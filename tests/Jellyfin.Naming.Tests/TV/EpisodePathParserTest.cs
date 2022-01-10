@@ -6,6 +6,8 @@ namespace Jellyfin.Naming.Tests.TV
 {
     public class EpisodePathParserTest
     {
+        private readonly NamingOptions _namingOptions = new NamingOptions();
+
         [Theory]
         [InlineData("/media/Foo/Foo-S01E01", true, "Foo", 1, 1)]
         [InlineData("/media/Foo - S04E011", true, "Foo", 4, 11)]
@@ -36,8 +38,7 @@ namespace Jellyfin.Naming.Tests.TV
         // TODO: [InlineData("/The.Legend.of.Condor.Heroes.2017.V2.web-dl.1080p.h264.aac-hdctv/The.Legend.of.Condor.Heroes.2017.E07.V2.web-dl.1080p.h264.aac-hdctv.mkv", "The Legend of Condor Heroes 2017", 1, 7)]
         public void ParseEpisodesCorrectly(string path, bool isDirectory, string name, int season, int episode)
         {
-            NamingOptions o = new NamingOptions();
-            EpisodePathParser p = new EpisodePathParser(o);
+            EpisodePathParser p = new EpisodePathParser(_namingOptions);
             var res = p.Parse(path, isDirectory);
 
             Assert.True(res.Success);
@@ -50,8 +51,7 @@ namespace Jellyfin.Naming.Tests.TV
         [InlineData("/test/01-03.avi", true, true)]
         public void EpisodePathParserTest_DifferentExpressionsParameters(string path, bool? isNamed, bool? isOptimistic)
         {
-            NamingOptions o = new NamingOptions();
-            EpisodePathParser p = new EpisodePathParser(o);
+            EpisodePathParser p = new EpisodePathParser(_namingOptions);
             var res = p.Parse(path, false, isNamed, isOptimistic);
 
             Assert.True(res.Success);
@@ -60,8 +60,7 @@ namespace Jellyfin.Naming.Tests.TV
         [Fact]
         public void EpisodePathParserTest_FalsePositivePixelRate()
         {
-            NamingOptions o = new NamingOptions();
-            EpisodePathParser p = new EpisodePathParser(o);
+            EpisodePathParser p = new EpisodePathParser(_namingOptions);
             var res = p.Parse("Series Special (1920x1080).mkv", false);
 
             Assert.False(res.Success);
@@ -70,14 +69,14 @@ namespace Jellyfin.Naming.Tests.TV
         [Fact]
         public void EpisodeResolverTest_WrongExtension()
         {
-            var res = new EpisodeResolver(new NamingOptions()).Resolve("test.mp3", false);
+            var res = new EpisodeResolver(_namingOptions).Resolve("test.mp3", false);
             Assert.Null(res);
         }
 
         [Fact]
         public void EpisodeResolverTest_WrongExtensionStub()
         {
-            var res = new EpisodeResolver(new NamingOptions()).Resolve("dvd.disc", false);
+            var res = new EpisodeResolver(_namingOptions).Resolve("dvd.disc", false);
             Assert.NotNull(res);
             Assert.True(res!.IsStub);
         }

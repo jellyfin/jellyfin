@@ -175,7 +175,7 @@ namespace Emby.Dlna.PlayTo
                 var sendValue = state.AllowedValues.FirstOrDefault(a => string.Equals(a, commandParameter, StringComparison.OrdinalIgnoreCase)) ??
                     (state.AllowedValues.Count > 0 ? state.AllowedValues[0] : value);
 
-                return string.Format(CultureInfo.InvariantCulture, "<{0} xmlns:dt=\"urn:schemas-microsoft-com:datatypes\" dt:dt=\"{1}\">{2}</{0}>", argument.Name, state.DataType ?? "string", sendValue);
+                return string.Format(CultureInfo.InvariantCulture, "<{0} xmlns:dt=\"urn:schemas-microsoft-com:datatypes\" dt:dt=\"{1}\">{2}</{0}>", argument.Name, state.DataType, sendValue);
             }
 
             return string.Format(CultureInfo.InvariantCulture, "<{0}>{1}</{0}>", argument.Name, value);

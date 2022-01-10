@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System.Collections.Generic;
@@ -22,7 +20,7 @@ namespace MediaBrowser.Controller.Dlna
         /// </summary>
         /// <param name="headers">The headers.</param>
         /// <returns>DeviceProfile.</returns>
-        DeviceProfile GetProfile(IHeaderDictionary headers);
+        DeviceProfile? GetProfile(IHeaderDictionary headers);
 
         /// <summary>
         /// Gets the default profile.
@@ -39,8 +37,9 @@ namespace MediaBrowser.Controller.Dlna
         /// <summary>
         /// Updates the profile.
         /// </summary>
+        /// <param name="profileId">The profile id.</param>
         /// <param name="profile">The profile.</param>
-        void UpdateProfile(DeviceProfile profile);
+        void UpdateProfile(string profileId, DeviceProfile profile);
 
         /// <summary>
         /// Deletes the profile.
@@ -53,14 +52,14 @@ namespace MediaBrowser.Controller.Dlna
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns>DeviceProfile.</returns>
-        DeviceProfile GetProfile(string id);
+        DeviceProfile? GetProfile(string id);
 
         /// <summary>
         /// Gets the profile.
         /// </summary>
         /// <param name="deviceInfo">The device information.</param>
         /// <returns>DeviceProfile.</returns>
-        DeviceProfile GetProfile(DeviceIdentification deviceInfo);
+        DeviceProfile? GetProfile(DeviceIdentification deviceInfo);
 
         /// <summary>
         /// Gets the server description XML.
@@ -76,6 +75,6 @@ namespace MediaBrowser.Controller.Dlna
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <returns>DlnaIconResponse.</returns>
-        ImageStream GetIcon(string filename);
+        ImageStream? GetIcon(string filename);
     }
 }

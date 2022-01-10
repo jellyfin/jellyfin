@@ -9,12 +9,12 @@
     "HeaderFavoriteArtists": "पसंदीदा कलाकारसमूह",
     "HeaderFavoriteAlbums": "पसंदीदा एलबम्स",
     "HeaderContinueWatching": "देखते रहिए",
-    "HeaderAlbumArtists": "एल्बम कलकरसमुह",
+    "HeaderAlbumArtists": "एल्बम कलाकार",
     "Genres": "शैली",
     "Forced": "बलपूर्वक",
     "Folders": "फोल्डेरें",
     "Favorites": "पसंदीदा",
-    "FailedLoginAttemptWithUserName": "{0} से लॉगिन असफल हुआ है",
+    "FailedLoginAttemptWithUserName": "लॉगिन असफल हुआ, पुनः {0} से प्रयास करें",
     "DeviceOnlineWithName": "{0} से संयोग हो गया है",
     "DeviceOfflineWithName": "{0} से संयोग विच्छिन्न हो गया है",
     "Default": "प्राथमिक",
@@ -51,7 +51,7 @@
     "Latest": "सबसे नया",
     "LabelIpAddressValue": "आई पी एड्रेस: {0}",
     "ItemRemovedWithName": "{0} लाइब्रेरी में से निकाल दिया है",
-    "HomeVideos": "होम वीडियोस",
+    "HomeVideos": "होम चलचित्र",
     "NotificationOptionVideoPlayback": "वीडियो प्लेबैक शुरू हुआ",
     "NotificationOptionUserLockedOut": "उपयोगकर्ता लॉक हो गया",
     "NotificationOptionTaskFailed": "निर्धारित कार्य विफलता",
@@ -60,5 +60,6 @@
     "NotificationOptionNewLibraryContent": "नई सामग्री जोड़ी गई",
     "LabelRunningTimeValue": "चलने का समय: {0}",
     "ItemAddedWithName": "{0} को लाइब्रेरी में जोड़ा गया",
-    "Inherit": "इनहेरिट"
+    "Inherit": "इनहेरिट",
+    "NotificationOptionVideoPlaybackStopped": "चलचित्र रुका हुआ"
 }

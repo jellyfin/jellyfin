@@ -1,7 +1,7 @@
 using System;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
+using Jellyfin.Extensions;
 
 namespace Rssdp.Infrastructure
 {
@@ -49,7 +49,7 @@ namespace Rssdp.Infrastructure
         /// <returns>A boolean, true if th specified header relates to HTTP content, otherwise false.</returns>
         protected override bool IsContentHeader(string headerName)
         {
-            return ContentHeaderNames.Contains(headerName, StringComparer.OrdinalIgnoreCase);
+            return ContentHeaderNames.Contains(headerName, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

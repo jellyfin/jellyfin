@@ -117,5 +117,6 @@
     "TaskCleanActivityLogDescription": "ลบบันทึกกิจกรรมที่เก่ากว่าค่าที่กำหนดไว้",
     "TaskCleanActivityLog": "ล้างบันทึกกิจกรรม",
     "Undefined": "ไม่ได้กำหนด",
-    "Forced": "บังคับใช้"
+    "Forced": "บังคับใช้",
+    "TaskOptimizeDatabase": "ปรับฐานข้อมูลให้เหมาะสม"
 }

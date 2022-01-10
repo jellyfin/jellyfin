@@ -1,6 +1,6 @@
 #nullable disable
 
-#pragma warning disable CS1591
+#pragma warning disable CS1591, SA1306, SA1401
 
 using System;
 using System.Collections.Generic;
@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Session;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Net
@@ -29,6 +30,21 @@ namespace MediaBrowser.Controller.Net
         /// </summary>
         private readonly List<Tuple<IWebSocketConnection, CancellationTokenSource, TStateType>> _activeConnections =
             new List<Tuple<IWebSocketConnection, CancellationTokenSource, TStateType>>();
+
+        /// <summary>
+        /// The logger.
+        /// </summary>
+        protected ILogger<BasePeriodicWebSocketListener<TReturnDataType, TStateType>> Logger;
+
+        protected BasePeriodicWebSocketListener(ILogger<BasePeriodicWebSocketListener<TReturnDataType, TStateType>> logger)
+        {
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            Logger = logger;
+        }
 
         /// <summary>
         /// Gets the type used for the messages sent to the client.
@@ -53,21 +69,6 @@ namespace MediaBrowser.Controller.Net
         /// </summary>
         /// <returns>Task{`1}.</returns>
         protected abstract Task<TReturnDataType> GetDataToSend();
-
-        /// <summary>
-        /// The logger.
-        /// </summary>
-        protected ILogger<BasePeriodicWebSocketListener<TReturnDataType, TStateType>> Logger;
-
-        protected BasePeriodicWebSocketListener(ILogger<BasePeriodicWebSocketListener<TReturnDataType, TStateType>> logger)
-        {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            Logger = logger;
-        }
 
         /// <summary>
         /// Processes the message.
@@ -95,7 +96,7 @@ namespace MediaBrowser.Controller.Net
         }
 
         /// <inheritdoc />
-        public Task ProcessWebSocketConnectedAsync(IWebSocketConnection connection) => Task.CompletedTask;
+        public Task ProcessWebSocketConnectedAsync(IWebSocketConnection connection, HttpContext httpContext) => Task.CompletedTask;
 
         /// <summary>
         /// Starts sending messages over a web socket.

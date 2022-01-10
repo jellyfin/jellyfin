@@ -2,25 +2,28 @@ FROM fedora:33
 # Docker build arguments
 ARG SOURCE_DIR=/jellyfin
 ARG ARTIFACT_DIR=/dist
-ARG SDK_VERSION=5.0
 # Docker run environment
 ENV SOURCE_DIR=/jellyfin
 ENV ARTIFACT_DIR=/dist
 ENV IS_DOCKER=YES
 
 # Prepare Fedora environment
-RUN dnf update -y \
- && dnf install -y @buildsys-build rpmdevtools git dnf-plugins-core libcurl-devel fontconfig-devel freetype-devel openssl-devel glibc-devel libicu-devel systemd
+RUN dnf update -yq \
+  && dnf install -yq @buildsys-build rpmdevtools git dnf-plugins-core libcurl-devel fontconfig-devel freetype-devel openssl-devel glibc-devel libicu-devel systemd wget
 
 # Install DotNET SDK
-RUN dnf install -y dotnet-sdk-${SDK_VERSION} dotnet-runtime-${SDK_VERSION}
+RUN wget -q https://download.visualstudio.microsoft.com/download/pr/ede8a287-3d61-4988-a356-32ff9129079e/bdb47b6b510ed0c4f0b132f7f4ad9d5a/dotnet-sdk-6.0.101-linux-x64.tar.gz -O dotnet-sdk.tar.gz \
+  && mkdir -p dotnet-sdk \
+  && tar -xzf dotnet-sdk.tar.gz -C dotnet-sdk \
+  && ln -s $( pwd )/dotnet-sdk/dotnet /usr/bin/dotnet
+
 
 # Create symlinks and directories
 RUN ln -sf ${SOURCE_DIR}/deployment/build.fedora.amd64 /build.sh \
- && mkdir -p ${SOURCE_DIR}/SPECS \
- && ln -s ${SOURCE_DIR}/fedora/jellyfin.spec ${SOURCE_DIR}/SPECS/jellyfin.spec \
- && mkdir -p ${SOURCE_DIR}/SOURCES \
- && ln -s ${SOURCE_DIR}/fedora ${SOURCE_DIR}/SOURCES
+  && mkdir -p ${SOURCE_DIR}/SPECS \
+  && ln -s ${SOURCE_DIR}/fedora/jellyfin.spec ${SOURCE_DIR}/SPECS/jellyfin.spec \
+  && mkdir -p ${SOURCE_DIR}/SOURCES \
+  && ln -s ${SOURCE_DIR}/fedora ${SOURCE_DIR}/SOURCES
 
 VOLUME ${SOURCE_DIR}/
 

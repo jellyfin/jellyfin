@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -35,7 +36,12 @@ namespace Emby.Server.Implementations.HttpServer
         /// <inheritdoc />
         public async Task WebSocketRequestHandler(HttpContext context)
         {
-            _ = _authService.Authenticate(context.Request);
+            var authorizationInfo = await _authService.Authenticate(context.Request).ConfigureAwait(false);
+            if (!authorizationInfo.IsAuthenticated)
+            {
+                throw new SecurityException("Token is required");
+            }
+
             try
             {
                 _logger.LogInformation("WS {IP} request", context.Connection.RemoteIpAddress);
@@ -45,8 +51,7 @@ namespace Emby.Server.Implementations.HttpServer
                 using var connection = new WebSocketConnection(
                     _loggerFactory.CreateLogger<WebSocketConnection>(),
                     webSocket,
-                    context.Connection.RemoteIpAddress,
-                    context.Request.Query)
+                    context.GetNormalizedRemoteIp())
                 {
                     OnReceive = ProcessWebSocketMessageReceived
                 };
@@ -54,7 +59,7 @@ namespace Emby.Server.Implementations.HttpServer
                 var tasks = new Task[_webSocketListeners.Length];
                 for (var i = 0; i < _webSocketListeners.Length; ++i)
                 {
-                    tasks[i] = _webSocketListeners[i].ProcessWebSocketConnectedAsync(connection);
+                    tasks[i] = _webSocketListeners[i].ProcessWebSocketConnectedAsync(connection, context);
                 }
 
                 await Task.WhenAll(tasks).ConfigureAwait(false);

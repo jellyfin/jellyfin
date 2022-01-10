@@ -11,6 +11,12 @@ namespace Emby.Server.Implementations.Sorting
     public class DateCreatedComparer : IBaseItemComparer
     {
         /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.DateCreated;
+
+        /// <summary>
         /// Compares the specified x.
         /// </summary>
         /// <param name="x">The x.</param>
@@ -30,11 +36,5 @@ namespace Emby.Server.Implementations.Sorting
 
             return DateTime.Compare(x.DateCreated, y.DateCreated);
         }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name => ItemSortBy.DateCreated;
     }
 }

@@ -20,8 +20,6 @@ namespace Emby.Dlna.PlayTo
 {
     public class Device : IDisposable
     {
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
         private readonly IHttpClientFactory _httpClientFactory;
 
         private readonly ILogger _logger;
@@ -640,7 +638,7 @@ namespace Emby.Dlna.PlayTo
                 return;
             }
 
-            Volume = int.Parse(volumeValue, UsCulture);
+            Volume = int.Parse(volumeValue, CultureInfo.InvariantCulture);
 
             if (Volume > 0)
             {
@@ -842,7 +840,7 @@ namespace Emby.Dlna.PlayTo
             if (!string.IsNullOrWhiteSpace(duration)
                 && !string.Equals(duration, "NOT_IMPLEMENTED", StringComparison.OrdinalIgnoreCase))
             {
-                Duration = TimeSpan.Parse(duration, UsCulture);
+                Duration = TimeSpan.Parse(duration, CultureInfo.InvariantCulture);
             }
             else
             {
@@ -854,7 +852,7 @@ namespace Emby.Dlna.PlayTo
 
             if (!string.IsNullOrWhiteSpace(position) && !string.Equals(position, "NOT_IMPLEMENTED", StringComparison.OrdinalIgnoreCase))
             {
-                Position = TimeSpan.Parse(position, UsCulture);
+                Position = TimeSpan.Parse(position, CultureInfo.InvariantCulture);
             }
 
             var track = result.Document.Descendants("TrackMetaData").FirstOrDefault();
@@ -1181,6 +1179,7 @@ namespace Emby.Dlna.PlayTo
             return new Device(deviceProperties, httpClientFactory, logger);
         }
 
+#nullable enable
         private static DeviceIcon CreateIcon(XElement element)
         {
             if (element == null)
@@ -1188,68 +1187,60 @@ namespace Emby.Dlna.PlayTo
                 throw new ArgumentNullException(nameof(element));
             }
 
-            var mimeType = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("mimetype"));
             var width = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("width"));
             var height = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("height"));
-            var depth = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("depth"));
-            var url = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("url"));
 
-            var widthValue = int.Parse(width, NumberStyles.Integer, UsCulture);
-            var heightValue = int.Parse(height, NumberStyles.Integer, UsCulture);
+            _ = int.TryParse(width, NumberStyles.Integer, CultureInfo.InvariantCulture, out var widthValue);
+            _ = int.TryParse(height, NumberStyles.Integer, CultureInfo.InvariantCulture, out var heightValue);
 
             return new DeviceIcon
             {
-                Depth = depth,
+                Depth = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("depth")) ?? string.Empty,
                 Height = heightValue,
-                MimeType = mimeType,
-                Url = url,
+                MimeType = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("mimetype")) ?? string.Empty,
+                Url = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("url")) ?? string.Empty,
                 Width = widthValue
             };
         }
 
         private static DeviceService Create(XElement element)
-        {
-            var type = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("serviceType"));
-            var id = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("serviceId"));
-            var scpdUrl = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("SCPDURL"));
-            var controlURL = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("controlURL"));
-            var eventSubURL = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("eventSubURL"));
-
-            return new DeviceService
+            => new DeviceService()
             {
-                ControlUrl = controlURL,
-                EventSubUrl = eventSubURL,
-                ScpdUrl = scpdUrl,
-                ServiceId = id,
-                ServiceType = type
+                ControlUrl = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("controlURL")) ?? string.Empty,
+                EventSubUrl = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("eventSubURL")) ?? string.Empty,
+                ScpdUrl = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("SCPDURL")) ?? string.Empty,
+                ServiceId = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("serviceId")) ?? string.Empty,
+                ServiceType = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("serviceType")) ?? string.Empty
             };
-        }
 
-        private void UpdateMediaInfo(UBaseObject mediaInfo, TransportState state)
+        private void UpdateMediaInfo(UBaseObject? mediaInfo, TransportState state)
         {
             TransportState = state;
 
             var previousMediaInfo = CurrentMediaInfo;
             CurrentMediaInfo = mediaInfo;
 
-            if (previousMediaInfo == null && mediaInfo != null)
+            if (mediaInfo == null)
+            {
+                if (previousMediaInfo != null)
+                {
+                    OnPlaybackStop(previousMediaInfo);
+                }
+            }
+            else if (previousMediaInfo == null)
             {
                 if (state != TransportState.Stopped)
                 {
                     OnPlaybackStart(mediaInfo);
                 }
             }
-            else if (mediaInfo != null && previousMediaInfo != null && !mediaInfo.Equals(previousMediaInfo))
-            {
-                OnMediaChanged(previousMediaInfo, mediaInfo);
-            }
-            else if (mediaInfo == null && previousMediaInfo != null)
-            {
-                OnPlaybackStop(previousMediaInfo);
-            }
-            else if (mediaInfo != null && mediaInfo.Equals(previousMediaInfo))
+            else if (mediaInfo.Equals(previousMediaInfo))
             {
                 OnPlaybackProgress(mediaInfo);
+            }
+            else
+            {
+                OnMediaChanged(previousMediaInfo, mediaInfo);
             }
         }
 

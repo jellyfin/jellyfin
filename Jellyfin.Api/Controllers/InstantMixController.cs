@@ -80,7 +80,7 @@ namespace Jellyfin.Api.Controllers
                 : null;
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
-                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes!);
+                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
             var items = _musicManager.GetInstantMixFromItem(item, user, dtoOptions);
             return GetResult(items, user, limit, dtoOptions);
         }
@@ -116,7 +116,7 @@ namespace Jellyfin.Api.Controllers
                 : null;
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
-                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes!);
+                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
             var items = _musicManager.GetInstantMixFromItem(album, user, dtoOptions);
             return GetResult(items, user, limit, dtoOptions);
         }
@@ -152,7 +152,7 @@ namespace Jellyfin.Api.Controllers
                 : null;
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
-                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes!);
+                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
             var items = _musicManager.GetInstantMixFromItem(playlist, user, dtoOptions);
             return GetResult(items, user, limit, dtoOptions);
         }
@@ -187,7 +187,7 @@ namespace Jellyfin.Api.Controllers
                 : null;
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
-                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes!);
+                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
             var items = _musicManager.GetInstantMixFromGenres(new[] { name }, user, dtoOptions);
             return GetResult(items, user, limit, dtoOptions);
         }
@@ -223,7 +223,7 @@ namespace Jellyfin.Api.Controllers
                 : null;
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
-                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes!);
+                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
             var items = _musicManager.GetInstantMixFromItem(item, user, dtoOptions);
             return GetResult(items, user, limit, dtoOptions);
         }
@@ -259,7 +259,7 @@ namespace Jellyfin.Api.Controllers
                 : null;
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
-                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes!);
+                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
             var items = _musicManager.GetInstantMixFromItem(item, user, dtoOptions);
             return GetResult(items, user, limit, dtoOptions);
         }
@@ -332,7 +332,7 @@ namespace Jellyfin.Api.Controllers
                 : null;
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
-                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes!);
+                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
             var items = _musicManager.GetInstantMixFromItem(item, user, dtoOptions);
             return GetResult(items, user, limit, dtoOptions);
         }

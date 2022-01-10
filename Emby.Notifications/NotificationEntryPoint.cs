@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
@@ -104,7 +105,7 @@ namespace Emby.Notifications
 
             var type = entry.Type;
 
-            if (string.IsNullOrEmpty(type) || !_coreNotificationTypes.Contains(type, StringComparer.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(type) || !_coreNotificationTypes.Contains(type, StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }

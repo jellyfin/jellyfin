@@ -2,6 +2,7 @@
 #pragma warning disable CS1591
 
 using System;
+using Jellyfin.Data.Enums;
 
 namespace MediaBrowser.Model.Search
 {
@@ -16,8 +17,8 @@ namespace MediaBrowser.Model.Search
             IncludeStudios = true;
 
             MediaTypes = Array.Empty<string>();
-            IncludeItemTypes = Array.Empty<string>();
-            ExcludeItemTypes = Array.Empty<string>();
+            IncludeItemTypes = Array.Empty<BaseItemKind>();
+            ExcludeItemTypes = Array.Empty<BaseItemKind>();
         }
 
         /// <summary>
@@ -56,9 +57,9 @@ namespace MediaBrowser.Model.Search
 
         public string[] MediaTypes { get; set; }
 
-        public string[] IncludeItemTypes { get; set; }
+        public BaseItemKind[] IncludeItemTypes { get; set; }
 
-        public string[] ExcludeItemTypes { get; set; }
+        public BaseItemKind[] ExcludeItemTypes { get; set; }
 
         public Guid? ParentId { get; set; }
 

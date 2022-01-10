@@ -1,6 +1,6 @@
 #nullable disable
 
-#pragma warning disable CS1591
+#pragma warning disable CA1721, CA1819, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -36,6 +36,7 @@ namespace MediaBrowser.Controller.Library
             DirectoryService = directoryService;
         }
 
+        // TODO remove dependencies as properties, they should be injected where it makes sense
         public IDirectoryService DirectoryService { get; }
 
         /// <summary>
@@ -109,6 +110,21 @@ namespace MediaBrowser.Controller.Library
         /// <value>The additional locations.</value>
         private List<string> AdditionalLocations { get; set; }
 
+        /// <summary>
+        /// Gets the physical locations.
+        /// </summary>
+        /// <value>The physical locations.</value>
+        public string[] PhysicalLocations
+        {
+            get
+            {
+                var paths = string.IsNullOrEmpty(Path) ? Array.Empty<string>() : new[] { Path };
+                return AdditionalLocations == null ? paths : paths.Concat(AdditionalLocations).ToArray();
+            }
+        }
+
+        public string CollectionType { get; set; }
+
         public bool HasParent<T>()
             where T : Folder
         {
@@ -139,6 +155,16 @@ namespace MediaBrowser.Controller.Library
         }
 
         /// <summary>
+        /// Determines whether the specified <see cref="object" /> is equal to this instance.
+        /// </summary>
+        /// <param name="obj">The object to compare with the current object.</param>
+        /// <returns><c>true</c> if the specified <see cref="object" /> is equal to this instance; otherwise, <c>false</c>.</returns>
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as ItemResolveArgs);
+        }
+
+        /// <summary>
         /// Adds the additional location.
         /// </summary>
         /// <param name="path">The path.</param>
@@ -155,19 +181,6 @@ namespace MediaBrowser.Controller.Library
         }
 
         // REVIEW: @bond
-
-        /// <summary>
-        /// Gets the physical locations.
-        /// </summary>
-        /// <value>The physical locations.</value>
-        public string[] PhysicalLocations
-        {
-            get
-            {
-                var paths = string.IsNullOrEmpty(Path) ? Array.Empty<string>() : new[] { Path };
-                return AdditionalLocations == null ? paths : paths.Concat(AdditionalLocations).ToArray();
-            }
-        }
 
         /// <summary>
         /// Gets the name of the file system entry by.
@@ -190,7 +203,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>FileSystemInfo.</returns>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException">Throws if path is invalid.</exception>
         public FileSystemMetadata GetFileSystemEntryByPath(string path)
         {
             if (string.IsNullOrEmpty(path))
@@ -224,16 +237,38 @@ namespace MediaBrowser.Controller.Library
             return CollectionType;
         }
 
-        public string CollectionType { get; set; }
+        /// <summary>
+        /// Gets the configured content type for the path.
+        /// </summary>
+        /// <remarks>
+        /// This is subject to future refactoring as it relies on a static property in BaseItem.
+        /// </remarks>
+        /// <returns>The configured content type.</returns>
+        public string GetConfiguredContentType()
+        {
+            return BaseItem.LibraryManager.GetConfiguredContentType(Path);
+        }
 
         /// <summary>
-        /// Determines whether the specified <see cref="object" /> is equal to this instance.
+        /// Gets the file system children that do not hit the ignore file check.
         /// </summary>
-        /// <param name="obj">The object to compare with the current object.</param>
-        /// <returns><c>true</c> if the specified <see cref="object" /> is equal to this instance; otherwise, <c>false</c>.</returns>
-        public override bool Equals(object obj)
+        /// <remarks>
+        /// This is subject to future refactoring as it relies on a static property in BaseItem.
+        /// </remarks>
+        /// <returns>The file system children that are not ignored.</returns>
+        public IEnumerable<FileSystemMetadata> GetActualFileSystemChildren()
         {
-            return Equals(obj as ItemResolveArgs);
+            var numberOfChildren = FileSystemChildren.Length;
+            for (var i = 0; i < numberOfChildren; i++)
+            {
+                var child = FileSystemChildren[i];
+                if (BaseItem.LibraryManager.IgnoreFile(child, Parent))
+                {
+                    continue;
+                }
+
+                yield return child;
+            }
         }
 
         /// <summary>

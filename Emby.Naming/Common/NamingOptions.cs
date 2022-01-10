@@ -1,4 +1,7 @@
+#pragma warning disable CA1819
+
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Emby.Naming.Video;
@@ -122,11 +125,11 @@ namespace Emby.Naming.Common
                     token: "DSR")
             };
 
-            VideoFileStackingExpressions = new[]
+            VideoFileStackingRules = new[]
             {
-                "(?<title>.*?)(?<volume>[ _.-]*(?:cd|dvd|p(?:ar)?t|dis[ck])[ _.-]*[0-9]+)(?<ignore>.*?)(?<extension>\\.[^.]+)$",
-                "(?<title>.*?)(?<volume>[ _.-]*(?:cd|dvd|p(?:ar)?t|dis[ck])[ _.-]*[a-d])(?<ignore>.*?)(?<extension>\\.[^.]+)$",
-                "(?<title>.*?)(?<volume>[ ._-]*[a-d])(?<ignore>.*?)(?<extension>\\.[^.]+)$"
+                new FileStackRule(@"^(?<filename>.*?)(?:(?<=[\]\)\}])|[ _.-]+)[\(\[]?(?<parttype>cd|dvd|part|pt|dis[ck])[ _.-]*(?<number>[0-9]+)[\)\]]?(?:\.[^.]+)?$", true),
+                new FileStackRule(@"^(?<filename>.*?)(?:(?<=[\]\)\}])|[ _.-]+)[\(\[]?(?<parttype>cd|dvd|part|pt|dis[ck])[ _.-]*(?<number>[a-d])[\)\]]?(?:\.[^.]+)?$", false),
+                new FileStackRule(@"^(?<filename>.*?)(?:(?<=[\]\)\}])|[ _.-]?)(?<number>[a-d])(?:\.[^.]+)?$", false)
             };
 
             CleanDateTimes = new[]
@@ -137,8 +140,11 @@ namespace Emby.Naming.Common
 
             CleanStrings = new[]
             {
-                @"[ _\,\.\(\)\[\]\-](3d|sbs|tab|hsbs|htab|mvc|HDR|HDC|UHD|UltraHD|4k|ac3|dts|custom|dc|divx|divx5|dsr|dsrip|dutch|dvd|dvdrip|dvdscr|dvdscreener|screener|dvdivx|cam|fragment|fs|hdtv|hdrip|hdtvrip|internal|limited|multisubs|ntsc|ogg|ogm|pal|pdtv|proper|repack|rerip|retail|cd[1-9]|r3|r5|bd5|bd|se|svcd|swedish|german|read.nfo|nfofix|unrated|ws|telesync|ts|telecine|tc|brrip|bdrip|480p|480i|576p|576i|720p|720i|1080p|1080i|2160p|hrhd|hrhdtv|hddvd|bluray|blu-ray|x264|x265|h264|h265|xvid|xvidvd|xxx|www.www|AAC|DTS|\[.*\])([ _\,\.\(\)\[\]\-]|$)",
-                @"(\[.*\])"
+                @"^\s*(?<cleaned>.+?)[ _\,\.\(\)\[\]\-](3d|sbs|tab|hsbs|htab|mvc|HDR|HDC|UHD|UltraHD|4k|ac3|dts|custom|dc|divx|divx5|dsr|dsrip|dutch|dvd|dvdrip|dvdscr|dvdscreener|screener|dvdivx|cam|fragment|fs|hdtv|hdrip|hdtvrip|internal|limited|multisubs|ntsc|ogg|ogm|pal|pdtv|proper|repack|rerip|retail|cd[1-9]|r3|r5|bd5|bd|se|svcd|swedish|german|read.nfo|nfofix|unrated|ws|telesync|ts|telecine|tc|brrip|bdrip|480p|480i|576p|576i|720p|720i|1080p|1080i|2160p|hrhd|hrhdtv|hddvd|bluray|blu-ray|x264|x265|h264|h265|xvid|xvidvd|xxx|www.www|AAC|DTS|\[.*\])([ _\,\.\(\)\[\]\-]|$)",
+                @"^(?<cleaned>.+?)(\[.*\])",
+                @"^\s*(?<cleaned>.+?)\WE[0-9]+(-|~)E?[0-9]+(\W|$)",
+                @"^\s*\[[^\]]+\](?!\.\w+$)\s*(?<cleaned>.+)",
+                @"^\s*(?<cleaned>.+?)\s+-\s+[0-9]+\s*$"
             };
 
             SubtitleFileExtensions = new[]
@@ -250,6 +256,8 @@ namespace Emby.Naming.Common
                 },
                 // <!-- foo.ep01, foo.EP_01 -->
                 new EpisodeExpression(@"[\._ -]()[Ee][Pp]_?([0-9]+)([^\\/]*)$"),
+                // <!-- foo.E01., foo.e01. -->
+                new EpisodeExpression(@"[^\\/]*?()\.?[Ee]([0-9]+)\.([^\\/]*)$"),
                 new EpisodeExpression("(?<year>[0-9]{4})[\\.-](?<month>[0-9]{2})[\\.-](?<day>[0-9]{2})", true)
                 {
                     DateTimeFormats = new[]
@@ -284,7 +292,7 @@ namespace Emby.Naming.Common
 
                 // Not a Kodi rule as well, but below rule also causes false positives for triple-digit episode names
                 // [bar] Foo - 1 [baz] special case of below expression to prevent false positives with digits in the series name
-                new EpisodeExpression(@".*?(\[.*?\])+.*?(?<seriesname>[\w\s]+?)[\s_]*-[\s_]*(?<epnumber>[0-9]+).*$")
+                new EpisodeExpression(@".*[\\\/]?.*?(\[.*?\])+.*?(?<seriesname>[-\w\s]+?)[\s_]*-[\s_]*(?<epnumber>[0-9]+).*$")
                 {
                     IsNamed = true
                 },
@@ -368,6 +376,20 @@ namespace Emby.Naming.Common
                     IsOptimistic = true,
                     IsNamed = true
                 },
+
+                // Series and season only expression
+                // "the show/season 1", "the show/s01"
+                new EpisodeExpression(@"(.*(\\|\/))*(?<seriesname>.+)\/[Ss](eason)?[\. _\-]*(?<seasonnumber>[0-9]+)")
+                {
+                    IsNamed = true
+                },
+
+                // Series and season only expression
+                // "the show S01", "the show season 1"
+                new EpisodeExpression(@"(.*(\\|\/))*(?<seriesname>.+)[\. _\-]+[sS](eason)?[\. _\-]*(?<seasonnumber>[0-9]+)")
+                {
+                    IsNamed = true
+                },
             };
 
             EpisodeWithoutSeasonExpressions = new[]
@@ -382,6 +404,12 @@ namespace Emby.Naming.Common
 
             VideoExtraRules = new[]
             {
+                new ExtraRule(
+                    ExtraType.Trailer,
+                    ExtraRuleType.DirectoryName,
+                    "trailers",
+                    MediaType.Video),
+
                 new ExtraRule(
                     ExtraType.Trailer,
                     ExtraRuleType.Filename,
@@ -443,9 +471,21 @@ namespace Emby.Naming.Common
                     MediaType.Video),
 
                 new ExtraRule(
+                    ExtraType.ThemeVideo,
+                    ExtraRuleType.DirectoryName,
+                    "backdrops",
+                    MediaType.Video),
+
+                new ExtraRule(
                     ExtraType.ThemeSong,
                     ExtraRuleType.Filename,
                     "theme",
+                    MediaType.Audio),
+
+                new ExtraRule(
+                    ExtraType.ThemeSong,
+                    ExtraRuleType.DirectoryName,
+                    "theme-music",
                     MediaType.Audio),
 
                 new ExtraRule(
@@ -476,6 +516,12 @@ namespace Emby.Naming.Common
                     ExtraType.DeletedScene,
                     ExtraRuleType.Suffix,
                     "-deleted",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.DeletedScene,
+                    ExtraRuleType.Suffix,
+                    "-deletedscene",
                     MediaType.Video),
 
                 new ExtraRule(
@@ -536,7 +582,7 @@ namespace Emby.Naming.Common
                     ExtraType.Unknown,
                     ExtraRuleType.DirectoryName,
                     "extras",
-                    MediaType.Video),
+                    MediaType.Video)
             };
 
             Format3DRules = new[]
@@ -648,8 +694,28 @@ namespace Emby.Naming.Common
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
 
+            AllExtrasTypesFolderNames = new Dictionary<string, ExtraType>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["trailers"] = ExtraType.Trailer,
+                ["theme-music"] = ExtraType.ThemeSong,
+                ["backdrops"] = ExtraType.ThemeVideo,
+                ["extras"] = ExtraType.Unknown,
+                ["behind the scenes"] = ExtraType.BehindTheScenes,
+                ["deleted scenes"] = ExtraType.DeletedScene,
+                ["interviews"] = ExtraType.Interview,
+                ["scenes"] = ExtraType.Scene,
+                ["samples"] = ExtraType.Sample,
+                ["shorts"] = ExtraType.Clip,
+                ["featurettes"] = ExtraType.Clip
+            };
+
             Compile();
         }
+
+        /// <summary>
+        /// Gets or sets the folder name to extra types mapping.
+        /// </summary>
+        public Dictionary<string, ExtraType> AllExtrasTypesFolderNames { get; set; }
 
         /// <summary>
         /// Gets or sets list of audio file extensions.
@@ -732,9 +798,9 @@ namespace Emby.Naming.Common
         public Format3DRule[] Format3DRules { get; set; }
 
         /// <summary>
-        /// Gets or sets list of raw video file-stacking expressions strings.
+        /// Gets the file stacking rules.
         /// </summary>
-        public string[] VideoFileStackingExpressions { get; set; }
+        public FileStackRule[] VideoFileStackingRules { get; }
 
         /// <summary>
         /// Gets or sets list of raw clean DateTimes regular expressions strings.
@@ -755,11 +821,6 @@ namespace Emby.Naming.Common
         /// Gets or sets list of extra rules for videos.
         /// </summary>
         public ExtraRule[] VideoExtraRules { get; set; }
-
-        /// <summary>
-        /// Gets list of video file-stack regular expressions.
-        /// </summary>
-        public Regex[] VideoFileStackingRegexes { get; private set; } = Array.Empty<Regex>();
 
         /// <summary>
         /// Gets list of clean datetime regular expressions.
@@ -786,7 +847,6 @@ namespace Emby.Naming.Common
         /// </summary>
         public void Compile()
         {
-            VideoFileStackingRegexes = VideoFileStackingExpressions.Select(Compile).ToArray();
             CleanDateTimeRegexes = CleanDateTimes.Select(Compile).ToArray();
             CleanStringRegexes = CleanStrings.Select(Compile).ToArray();
             EpisodeWithoutSeasonRegexes = EpisodeWithoutSeasonExpressions.Select(Compile).ToArray();

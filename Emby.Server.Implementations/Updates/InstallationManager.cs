@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -10,8 +11,8 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
-using MediaBrowser.Common.Configuration;
 using Jellyfin.Extensions.Json;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
@@ -19,7 +20,6 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Updates;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.Logging;
@@ -47,13 +47,12 @@ namespace Emby.Server.Implementations.Updates
         /// </summary>
         /// <value>The application host.</value>
         private readonly IServerApplicationHost _applicationHost;
-        private readonly IZipClient _zipClient;
         private readonly object _currentInstallationsLock = new object();
 
         /// <summary>
         /// The current installations.
         /// </summary>
-        private readonly List<(InstallationInfo info, CancellationTokenSource token)> _currentInstallations;
+        private readonly List<(InstallationInfo Info, CancellationTokenSource Token)> _currentInstallations;
 
         /// <summary>
         /// The completed installations.
@@ -69,7 +68,6 @@ namespace Emby.Server.Implementations.Updates
         /// <param name="eventManager">The <see cref="IEventManager"/>.</param>
         /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
         /// <param name="config">The <see cref="IServerConfigurationManager"/>.</param>
-        /// <param name="zipClient">The <see cref="IZipClient"/>.</param>
         /// <param name="pluginManager">The <see cref="IPluginManager"/>.</param>
         public InstallationManager(
             ILogger<InstallationManager> logger,
@@ -78,7 +76,6 @@ namespace Emby.Server.Implementations.Updates
             IEventManager eventManager,
             IHttpClientFactory httpClientFactory,
             IServerConfigurationManager config,
-            IZipClient zipClient,
             IPluginManager pluginManager)
         {
             _currentInstallations = new List<(InstallationInfo, CancellationTokenSource)>();
@@ -90,7 +87,6 @@ namespace Emby.Server.Implementations.Updates
             _eventManager = eventManager;
             _httpClientFactory = httpClientFactory;
             _config = config;
-            _zipClient = zipClient;
             _jsonSerializerOptions = JsonDefaults.Options;
             _pluginManager = pluginManager;
         }
@@ -403,13 +399,13 @@ namespace Emby.Server.Implementations.Updates
         {
             lock (_currentInstallationsLock)
             {
-                var install = _currentInstallations.Find(x => x.info.Id == id);
+                var install = _currentInstallations.Find(x => x.Info.Id == id);
                 if (install == default((InstallationInfo, CancellationTokenSource)))
                 {
                     return false;
                 }
 
-                install.token.Cancel();
+                install.Token.Cancel();
                 _currentInstallations.Remove(install);
                 return true;
             }
@@ -560,7 +556,8 @@ namespace Emby.Server.Implementations.Updates
             }
 
             stream.Position = 0;
-            _zipClient.ExtractAllFromZip(stream, targetDir, true);
+            using var reader = new ZipArchive(stream);
+            reader.ExtractToDirectory(targetDir, true);
             await _pluginManager.GenerateManifest(package.PackageInfo, package.Version, targetDir, status).ConfigureAwait(false);
             _pluginManager.ImportPluginFrom(targetDir);
         }
@@ -571,7 +568,7 @@ namespace Emby.Server.Implementations.Updates
                   ?? _pluginManager.Plugins.FirstOrDefault(p => p.Name.Equals(package.Name, StringComparison.OrdinalIgnoreCase) && p.Version.Equals(package.Version));
 
             await PerformPackageInstallation(package, plugin?.Manifest.Status ?? PluginStatus.Active, cancellationToken).ConfigureAwait(false);
-            _logger.LogInformation(plugin == null ? "New plugin installed: {PluginName} {PluginVersion}" : "Plugin updated: {PluginName} {PluginVersion}", package.Name, package.Version);
+            _logger.LogInformation("Plugin {Action}: {PluginName} {PluginVersion}", plugin == null ? "installed" : "updated", package.Name, package.Version);
 
             return plugin != null;
         }

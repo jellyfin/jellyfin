@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Mime;
@@ -279,25 +278,26 @@ namespace Jellyfin.Api.Controllers
 
             return _liveTvManager.GetRecordings(
                 new RecordingQuery
-            {
-                ChannelId = channelId,
-                UserId = userId ?? Guid.Empty,
-                StartIndex = startIndex,
-                Limit = limit,
-                Status = status,
-                SeriesTimerId = seriesTimerId,
-                IsInProgress = isInProgress,
-                EnableTotalRecordCount = enableTotalRecordCount,
-                IsMovie = isMovie,
-                IsNews = isNews,
-                IsSeries = isSeries,
-                IsKids = isKids,
-                IsSports = isSports,
-                IsLibraryItem = isLibraryItem,
-                Fields = fields,
-                ImageTypeLimit = imageTypeLimit,
-                EnableImages = enableImages
-            }, dtoOptions);
+                {
+                    ChannelId = channelId,
+                    UserId = userId ?? Guid.Empty,
+                    StartIndex = startIndex,
+                    Limit = limit,
+                    Status = status,
+                    SeriesTimerId = seriesTimerId,
+                    IsInProgress = isInProgress,
+                    EnableTotalRecordCount = enableTotalRecordCount,
+                    IsMovie = isMovie,
+                    IsNews = isNews,
+                    IsSeries = isSeries,
+                    IsKids = isKids,
+                    IsSports = isSports,
+                    IsLibraryItem = isLibraryItem,
+                    Fields = fields,
+                    ImageTypeLimit = imageTypeLimit,
+                    EnableImages = enableImages
+                },
+                dtoOptions);
         }
 
         /// <summary>
@@ -429,10 +429,10 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Tuners/{tunerId}/Reset")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [Authorize(Policy = Policies.DefaultAuthorization)]
-        public ActionResult ResetTuner([FromRoute, Required] string tunerId)
+        public async Task<ActionResult> ResetTuner([FromRoute, Required] string tunerId)
         {
-            AssertUserCanManageLiveTv();
-            _liveTvManager.ResetTuner(tunerId, CancellationToken.None);
+            await AssertUserCanManageLiveTv().ConfigureAwait(false);
+            await _liveTvManager.ResetTuner(tunerId, CancellationToken.None).ConfigureAwait(false);
             return NoContent();
         }
 
@@ -490,14 +490,14 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? isScheduled)
         {
             return await _liveTvManager.GetTimers(
-                    new TimerQuery
-                    {
-                        ChannelId = channelId,
-                        SeriesTimerId = seriesTimerId,
-                        IsActive = isActive,
-                        IsScheduled = isScheduled
-                    }, CancellationToken.None)
-                .ConfigureAwait(false);
+                new TimerQuery
+                {
+                    ChannelId = channelId,
+                    SeriesTimerId = seriesTimerId,
+                    IsActive = isActive,
+                    IsScheduled = isScheduled
+                },
+                CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -761,9 +761,9 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult DeleteRecording([FromRoute, Required] Guid recordingId)
+        public async Task<ActionResult> DeleteRecording([FromRoute, Required] Guid recordingId)
         {
-            AssertUserCanManageLiveTv();
+            await AssertUserCanManageLiveTv().ConfigureAwait(false);
 
             var item = _libraryManager.GetItemById(recordingId);
             if (item == null)
@@ -790,7 +790,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> CancelTimer([FromRoute, Required] string timerId)
         {
-            AssertUserCanManageLiveTv();
+            await AssertUserCanManageLiveTv().ConfigureAwait(false);
             await _liveTvManager.CancelTimer(timerId).ConfigureAwait(false);
             return NoContent();
         }
@@ -808,7 +808,7 @@ namespace Jellyfin.Api.Controllers
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "timerId", Justification = "Imported from ServiceStack")]
         public async Task<ActionResult> UpdateTimer([FromRoute, Required] string timerId, [FromBody] TimerInfoDto timerInfo)
         {
-            AssertUserCanManageLiveTv();
+            await AssertUserCanManageLiveTv().ConfigureAwait(false);
             await _liveTvManager.UpdateTimer(timerInfo, CancellationToken.None).ConfigureAwait(false);
             return NoContent();
         }
@@ -824,7 +824,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> CreateTimer([FromBody] TimerInfoDto timerInfo)
         {
-            AssertUserCanManageLiveTv();
+            await AssertUserCanManageLiveTv().ConfigureAwait(false);
             await _liveTvManager.CreateTimer(timerInfo, CancellationToken.None).ConfigureAwait(false);
             return NoContent();
         }
@@ -868,7 +868,8 @@ namespace Jellyfin.Api.Controllers
                 {
                     SortOrder = sortOrder ?? SortOrder.Ascending,
                     SortBy = sortBy
-                }, CancellationToken.None).ConfigureAwait(false);
+                },
+                CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -882,7 +883,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> CancelSeriesTimer([FromRoute, Required] string timerId)
         {
-            AssertUserCanManageLiveTv();
+            await AssertUserCanManageLiveTv().ConfigureAwait(false);
             await _liveTvManager.CancelSeriesTimer(timerId).ConfigureAwait(false);
             return NoContent();
         }
@@ -900,7 +901,7 @@ namespace Jellyfin.Api.Controllers
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "timerId", Justification = "Imported from ServiceStack")]
         public async Task<ActionResult> UpdateSeriesTimer([FromRoute, Required] string timerId, [FromBody] SeriesTimerInfoDto seriesTimerInfo)
         {
-            AssertUserCanManageLiveTv();
+            await AssertUserCanManageLiveTv().ConfigureAwait(false);
             await _liveTvManager.UpdateSeriesTimer(seriesTimerInfo, CancellationToken.None).ConfigureAwait(false);
             return NoContent();
         }
@@ -916,7 +917,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> CreateSeriesTimer([FromBody] SeriesTimerInfoDto seriesTimerInfo)
         {
-            AssertUserCanManageLiveTv();
+            await AssertUserCanManageLiveTv().ConfigureAwait(false);
             await _liveTvManager.CreateSeriesTimer(seriesTimerInfo, CancellationToken.None).ConfigureAwait(false);
             return NoContent();
         }
@@ -1172,7 +1173,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesVideoFile]
-        public async Task<ActionResult> GetLiveRecordingFile([FromRoute, Required] string recordingId)
+        public ActionResult GetLiveRecordingFile([FromRoute, Required] string recordingId)
         {
             var path = _liveTvManager.GetEmbyTvActiveRecordingPath(recordingId);
 
@@ -1181,11 +1182,8 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            await using var memoryStream = new MemoryStream();
-            await new ProgressiveFileCopier(path, null, _transcodingJobHelper, CancellationToken.None)
-                .WriteToAsync(memoryStream, CancellationToken.None)
-                .ConfigureAwait(false);
-            return File(memoryStream, MimeTypes.GetMimeType(path));
+            var stream = new ProgressiveFileStream(path, null, _transcodingJobHelper);
+            return new FileStreamResult(stream, MimeTypes.GetMimeType(path));
         }
 
         /// <summary>
@@ -1203,21 +1201,21 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesVideoFile]
-        public async Task<ActionResult> GetLiveStreamFile([FromRoute, Required] string streamId, [FromRoute, Required] string container)
+        public ActionResult GetLiveStreamFile([FromRoute, Required] string streamId, [FromRoute, Required] string container)
         {
-            var liveStreamInfo = await _mediaSourceManager.GetDirectStreamProviderByUniqueId(streamId, CancellationToken.None).ConfigureAwait(false);
+            var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfoByUniqueId(streamId);
             if (liveStreamInfo == null)
             {
                 return NotFound();
             }
 
-            var liveStream = new ProgressiveFileStream(liveStreamInfo.GetFilePath(), null, _transcodingJobHelper);
+            var liveStream = new ProgressiveFileStream(liveStreamInfo.GetStream());
             return new FileStreamResult(liveStream, MimeTypes.GetMimeType("file." + container));
         }
 
-        private void AssertUserCanManageLiveTv()
+        private async Task AssertUserCanManageLiveTv()
         {
-            var user = _sessionContext.GetUser(Request);
+            var user = await _sessionContext.GetUser(Request).ConfigureAwait(false);
 
             if (user == null)
             {

@@ -1,4 +1,6 @@
-#pragma warning disable CS1591
+#nullable disable
+
+#pragma warning disable CA1068, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -42,6 +44,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ISubtitleManager _subtitleManager;
         private readonly IChapterManager _chapterManager;
         private readonly ILibraryManager _libraryManager;
+        private readonly AudioResolver _audioResolver;
         private readonly IMediaSourceManager _mediaSourceManager;
 
         private readonly long _dummyChapterDuration = TimeSpan.FromMinutes(5).Ticks;
@@ -57,7 +60,8 @@ namespace MediaBrowser.Providers.MediaInfo
             IServerConfigurationManager config,
             ISubtitleManager subtitleManager,
             IChapterManager chapterManager,
-            ILibraryManager libraryManager)
+            ILibraryManager libraryManager,
+            AudioResolver audioResolver)
         {
             _logger = logger;
             _mediaEncoder = mediaEncoder;
@@ -69,6 +73,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _subtitleManager = subtitleManager;
             _chapterManager = chapterManager;
             _libraryManager = libraryManager;
+            _audioResolver = audioResolver;
             _mediaSourceManager = mediaSourceManager;
         }
 
@@ -211,6 +216,8 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             await AddExternalSubtitles(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
+
+            await AddExternalAudioAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
 
             var libraryOptions = _libraryManager.GetLibraryOptions(video);
 
@@ -557,6 +564,7 @@ namespace MediaBrowser.Providers.MediaInfo
                         subtitleDownloadLanguages,
                         libraryOptions.DisabledSubtitleFetchers,
                         libraryOptions.SubtitleFetcherOrder,
+                        true,
                         cancellationToken).ConfigureAwait(false);
 
                 // Rescan
@@ -569,6 +577,31 @@ namespace MediaBrowser.Providers.MediaInfo
             video.SubtitleFiles = externalSubtitleStreams.Select(i => i.Path).ToArray();
 
             currentStreams.AddRange(externalSubtitleStreams);
+        }
+
+        /// <summary>
+        /// Adds the external audio.
+        /// </summary>
+        /// <param name="video">The video.</param>
+        /// <param name="currentStreams">The current streams.</param>
+        /// <param name="options">The refreshOptions.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        private async Task AddExternalAudioAsync(
+            Video video,
+            List<MediaStream> currentStreams,
+            MetadataRefreshOptions options,
+            CancellationToken cancellationToken)
+        {
+            var startIndex = currentStreams.Count == 0 ? 0 : currentStreams.Max(i => i.Index) + 1;
+            var externalAudioStreams = _audioResolver.GetExternalAudioStreams(video, startIndex, options.DirectoryService, false, cancellationToken);
+
+            await foreach (MediaStream externalAudioStream in externalAudioStreams)
+            {
+                currentStreams.Add(externalAudioStream);
+            }
+
+            // Select all external audio file paths
+            video.AudioFiles = currentStreams.Where(i => i.Type == MediaStreamType.Audio && i.IsExternal).Select(i => i.Path).Distinct().ToArray();
         }
 
         /// <summary>

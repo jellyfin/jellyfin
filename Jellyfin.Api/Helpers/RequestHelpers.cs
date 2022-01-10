@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
@@ -29,7 +30,7 @@ namespace Jellyfin.Api.Helpers
         {
             if (sortBy.Count == 0)
             {
-                return Array.Empty<ValueTuple<string, SortOrder>>();
+                return Array.Empty<(string, SortOrder)>();
             }
 
             var result = new (string, SortOrder)[sortBy.Count];
@@ -59,9 +60,9 @@ namespace Jellyfin.Api.Helpers
         /// <param name="userId">The user id.</param>
         /// <param name="restrictUserPreferences">Whether to restrict the user preferences.</param>
         /// <returns>A <see cref="bool"/> whether the user can update the entry.</returns>
-        internal static bool AssertCanUpdateUser(IAuthorizationContext authContext, HttpRequest requestContext, Guid userId, bool restrictUserPreferences)
+        internal static async Task<bool> AssertCanUpdateUser(IAuthorizationContext authContext, HttpRequest requestContext, Guid userId, bool restrictUserPreferences)
         {
-            var auth = authContext.GetAuthorizationInfo(requestContext);
+            var auth = await authContext.GetAuthorizationInfo(requestContext).ConfigureAwait(false);
 
             var authenticatedUser = auth.User;
 
@@ -75,17 +76,17 @@ namespace Jellyfin.Api.Helpers
             return true;
         }
 
-        internal static SessionInfo GetSession(ISessionManager sessionManager, IAuthorizationContext authContext, HttpRequest request)
+        internal static async Task<SessionInfo> GetSession(ISessionManager sessionManager, IAuthorizationContext authContext, HttpRequest request)
         {
-            var authorization = authContext.GetAuthorizationInfo(request);
+            var authorization = await authContext.GetAuthorizationInfo(request).ConfigureAwait(false);
             var user = authorization.User;
-            var session = sessionManager.LogSessionActivity(
+            var session = await sessionManager.LogSessionActivity(
                 authorization.Client,
                 authorization.Version,
                 authorization.DeviceId,
                 authorization.Device,
                 request.HttpContext.GetNormalizedRemoteIp().ToString(),
-                user);
+                user).ConfigureAwait(false);
 
             if (session == null)
             {
@@ -93,6 +94,13 @@ namespace Jellyfin.Api.Helpers
             }
 
             return session;
+        }
+
+        internal static async Task<string> GetSessionId(ISessionManager sessionManager, IAuthorizationContext authContext, HttpRequest request)
+        {
+            var session = await GetSession(sessionManager, authContext, request).ConfigureAwait(false);
+
+            return session.Id;
         }
 
         internal static QueryResult<BaseItemDto> CreateQueryResult(
@@ -128,22 +136,6 @@ namespace Jellyfin.Api.Helpers
                 Items = dtos.ToArray(),
                 TotalRecordCount = result.TotalRecordCount
             };
-        }
-
-        internal static string[] GetItemTypeStrings(IReadOnlyList<BaseItemKind> itemKinds)
-        {
-            if (itemKinds.Count == 0)
-            {
-                return Array.Empty<string>();
-            }
-
-            var itemTypes = new string[itemKinds.Count];
-            for (var i = 0; i < itemKinds.Count; i++)
-            {
-                itemTypes[i] = itemKinds[i].ToString();
-            }
-
-            return itemTypes;
         }
     }
 }

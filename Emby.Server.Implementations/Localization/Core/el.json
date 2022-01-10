@@ -1,5 +1,5 @@
 {
-    "Albums": "Άλμπουμς",
+    "Albums": "Άλμπουμ",
     "AppDeviceValues": "Εφαρμογή: {0}, Συσκευή: {1}",
     "Application": "Εφαρμογή",
     "Artists": "Καλλιτέχνες",
@@ -15,7 +15,7 @@
     "Favorites": "Αγαπημένα",
     "Folders": "Φάκελοι",
     "Genres": "Είδη",
-    "HeaderAlbumArtists": "Καλλιτέχνες του Άλμπουμ",
+    "HeaderAlbumArtists": "Καλλιτέχνες άλμπουμ",
     "HeaderContinueWatching": "Συνεχίστε την παρακολούθηση",
     "HeaderFavoriteAlbums": "Αγαπημένα Άλμπουμ",
     "HeaderFavoriteArtists": "Αγαπημένοι Καλλιτέχνες",
@@ -39,7 +39,7 @@
     "MixedContent": "Ανάμεικτο Περιεχόμενο",
     "Movies": "Ταινίες",
     "Music": "Μουσική",
-    "MusicVideos": "Μουσικά βίντεο",
+    "MusicVideos": "Μουσικά Βίντεο",
     "NameInstallFailed": "{0} η εγκατάσταση απέτυχε",
     "NameSeasonNumber": "Κύκλος {0}",
     "NameSeasonUnknown": "Άγνωστος Κύκλος",
@@ -62,7 +62,7 @@
     "NotificationOptionVideoPlaybackStopped": "Η αναπαραγωγή βίντεο σταμάτησε",
     "Photos": "Φωτογραφίες",
     "Playlists": "Λίστες αναπαραγωγής",
-    "Plugin": "Plugin",
+    "Plugin": "Πρόσθετο",
     "PluginInstalledWithName": "{0} εγκαταστήθηκε",
     "PluginUninstalledWithName": "{0} έχει απεγκατασταθεί",
     "PluginUpdatedWithName": "{0} έχει αναβαθμιστεί",
@@ -118,5 +118,7 @@
     "TaskCleanActivityLog": "Καθαρό Αρχείο Καταγραφής Δραστηριοτήτων",
     "Undefined": "Απροσδιόριστο",
     "Forced": "Εξαναγκασμένο",
-    "Default": "Προεπιλογή"
+    "Default": "Προεπιλογή",
+    "TaskOptimizeDatabaseDescription": "Συμπιέζει τη βάση δεδομένων και δημιουργεί ελεύθερο χώρο. Η εκτέλεση αυτής της εργασίας μετά τη σάρωση της βιβλιοθήκης ή την πραγματοποίηση άλλων αλλαγών που συνεπάγονται τροποποιήσεις της βάσης δεδομένων μπορεί να βελτιώσει την απόδοση.",
+    "TaskOptimizeDatabase": "Βελτιστοποίηση βάσης δεδομένων"
 }

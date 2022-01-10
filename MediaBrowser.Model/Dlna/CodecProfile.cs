@@ -2,8 +2,8 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Linq;
 using System.Xml.Serialization;
+using Jellyfin.Extensions;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -58,7 +58,7 @@ namespace MediaBrowser.Model.Dlna
 
             foreach (var val in codec)
             {
-                if (codecs.Contains(val, StringComparer.OrdinalIgnoreCase))
+                if (codecs.Contains(val, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }

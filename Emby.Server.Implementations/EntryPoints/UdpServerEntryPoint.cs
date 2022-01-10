@@ -37,6 +37,9 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <summary>
         /// Initializes a new instance of the <see cref="UdpServerEntryPoint" /> class.
         /// </summary>
+        /// <param name="logger">Instance of the <see cref="ILogger{UdpServerEntryPoint}"/> interface.</param>
+        /// <param name="appHost">Instance of the <see cref="IServerApplicationHost"/> interface.</param>
+        /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
         public UdpServerEntryPoint(
             ILogger<UdpServerEntryPoint> logger,
             IServerApplicationHost appHost,

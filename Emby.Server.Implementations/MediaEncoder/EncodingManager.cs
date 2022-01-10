@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -23,7 +24,6 @@ namespace Emby.Server.Implementations.MediaEncoder
 {
     public class EncodingManager : IEncodingManager
     {
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IFileSystem _fileSystem;
         private readonly ILogger<EncodingManager> _logger;
         private readonly IMediaEncoder _encoder;
@@ -121,7 +121,7 @@ namespace Emby.Server.Implementations.MediaEncoder
 
                 var path = GetChapterImagePath(video, chapter.StartPositionTicks);
 
-                if (!currentImages.Contains(path, StringComparer.OrdinalIgnoreCase))
+                if (!currentImages.Contains(path, StringComparison.OrdinalIgnoreCase))
                 {
                     if (extractImages)
                     {
@@ -193,7 +193,7 @@ namespace Emby.Server.Implementations.MediaEncoder
 
         private string GetChapterImagePath(Video video, long chapterPositionTicks)
         {
-            var filename = video.DateModified.Ticks.ToString(_usCulture) + "_" + chapterPositionTicks.ToString(_usCulture) + ".jpg";
+            var filename = video.DateModified.Ticks.ToString(CultureInfo.InvariantCulture) + "_" + chapterPositionTicks.ToString(CultureInfo.InvariantCulture) + ".jpg";
 
             return Path.Combine(GetChapterImagesPath(video), filename);
         }
@@ -220,7 +220,7 @@ namespace Emby.Server.Implementations.MediaEncoder
         {
             var deadImages = images
                 .Except(chapters.Select(i => i.ImagePath).Where(i => !string.IsNullOrEmpty(i)), StringComparer.OrdinalIgnoreCase)
-                .Where(i => BaseItem.SupportedImageExtensions.Contains(Path.GetExtension(i), StringComparer.OrdinalIgnoreCase))
+                .Where(i => BaseItem.SupportedImageExtensions.Contains(Path.GetExtension(i), StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             foreach (var image in deadImages)

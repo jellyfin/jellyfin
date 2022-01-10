@@ -27,11 +27,7 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
 
         public double RateLimit
         {
-            get
-            {
-                return _rateLimit;
-            }
-
+            get => _rateLimit;
             set
             {
                 if (value < Plugin.DefaultRateLimit && _server == Plugin.DefaultServer)

@@ -28,35 +28,35 @@ namespace Emby.Server.Implementations.Images
             var view = (CollectionFolder)item;
             var viewType = view.CollectionType;
 
-            string[] includeItemTypes;
+            BaseItemKind[] includeItemTypes;
 
-            if (string.Equals(viewType, CollectionType.Movies))
+            if (string.Equals(viewType, CollectionType.Movies, StringComparison.Ordinal))
             {
-                includeItemTypes = new string[] { "Movie" };
+                includeItemTypes = new[] { BaseItemKind.Movie };
             }
-            else if (string.Equals(viewType, CollectionType.TvShows))
+            else if (string.Equals(viewType, CollectionType.TvShows, StringComparison.Ordinal))
             {
-                includeItemTypes = new string[] { "Series" };
+                includeItemTypes = new[] { BaseItemKind.Series };
             }
-            else if (string.Equals(viewType, CollectionType.Music))
+            else if (string.Equals(viewType, CollectionType.Music, StringComparison.Ordinal))
             {
-                includeItemTypes = new string[] { "MusicAlbum" };
+                includeItemTypes = new[] { BaseItemKind.MusicAlbum };
             }
-            else if (string.Equals(viewType, CollectionType.Books))
+            else if (string.Equals(viewType, CollectionType.Books, StringComparison.Ordinal))
             {
-                includeItemTypes = new string[] { "Book", "AudioBook" };
+                includeItemTypes = new[] { BaseItemKind.Book, BaseItemKind.AudioBook };
             }
-            else if (string.Equals(viewType, CollectionType.BoxSets))
+            else if (string.Equals(viewType, CollectionType.BoxSets, StringComparison.Ordinal))
             {
-                includeItemTypes = new string[] { "BoxSet" };
+                includeItemTypes = new[] { BaseItemKind.BoxSet };
             }
-            else if (string.Equals(viewType, CollectionType.HomeVideos) || string.Equals(viewType, CollectionType.Photos))
+            else if (string.Equals(viewType, CollectionType.HomeVideos, StringComparison.Ordinal) || string.Equals(viewType, CollectionType.Photos, StringComparison.Ordinal))
             {
-                includeItemTypes = new string[] { "Video", "Photo" };
+                includeItemTypes = new[] { BaseItemKind.Video, BaseItemKind.Photo };
             }
             else
             {
-                includeItemTypes = new string[] { "Video", "Audio", "Photo", "Movie", "Series" };
+                includeItemTypes = new[] { BaseItemKind.Video, BaseItemKind.Audio, BaseItemKind.Photo, BaseItemKind.Movie, BaseItemKind.Series };
             }
 
             var recursive = !string.Equals(CollectionType.Playlists, viewType, StringComparison.OrdinalIgnoreCase);
@@ -68,9 +68,9 @@ namespace Emby.Server.Implementations.Images
                 DtoOptions = new DtoOptions(false),
                 ImageTypes = new ImageType[] { ImageType.Primary },
                 Limit = 8,
-                OrderBy = new ValueTuple<string, SortOrder>[]
+                OrderBy = new[]
                 {
-                    new ValueTuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending)
+                    (ItemSortBy.Random, SortOrder.Ascending)
                 },
                 IncludeItemTypes = includeItemTypes
             });

@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System.Reflection;
 using Emby.Server.Implementations;
 using Jellyfin.Api.Auth;
+using Jellyfin.Api.Auth.AnonymousLanAccessPolicy;
 using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
 using Jellyfin.Api.Auth.DownloadPolicy;
 using Jellyfin.Api.Auth.FirstTimeOrIgnoreParentalControlSetupPolicy;
@@ -61,6 +62,7 @@ namespace Jellyfin.Server.Extensions
             serviceCollection.AddSingleton<IAuthorizationHandler, IgnoreParentalControlHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, FirstTimeOrIgnoreParentalControlSetupHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, AnonymousLanAccessHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessOrRequiresElevationHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, RequiresElevationHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, SyncPlayAccessHandler>();
@@ -157,6 +159,13 @@ namespace Jellyfin.Server.Extensions
                         policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
                         policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.IsInGroup));
                     });
+                options.AddPolicy(
+                    Policies.AnonymousLanAccessPolicy,
+                    policy =>
+                    {
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
+                        policy.AddRequirements(new AnonymousLanAccessRequirement());
+                    });
             });
         }
 
@@ -188,7 +197,8 @@ namespace Jellyfin.Server.Extensions
                     // https://github.com/dotnet/aspnetcore/blob/master/src/Middleware/HttpOverrides/src/ForwardedHeadersMiddleware.cs
                     // Enable debug logging on Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersMiddleware to help investigate issues.
 
-                    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
+
                     if (config.KnownProxies.Length == 0)
                     {
                         options.KnownNetworks.Clear();
@@ -278,7 +288,7 @@ namespace Jellyfin.Server.Extensions
                 {
                     Type = SecuritySchemeType.ApiKey,
                     In = ParameterLocation.Header,
-                    Name = "X-Emby-Authorization",
+                    Name = "Authorization",
                     Description = "API key header parameter"
                 });
 
@@ -303,7 +313,7 @@ namespace Jellyfin.Server.Extensions
                     {
                         description.TryGetMethodInfo(out MethodInfo methodInfo);
                         // Attribute name, method name, none.
-                        return description?.ActionDescriptor?.AttributeRouteInfo?.Name
+                        return description?.ActionDescriptor.AttributeRouteInfo?.Name
                                ?? methodInfo?.Name
                                ?? null;
                     });
@@ -341,7 +351,7 @@ namespace Jellyfin.Server.Extensions
                 {
                     foreach (var address in host.GetAddresses())
                     {
-                        AddIpAddress(config, options, addr.Address, addr.PrefixLength);
+                        AddIpAddress(config, options, address, address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);
                     }
                 }
             }
@@ -397,7 +407,7 @@ namespace Jellyfin.Server.Extensions
                     Type = "object",
                     Properties = typeof(ImageType).GetEnumNames().ToDictionary(
                         name => name,
-                        name => new OpenApiSchema
+                        _ => new OpenApiSchema
                         {
                             Type = "object",
                             AdditionalProperties = new OpenApiSchema
@@ -405,6 +415,18 @@ namespace Jellyfin.Server.Extensions
                                 Type = "string"
                             }
                         })
+                });
+
+            // Support dictionary with nullable string value.
+            options.MapType<Dictionary<string, string?>>(() =>
+                new OpenApiSchema
+                {
+                    Type = "object",
+                    AdditionalProperties = new OpenApiSchema
+                    {
+                        Type = "string",
+                        Nullable = true
+                    }
                 });
         }
     }

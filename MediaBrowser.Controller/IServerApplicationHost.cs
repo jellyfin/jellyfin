@@ -2,8 +2,6 @@
 
 #pragma warning disable CS1591
 
-using System;
-using System.Collections.Generic;
 using System.Net;
 using MediaBrowser.Common;
 using MediaBrowser.Model.System;
@@ -44,49 +42,41 @@ namespace MediaBrowser.Controller
         string FriendlyName { get; }
 
         /// <summary>
-        /// Gets the configured published server url.
-        /// </summary>
-        string PublishedServerUrl { get; }
-
-        /// <summary>
         /// Gets the system info.
         /// </summary>
-        /// <param name="source">The originator of the request.</param>
+        /// <param name="request">The HTTP request.</param>
         /// <returns>SystemInfo.</returns>
-        SystemInfo GetSystemInfo(IPAddress source);
+        SystemInfo GetSystemInfo(HttpRequest request);
 
-        PublicSystemInfo GetPublicSystemInfo(IPAddress address);
+        PublicSystemInfo GetPublicSystemInfo(HttpRequest request);
 
         /// <summary>
         /// Gets a URL specific for the request.
         /// </summary>
         /// <param name="request">The <see cref="HttpRequest"/> instance.</param>
-        /// <param name="port">Optional port number.</param>
         /// <returns>An accessible URL.</returns>
-        string GetSmartApiUrl(HttpRequest request, int? port = null);
+        string GetSmartApiUrl(HttpRequest request);
 
         /// <summary>
         /// Gets a URL specific for the request.
         /// </summary>
         /// <param name="remoteAddr">The remote <see cref="IPAddress"/> of the connection.</param>
-        /// <param name="port">Optional port number.</param>
         /// <returns>An accessible URL.</returns>
-        string GetSmartApiUrl(IPAddress remoteAddr, int? port = null);
+        string GetSmartApiUrl(IPAddress remoteAddr);
 
         /// <summary>
         /// Gets a URL specific for the request.
         /// </summary>
         /// <param name="hostname">The hostname used in the connection.</param>
-        /// <param name="port">Optional port number.</param>
         /// <returns>An accessible URL.</returns>
-        string GetSmartApiUrl(string hostname, int? port = null);
+        string GetSmartApiUrl(string hostname);
 
         /// <summary>
-        /// Gets a localhost URL that can be used to access the API using the loop-back IP address.
-        /// over HTTP (not HTTPS).
+        /// Gets an URL that can be used to access the API over LAN.
         /// </summary>
+        /// <param name="allowHttps">A value indicating whether to allow HTTPS.</param>
         /// <returns>The API URL.</returns>
-        string GetLoopbackHttpApiUrl();
+        string GetApiUrlForLocalAccess(bool allowHttps = true);
 
         /// <summary>
         /// Gets a local (LAN) URL that can be used to access the API.
@@ -103,15 +93,6 @@ namespace MediaBrowser.Controller
         /// </param>
         /// <returns>The API URL.</returns>
         string GetLocalApiUrl(string hostname, string scheme = null, int? port = null);
-
-        /// <summary>
-        /// Open a URL in an external browser window.
-        /// </summary>
-        /// <param name="url">The URL to open.</param>
-        /// <exception cref="NotSupportedException"><see cref="CanLaunchWebBrowser"/> is false.</exception>
-        void LaunchUrl(string url);
-
-        IEnumerable<WakeOnLanInfo> GetWakeOnLanInfo();
 
         string ExpandVirtualPath(string path);
 

@@ -8,13 +8,14 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using MediaBrowser.Common;
-using MediaBrowser.Common.Extensions;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Extensions.Json.Converters;
+using MediaBrowser.Common;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,14 +38,6 @@ namespace Emby.Server.Implementations.Plugins
         private readonly Version _minimumVersion;
 
         private IHttpClientFactory? _httpClientFactory;
-
-        private IHttpClientFactory HttpClientFactory
-        {
-            get
-            {
-                return _httpClientFactory ?? (_httpClientFactory = _appHost.Resolve<IHttpClientFactory>());
-            }
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PluginManager"/> class.
@@ -83,6 +76,14 @@ namespace Emby.Server.Implementations.Plugins
             _appHost = appHost;
             _minimumVersion = new Version(0, 0, 0, 1);
             _plugins = Directory.Exists(_pluginsPath) ? DiscoverPlugins().ToList() : new List<LocalPlugin>();
+        }
+
+        private IHttpClientFactory HttpClientFactory
+        {
+            get
+            {
+                return _httpClientFactory ??= _appHost.Resolve<IHttpClientFactory>();
+            }
         }
 
         /// <summary>
@@ -125,7 +126,8 @@ namespace Emby.Server.Implementations.Plugins
                     {
                         assembly = Assembly.LoadFrom(file);
 
-                        assembly.GetExportedTypes();
+                        // Load all required types to verify that the plugin will load
+                        assembly.GetTypes();
                     }
                     catch (FileLoadException ex)
                     {
@@ -133,7 +135,7 @@ namespace Emby.Server.Implementations.Plugins
                         ChangePluginState(plugin, PluginStatus.Malfunctioned);
                         continue;
                     }
-                    catch (TypeLoadException ex) // Undocumented exception
+                    catch (SystemException ex) when (ex is TypeLoadException or ReflectionTypeLoadException) // Undocumented exception
                     {
                         _logger.LogError(ex, "Failed to load assembly {Path}. This error occurs when a plugin references an incompatible version of one of the shared libraries. Disabling plugin.", file);
                         ChangePluginState(plugin, PluginStatus.NotSupported);
@@ -358,11 +360,6 @@ namespace Emby.Server.Implementations.Plugins
         /// <inheritdoc/>
         public async Task<bool> GenerateManifest(PackageInfo packageInfo, Version version, string path, PluginStatus status)
         {
-            if (packageInfo == null)
-            {
-                return false;
-            }
-
             var versionInfo = packageInfo.Versions.First(v => v.Version == version.ToString());
             var imagePath = string.Empty;
 
@@ -371,7 +368,7 @@ namespace Emby.Server.Implementations.Plugins
                 var url = new Uri(packageInfo.ImageUrl);
                 imagePath = Path.Join(path, url.Segments[^1]);
 
-                await using var fileStream = File.OpenWrite(imagePath);
+                await using var fileStream = AsyncFile.OpenWrite(imagePath);
 
                 try
                 {
@@ -615,7 +612,7 @@ namespace Emby.Server.Implementations.Plugins
             if (versionIndex != -1)
             {
                 // Get the version number from the filename if possible.
-                metafile = Path.GetFileName(dir[..versionIndex]) ?? dir[..versionIndex];
+                metafile = Path.GetFileName(dir[..versionIndex]);
                 version = Version.TryParse(dir.AsSpan()[(versionIndex + 1)..], out Version? parsedVersion) ? parsedVersion : _appVersion;
             }
             else
@@ -680,7 +677,6 @@ namespace Emby.Server.Implementations.Plugins
                     continue;
                 }
 
-                var manifest = entry.Manifest;
                 var cleaned = false;
                 var path = entry.Path;
                 if (_config.RemoveOldPlugins)
@@ -705,12 +701,6 @@ namespace Emby.Server.Implementations.Plugins
                     }
                     else
                     {
-                        if (manifest == null)
-                        {
-                            _logger.LogWarning("Unable to disable plugin {Path}", entry.Path);
-                            continue;
-                        }
-
                         ChangePluginState(entry, PluginStatus.Deleted);
                     }
                 }

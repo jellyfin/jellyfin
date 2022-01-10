@@ -13,6 +13,12 @@ namespace Emby.Server.Implementations.Sorting
     public class AlbumArtistComparer : IBaseItemComparer
     {
         /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.AlbumArtist;
+
+        /// <summary>
         /// Compares the specified x.
         /// </summary>
         /// <param name="x">The x.</param>
@@ -20,7 +26,7 @@ namespace Emby.Server.Implementations.Sorting
         /// <returns>System.Int32.</returns>
         public int Compare(BaseItem? x, BaseItem? y)
         {
-            return string.Compare(GetValue(x), GetValue(y), StringComparison.CurrentCultureIgnoreCase);
+            return string.Compare(GetValue(x), GetValue(y), StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -34,11 +40,5 @@ namespace Emby.Server.Implementations.Sorting
 
             return audio?.AlbumArtists.FirstOrDefault();
         }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name => ItemSortBy.AlbumArtist;
     }
 }

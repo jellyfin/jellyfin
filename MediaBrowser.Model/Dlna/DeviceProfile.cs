@@ -1,8 +1,8 @@
 #pragma warning disable CA1819 // Properties should not return arrays
 using System;
 using System.ComponentModel;
-using System.Linq;
 using System.Xml.Serialization;
+using Jellyfin.Extensions;
 using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Model.Dlna
@@ -253,7 +253,7 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                if (!i.GetAudioCodecs().Contains(audioCodec ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                if (!i.GetAudioCodecs().Contains(audioCodec ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -287,7 +287,7 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                if (!i.GetAudioCodecs().Contains(audioCodec ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                if (!i.GetAudioCodecs().Contains(audioCodec ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -328,7 +328,7 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 var audioCodecs = i.GetAudioCodecs();
-                if (audioCodecs.Length > 0 && !audioCodecs.Contains(audioCodec ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                if (audioCodecs.Length > 0 && !audioCodecs.Contains(audioCodec ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -469,13 +469,13 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 var audioCodecs = i.GetAudioCodecs();
-                if (audioCodecs.Length > 0 && !audioCodecs.Contains(audioCodec ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                if (audioCodecs.Length > 0 && !audioCodecs.Contains(audioCodec ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
 
                 var videoCodecs = i.GetVideoCodecs();
-                if (videoCodecs.Length > 0 && !videoCodecs.Contains(videoCodec ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                if (videoCodecs.Length > 0 && !videoCodecs.Contains(videoCodec ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }

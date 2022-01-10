@@ -49,17 +49,17 @@ namespace MediaBrowser.Controller.Persistence
         /// <summary>
         /// Gets chapters for an item.
         /// </summary>
-        /// <param name="id">The item.</param>
+        /// <param name="item">The item.</param>
         /// <returns>The list of chapter info.</returns>
-        List<ChapterInfo> GetChapters(BaseItem id);
+        List<ChapterInfo> GetChapters(BaseItem item);
 
         /// <summary>
         /// Gets a single chapter for an item.
         /// </summary>
-        /// <param name="id">The item.</param>
+        /// <param name="item">The item.</param>
         /// <param name="index">The chapter index.</param>
         /// <returns>The chapter info at the specified index.</returns>
-        ChapterInfo GetChapter(BaseItem id, int index);
+        ChapterInfo GetChapter(BaseItem item, int index);
 
         /// <summary>
         /// Saves the chapters.
@@ -161,17 +161,17 @@ namespace MediaBrowser.Controller.Persistence
 
         int GetCount(InternalItemsQuery query);
 
-        QueryResult<(BaseItem, ItemCounts)> GetGenres(InternalItemsQuery query);
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery query);
 
-        QueryResult<(BaseItem, ItemCounts)> GetMusicGenres(InternalItemsQuery query);
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery query);
 
-        QueryResult<(BaseItem, ItemCounts)> GetStudios(InternalItemsQuery query);
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery query);
 
-        QueryResult<(BaseItem, ItemCounts)> GetArtists(InternalItemsQuery query);
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery query);
 
-        QueryResult<(BaseItem, ItemCounts)> GetAlbumArtists(InternalItemsQuery query);
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery query);
 
-        QueryResult<(BaseItem, ItemCounts)> GetAllArtists(InternalItemsQuery query);
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery query);
 
         List<string> GetMusicGenreNames();
 

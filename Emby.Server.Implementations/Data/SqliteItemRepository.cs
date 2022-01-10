@@ -16,7 +16,6 @@ using Emby.Server.Implementations.Playlists;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -25,7 +24,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
@@ -48,6 +46,11 @@ namespace Emby.Server.Implementations.Data
         private const string FromText = " from TypedBaseItems A";
         private const string ChaptersTableName = "Chapters2";
 
+        private const string SaveItemCommandText =
+            @"replace into TypedBaseItems
+            (guid,type,data,Path,StartDate,EndDate,ChannelId,IsMovie,IsSeries,EpisodeTitle,IsRepeat,CommunityRating,CustomRating,IndexNumber,IsLocked,Name,OfficialRating,MediaType,Overview,ParentIndexNumber,PremiereDate,ProductionYear,ParentId,Genres,InheritedParentalRatingValue,SortName,ForcedSortName,RunTimeTicks,Size,DateCreated,DateModified,PreferredMetadataLanguage,PreferredMetadataCountryCode,Width,Height,DateLastRefreshed,DateLastSaved,IsInMixedFolder,LockedFields,Studios,Audio,ExternalServiceId,Tags,IsFolder,UnratedType,TopParentId,TrailerTypes,CriticRating,CleanName,PresentationUniqueKey,OriginalTitle,PrimaryVersionId,DateLastMediaAdded,Album,IsVirtualItem,SeriesName,UserDataKey,SeasonName,SeasonId,SeriesId,ExternalSeriesId,Tagline,ProviderIds,Images,ProductionLocations,ExtraIds,TotalBitrate,ExtraType,Artists,AlbumArtists,ExternalId,SeriesPresentationUniqueKey,ShowId,OwnerId)
+            values (@guid,@type,@data,@Path,@StartDate,@EndDate,@ChannelId,@IsMovie,@IsSeries,@EpisodeTitle,@IsRepeat,@CommunityRating,@CustomRating,@IndexNumber,@IsLocked,@Name,@OfficialRating,@MediaType,@Overview,@ParentIndexNumber,@PremiereDate,@ProductionYear,@ParentId,@Genres,@InheritedParentalRatingValue,@SortName,@ForcedSortName,@RunTimeTicks,@Size,@DateCreated,@DateModified,@PreferredMetadataLanguage,@PreferredMetadataCountryCode,@Width,@Height,@DateLastRefreshed,@DateLastSaved,@IsInMixedFolder,@LockedFields,@Studios,@Audio,@ExternalServiceId,@Tags,@IsFolder,@UnratedType,@TopParentId,@TrailerTypes,@CriticRating,@CleanName,@PresentationUniqueKey,@OriginalTitle,@PrimaryVersionId,@DateLastMediaAdded,@Album,@IsVirtualItem,@SeriesName,@UserDataKey,@SeasonName,@SeasonId,@SeriesId,@ExternalSeriesId,@Tagline,@ProviderIds,@Images,@ProductionLocations,@ExtraIds,@TotalBitrate,@ExtraType,@Artists,@AlbumArtists,@ExternalId,@SeriesPresentationUniqueKey,@ShowId,@OwnerId)";
+
         private readonly IServerConfigurationManager _config;
         private readonly IServerApplicationHost _appHost;
         private readonly ILocalizationManager _localization;
@@ -56,6 +59,231 @@ namespace Emby.Server.Implementations.Data
 
         private readonly TypeMapper _typeMapper;
         private readonly JsonSerializerOptions _jsonOptions;
+
+        private readonly ItemFields[] _allItemFields = Enum.GetValues<ItemFields>();
+
+        private static readonly string[] _retrieveItemColumns =
+        {
+            "type",
+            "data",
+            "StartDate",
+            "EndDate",
+            "ChannelId",
+            "IsMovie",
+            "IsSeries",
+            "EpisodeTitle",
+            "IsRepeat",
+            "CommunityRating",
+            "CustomRating",
+            "IndexNumber",
+            "IsLocked",
+            "PreferredMetadataLanguage",
+            "PreferredMetadataCountryCode",
+            "Width",
+            "Height",
+            "DateLastRefreshed",
+            "Name",
+            "Path",
+            "PremiereDate",
+            "Overview",
+            "ParentIndexNumber",
+            "ProductionYear",
+            "OfficialRating",
+            "ForcedSortName",
+            "RunTimeTicks",
+            "Size",
+            "DateCreated",
+            "DateModified",
+            "guid",
+            "Genres",
+            "ParentId",
+            "Audio",
+            "ExternalServiceId",
+            "IsInMixedFolder",
+            "DateLastSaved",
+            "LockedFields",
+            "Studios",
+            "Tags",
+            "TrailerTypes",
+            "OriginalTitle",
+            "PrimaryVersionId",
+            "DateLastMediaAdded",
+            "Album",
+            "CriticRating",
+            "IsVirtualItem",
+            "SeriesName",
+            "SeasonName",
+            "SeasonId",
+            "SeriesId",
+            "PresentationUniqueKey",
+            "InheritedParentalRatingValue",
+            "ExternalSeriesId",
+            "Tagline",
+            "ProviderIds",
+            "Images",
+            "ProductionLocations",
+            "ExtraIds",
+            "TotalBitrate",
+            "ExtraType",
+            "Artists",
+            "AlbumArtists",
+            "ExternalId",
+            "SeriesPresentationUniqueKey",
+            "ShowId",
+            "OwnerId"
+        };
+
+        private static readonly string _retrieveItemColumnsSelectQuery = $"select {string.Join(',', _retrieveItemColumns)} from TypedBaseItems where guid = @guid";
+
+        private static readonly string[] _mediaStreamSaveColumns =
+        {
+            "ItemId",
+            "StreamIndex",
+            "StreamType",
+            "Codec",
+            "Language",
+            "ChannelLayout",
+            "Profile",
+            "AspectRatio",
+            "Path",
+            "IsInterlaced",
+            "BitRate",
+            "Channels",
+            "SampleRate",
+            "IsDefault",
+            "IsForced",
+            "IsExternal",
+            "Height",
+            "Width",
+            "AverageFrameRate",
+            "RealFrameRate",
+            "Level",
+            "PixelFormat",
+            "BitDepth",
+            "IsAnamorphic",
+            "RefFrames",
+            "CodecTag",
+            "Comment",
+            "NalLengthSize",
+            "IsAvc",
+            "Title",
+            "TimeBase",
+            "CodecTimeBase",
+            "ColorPrimaries",
+            "ColorSpace",
+            "ColorTransfer"
+        };
+
+        private static readonly string _mediaStreamSaveColumnsInsertQuery =
+            $"insert into mediastreams ({string.Join(',', _mediaStreamSaveColumns)}) values ";
+
+        private static readonly string _mediaStreamSaveColumnsSelectQuery =
+            $"select {string.Join(',', _mediaStreamSaveColumns)} from mediastreams where ItemId=@ItemId";
+
+        private static readonly string[] _mediaAttachmentSaveColumns =
+        {
+            "ItemId",
+            "AttachmentIndex",
+            "Codec",
+            "CodecTag",
+            "Comment",
+            "Filename",
+            "MIMEType"
+        };
+
+        private static readonly string _mediaAttachmentSaveColumnsSelectQuery =
+            $"select {string.Join(',', _mediaAttachmentSaveColumns)} from mediaattachments where ItemId=@ItemId";
+
+        private static readonly string _mediaAttachmentInsertPrefix;
+
+        private static readonly BaseItemKind[] _programTypes = new[]
+        {
+            BaseItemKind.Program,
+            BaseItemKind.TvChannel,
+            BaseItemKind.LiveTvProgram,
+            BaseItemKind.LiveTvChannel
+        };
+
+        private static readonly BaseItemKind[] _programExcludeParentTypes = new[]
+        {
+            BaseItemKind.Series,
+            BaseItemKind.Season,
+            BaseItemKind.MusicAlbum,
+            BaseItemKind.MusicArtist,
+            BaseItemKind.PhotoAlbum
+        };
+
+        private static readonly BaseItemKind[] _serviceTypes = new[]
+        {
+            BaseItemKind.TvChannel,
+            BaseItemKind.LiveTvChannel
+        };
+
+        private static readonly BaseItemKind[] _startDateTypes = new[]
+        {
+            BaseItemKind.Program,
+            BaseItemKind.LiveTvProgram
+        };
+
+        private static readonly BaseItemKind[] _seriesTypes = new[]
+        {
+            BaseItemKind.Book,
+            BaseItemKind.AudioBook,
+            BaseItemKind.Episode,
+            BaseItemKind.Season
+        };
+
+        private static readonly BaseItemKind[] _artistExcludeParentTypes = new[]
+        {
+            BaseItemKind.Series,
+            BaseItemKind.Season,
+            BaseItemKind.PhotoAlbum
+        };
+
+        private static readonly BaseItemKind[] _artistsTypes = new[]
+        {
+            BaseItemKind.Audio,
+            BaseItemKind.MusicAlbum,
+            BaseItemKind.MusicVideo,
+            BaseItemKind.AudioBook
+        };
+
+        private static readonly Dictionary<BaseItemKind, string> _baseItemKindNames = new()
+        {
+            { BaseItemKind.AggregateFolder, typeof(AggregateFolder).FullName },
+            { BaseItemKind.Audio, typeof(Audio).FullName },
+            { BaseItemKind.AudioBook, typeof(AudioBook).FullName },
+            { BaseItemKind.BasePluginFolder, typeof(BasePluginFolder).FullName },
+            { BaseItemKind.Book, typeof(Book).FullName },
+            { BaseItemKind.BoxSet, typeof(BoxSet).FullName },
+            { BaseItemKind.Channel, typeof(Channel).FullName },
+            { BaseItemKind.CollectionFolder, typeof(CollectionFolder).FullName },
+            { BaseItemKind.Episode, typeof(Episode).FullName },
+            { BaseItemKind.Folder, typeof(Folder).FullName },
+            { BaseItemKind.Genre, typeof(Genre).FullName },
+            { BaseItemKind.Movie, typeof(Movie).FullName },
+            { BaseItemKind.LiveTvChannel, typeof(LiveTvChannel).FullName },
+            { BaseItemKind.LiveTvProgram, typeof(LiveTvProgram).FullName },
+            { BaseItemKind.MusicAlbum, typeof(MusicAlbum).FullName },
+            { BaseItemKind.MusicArtist, typeof(MusicArtist).FullName },
+            { BaseItemKind.MusicGenre, typeof(MusicGenre).FullName },
+            { BaseItemKind.MusicVideo, typeof(MusicVideo).FullName },
+            { BaseItemKind.Person, typeof(Person).FullName },
+            { BaseItemKind.Photo, typeof(Photo).FullName },
+            { BaseItemKind.PhotoAlbum, typeof(PhotoAlbum).FullName },
+            { BaseItemKind.Playlist, typeof(Playlist).FullName },
+            { BaseItemKind.PlaylistsFolder, typeof(PlaylistsFolder).FullName },
+            { BaseItemKind.Season, typeof(Season).FullName },
+            { BaseItemKind.Series, typeof(Series).FullName },
+            { BaseItemKind.Studio, typeof(Studio).FullName },
+            { BaseItemKind.Trailer, typeof(Trailer).FullName },
+            { BaseItemKind.TvChannel, typeof(LiveTvChannel).FullName },
+            { BaseItemKind.TvProgram, typeof(LiveTvProgram).FullName },
+            { BaseItemKind.UserRootFolder, typeof(UserRootFolder).FullName },
+            { BaseItemKind.UserView, typeof(UserView).FullName },
+            { BaseItemKind.Video, typeof(Video).FullName },
+            { BaseItemKind.Year, typeof(Year).FullName }
+        };
 
         static SqliteItemRepository()
         {
@@ -75,6 +303,12 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
         /// </summary>
+        /// <param name="config">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+        /// <param name="appHost">Instance of the <see cref="IServerApplicationHost"/> interface.</param>
+        /// <param name="logger">Instance of the <see cref="ILogger{SqliteItemRepository}"/> interface.</param>
+        /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
+        /// <param name="imageProcessor">Instance of the <see cref="IImageProcessor"/> interface.</param>
+        /// <exception cref="ArgumentNullException">config is null.</exception>
         public SqliteItemRepository(
             IServerConfigurationManager config,
             IServerApplicationHost appHost,
@@ -111,6 +345,8 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Opens the connection to the database.
         /// </summary>
+        /// <param name="userDataRepo">The user data repository.</param>
+        /// <param name="userManager">The user manager.</param>
         public void Initialize(SqliteUserDataRepository userDataRepo, IUserManager userManager)
         {
             const string CreateMediaStreamsTableCommand
@@ -150,7 +386,7 @@ namespace Emby.Server.Implementations.Data
                 "drop index if exists idx_TypedBaseItems",
                 "drop index if exists idx_mediastreams",
                 "drop index if exists idx_mediastreams1",
-                "drop index if exists idx_"+ChaptersTableName,
+                "drop index if exists idx_" + ChaptersTableName,
                 "drop index if exists idx_UserDataKeys1",
                 "drop index if exists idx_UserDataKeys2",
                 "drop index if exists idx_TypeTopParentId3",
@@ -226,109 +462,110 @@ namespace Emby.Server.Implementations.Data
                 connection.RunQueries(queries);
 
                 connection.RunInTransaction(
-                db =>
-                {
-                    var existingColumnNames = GetColumnNames(db, "AncestorIds");
-                    AddColumn(db, "AncestorIds", "AncestorIdText", "Text", existingColumnNames);
+                    db =>
+                    {
+                        var existingColumnNames = GetColumnNames(db, "AncestorIds");
+                        AddColumn(db, "AncestorIds", "AncestorIdText", "Text", existingColumnNames);
 
-                    existingColumnNames = GetColumnNames(db, "TypedBaseItems");
+                        existingColumnNames = GetColumnNames(db, "TypedBaseItems");
 
-                    AddColumn(db, "TypedBaseItems", "Path", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "StartDate", "DATETIME", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "EndDate", "DATETIME", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "ChannelId", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "IsMovie", "BIT", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "CommunityRating", "Float", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "CustomRating", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "IndexNumber", "INT", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "IsLocked", "BIT", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "Name", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "OfficialRating", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "MediaType", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "Overview", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "ParentIndexNumber", "INT", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "PremiereDate", "DATETIME", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "ProductionYear", "INT", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "ParentId", "GUID", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "Genres", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "SortName", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "ForcedSortName", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "RunTimeTicks", "BIGINT", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "DateCreated", "DATETIME", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "DateModified", "DATETIME", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "IsSeries", "BIT", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "EpisodeTitle", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "IsRepeat", "BIT", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "PreferredMetadataLanguage", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "PreferredMetadataCountryCode", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "DateLastRefreshed", "DATETIME", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "DateLastSaved", "DATETIME", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "IsInMixedFolder", "BIT", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "LockedFields", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "Studios", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "Audio", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "ExternalServiceId", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "Tags", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "IsFolder", "BIT", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "InheritedParentalRatingValue", "INT", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "UnratedType", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "TopParentId", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "TrailerTypes", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "CriticRating", "Float", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "CleanName", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "PresentationUniqueKey", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "OriginalTitle", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "PrimaryVersionId", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "DateLastMediaAdded", "DATETIME", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "Album", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "IsVirtualItem", "BIT", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "SeriesName", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "UserDataKey", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "SeasonName", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "SeasonId", "GUID", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "SeriesId", "GUID", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "ExternalSeriesId", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "Tagline", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "ProviderIds", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "Images", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "ProductionLocations", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "ExtraIds", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "TotalBitrate", "INT", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "ExtraType", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "Artists", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "AlbumArtists", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "ExternalId", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "SeriesPresentationUniqueKey", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "ShowId", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "OwnerId", "Text", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "Width", "INT", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "Height", "INT", existingColumnNames);
-                    AddColumn(db, "TypedBaseItems", "Size", "BIGINT", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "Path", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "StartDate", "DATETIME", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "EndDate", "DATETIME", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "ChannelId", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "IsMovie", "BIT", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "CommunityRating", "Float", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "CustomRating", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "IndexNumber", "INT", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "IsLocked", "BIT", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "Name", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "OfficialRating", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "MediaType", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "Overview", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "ParentIndexNumber", "INT", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "PremiereDate", "DATETIME", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "ProductionYear", "INT", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "ParentId", "GUID", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "Genres", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "SortName", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "ForcedSortName", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "RunTimeTicks", "BIGINT", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "DateCreated", "DATETIME", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "DateModified", "DATETIME", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "IsSeries", "BIT", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "EpisodeTitle", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "IsRepeat", "BIT", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "PreferredMetadataLanguage", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "PreferredMetadataCountryCode", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "DateLastRefreshed", "DATETIME", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "DateLastSaved", "DATETIME", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "IsInMixedFolder", "BIT", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "LockedFields", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "Studios", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "Audio", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "ExternalServiceId", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "Tags", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "IsFolder", "BIT", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "InheritedParentalRatingValue", "INT", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "UnratedType", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "TopParentId", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "TrailerTypes", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "CriticRating", "Float", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "CleanName", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "PresentationUniqueKey", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "OriginalTitle", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "PrimaryVersionId", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "DateLastMediaAdded", "DATETIME", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "Album", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "IsVirtualItem", "BIT", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "SeriesName", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "UserDataKey", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "SeasonName", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "SeasonId", "GUID", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "SeriesId", "GUID", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "ExternalSeriesId", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "Tagline", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "ProviderIds", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "Images", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "ProductionLocations", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "ExtraIds", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "TotalBitrate", "INT", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "ExtraType", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "Artists", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "AlbumArtists", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "ExternalId", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "SeriesPresentationUniqueKey", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "ShowId", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "OwnerId", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "Width", "INT", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "Height", "INT", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "Size", "BIGINT", existingColumnNames);
 
-                    existingColumnNames = GetColumnNames(db, "ItemValues");
-                    AddColumn(db, "ItemValues", "CleanValue", "Text", existingColumnNames);
+                        existingColumnNames = GetColumnNames(db, "ItemValues");
+                        AddColumn(db, "ItemValues", "CleanValue", "Text", existingColumnNames);
 
-                    existingColumnNames = GetColumnNames(db, ChaptersTableName);
-                    AddColumn(db, ChaptersTableName, "ImageDateModified", "DATETIME", existingColumnNames);
+                        existingColumnNames = GetColumnNames(db, ChaptersTableName);
+                        AddColumn(db, ChaptersTableName, "ImageDateModified", "DATETIME", existingColumnNames);
 
-                    existingColumnNames = GetColumnNames(db, "MediaStreams");
-                    AddColumn(db, "MediaStreams", "IsAvc", "BIT", existingColumnNames);
-                    AddColumn(db, "MediaStreams", "TimeBase", "TEXT", existingColumnNames);
-                    AddColumn(db, "MediaStreams", "CodecTimeBase", "TEXT", existingColumnNames);
-                    AddColumn(db, "MediaStreams", "Title", "TEXT", existingColumnNames);
-                    AddColumn(db, "MediaStreams", "NalLengthSize", "TEXT", existingColumnNames);
-                    AddColumn(db, "MediaStreams", "Comment", "TEXT", existingColumnNames);
-                    AddColumn(db, "MediaStreams", "CodecTag", "TEXT", existingColumnNames);
-                    AddColumn(db, "MediaStreams", "PixelFormat", "TEXT", existingColumnNames);
-                    AddColumn(db, "MediaStreams", "BitDepth", "INT", existingColumnNames);
-                    AddColumn(db, "MediaStreams", "RefFrames", "INT", existingColumnNames);
-                    AddColumn(db, "MediaStreams", "KeyFrames", "TEXT", existingColumnNames);
-                    AddColumn(db, "MediaStreams", "IsAnamorphic", "BIT", existingColumnNames);
+                        existingColumnNames = GetColumnNames(db, "MediaStreams");
+                        AddColumn(db, "MediaStreams", "IsAvc", "BIT", existingColumnNames);
+                        AddColumn(db, "MediaStreams", "TimeBase", "TEXT", existingColumnNames);
+                        AddColumn(db, "MediaStreams", "CodecTimeBase", "TEXT", existingColumnNames);
+                        AddColumn(db, "MediaStreams", "Title", "TEXT", existingColumnNames);
+                        AddColumn(db, "MediaStreams", "NalLengthSize", "TEXT", existingColumnNames);
+                        AddColumn(db, "MediaStreams", "Comment", "TEXT", existingColumnNames);
+                        AddColumn(db, "MediaStreams", "CodecTag", "TEXT", existingColumnNames);
+                        AddColumn(db, "MediaStreams", "PixelFormat", "TEXT", existingColumnNames);
+                        AddColumn(db, "MediaStreams", "BitDepth", "INT", existingColumnNames);
+                        AddColumn(db, "MediaStreams", "RefFrames", "INT", existingColumnNames);
+                        AddColumn(db, "MediaStreams", "KeyFrames", "TEXT", existingColumnNames);
+                        AddColumn(db, "MediaStreams", "IsAnamorphic", "BIT", existingColumnNames);
 
-                    AddColumn(db, "MediaStreams", "ColorPrimaries", "TEXT", existingColumnNames);
-                    AddColumn(db, "MediaStreams", "ColorSpace", "TEXT", existingColumnNames);
-                    AddColumn(db, "MediaStreams", "ColorTransfer", "TEXT", existingColumnNames);
-                }, TransactionMode);
+                        AddColumn(db, "MediaStreams", "ColorPrimaries", "TEXT", existingColumnNames);
+                        AddColumn(db, "MediaStreams", "ColorSpace", "TEXT", existingColumnNames);
+                        AddColumn(db, "MediaStreams", "ColorTransfer", "TEXT", existingColumnNames);
+                    },
+                    TransactionMode);
 
                 connection.RunQueries(postQueries);
             }
@@ -336,151 +573,12 @@ namespace Emby.Server.Implementations.Data
             userDataRepo.Initialize(userManager, WriteLock, WriteConnection);
         }
 
-        private static readonly string[] _retriveItemColumns =
-        {
-            "type",
-            "data",
-            "StartDate",
-            "EndDate",
-            "ChannelId",
-            "IsMovie",
-            "IsSeries",
-            "EpisodeTitle",
-            "IsRepeat",
-            "CommunityRating",
-            "CustomRating",
-            "IndexNumber",
-            "IsLocked",
-            "PreferredMetadataLanguage",
-            "PreferredMetadataCountryCode",
-            "Width",
-            "Height",
-            "DateLastRefreshed",
-            "Name",
-            "Path",
-            "PremiereDate",
-            "Overview",
-            "ParentIndexNumber",
-            "ProductionYear",
-            "OfficialRating",
-            "ForcedSortName",
-            "RunTimeTicks",
-            "Size",
-            "DateCreated",
-            "DateModified",
-            "guid",
-            "Genres",
-            "ParentId",
-            "Audio",
-            "ExternalServiceId",
-            "IsInMixedFolder",
-            "DateLastSaved",
-            "LockedFields",
-            "Studios",
-            "Tags",
-            "TrailerTypes",
-            "OriginalTitle",
-            "PrimaryVersionId",
-            "DateLastMediaAdded",
-            "Album",
-            "CriticRating",
-            "IsVirtualItem",
-            "SeriesName",
-            "SeasonName",
-            "SeasonId",
-            "SeriesId",
-            "PresentationUniqueKey",
-            "InheritedParentalRatingValue",
-            "ExternalSeriesId",
-            "Tagline",
-            "ProviderIds",
-            "Images",
-            "ProductionLocations",
-            "ExtraIds",
-            "TotalBitrate",
-            "ExtraType",
-            "Artists",
-            "AlbumArtists",
-            "ExternalId",
-            "SeriesPresentationUniqueKey",
-            "ShowId",
-            "OwnerId"
-        };
-
-        private static readonly string _retriveItemColumnsSelectQuery = $"select {string.Join(',', _retriveItemColumns)} from TypedBaseItems where guid = @guid";
-
-        private static readonly string[] _mediaStreamSaveColumns =
-        {
-            "ItemId",
-            "StreamIndex",
-            "StreamType",
-            "Codec",
-            "Language",
-            "ChannelLayout",
-            "Profile",
-            "AspectRatio",
-            "Path",
-            "IsInterlaced",
-            "BitRate",
-            "Channels",
-            "SampleRate",
-            "IsDefault",
-            "IsForced",
-            "IsExternal",
-            "Height",
-            "Width",
-            "AverageFrameRate",
-            "RealFrameRate",
-            "Level",
-            "PixelFormat",
-            "BitDepth",
-            "IsAnamorphic",
-            "RefFrames",
-            "CodecTag",
-            "Comment",
-            "NalLengthSize",
-            "IsAvc",
-            "Title",
-            "TimeBase",
-            "CodecTimeBase",
-            "ColorPrimaries",
-            "ColorSpace",
-            "ColorTransfer"
-        };
-
-        private static readonly string _mediaStreamSaveColumnsInsertQuery =
-            $"insert into mediastreams ({string.Join(',', _mediaStreamSaveColumns)}) values ";
-
-        private static readonly string _mediaStreamSaveColumnsSelectQuery =
-            $"select {string.Join(',', _mediaStreamSaveColumns)} from mediastreams where ItemId=@ItemId";
-
-        private static readonly string[] _mediaAttachmentSaveColumns =
-        {
-            "ItemId",
-            "AttachmentIndex",
-            "Codec",
-            "CodecTag",
-            "Comment",
-            "Filename",
-            "MIMEType"
-        };
-
-        private static readonly string _mediaAttachmentSaveColumnsSelectQuery =
-            $"select {string.Join(',', _mediaAttachmentSaveColumns)} from mediaattachments where ItemId=@ItemId";
-
-        private static readonly string _mediaAttachmentInsertPrefix;
-
-        private const string SaveItemCommandText =
-            @"replace into TypedBaseItems
-            (guid,type,data,Path,StartDate,EndDate,ChannelId,IsMovie,IsSeries,EpisodeTitle,IsRepeat,CommunityRating,CustomRating,IndexNumber,IsLocked,Name,OfficialRating,MediaType,Overview,ParentIndexNumber,PremiereDate,ProductionYear,ParentId,Genres,InheritedParentalRatingValue,SortName,ForcedSortName,RunTimeTicks,Size,DateCreated,DateModified,PreferredMetadataLanguage,PreferredMetadataCountryCode,Width,Height,DateLastRefreshed,DateLastSaved,IsInMixedFolder,LockedFields,Studios,Audio,ExternalServiceId,Tags,IsFolder,UnratedType,TopParentId,TrailerTypes,CriticRating,CleanName,PresentationUniqueKey,OriginalTitle,PrimaryVersionId,DateLastMediaAdded,Album,IsVirtualItem,SeriesName,UserDataKey,SeasonName,SeasonId,SeriesId,ExternalSeriesId,Tagline,ProviderIds,Images,ProductionLocations,ExtraIds,TotalBitrate,ExtraType,Artists,AlbumArtists,ExternalId,SeriesPresentationUniqueKey,ShowId,OwnerId)
-            values (@guid,@type,@data,@Path,@StartDate,@EndDate,@ChannelId,@IsMovie,@IsSeries,@EpisodeTitle,@IsRepeat,@CommunityRating,@CustomRating,@IndexNumber,@IsLocked,@Name,@OfficialRating,@MediaType,@Overview,@ParentIndexNumber,@PremiereDate,@ProductionYear,@ParentId,@Genres,@InheritedParentalRatingValue,@SortName,@ForcedSortName,@RunTimeTicks,@Size,@DateCreated,@DateModified,@PreferredMetadataLanguage,@PreferredMetadataCountryCode,@Width,@Height,@DateLastRefreshed,@DateLastSaved,@IsInMixedFolder,@LockedFields,@Studios,@Audio,@ExternalServiceId,@Tags,@IsFolder,@UnratedType,@TopParentId,@TrailerTypes,@CriticRating,@CleanName,@PresentationUniqueKey,@OriginalTitle,@PrimaryVersionId,@DateLastMediaAdded,@Album,@IsVirtualItem,@SeriesName,@UserDataKey,@SeasonName,@SeasonId,@SeriesId,@ExternalSeriesId,@Tagline,@ProviderIds,@Images,@ProductionLocations,@ExtraIds,@TotalBitrate,@ExtraType,@Artists,@AlbumArtists,@ExternalId,@SeriesPresentationUniqueKey,@ShowId,@OwnerId)";
-
         /// <summary>
         /// Save a standard item in the repo.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <exception cref="ArgumentNullException">item</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="item"/> is <c>null</c>.</exception>
         public void SaveItem(BaseItem item, CancellationToken cancellationToken)
         {
             if (item == null)
@@ -503,16 +601,17 @@ namespace Emby.Server.Implementations.Data
             using (var connection = GetConnection())
             {
                 connection.RunInTransaction(
-                db =>
-                {
-                    using (var saveImagesStatement = base.PrepareStatement(db, "Update TypedBaseItems set Images=@Images where guid=@Id"))
+                    db =>
                     {
-                        saveImagesStatement.TryBind("@Id", item.Id.ToByteArray());
-                        saveImagesStatement.TryBind("@Images", SerializeImages(item.ImageInfos));
+                        using (var saveImagesStatement = PrepareStatement(db, "Update TypedBaseItems set Images=@Images where guid=@Id"))
+                        {
+                            saveImagesStatement.TryBind("@Id", item.Id.ToByteArray());
+                            saveImagesStatement.TryBind("@Images", SerializeImages(item.ImageInfos));
 
-                        saveImagesStatement.MoveNext();
-                    }
-                }, TransactionMode);
+                            saveImagesStatement.MoveNext();
+                        }
+                    },
+                    TransactionMode);
             }
         }
 
@@ -522,9 +621,7 @@ namespace Emby.Server.Implementations.Data
         /// <param name="items">The items.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <exception cref="ArgumentNullException">
-        /// items
-        /// or
-        /// cancellationToken
+        /// <paramref name="items"/> or <paramref name="cancellationToken"/> is <c>null</c>.
         /// </exception>
         public void SaveItems(IEnumerable<BaseItem> items, CancellationToken cancellationToken)
         {
@@ -555,14 +652,15 @@ namespace Emby.Server.Implementations.Data
             using (var connection = GetConnection())
             {
                 connection.RunInTransaction(
-                db =>
-                {
-                    SaveItemsInTranscation(db, tuples);
-                }, TransactionMode);
+                    db =>
+                    {
+                        SaveItemsInTransaction(db, tuples);
+                    },
+                    TransactionMode);
             }
         }
 
-        private void SaveItemsInTranscation(IDatabaseConnection db, IEnumerable<(BaseItem, List<Guid>, BaseItem, string, List<string>)> tuples)
+        private void SaveItemsInTransaction(IDatabaseConnection db, IEnumerable<(BaseItem Item, List<Guid> AncestorIds, BaseItem TopParent, string UserDataKey, List<string> InheritedTags)> tuples)
         {
             var statements = PrepareAll(db, new string[]
             {
@@ -581,17 +679,17 @@ namespace Emby.Server.Implementations.Data
                         saveItemStatement.Reset();
                     }
 
-                    var item = tuple.Item1;
-                    var topParent = tuple.Item3;
-                    var userDataKey = tuple.Item4;
+                    var item = tuple.Item;
+                    var topParent = tuple.TopParent;
+                    var userDataKey = tuple.UserDataKey;
 
                     SaveItem(item, topParent, userDataKey, saveItemStatement);
 
-                    var inheritedTags = tuple.Item5;
+                    var inheritedTags = tuple.InheritedTags;
 
                     if (item.SupportsAncestors)
                     {
-                        UpdateAncestors(item.Id, tuple.Item2, db, deleteAncestorsStatement);
+                        UpdateAncestors(item.Id, tuple.AncestorIds, db, deleteAncestorsStatement);
                     }
 
                     UpdateItemValues(item.Id, GetItemValuesToSave(item, inheritedTags), db);
@@ -1135,14 +1233,24 @@ namespace Emby.Server.Implementations.Data
                 Path = RestorePath(path.ToString())
             };
 
-            if (long.TryParse(dateModified, NumberStyles.Any, CultureInfo.InvariantCulture, out var ticks))
+            if (long.TryParse(dateModified, NumberStyles.Any, CultureInfo.InvariantCulture, out var ticks)
+                && ticks >= DateTime.MinValue.Ticks
+                && ticks <= DateTime.MaxValue.Ticks)
             {
                 image.DateModified = new DateTime(ticks, DateTimeKind.Utc);
             }
+            else
+            {
+                return null;
+            }
 
-            if (Enum.TryParse(imageType.ToString(), true, out ImageType type))
+            if (Enum.TryParse(imageType, true, out ImageType type))
             {
                 image.Type = type;
+            }
+            else
+            {
+                return null;
             }
 
             // Optional parameters: width*height*blurhash
@@ -1202,8 +1310,8 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>BaseItem.</returns>
-        /// <exception cref="ArgumentNullException">id</exception>
-        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException"><paramref name="id"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException"><paramr name="id"/> is <seealso cref="Guid.Empty"/>.</exception>
         public BaseItem RetrieveItem(Guid id)
         {
             if (id == Guid.Empty)
@@ -1215,7 +1323,7 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection(true))
             {
-                using (var statement = PrepareStatement(connection, _retriveItemColumnsSelectQuery))
+                using (var statement = PrepareStatement(connection, _retrieveItemColumnsSelectQuery))
                 {
                     statement.TryBind("@guid", id);
 
@@ -1557,7 +1665,6 @@ namespace Emby.Server.Implementations.Data
 
             if (reader.TryGetString(index++, out var audioString))
             {
-                // TODO Span overload coming in the future https://github.com/dotnet/runtime/issues/1916
                 if (Enum.TryParse(audioString, true, out ProgramAudio audio))
                 {
                     item.Audio = audio;
@@ -1596,18 +1703,16 @@ namespace Emby.Server.Implementations.Data
             {
                 if (reader.TryGetString(index++, out var lockedFields))
                 {
-                    IEnumerable<MetadataField> GetLockedFields(string s)
+                    List<MetadataField> fields = null;
+                    foreach (var i in lockedFields.AsSpan().Split('|'))
                     {
-                        foreach (var i in s.Split('|', StringSplitOptions.RemoveEmptyEntries))
+                        if (Enum.TryParse(i, true, out MetadataField parsedValue))
                         {
-                            if (Enum.TryParse(i, true, out MetadataField parsedValue))
-                            {
-                                yield return parsedValue;
-                            }
+                            (fields ??= new List<MetadataField>()).Add(parsedValue);
                         }
                     }
 
-                    item.LockedFields = GetLockedFields(lockedFields).ToArray();
+                    item.LockedFields = fields?.ToArray() ?? Array.Empty<MetadataField>();
                 }
             }
 
@@ -1633,18 +1738,16 @@ namespace Emby.Server.Implementations.Data
                 {
                     if (reader.TryGetString(index, out var trailerTypes))
                     {
-                        IEnumerable<TrailerType> GetTrailerTypes(string s)
+                        List<TrailerType> types = null;
+                        foreach (var i in trailerTypes.AsSpan().Split('|'))
                         {
-                            foreach (var i in s.Split('|', StringSplitOptions.RemoveEmptyEntries))
+                            if (Enum.TryParse(i, true, out TrailerType parsedValue))
                             {
-                                if (Enum.TryParse(i, true, out TrailerType parsedValue))
-                                {
-                                    yield return parsedValue;
-                                }
+                                (types ??= new List<TrailerType>()).Add(parsedValue);
                             }
                         }
 
-                        trailer.TrailerTypes = GetTrailerTypes(trailerTypes).ToArray();
+                        trailer.TrailerTypes = types?.ToArray() ?? Array.Empty<TrailerType>();
                     }
                 }
 
@@ -1886,12 +1989,7 @@ namespace Emby.Server.Implementations.Data
             return result;
         }
 
-        /// <summary>
-        /// Gets chapters for an item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>IEnumerable{ChapterInfo}.</returns>
-        /// <exception cref="ArgumentNullException">id</exception>
+        /// <inheritdoc />
         public List<ChapterInfo> GetChapters(BaseItem item)
         {
             CheckDisposed();
@@ -1914,13 +2012,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        /// <summary>
-        /// Gets a single chapter for an item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="index">The index.</param>
-        /// <returns>ChapterInfo.</returns>
-        /// <exception cref="ArgumentNullException">id</exception>
+        /// <inheritdoc />
         public ChapterInfo GetChapter(BaseItem item, int index)
         {
             CheckDisposed();
@@ -1988,6 +2080,8 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Saves the chapters.
         /// </summary>
+        /// <param name="id">The item id.</param>
+        /// <param name="chapters">The chapters.</param>
         public void SaveChapters(Guid id, IReadOnlyList<ChapterInfo> chapters)
         {
             CheckDisposed();
@@ -2007,13 +2101,14 @@ namespace Emby.Server.Implementations.Data
             using (var connection = GetConnection())
             {
                 connection.RunInTransaction(
-                db =>
-                {
-                    // First delete chapters
-                    db.Execute("delete from " + ChaptersTableName + " where ItemId=@ItemId", idBlob);
+                    db =>
+                    {
+                        // First delete chapters
+                        db.Execute("delete from " + ChaptersTableName + " where ItemId=@ItemId", idBlob);
 
-                    InsertChapters(idBlob, chapters, db);
-                }, TransactionMode);
+                        InsertChapters(idBlob, chapters, db);
+                    },
+                    TransactionMode);
             }
         }
 
@@ -2032,7 +2127,7 @@ namespace Emby.Server.Implementations.Data
 
                 for (var i = startIndex; i < endIndex; i++)
                 {
-                    insertText.AppendFormat("(@ItemId, @ChapterIndex{0}, @StartPositionTicks{0}, @Name{0}, @ImagePath{0}, @ImageDateModified{0}),", i.ToString(CultureInfo.InvariantCulture));
+                    insertText.AppendFormat(CultureInfo.InvariantCulture, "(@ItemId, @ChapterIndex{0}, @StartPositionTicks{0}, @Name{0}, @ImagePath{0}, @ImageDateModified{0}),", i.ToString(CultureInfo.InvariantCulture));
                 }
 
                 insertText.Length -= 1; // Remove last ,
@@ -2072,7 +2167,7 @@ namespace Emby.Server.Implementations.Data
                 return false;
             }
 
-            var sortingFields = new HashSet<string>(query.OrderBy.Select(i => i.Item1), StringComparer.OrdinalIgnoreCase);
+            var sortingFields = new HashSet<string>(query.OrderBy.Select(i => i.OrderBy), StringComparer.OrdinalIgnoreCase);
 
             return sortingFields.Contains(ItemSortBy.IsFavoriteOrLiked)
                     || sortingFields.Contains(ItemSortBy.IsPlayed)
@@ -2086,8 +2181,6 @@ namespace Emby.Server.Implementations.Data
                     || query.IsPlayed.HasValue
                     || query.IsLiked.HasValue;
         }
-
-        private readonly ItemFields[] _allFields = Enum.GetValues<ItemFields>();
 
         private bool HasField(InternalItemsQuery query, ItemFields name)
         {
@@ -2121,26 +2214,9 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        private static readonly HashSet<string> _programExcludeParentTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "Series",
-            "Season",
-            "MusicAlbum",
-            "MusicArtist",
-            "PhotoAlbum"
-        };
-
-        private static readonly HashSet<string> _programTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "Program",
-            "TvChannel",
-            "LiveTvProgram",
-            "LiveTvTvChannel"
-        };
-
         private bool HasProgramAttributes(InternalItemsQuery query)
         {
-            if (_programExcludeParentTypes.Contains(query.ParentType))
+            if (query.ParentType != null && _programExcludeParentTypes.Contains(query.ParentType.Value))
             {
                 return false;
             }
@@ -2153,15 +2229,9 @@ namespace Emby.Server.Implementations.Data
             return query.IncludeItemTypes.Any(x => _programTypes.Contains(x));
         }
 
-        private static readonly HashSet<string> _serviceTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "TvChannel",
-            "LiveTvTvChannel"
-        };
-
         private bool HasServiceName(InternalItemsQuery query)
         {
-            if (_programExcludeParentTypes.Contains(query.ParentType))
+            if (query.ParentType != null && _programExcludeParentTypes.Contains(query.ParentType.Value))
             {
                 return false;
             }
@@ -2174,15 +2244,9 @@ namespace Emby.Server.Implementations.Data
             return query.IncludeItemTypes.Any(x => _serviceTypes.Contains(x));
         }
 
-        private static readonly HashSet<string> _startDateTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "Program",
-            "LiveTvProgram"
-        };
-
         private bool HasStartDate(InternalItemsQuery query)
         {
-            if (_programExcludeParentTypes.Contains(query.ParentType))
+            if (query.ParentType != null && _programExcludeParentTypes.Contains(query.ParentType.Value))
             {
                 return false;
             }
@@ -2202,7 +2266,7 @@ namespace Emby.Server.Implementations.Data
                 return true;
             }
 
-            return query.IncludeItemTypes.Contains("Episode", StringComparer.OrdinalIgnoreCase);
+            return query.IncludeItemTypes.Contains(BaseItemKind.Episode);
         }
 
         private bool HasTrailerTypes(InternalItemsQuery query)
@@ -2212,28 +2276,12 @@ namespace Emby.Server.Implementations.Data
                 return true;
             }
 
-            return query.IncludeItemTypes.Contains("Trailer", StringComparer.OrdinalIgnoreCase);
+            return query.IncludeItemTypes.Contains(BaseItemKind.Trailer);
         }
-
-        private static readonly HashSet<string> _artistExcludeParentTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "Series",
-            "Season",
-            "PhotoAlbum"
-        };
-
-        private static readonly HashSet<string> _artistsTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "Audio",
-            "MusicAlbum",
-            "MusicVideo",
-            "AudioBook",
-            "AudioPodcast"
-        };
 
         private bool HasArtistFields(InternalItemsQuery query)
         {
-            if (_artistExcludeParentTypes.Contains(query.ParentType))
+            if (query.ParentType != null && _artistExcludeParentTypes.Contains(query.ParentType.Value))
             {
                 return false;
             }
@@ -2246,17 +2294,9 @@ namespace Emby.Server.Implementations.Data
             return query.IncludeItemTypes.Any(x => _artistsTypes.Contains(x));
         }
 
-        private static readonly HashSet<string> _seriesTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "Book",
-            "AudioBook",
-            "Episode",
-            "Season"
-        };
-
         private bool HasSeriesFields(InternalItemsQuery query)
         {
-            if (string.Equals(query.ParentType, "PhotoAlbum", StringComparison.OrdinalIgnoreCase))
+            if (query.ParentType == BaseItemKind.PhotoAlbum)
             {
                 return false;
             }
@@ -2271,7 +2311,7 @@ namespace Emby.Server.Implementations.Data
 
         private void SetFinalColumnsToSelect(InternalItemsQuery query, List<string> columns)
         {
-            foreach (var field in _allFields)
+            foreach (var field in _allItemFields)
             {
                 if (!HasField(query, field))
                 {
@@ -2594,7 +2634,7 @@ namespace Emby.Server.Implementations.Data
                 query.Limit = query.Limit.Value + 4;
             }
 
-            var columns = _retriveItemColumns.ToList();
+            var columns = _retrieveItemColumns.ToList();
             SetFinalColumnsToSelect(query, columns);
             var commandTextBuilder = new StringBuilder("select ", 1024)
                 .AppendJoin(',', columns)
@@ -2785,7 +2825,7 @@ namespace Emby.Server.Implementations.Data
                 query.Limit = query.Limit.Value + 4;
             }
 
-            var columns = _retriveItemColumns.ToList();
+            var columns = _retrieveItemColumns.ToList();
             SetFinalColumnsToSelect(query, columns);
             var commandTextBuilder = new StringBuilder("select ", 512)
                 .AppendJoin(',', columns)
@@ -2872,69 +2912,70 @@ namespace Emby.Server.Implementations.Data
             using (var connection = GetConnection(true))
             {
                 connection.RunInTransaction(
-                db =>
-                {
-                    var itemQueryStatement = PrepareStatement(db, itemQuery);
-                    var totalRecordCountQueryStatement = PrepareStatement(db, totalRecordCountQuery);
-
-                    if (!isReturningZeroItems)
+                    db =>
                     {
-                        using (var statement = itemQueryStatement)
+                        var itemQueryStatement = PrepareStatement(db, itemQuery);
+                        var totalRecordCountQueryStatement = PrepareStatement(db, totalRecordCountQuery);
+
+                        if (!isReturningZeroItems)
                         {
-                            if (EnableJoinUserData(query))
+                            using (var statement = itemQueryStatement)
                             {
-                                statement.TryBind("@UserId", query.User.InternalId);
-                            }
-
-                            BindSimilarParams(query, statement);
-                            BindSearchParams(query, statement);
-
-                            // Running this again will bind the params
-                            GetWhereClauses(query, statement);
-
-                            var hasEpisodeAttributes = HasEpisodeAttributes(query);
-                            var hasServiceName = HasServiceName(query);
-                            var hasProgramAttributes = HasProgramAttributes(query);
-                            var hasStartDate = HasStartDate(query);
-                            var hasTrailerTypes = HasTrailerTypes(query);
-                            var hasArtistFields = HasArtistFields(query);
-                            var hasSeriesFields = HasSeriesFields(query);
-
-                            foreach (var row in statement.ExecuteQuery())
-                            {
-                                var item = GetItem(row, query, hasProgramAttributes, hasEpisodeAttributes, hasServiceName, hasStartDate, hasTrailerTypes, hasArtistFields, hasSeriesFields);
-                                if (item != null)
+                                if (EnableJoinUserData(query))
                                 {
-                                    list.Add(item);
+                                    statement.TryBind("@UserId", query.User.InternalId);
+                                }
+
+                                BindSimilarParams(query, statement);
+                                BindSearchParams(query, statement);
+
+                                // Running this again will bind the params
+                                GetWhereClauses(query, statement);
+
+                                var hasEpisodeAttributes = HasEpisodeAttributes(query);
+                                var hasServiceName = HasServiceName(query);
+                                var hasProgramAttributes = HasProgramAttributes(query);
+                                var hasStartDate = HasStartDate(query);
+                                var hasTrailerTypes = HasTrailerTypes(query);
+                                var hasArtistFields = HasArtistFields(query);
+                                var hasSeriesFields = HasSeriesFields(query);
+
+                                foreach (var row in statement.ExecuteQuery())
+                                {
+                                    var item = GetItem(row, query, hasProgramAttributes, hasEpisodeAttributes, hasServiceName, hasStartDate, hasTrailerTypes, hasArtistFields, hasSeriesFields);
+                                    if (item != null)
+                                    {
+                                        list.Add(item);
+                                    }
                                 }
                             }
+
+                            LogQueryTime("GetItems.ItemQuery", itemQuery, now);
                         }
 
-                        LogQueryTime("GetItems.ItemQuery", itemQuery, now);
-                    }
-
-                    now = DateTime.UtcNow;
-                    if (query.EnableTotalRecordCount)
-                    {
-                        using (var statement = totalRecordCountQueryStatement)
+                        now = DateTime.UtcNow;
+                        if (query.EnableTotalRecordCount)
                         {
-                            if (EnableJoinUserData(query))
+                            using (var statement = totalRecordCountQueryStatement)
                             {
-                                statement.TryBind("@UserId", query.User.InternalId);
+                                if (EnableJoinUserData(query))
+                                {
+                                    statement.TryBind("@UserId", query.User.InternalId);
+                                }
+
+                                BindSimilarParams(query, statement);
+                                BindSearchParams(query, statement);
+
+                                // Running this again will bind the params
+                                GetWhereClauses(query, statement);
+
+                                result.TotalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
                             }
 
-                            BindSimilarParams(query, statement);
-                            BindSearchParams(query, statement);
-
-                            // Running this again will bind the params
-                            GetWhereClauses(query, statement);
-
-                            result.TotalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
+                            LogQueryTime("GetItems.TotalRecordCount", totalRecordCountQuery, now);
                         }
-
-                        LogQueryTime("GetItems.TotalRecordCount", totalRecordCountQuery, now);
-                    }
-                }, ReadTransactionMode);
+                    },
+                    ReadTransactionMode);
             }
 
             result.Items = list;
@@ -2974,88 +3015,101 @@ namespace Emby.Server.Implementations.Data
 
             return " ORDER BY " + string.Join(',', orderBy.Select(i =>
             {
-                var columnMap = MapOrderByField(i.Item1, query);
-
-                var sortOrder = i.Item2 == SortOrder.Ascending ? "ASC" : "DESC";
-
-                return columnMap.Item1 + " " + sortOrder;
+                var sortBy = MapOrderByField(i.OrderBy, query);
+                var sortOrder = i.SortOrder == SortOrder.Ascending ? "ASC" : "DESC";
+                return sortBy + " " + sortOrder;
             }));
         }
 
-        private (string, bool) MapOrderByField(string name, InternalItemsQuery query)
+        private string MapOrderByField(string name, InternalItemsQuery query)
         {
             if (string.Equals(name, ItemSortBy.AirTime, StringComparison.OrdinalIgnoreCase))
             {
                 // TODO
-                return ("SortName", false);
+                return "SortName";
             }
-            else if (string.Equals(name, ItemSortBy.Runtime, StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(name, ItemSortBy.Runtime, StringComparison.OrdinalIgnoreCase))
             {
-                return ("RuntimeTicks", false);
+                return "RuntimeTicks";
             }
-            else if (string.Equals(name, ItemSortBy.Random, StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(name, ItemSortBy.Random, StringComparison.OrdinalIgnoreCase))
             {
-                return ("RANDOM()", false);
+                return "RANDOM()";
             }
-            else if (string.Equals(name, ItemSortBy.DatePlayed, StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(name, ItemSortBy.DatePlayed, StringComparison.OrdinalIgnoreCase))
             {
                 if (query.GroupBySeriesPresentationUniqueKey)
                 {
-                    return ("MAX(LastPlayedDate)", false);
+                    return "MAX(LastPlayedDate)";
                 }
 
-                return ("LastPlayedDate", false);
-            }
-            else if (string.Equals(name, ItemSortBy.PlayCount, StringComparison.OrdinalIgnoreCase))
-            {
-                return ("PlayCount", false);
-            }
-            else if (string.Equals(name, ItemSortBy.IsFavoriteOrLiked, StringComparison.OrdinalIgnoreCase))
-            {
-                return ("(Select Case When IsFavorite is null Then 0 Else IsFavorite End )", true);
-            }
-            else if (string.Equals(name, ItemSortBy.IsFolder, StringComparison.OrdinalIgnoreCase))
-            {
-                return ("IsFolder", true);
-            }
-            else if (string.Equals(name, ItemSortBy.IsPlayed, StringComparison.OrdinalIgnoreCase))
-            {
-                return ("played", true);
-            }
-            else if (string.Equals(name, ItemSortBy.IsUnplayed, StringComparison.OrdinalIgnoreCase))
-            {
-                return ("played", false);
-            }
-            else if (string.Equals(name, ItemSortBy.DateLastContentAdded, StringComparison.OrdinalIgnoreCase))
-            {
-                return ("DateLastMediaAdded", false);
-            }
-            else if (string.Equals(name, ItemSortBy.Artist, StringComparison.OrdinalIgnoreCase))
-            {
-                return ("(select CleanValue from itemvalues where ItemId=Guid and Type=0 LIMIT 1)", false);
-            }
-            else if (string.Equals(name, ItemSortBy.AlbumArtist, StringComparison.OrdinalIgnoreCase))
-            {
-                return ("(select CleanValue from itemvalues where ItemId=Guid and Type=1 LIMIT 1)", false);
-            }
-            else if (string.Equals(name, ItemSortBy.OfficialRating, StringComparison.OrdinalIgnoreCase))
-            {
-                return ("InheritedParentalRatingValue", false);
-            }
-            else if (string.Equals(name, ItemSortBy.Studio, StringComparison.OrdinalIgnoreCase))
-            {
-                return ("(select CleanValue from itemvalues where ItemId=Guid and Type=3 LIMIT 1)", false);
-            }
-            else if (string.Equals(name, ItemSortBy.SeriesDatePlayed, StringComparison.OrdinalIgnoreCase))
-            {
-                return ("(Select MAX(LastPlayedDate) from TypedBaseItems B" + GetJoinUserDataText(query) + " where Played=1 and B.SeriesPresentationUniqueKey=A.PresentationUniqueKey)", false);
-            }
-            else if (string.Equals(name, ItemSortBy.SeriesSortName, StringComparison.OrdinalIgnoreCase))
-            {
-                return ("SeriesName", false);
+                return "LastPlayedDate";
             }
 
-            return (name, false);
+            if (string.Equals(name, ItemSortBy.PlayCount, StringComparison.OrdinalIgnoreCase))
+            {
+                return "PlayCount";
+            }
+
+            if (string.Equals(name, ItemSortBy.IsFavoriteOrLiked, StringComparison.OrdinalIgnoreCase))
+            {
+                return "(Select Case When IsFavorite is null Then 0 Else IsFavorite End )";
+            }
+
+            if (string.Equals(name, ItemSortBy.IsFolder, StringComparison.OrdinalIgnoreCase))
+            {
+                return "IsFolder";
+            }
+
+            if (string.Equals(name, ItemSortBy.IsPlayed, StringComparison.OrdinalIgnoreCase))
+            {
+                return "played";
+            }
+
+            if (string.Equals(name, ItemSortBy.IsUnplayed, StringComparison.OrdinalIgnoreCase))
+            {
+                return "played";
+            }
+
+            if (string.Equals(name, ItemSortBy.DateLastContentAdded, StringComparison.OrdinalIgnoreCase))
+            {
+                return "DateLastMediaAdded";
+            }
+
+            if (string.Equals(name, ItemSortBy.Artist, StringComparison.OrdinalIgnoreCase))
+            {
+                return "(select CleanValue from itemvalues where ItemId=Guid and Type=0 LIMIT 1)";
+            }
+
+            if (string.Equals(name, ItemSortBy.AlbumArtist, StringComparison.OrdinalIgnoreCase))
+            {
+                return "(select CleanValue from itemvalues where ItemId=Guid and Type=1 LIMIT 1)";
+            }
+
+            if (string.Equals(name, ItemSortBy.OfficialRating, StringComparison.OrdinalIgnoreCase))
+            {
+                return "InheritedParentalRatingValue";
+            }
+
+            if (string.Equals(name, ItemSortBy.Studio, StringComparison.OrdinalIgnoreCase))
+            {
+                return "(select CleanValue from itemvalues where ItemId=Guid and Type=3 LIMIT 1)";
+            }
+
+            if (string.Equals(name, ItemSortBy.SeriesDatePlayed, StringComparison.OrdinalIgnoreCase))
+            {
+                return "(Select MAX(LastPlayedDate) from TypedBaseItems B" + GetJoinUserDataText(query) + " where Played=1 and B.SeriesPresentationUniqueKey=A.PresentationUniqueKey)";
+            }
+
+            if (string.Equals(name, ItemSortBy.SeriesSortName, StringComparison.OrdinalIgnoreCase))
+            {
+                return "SeriesName";
+            }
+
+            return name;
         }
 
         public List<Guid> GetItemIdsList(InternalItemsQuery query)
@@ -3291,51 +3345,52 @@ namespace Emby.Server.Implementations.Data
             using (var connection = GetConnection(true))
             {
                 connection.RunInTransaction(
-                db =>
-                {
-                    var statements = PrepareAll(db, statementTexts);
-
-                    if (!isReturningZeroItems)
+                    db =>
                     {
-                        using (var statement = statements[0])
+                        var statements = PrepareAll(db, statementTexts);
+
+                        if (!isReturningZeroItems)
                         {
-                            if (EnableJoinUserData(query))
+                            using (var statement = statements[0])
                             {
-                                statement.TryBind("@UserId", query.User.InternalId);
-                            }
+                                if (EnableJoinUserData(query))
+                                {
+                                    statement.TryBind("@UserId", query.User.InternalId);
+                                }
 
-                            BindSimilarParams(query, statement);
-                            BindSearchParams(query, statement);
+                                BindSimilarParams(query, statement);
+                                BindSearchParams(query, statement);
 
-                            // Running this again will bind the params
-                            GetWhereClauses(query, statement);
+                                // Running this again will bind the params
+                                GetWhereClauses(query, statement);
 
-                            foreach (var row in statement.ExecuteQuery())
-                            {
-                                list.Add(row[0].ReadGuidFromBlob());
+                                foreach (var row in statement.ExecuteQuery())
+                                {
+                                    list.Add(row[0].ReadGuidFromBlob());
+                                }
                             }
                         }
-                    }
 
-                    if (query.EnableTotalRecordCount)
-                    {
-                        using (var statement = statements[statements.Length - 1])
+                        if (query.EnableTotalRecordCount)
                         {
-                            if (EnableJoinUserData(query))
+                            using (var statement = statements[statements.Length - 1])
                             {
-                                statement.TryBind("@UserId", query.User.InternalId);
+                                if (EnableJoinUserData(query))
+                                {
+                                    statement.TryBind("@UserId", query.User.InternalId);
+                                }
+
+                                BindSimilarParams(query, statement);
+                                BindSearchParams(query, statement);
+
+                                // Running this again will bind the params
+                                GetWhereClauses(query, statement);
+
+                                result.TotalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
                             }
-
-                            BindSimilarParams(query, statement);
-                            BindSearchParams(query, statement);
-
-                            // Running this again will bind the params
-                            GetWhereClauses(query, statement);
-
-                            result.TotalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
                         }
-                    }
-                }, ReadTransactionMode);
+                    },
+                    ReadTransactionMode);
             }
 
             LogQueryTime("GetItemIds", commandText, now);
@@ -3360,11 +3415,6 @@ namespace Emby.Server.Implementations.Data
             }
 
             return true;
-        }
-
-        private bool IsValidType(string value)
-        {
-            return IsAlphaNumeric(value);
         }
 
         private bool IsValidMediaType(string value)
@@ -3451,8 +3501,8 @@ namespace Emby.Server.Implementations.Data
             if (query.IsMovie == true)
             {
                 if (query.IncludeItemTypes.Length == 0
-                    || query.IncludeItemTypes.Contains(nameof(Movie))
-                    || query.IncludeItemTypes.Contains(nameof(Trailer)))
+                    || query.IncludeItemTypes.Contains(BaseItemKind.Movie)
+                    || query.IncludeItemTypes.Contains(BaseItemKind.Trailer))
                 {
                     whereClauses.Add("(IsMovie is null OR IsMovie=@IsMovie)");
                 }
@@ -3527,31 +3577,81 @@ namespace Emby.Server.Implementations.Data
                 statement?.TryBind("@IsFolder", query.IsFolder);
             }
 
-            var includeTypes = query.IncludeItemTypes.Select(MapIncludeItemTypes).Where(x => x != null).ToArray();
+            var includeTypes = query.IncludeItemTypes;
             // Only specify excluded types if no included types are specified
-            if (includeTypes.Length == 0)
+            if (query.IncludeItemTypes.Length == 0)
             {
-                var excludeTypes = query.ExcludeItemTypes.Select(MapIncludeItemTypes).Where(x => x != null).ToArray();
+                var excludeTypes = query.ExcludeItemTypes;
                 if (excludeTypes.Length == 1)
                 {
-                    whereClauses.Add("type<>@type");
-                    statement?.TryBind("@type", excludeTypes[0]);
+                    if (_baseItemKindNames.TryGetValue(excludeTypes[0], out var excludeTypeName))
+                    {
+                        whereClauses.Add("type<>@type");
+                        statement?.TryBind("@type", excludeTypeName);
+                    }
+                    else
+                    {
+                        Logger.LogWarning("Undefined BaseItemKind to Type mapping: {BaseItemKind}", excludeTypes[0]);
+                    }
                 }
                 else if (excludeTypes.Length > 1)
                 {
-                    var inClause = string.Join(',', excludeTypes.Select(i => "'" + i + "'"));
-                    whereClauses.Add($"type not in ({inClause})");
+                    var whereBuilder = new StringBuilder("type not in (");
+                    foreach (var excludeType in excludeTypes)
+                    {
+                        if (_baseItemKindNames.TryGetValue(excludeType, out var baseItemKindName))
+                        {
+                            whereBuilder
+                                .Append('\'')
+                                .Append(baseItemKindName)
+                                .Append("',");
+                        }
+                        else
+                        {
+                            Logger.LogWarning("Undefined BaseItemKind to Type mapping: {BaseItemKind}", excludeType);
+                        }
+                    }
+
+                    // Remove trailing comma.
+                    whereBuilder.Length--;
+                    whereBuilder.Append(')');
+                    whereClauses.Add(whereBuilder.ToString());
                 }
             }
             else if (includeTypes.Length == 1)
             {
-                whereClauses.Add("type=@type");
-                statement?.TryBind("@type", includeTypes[0]);
+                if (_baseItemKindNames.TryGetValue(includeTypes[0], out var includeTypeName))
+                {
+                    whereClauses.Add("type=@type");
+                    statement?.TryBind("@type", includeTypeName);
+                }
+                else
+                {
+                    Logger.LogWarning("Undefined BaseItemKind to Type mapping: {BaseItemKind}", includeTypes[0]);
+                }
             }
             else if (includeTypes.Length > 1)
             {
-                var inClause = string.Join(',', includeTypes.Select(i => "'" + i + "'"));
-                whereClauses.Add($"type in ({inClause})");
+                var whereBuilder = new StringBuilder("type in (");
+                foreach (var includeType in includeTypes)
+                {
+                    if (_baseItemKindNames.TryGetValue(includeType, out var baseItemKindName))
+                    {
+                        whereBuilder
+                            .Append('\'')
+                            .Append(baseItemKindName)
+                            .Append("',");
+                    }
+                    else
+                    {
+                        Logger.LogWarning("Undefined BaseItemKind to Type mapping: {BaseItemKind}", includeType);
+                    }
+                }
+
+                // Remove trailing comma.
+                whereBuilder.Length--;
+                whereBuilder.Append(')');
+                whereClauses.Add(whereBuilder.ToString());
             }
 
             if (query.ChannelIds.Count == 1)
@@ -3875,7 +3975,7 @@ namespace Emby.Server.Implementations.Data
                 if (query.IsPlayed.HasValue)
                 {
                     // We should probably figure this out for all folders, but for right now, this is the only place where we need it
-                    if (query.IncludeItemTypes.Length == 1 && string.Equals(query.IncludeItemTypes[0], nameof(Series), StringComparison.OrdinalIgnoreCase))
+                    if (query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes[0] == BaseItemKind.Series)
                     {
                         if (query.IsPlayed.Value)
                         {
@@ -4583,7 +4683,7 @@ namespace Emby.Server.Implementations.Data
                 if (statement == null)
                 {
                     int index = 0;
-                    string excludedTags = string.Join(',', query.ExcludeInheritedTags.Select(t => paramName + index++));
+                    string excludedTags = string.Join(',', query.ExcludeInheritedTags.Select(_ => paramName + index++));
                     whereClauses.Add("((select CleanValue from itemvalues where ItemId=Guid and Type=6 and cleanvalue in (" + excludedTags + ")) is null)");
                 }
                 else
@@ -4725,27 +4825,27 @@ namespace Emby.Server.Implementations.Data
         {
             var list = new List<string>();
 
-            if (IsTypeInQuery(nameof(Person), query))
+            if (IsTypeInQuery(BaseItemKind.Person, query))
             {
                 list.Add(typeof(Person).FullName);
             }
 
-            if (IsTypeInQuery(nameof(Genre), query))
+            if (IsTypeInQuery(BaseItemKind.Genre, query))
             {
                 list.Add(typeof(Genre).FullName);
             }
 
-            if (IsTypeInQuery(nameof(MusicGenre), query))
+            if (IsTypeInQuery(BaseItemKind.MusicGenre, query))
             {
                 list.Add(typeof(MusicGenre).FullName);
             }
 
-            if (IsTypeInQuery(nameof(MusicArtist), query))
+            if (IsTypeInQuery(BaseItemKind.MusicArtist, query))
             {
                 list.Add(typeof(MusicArtist).FullName);
             }
 
-            if (IsTypeInQuery(nameof(Studio), query))
+            if (IsTypeInQuery(BaseItemKind.Studio, query))
             {
                 list.Add(typeof(Studio).FullName);
             }
@@ -4753,14 +4853,14 @@ namespace Emby.Server.Implementations.Data
             return list;
         }
 
-        private bool IsTypeInQuery(string type, InternalItemsQuery query)
+        private bool IsTypeInQuery(BaseItemKind type, InternalItemsQuery query)
         {
-            if (query.ExcludeItemTypes.Contains(type, StringComparer.OrdinalIgnoreCase))
+            if (query.ExcludeItemTypes.Contains(type))
             {
                 return false;
             }
 
-            return query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains(type, StringComparer.OrdinalIgnoreCase);
+            return query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains(type);
         }
 
         private string GetCleanValue(string value)
@@ -4800,52 +4900,18 @@ namespace Emby.Server.Implementations.Data
                 return true;
             }
 
-            if (query.IncludeItemTypes.Contains(nameof(Episode), StringComparer.OrdinalIgnoreCase)
-                || query.IncludeItemTypes.Contains(nameof(Video), StringComparer.OrdinalIgnoreCase)
-                || query.IncludeItemTypes.Contains(nameof(Movie), StringComparer.OrdinalIgnoreCase)
-                || query.IncludeItemTypes.Contains(nameof(MusicVideo), StringComparer.OrdinalIgnoreCase)
-                || query.IncludeItemTypes.Contains(nameof(Series), StringComparer.OrdinalIgnoreCase)
-                || query.IncludeItemTypes.Contains(nameof(Season), StringComparer.OrdinalIgnoreCase))
+            if (query.IncludeItemTypes.Contains(BaseItemKind.Episode)
+                || query.IncludeItemTypes.Contains(BaseItemKind.Video)
+                || query.IncludeItemTypes.Contains(BaseItemKind.Movie)
+                || query.IncludeItemTypes.Contains(BaseItemKind.MusicVideo)
+                || query.IncludeItemTypes.Contains(BaseItemKind.Series)
+                || query.IncludeItemTypes.Contains(BaseItemKind.Season))
             {
                 return true;
             }
 
             return false;
         }
-
-        private static readonly Type[] _knownTypes =
-        {
-            typeof(LiveTvProgram),
-            typeof(LiveTvChannel),
-            typeof(Series),
-            typeof(Audio),
-            typeof(MusicAlbum),
-            typeof(MusicArtist),
-            typeof(MusicGenre),
-            typeof(MusicVideo),
-            typeof(Movie),
-            typeof(Playlist),
-            typeof(AudioBook),
-            typeof(Trailer),
-            typeof(BoxSet),
-            typeof(Episode),
-            typeof(Season),
-            typeof(Series),
-            typeof(Book),
-            typeof(CollectionFolder),
-            typeof(Folder),
-            typeof(Genre),
-            typeof(Person),
-            typeof(Photo),
-            typeof(PhotoAlbum),
-            typeof(Studio),
-            typeof(UserRootFolder),
-            typeof(UserView),
-            typeof(Video),
-            typeof(Year),
-            typeof(Channel),
-            typeof(AggregateFolder)
-        };
 
         public void UpdateInheritedValues()
         {
@@ -4866,45 +4932,12 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             using (var connection = GetConnection())
             {
                 connection.RunInTransaction(
-                db =>
-                {
-                    connection.ExecuteAll(sql);
-                }, TransactionMode);
+                    db =>
+                    {
+                        connection.ExecuteAll(sql);
+                    },
+                    TransactionMode);
             }
-        }
-
-        private static Dictionary<string, string> GetTypeMapDictionary()
-        {
-            var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var t in _knownTypes)
-            {
-                dict[t.Name] = t.FullName ;
-            }
-
-            dict["Program"] = typeof(LiveTvProgram).FullName;
-            dict["TvChannel"] = typeof(LiveTvChannel).FullName;
-
-            return dict;
-        }
-
-        // Not crazy about having this all the way down here, but at least it's in one place
-        private readonly Dictionary<string, string> _types = GetTypeMapDictionary();
-
-        private string MapIncludeItemTypes(string value)
-        {
-            if (_types.TryGetValue(value, out string result))
-            {
-                return result;
-            }
-
-            if (IsValidType(value))
-            {
-                return value;
-            }
-
-            Logger.LogWarning("Unknown item type: {ItemType}", value);
-            return null;
         }
 
         public void DeleteItem(Guid id)
@@ -4919,28 +4952,29 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             using (var connection = GetConnection())
             {
                 connection.RunInTransaction(
-                db =>
-                {
-                    var idBlob = id.ToByteArray();
+                    db =>
+                    {
+                        var idBlob = id.ToByteArray();
 
-                    // Delete people
-                    ExecuteWithSingleParam(db, "delete from People where ItemId=@Id", idBlob);
+                        // Delete people
+                        ExecuteWithSingleParam(db, "delete from People where ItemId=@Id", idBlob);
 
-                    // Delete chapters
-                    ExecuteWithSingleParam(db, "delete from " + ChaptersTableName + " where ItemId=@Id", idBlob);
+                        // Delete chapters
+                        ExecuteWithSingleParam(db, "delete from " + ChaptersTableName + " where ItemId=@Id", idBlob);
 
-                    // Delete media streams
-                    ExecuteWithSingleParam(db, "delete from mediastreams where ItemId=@Id", idBlob);
+                        // Delete media streams
+                        ExecuteWithSingleParam(db, "delete from mediastreams where ItemId=@Id", idBlob);
 
-                    // Delete ancestors
-                    ExecuteWithSingleParam(db, "delete from AncestorIds where ItemId=@Id", idBlob);
+                        // Delete ancestors
+                        ExecuteWithSingleParam(db, "delete from AncestorIds where ItemId=@Id", idBlob);
 
-                    // Delete item values
-                    ExecuteWithSingleParam(db, "delete from ItemValues where ItemId=@Id", idBlob);
+                        // Delete item values
+                        ExecuteWithSingleParam(db, "delete from ItemValues where ItemId=@Id", idBlob);
 
-                    // Delete the item
-                    ExecuteWithSingleParam(db, "delete from TypedBaseItems where guid=@Id", idBlob);
-                }, TransactionMode);
+                        // Delete the item
+                        ExecuteWithSingleParam(db, "delete from TypedBaseItems where guid=@Id", idBlob);
+                    },
+                    TransactionMode);
             }
         }
 
@@ -5175,32 +5209,32 @@ AND Type = @InternalPersonType)");
             }
         }
 
-        public QueryResult<(BaseItem, ItemCounts)> GetAllArtists(InternalItemsQuery query)
+        public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 0, 1 }, typeof(MusicArtist).FullName);
         }
 
-        public QueryResult<(BaseItem, ItemCounts)> GetArtists(InternalItemsQuery query)
+        public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 0 }, typeof(MusicArtist).FullName);
         }
 
-        public QueryResult<(BaseItem, ItemCounts)> GetAlbumArtists(InternalItemsQuery query)
+        public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 1 }, typeof(MusicArtist).FullName);
         }
 
-        public QueryResult<(BaseItem, ItemCounts)> GetStudios(InternalItemsQuery query)
+        public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 3 }, typeof(Studio).FullName);
         }
 
-        public QueryResult<(BaseItem, ItemCounts)> GetGenres(InternalItemsQuery query)
+        public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 2 }, typeof(Genre).FullName);
         }
 
-        public QueryResult<(BaseItem, ItemCounts)> GetMusicGenres(InternalItemsQuery query)
+        public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 2 }, typeof(MusicGenre).FullName);
         }
@@ -5296,7 +5330,7 @@ AND Type = @InternalPersonType)");
             return list;
         }
 
-        private QueryResult<(BaseItem, ItemCounts)> GetItemValues(InternalItemsQuery query, int[] itemValueTypes, string returnType)
+        private QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetItemValues(InternalItemsQuery query, int[] itemValueTypes, string returnType)
         {
             if (query == null)
             {
@@ -5352,7 +5386,7 @@ AND Type = @InternalPersonType)");
                 stringBuilder.Clear();
             }
 
-            List<string> columns = _retriveItemColumns.ToList();
+            List<string> columns = _retrieveItemColumns.ToList();
             // Unfortunately we need to add it to columns to ensure the order of the columns in the select
             if (!string.IsNullOrEmpty(itemCountColumns))
             {
@@ -5570,7 +5604,7 @@ AND Type = @InternalPersonType)");
             return result;
         }
 
-        private static ItemCounts GetItemCounts(IReadOnlyList<ResultSetValue> reader, int countStartColumn, string[] typesToCount)
+        private static ItemCounts GetItemCounts(IReadOnlyList<ResultSetValue> reader, int countStartColumn, BaseItemKind[] typesToCount)
         {
             var counts = new ItemCounts();
 
@@ -5621,7 +5655,7 @@ AND Type = @InternalPersonType)");
             return counts;
         }
 
-        private List<(int, string)> GetItemValuesToSave(BaseItem item, List<string> inheritedTags)
+        private List<(int MagicNumber, string Value)> GetItemValuesToSave(BaseItem item, List<string> inheritedTags)
         {
             var list = new List<(int, string)>();
 
@@ -5646,7 +5680,7 @@ AND Type = @InternalPersonType)");
             return list;
         }
 
-        private void UpdateItemValues(Guid itemId, List<(int, string)> values, IDatabaseConnection db)
+        private void UpdateItemValues(Guid itemId, List<(int MagicNumber, string Value)> values, IDatabaseConnection db)
         {
             if (itemId.Equals(Guid.Empty))
             {
@@ -5668,7 +5702,7 @@ AND Type = @InternalPersonType)");
             InsertItemValues(guidBlob, values, db);
         }
 
-        private void InsertItemValues(byte[] idBlob, List<(int, string)> values, IDatabaseConnection db)
+        private void InsertItemValues(byte[] idBlob, List<(int MagicNumber, string Value)> values, IDatabaseConnection db)
         {
             const int Limit = 100;
             var startIndex = 0;
@@ -5700,7 +5734,7 @@ AND Type = @InternalPersonType)");
 
                         var currentValueInfo = values[i];
 
-                        var itemValue = currentValueInfo.Item2;
+                        var itemValue = currentValueInfo.Value;
 
                         // Don't save if invalid
                         if (string.IsNullOrWhiteSpace(itemValue))
@@ -5708,7 +5742,7 @@ AND Type = @InternalPersonType)");
                             continue;
                         }
 
-                        statement.TryBind("@Type" + index, currentValueInfo.Item1);
+                        statement.TryBind("@Type" + index, currentValueInfo.MagicNumber);
                         statement.TryBind("@Value" + index, itemValue);
                         statement.TryBind("@CleanValue" + index, GetCleanValue(itemValue));
                     }
@@ -5739,15 +5773,16 @@ AND Type = @InternalPersonType)");
             using (var connection = GetConnection())
             {
                 connection.RunInTransaction(
-                db =>
-                {
-                    var itemIdBlob = itemId.ToByteArray();
+                    db =>
+                    {
+                        var itemIdBlob = itemId.ToByteArray();
 
-                    // First delete chapters
-                    db.Execute("delete from People where ItemId=@ItemId", itemIdBlob);
+                        // First delete chapters
+                        db.Execute("delete from People where ItemId=@ItemId", itemIdBlob);
 
-                    InsertPeople(itemIdBlob, people, db);
-                }, TransactionMode);
+                        InsertPeople(itemIdBlob, people, db);
+                    },
+                    TransactionMode);
             }
         }
 
@@ -5905,7 +5940,8 @@ AND Type = @InternalPersonType)");
                     db.Execute("delete from mediastreams where ItemId=@ItemId", itemIdBlob);
 
                     InsertMediaStreams(itemIdBlob, streams, db);
-                }, TransactionMode);
+                },
+                TransactionMode);
             }
         }
 
@@ -6239,7 +6275,8 @@ AND Type = @InternalPersonType)");
                     db.Execute("delete from mediaattachments where ItemId=@ItemId", itemIdBlob);
 
                     InsertMediaAttachments(itemIdBlob, attachments, db, cancellationToken);
-                }, TransactionMode);
+                },
+                TransactionMode);
             }
         }
 

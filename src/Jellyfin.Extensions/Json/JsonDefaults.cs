@@ -25,7 +25,7 @@ namespace Jellyfin.Extensions.Json
         ///   -> AddJellyfinApi
         ///    -> AddJsonOptions.
         /// </summary>
-        private static readonly JsonSerializerOptions _jsonSerializerOptions = new ()
+        private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
         {
             ReadCommentHandling = JsonCommentHandling.Disallow,
             WriteIndented = false,
@@ -44,12 +44,12 @@ namespace Jellyfin.Extensions.Json
             }
         };
 
-        private static readonly JsonSerializerOptions _pascalCaseJsonSerializerOptions = new (_jsonSerializerOptions)
+        private static readonly JsonSerializerOptions _pascalCaseJsonSerializerOptions = new(_jsonSerializerOptions)
         {
             PropertyNamingPolicy = null
         };
 
-        private static readonly JsonSerializerOptions _camelCaseJsonSerializerOptions = new (_jsonSerializerOptions)
+        private static readonly JsonSerializerOptions _camelCaseJsonSerializerOptions = new(_jsonSerializerOptions)
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };

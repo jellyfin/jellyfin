@@ -126,7 +126,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            _dlnaManager.UpdateProfile(deviceProfile);
+            _dlnaManager.UpdateProfile(profileId, deviceProfile);
             return NoContent();
         }
     }

@@ -101,7 +101,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 }
             }
 
-            _lastProgressMessageTimes.AddOrUpdate(item.Id, key => DateTime.UtcNow, (key, existing) => DateTime.UtcNow);
+            _lastProgressMessageTimes.AddOrUpdate(item.Id, _ => DateTime.UtcNow, (_, _) => DateTime.UtcNow);
 
             var dict = new Dictionary<string, string>();
             dict["ItemId"] = item.Id.ToString("N", CultureInfo.InvariantCulture);
@@ -144,12 +144,12 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             OnProviderRefreshProgress(sender, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(e.Argument, 100)));
 
-            _lastProgressMessageTimes.TryRemove(e.Argument.Id, out DateTime removed);
+            _lastProgressMessageTimes.TryRemove(e.Argument.Id, out _);
         }
 
         private static bool EnableRefreshMessage(BaseItem item)
         {
-            if (!(item is Folder folder))
+            if (item is not Folder folder)
             {
                 return false;
             }
@@ -403,7 +403,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 return false;
             }
 
-            if (item is IItemByName && !(item is MusicArtist))
+            if (item is IItemByName && item is not MusicArtist)
             {
                 return false;
             }
@@ -423,7 +423,6 @@ namespace Emby.Server.Implementations.EntryPoints
                     continue;
                 }
 
-                var collectionFolders = _libraryManager.GetCollectionFolders(item, allUserRootChildren);
                 foreach (var folder in allUserRootChildren)
                 {
                     list.Add(folder.Id.ToString("N", CultureInfo.InvariantCulture));
@@ -436,7 +435,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <summary>
         /// Translates the physical item to user library.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">The type of item.</typeparam>
         /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <param name="includeIfNotFound">if set to <c>true</c> [include if not found].</param>
@@ -465,6 +464,7 @@ namespace Emby.Server.Implementations.EntryPoints
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>

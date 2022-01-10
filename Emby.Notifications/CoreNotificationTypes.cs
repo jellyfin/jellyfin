@@ -24,63 +24,63 @@ namespace Emby.Notifications
             {
                 new NotificationTypeInfo
                 {
-                     Type = NotificationType.ApplicationUpdateInstalled.ToString()
+                     Type = nameof(NotificationType.ApplicationUpdateInstalled)
                 },
                 new NotificationTypeInfo
                 {
-                     Type = NotificationType.InstallationFailed.ToString()
+                     Type = nameof(NotificationType.InstallationFailed)
                 },
                 new NotificationTypeInfo
                 {
-                     Type = NotificationType.PluginInstalled.ToString()
+                     Type = nameof(NotificationType.PluginInstalled)
                 },
                 new NotificationTypeInfo
                 {
-                     Type = NotificationType.PluginError.ToString()
+                     Type = nameof(NotificationType.PluginError)
                 },
                 new NotificationTypeInfo
                 {
-                     Type = NotificationType.PluginUninstalled.ToString()
+                     Type = nameof(NotificationType.PluginUninstalled)
                 },
                 new NotificationTypeInfo
                 {
-                     Type = NotificationType.PluginUpdateInstalled.ToString()
+                     Type = nameof(NotificationType.PluginUpdateInstalled)
                 },
                 new NotificationTypeInfo
                 {
-                     Type = NotificationType.ServerRestartRequired.ToString()
+                     Type = nameof(NotificationType.ServerRestartRequired)
                 },
                 new NotificationTypeInfo
                 {
-                     Type = NotificationType.TaskFailed.ToString()
+                     Type = nameof(NotificationType.TaskFailed)
                 },
                 new NotificationTypeInfo
                 {
-                     Type = NotificationType.NewLibraryContent.ToString()
+                     Type = nameof(NotificationType.NewLibraryContent)
                 },
                 new NotificationTypeInfo
                 {
-                     Type = NotificationType.AudioPlayback.ToString()
+                     Type = nameof(NotificationType.AudioPlayback)
                 },
                 new NotificationTypeInfo
                 {
-                     Type = NotificationType.VideoPlayback.ToString()
+                     Type = nameof(NotificationType.VideoPlayback)
                 },
                 new NotificationTypeInfo
                 {
-                     Type = NotificationType.AudioPlaybackStopped.ToString()
+                     Type = nameof(NotificationType.AudioPlaybackStopped)
                 },
                 new NotificationTypeInfo
                 {
-                     Type = NotificationType.VideoPlaybackStopped.ToString()
+                     Type = nameof(NotificationType.VideoPlaybackStopped)
                 },
                 new NotificationTypeInfo
                 {
-                     Type = NotificationType.UserLockedOut.ToString()
+                     Type = nameof(NotificationType.UserLockedOut)
                 },
                 new NotificationTypeInfo
                 {
-                    Type = NotificationType.ApplicationUpdateAvailable.ToString()
+                    Type = nameof(NotificationType.ApplicationUpdateAvailable)
                 }
             };
 
@@ -98,7 +98,7 @@ namespace Emby.Notifications
 
         private void Update(NotificationTypeInfo note)
         {
-            note.Name = _localization.GetLocalizedString("NotificationOption" + note.Type) ?? note.Type;
+            note.Name = _localization.GetLocalizedString("NotificationOption" + note.Type);
 
             note.IsBasedOnUserEvent = note.Type.IndexOf("Playback", StringComparison.OrdinalIgnoreCase) != -1;
 

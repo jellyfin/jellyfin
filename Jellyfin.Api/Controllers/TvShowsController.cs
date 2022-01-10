@@ -61,7 +61,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="seriesId">Optional. Filter by series id.</param>
         /// <param name="parentId">Optional. Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
-        /// <param name="enableImges">Optional. Include image information in output.</param>
+        /// <param name="enableImages">Optional. Include image information in output.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
         /// <param name="enableUserData">Optional. Include user data.</param>
@@ -78,7 +78,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] string? seriesId,
             [FromQuery] Guid? parentId,
-            [FromQuery] bool? enableImges,
+            [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] bool? enableUserData,
@@ -88,7 +88,7 @@ namespace Jellyfin.Api.Controllers
         {
             var options = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
-                .AddAdditionalDtoOptions(enableImges, enableUserData, imageTypeLimit, enableImageTypes!);
+                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             var result = _tvSeriesManager.GetNextUp(
                 new NextUpQuery
@@ -125,7 +125,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="parentId">Optional. Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
-        /// <param name="enableImges">Optional. Include image information in output.</param>
+        /// <param name="enableImages">Optional. Include image information in output.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
         /// <param name="enableUserData">Optional. Include user data.</param>
@@ -138,7 +138,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? limit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] Guid? parentId,
-            [FromQuery] bool? enableImges,
+            [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] bool? enableUserData)
@@ -147,17 +147,17 @@ namespace Jellyfin.Api.Controllers
                 ? _userManager.GetUserById(userId.Value)
                 : null;
 
-            var minPremiereDate = DateTime.Now.Date.ToUniversalTime().AddDays(-1);
+            var minPremiereDate = DateTime.UtcNow.Date.AddDays(-1);
 
             var parentIdGuid = parentId ?? Guid.Empty;
 
             var options = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
-                .AddAdditionalDtoOptions(enableImges, enableUserData, imageTypeLimit, enableImageTypes!);
+                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { nameof(Episode) },
+                IncludeItemTypes = new[] { BaseItemKind.Episode },
                 OrderBy = new[] { (ItemSortBy.PremiereDate, SortOrder.Ascending), (ItemSortBy.SortName, SortOrder.Ascending) },
                 MinPremiereDate = minPremiereDate,
                 StartIndex = startIndex,
@@ -223,12 +223,12 @@ namespace Jellyfin.Api.Controllers
 
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
-                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes!);
+                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             if (seasonId.HasValue) // Season id was supplied. Get episodes by season id.
             {
                 var item = _libraryManager.GetItemById(seasonId.Value);
-                if (!(item is Season seasonItem))
+                if (item is not Season seasonItem)
                 {
                     return NotFound("No season exists with Id " + seasonId);
                 }
@@ -237,7 +237,7 @@ namespace Jellyfin.Api.Controllers
             }
             else if (season.HasValue) // Season number was supplied. Get episodes by season number
             {
-                if (!(_libraryManager.GetItemById(seriesId) is Series series))
+                if (_libraryManager.GetItemById(seriesId) is not Series series)
                 {
                     return NotFound("Series not found");
                 }
@@ -252,7 +252,7 @@ namespace Jellyfin.Api.Controllers
             }
             else // No season number or season id was supplied. Returning all episodes.
             {
-                if (!(_libraryManager.GetItemById(seriesId) is Series series))
+                if (_libraryManager.GetItemById(seriesId) is not Series series)
                 {
                     return NotFound("Series not found");
                 }
@@ -336,7 +336,7 @@ namespace Jellyfin.Api.Controllers
                 ? _userManager.GetUserById(userId.Value)
                 : null;
 
-            if (!(_libraryManager.GetItemById(seriesId) is Series series))
+            if (_libraryManager.GetItemById(seriesId) is not Series series)
             {
                 return NotFound("Series not found");
             }
@@ -350,7 +350,7 @@ namespace Jellyfin.Api.Controllers
 
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
-                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes!);
+                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             var returnItems = _dtoService.GetBaseItemDtos(seasons, dtoOptions, user);
 

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Net;
@@ -50,16 +51,10 @@ namespace Emby.Server.Implementations.Session
         /// </summary>
         private readonly object _webSocketsLock = new object();
 
-        /// <summary>
-        /// The _session manager.
-        /// </summary>
         private readonly ISessionManager _sessionManager;
-
-        /// <summary>
-        /// The _logger.
-        /// </summary>
         private readonly ILogger<SessionWebSocketListener> _logger;
         private readonly ILoggerFactory _loggerFactory;
+        private readonly IAuthorizationContext _authorizationContext;
 
         /// <summary>
         /// The KeepAlive cancellation token.
@@ -72,14 +67,17 @@ namespace Emby.Server.Implementations.Session
         /// <param name="logger">The logger.</param>
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="loggerFactory">The logger factory.</param>
+        /// <param name="authorizationContext">The authorization context.</param>
         public SessionWebSocketListener(
             ILogger<SessionWebSocketListener> logger,
             ISessionManager sessionManager,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory,
+            IAuthorizationContext authorizationContext)
         {
             _logger = logger;
             _sessionManager = sessionManager;
             _loggerFactory = loggerFactory;
+            _authorizationContext = authorizationContext;
         }
 
         /// <inheritdoc />
@@ -97,9 +95,9 @@ namespace Emby.Server.Implementations.Session
             => Task.CompletedTask;
 
         /// <inheritdoc />
-        public async Task ProcessWebSocketConnectedAsync(IWebSocketConnection connection)
+        public async Task ProcessWebSocketConnectedAsync(IWebSocketConnection connection, HttpContext httpContext)
         {
-            var session = GetSession(connection.QueryString, connection.RemoteEndPoint.ToString());
+            var session = await GetSession(httpContext, connection.RemoteEndPoint?.ToString()).ConfigureAwait(false);
             if (session != null)
             {
                 EnsureController(session, connection);
@@ -107,25 +105,28 @@ namespace Emby.Server.Implementations.Session
             }
             else
             {
-                _logger.LogWarning("Unable to determine session based on query string: {0}", connection.QueryString);
+                _logger.LogWarning("Unable to determine session based on query string: {0}", httpContext.Request.QueryString);
             }
         }
 
-        private SessionInfo GetSession(IQueryCollection queryString, string remoteEndpoint)
+        private async Task<SessionInfo> GetSession(HttpContext httpContext, string remoteEndpoint)
         {
-            if (queryString == null)
+            var authorizationInfo = await _authorizationContext.GetAuthorizationInfo(httpContext)
+                .ConfigureAwait(false);
+
+            if (!authorizationInfo.IsAuthenticated)
             {
                 return null;
             }
 
-            var token = queryString["api_key"];
-            if (string.IsNullOrWhiteSpace(token))
+            var deviceId = authorizationInfo.DeviceId;
+            if (httpContext.Request.Query.TryGetValue("deviceId", out var queryDeviceId))
             {
-                return null;
+                deviceId = queryDeviceId;
             }
 
-            var deviceId = queryString["deviceId"];
-            return _sessionManager.GetSessionByAuthenticationToken(token, deviceId, remoteEndpoint);
+            return await _sessionManager.GetSessionByAuthenticationToken(authorizationInfo.Token, deviceId, remoteEndpoint)
+                .ConfigureAwait(false);
         }
 
         private void EnsureController(SessionInfo session, IWebSocketConnection connection)

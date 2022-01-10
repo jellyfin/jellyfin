@@ -1,6 +1,6 @@
 #nullable disable
 
-#pragma warning disable CS1591
+#pragma warning disable CA1002, CA1721, CA1819, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -165,6 +165,8 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public static ICollectionManager CollectionManager { get; set; }
+
         public override bool CanDelete()
         {
             if (IsRoot)
@@ -231,7 +233,7 @@ namespace MediaBrowser.Controller.Entities
 
         public override bool IsVisible(User user)
         {
-            if (this is ICollectionFolder && !(this is BasePluginFolder))
+            if (this is ICollectionFolder && this is not BasePluginFolder)
             {
                 var blockedMediaFolders = user.GetPreferenceValues<Guid>(PreferenceKind.BlockedMediaFolders);
                 if (blockedMediaFolders.Length > 0)
@@ -258,6 +260,7 @@ namespace MediaBrowser.Controller.Entities
         /// Loads our children.  Validation will occur externally.
         /// We want this synchronous.
         /// </summary>
+        /// <returns>Returns children.</returns>
         protected virtual List<BaseItem> LoadChildren()
         {
             // logger.LogDebug("Loading children from {0} {1} {2}", GetType().Name, Id, Path);
@@ -300,7 +303,7 @@ namespace MediaBrowser.Controller.Entities
                 if (dictionary.ContainsKey(id))
                 {
                     Logger.LogError(
-                        "Found folder containing items with duplicate id. Path: {path}, Child Name: {ChildName}",
+                        "Found folder containing items with duplicate id. Path: {Path}, Child Name: {ChildName}",
                         Path ?? Name,
                         child.Path ?? child.Name);
                 }
@@ -422,7 +425,7 @@ namespace MediaBrowser.Controller.Entities
                     {
                         if (item.IsFileProtocol)
                         {
-                            Logger.LogDebug("Removed item: " + item.Path);
+                            Logger.LogDebug("Removed item: {Path}", item.Path);
 
                             item.SetParent(null);
                             LibraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false }, this, false);
@@ -642,6 +645,8 @@ namespace MediaBrowser.Controller.Entities
         /// Get the children of this folder from the actual file system.
         /// </summary>
         /// <returns>IEnumerable{BaseItem}.</returns>
+        /// <param name="directoryService">The directory service to use for operation.</param>
+        /// <returns>Returns set of base items.</returns>
         protected virtual IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
         {
             var collectionType = LibraryManager.GetContentType(this);
@@ -668,7 +673,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (LinkedChildren.Length > 0)
             {
-                if (!(this is ICollectionFolder))
+                if (this is not ICollectionFolder)
                 {
                     return GetChildren(user, true).Count;
                 }
@@ -725,7 +730,7 @@ namespace MediaBrowser.Controller.Entities
                 return PostFilterAndSort(items, query, true);
             }
 
-            if (!(this is UserRootFolder) && !(this is AggregateFolder) && query.ParentId == Guid.Empty)
+            if (this is not UserRootFolder && this is not AggregateFolder && query.ParentId == Guid.Empty)
             {
                 query.Parent = this;
             }
@@ -787,7 +792,7 @@ namespace MediaBrowser.Controller.Entities
 
         private bool RequiresPostFiltering2(InternalItemsQuery query)
         {
-            if (query.IncludeItemTypes.Length == 1 && string.Equals(query.IncludeItemTypes[0], nameof(BoxSet), StringComparison.OrdinalIgnoreCase))
+            if (query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes[0] == BaseItemKind.BoxSet)
             {
                 Logger.LogDebug("Query requires post-filtering due to BoxSet query");
                 return true;
@@ -800,9 +805,9 @@ namespace MediaBrowser.Controller.Entities
         {
             if (LinkedChildren.Length > 0)
             {
-                if (!(this is ICollectionFolder))
+                if (this is not ICollectionFolder)
                 {
-                    Logger.LogDebug("Query requires post-filtering due to LinkedChildren. Type: " + GetType().Name);
+                    Logger.LogDebug("{Type}: Query requires post-filtering due to LinkedChildren.", GetType().Name);
                     return true;
                 }
             }
@@ -877,7 +882,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsPlayed.HasValue)
             {
-                if (query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes.Contains(nameof(Series)))
+                if (query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes.Contains(BaseItemKind.Series))
                 {
                     Logger.LogDebug("Query requires post-filtering due to IsPlayed");
                     return true;
@@ -998,8 +1003,6 @@ namespace MediaBrowser.Controller.Entities
             return PostFilterAndSort(items, query, true);
         }
 
-        public static ICollectionManager CollectionManager { get; set; }
-
         protected QueryResult<BaseItem> PostFilterAndSort(IEnumerable<BaseItem> items, InternalItemsQuery query, bool enableSorting)
         {
             var user = query.User;
@@ -1010,20 +1013,22 @@ namespace MediaBrowser.Controller.Entities
                 items = CollapseBoxSetItemsIfNeeded(items, query, this, user, ConfigurationManager, CollectionManager);
             }
 
+            #pragma warning disable CA1309
             if (!string.IsNullOrEmpty(query.NameStartsWithOrGreater))
             {
-                items = items.Where(i => string.Compare(query.NameStartsWithOrGreater, i.SortName, StringComparison.CurrentCultureIgnoreCase) < 1);
+                items = items.Where(i => string.Compare(query.NameStartsWithOrGreater, i.SortName, StringComparison.InvariantCultureIgnoreCase) < 1);
             }
 
             if (!string.IsNullOrEmpty(query.NameStartsWith))
             {
-                items = items.Where(i => i.SortName.StartsWith(query.NameStartsWith, StringComparison.CurrentCultureIgnoreCase));
+                items = items.Where(i => i.SortName.StartsWith(query.NameStartsWith, StringComparison.InvariantCultureIgnoreCase));
             }
 
             if (!string.IsNullOrEmpty(query.NameLessThan))
             {
-                items = items.Where(i => string.Compare(query.NameLessThan, i.SortName, StringComparison.CurrentCultureIgnoreCase) == 1);
+                items = items.Where(i => string.Compare(query.NameLessThan, i.SortName, StringComparison.InvariantCultureIgnoreCase) == 1);
             }
+            #pragma warning restore CA1309
 
             // This must be the last filter
             if (!string.IsNullOrEmpty(query.AdjacentTo))
@@ -1096,7 +1101,7 @@ namespace MediaBrowser.Controller.Entities
                     return false;
                 }
 
-                if (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains("Movie", StringComparer.OrdinalIgnoreCase))
+                if (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains(BaseItemKind.Movie))
                 {
                     param = true;
                 }
@@ -1542,7 +1547,7 @@ namespace MediaBrowser.Controller.Entities
 
                 var childOwner = child.GetOwner() ?? child;
 
-                if (childOwner != null && !(child is IItemByName))
+                if (child is not IItemByName)
                 {
                     var childProtocol = childOwner.PathProtocol;
                     if (!childProtocol.HasValue || childProtocol.Value != Model.MediaInfo.MediaProtocol.File)
@@ -1666,7 +1671,6 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="user">The user.</param>
         /// <param name="datePlayed">The date played.</param>
         /// <param name="resetPosition">if set to <c>true</c> [reset position].</param>
-        /// <returns>Task.</returns>
         public override void MarkPlayed(
             User user,
             DateTime? datePlayed,
@@ -1708,7 +1712,6 @@ namespace MediaBrowser.Controller.Entities
         /// Marks the unplayed.
         /// </summary>
         /// <param name="user">The user.</param>
-        /// <returns>Task.</returns>
         public override void MarkUnplayed(User user)
         {
             var itemsResult = GetItemList(new InternalItemsQuery

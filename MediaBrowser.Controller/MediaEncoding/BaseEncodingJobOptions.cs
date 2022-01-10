@@ -10,6 +10,15 @@ namespace MediaBrowser.Controller.MediaEncoding
 {
     public class BaseEncodingJobOptions
     {
+        public BaseEncodingJobOptions()
+        {
+            EnableAutoStreamCopy = true;
+            AllowVideoStreamCopy = true;
+            AllowAudioStreamCopy = true;
+            Context = EncodingContext.Streaming;
+            StreamOptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
@@ -190,15 +199,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             return null;
-        }
-
-        public BaseEncodingJobOptions()
-        {
-            EnableAutoStreamCopy = true;
-            AllowVideoStreamCopy = true;
-            AllowAudioStreamCopy = true;
-            Context = EncodingContext.Streaming;
-            StreamOptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
     }
 }

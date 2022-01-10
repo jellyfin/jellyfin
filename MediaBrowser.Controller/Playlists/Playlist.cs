@@ -31,23 +31,17 @@ namespace MediaBrowser.Controller.Playlists
             ".zpl"
         };
 
-        public Guid OwnerUserId { get; set; }
-
-        public Share[] Shares { get; set; }
-
         public Playlist()
         {
             Shares = Array.Empty<Share>();
         }
 
+        public Guid OwnerUserId { get; set; }
+
+        public Share[] Shares { get; set; }
+
         [JsonIgnore]
         public bool IsFile => IsPlaylistFile(Path);
-
-        public static bool IsPlaylistFile(string path)
-        {
-            // The path will sometimes be a directory and "Path.HasExtension" returns true if the name contains a '.' (dot).
-            return System.IO.Path.HasExtension(path) && !Directory.Exists(path);
-        }
 
         [JsonIgnore]
         public override string ContainingFolderPath
@@ -79,6 +73,41 @@ namespace MediaBrowser.Controller.Playlists
 
         [JsonIgnore]
         public override bool SupportsCumulativeRunTimeTicks => true;
+
+        [JsonIgnore]
+        public override bool IsPreSorted => true;
+
+        public string PlaylistMediaType { get; set; }
+
+        [JsonIgnore]
+        public override string MediaType => PlaylistMediaType;
+
+        [JsonIgnore]
+        private bool IsSharedItem
+        {
+            get
+            {
+                var path = Path;
+
+                if (string.IsNullOrEmpty(path))
+                {
+                    return false;
+                }
+
+                return FileSystem.ContainsSubPath(ConfigurationManager.ApplicationPaths.DataPath, path);
+            }
+        }
+
+        public static bool IsPlaylistFile(string path)
+        {
+            // The path will sometimes be a directory and "Path.HasExtension" returns true if the name contains a '.' (dot).
+            return System.IO.Path.HasExtension(path) && !Directory.Exists(path);
+        }
+
+        public void SetMediaType(string value)
+        {
+            PlaylistMediaType = value;
+        }
 
         public override double GetDefaultPrimaryImageAspectRatio()
         {
@@ -160,7 +189,7 @@ namespace MediaBrowser.Controller.Playlists
                 return LibraryManager.GetItemList(new InternalItemsQuery(user)
                 {
                     Recursive = true,
-                    IncludeItemTypes = new[] { nameof(Audio) },
+                    IncludeItemTypes = new[] { BaseItemKind.Audio },
                     GenreIds = new[] { musicGenre.Id },
                     OrderBy = new[] { (ItemSortBy.AlbumArtist, SortOrder.Ascending), (ItemSortBy.Album, SortOrder.Ascending), (ItemSortBy.SortName, SortOrder.Ascending) },
                     DtoOptions = options
@@ -172,7 +201,7 @@ namespace MediaBrowser.Controller.Playlists
                 return LibraryManager.GetItemList(new InternalItemsQuery(user)
                 {
                     Recursive = true,
-                    IncludeItemTypes = new[] { nameof(Audio) },
+                    IncludeItemTypes = new[] { BaseItemKind.Audio },
                     ArtistIds = new[] { musicArtist.Id },
                     OrderBy = new[] { (ItemSortBy.AlbumArtist, SortOrder.Ascending), (ItemSortBy.Album, SortOrder.Ascending), (ItemSortBy.SortName, SortOrder.Ascending) },
                     DtoOptions = options
@@ -195,35 +224,6 @@ namespace MediaBrowser.Controller.Playlists
             }
 
             return new[] { item };
-        }
-
-        [JsonIgnore]
-        public override bool IsPreSorted => true;
-
-        public string PlaylistMediaType { get; set; }
-
-        [JsonIgnore]
-        public override string MediaType => PlaylistMediaType;
-
-        public void SetMediaType(string value)
-        {
-            PlaylistMediaType = value;
-        }
-
-        [JsonIgnore]
-        private bool IsSharedItem
-        {
-            get
-            {
-                var path = Path;
-
-                if (string.IsNullOrEmpty(path))
-                {
-                    return false;
-                }
-
-                return FileSystem.ContainsSubPath(ConfigurationManager.ApplicationPaths.DataPath, path);
-            }
         }
 
         public override bool IsVisible(User user)

@@ -21,8 +21,36 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class UserRootFolder : Folder
     {
-        private List<Guid> _childrenIds = null;
         private readonly object _childIdsLock = new object();
+        private List<Guid> _childrenIds = null;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserRootFolder"/> class.
+        /// </summary>
+        public UserRootFolder()
+        {
+            IsRoot = true;
+        }
+
+        [JsonIgnore]
+        public override bool SupportsInheritedParentImages => false;
+
+        [JsonIgnore]
+        public override bool SupportsPlayedStatus => false;
+
+        [JsonIgnore]
+        protected override bool SupportsShortcutChildren => true;
+
+        [JsonIgnore]
+        public override bool IsPreSorted => true;
+
+        private void ClearCache()
+        {
+            lock (_childIdsLock)
+            {
+                _childrenIds = null;
+            }
+        }
 
         protected override List<BaseItem> LoadChildren()
         {
@@ -36,20 +64,6 @@ namespace MediaBrowser.Controller.Entities
                 }
 
                 return _childrenIds.Select(LibraryManager.GetItemById).Where(i => i != null).ToList();
-            }
-        }
-
-        [JsonIgnore]
-        public override bool SupportsInheritedParentImages => false;
-
-        [JsonIgnore]
-        public override bool SupportsPlayedStatus => false;
-
-        private void ClearCache()
-        {
-            lock (_childIdsLock)
-            {
-                _childrenIds = null;
             }
         }
 
@@ -73,12 +87,6 @@ namespace MediaBrowser.Controller.Entities
         {
             return GetChildren(user, true).Count;
         }
-
-        [JsonIgnore]
-        protected override bool SupportsShortcutChildren => true;
-
-        [JsonIgnore]
-        public override bool IsPreSorted => true;
 
         protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
         {

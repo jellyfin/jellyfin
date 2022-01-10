@@ -20,7 +20,7 @@ namespace Jellyfin.Networking.Tests
                 CallBase = true
             };
             configManager.Setup(x => x.GetConfiguration(It.IsAny<string>())).Returns(conf);
-            return (IConfigurationManager)configManager.Object;
+            return configManager.Object;
         }
 
         /// <summary>
@@ -35,9 +35,9 @@ namespace Jellyfin.Networking.Tests
         // eth16 only
         [InlineData("192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[192.168.1.208/24]")]
         // All interfaces excluded. (including loopbacks)
-        [InlineData("192.168.1.208/24,-16,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[127.0.0.1/8,::1/128]")]
+        [InlineData("192.168.1.208/24,-16,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[]")]
         // vEthernet1 and vEthernet212 should be excluded.
-        [InlineData("192.168.1.200/24,-20,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.200/24", "[200.200.200.200/24,127.0.0.1/8,::1/128]")]
+        [InlineData("192.168.1.200/24,-20,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.200/24", "[200.200.200.200/24]")]
         // Overlapping interface,
         [InlineData("192.168.1.110/24,-20,br0|192.168.1.10/24,-16,br0|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[192.168.1.110/24,192.168.1.10/24]")]
         public void IgnoreVirtualInterfaces(string interfaces, string lan, string value)
@@ -475,6 +475,52 @@ namespace Jellyfin.Networking.Tests
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
             Assert.NotEqual(nm.HasRemoteAccess(IPAddress.Parse(remoteIp)), denied);
+        }
+
+        [Theory]
+        [InlineData("192.168.1.209/24,-16,eth16", "192.168.1.0/24", "", "192.168.1.209")] // Only 1 address so use it.
+        [InlineData("192.168.1.208/24,-16,eth16|10.0.0.1/24,10,eth7", "192.168.1.0/24", "", "192.168.1.208")] // LAN address is specified by default.
+        [InlineData("192.168.1.208/24,-16,eth16|10.0.0.1/24,10,eth7", "192.168.1.0/24", "10.0.0.1", "10.0.0.1")] // return bind address
+
+        public void GetBindInterface_NoSourceGiven_Success(string interfaces, string lan, string bind, string result)
+        {
+            var conf = new NetworkConfiguration
+            {
+                EnableIPV4 = true,
+                LocalNetworkSubnets = lan.Split(','),
+                LocalNetworkAddresses = bind.Split(',')
+            };
+
+            NetworkManager.MockNetworkSettings = interfaces;
+            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
+
+            var interfaceToUse = nm.GetBindInterface(string.Empty, out _);
+
+            Assert.Equal(result, interfaceToUse);
+        }
+
+        [Theory]
+        [InlineData("192.168.1.209/24,-16,eth16", "192.168.1.0/24", "", "192.168.1.210", "192.168.1.209")] // Source on LAN
+        [InlineData("192.168.1.208/24,-16,eth16|10.0.0.1/24,10,eth7", "192.168.1.0/24", "", "192.168.1.209", "192.168.1.208")] // Source on LAN
+        [InlineData("192.168.1.208/24,-16,eth16|10.0.0.1/24,10,eth7", "192.168.1.0/24", "", "8.8.8.8", "10.0.0.1")] // Source external.
+        [InlineData("192.168.1.208/24,-16,eth16|10.0.0.1/24,10,eth7", "192.168.1.0/24", "10.0.0.1", "192.168.1.209", "10.0.0.1")] // LAN not bound, so return external.
+        [InlineData("192.168.1.208/24,-16,eth16|10.0.0.1/24,10,eth7", "192.168.1.0/24", "192.168.1.208,10.0.0.1", "8.8.8.8", "10.0.0.1")] // return external bind address
+        [InlineData("192.168.1.208/24,-16,eth16|10.0.0.1/24,10,eth7", "192.168.1.0/24", "192.168.1.208,10.0.0.1", "192.168.1.210", "192.168.1.208")] // return LAN bind address
+        public void GetBindInterface_ValidSourceGiven_Success(string interfaces, string lan, string bind, string source, string result)
+        {
+            var conf = new NetworkConfiguration
+            {
+                EnableIPV4 = true,
+                LocalNetworkSubnets = lan.Split(','),
+                LocalNetworkAddresses = bind.Split(',')
+            };
+
+            NetworkManager.MockNetworkSettings = interfaces;
+            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
+
+            var interfaceToUse = nm.GetBindInterface(source, out _);
+
+            Assert.Equal(result, interfaceToUse);
         }
     }
 }

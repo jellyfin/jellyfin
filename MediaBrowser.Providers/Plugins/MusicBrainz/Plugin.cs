@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -13,6 +14,10 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
 {
     public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     {
+        public const string DefaultServer = "musicbrainz.org";
+
+        public const double DefaultRateLimit = 1.0;
+
         public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
             : base(applicationPaths, xmlSerializer)
         {
@@ -31,10 +36,6 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
         public override string Name => "MusicBrainz";
 
         public override string Description => "Get artist and album metadata from any MusicBrainz server.";
-
-        public const string DefaultServer = "musicbrainz.org";
-
-        public const double DefaultRateLimit = 1.0;
 
         // TODO remove when plugin removed from server.
         public override string ConfigurationFileName => "Jellyfin.Plugin.MusicBrainz.xml";

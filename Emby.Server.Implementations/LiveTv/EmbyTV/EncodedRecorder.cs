@@ -62,12 +62,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             using var durationToken = new CancellationTokenSource(duration);
             using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token);
 
-            await RecordFromFile(mediaSource, mediaSource.Path, targetFile, duration, onStarted, cancellationTokenSource.Token).ConfigureAwait(false);
+            await RecordFromFile(mediaSource, mediaSource.Path, targetFile, onStarted, cancellationTokenSource.Token).ConfigureAwait(false);
 
             _logger.LogInformation("Recording completed to file {0}", targetFile);
         }
 
-        private async Task RecordFromFile(MediaSourceInfo mediaSource, string inputFile, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
+        private async Task RecordFromFile(MediaSourceInfo mediaSource, string inputFile, string targetFile, Action onStarted, CancellationToken cancellationToken)
         {
             _targetPath = targetFile;
             Directory.CreateDirectory(Path.GetDirectoryName(targetFile));
@@ -81,30 +81,29 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 RedirectStandardInput = true,
 
                 FileName = _mediaEncoder.EncoderPath,
-                Arguments = GetCommandLineArgs(mediaSource, inputFile, targetFile, duration),
+                Arguments = GetCommandLineArgs(mediaSource, inputFile, targetFile),
 
                 WindowStyle = ProcessWindowStyle.Hidden,
                 ErrorDialog = false
             };
 
-            var commandLineLogMessage = processStartInfo.FileName + " " + processStartInfo.Arguments;
-            _logger.LogInformation(commandLineLogMessage);
+            _logger.LogInformation("{Filename} {Arguments}", processStartInfo.FileName, processStartInfo.Arguments);
 
             var logFilePath = Path.Combine(_appPaths.LogDirectoryPath, "record-transcode-" + Guid.NewGuid() + ".txt");
             Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
 
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
-            _logFileStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
+            _logFileStream = new FileStream(logFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
 
             await JsonSerializer.SerializeAsync(_logFileStream, mediaSource, _jsonOptions, cancellationToken).ConfigureAwait(false);
-            await _logFileStream.WriteAsync(Encoding.UTF8.GetBytes(Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine), cancellationToken).ConfigureAwait(false);
+            await _logFileStream.WriteAsync(Encoding.UTF8.GetBytes(Environment.NewLine + Environment.NewLine + processStartInfo.FileName + " " + processStartInfo.Arguments + Environment.NewLine + Environment.NewLine), cancellationToken).ConfigureAwait(false);
 
             _process = new Process
             {
                 StartInfo = processStartInfo,
                 EnableRaisingEvents = true
             };
-            _process.Exited += (sender, args) => OnFfMpegProcessExited(_process);
+            _process.Exited += (_, _) => OnFfMpegProcessExited(_process);
 
             _process.Start();
 
@@ -118,7 +117,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _logger.LogInformation("ffmpeg recording process started for {0}", _targetPath);
         }
 
-        private string GetCommandLineArgs(MediaSourceInfo mediaSource, string inputTempFile, string targetFile, TimeSpan duration)
+        private string GetCommandLineArgs(MediaSourceInfo mediaSource, string inputTempFile, string targetFile)
         {
             string videoArgs;
             if (EncodeVideo(mediaSource))
@@ -188,7 +187,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 CultureInfo.InvariantCulture,
                 "-i \"{0}\" {2} -map_metadata -1 -threads {6} {3}{4}{5} -y \"{1}\"",
                 inputTempFile,
-                targetFile,
+                targetFile.Replace("\"", "\\\"", StringComparison.Ordinal), // Escape quotes in filename
                 videoArgs,
                 GetAudioArgs(mediaSource),
                 subtitleArgs,
@@ -205,9 +204,9 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             // var audioChannels = 2;
             // var audioStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
             // if (audioStream != null)
-            //{
+            // {
             //    audioChannels = audioStream.Channels ?? audioChannels;
-            //}
+            // }
             // return "-codec:a:0 aac -strict experimental -ab 320000";
         }
 
@@ -225,13 +224,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 try
                 {
-                    _logger.LogInformation("Stopping ffmpeg recording process for {path}", _targetPath);
+                    _logger.LogInformation("Stopping ffmpeg recording process for {Path}", _targetPath);
 
                     _process.StandardInput.WriteLine("q");
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error stopping recording transcoding job for {path}", _targetPath);
+                    _logger.LogError(ex, "Error stopping recording transcoding job for {Path}", _targetPath);
                 }
 
                 if (_hasExited)
@@ -241,7 +240,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 try
                 {
-                    _logger.LogInformation("Calling recording process.WaitForExit for {path}", _targetPath);
+                    _logger.LogInformation("Calling recording process.WaitForExit for {Path}", _targetPath);
 
                     if (_process.WaitForExit(10000))
                     {
@@ -250,7 +249,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error waiting for recording process to exit for {path}", _targetPath);
+                    _logger.LogError(ex, "Error waiting for recording process to exit for {Path}", _targetPath);
                 }
 
                 if (_hasExited)
@@ -260,13 +259,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 try
                 {
-                    _logger.LogInformation("Killing ffmpeg recording process for {path}", _targetPath);
+                    _logger.LogInformation("Killing ffmpeg recording process for {Path}", _targetPath);
 
                     _process.Kill();
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error killing recording transcoding job for {path}", _targetPath);
+                    _logger.LogError(ex, "Error killing recording transcoding job for {Path}", _targetPath);
                 }
             }
         }
@@ -318,11 +317,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                         await target.FlushAsync().ConfigureAwait(false);
                     }
                 }
-            }
-            catch (ObjectDisposedException)
-            {
-                // TODO Investigate and properly fix.
-                // Don't spam the log. This doesn't seem to throw in windows, but sometimes under linux
             }
             catch (Exception ex)
             {

@@ -9,7 +9,7 @@ namespace Jellyfin.Extensions.Json.Converters
     /// Convert delimited string to array of type.
     /// </summary>
     /// <typeparam name="T">Type to convert to.</typeparam>
-    public abstract class JsonDelimitedArrayConverter<T> : JsonConverter<T[]?>
+    public abstract class JsonDelimitedArrayConverter<T> : JsonConverter<T[]>
     {
         private readonly TypeConverter _typeConverter;
 
@@ -31,9 +31,9 @@ namespace Jellyfin.Extensions.Json.Converters
         {
             if (reader.TokenType == JsonTokenType.String)
             {
-                // GetString can't return null here because we already handled it above
-                var stringEntries = reader.GetString()?.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries);
-                if (stringEntries == null || stringEntries.Length == 0)
+                // null got handled higher up the call stack
+                var stringEntries = reader.GetString()!.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries);
+                if (stringEntries.Length == 0)
                 {
                     return Array.Empty<T>();
                 }
@@ -44,7 +44,7 @@ namespace Jellyfin.Extensions.Json.Converters
                 {
                     try
                     {
-                        parsedValues[i] = _typeConverter.ConvertFrom(stringEntries[i].Trim());
+                        parsedValues[i] = _typeConverter.ConvertFromInvariantString(stringEntries[i].Trim()) ?? throw new FormatException();
                         convertedCount++;
                     }
                     catch (FormatException)

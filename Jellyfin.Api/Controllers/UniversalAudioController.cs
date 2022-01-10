@@ -116,9 +116,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool enableRedirection = true)
         {
             var deviceProfile = GetDeviceProfile(container, transcodingContainer, audioCodec, transcodingProtocol, breakOnNonKeyFrames, transcodingAudioChannels, maxAudioSampleRate, maxAudioBitDepth, maxAudioChannels);
-            _authorizationContext.GetAuthorizationInfo(Request).DeviceId = deviceId;
+            (await _authorizationContext.GetAuthorizationInfo(Request).ConfigureAwait(false)).DeviceId = deviceId;
 
-            var authInfo = _authorizationContext.GetAuthorizationInfo(Request);
+            var authInfo = await _authorizationContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
 
             _logger.LogInformation("GetPostedPlaybackInfo profile: {@Profile}", deviceProfile);
 
@@ -155,7 +155,7 @@ namespace Jellyfin.Api.Controllers
                         null,
                         null,
                         maxAudioChannels,
-                        info!.PlaySessionId!,
+                        info.PlaySessionId!,
                         userId ?? Guid.Empty,
                         true,
                         true,
