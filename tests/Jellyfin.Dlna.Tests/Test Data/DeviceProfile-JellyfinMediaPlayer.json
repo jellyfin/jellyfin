@@ -1,0 +1,137 @@
+{
+    "Name": "Jellyfin Media Player",
+    "SupportedMediaTypes": "Audio,Photo,Video",
+    "MaxStreamingBitrate": 8000000,
+    "MaxStaticBitrate": 8000000,
+    "MusicStreamingTranscodingBitrate": 1280000,
+    "TimelineOffsetSeconds": 5,
+    "DirectPlayProfiles": [
+        {
+            "Type": "Video",
+            "$type": "DirectPlayProfile"
+        },
+        {
+            "Type": "Audio",
+            "$type": "DirectPlayProfile"
+        },
+        {
+            "Type": "Photo",
+            "$type": "DirectPlayProfile"
+        }
+    ],
+    "TranscodingProfiles": [
+        {
+            "Type": "Audio",
+            "EstimateContentLength": false,
+            "EnableMpegtsM2TsMode": false,
+            "TranscodeSeekInfo": "Auto",
+            "CopyTimestamps": false,
+            "Context": "Streaming",
+            "EnableSubtitlesInManifest": false,
+            "MinSegments": 0,
+            "SegmentLength": 0,
+            "BreakOnNonKeyFrames": false,
+            "$type": "TranscodingProfile"
+        },
+        {
+            "Container": "ts",
+            "Type": "Video",
+            "VideoCodec": "h264,h265,hevc,mpeg4,mpeg2video",
+            "AudioCodec": "aac,mp3,ac3,opus,flac,vorbis",
+            "Protocol": "hls",
+            "EstimateContentLength": false,
+            "EnableMpegtsM2TsMode": false,
+            "TranscodeSeekInfo": "Auto",
+            "CopyTimestamps": false,
+            "Context": "Streaming",
+            "EnableSubtitlesInManifest": false,
+            "MaxAudioChannels": "6",
+            "MinSegments": 0,
+            "SegmentLength": 0,
+            "BreakOnNonKeyFrames": false,
+            "$type": "TranscodingProfile"
+        },
+        {
+            "Container": "jpeg",
+            "Type": "Photo",
+            "EstimateContentLength": false,
+            "EnableMpegtsM2TsMode": false,
+            "TranscodeSeekInfo": "Auto",
+            "CopyTimestamps": false,
+            "Context": "Streaming",
+            "EnableSubtitlesInManifest": false,
+            "MinSegments": 0,
+            "SegmentLength": 0,
+            "BreakOnNonKeyFrames": false,
+            "$type": "TranscodingProfile"
+        }
+    ],
+    "SubtitleProfiles": [
+        {
+            "Format": "srt",
+            "Method": "External",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "srt",
+            "Method": "Embed",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "ass",
+            "Method": "External",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "ass",
+            "Method": "Embed",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "sub",
+            "Method": "Embed",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "sub",
+            "Method": "External",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "ssa",
+            "Method": "Embed",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "ssa",
+            "Method": "External",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "smi",
+            "Method": "Embed",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "smi",
+            "Method": "External",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "pgssub",
+            "Method": "Embed",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "dvdsub",
+            "Method": "Embed",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "pgs",
+            "Method": "Embed",
+            "$type": "SubtitleProfile"
+        }
+    ],
+    "$type": "DeviceProfile"
+}
