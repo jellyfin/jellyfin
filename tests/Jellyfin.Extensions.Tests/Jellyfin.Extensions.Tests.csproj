@@ -17,7 +17,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="FsCheck.Xunit" Version="2.16.3" />
+    <PackageReference Include="FsCheck.Xunit" Version="2.16.4" />
   </ItemGroup>
 
   <!-- Code Analyzers -->
