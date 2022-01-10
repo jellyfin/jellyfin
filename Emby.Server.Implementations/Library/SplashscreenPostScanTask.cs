@@ -29,7 +29,7 @@ public class SplashscreenPostScanTask : ILibraryPostScanTask
     /// </summary>
     /// <param name="itemRepository">Instance of the <see cref="IItemRepository"/> interface.</param>
     /// <param name="imageEncoder">Instance of the <see cref="IImageEncoder"/> interface.</param>
-    /// <param name="logger">Instance of the <see cref="ILogger{SplashscreenPostScanTask"/> interface.</param>
+    /// <param name="logger">Instance of the <see cref="ILogger{SplashscreenPostScanTask}"/> interface.</param>
     public SplashscreenPostScanTask(
         IItemRepository itemRepository,
         IImageEncoder imageEncoder,
