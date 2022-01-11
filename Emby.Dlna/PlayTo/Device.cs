@@ -535,9 +535,9 @@ namespace Emby.Dlna.PlayTo
                     {
                         var tuple = await GetPositionInfo(avCommands, cancellationToken).ConfigureAwait(false);
 
-                        var currentObject = tuple.Item2;
+                        var currentObject = tuple.Track;
 
-                        if (tuple.Item1 && currentObject == null)
+                        if (tuple.Success && currentObject == null)
                         {
                             currentObject = await GetMediaInfo(avCommands, cancellationToken).ConfigureAwait(false);
                         }
@@ -797,7 +797,7 @@ namespace Emby.Dlna.PlayTo
             return null;
         }
 
-        private async Task<(bool, UBaseObject)> GetPositionInfo(TransportCommands avCommands, CancellationToken cancellationToken)
+        private async Task<(bool Success, UBaseObject Track)> GetPositionInfo(TransportCommands avCommands, CancellationToken cancellationToken)
         {
             var command = avCommands.ServiceActions.FirstOrDefault(c => c.Name == "GetPositionInfo");
             if (command == null)

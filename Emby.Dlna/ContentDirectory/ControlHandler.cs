@@ -1192,13 +1192,13 @@ namespace Emby.Dlna.ContentDirectory
         /// </summary>
         /// <param name="result">A <see cref="QueryResult{BaseItem}"/>.</param>
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private static QueryResult<ServerItem> ToResult(QueryResult<(BaseItem, ItemCounts)> result)
+        private static QueryResult<ServerItem> ToResult(QueryResult<(BaseItem Item, ItemCounts ItemCounts)> result)
         {
             var length = result.Items.Count;
             var serverItems = new ServerItem[length];
             for (var i = 0; i < length; i++)
             {
-                serverItems[i] = new ServerItem(result.Items[i].Item1, null);
+                serverItems[i] = new ServerItem(result.Items[i].Item, null);
             }
 
             return new QueryResult<ServerItem>
@@ -1213,7 +1213,7 @@ namespace Emby.Dlna.ContentDirectory
         /// </summary>
         /// <param name="sort">The <see cref="SortCriteria"/>.</param>
         /// <param name="isPreSorted">True if pre-sorted.</param>
-        private static (string, SortOrder)[] GetOrderBy(SortCriteria sort, bool isPreSorted)
+        private static (string SortName, SortOrder SortOrder)[] GetOrderBy(SortCriteria sort, bool isPreSorted)
         {
             return isPreSorted ? Array.Empty<(string, SortOrder)>() : new[] { (ItemSortBy.SortName, sort.SortOrder) };
         }

@@ -104,7 +104,7 @@ namespace Jellyfin.Api.Helpers
         }
 
         internal static QueryResult<BaseItemDto> CreateQueryResult(
-            QueryResult<(BaseItem, ItemCounts)> result,
+            QueryResult<(BaseItem Item, ItemCounts ItemCounts)> result,
             DtoOptions dtoOptions,
             IDtoService dtoService,
             bool includeItemTypes,
