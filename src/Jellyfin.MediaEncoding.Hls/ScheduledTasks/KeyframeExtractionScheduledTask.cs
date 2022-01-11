@@ -62,10 +62,11 @@ public class KeyframeExtractionScheduledTask : IScheduledTask
         };
 
         var videos = _libraryManager.GetItemList(query);
+        var numberOfVideos = videos.Count;
         var numComplete = 0;
 
         // TODO parallelize with Parallel.ForEach?
-        for (var i = 0; i < videos.Count; i++)
+        for (var i = 0; i < numberOfVideos; i++)
         {
             var video = videos[i];
             // Only local files supported
@@ -86,7 +87,7 @@ public class KeyframeExtractionScheduledTask : IScheduledTask
 
             // Update progress
             numComplete++;
-            double percent = (double)numComplete / videos.Count;
+            double percent = (double)numComplete / numberOfVideos;
 
             progress.Report(100 * percent);
         }
