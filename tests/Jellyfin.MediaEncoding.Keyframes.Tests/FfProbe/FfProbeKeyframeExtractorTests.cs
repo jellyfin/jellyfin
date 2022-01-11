@@ -13,7 +13,7 @@ namespace Jellyfin.MediaEncoding.Keyframes.FfProbe
         {
             var testDataPath = Path.Combine("FfProbe/Test Data", testDataFileName);
             var resultPath = Path.Combine("FfProbe/Test Data", resultFileName);
-            var resultFileStream = File.OpenRead(resultPath);
+            using var resultFileStream = File.OpenRead(resultPath);
             var expectedResult = JsonSerializer.Deserialize<KeyframeData>(resultFileStream)!;
 
             using var fileStream = File.OpenRead(testDataPath);

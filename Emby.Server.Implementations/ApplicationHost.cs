@@ -47,6 +47,7 @@ using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Udp;
 using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
+using Jellyfin.MediaEncoding.Hls.Playlist;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
 using MediaBrowser.Common;
@@ -998,6 +999,9 @@ namespace Emby.Server.Implementations
 
             // Network
             yield return typeof(NetworkManager).Assembly;
+
+            // Hls
+            yield return typeof(DynamicHlsPlaylistGenerator).Assembly;
 
             foreach (var i in GetAssembliesWithPartsInternal())
             {

@@ -848,7 +848,7 @@ namespace Jellyfin.Api.Controllers
                 StreamOptions = streamOptions
             };
 
-            return await GetVariantPlaylistInternal(streamingRequest, "main", cancellationTokenSource)
+            return await GetVariantPlaylistInternal(streamingRequest, cancellationTokenSource)
                 .ConfigureAwait(false);
         }
 
@@ -1013,7 +1013,7 @@ namespace Jellyfin.Api.Controllers
                 StreamOptions = streamOptions
             };
 
-            return await GetVariantPlaylistInternal(streamingRequest, "main", cancellationTokenSource)
+            return await GetVariantPlaylistInternal(streamingRequest, cancellationTokenSource)
                 .ConfigureAwait(false);
         }
 
@@ -1371,7 +1371,7 @@ namespace Jellyfin.Api.Controllers
                 .ConfigureAwait(false);
         }
 
-        private async Task<ActionResult> GetVariantPlaylistInternal(StreamingRequestDto streamingRequest, string name, CancellationTokenSource cancellationTokenSource)
+        private async Task<ActionResult> GetVariantPlaylistInternal(StreamingRequestDto streamingRequest, CancellationTokenSource cancellationTokenSource)
         {
             using var state = await StreamingHelpers.GetStreamingState(
                     streamingRequest,
