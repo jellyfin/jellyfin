@@ -62,6 +62,7 @@ public class KeyframeExtractionScheduledTask : IScheduledTask
         };
 
         var videos = _libraryManager.GetItemList(query);
+        var numComplete = 0;
 
         // TODO parallelize with Parallel.ForEach?
         for (var i = 0; i < videos.Count; i++)
@@ -82,6 +83,12 @@ public class KeyframeExtractionScheduledTask : IScheduledTask
                     break;
                 }
             }
+
+            // Update progress
+            numComplete++;
+            double percent = (double)numComplete / videos.Count;
+
+            progress.Report(100 * percent);
         }
 
         return Task.CompletedTask;
