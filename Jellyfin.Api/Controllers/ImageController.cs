@@ -1747,7 +1747,7 @@ namespace Jellyfin.Api.Controllers
             }
             else
             {
-                splashscreenPath = Path.Combine(_appPaths.DataPath, "splashscreen.webp");
+                splashscreenPath = Path.Combine(_appPaths.DataPath, "splashscreen.png");
                 if (!System.IO.File.Exists(splashscreenPath))
                 {
                     return NotFound();

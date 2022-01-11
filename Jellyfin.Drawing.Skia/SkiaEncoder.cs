@@ -496,7 +496,7 @@ namespace Jellyfin.Drawing.Skia
         public void CreateSplashscreen(IReadOnlyList<string> posters, IReadOnlyList<string> backdrops)
         {
             var splashBuilder = new SplashscreenBuilder(this);
-            var outputPath = Path.Combine(_appPaths.DataPath, "splashscreen.webp");
+            var outputPath = Path.Combine(_appPaths.DataPath, "splashscreen.png");
             splashBuilder.GenerateSplash(posters, backdrops, outputPath);
         }
 
