@@ -63,32 +63,27 @@ public class KeyframeExtractionScheduledTask : IScheduledTask
 
         var videos = _libraryManager.GetItemList(query);
         var numberOfVideos = videos.Count;
-        var numComplete = 0;
 
         // TODO parallelize with Parallel.ForEach?
         for (var i = 0; i < numberOfVideos; i++)
         {
             var video = videos[i];
             // Only local files supported
-            if (!video.IsFileProtocol || !File.Exists(video.Path))
+            if (video.IsFileProtocol && File.Exists(video.Path))
             {
-                continue;
-            }
-
-            for (var j = 0; j < _keyframeExtractors.Length; j++)
-            {
-                var extractor = _keyframeExtractors[j];
-                // The cache decorator will make sure to save them in the data dir
-                if (extractor.TryExtractKeyframes(video.Path, out _))
+                for (var j = 0; j < _keyframeExtractors.Length; j++)
                 {
-                    break;
+                    var extractor = _keyframeExtractors[j];
+                    // The cache decorator will make sure to save them in the data dir
+                    if (extractor.TryExtractKeyframes(video.Path, out _))
+                    {
+                        break;
+                    }
                 }
             }
 
             // Update progress
-            numComplete++;
-            double percent = (double)numComplete / numberOfVideos;
-
+            double percent = (double)(i + 1) / numberOfVideos;
             progress.Report(100 * percent);
         }
 
