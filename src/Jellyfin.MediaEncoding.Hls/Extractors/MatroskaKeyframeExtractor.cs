@@ -26,7 +26,7 @@ public class MatroskaKeyframeExtractor : IKeyframeExtractor
     /// <inheritdoc />
     public bool TryExtractKeyframes(string filePath, [NotNullWhen(true)] out KeyframeData? keyframeData)
     {
-        if (filePath.AsSpan().EndsWith(".mkv", StringComparison.OrdinalIgnoreCase))
+        if (!filePath.AsSpan().EndsWith(".mkv", StringComparison.OrdinalIgnoreCase))
         {
             keyframeData = null;
             return false;
