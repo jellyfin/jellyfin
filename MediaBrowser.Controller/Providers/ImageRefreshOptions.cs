@@ -28,7 +28,7 @@ namespace MediaBrowser.Controller.Providers
         public bool IsAutomated { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether old metadata should be removed if it isn't be replaced.
+        /// Gets or sets a value indicating whether old metadata should be removed if it isn't replaced.
         /// </summary>
         public bool RemoveOldMetadata { get; set; }
 
