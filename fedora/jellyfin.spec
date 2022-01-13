@@ -24,10 +24,13 @@ Source16:       jellyfin-firewalld.xml
 %{?systemd_requires}
 BuildRequires:  systemd
 BuildRequires:  libcurl-devel, fontconfig-devel, freetype-devel, openssl-devel, glibc-devel, libicu-devel
-# Requirements not packaged in main repos
-# COPR @dotnet-sig/dotnet or
-# https://packages.microsoft.com/rhel/7/prod/
-BuildRequires:  dotnet-runtime-5.0, dotnet-sdk-5.0, dotnet-host < 6
+# Requirements not packaged in main repos (only for EL7 currently)
+# - COPR @dotnet-sig/dotnet or
+# - https://packages.microsoft.com/rhel/7/prod/
+BuildRequires:  dotnet-runtime-5.0, dotnet-sdk-5.0
+%if 0%{?rhel} == 7
+BuildRequires: dotnet-host < 6
+%endif
 Requires: %{name}-server = %{version}-%{release}, %{name}-web = %{version}-%{release}
 # Disable Automatic Dependency Processing
 AutoReqProv:    no
