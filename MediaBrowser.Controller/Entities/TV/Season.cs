@@ -271,7 +271,7 @@ namespace MediaBrowser.Controller.Entities.TV
             var list = base.GetRelatedUrls();
 
             var seriesImdbId = this.Series.GetProviderId(MetadataProvider.Imdb);
-            if (!string.IsNullOrEmpty(seriesImdbId))
+            if (!string.IsNullOrEmpty(seriesImdbId) && this.IndexNumber.HasValue && this.IndexNumber > 0)
             {
                 list.Add(new ExternalUrl
                 {
