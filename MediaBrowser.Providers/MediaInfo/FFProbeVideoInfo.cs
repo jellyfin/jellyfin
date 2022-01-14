@@ -229,10 +229,16 @@ namespace MediaBrowser.Providers.MediaInfo
                 video.Video3DFormat ??= mediaInfo.Video3DFormat;
             }
 
-            if (libraryOptions.DisableEmbeddedSubtitles)
+            if (libraryOptions.DisableEmbeddedImageSubtitles)
             {
-                _logger.LogDebug("Disabling embedded subtitles for {Path} due to DisableEmbeddedSubtitles setting", video.Path);
-                mediaStreams.RemoveAll(i => i.Type == MediaStreamType.Subtitle && !i.IsExternal);
+                _logger.LogDebug("Disabling embedded image subtitles for {Path} due to DisableEmbeddedImageSubtitles setting", video.Path);
+                mediaStreams.RemoveAll(i => i.Type == MediaStreamType.Subtitle && !i.IsExternal && !i.IsTextSubtitleStream);
+            }
+
+            if (libraryOptions.DisableEmbeddedTextSubtitles)
+            {
+                _logger.LogDebug("Disabling embedded text subtitles for {Path} due to DisableEmbeddedTextSubtitles setting", video.Path);
+                mediaStreams.RemoveAll(i => i.Type == MediaStreamType.Subtitle && !i.IsExternal && i.IsTextSubtitleStream);
             }
 
             var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);

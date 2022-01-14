@@ -84,7 +84,9 @@ namespace MediaBrowser.Model.Configuration
 
         public bool AutomaticallyAddToCollection { get; set; }
 
-        public bool DisableEmbeddedSubtitles { get; set; }
+        public bool DisableEmbeddedTextSubtitles { get; set; }
+
+        public bool DisableEmbeddedImageSubtitles { get; set; }
 
         public TypeOptions[] TypeOptions { get; set; }
 
