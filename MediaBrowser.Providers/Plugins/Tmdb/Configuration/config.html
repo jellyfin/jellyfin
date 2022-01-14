@@ -20,6 +20,10 @@
                         <input is="emby-checkbox" type="checkbox" id="excludeTagsMovies" />
                         <span>Exclude tags/keywords from metadata fetched for movies.</span>
                     </label>
+                    <label class="checkboxContainer">
+                        <input is="emby-checkbox" type="checkbox" id="importSeasonName" />
+                        <span>Import season name from metadata fetched for series.</span>
+                    </label>
                     <div class="inputContainer">
                         <input is="emby-input" type="number" id="maxCastMembers" pattern="[0-9]*" required min="0" max="1000" label="Max Cast Members" />
                         <div class="fieldDescription">The maximum number of cast members to fetch for an item.</div>
@@ -98,6 +102,7 @@
                         document.querySelector('#includeAdult').checked = config.IncludeAdult;
                         document.querySelector('#excludeTagsSeries').checked = config.ExcludeTagsSeries;
                         document.querySelector('#excludeTagsMovies').checked = config.ExcludeTagsMovies;
+                        document.querySelector('#importSeasonName').checked = config.ImportSeasonName;
 
                         var maxCastMembers = document.querySelector('#maxCastMembers');
                         maxCastMembers.value = config.MaxCastMembers;
@@ -120,6 +125,7 @@
                         config.IncludeAdult = document.querySelector('#includeAdult').checked;
                         config.ExcludeTagsSeries = document.querySelector('#excludeTagsSeries').checked;
                         config.ExcludeTagsMovies = document.querySelector('#excludeTagsMovies').checked;
+                        config.ImportSeasonName = document.querySelector('#importSeasonName').checked;
                         config.MaxCastMembers = document.querySelector('#maxCastMembers').value;
                         config.PosterSize = document.querySelector('#selectPosterSize').value;
                         config.BackdropSize = document.querySelector('#selectBackdropSize').value;
