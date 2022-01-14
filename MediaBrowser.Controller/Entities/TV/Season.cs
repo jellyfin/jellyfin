@@ -11,6 +11,8 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Entities.TV
@@ -262,6 +264,42 @@ namespace MediaBrowser.Controller.Entities.TV
             }
 
             return hasChanges;
+        }
+
+        public override List<ExternalUrl> GetRelatedUrls()
+        {
+            var list = base.GetRelatedUrls();
+
+            var seriesImdbId = this.Series.GetProviderId(MetadataProvider.Imdb);
+            if (!string.IsNullOrEmpty(seriesImdbId))
+            {
+                list.Add(new ExternalUrl
+                {
+                    Name = "IMDb",
+                    Url = string.Format(CultureInfo.InvariantCulture, "https://www.imdb.com/title/{0}/episodes?season={1}", seriesImdbId, this.IndexNumber)
+                });
+            }
+
+            var seriesTmdbId = this.Series.GetProviderId(MetadataProvider.Tmdb);
+            if (!string.IsNullOrEmpty(seriesTmdbId))
+            {
+                list.Add(new ExternalUrl
+                {
+                    Name = "TheMovieDb",
+                    Url = string.Format(CultureInfo.InvariantCulture, "https://www.themoviedb.org/tv/{0}/season/{1}", seriesTmdbId, this.IndexNumber)
+                });
+            }
+
+            if (!string.IsNullOrEmpty(seriesImdbId))
+            {
+                list.Add(new ExternalUrl
+                {
+                    Name = "Trakt",
+                    Url = string.Format(CultureInfo.InvariantCulture, "https://trakt.tv/shows/{0}/seasons/{1}", seriesImdbId, this.IndexNumber)
+                });
+            }
+
+            return list;
         }
     }
 }

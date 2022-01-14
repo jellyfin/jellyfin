@@ -353,6 +353,16 @@ namespace MediaBrowser.Controller.Entities.TV
                 });
             }
 
+            var seriesTmdbId = this.Series.GetProviderId(MetadataProvider.Tmdb);
+            if (!string.IsNullOrEmpty(seriesTmdbId))
+            {
+                list.Add(new ExternalUrl
+                {
+                    Name = "TheMovieDb",
+                    Url = string.Format(CultureInfo.InvariantCulture, "https://www.themoviedb.org/tv/{0}/season/{1}/episode/{2}", seriesTmdbId, this.ParentIndexNumber, this.IndexNumber)
+                });
+            }
+
             return list;
         }
     }
