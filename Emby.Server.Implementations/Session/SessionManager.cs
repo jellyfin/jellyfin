@@ -424,16 +424,15 @@ namespace Emby.Server.Implementations.Session
 
             var nowPlayingQueue = info.NowPlayingQueue;
 
-            if (nowPlayingQueue != null)
+            if (nowPlayingQueue?.Length > 0)
             {
                 session.NowPlayingQueue = nowPlayingQueue;
+
+                var itemIds = nowPlayingQueue.Select(queue => queue.Id).ToArray();
+                session.NowPlayingQueueFullItems = _dtoService.GetBaseItemDtos(
+                    _libraryManager.GetItemList(new InternalItemsQuery { ItemIds = itemIds }),
+                    new DtoOptions(true));
             }
-
-            var itemIds = session.NowPlayingQueue.Select(queue => queue.Id).ToArray();
-
-            session.NowPlayingQueueFullItems = _dtoService.GetBaseItemDtos(_libraryManager.GetItemList(new InternalItemsQuery {
-                ItemIds = itemIds,
-            }), new DtoOptions(true)).ToArray();
         }
 
         /// <summary>

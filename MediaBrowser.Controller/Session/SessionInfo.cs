@@ -39,6 +39,8 @@ namespace MediaBrowser.Controller.Session
             AdditionalUsers = Array.Empty<SessionUserInfo>();
             PlayState = new PlayerStateInfo();
             SessionControllers = Array.Empty<ISessionController>();
+            NowPlayingQueue = Array.Empty<QueueItem>();
+            NowPlayingQueueFullItems = Array.Empty<BaseItemDto>();
         }
 
         public PlayerStateInfo PlayState { get; set; }
@@ -219,9 +221,9 @@ namespace MediaBrowser.Controller.Session
             }
         }
 
-        public QueueItem[] NowPlayingQueue { get; set; }
+        public IReadOnlyList<QueueItem> NowPlayingQueue { get; set; }
 
-        public BaseItemDto[] NowPlayingQueueFullItems { get; set; }
+        public IReadOnlyList<BaseItemDto> NowPlayingQueueFullItems { get; set; }
 
         public bool HasCustomDeviceName { get; set; }
 
