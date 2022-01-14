@@ -20,6 +20,7 @@ namespace MediaBrowser.Controller.Entities.Movies
     public class Movie : Video, IHasSpecialFeatures, IHasTrailers, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping
     {
         /// <inheritdoc />
+        [JsonIgnore]
         public IReadOnlyList<Guid> SpecialFeatureIds => GetExtras()
             .Where(extra => extra.ExtraType != null && extra is Video)
             .Select(extra => extra.Id)
