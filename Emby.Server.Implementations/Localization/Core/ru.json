@@ -96,7 +96,7 @@
     "TaskRefreshChannels": "Обновление каналов",
     "TaskCleanTranscode": "Очистка каталога перекодировки",
     "TaskUpdatePlugins": "Обновление плагинов",
-    "TaskRefreshPeople": "Подновить людей",
+    "TaskRefreshPeople": "Подновление людей",
     "TaskCleanLogs": "Очистка каталога журналов",
     "TaskRefreshLibrary": "Сканирование медиатеки",
     "TaskRefreshChapterImages": "Извлечение изображений сцен",
@@ -115,10 +115,10 @@
     "TaskRefreshChapterImagesDescription": "Создаются эскизы для видео, которые содержат сцены.",
     "TaskCleanCacheDescription": "Удаляются файлы кэша, которые больше не нужны системе.",
     "TaskCleanActivityLogDescription": "Удаляет записи журнала активности старше установленного возраста.",
-    "TaskCleanActivityLog": "Очистить журнал активности",
+    "TaskCleanActivityLog": "Очистка журнала активности",
     "Undefined": "Не определено",
     "Forced": "Форсир-ые",
     "Default": "По умолчанию",
     "TaskOptimizeDatabaseDescription": "Сжимает базу данных и вырезает свободные места. Выполнение этой задачи после сканирования библиотеки или внесения других изменений, предполагающих модификации базы данных, может повысить производительность.",
-    "TaskOptimizeDatabase": "Оптимизировать базу данных"
+    "TaskOptimizeDatabase": "Оптимизация базы данных"
 }

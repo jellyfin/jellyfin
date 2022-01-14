@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System;
@@ -51,7 +49,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             var url = mediaSource.Path;
 
-            Directory.CreateDirectory(Path.GetDirectoryName(TempFilePath));
+            Directory.CreateDirectory(Path.GetDirectoryName(TempFilePath) ?? throw new InvalidOperationException("Path can't be a root directory."));
 
             var typeName = GetType().Name;
             Logger.LogInformation("Opening {StreamType} Live stream from {Url}", typeName, url);
@@ -94,14 +92,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             // OpenedMediaSource.SupportsDirectPlay = false;
             // OpenedMediaSource.SupportsDirectStream = true;
             // OpenedMediaSource.SupportsTranscoding = true;
-            await taskCompletionSource.Task.ConfigureAwait(false);
-            if (taskCompletionSource.Task.Exception != null)
-            {
-                // Error happened while opening the stream so raise the exception again to inform the caller
-                throw taskCompletionSource.Task.Exception;
-            }
-
-            if (!taskCompletionSource.Task.Result)
+            var res = await taskCompletionSource.Task.ConfigureAwait(false);
+            if (!res)
             {
                 Logger.LogWarning("Zero bytes copied from stream {StreamType} to {FilePath} but no exception raised", GetType().Name, TempFilePath);
                 throw new EndOfStreamException(string.Format(CultureInfo.InvariantCulture, "Zero bytes copied from stream {0}", GetType().Name));

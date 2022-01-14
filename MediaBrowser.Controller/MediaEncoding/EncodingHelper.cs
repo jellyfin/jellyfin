@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
@@ -885,6 +886,13 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (state.AudioStream != null && state.AudioStream.IsExternal)
             {
+                // Also seek the external audio stream.
+                var seekAudioParam = GetFastSeekCommandLineParameter(state, options);
+                if (!string.IsNullOrEmpty(seekAudioParam))
+                {
+                    arg.Append(' ').Append(seekAudioParam);
+                }
+
                 arg.Append(" -i \"").Append(state.AudioStream.Path).Append('"');
             }
 
@@ -1278,7 +1286,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 param += " -pix_fmt nv21";
             }
 
-            var isVc1 = string.Equals(state.VideoStream.Codec, "vc1", StringComparison.OrdinalIgnoreCase);
+            var isVc1 = string.Equals(state.VideoStream?.Codec, "vc1", StringComparison.OrdinalIgnoreCase);
             var isLibX265 = string.Equals(videoEncoder, "libx265", StringComparison.OrdinalIgnoreCase);
 
             if (string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase) || isLibX265)
@@ -1318,7 +1326,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 string[] valid_h264_qsv = { "veryslow", "slower", "slow", "medium", "fast", "faster", "veryfast" };
 
-                if (valid_h264_qsv.Contains(encodingOptions.EncoderPreset, StringComparer.OrdinalIgnoreCase))
+                if (valid_h264_qsv.Contains(encodingOptions.EncoderPreset, StringComparison.OrdinalIgnoreCase))
                 {
                     param += " -preset " + encodingOptions.EncoderPreset;
                 }
@@ -1669,7 +1677,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // Source and target codecs must match
             if (string.IsNullOrEmpty(videoStream.Codec)
-                || !state.SupportedVideoCodecs.Contains(videoStream.Codec, StringComparer.OrdinalIgnoreCase))
+                || !state.SupportedVideoCodecs.Contains(videoStream.Codec, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -1687,7 +1695,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var requestedProfile = requestedProfiles[0];
                 // strip spaces because they may be stripped out on the query string as well
                 if (!string.IsNullOrEmpty(videoStream.Profile)
-                    && !requestedProfiles.Contains(videoStream.Profile.Replace(" ", string.Empty, StringComparison.Ordinal), StringComparer.OrdinalIgnoreCase))
+                    && !requestedProfiles.Contains(videoStream.Profile.Replace(" ", string.Empty, StringComparison.Ordinal), StringComparison.OrdinalIgnoreCase))
                 {
                     var currentScore = GetVideoProfileScore(videoStream.Codec, videoStream.Profile);
                     var requestedScore = GetVideoProfileScore(videoStream.Codec, requestedProfile);
@@ -1794,7 +1802,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // Source and target codecs must match
             if (string.IsNullOrEmpty(audioStream.Codec)
-                || !supportedAudioCodecs.Contains(audioStream.Codec, StringComparer.OrdinalIgnoreCase))
+                || !supportedAudioCodecs.Contains(audioStream.Codec, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -4302,11 +4310,19 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var decoderName = decoderPrefix + '_' + decoderSuffix;
 
-            var isCodecAvailable = _mediaEncoder.SupportsDecoder(decoderName) && options.HardwareDecodingCodecs.Contains(videoCodec, StringComparer.OrdinalIgnoreCase);
+            var isCodecAvailable = _mediaEncoder.SupportsDecoder(decoderName) && options.HardwareDecodingCodecs.Contains(videoCodec, StringComparison.OrdinalIgnoreCase);
             if (bitDepth == 10 && isCodecAvailable)
             {
-                if ((options.HardwareDecodingCodecs.Contains("hevc", StringComparer.OrdinalIgnoreCase) && !options.EnableDecodingColorDepth10Hevc)
-                    || (options.HardwareDecodingCodecs.Contains("vp9", StringComparer.OrdinalIgnoreCase) && !options.EnableDecodingColorDepth10Vp9))
+                if (string.Equals(videoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
+                    && options.HardwareDecodingCodecs.Contains("hevc", StringComparison.OrdinalIgnoreCase)
+                    && !options.EnableDecodingColorDepth10Hevc)
+                {
+                    return null;
+                }
+
+                if (string.Equals(videoCodec, "vp9", StringComparison.OrdinalIgnoreCase)
+                    && options.HardwareDecodingCodecs.Contains("vp9", StringComparison.OrdinalIgnoreCase)
+                    && !options.EnableDecodingColorDepth10Vp9)
                 {
                     return null;
                 }
@@ -4344,15 +4360,23 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isCudaSupported = (isLinux || isWindows) && IsCudaFullSupported();
             var isQsvSupported = (isLinux || isWindows) && _mediaEncoder.SupportsHwaccel("qsv");
             var isVideotoolboxSupported = isMacOS && _mediaEncoder.SupportsHwaccel("videotoolbox");
-            var isCodecAvailable = options.HardwareDecodingCodecs.Contains(videoCodec, StringComparer.OrdinalIgnoreCase);
+            var isCodecAvailable = options.HardwareDecodingCodecs.Contains(videoCodec, StringComparison.OrdinalIgnoreCase);
 
             // Set the av1 codec explicitly to trigger hw accelerator, otherwise libdav1d will be used.
             var isAv1 = string.Equals(videoCodec, "av1", StringComparison.OrdinalIgnoreCase);
 
             if (bitDepth == 10 && isCodecAvailable)
             {
-                if ((options.HardwareDecodingCodecs.Contains("hevc", StringComparer.OrdinalIgnoreCase) && !options.EnableDecodingColorDepth10Hevc)
-                    || (options.HardwareDecodingCodecs.Contains("vp9", StringComparer.OrdinalIgnoreCase) && !options.EnableDecodingColorDepth10Vp9))
+                if (string.Equals(videoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
+                    && options.HardwareDecodingCodecs.Contains("hevc", StringComparison.OrdinalIgnoreCase)
+                    && !options.EnableDecodingColorDepth10Hevc)
+                {
+                    return null;
+                }
+
+                if (string.Equals(videoCodec, "vp9", StringComparison.OrdinalIgnoreCase)
+                    && options.HardwareDecodingCodecs.Contains("vp9", StringComparison.OrdinalIgnoreCase)
+                    && !options.EnableDecodingColorDepth10Vp9)
                 {
                     return null;
                 }
@@ -5072,12 +5096,12 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Transcoding to 2ch ac3 almost always causes a playback failure
             // Keep it in the supported codecs list, but shift it to the end of the list so that if transcoding happens, another codec is used
             var shiftAudioCodecs = new[] { "ac3", "eac3" };
-            if (audioCodecs.All(i => shiftAudioCodecs.Contains(i, StringComparer.OrdinalIgnoreCase)))
+            if (audioCodecs.All(i => shiftAudioCodecs.Contains(i, StringComparison.OrdinalIgnoreCase)))
             {
                 return;
             }
 
-            while (shiftAudioCodecs.Contains(audioCodecs[0], StringComparer.OrdinalIgnoreCase))
+            while (shiftAudioCodecs.Contains(audioCodecs[0], StringComparison.OrdinalIgnoreCase))
             {
                 var removed = shiftAudioCodecs[0];
                 audioCodecs.RemoveAt(0);
@@ -5100,12 +5124,12 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             var shiftVideoCodecs = new[] { "hevc", "h265" };
-            if (videoCodecs.All(i => shiftVideoCodecs.Contains(i, StringComparer.OrdinalIgnoreCase)))
+            if (videoCodecs.All(i => shiftVideoCodecs.Contains(i, StringComparison.OrdinalIgnoreCase)))
             {
                 return;
             }
 
-            while (shiftVideoCodecs.Contains(videoCodecs[0], StringComparer.OrdinalIgnoreCase))
+            while (shiftVideoCodecs.Contains(videoCodecs[0], StringComparison.OrdinalIgnoreCase))
             {
                 var removed = shiftVideoCodecs[0];
                 videoCodecs.RemoveAt(0);

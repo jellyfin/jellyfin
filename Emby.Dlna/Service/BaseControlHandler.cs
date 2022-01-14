@@ -47,7 +47,7 @@ namespace Emby.Dlna.Service
 
         private async Task<ControlResponse> ProcessControlRequestInternalAsync(ControlRequest request)
         {
-            ControlRequestInfo? requestInfo = null;
+            ControlRequestInfo requestInfo;
 
             using (var streamReader = new StreamReader(request.InputXml, Encoding.UTF8))
             {
@@ -66,6 +66,11 @@ namespace Emby.Dlna.Service
 
             Logger.LogDebug("Received control request {LocalName}, params: {@Headers}", requestInfo.LocalName, requestInfo.Headers);
 
+            return CreateControlResponse(requestInfo);
+        }
+
+        private ControlResponse CreateControlResponse(ControlRequestInfo requestInfo)
+        {
             var settings = new XmlWriterSettings
             {
                 Encoding = Encoding.UTF8,
@@ -112,29 +117,19 @@ namespace Emby.Dlna.Service
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
-                    switch (reader.LocalName)
+                    if (string.Equals(reader.LocalName, "Body", StringComparison.Ordinal))
                     {
-                        case "Body":
-                            {
-                                if (!reader.IsEmptyElement)
-                                {
-                                    using var subReader = reader.ReadSubtree();
-                                    return await ParseBodyTagAsync(subReader).ConfigureAwait(false);
-                                }
-                                else
-                                {
-                                    await reader.ReadAsync().ConfigureAwait(false);
-                                }
+                        if (reader.IsEmptyElement)
+                        {
+                            await reader.ReadAsync().ConfigureAwait(false);
+                            continue;
+                        }
 
-                                break;
-                            }
-
-                        default:
-                            {
-                                await reader.SkipAsync().ConfigureAwait(false);
-                                break;
-                            }
+                        using var subReader = reader.ReadSubtree();
+                        return await ParseBodyTagAsync(subReader).ConfigureAwait(false);
                     }
+
+                    await reader.SkipAsync().ConfigureAwait(false);
                 }
                 else
                 {
@@ -160,16 +155,16 @@ namespace Emby.Dlna.Service
                     localName = reader.LocalName;
                     namespaceURI = reader.NamespaceURI;
 
-                    if (!reader.IsEmptyElement)
+                    if (reader.IsEmptyElement)
+                    {
+                        await reader.ReadAsync().ConfigureAwait(false);
+                    }
+                    else
                     {
                         var result = new ControlRequestInfo(localName, namespaceURI);
                         using var subReader = reader.ReadSubtree();
                         await ParseFirstBodyChildAsync(subReader, result.Headers).ConfigureAwait(false);
                         return result;
-                    }
-                    else
-                    {
-                        await reader.ReadAsync().ConfigureAwait(false);
                     }
                 }
                 else

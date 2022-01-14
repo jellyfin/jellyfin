@@ -6,6 +6,8 @@ namespace Jellyfin.Naming.Tests.TV
 {
     public class SeriesResolverTests
     {
+        private readonly NamingOptions _namingOptions = new NamingOptions();
+
         [Theory]
         [InlineData("The.Show.S01", "The Show")]
         [InlineData("The.Show.S01.COMPLETE", "The Show")]
@@ -19,8 +21,7 @@ namespace Jellyfin.Naming.Tests.TV
         [InlineData("/some/path/The Show s02e10 the episode 720p hdtv", "The Show")]
         public void SeriesResolverResolveTest(string path, string name)
         {
-            NamingOptions o = new NamingOptions();
-            var res = SeriesResolver.Resolve(o, path);
+            var res = SeriesResolver.Resolve(_namingOptions, path);
 
             Assert.Equal(name, res.Name);
         }

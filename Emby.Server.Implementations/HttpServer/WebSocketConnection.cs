@@ -42,17 +42,14 @@ namespace Emby.Server.Implementations.HttpServer
         /// <param name="logger">The logger.</param>
         /// <param name="socket">The socket.</param>
         /// <param name="remoteEndPoint">The remote end point.</param>
-        /// <param name="query">The query.</param>
         public WebSocketConnection(
             ILogger<WebSocketConnection> logger,
             WebSocket socket,
-            IPAddress? remoteEndPoint,
-            IQueryCollection query)
+            IPAddress? remoteEndPoint)
         {
             _logger = logger;
             _socket = socket;
             RemoteEndPoint = remoteEndPoint;
-            QueryString = query;
 
             _jsonOptions = JsonDefaults.Options;
             LastActivityDate = DateTime.Now;
@@ -80,12 +77,6 @@ namespace Emby.Server.Implementations.HttpServer
 
         /// <inheritdoc />
         public DateTime LastKeepAliveDate { get; set; }
-
-        /// <summary>
-        /// Gets the query string.
-        /// </summary>
-        /// <value>The query string.</value>
-        public IQueryCollection QueryString { get; }
 
         /// <summary>
         /// Gets the state.

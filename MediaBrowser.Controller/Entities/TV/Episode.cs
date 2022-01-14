@@ -11,6 +11,7 @@ using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities.TV
@@ -21,6 +22,7 @@ namespace MediaBrowser.Controller.Entities.TV
     public class Episode : Video, IHasTrailers, IHasLookupInfo<EpisodeInfo>, IHasSeries
     {
         /// <inheritdoc />
+        [JsonIgnore]
         public IReadOnlyList<BaseItem> LocalTrailers => GetExtras()
             .Where(extra => extra.ExtraType == Model.Entities.ExtraType.Trailer)
             .ToArray();
@@ -335,6 +337,23 @@ namespace MediaBrowser.Controller.Entities.TV
             }
 
             return hasChanges;
+        }
+
+        public override List<ExternalUrl> GetRelatedUrls()
+        {
+            var list = base.GetRelatedUrls();
+
+            var imdbId = this.GetProviderId(MetadataProvider.Imdb);
+            if (!string.IsNullOrEmpty(imdbId))
+            {
+                list.Add(new ExternalUrl
+                {
+                    Name = "Trakt",
+                    Url = string.Format(CultureInfo.InvariantCulture, "https://trakt.tv/episodes/{0}", imdbId)
+                });
+            }
+
+            return list;
         }
     }
 }

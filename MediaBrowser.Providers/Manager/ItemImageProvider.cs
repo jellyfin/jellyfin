@@ -14,6 +14,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
@@ -172,7 +173,13 @@ namespace MediaBrowser.Providers.Manager
 
                         if (response.HasImage)
                         {
-                            if (!string.IsNullOrEmpty(response.Path))
+                            if (string.IsNullOrEmpty(response.Path))
+                            {
+                                var mimeType = response.Format.GetMimeType();
+
+                                await _providerManager.SaveImage(item, response.Stream, mimeType, imageType, null, cancellationToken).ConfigureAwait(false);
+                            }
+                            else
                             {
                                 if (response.Protocol == MediaProtocol.Http)
                                 {
@@ -194,12 +201,6 @@ namespace MediaBrowser.Providers.Manager
 
                                     await _providerManager.SaveImage(item, stream, mimeType, imageType, null, cancellationToken).ConfigureAwait(false);
                                 }
-                            }
-                            else
-                            {
-                                var mimeType = "image/" + response.Format.ToString().ToLowerInvariant();
-
-                                await _providerManager.SaveImage(item, response.Stream, mimeType, imageType, null, cancellationToken).ConfigureAwait(false);
                             }
 
                             downloadedImages.Add(imageType);

@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Controller.Net
 {
@@ -18,7 +19,8 @@ namespace MediaBrowser.Controller.Net
         /// Processes a new web socket connection.
         /// </summary>
         /// <param name="connection">An instance of the <see cref="IWebSocketConnection"/> interface.</param>
+        /// <param name="httpContext">The current http context.</param>
         /// <returns>Task.</returns>
-        Task ProcessWebSocketConnectedAsync(IWebSocketConnection connection);
+        Task ProcessWebSocketConnectedAsync(IWebSocketConnection connection, HttpContext httpContext);
     }
 }
