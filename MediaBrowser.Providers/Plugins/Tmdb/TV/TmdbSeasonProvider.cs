@@ -59,7 +59,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 Overview = seasonResult.Overview
             };
 
-            if ((Plugin.Instance?.Configuration.ImportSeasonName).GetValueOrDefault())
+            if (Plugin.Instance.Configuration.ImportSeasonName)
             {
                 result.Item.Name = seasonResult.Name;
             }
