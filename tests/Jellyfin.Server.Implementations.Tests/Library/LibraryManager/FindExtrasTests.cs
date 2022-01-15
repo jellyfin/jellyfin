@@ -60,7 +60,8 @@ public class FindExtrasTests
             "/movies/Up/Up.mkv",
             "/movies/Up/Up - trailer.mkv",
             "/movies/Up/Up - sample.mkv",
-            "/movies/Up/Up something else.mkv"
+            "/movies/Up/Up something else.mkv",
+            "/movies/Up/Up-extra.mkv"
         };
 
         var files = paths.Select(p => new FileSystemMetadata
@@ -71,10 +72,11 @@ public class FindExtrasTests
 
         var extras = _libraryManager.FindExtras(owner, files, new DirectoryService(_fileSystemMock.Object)).OrderBy(e => e.ExtraType).ToList();
 
-        Assert.Equal(2, extras.Count);
-        Assert.Equal(ExtraType.Trailer, extras[0].ExtraType);
-        Assert.Equal(typeof(Trailer), extras[0].GetType());
-        Assert.Equal(ExtraType.Sample, extras[1].ExtraType);
+        Assert.Equal(3, extras.Count);
+        Assert.Equal(ExtraType.Unknown, extras[0].ExtraType);
+        Assert.Equal(ExtraType.Trailer, extras[1].ExtraType);
+        Assert.Equal(typeof(Trailer), extras[1].GetType());
+        Assert.Equal(ExtraType.Sample, extras[2].ExtraType);
     }
 
     [Fact]

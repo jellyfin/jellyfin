@@ -582,6 +582,12 @@ namespace Emby.Naming.Common
                     ExtraType.Clip,
                     ExtraRuleType.Suffix,
                     "-short",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Unknown,
+                    ExtraRuleType.Suffix,
+                    "-extra",
                     MediaType.Video)
             };
 
