@@ -1108,8 +1108,7 @@ namespace Emby.Server.Implementations.Dto
                 }
                 else
                 {
-                    allExtras ??= item.GetExtras().ToArray();
-                    dto.LocalTrailerCount = allExtras.Count(i => i.ExtraType == ExtraType.Trailer);
+                    dto.LocalTrailerCount = (allExtras ?? item.GetExtras()).Count(i => i.ExtraType == ExtraType.Trailer);
                 }
             }
 
