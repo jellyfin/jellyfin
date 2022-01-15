@@ -20,7 +20,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
         private readonly IItemResolver[] _videoResolvers;
 
         /// <summary>
-        /// Initializes an new instance of the <see cref="ExtraResolver"/> class.
+        /// Initializes a new instance of the <see cref="ExtraResolver"/> class.
         /// </summary>
         /// <param name="namingOptions">An instance of <see cref="NamingOptions"/>.</param>
         public ExtraResolver(NamingOptions namingOptions)
