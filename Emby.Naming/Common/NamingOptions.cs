@@ -411,6 +411,66 @@ namespace Emby.Naming.Common
                     MediaType.Video),
 
                 new ExtraRule(
+                    ExtraType.ThemeVideo,
+                    ExtraRuleType.DirectoryName,
+                    "backdrops",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.ThemeSong,
+                    ExtraRuleType.DirectoryName,
+                    "theme-music",
+                    MediaType.Audio),
+
+                new ExtraRule(
+                    ExtraType.BehindTheScenes,
+                    ExtraRuleType.DirectoryName,
+                    "behind the scenes",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.DeletedScene,
+                    ExtraRuleType.DirectoryName,
+                    "deleted scenes",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Interview,
+                    ExtraRuleType.DirectoryName,
+                    "interviews",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Scene,
+                    ExtraRuleType.DirectoryName,
+                    "scenes",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Sample,
+                    ExtraRuleType.DirectoryName,
+                    "samples",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Clip,
+                    ExtraRuleType.DirectoryName,
+                    "shorts",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Clip,
+                    ExtraRuleType.DirectoryName,
+                    "featurettes",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Unknown,
+                    ExtraRuleType.DirectoryName,
+                    "extras",
+                    MediaType.Video),
+
+                new ExtraRule(
                     ExtraType.Trailer,
                     ExtraRuleType.Filename,
                     "trailer",
@@ -471,21 +531,9 @@ namespace Emby.Naming.Common
                     MediaType.Video),
 
                 new ExtraRule(
-                    ExtraType.ThemeVideo,
-                    ExtraRuleType.DirectoryName,
-                    "backdrops",
-                    MediaType.Video),
-
-                new ExtraRule(
                     ExtraType.ThemeSong,
                     ExtraRuleType.Filename,
                     "theme",
-                    MediaType.Audio),
-
-                new ExtraRule(
-                    ExtraType.ThemeSong,
-                    ExtraRuleType.DirectoryName,
-                    "theme-music",
                     MediaType.Audio),
 
                 new ExtraRule(
@@ -534,54 +582,6 @@ namespace Emby.Naming.Common
                     ExtraType.Clip,
                     ExtraRuleType.Suffix,
                     "-short",
-                    MediaType.Video),
-
-                new ExtraRule(
-                    ExtraType.BehindTheScenes,
-                    ExtraRuleType.DirectoryName,
-                    "behind the scenes",
-                    MediaType.Video),
-
-                new ExtraRule(
-                    ExtraType.DeletedScene,
-                    ExtraRuleType.DirectoryName,
-                    "deleted scenes",
-                    MediaType.Video),
-
-                new ExtraRule(
-                    ExtraType.Interview,
-                    ExtraRuleType.DirectoryName,
-                    "interviews",
-                    MediaType.Video),
-
-                new ExtraRule(
-                    ExtraType.Scene,
-                    ExtraRuleType.DirectoryName,
-                    "scenes",
-                    MediaType.Video),
-
-                new ExtraRule(
-                    ExtraType.Sample,
-                    ExtraRuleType.DirectoryName,
-                    "samples",
-                    MediaType.Video),
-
-                new ExtraRule(
-                    ExtraType.Clip,
-                    ExtraRuleType.DirectoryName,
-                    "shorts",
-                    MediaType.Video),
-
-                new ExtraRule(
-                    ExtraType.Clip,
-                    ExtraRuleType.DirectoryName,
-                    "featurettes",
-                    MediaType.Video),
-
-                new ExtraRule(
-                    ExtraType.Unknown,
-                    ExtraRuleType.DirectoryName,
-                    "extras",
                     MediaType.Video)
             };
 
