@@ -87,14 +87,8 @@ namespace Jellyfin.Providers.Tests.Manager
             Assert.Equal(ItemUpdateType.MetadataDownload, actual.Result);
             for (var i = 0; i < servicesList.Length; i++)
             {
-                if (i == expectedIndex)
-                {
-                    servicesList[i].Verify(mock => mock.RefreshMetadata(It.IsAny<BaseItem>(), It.IsAny<MetadataRefreshOptions>(), It.IsAny<CancellationToken>()), Times.Once());
-                }
-                else
-                {
-                    servicesList[i].Verify(mock => mock.RefreshMetadata(It.IsAny<BaseItem>(), It.IsAny<MetadataRefreshOptions>(), It.IsAny<CancellationToken>()), Times.Never());
-                }
+                var times = i == expectedIndex ? Times.Once() : Times.Never();
+                servicesList[i].Verify(mock => mock.RefreshMetadata(It.IsAny<BaseItem>(), It.IsAny<MetadataRefreshOptions>(), It.IsAny<CancellationToken>()), times);
             }
         }
 
