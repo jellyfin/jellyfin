@@ -591,6 +591,10 @@ namespace Emby.Naming.Common
                     MediaType.Video)
             };
 
+            AllExtrasTypesFolderNames = VideoExtraRules
+                .Where(i => i.RuleType == ExtraRuleType.DirectoryName)
+                .ToDictionary(i => i.Token, i => i.ExtraType, StringComparer.OrdinalIgnoreCase);
+
             Format3DRules = new[]
             {
                 // Kodi rules:
@@ -679,6 +683,10 @@ namespace Emby.Naming.Common
                 ".mxf"
             });
 
+            VideoFileExtensions = extensions
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
             MultipleEpisodeExpressions = new[]
             {
                 @".*(\\|\/)[sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3})((-| - )[0-9]{1,4}[eExX](?<endingepnumber>[0-9]{1,3}))+[^\\\/]*$",
@@ -695,25 +703,6 @@ namespace Emby.Naming.Common
             {
                 IsNamed = true
             }).ToArray();
-
-            VideoFileExtensions = extensions
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToArray();
-
-            AllExtrasTypesFolderNames = new Dictionary<string, ExtraType>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["trailers"] = ExtraType.Trailer,
-                ["theme-music"] = ExtraType.ThemeSong,
-                ["backdrops"] = ExtraType.ThemeVideo,
-                ["extras"] = ExtraType.Unknown,
-                ["behind the scenes"] = ExtraType.BehindTheScenes,
-                ["deleted scenes"] = ExtraType.DeletedScene,
-                ["interviews"] = ExtraType.Interview,
-                ["scenes"] = ExtraType.Scene,
-                ["samples"] = ExtraType.Sample,
-                ["shorts"] = ExtraType.Clip,
-                ["featurettes"] = ExtraType.Clip
-            };
 
             Compile();
         }
