@@ -63,6 +63,29 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <summary>
+        /// Removes all existing images from the provided item.
+        /// </summary>
+        /// <param name="item">The <see cref="BaseItem"/> to remove images from.</param>
+        /// <returns><c>true</c> if changes were made to the item; otherwise <c>false</c>.</returns>
+        public bool RemoveImages(BaseItem item)
+        {
+            var singular = new List<ItemImageInfo>();
+            for (var i = 0; i < _singularImages.Length; i++)
+            {
+                var currentImage = item.GetImageInfo(_singularImages[i], 0);
+                if (currentImage != null)
+                {
+                    singular.Add(currentImage);
+                }
+            }
+
+            singular.AddRange(item.GetImages(ImageType.Backdrop));
+            PruneImages(item, singular);
+
+            return singular.Count > 0;
+        }
+
+        /// <summary>
         /// Verifies existing images have valid paths and adds any new local images provided.
         /// </summary>
         /// <param name="item">The <see cref="BaseItem"/> to validate images for.</param>
@@ -100,7 +123,7 @@ namespace MediaBrowser.Providers.Manager
         public async Task<RefreshResult> RefreshImages(
             BaseItem item,
             LibraryOptions libraryOptions,
-            List<IImageProvider> providers,
+            IEnumerable<IImageProvider> providers,
             ImageRefreshOptions refreshOptions,
             CancellationToken cancellationToken)
         {
@@ -160,14 +183,14 @@ namespace MediaBrowser.Providers.Manager
 
                 foreach (var imageType in images)
                 {
-                    if (!IsEnabled(savedOptions, imageType))
+                    if (!savedOptions.IsEnabled(imageType))
                     {
                         continue;
                     }
 
-                    if (!HasImage(item, imageType) || (refreshOptions.IsReplacingImage(imageType) && !downloadedImages.Contains(imageType)))
+                    if (!item.HasImage(imageType) || (refreshOptions.IsReplacingImage(imageType) && !downloadedImages.Contains(imageType)))
                     {
-                        _logger.LogDebug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name);
+                        _logger.LogDebug("Running {Provider} for {Item}", provider.GetType().Name, item.Path ?? item.Name);
 
                         var response = await provider.GetImage(item, imageType, cancellationToken).ConfigureAwait(false);
 
@@ -183,7 +206,7 @@ namespace MediaBrowser.Providers.Manager
                             {
                                 if (response.Protocol == MediaProtocol.Http)
                                 {
-                                    _logger.LogDebug("Setting image url into item {0}", item.Id);
+                                    _logger.LogDebug("Setting image url into item {Item}", item.Id);
                                     var index = item.AllowsMultipleImages(imageType) ? item.GetImages(imageType).Count() : 0;
                                     item.SetImage(
                                         new ItemImageInfo
@@ -218,39 +241,6 @@ namespace MediaBrowser.Providers.Manager
                 result.ErrorMessage = ex.Message;
                 _logger.LogError(ex, "Error in {Provider}", provider.Name);
             }
-        }
-
-        private bool HasImage(BaseItem item, ImageType type)
-        {
-            return item.HasImage(type);
-        }
-
-        /// <summary>
-        /// Determines if an item already contains the given images.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="images">The images.</param>
-        /// <param name="savedOptions">The saved options.</param>
-        /// <param name="backdropLimit">The backdrop limit.</param>
-        /// <returns><c>true</c> if the specified item contains images; otherwise, <c>false</c>.</returns>
-        private bool ContainsImages(BaseItem item, List<ImageType> images, TypeOptions savedOptions, int backdropLimit)
-        {
-            // Using .Any causes the creation of a DisplayClass aka. variable capture
-            for (var i = 0; i < _singularImages.Length; i++)
-            {
-                var type = _singularImages[i];
-                if (images.Contains(type) && !HasImage(item, type) && savedOptions.GetLimit(type) > 0)
-                {
-                    return false;
-                }
-            }
-
-            if (images.Contains(ImageType.Backdrop) && item.GetImages(ImageType.Backdrop).Count() < backdropLimit)
-            {
-                return false;
-            }
-
-            return true;
         }
 
         /// <summary>
@@ -289,7 +279,7 @@ namespace MediaBrowser.Providers.Manager
                     return;
                 }
 
-                _logger.LogDebug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name);
+                _logger.LogDebug("Running {Provider} for {Item}", provider.GetType().Name, item.Path ?? item.Name);
 
                 var images = await _providerManager.GetAvailableRemoteImages(
                     item,
@@ -305,12 +295,12 @@ namespace MediaBrowser.Providers.Manager
 
                 foreach (var imageType in _singularImages)
                 {
-                    if (!IsEnabled(savedOptions, imageType))
+                    if (!savedOptions.IsEnabled(imageType))
                     {
                         continue;
                     }
 
-                    if (!HasImage(item, imageType) || (refreshOptions.IsReplacingImage(imageType) && !downloadedImages.Contains(imageType)))
+                    if (!item.HasImage(imageType) || (refreshOptions.IsReplacingImage(imageType) && !downloadedImages.Contains(imageType)))
                     {
                         minWidth = savedOptions.GetMinWidth(imageType);
                         var downloaded = await DownloadImage(item, provider, result, list, minWidth, imageType, cancellationToken).ConfigureAwait(false);
@@ -336,14 +326,37 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        private bool IsEnabled(TypeOptions options, ImageType type)
+        /// <summary>
+        /// Determines if an item already contains the given images.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="images">The images.</param>
+        /// <param name="savedOptions">The saved options.</param>
+        /// <param name="backdropLimit">The backdrop limit.</param>
+        /// <returns><c>true</c> if the specified item contains images; otherwise, <c>false</c>.</returns>
+        private bool ContainsImages(BaseItem item, List<ImageType> images, TypeOptions savedOptions, int backdropLimit)
         {
-            return options.IsEnabled(type);
+            // Using .Any causes the creation of a DisplayClass aka. variable capture
+            for (var i = 0; i < _singularImages.Length; i++)
+            {
+                var type = _singularImages[i];
+                if (images.Contains(type) && !item.HasImage(type) && savedOptions.GetLimit(type) > 0)
+                {
+                    return false;
+                }
+            }
+
+            if (images.Contains(ImageType.Backdrop) && item.GetImages(ImageType.Backdrop).Count() < backdropLimit)
+            {
+                return false;
+            }
+
+            return true;
         }
 
-        private void PruneImages(BaseItem item, ItemImageInfo[] images)
+        private void PruneImages(BaseItem item, IReadOnlyList<ItemImageInfo> images)
         {
-            for (var i = 0; i < images.Length; i++)
+            for (var i = 0; i < images.Count; i++)
             {
                 var image = images[i];
 
@@ -355,6 +368,11 @@ namespace MediaBrowser.Providers.Manager
                     }
                     catch (FileNotFoundException)
                     {
+                        // nothing to do, already gone
+                    }
+                    catch (UnauthorizedAccessException ex)
+                    {
+                        _logger.LogWarning(ex, "Unable to delete {Image}", image.Path);
                     }
                 }
             }
@@ -381,12 +399,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     var currentImage = item.GetImageInfo(type, 0);
 
-                    if (currentImage == null)
-                    {
-                        item.SetImagePath(type, image.FileInfo);
-                        changed = true;
-                    }
-                    else if (!string.Equals(currentImage.Path, image.FileInfo.FullName, StringComparison.OrdinalIgnoreCase))
+                    if (currentImage == null || !string.Equals(currentImage.Path, image.FileInfo.FullName, StringComparison.OrdinalIgnoreCase))
                     {
                         item.SetImagePath(type, image.FileInfo);
                         changed = true;
@@ -494,7 +507,7 @@ namespace MediaBrowser.Providers.Manager
                     await _providerManager.SaveImage(
                         item,
                         stream,
-                        response.Content.Headers.ContentType.MediaType,
+                        response.Content.Headers.ContentType?.MediaType,
                         type,
                         null,
                         cancellationToken).ConfigureAwait(false);
@@ -617,11 +630,11 @@ namespace MediaBrowser.Providers.Manager
                     await _providerManager.SaveImage(
                         item,
                         stream,
-                        response.Content.Headers.ContentType.MediaType,
+                        response.Content.Headers.ContentType?.MediaType,
                         imageType,
                         null,
                         cancellationToken).ConfigureAwait(false);
-                    result.UpdateType = result.UpdateType | ItemUpdateType.ImageUpdate;
+                    result.UpdateType |= ItemUpdateType.ImageUpdate;
                 }
                 catch (HttpRequestException)
                 {

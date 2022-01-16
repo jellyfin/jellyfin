@@ -30,6 +30,7 @@ namespace MediaBrowser.Controller.Providers
             ReplaceAllImages = copy.ReplaceAllImages;
             ReplaceImages = copy.ReplaceImages;
             SearchResult = copy.SearchResult;
+            RemoveOldMetadata = copy.RemoveOldMetadata;
 
             if (copy.RefreshPaths != null && copy.RefreshPaths.Length > 0)
             {

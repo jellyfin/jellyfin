@@ -70,7 +70,7 @@ namespace MediaBrowser.Providers.TV
         /// <inheritdoc />
         protected override void MergeData(MetadataResult<Episode> source, MetadataResult<Episode> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
-            ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
+            base.MergeData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 
             var sourceItem = source.Item;
             var targetItem = target.Item;
