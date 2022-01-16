@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Jellyfin.MediaEncoding.Keyframes.Matroska.Extensions;
+using Jellyfin.MediaEncoding.Keyframes.Matroska.Models;
 using NEbml.Core;
 
 namespace Jellyfin.MediaEncoding.Keyframes.Matroska;
@@ -22,8 +23,19 @@ public static class MatroskaKeyframeExtractor
         using var reader = new EbmlReader(stream);
 
         var seekHead = reader.ReadSeekHead();
-        var info = reader.ReadInfo(seekHead.InfoPosition);
-        var videoTrackNumber = reader.FindFirstTrackNumberByType(seekHead.TracksPosition, MatroskaConstants.TrackTypeVideo);
+        // External lib does not support seeking backwards (yet)
+        Info info;
+        ulong videoTrackNumber;
+        if (seekHead.InfoPosition < seekHead.TracksPosition)
+        {
+            info = reader.ReadInfo(seekHead.InfoPosition);
+            videoTrackNumber = reader.FindFirstTrackNumberByType(seekHead.TracksPosition, MatroskaConstants.TrackTypeVideo);
+        }
+        else
+        {
+            videoTrackNumber = reader.FindFirstTrackNumberByType(seekHead.TracksPosition, MatroskaConstants.TrackTypeVideo);
+            info = reader.ReadInfo(seekHead.InfoPosition);
+        }
 
         var keyframes = new List<long>();
         reader.ReadAt(seekHead.CuesPosition);

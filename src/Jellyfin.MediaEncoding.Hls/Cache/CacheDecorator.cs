@@ -8,6 +8,7 @@ using Jellyfin.MediaEncoding.Hls.Extractors;
 using Jellyfin.MediaEncoding.Keyframes;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.MediaEncoding.Hls.Cache;
 
@@ -15,6 +16,8 @@ namespace Jellyfin.MediaEncoding.Hls.Cache;
 public class CacheDecorator : IKeyframeExtractor
 {
     private readonly IKeyframeExtractor _keyframeExtractor;
+    private readonly ILogger<CacheDecorator> _logger;
+    private readonly string _keyframeExtractorName;
     private static readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
     private readonly string _keyframeCachePath;
 
@@ -23,11 +26,15 @@ public class CacheDecorator : IKeyframeExtractor
     /// </summary>
     /// <param name="applicationPaths">An instance of the <see cref="IApplicationPaths"/> interface.</param>
     /// <param name="keyframeExtractor">An instance of the <see cref="IKeyframeExtractor"/> interface.</param>
-    public CacheDecorator(IApplicationPaths applicationPaths, IKeyframeExtractor keyframeExtractor)
+    /// <param name="logger">An instance of the <see cref="ILogger{CacheDecorator}"/> interface.</param>
+    public CacheDecorator(IApplicationPaths applicationPaths, IKeyframeExtractor keyframeExtractor, ILogger<CacheDecorator> logger)
     {
-        _keyframeExtractor = keyframeExtractor;
         ArgumentNullException.ThrowIfNull(applicationPaths);
+        ArgumentNullException.ThrowIfNull(keyframeExtractor);
 
+        _keyframeExtractor = keyframeExtractor;
+        _logger = logger;
+        _keyframeExtractorName = keyframeExtractor.GetType().Name;
         // TODO make the dir configurable
         _keyframeCachePath = Path.Combine(applicationPaths.DataPath, "keyframes");
     }
@@ -48,9 +55,11 @@ public class CacheDecorator : IKeyframeExtractor
 
         if (!_keyframeExtractor.TryExtractKeyframes(filePath, out var result))
         {
+            _logger.LogDebug("Failed to extract keyframes using {ExtractorName}", _keyframeExtractorName);
             return false;
         }
 
+        _logger.LogDebug("Successfully extracted keyframes using {ExtractorName}", _keyframeExtractorName);
         keyframeData = result;
         SaveToCache(cachePath, keyframeData);
         return true;

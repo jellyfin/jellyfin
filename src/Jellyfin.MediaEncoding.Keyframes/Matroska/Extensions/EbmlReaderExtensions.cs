@@ -106,7 +106,7 @@ internal static class EbmlReaderExtensions
 
         if (!tracksPosition.HasValue || !cuesPosition.HasValue || !infoPosition.HasValue)
         {
-            throw new InvalidOperationException("SeekHead is missing or does not contain Info, Tracks and Cues positions");
+            throw new InvalidOperationException("SeekHead is missing or does not contain Info, Tracks and Cues positions. SeekHead referencing another SeekHead is not supported");
         }
 
         return new SeekHead(infoPosition.Value, tracksPosition.Value, cuesPosition.Value);

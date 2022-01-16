@@ -18,6 +18,8 @@ namespace Jellyfin.MediaEncoding.Hls.ScheduledTasks;
 /// <inheritdoc />
 public class KeyframeExtractionScheduledTask : IScheduledTask
 {
+    private const int Pagesize = 1000;
+
     private readonly ILocalizationManager _localizationManager;
     private readonly ILibraryManager _libraryManager;
     private readonly IKeyframeExtractor[] _keyframeExtractors;
@@ -33,7 +35,7 @@ public class KeyframeExtractionScheduledTask : IScheduledTask
     {
         _localizationManager = localizationManager;
         _libraryManager = libraryManager;
-        _keyframeExtractors = keyframeExtractors.ToArray();
+        _keyframeExtractors = keyframeExtractors.OrderByDescending(e => e.IsMetadataBased).ToArray();
     }
 
     /// <inheritdoc />
@@ -43,7 +45,7 @@ public class KeyframeExtractionScheduledTask : IScheduledTask
     public string Key => "KeyframeExtraction";
 
     /// <inheritdoc />
-    public string Description => "Extracts keyframes from video files to create more precise HLS playlists";
+    public string Description => "Extracts keyframes from video files to create more precise HLS playlists. This task may run for a long time.";
 
     /// <inheritdoc />
     public string Category => _localizationManager.GetLocalizedString("TasksLibraryCategory");
@@ -58,35 +60,49 @@ public class KeyframeExtractionScheduledTask : IScheduledTask
             IncludeItemTypes = _itemTypes,
             DtoOptions = new DtoOptions(true),
             SourceTypes = new[] { SourceType.Library },
-            Recursive = true
+            Recursive = true,
+            Limit = Pagesize
         };
 
-        var videos = _libraryManager.GetItemList(query);
-        var numberOfVideos = videos.Count;
+        var numberOfVideos = _libraryManager.GetCount(query);
 
-        // TODO parallelize with Parallel.ForEach?
-        for (var i = 0; i < numberOfVideos; i++)
+        var startIndex = 0;
+        var numComplete = 0;
+
+        while (startIndex < numberOfVideos)
         {
-            var video = videos[i];
-            // Only local files supported
-            if (video.IsFileProtocol && File.Exists(video.Path))
+            query.StartIndex = startIndex;
+
+            var videos = _libraryManager.GetItemList(query);
+            var currentPageCount = videos.Count;
+            // TODO parallelize with Parallel.ForEach?
+            for (var i = 0; i < currentPageCount; i++)
             {
-                for (var j = 0; j < _keyframeExtractors.Length; j++)
+                var video = videos[i];
+                // Only local files supported
+                if (video.IsFileProtocol && File.Exists(video.Path))
                 {
-                    var extractor = _keyframeExtractors[j];
-                    // The cache decorator will make sure to save them in the data dir
-                    if (extractor.TryExtractKeyframes(video.Path, out _))
+                    for (var j = 0; j < _keyframeExtractors.Length; j++)
                     {
-                        break;
+                        var extractor = _keyframeExtractors[j];
+                        // The cache decorator will make sure to save them in the data dir
+                        if (extractor.TryExtractKeyframes(video.Path, out _))
+                        {
+                            break;
+                        }
                     }
                 }
+
+                // Update progress
+                numComplete++;
+                double percent = (double)numComplete / numberOfVideos;
+                progress.Report(100 * percent);
             }
 
-            // Update progress
-            double percent = (double)(i + 1) / numberOfVideos;
-            progress.Report(100 * percent);
+            startIndex += Pagesize;
         }
 
+        progress.Report(100);
         return Task.CompletedTask;
     }
 
