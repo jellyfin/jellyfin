@@ -699,6 +699,7 @@ namespace MediaBrowser.Model.Dlna
                     if (playlistItem.PlayMethod != PlayMethod.DirectPlay)
                     {
                         playlistItem.PlayMethod = PlayMethod.Transcode;
+                        ApplyTranscodingConditions(playlistItem, transcodingProfile.Conditions, null, true, true);
                     }
                 }
             }
