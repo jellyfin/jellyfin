@@ -169,7 +169,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                         // Try to translate to three character code, use as title if not a valid language
                         var culture = _localization.FindLanguageInfo(currentSliceString);
-                        if (culture == null)
+                        if (culture == null || language != null)
                         {
                             if (title == null)
                             {

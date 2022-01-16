@@ -23,10 +23,19 @@ namespace Jellyfin.Providers.Tests.MediaInfo
                 ThreeLetterISOLanguageNames = new[] { "eng" },
                 TwoLetterISOLanguageName = "en"
             };
+            var frenchCultureDto = new CultureDto()
+            {
+                Name = "French",
+                DisplayName = "French",
+                ThreeLetterISOLanguageNames = new[] { "fre", "fra" },
+                TwoLetterISOLanguageName = "fr"
+            };
 
             var localizationManager = new Mock<ILocalizationManager>(MockBehavior.Loose);
             localizationManager.Setup(lm => lm.FindLanguageInfo(It.IsRegex(@"en.*", RegexOptions.IgnoreCase)))
                 .Returns(englishCultureDto);
+            localizationManager.Setup(lm => lm.FindLanguageInfo(It.IsRegex(@"fr.*", RegexOptions.IgnoreCase)))
+                .Returns(frenchCultureDto);
             _localizationManager = localizationManager.Object;
         }
 
@@ -113,6 +122,8 @@ namespace Jellyfin.Providers.Tests.MediaInfo
         [InlineData("/video/My.Video.mkv", "/video/My.Video.default.srt", "srt", null, null, false, true)]
         [InlineData("/video/My.Video.mkv", "/video/My.Video.forced.default.srt", "srt", null, null, true, true)]
         [InlineData("/video/My.Video.mkv", "/video/My.Video.en.srt", "srt", "eng", null, false, false)]
+        [InlineData("/video/My.Video.mkv", "/video/My.Video.fr.en.srt", "srt", "eng", "fr", false, false)]
+        [InlineData("/video/My.Video.mkv", "/video/My.Video.en.fr.srt", "srt", "fre", "en", false, false)]
         [InlineData("/video/My.Video.mkv", "/video/My.Video.default.en.srt", "srt", "eng", null, false, true)]
         [InlineData("/video/My.Video.mkv", "/video/My.Video.default.forced.en.srt", "srt", "eng", null, true, true)]
         [InlineData("/video/My.Video.mkv", "/video/My.Video.en.default.forced.srt", "srt", "eng", null, true, true)]
