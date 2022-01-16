@@ -210,15 +210,12 @@ namespace Jellyfin.Api.Controllers
             if (item is IHasTrailers hasTrailers)
             {
                 var trailers = hasTrailers.LocalTrailers;
-                var dtosTrailers = _dtoService.GetBaseItemDtos(trailers, dtoOptions, user, item);
-                var allTrailers = new BaseItemDto[dtosTrailers.Count];
-                dtosTrailers.CopyTo(allTrailers, 0);
-                return allTrailers;
+                return Ok(_dtoService.GetBaseItemDtos(trailers, dtoOptions, user, item));
             }
 
-            return item.GetExtras(new[] { ExtraType.Trailer })
-                .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item))
-                .ToArray();
+            return Ok(item.GetExtras()
+                .Where(e => e.ExtraType == ExtraType.Trailer)
+                .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item)));
         }
 
         /// <summary>
