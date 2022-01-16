@@ -157,8 +157,9 @@ namespace Jellyfin.Providers.Tests.Manager
             {
                 Assert.True(changed);
                 // before and after paths are the same, verify updated by size reset to 0
-                Assert.Equal(imageCount, item.GetImages(imageType).Count());
-                foreach (var image in item.GetImages(imageType))
+                var typedImages = item.GetImages(imageType).ToArray();
+                Assert.Equal(imageCount, typedImages.Length);
+                foreach (var image in typedImages)
                 {
                     Assert.Equal(updatedTime, image.DateModified);
                     Assert.Equal(0, image.Height);

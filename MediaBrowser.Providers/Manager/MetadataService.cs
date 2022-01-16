@@ -1071,9 +1071,13 @@ namespace MediaBrowser.Providers.Manager
                 var key = id.Key;
 
                 // Don't replace existing Id's.
-                if (replaceData || !target.ProviderIds.ContainsKey(key))
+                if (replaceData)
                 {
                     target.ProviderIds[key] = id.Value;
+                }
+                else
+                {
+                    target.ProviderIds.TryAdd(key, id.Value);
                 }
             }
 
@@ -1120,10 +1124,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     foreach (var providerId in personInSource.ProviderIds)
                     {
-                        if (!person.ProviderIds.ContainsKey(providerId.Key))
-                        {
-                            person.ProviderIds[providerId.Key] = providerId.Value;
-                        }
+                        person.ProviderIds.TryAdd(providerId.Key, providerId.Value);
                     }
 
                     if (string.IsNullOrWhiteSpace(person.ImageUrl))
