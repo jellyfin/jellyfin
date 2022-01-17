@@ -52,7 +52,7 @@ namespace Emby.Server.Implementations.Library
             var genres = item
                .GetRecursiveChildren(user, new InternalItemsQuery(user)
                {
-                   IncludeItemTypes = new[] { nameof(Audio) },
+                   IncludeItemTypes = new[] { BaseItemKind.Audio },
                    DtoOptions = dtoOptions
                })
                .Cast<Audio>()
@@ -89,7 +89,7 @@ namespace Emby.Server.Implementations.Library
         {
             return _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { nameof(Audio) },
+                IncludeItemTypes = new[] { BaseItemKind.Audio },
 
                 GenreIds = genreIds.ToArray(),
 
@@ -103,7 +103,7 @@ namespace Emby.Server.Implementations.Library
 
         public List<BaseItem> GetInstantMixFromItem(BaseItem item, User user, DtoOptions dtoOptions)
         {
-            if (item is MusicGenre genre)
+            if (item is MusicGenre)
             {
                 return GetInstantMixFromGenreIds(new[] { item.Id }, user, dtoOptions);
             }

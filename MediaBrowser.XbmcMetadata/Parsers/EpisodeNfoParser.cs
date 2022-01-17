@@ -163,7 +163,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         if (!string.IsNullOrWhiteSpace(val))
                         {
                             // int.TryParse is local aware, so it can be problematic, force us culture
-                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out var rval))
+                            if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var rval))
                             {
                                 item.AirsBeforeEpisodeNumber = rval;
                             }
@@ -179,7 +179,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         if (!string.IsNullOrWhiteSpace(val))
                         {
                             // int.TryParse is local aware, so it can be problematic, force us culture
-                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out var rval))
+                            if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var rval))
                             {
                                 item.AirsAfterSeasonNumber = rval;
                             }
@@ -195,7 +195,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         if (!string.IsNullOrWhiteSpace(val))
                         {
                             // int.TryParse is local aware, so it can be problematic, force us culture
-                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out var rval))
+                            if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var rval))
                             {
                                 item.AirsBeforeSeasonNumber = rval;
                             }
@@ -211,7 +211,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         if (!string.IsNullOrWhiteSpace(val))
                         {
                             // int.TryParse is local aware, so it can be problematic, force us culture
-                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out var rval))
+                            if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var rval))
                             {
                                 item.AirsBeforeSeasonNumber = rval;
                             }
@@ -227,7 +227,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         if (!string.IsNullOrWhiteSpace(val))
                         {
                             // int.TryParse is local aware, so it can be problematic, force us culture
-                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out var rval))
+                            if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var rval))
                             {
                                 item.AirsBeforeEpisodeNumber = rval;
                             }

@@ -35,14 +35,14 @@ namespace MediaBrowser.Providers.TV
         {
             var updatedType = base.BeforeSaveInternal(item, isFullRefresh, updateType);
 
-            if (item.IndexNumber.HasValue && item.IndexNumber.Value == 0)
+            if (item.IndexNumber == 0 && !item.IsLocked && !item.LockedFields.Contains(MetadataField.Name))
             {
                 var seasonZeroDisplayName = LibraryManager.GetLibraryOptions(item).SeasonZeroDisplayName;
 
                 if (!string.Equals(item.Name, seasonZeroDisplayName, StringComparison.OrdinalIgnoreCase))
                 {
                     item.Name = seasonZeroDisplayName;
-                    updatedType = updatedType | ItemUpdateType.MetadataEdit;
+                    updatedType |= ItemUpdateType.MetadataEdit;
                 }
             }
 
@@ -85,12 +85,6 @@ namespace MediaBrowser.Providers.TV
             }
 
             return updateType;
-        }
-
-        /// <inheritdoc />
-        protected override void MergeData(MetadataResult<Season> source, MetadataResult<Season> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
-        {
-            ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }
 
         private ItemUpdateType SaveIsVirtualItem(Season item, IList<BaseItem> episodes)

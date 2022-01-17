@@ -12,9 +12,6 @@ namespace Jellyfin.Server.Tests
     {
         [Theory]
         [InlineData("e0a72cb2a2c7", "e0a72cb2a2c7")] // isn't encoded
-        [InlineData("random+test", "random test")] // encoded
-        [InlineData("random%20test", "random test")] // encoded
-        [InlineData("++", "  ")] // encoded
         public static void EmptyValueTest(string query, string key)
         {
             var dict = new Dictionary<string, StringValues>

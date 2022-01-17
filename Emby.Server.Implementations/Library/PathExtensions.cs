@@ -16,7 +16,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="attribute">The attrib.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="ArgumentException"><paramref name="str" /> or <paramref name="attribute" /> is empty.</exception>
-        public static string? GetAttributeValue(this string str, string attribute)
+        public static string? GetAttributeValue(this ReadOnlySpan<char> str, ReadOnlySpan<char> attribute)
         {
             if (str.Length == 0)
             {
@@ -28,17 +28,31 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentException("String can't be empty.", nameof(attribute));
             }
 
-            string srch = "[" + attribute + "=";
-            int start = str.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
-            if (start != -1)
+            var attributeIndex = str.IndexOf(attribute, StringComparison.OrdinalIgnoreCase);
+
+            // Must be at least 3 characters after the attribute =, ], any character.
+            var maxIndex = str.Length - attribute.Length - 3;
+            while (attributeIndex > -1 && attributeIndex < maxIndex)
             {
-                start += srch.Length;
-                int end = str.IndexOf(']', start);
-                return str.Substring(start, end - start);
+                var attributeEnd = attributeIndex + attribute.Length;
+                if (attributeIndex > 0
+                    && str[attributeIndex - 1] == '['
+                    && (str[attributeEnd] == '=' || str[attributeEnd] == '-'))
+                {
+                    var closingIndex = str[attributeEnd..].IndexOf(']');
+                    // Must be at least 1 character before the closing bracket.
+                    if (closingIndex > 1)
+                    {
+                        return str[(attributeEnd + 1)..(attributeEnd + closingIndex)].Trim().ToString();
+                    }
+                }
+
+                str = str[attributeEnd..];
+                attributeIndex = str.IndexOf(attribute, StringComparison.OrdinalIgnoreCase);
             }
 
             // for imdbid we also accept pattern matching
-            if (string.Equals(attribute, "imdbid", StringComparison.OrdinalIgnoreCase))
+            if (attribute.Equals("imdbid", StringComparison.OrdinalIgnoreCase))
             {
                 var match = ProviderIdParsers.TryFindImdbId(str, out var imdbId);
                 return match ? imdbId.ToString() : null;
@@ -53,7 +67,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="path">The original path.</param>
         /// <param name="subPath">The original sub path.</param>
         /// <param name="newSubPath">The new sub path.</param>
-        /// <param name="newPath">The result of the sub path replacement</param>
+        /// <param name="newPath">The result of the sub path replacement.</param>
         /// <returns>The path after replacing the sub path.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="path" />, <paramref name="newSubPath" /> or <paramref name="newSubPath" /> is empty.</exception>
         public static bool TryReplaceSubPath(

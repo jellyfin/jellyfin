@@ -106,7 +106,7 @@ namespace Jellyfin.Api.Controllers
             await using var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
 
             // Handle image/png; charset=utf-8
-            var mimeType = Request.ContentType.Split(';').FirstOrDefault();
+            var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
             var userDataPath = Path.Combine(_serverConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, user.Username);
             if (user.ProfileImage != null)
             {
@@ -153,7 +153,7 @@ namespace Jellyfin.Api.Controllers
             await using var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
 
             // Handle image/png; charset=utf-8
-            var mimeType = Request.ContentType.Split(';').FirstOrDefault();
+            var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
             var userDataPath = Path.Combine(_serverConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, user.Username);
             if (user.ProfileImage != null)
             {
@@ -341,7 +341,7 @@ namespace Jellyfin.Api.Controllers
             await using var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
 
             // Handle image/png; charset=utf-8
-            var mimeType = Request.ContentType.Split(';').FirstOrDefault();
+            var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
             await _providerManager.SaveImage(item, memoryStream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
             await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
 
@@ -377,7 +377,7 @@ namespace Jellyfin.Api.Controllers
             await using var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
 
             // Handle image/png; charset=utf-8
-            var mimeType = Request.ContentType.Split(';').FirstOrDefault();
+            var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
             await _providerManager.SaveImage(item, memoryStream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
             await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
 
@@ -1878,8 +1878,8 @@ namespace Jellyfin.Api.Controllers
             if (!supportsWebP)
             {
                 var userAgent = Request.Headers[HeaderNames.UserAgent].ToString();
-                if (userAgent.IndexOf("crosswalk", StringComparison.OrdinalIgnoreCase) != -1 &&
-                    userAgent.IndexOf("android", StringComparison.OrdinalIgnoreCase) != -1)
+                if (userAgent.Contains("crosswalk", StringComparison.OrdinalIgnoreCase)
+                    && userAgent.Contains("android", StringComparison.OrdinalIgnoreCase))
                 {
                     supportsWebP = true;
                 }
@@ -1905,10 +1905,7 @@ namespace Jellyfin.Api.Controllers
 
         private bool SupportsFormat(IReadOnlyCollection<string> requestAcceptTypes, string acceptParam, ImageFormat format, bool acceptAll)
         {
-            var normalized = format.ToString().ToLowerInvariant();
-            var mimeType = "image/" + normalized;
-
-            if (requestAcceptTypes.Contains(mimeType))
+            if (requestAcceptTypes.Contains(format.GetMimeType()))
             {
                 return true;
             }
@@ -1918,6 +1915,8 @@ namespace Jellyfin.Api.Controllers
                 return true;
             }
 
+            // Review if this should be jpeg, jpg or both for ImageFormat.Jpg
+            var normalized = format.ToString().ToLowerInvariant();
             return string.Equals(acceptParam, normalized, StringComparison.OrdinalIgnoreCase);
         }
 
@@ -2007,7 +2006,7 @@ namespace Jellyfin.Api.Controllers
                     Response.Headers.Add(HeaderNames.CacheControl, "public");
                 }
 
-                Response.Headers.Add(HeaderNames.LastModified, dateImageModified.ToUniversalTime().ToString("ddd, dd MMM yyyy HH:mm:ss \"GMT\"", new CultureInfo("en-US", false)));
+                Response.Headers.Add(HeaderNames.LastModified, dateImageModified.ToUniversalTime().ToString("ddd, dd MMM yyyy HH:mm:ss \"GMT\"", CultureInfo.InvariantCulture));
 
                 // if the image was not modified since "ifModifiedSinceHeader"-header, return a HTTP status code 304 not modified
                 if (!(dateImageModified > ifModifiedSinceHeader) && cacheDuration.HasValue)
@@ -2026,7 +2025,7 @@ namespace Jellyfin.Api.Controllers
                 return NoContent();
             }
 
-            return PhysicalFile(imagePath, imageContentType);
+            return PhysicalFile(imagePath, imageContentType ?? MediaTypeNames.Text.Plain);
         }
     }
 }

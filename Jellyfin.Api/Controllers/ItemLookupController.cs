@@ -5,8 +5,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
-using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -30,7 +28,6 @@ namespace Jellyfin.Api.Controllers
     public class ItemLookupController : BaseJellyfinApiController
     {
         private readonly IProviderManager _providerManager;
-        private readonly IServerApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger<ItemLookupController> _logger;
@@ -39,19 +36,16 @@ namespace Jellyfin.Api.Controllers
         /// Initializes a new instance of the <see cref="ItemLookupController"/> class.
         /// </summary>
         /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
-        /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{ItemLookupController}"/> interface.</param>
         public ItemLookupController(
             IProviderManager providerManager,
-            IServerConfigurationManager serverConfigurationManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager,
             ILogger<ItemLookupController> logger)
         {
             _providerManager = providerManager;
-            _appPaths = serverConfigurationManager.ApplicationPaths;
             _fileSystem = fileSystem;
             _libraryManager = libraryManager;
             _logger = logger;
@@ -269,8 +263,10 @@ namespace Jellyfin.Api.Controllers
                     ImageRefreshMode = MetadataRefreshMode.FullRefresh,
                     ReplaceAllMetadata = true,
                     ReplaceAllImages = replaceAllImages,
-                    SearchResult = searchResult
-                }, CancellationToken.None).ConfigureAwait(false);
+                    SearchResult = searchResult,
+                    RemoveOldMetadata = true
+                },
+                CancellationToken.None).ConfigureAwait(false);
 
             return NoContent();
         }

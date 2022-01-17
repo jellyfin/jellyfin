@@ -101,8 +101,8 @@ namespace Jellyfin.Api.Controllers
 
             var query = new InternalItemsQuery(user)
             {
-                ExcludeItemTypes = RequestHelpers.GetItemTypeStrings(excludeItemTypes),
-                IncludeItemTypes = RequestHelpers.GetItemTypeStrings(includeItemTypes),
+                ExcludeItemTypes = excludeItemTypes,
+                IncludeItemTypes = includeItemTypes,
                 StartIndex = startIndex,
                 Limit = limit,
                 IsFavorite = isFavorite,
@@ -149,7 +149,7 @@ namespace Jellyfin.Api.Controllers
 
             if (genreName.IndexOf(BaseItem.SlugChar, StringComparison.OrdinalIgnoreCase) != -1)
             {
-                item = GetItemFromSlugName<MusicGenre>(_libraryManager, genreName, dtoOptions);
+                item = GetItemFromSlugName<MusicGenre>(_libraryManager, genreName, dtoOptions, BaseItemKind.MusicGenre);
             }
             else
             {
@@ -166,27 +166,27 @@ namespace Jellyfin.Api.Controllers
             return _dtoService.GetBaseItemDto(item, dtoOptions);
         }
 
-        private T? GetItemFromSlugName<T>(ILibraryManager libraryManager, string name, DtoOptions dtoOptions)
+        private T? GetItemFromSlugName<T>(ILibraryManager libraryManager, string name, DtoOptions dtoOptions, BaseItemKind baseItemKind)
             where T : BaseItem, new()
         {
             var result = libraryManager.GetItemList(new InternalItemsQuery
             {
                 Name = name.Replace(BaseItem.SlugChar, '&'),
-                IncludeItemTypes = new[] { typeof(T).Name },
+                IncludeItemTypes = new[] { baseItemKind },
                 DtoOptions = dtoOptions
             }).OfType<T>().FirstOrDefault();
 
             result ??= libraryManager.GetItemList(new InternalItemsQuery
             {
                 Name = name.Replace(BaseItem.SlugChar, '/'),
-                IncludeItemTypes = new[] { typeof(T).Name },
+                IncludeItemTypes = new[] { baseItemKind },
                 DtoOptions = dtoOptions
             }).OfType<T>().FirstOrDefault();
 
             result ??= libraryManager.GetItemList(new InternalItemsQuery
             {
                 Name = name.Replace(BaseItem.SlugChar, '?'),
-                IncludeItemTypes = new[] { typeof(T).Name },
+                IncludeItemTypes = new[] { baseItemKind },
                 DtoOptions = dtoOptions
             }).OfType<T>().FirstOrDefault();
 

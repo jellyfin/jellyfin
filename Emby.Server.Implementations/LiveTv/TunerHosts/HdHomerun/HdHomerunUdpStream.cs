@@ -3,7 +3,6 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -82,10 +81,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             Directory.CreateDirectory(Path.GetDirectoryName(TempFilePath));
 
-            Logger.LogInformation("Opening HDHR UDP Live stream from {host}", uri.Host);
+            Logger.LogInformation("Opening HDHR UDP Live stream from {Host}", uri.Host);
 
             var remoteAddress = IPAddress.Parse(uri.Host);
-            IPAddress localAddress = null;
+            IPAddress localAddress;
             using (var tcpClient = new TcpClient())
             {
                 try
@@ -101,7 +100,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
             }
 
-            if (localAddress.IsIPv4MappedToIPv6) {
+            if (localAddress.IsIPv4MappedToIPv6)
+            {
                 localAddress = localAddress.MapToIPv4();
             }
 
@@ -146,7 +146,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             // OpenedMediaSource.Path = tempFile;
             // OpenedMediaSource.ReadAtNativeFramerate = true;
 
-            MediaSource.Path = _appHost.GetLoopbackHttpApiUrl() + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
+            MediaSource.Path = _appHost.GetApiUrlForLocalAccess() + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
             MediaSource.Protocol = MediaProtocol.Http;
             // OpenedMediaSource.SupportsDirectPlay = false;
             // OpenedMediaSource.SupportsDirectStream = true;
@@ -154,11 +154,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             // await Task.Delay(5000).ConfigureAwait(false);
             await taskCompletionSource.Task.ConfigureAwait(false);
-        }
-
-        public string GetFilePath()
-        {
-            return TempFilePath;
         }
 
         private async Task StartStreaming(UdpClient udpClient, HdHomerunManager hdHomerunManager, IPAddress remoteAddress, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
@@ -170,7 +165,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 {
                     await CopyTo(udpClient, TempFilePath, openTaskCompletionSource, cancellationToken).ConfigureAwait(false);
                 }
-                catch (OperationCanceledException ex)
+                catch (Exception ex) when (ex is OperationCanceledException || ex is TimeoutException)
                 {
                     Logger.LogInformation("HDHR UDP stream cancelled or timed out from {0}", remoteAddress);
                     openTaskCompletionSource.TrySetException(ex);
@@ -184,7 +179,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 EnableStreamSharing = false;
             }
 
-            await DeleteTempFiles(new List<string> { TempFilePath }).ConfigureAwait(false);
+            await DeleteTempFiles(TempFilePath).ConfigureAwait(false);
         }
 
         private async Task CopyTo(UdpClient udpClient, string file, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
@@ -196,36 +191,24 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 while (true)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    using (var timeOutSource = new CancellationTokenSource())
-                    using (var linkedSource = CancellationTokenSource.CreateLinkedTokenSource(
-                        cancellationToken,
-                        timeOutSource.Token))
+                    var res = await udpClient.ReceiveAsync(cancellationToken)
+                        .AsTask()
+                        .WaitAsync(TimeSpan.FromMilliseconds(30000), CancellationToken.None)
+                        .ConfigureAwait(false);
+                    var buffer = res.Buffer;
+
+                    var read = buffer.Length - RtpHeaderBytes;
+
+                    if (read > 0)
                     {
-                        var resTask = udpClient.ReceiveAsync();
-                        if (await Task.WhenAny(resTask, Task.Delay(30000, linkedSource.Token)).ConfigureAwait(false) != resTask)
-                        {
-                            resTask.Dispose();
-                            break;
-                        }
+                        await fileStream.WriteAsync(buffer.AsMemory(RtpHeaderBytes, read), cancellationToken).ConfigureAwait(false);
+                    }
 
-                        // We don't want all these delay tasks to keep running
-                        timeOutSource.Cancel();
-                        var res = await resTask.ConfigureAwait(false);
-                        var buffer = res.Buffer;
-
-                        var read = buffer.Length - RtpHeaderBytes;
-
-                        if (read > 0)
-                        {
-                            fileStream.Write(buffer, RtpHeaderBytes, read);
-                        }
-
-                        if (!resolved)
-                        {
-                            resolved = true;
-                            DateOpened = DateTime.UtcNow;
-                            openTaskCompletionSource.TrySetResult(true);
-                        }
+                    if (!resolved)
+                    {
+                        resolved = true;
+                        DateOpened = DateTime.UtcNow;
+                        openTaskCompletionSource.TrySetResult(true);
                     }
                 }
             }

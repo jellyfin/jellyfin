@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -33,7 +34,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         {
             var result = new MetadataResult<Season>();
 
-            info.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out string seriesTmdbId);
+            info.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out string? seriesTmdbId);
 
             var seasonNumber = info.IndexNumber;
 
@@ -58,6 +59,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 Overview = seasonResult.Overview
             };
 
+            if (Plugin.Instance.Configuration.ImportSeasonName)
+            {
+                result.Item.Name = seasonResult.Name;
+            }
+
             if (!string.IsNullOrEmpty(seasonResult.ExternalIds?.TvdbId))
             {
                 result.Item.SetProviderId(MetadataProvider.Tvdb, seasonResult.ExternalIds.TvdbId);
@@ -67,7 +73,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             var credits = seasonResult.Credits;
             if (credits?.Cast != null)
             {
-                var cast = credits.Cast.OrderBy(c => c.Order).Take(TmdbUtils.MaxCastMembers).ToList();
+                var cast = credits.Cast.OrderBy(c => c.Order).Take(Plugin.Instance.Configuration.MaxCastMembers).ToList();
                 for (var i = 0; i < cast.Count; i++)
                 {
                     result.AddPerson(new PersonInfo
@@ -87,8 +93,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     // Normalize this
                     var type = TmdbUtils.MapCrewToPersonType(person);
 
-                    if (!TmdbUtils.WantedCrewTypes.Contains(type, StringComparer.OrdinalIgnoreCase)
-                        && !TmdbUtils.WantedCrewTypes.Contains(person.Job ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                    if (!TmdbUtils.WantedCrewTypes.Contains(type, StringComparison.OrdinalIgnoreCase)
+                        && !TmdbUtils.WantedCrewTypes.Contains(person.Job ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }

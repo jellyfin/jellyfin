@@ -36,7 +36,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IServerApplicationHost _appHost;
         private readonly ISocketFactory _socketFactory;
-        private readonly INetworkManager _networkManager;
         private readonly IStreamHelper _streamHelper;
 
         private readonly JsonSerializerOptions _jsonOptions;
@@ -50,7 +49,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             IHttpClientFactory httpClientFactory,
             IServerApplicationHost appHost,
             ISocketFactory socketFactory,
-            INetworkManager networkManager,
             IStreamHelper streamHelper,
             IMemoryCache memoryCache)
             : base(config, logger, fileSystem, memoryCache)
@@ -58,7 +56,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             _httpClientFactory = httpClientFactory;
             _appHost = appHost;
             _socketFactory = socketFactory;
-            _networkManager = networkManager;
             _streamHelper = streamHelper;
 
             _jsonOptions = JsonDefaults.Options;
@@ -70,7 +67,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         protected override string ChannelIdPrefix => "hdhr_";
 
-        private string GetChannelId(TunerHostInfo info, Channels i)
+        private string GetChannelId(Channels i)
             => ChannelIdPrefix + i.GuideNumber;
 
         internal async Task<List<Channels>> GetLineup(TunerHostInfo info, CancellationToken cancellationToken)
@@ -90,11 +87,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return lineup.Where(i => !i.DRM).ToList();
         }
 
-        private class HdHomerunChannelInfo : ChannelInfo
-        {
-            public bool IsLegacyTuner { get; set; }
-        }
-
         protected override async Task<List<ChannelInfo>> GetChannelsInternal(TunerHostInfo tuner, CancellationToken cancellationToken)
         {
             var lineup = await GetLineup(tuner, cancellationToken).ConfigureAwait(false);
@@ -103,7 +95,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             {
                 Name = i.GuideName,
                 Number = i.GuideNumber,
-                Id = GetChannelId(tuner, i),
+                Id = GetChannelId(i),
                 IsFavorite = i.Favorite,
                 TunerHostId = tuner.Id,
                 IsHD = i.HD,
@@ -255,7 +247,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             var model = await GetModelInfo(info, false, cancellationToken).ConfigureAwait(false);
 
-            var tuners = new List<LiveTvTunerInfo>();
+            var tuners = new List<LiveTvTunerInfo>(model.TunerCount);
 
             var uri = new Uri(GetApiUrl(info));
 
@@ -264,10 +256,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 // Legacy HdHomeruns are IPv4 only
                 var ipInfo = IPAddress.Parse(uri.Host);
 
-                for (int i = 0; i < model.TunerCount; ++i)
+                for (int i = 0; i < model.TunerCount; i++)
                 {
                     var name = string.Format(CultureInfo.InvariantCulture, "Tuner {0}", i + 1);
-                    var currentChannel = "none"; // @todo Get current channel and map back to Station Id
+                    var currentChannel = "none"; // TODO: Get current channel and map back to Station Id
                     var isAvailable = await manager.CheckTunerAvailability(ipInfo, i, cancellationToken).ConfigureAwait(false);
                     var status = isAvailable ? LiveTvTunerStatus.Available : LiveTvTunerStatus.LiveTv;
                     tuners.Add(new LiveTvTunerInfo
@@ -455,28 +447,28 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 Path = url,
                 Protocol = MediaProtocol.Udp,
                 MediaStreams = new List<MediaStream>
-                        {
-                            new MediaStream
-                            {
-                                Type = MediaStreamType.Video,
-                                // Set the index to -1 because we don't know the exact index of the video stream within the container
-                                Index = -1,
-                                IsInterlaced = isInterlaced,
-                                Codec = videoCodec,
-                                Width = width,
-                                Height = height,
-                                BitRate = videoBitrate,
-                                NalLengthSize = nal
-                            },
-                            new MediaStream
-                            {
-                                Type = MediaStreamType.Audio,
-                                // Set the index to -1 because we don't know the exact index of the audio stream within the container
-                                Index = -1,
-                                Codec = audioCodec,
-                                BitRate = audioBitrate
-                            }
-                        },
+                {
+                    new MediaStream
+                    {
+                        Type = MediaStreamType.Video,
+                        // Set the index to -1 because we don't know the exact index of the video stream within the container
+                        Index = -1,
+                        IsInterlaced = isInterlaced,
+                        Codec = videoCodec,
+                        Width = width,
+                        Height = height,
+                        BitRate = videoBitrate,
+                        NalLengthSize = nal
+                    },
+                    new MediaStream
+                    {
+                        Type = MediaStreamType.Audio,
+                        // Set the index to -1 because we don't know the exact index of the audio stream within the container
+                        Index = -1,
+                        Codec = audioCodec,
+                        BitRate = audioBitrate
+                    }
+                },
                 RequiresOpening = true,
                 RequiresClosing = true,
                 BufferMs = 0,
@@ -551,7 +543,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
             }
 
-            var profile = streamId.Split('_')[0];
+            var profile = streamId.AsSpan().LeftPart('_').ToString();
 
             Logger.LogInformation("GetChannelStream: channel id: {0}. stream id: {1} profile: {2}", channel.Id, streamId, profile);
 
@@ -638,7 +630,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
             catch (HttpRequestException ex)
             {
-                if (ex.StatusCode.HasValue && ex.StatusCode.Value == System.Net.HttpStatusCode.NotFound)
+                if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
                 {
                     // HDHR4 doesn't have this api
                     return;
@@ -717,6 +709,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             hostInfo.TunerCount = modelInfo.TunerCount;
 
             return hostInfo;
+        }
+
+        private class HdHomerunChannelInfo : ChannelInfo
+        {
+            public bool IsLegacyTuner { get; set; }
         }
     }
 }

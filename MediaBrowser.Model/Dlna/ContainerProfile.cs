@@ -1,8 +1,8 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Linq;
 using System.Xml.Serialization;
+using Jellyfin.Extensions;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -62,7 +62,7 @@ namespace MediaBrowser.Model.Dlna
 
             foreach (var container in allInputContainers)
             {
-                if (profileContainers.Contains(container, StringComparer.OrdinalIgnoreCase))
+                if (profileContainers.Contains(container, StringComparison.OrdinalIgnoreCase))
                 {
                     return !isNegativeList;
                 }

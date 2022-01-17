@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using Emby.Server.Implementations.Data;
-using Emby.Server.Implementations.Serialization;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json;
@@ -10,6 +9,7 @@ using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
@@ -27,7 +27,7 @@ namespace Jellyfin.Server.Migrations.Routines
         private readonly ILogger<MigrateUserDb> _logger;
         private readonly IServerApplicationPaths _paths;
         private readonly JellyfinDbProvider _provider;
-        private readonly MyXmlSerializer _xmlSerializer;
+        private readonly IXmlSerializer _xmlSerializer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MigrateUserDb"/> class.
@@ -40,7 +40,7 @@ namespace Jellyfin.Server.Migrations.Routines
             ILogger<MigrateUserDb> logger,
             IServerApplicationPaths paths,
             JellyfinDbProvider provider,
-            MyXmlSerializer xmlSerializer)
+            IXmlSerializer xmlSerializer)
         {
             _logger = logger;
             _paths = paths;

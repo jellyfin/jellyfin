@@ -1,4 +1,3 @@
-#nullable disable
 #pragma warning disable CS1591
 
 namespace MediaBrowser.Model.Configuration
@@ -13,7 +12,7 @@ namespace MediaBrowser.Model.Configuration
             EnablePathSubstitution = true;
         }
 
-        public string UserId { get; set; }
+        public string? UserId { get; set; }
 
         public string ReleaseDateFormat { get; set; }
 

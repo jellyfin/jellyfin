@@ -1,5 +1,3 @@
-#nullable disable
-
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 
@@ -35,7 +33,7 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// Gets the URL format string for this id.
         /// </summary>
-        string UrlFormatString { get; }
+        string? UrlFormatString { get; }
 
         /// <summary>
         /// Determines whether this id supports a given item type.

@@ -13,20 +13,11 @@ namespace Jellyfin.Extensions.Json.Converters
     {
         /// <inheritdoc />
         public override string? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            return reader.TokenType switch
-            {
-                JsonTokenType.Null => null,
-                JsonTokenType.String => reader.GetString(),
-                _ => GetRawValue(reader)
-            };
-        }
+            => reader.TokenType == JsonTokenType.String ? reader.GetString() : GetRawValue(reader);
 
         /// <inheritdoc />
         public override void Write(Utf8JsonWriter writer, string? value, JsonSerializerOptions options)
-        {
-            writer.WriteStringValue(value);
-        }
+            => writer.WriteStringValue(value);
 
         private static string GetRawValue(Utf8JsonReader reader)
         {

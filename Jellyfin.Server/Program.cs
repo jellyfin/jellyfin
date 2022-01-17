@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 using Emby.Server.Implementations;
-using Emby.Server.Implementations.IO;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
@@ -157,34 +156,37 @@ namespace Jellyfin.Server
 
             ApplicationHost.LogEnvironmentInfo(_logger, appPaths);
 
+            // If hosting the web client, validate the client content path
+            if (startupConfig.HostWebClient())
+            {
+                string? webContentPath = appPaths.WebPath;
+                if (!Directory.Exists(webContentPath) || !Directory.EnumerateFiles(webContentPath).Any())
+                {
+                    _logger.LogError(
+                        "The server is expected to host the web client, but the provided content directory is either " +
+                        "invalid or empty: {WebContentPath}. If you do not want to host the web client with the " +
+                        "server, you may set the '--nowebclient' command line flag, or set" +
+                        "'{ConfigKey}=false' in your config settings.",
+                        webContentPath,
+                        ConfigurationExtensions.HostWebClientKey);
+                    Environment.ExitCode = 1;
+                    return;
+                }
+            }
+
             PerformStaticInitialization();
-            var serviceCollection = new ServiceCollection();
+            Migrations.MigrationRunner.RunPreStartup(appPaths, _loggerFactory);
 
             var appHost = new CoreAppHost(
                 appPaths,
                 _loggerFactory,
                 options,
-                startupConfig,
-                new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
-                serviceCollection);
+                startupConfig);
 
             try
             {
-                // If hosting the web client, validate the client content path
-                if (startupConfig.HostWebClient())
-                {
-                    string? webContentPath = appHost.ConfigurationManager.ApplicationPaths.WebPath;
-                    if (!Directory.Exists(webContentPath) || Directory.GetFiles(webContentPath).Length == 0)
-                    {
-                        throw new InvalidOperationException(
-                            "The server is expected to host the web client, but the provided content directory is either " +
-                            $"invalid or empty: {webContentPath}. If you do not want to host the web client with the " +
-                            "server, you may set the '--nowebclient' command line flag, or set" +
-                            $"'{ConfigurationExtensions.HostWebClientKey}=false' in your config settings.");
-                    }
-                }
-
-                appHost.Init();
+                var serviceCollection = new ServiceCollection();
+                appHost.Init(serviceCollection);
 
                 var webHost = new WebHostBuilder().ConfigureWebHostBuilder(appHost, serviceCollection, options, startupConfig, appPaths).Build();
 
@@ -195,9 +197,9 @@ namespace Jellyfin.Server
 
                 try
                 {
-                    await webHost.StartAsync().ConfigureAwait(false);
+                    await webHost.StartAsync(_tokenSource.Token).ConfigureAwait(false);
                 }
-                catch
+                catch (Exception ex) when (ex is not TaskCanceledException)
                 {
                     _logger.LogError("Kestrel failed to start! This is most likely due to an invalid address or port bind - correct your bind configuration in network.xml and try again.");
                     throw;
@@ -547,7 +549,7 @@ namespace Jellyfin.Server
                 ?? throw new InvalidOperationException($"Invalid resource path: '{ResourcePath}'");
 
             // Copy the resource contents to the expected file path for the config file
-            await using Stream dst = new FileStream(configPath, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, AsyncFile.UseAsyncIO);
+            await using Stream dst = new FileStream(configPath, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
             await resource.CopyToAsync(dst).ConfigureAwait(false);
         }
 
@@ -594,7 +596,7 @@ namespace Jellyfin.Server
             try
             {
                 // Serilog.Log is used by SerilogLoggerFactory when no logger is specified
-                Serilog.Log.Logger = new LoggerConfiguration()
+                Log.Logger = new LoggerConfiguration()
                     .ReadFrom.Configuration(configuration)
                     .Enrich.FromLogContext()
                     .Enrich.WithThreadId()
@@ -602,7 +604,7 @@ namespace Jellyfin.Server
             }
             catch (Exception ex)
             {
-                Serilog.Log.Logger = new LoggerConfiguration()
+                Log.Logger = new LoggerConfiguration()
                     .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message:lj}{NewLine}{Exception}")
                     .WriteTo.Async(x => x.File(
                         Path.Combine(appPaths.LogDirectoryPath, "log_.log"),
@@ -613,7 +615,7 @@ namespace Jellyfin.Server
                     .Enrich.WithThreadId()
                     .CreateLogger();
 
-                Serilog.Log.Logger.Fatal(ex, "Failed to create/read logger configuration");
+                Log.Logger.Fatal(ex, "Failed to create/read logger configuration");
             }
         }
 
@@ -648,7 +650,7 @@ namespace Jellyfin.Server
 
         private static string NormalizeCommandLineArgument(string arg)
         {
-            if (!arg.Contains(" ", StringComparison.OrdinalIgnoreCase))
+            if (!arg.Contains(' ', StringComparison.Ordinal))
             {
                 return arg;
             }

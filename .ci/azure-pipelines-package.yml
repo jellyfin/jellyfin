@@ -39,6 +39,10 @@ jobs:
     vmImage: 'ubuntu-latest'
 
   steps:
+  - script: echo "##vso[task.setvariable variable=JellyfinVersion]$( awk -F '/' '{ print $NF }' <<<'$(Build.SourceBranch)' | sed 's/^v//' )"
+    displayName: Set release version (stable)
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+
   - script: 'docker build -f deployment/Dockerfile.$(BuildConfiguration) -t jellyfin-server-$(BuildConfiguration) deployment'
     displayName: 'Build Dockerfile'
 
@@ -80,6 +84,10 @@ jobs:
     vmImage: 'ubuntu-latest'
 
   steps:
+  - script: echo "##vso[task.setvariable variable=JellyfinVersion]$( awk -F '/' '{ print $NF }' <<<'$(Build.SourceBranch)' | sed 's/^v//' )"
+    displayName: Set release version (stable)
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+
   - task: DownloadPipelineArtifact@2
     displayName: 'Download OpenAPI Spec'
     inputs:
@@ -181,7 +189,7 @@ jobs:
     inputs:
       sshEndpoint: repository
       runOptions: 'commands'
-      commands: nohup sudo /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) &
+      commands: nohup sudo /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) $(Build.SourceBranch) &
 
 - job: PublishNuget
   displayName: 'Publish NuGet packages'
@@ -195,10 +203,10 @@ jobs:
 
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET 5.0 sdk'
+    displayName: 'Use .NET 6.0 sdk'
     inputs:
       packageType: 'sdk'
-      version: '5.0.x'
+      version: '6.0.x'
 
   - task: DotNetCoreCLI@2
     displayName: 'Build Stable Nuget packages'
@@ -211,6 +219,7 @@ jobs:
         MediaBrowser.Controller/MediaBrowser.Controller.csproj
         MediaBrowser.Model/MediaBrowser.Model.csproj
         Emby.Naming/Emby.Naming.csproj
+        src/Jellyfin.Extensions/Jellyfin.Extensions.csproj
       custom: 'pack'
       arguments: -o $(Build.ArtifactStagingDirectory) -p:Version=$(JellyfinVersion)
 
@@ -225,6 +234,7 @@ jobs:
         MediaBrowser.Controller/MediaBrowser.Controller.csproj
         MediaBrowser.Model/MediaBrowser.Model.csproj
         Emby.Naming/Emby.Naming.csproj
+        src/Jellyfin.Extensions/Jellyfin.Extensions.csproj
       custom: 'pack'
       arguments: '--version-suffix $(Build.BuildNumber) -o $(Build.ArtifactStagingDirectory) -p:Stability=Unstable'
 

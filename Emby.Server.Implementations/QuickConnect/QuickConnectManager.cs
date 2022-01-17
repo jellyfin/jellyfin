@@ -18,7 +18,7 @@ namespace Emby.Server.Implementations.QuickConnect
     /// <summary>
     /// Quick connect implementation.
     /// </summary>
-    public class QuickConnectManager : IQuickConnect, IDisposable
+    public class QuickConnectManager : IQuickConnect
     {
         /// <summary>
         /// The length of user facing codes.
@@ -30,9 +30,8 @@ namespace Emby.Server.Implementations.QuickConnect
         /// </summary>
         private const int Timeout = 10;
 
-        private readonly RNGCryptoServiceProvider _rng = new ();
-        private readonly ConcurrentDictionary<string, QuickConnectResult> _currentRequests = new ();
-        private readonly ConcurrentDictionary<string, (DateTime Timestamp, AuthenticationResult AuthenticationResult)> _authorizedSecrets = new ();
+        private readonly ConcurrentDictionary<string, QuickConnectResult> _currentRequests = new();
+        private readonly ConcurrentDictionary<string, (DateTime Timestamp, AuthenticationResult AuthenticationResult)> _authorizedSecrets = new();
 
         private readonly IServerConfigurationManager _config;
         private readonly ILogger<QuickConnectManager> _logger;
@@ -140,7 +139,7 @@ namespace Emby.Server.Implementations.QuickConnect
             uint scale = uint.MaxValue;
             while (scale == uint.MaxValue)
             {
-                _rng.GetBytes(raw);
+                RandomNumberGenerator.Fill(raw);
                 scale = BitConverter.ToUInt32(raw);
             }
 
@@ -199,31 +198,10 @@ namespace Emby.Server.Implementations.QuickConnect
             return result.AuthenticationResult;
         }
 
-        /// <summary>
-        /// Dispose.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Dispose.
-        /// </summary>
-        /// <param name="disposing">Dispose unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _rng.Dispose();
-            }
-        }
-
         private string GenerateSecureRandom(int length = 32)
         {
             Span<byte> bytes = stackalloc byte[length];
-            _rng.GetBytes(bytes);
+            RandomNumberGenerator.Fill(bytes);
 
             return Convert.ToHexString(bytes);
         }

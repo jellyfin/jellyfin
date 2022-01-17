@@ -513,7 +513,7 @@ namespace Rssdp.Infrastructure
                 return TimeSpan.Zero;
             }
 
-            return (TimeSpan)(headerValue.MaxAge ?? headerValue.SharedMaxAge ?? TimeSpan.Zero);
+            return headerValue.MaxAge ?? headerValue.SharedMaxAge ?? TimeSpan.Zero;
         }
 
         private void RemoveExpiredDevicesFromCache()

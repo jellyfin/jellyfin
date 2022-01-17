@@ -58,7 +58,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <returns>Guid.</returns>
         string GetImageCacheTag(BaseItem item, ItemImageInfo image);
 
-        string GetImageCacheTag(BaseItem item, ChapterInfo info);
+        string GetImageCacheTag(BaseItem item, ChapterInfo chapter);
 
         string? GetImageCacheTag(User user);
 
@@ -75,7 +75,7 @@ namespace MediaBrowser.Controller.Drawing
         /// </summary>
         /// <param name="options">The options.</param>
         /// <returns>Task.</returns>
-        Task<(string path, string? mimeType, DateTime dateModified)> ProcessImage(ImageProcessingOptions options);
+        Task<(string Path, string? MimeType, DateTime DateModified)> ProcessImage(ImageProcessingOptions options);
 
         /// <summary>
         /// Gets the supported image output formats.

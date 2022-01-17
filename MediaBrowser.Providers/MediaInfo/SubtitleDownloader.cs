@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CA1002, CS1591
 
 using System;
@@ -36,6 +38,7 @@ namespace MediaBrowser.Providers.MediaInfo
             IEnumerable<string> languages,
             string[] disabledSubtitleFetchers,
             string[] subtitleFetcherOrder,
+            bool isAutomated,
             CancellationToken cancellationToken)
         {
             var downloadedLanguages = new List<string>();
@@ -51,6 +54,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     lang,
                     disabledSubtitleFetchers,
                     subtitleFetcherOrder,
+                    isAutomated,
                     cancellationToken).ConfigureAwait(false);
 
                 if (downloaded)
@@ -71,6 +75,7 @@ namespace MediaBrowser.Providers.MediaInfo
             string lang,
             string[] disabledSubtitleFetchers,
             string[] subtitleFetcherOrder,
+            bool isAutomated,
             CancellationToken cancellationToken)
         {
             if (video.VideoType != VideoType.VideoFile)
@@ -109,6 +114,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 disabledSubtitleFetchers,
                 subtitleFetcherOrder,
                 mediaType,
+                isAutomated,
                 cancellationToken);
         }
 
@@ -122,6 +128,7 @@ namespace MediaBrowser.Providers.MediaInfo
             string[] disabledSubtitleFetchers,
             string[] subtitleFetcherOrder,
             VideoContentType mediaType,
+            bool isAutomated,
             CancellationToken cancellationToken)
         {
             // There's already subtitles for this language
@@ -169,7 +176,8 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 IsPerfectMatch = requirePerfectMatch,
                 DisabledSubtitleFetchers = disabledSubtitleFetchers,
-                SubtitleFetcherOrder = subtitleFetcherOrder
+                SubtitleFetcherOrder = subtitleFetcherOrder,
+                IsAutomated = isAutomated
             };
 
             if (video is Episode episode)

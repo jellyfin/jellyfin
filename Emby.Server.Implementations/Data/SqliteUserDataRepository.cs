@@ -32,6 +32,9 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Opens the connection to the database.
         /// </summary>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="dbLock">The lock to use for database IO.</param>
+        /// <param name="dbConnection">The connection to use for database IO.</param>
         public void Initialize(IUserManager userManager, SemaphoreSlim dbLock, SQLiteDatabaseConnection dbConnection)
         {
             WriteLock.Dispose();
@@ -47,41 +50,42 @@ namespace Emby.Server.Implementations.Data
                 var users = userDatasTableExists ? null : userManager.Users;
 
                 connection.RunInTransaction(
-                db =>
-                {
-                    db.ExecuteAll(string.Join(';', new[] {
-
-                        "create table if not exists UserDatas (key nvarchar not null, userId INT not null, rating float null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null, AudioStreamIndex INT, SubtitleStreamIndex INT)",
-
-                        "drop index if exists idx_userdata",
-                        "drop index if exists idx_userdata1",
-                        "drop index if exists idx_userdata2",
-                        "drop index if exists userdataindex1",
-                        "drop index if exists userdataindex",
-                        "drop index if exists userdataindex3",
-                        "drop index if exists userdataindex4",
-                        "create unique index if not exists UserDatasIndex1 on UserDatas (key, userId)",
-                        "create index if not exists UserDatasIndex2 on UserDatas (key, userId, played)",
-                        "create index if not exists UserDatasIndex3 on UserDatas (key, userId, playbackPositionTicks)",
-                        "create index if not exists UserDatasIndex4 on UserDatas (key, userId, isFavorite)"
-                    }));
-
-                    if (userDataTableExists)
+                    db =>
                     {
-                        var existingColumnNames = GetColumnNames(db, "userdata");
-
-                        AddColumn(db, "userdata", "InternalUserId", "int", existingColumnNames);
-                        AddColumn(db, "userdata", "AudioStreamIndex", "int", existingColumnNames);
-                        AddColumn(db, "userdata", "SubtitleStreamIndex", "int", existingColumnNames);
-
-                        if (!userDatasTableExists)
+                        db.ExecuteAll(string.Join(';', new[]
                         {
-                            ImportUserIds(db, users);
+                            "create table if not exists UserDatas (key nvarchar not null, userId INT not null, rating float null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null, AudioStreamIndex INT, SubtitleStreamIndex INT)",
 
-                            db.ExecuteAll("INSERT INTO UserDatas (key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex) SELECT key, InternalUserId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex from userdata where InternalUserId not null");
+                            "drop index if exists idx_userdata",
+                            "drop index if exists idx_userdata1",
+                            "drop index if exists idx_userdata2",
+                            "drop index if exists userdataindex1",
+                            "drop index if exists userdataindex",
+                            "drop index if exists userdataindex3",
+                            "drop index if exists userdataindex4",
+                            "create unique index if not exists UserDatasIndex1 on UserDatas (key, userId)",
+                            "create index if not exists UserDatasIndex2 on UserDatas (key, userId, played)",
+                            "create index if not exists UserDatasIndex3 on UserDatas (key, userId, playbackPositionTicks)",
+                            "create index if not exists UserDatasIndex4 on UserDatas (key, userId, isFavorite)"
+                        }));
+
+                        if (userDataTableExists)
+                        {
+                            var existingColumnNames = GetColumnNames(db, "userdata");
+
+                            AddColumn(db, "userdata", "InternalUserId", "int", existingColumnNames);
+                            AddColumn(db, "userdata", "AudioStreamIndex", "int", existingColumnNames);
+                            AddColumn(db, "userdata", "SubtitleStreamIndex", "int", existingColumnNames);
+
+                            if (!userDatasTableExists)
+                            {
+                                ImportUserIds(db, users);
+
+                                db.ExecuteAll("INSERT INTO UserDatas (key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex) SELECT key, InternalUserId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex from userdata where InternalUserId not null");
+                            }
                         }
-                    }
-                }, TransactionMode);
+                    },
+                    TransactionMode);
             }
         }
 
@@ -180,10 +184,11 @@ namespace Emby.Server.Implementations.Data
             using (var connection = GetConnection())
             {
                 connection.RunInTransaction(
-                db =>
-                {
-                    SaveUserData(db, internalUserId, key, userData);
-                }, TransactionMode);
+                    db =>
+                    {
+                        SaveUserData(db, internalUserId, key, userData);
+                    },
+                    TransactionMode);
             }
         }
 
@@ -249,13 +254,14 @@ namespace Emby.Server.Implementations.Data
             using (var connection = GetConnection())
             {
                 connection.RunInTransaction(
-                db =>
-                {
-                    foreach (var userItemData in userDataList)
+                    db =>
                     {
-                        SaveUserData(db, internalUserId, userItemData.Key, userItemData);
-                    }
-                }, TransactionMode);
+                        foreach (var userItemData in userDataList)
+                        {
+                            SaveUserData(db, internalUserId, userItemData.Key, userItemData);
+                        }
+                    },
+                    TransactionMode);
             }
         }
 

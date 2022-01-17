@@ -127,7 +127,7 @@ namespace Jellyfin.Api.Controllers
         {
             var video = (Video)_libraryManager.GetItemById(itemId);
 
-            return await _subtitleManager.SearchSubtitles(video, language, isPerfectMatch, CancellationToken.None).ConfigureAwait(false);
+            return await _subtitleManager.SearchSubtitles(video, language, isPerfectMatch, false, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -376,7 +376,7 @@ namespace Jellyfin.Api.Controllers
                 var endPositionTicks = Math.Min(runtime, positionTicks + segmentLengthTicks);
 
                 var url = string.Format(
-                    CultureInfo.CurrentCulture,
+                    CultureInfo.InvariantCulture,
                     "stream.vtt?CopyTimestamps=true&AddVttTimeMap=true&StartPositionTicks={0}&EndPositionTicks={1}&api_key={2}",
                     positionTicks.ToString(CultureInfo.InvariantCulture),
                     endPositionTicks.ToString(CultureInfo.InvariantCulture),
@@ -417,6 +417,8 @@ namespace Jellyfin.Api.Controllers
                     IsForced = body.IsForced,
                     Stream = memoryStream
                 }).ConfigureAwait(false);
+            _providerManager.QueueRefresh(video.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
+
             return NoContent();
         }
 
@@ -526,7 +528,7 @@ namespace Jellyfin.Api.Controllers
 
                 if (fontFile != null && fileSize != null && fileSize > 0)
                 {
-                    _logger.LogDebug("Fallback font size is {fileSize} Bytes", fileSize);
+                    _logger.LogDebug("Fallback font size is {FileSize} Bytes", fileSize);
                     return PhysicalFile(fontFile.FullName, MimeTypes.GetMimeType(fontFile.FullName));
                 }
                 else

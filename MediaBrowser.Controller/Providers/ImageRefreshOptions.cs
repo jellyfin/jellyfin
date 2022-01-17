@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CA1819, CS1591
 
 using System;
@@ -28,6 +26,11 @@ namespace MediaBrowser.Controller.Providers
         public ImageType[] ReplaceImages { get; set; }
 
         public bool IsAutomated { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether old metadata should be removed if it isn't replaced.
+        /// </summary>
+        public bool RemoveOldMetadata { get; set; }
 
         public bool IsReplacingImage(ImageType type)
         {

@@ -1,5 +1,4 @@
-#nullable disable
-
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -14,18 +13,18 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// Gets or sets the list of maps.
         /// </summary>
         [JsonPropertyName("map")]
-        public List<MapDto> Map { get; set; }
+        public IReadOnlyList<MapDto> Map { get; set; } = Array.Empty<MapDto>();
 
         /// <summary>
         /// Gets or sets the list of stations.
         /// </summary>
         [JsonPropertyName("stations")]
-        public List<StationDto> Stations { get; set; }
+        public IReadOnlyList<StationDto> Stations { get; set; } = Array.Empty<StationDto>();
 
         /// <summary>
         /// Gets or sets the metadata.
         /// </summary>
         [JsonPropertyName("metadata")]
-        public MetadataDto Metadata { get; set; }
+        public MetadataDto? Metadata { get; set; }
     }
 }

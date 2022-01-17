@@ -83,9 +83,9 @@ These instructions will help you get set up with a local development environment
 
 ### Prerequisites
 
-Before the project can be built, you must first install the [.NET 5.0 SDK](https://dotnet.microsoft.com/download) on your system.
+Before the project can be built, you must first install the [.NET 6.0 SDK](https://dotnet.microsoft.com/download/dotnet) on your system.
 
-Instructions to run this project from the command line are included here, but you will also need to install an IDE if you want to debug the server while it is running. Any IDE that supports .NET Core development will work, but two options are recent versions of [Visual Studio](https://visualstudio.microsoft.com/downloads/) (at least 2017) and [Visual Studio Code](https://code.visualstudio.com/Download).
+Instructions to run this project from the command line are included here, but you will also need to install an IDE if you want to debug the server while it is running. Any IDE that supports .NET 6 development will work, but two options are recent versions of [Visual Studio](https://visualstudio.microsoft.com/downloads/) (at least 2022) and [Visual Studio Code](https://code.visualstudio.com/Download).
 
 [ffmpeg](https://github.com/jellyfin/jellyfin-ffmpeg) will also need to be installed.
 
@@ -138,10 +138,10 @@ A second option is to build the project and then run the resulting executable fi
 
 1. Build the project
 
-    ```bash
-    dotnet build                # Build the project
-    cd bin/Debug/net5.0  # Change into the build output directory
-    ```
+```bash
+dotnet build                       # Build the project
+cd Jellyfin.Server/bin/Debug/net6.0 # Change into the build output directory
+```
 
 2. Execute the build output. On Linux, Mac, etc. use `./jellyfin` and on Windows use `jellyfin.exe`.
 

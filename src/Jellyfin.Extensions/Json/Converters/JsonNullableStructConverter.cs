@@ -15,13 +15,10 @@ namespace Jellyfin.Extensions.Json.Converters
         /// <inheritdoc />
         public override TStruct? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            if (reader.TokenType == JsonTokenType.Null)
-            {
-                return null;
-            }
-
             // Token is empty string.
-            if (reader.TokenType == JsonTokenType.String && ((reader.HasValueSequence && reader.ValueSequence.IsEmpty) || reader.ValueSpan.IsEmpty))
+            if (reader.TokenType == JsonTokenType.String
+                && ((reader.HasValueSequence && reader.ValueSequence.IsEmpty)
+                    || (!reader.HasValueSequence && reader.ValueSpan.IsEmpty)))
             {
                 return null;
             }
@@ -31,15 +28,6 @@ namespace Jellyfin.Extensions.Json.Converters
 
         /// <inheritdoc />
         public override void Write(Utf8JsonWriter writer, TStruct? value, JsonSerializerOptions options)
-        {
-            if (value.HasValue)
-            {
-                JsonSerializer.Serialize(writer, value.Value, options);
-            }
-            else
-            {
-                writer.WriteNullValue();
-            }
-        }
+            => JsonSerializer.Serialize(writer, value!.Value, options); // null got handled higher up the call stack
     }
 }

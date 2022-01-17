@@ -42,17 +42,14 @@ namespace Emby.Server.Implementations.HttpServer
         /// <param name="logger">The logger.</param>
         /// <param name="socket">The socket.</param>
         /// <param name="remoteEndPoint">The remote end point.</param>
-        /// <param name="query">The query.</param>
         public WebSocketConnection(
             ILogger<WebSocketConnection> logger,
             WebSocket socket,
-            IPAddress? remoteEndPoint,
-            IQueryCollection query)
+            IPAddress? remoteEndPoint)
         {
             _logger = logger;
             _socket = socket;
             RemoteEndPoint = remoteEndPoint;
-            QueryString = query;
 
             _jsonOptions = JsonDefaults.Options;
             LastActivityDate = DateTime.Now;
@@ -82,12 +79,6 @@ namespace Emby.Server.Implementations.HttpServer
         public DateTime LastKeepAliveDate { get; set; }
 
         /// <summary>
-        /// Gets the query string.
-        /// </summary>
-        /// <value>The query string.</value>
-        public IQueryCollection QueryString { get; }
-
-        /// <summary>
         /// Gets the state.
         /// </summary>
         /// <value>The state.</value>
@@ -96,7 +87,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Sends a message asynchronously.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
@@ -150,8 +141,8 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     await ProcessInternal(pipe.Reader).ConfigureAwait(false);
                 }
-            } while (
-                (_socket.State == WebSocketState.Open || _socket.State == WebSocketState.Connecting)
+            }
+            while ((_socket.State == WebSocketState.Open || _socket.State == WebSocketState.Connecting)
                 && receiveresult.MessageType != WebSocketMessageType.Close);
 
             Closed?.Invoke(this, EventArgs.Empty);
@@ -180,7 +171,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
 
             WebSocketMessage<object>? stub;
-            long bytesConsumed = 0;
+            long bytesConsumed;
             try
             {
                 stub = DeserializeWebSocketMessage(buffer, out bytesConsumed);
@@ -236,7 +227,8 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     MessageId = Guid.NewGuid(),
                     MessageType = SessionMessageType.KeepAlive
-                }, CancellationToken.None);
+                },
+                CancellationToken.None);
         }
 
         /// <inheritdoc />

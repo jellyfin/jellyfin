@@ -195,7 +195,7 @@ namespace MediaBrowser.Common.Net
                     return NetworkAddress.PrefixLength <= netaddrObj.PrefixLength;
                 }
 
-                var altAddress = NetworkAddressOf(netaddrObj.Address, PrefixLength).address;
+                var altAddress = NetworkAddressOf(netaddrObj.Address, PrefixLength).Address;
                 return NetworkAddress.Address.Equals(altAddress);
             }
 

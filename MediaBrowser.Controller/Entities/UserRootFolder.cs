@@ -24,6 +24,14 @@ namespace MediaBrowser.Controller.Entities
         private readonly object _childIdsLock = new object();
         private List<Guid> _childrenIds = null;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserRootFolder"/> class.
+        /// </summary>
+        public UserRootFolder()
+        {
+            IsRoot = true;
+        }
+
         [JsonIgnore]
         public override bool SupportsInheritedParentImages => false;
 
@@ -42,14 +50,6 @@ namespace MediaBrowser.Controller.Entities
             {
                 _childrenIds = null;
             }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UserRootFolder"/> class.
-        /// </summary>
-        public UserRootFolder()
-        {
-            IsRoot = true;
         }
 
         protected override List<BaseItem> LoadChildren()

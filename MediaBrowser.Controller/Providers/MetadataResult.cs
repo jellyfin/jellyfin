@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.Providers
     {
         // Images aren't always used so the allocation is a waste a lot of the time
         private List<LocalImageInfo> _images;
-        private List<(string url, ImageType type)> _remoteImages;
+        private List<(string Url, ImageType Type)> _remoteImages;
 
         public MetadataResult()
         {
@@ -27,9 +27,9 @@ namespace MediaBrowser.Controller.Providers
             set => _images = value;
         }
 
-        public List<(string url, ImageType type)> RemoteImages
+        public List<(string Url, ImageType Type)> RemoteImages
         {
-            get => _remoteImages ??= new List<(string url, ImageType type)>();
+            get => _remoteImages ??= new List<(string Url, ImageType Type)>();
             set => _remoteImages = value;
         }
 

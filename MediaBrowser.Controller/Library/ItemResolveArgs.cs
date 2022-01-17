@@ -36,6 +36,7 @@ namespace MediaBrowser.Controller.Library
             DirectoryService = directoryService;
         }
 
+        // TODO remove dependencies as properties, they should be injected where it makes sense
         public IDirectoryService DirectoryService { get; }
 
         /// <summary>
@@ -234,6 +235,40 @@ namespace MediaBrowser.Controller.Library
         public string GetCollectionType()
         {
             return CollectionType;
+        }
+
+        /// <summary>
+        /// Gets the configured content type for the path.
+        /// </summary>
+        /// <remarks>
+        /// This is subject to future refactoring as it relies on a static property in BaseItem.
+        /// </remarks>
+        /// <returns>The configured content type.</returns>
+        public string GetConfiguredContentType()
+        {
+            return BaseItem.LibraryManager.GetConfiguredContentType(Path);
+        }
+
+        /// <summary>
+        /// Gets the file system children that do not hit the ignore file check.
+        /// </summary>
+        /// <remarks>
+        /// This is subject to future refactoring as it relies on a static property in BaseItem.
+        /// </remarks>
+        /// <returns>The file system children that are not ignored.</returns>
+        public IEnumerable<FileSystemMetadata> GetActualFileSystemChildren()
+        {
+            var numberOfChildren = FileSystemChildren.Length;
+            for (var i = 0; i < numberOfChildren; i++)
+            {
+                var child = FileSystemChildren[i];
+                if (BaseItem.LibraryManager.IgnoreFile(child, Parent))
+                {
+                    continue;
+                }
+
+                yield return child;
+            }
         }
 
         /// <summary>

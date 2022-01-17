@@ -110,23 +110,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string OutputContainer { get; set; }
 
-        public string OutputVideoSync
-        {
-            get
-            {
-                // For live tv + in progress recordings
-                if (string.Equals(InputContainer, "mpegts", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(InputContainer, "ts", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (!MediaSource.RunTimeTicks.HasValue)
-                    {
-                        return "cfr";
-                    }
-                }
-
-                return "-1";
-            }
-        }
+        public string OutputVideoSync { get; set; }
 
         public string AlbumCoverPath { get; set; }
 
@@ -541,7 +525,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return MimeType;
             }
 
-            return MimeTypes.GetMimeType(outputPath, enableStreamDefault);
+            if (enableStreamDefault)
+            {
+                return MimeTypes.GetMimeType(outputPath);
+            }
+
+            return MimeTypes.GetMimeType(outputPath, null);
         }
 
         public bool DeInterlace(string videoCodec, bool forceDeinterlaceIfSourceIsInterlaced)

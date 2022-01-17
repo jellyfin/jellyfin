@@ -3,8 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Net.Mime;
+using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.UserDtos;
@@ -31,18 +30,10 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         }
 
         private Task<HttpResponseMessage> CreateUserByName(HttpClient httpClient, CreateUserByName request)
-        {
-            using var postContent = new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(request, _jsonOpions));
-            postContent.Headers.ContentType = MediaTypeHeaderValue.Parse(MediaTypeNames.Application.Json);
-            return httpClient.PostAsync("Users/New", postContent);
-        }
+            => httpClient.PostAsJsonAsync("Users/New", request, _jsonOpions);
 
         private Task<HttpResponseMessage> UpdateUserPassword(HttpClient httpClient, Guid userId, UpdateUserPassword request)
-        {
-            using var postContent = new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(request, _jsonOpions));
-            postContent.Headers.ContentType = MediaTypeHeaderValue.Parse(MediaTypeNames.Application.Json);
-            return httpClient.PostAsync("Users/" + userId.ToString("N", CultureInfo.InvariantCulture) + "/Password", postContent);
-        }
+            => httpClient.PostAsJsonAsync("Users/" + userId.ToString("N", CultureInfo.InvariantCulture) + "/Password", request, _jsonOpions);
 
         [Fact]
         [Priority(-1)]

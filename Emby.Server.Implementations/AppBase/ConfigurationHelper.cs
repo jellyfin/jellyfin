@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Linq;
 using MediaBrowser.Model.Serialization;
 
 namespace Emby.Server.Implementations.AppBase
@@ -41,20 +40,19 @@ namespace Emby.Server.Implementations.AppBase
             xmlSerializer.SerializeToStream(configuration, stream);
 
             // Take the object we just got and serialize it back to bytes
-            byte[] newBytes = stream.GetBuffer();
-            int newBytesLen = (int)stream.Length;
+            Span<byte> newBytes = stream.GetBuffer().AsSpan(0, (int)stream.Length);
 
             // If the file didn't exist before, or if something has changed, re-save
-            if (buffer == null || !newBytes.AsSpan(0, newBytesLen).SequenceEqual(buffer))
+            if (buffer == null || !newBytes.SequenceEqual(buffer))
             {
                 var directory = Path.GetDirectoryName(path) ?? throw new ArgumentException($"Provided path ({path}) is not valid.", nameof(path));
 
                 Directory.CreateDirectory(directory);
+
                 // Save it after load in case we got new items
-                // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
                 using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
-                    fs.Write(newBytes, 0, newBytesLen);
+                    fs.Write(newBytes);
                 }
             }
 

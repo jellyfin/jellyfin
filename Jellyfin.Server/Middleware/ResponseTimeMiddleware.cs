@@ -68,7 +68,7 @@ namespace Jellyfin.Server.Middleware
             if (_enableWarning && watch.ElapsedMilliseconds > _warningThreshold)
             {
                 _logger.LogWarning(
-                    "Slow HTTP Response from {url} to {remoteIp} in {elapsed:g} with Status Code {statusCode}",
+                    "Slow HTTP Response from {Url} to {RemoteIp} in {Elapsed:g} with Status Code {StatusCode}",
                     context.Request.GetDisplayUrl(),
                     context.GetNormalizedRemoteIp(),
                     watch.Elapsed,

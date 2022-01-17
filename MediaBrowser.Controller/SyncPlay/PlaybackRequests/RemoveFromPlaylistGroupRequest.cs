@@ -19,7 +19,6 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
         /// <param name="items">The playlist ids of the items to remove.</param>
         /// <param name="clearPlaylist">Whether to clear the entire playlist. The items list will be ignored.</param>
         /// <param name="clearPlayingItem">Whether to remove the playing item as well. Used only when clearing the playlist.</param>
-
         public RemoveFromPlaylistGroupRequest(IReadOnlyList<Guid> items, bool clearPlaylist = false, bool clearPlayingItem = false)
         {
             PlaylistItemIds = items ?? Array.Empty<Guid>();

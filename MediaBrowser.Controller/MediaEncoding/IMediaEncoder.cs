@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
@@ -23,6 +24,30 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// </summary>
         /// <value>The encoder path.</value>
         string EncoderPath { get; }
+
+        /// <summary>
+        /// Gets the version of encoder.
+        /// </summary>
+        /// <returns>The version of encoder.</returns>
+        Version EncoderVersion { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the configured Vaapi device is from AMD(radeonsi/r600 Mesa driver).
+        /// </summary>
+        /// <value><c>true</c> if the Vaapi device is an AMD(radeonsi/r600 Mesa driver) GPU, <c>false</c> otherwise.</value>
+        bool IsVaapiDeviceAmd { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the configured Vaapi device is from Intel(iHD driver).
+        /// </summary>
+        /// <value><c>true</c> if the Vaapi device is an Intel(iHD driver) GPU, <c>false</c> otherwise.</value>
+        bool IsVaapiDeviceInteliHD { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the configured Vaapi device is from Intel(legacy i965 driver).
+        /// </summary>
+        /// <value><c>true</c> if the Vaapi device is an Intel(legacy i965 driver) GPU, <c>false</c> otherwise.</value>
+        bool IsVaapiDeviceInteli965 { get; }
 
         /// <summary>
         /// Whether given encoder codec is supported.
@@ -60,12 +85,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         bool SupportsFilterWithOption(FilterOptionType option);
 
         /// <summary>
-        /// Get the version of media encoder.
-        /// </summary>
-        /// <returns>The version of media encoder.</returns>
-        Version GetMediaEncoderVersion();
-
-        /// <summary>
         /// Extracts the audio image.
         /// </summary>
         /// <param name="path">The path.</param>
@@ -95,35 +114,10 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="mediaSource">Media source information.</param>
         /// <param name="imageStream">Media stream information.</param>
         /// <param name="imageStreamIndex">Index of the stream to extract from.</param>
+        /// <param name="targetFormat">The format of the file to write.</param>
         /// <param name="cancellationToken">CancellationToken to use for operation.</param>
         /// <returns>Location of video image.</returns>
-        Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream imageStream, int? imageStreamIndex, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Extracts the video images on interval.
-        /// </summary>
-        /// <param name="inputFile">Input file.</param>
-        /// <param name="container">Video container type.</param>
-        /// <param name="videoStream">Media stream information.</param>
-        /// <param name="mediaSource">Media source information.</param>
-        /// <param name="threedFormat">Video 3D format.</param>
-        /// <param name="interval">Time interval.</param>
-        /// <param name="targetDirectory">Directory to write images.</param>
-        /// <param name="filenamePrefix">Filename prefix to use.</param>
-        /// <param name="maxWidth">Maximum width of image.</param>
-        /// <param name="cancellationToken">CancellationToken to use for operation.</param>
-        /// <returns>A task.</returns>
-        Task ExtractVideoImagesOnInterval(
-            string inputFile,
-            string container,
-            MediaStream videoStream,
-            MediaSourceInfo mediaSource,
-            Video3DFormat? threedFormat,
-            TimeSpan interval,
-            string targetDirectory,
-            string filenamePrefix,
-            int? maxWidth,
-            CancellationToken cancellationToken);
+        Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream imageStream, int? imageStreamIndex, ImageFormat? targetFormat, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the media info.

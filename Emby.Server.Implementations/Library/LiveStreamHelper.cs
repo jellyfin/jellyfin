@@ -10,9 +10,9 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
@@ -66,11 +66,8 @@ namespace Emby.Server.Implementations.Library
                 {
                     var delayMs = mediaSource.AnalyzeDurationMs ?? 0;
                     delayMs = Math.Max(3000, delayMs);
-                    if (delayMs > 0)
-                    {
-                        _logger.LogInformation("Waiting {0}ms before probing the live stream", delayMs);
-                        await Task.Delay(delayMs, cancellationToken).ConfigureAwait(false);
-                    }
+                    _logger.LogInformation("Waiting {0}ms before probing the live stream", delayMs);
+                    await Task.Delay(delayMs, cancellationToken).ConfigureAwait(false);
                 }
 
                 mediaSource.AnalyzeDurationMs = 3000;

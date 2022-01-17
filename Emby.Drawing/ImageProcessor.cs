@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
@@ -26,7 +27,7 @@ namespace Emby.Drawing
     public sealed class ImageProcessor : IImageProcessor, IDisposable
     {
         // Increment this when there's a change requiring caches to be invalidated
-        private const string Version = "3";
+        private const char Version = '3';
 
         private static readonly HashSet<string> _transparentImageTypes
             = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".webp", ".gif" };
@@ -101,8 +102,7 @@ namespace Emby.Drawing
         public async Task ProcessImage(ImageProcessingOptions options, Stream toStream)
         {
             var file = await ProcessImage(options).ConfigureAwait(false);
-
-            using (var fileStream = new FileStream(file.Item1, FileMode.Open, FileAccess.Read, FileShare.Read, IODefaults.FileStreamBufferSize, AsyncFile.UseAsyncIO))
+            using (var fileStream = AsyncFile.OpenRead(file.Path))
             {
                 await fileStream.CopyToAsync(toStream).ConfigureAwait(false);
             }
@@ -117,7 +117,7 @@ namespace Emby.Drawing
             => _transparentImageTypes.Contains(Path.GetExtension(path));
 
         /// <inheritdoc />
-        public async Task<(string path, string? mimeType, DateTime dateModified)> ProcessImage(ImageProcessingOptions options)
+        public async Task<(string Path, string? MimeType, DateTime DateModified)> ProcessImage(ImageProcessingOptions options)
         {
             ItemImageInfo originalImage = options.Image;
             BaseItem item = options.Item;
@@ -130,20 +130,22 @@ namespace Emby.Drawing
                 originalImageSize = new ImageDimensions(originalImage.Width, originalImage.Height);
             }
 
+            var mimeType = MimeTypes.GetMimeType(originalImagePath);
             if (!_imageEncoder.SupportsImageEncoding)
             {
-                return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
+                return (originalImagePath, mimeType, dateModified);
             }
 
             var supportedImageInfo = await GetSupportedImage(originalImagePath, dateModified).ConfigureAwait(false);
-            originalImagePath = supportedImageInfo.path;
+            originalImagePath = supportedImageInfo.Path;
 
-            if (!File.Exists(originalImagePath))
+            // Original file doesn't exist, or original file is gif.
+            if (!File.Exists(originalImagePath) || string.Equals(mimeType, MediaTypeNames.Image.Gif, StringComparison.OrdinalIgnoreCase))
             {
-                return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
+                return (originalImagePath, mimeType, dateModified);
             }
 
-            dateModified = supportedImageInfo.dateModified;
+            dateModified = supportedImageInfo.DateModified;
             bool requiresTransparency = _transparentImageTypes.Contains(Path.GetExtension(originalImagePath));
 
             bool autoOrient = false;
@@ -243,7 +245,7 @@ namespace Emby.Drawing
             return ImageFormat.Jpg;
         }
 
-        private string? GetMimeType(ImageFormat format, string path)
+        private string GetMimeType(ImageFormat format, string path)
             => format switch
             {
                 ImageFormat.Bmp => MimeTypes.GetMimeType("i.bmp"),
@@ -437,7 +439,7 @@ namespace Emby.Drawing
                 .ToString("N", CultureInfo.InvariantCulture);
         }
 
-        private async Task<(string path, DateTime dateModified)> GetSupportedImage(string originalImagePath, DateTime dateModified)
+        private async Task<(string Path, DateTime DateModified)> GetSupportedImage(string originalImagePath, DateTime dateModified)
         {
             var inputFormat = Path.GetExtension(originalImagePath)
                 .TrimStart('.')

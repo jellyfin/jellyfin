@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -16,7 +17,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Tasks;
 
-namespace Emby.Server.Implementations.ScheduledTasks
+namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 {
     /// <summary>
     /// Class ChapterImagesTask.
@@ -39,6 +40,12 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <summary>
         /// Initializes a new instance of the <see cref="ChapterImagesTask" /> class.
         /// </summary>
+        /// <param name="libraryManager">The library manager.</param>.
+        /// <param name="itemRepo">The item repository.</param>
+        /// <param name="appPaths">The application paths.</param>
+        /// <param name="encodingManager">The encoding manager.</param>
+        /// <param name="fileSystem">The filesystem.</param>
+        /// <param name="localization">The localization manager.</param>
         public ChapterImagesTask(
             ILibraryManager libraryManager,
             IItemRepository itemRepo,
@@ -137,7 +144,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
                 var key = video.Path + video.DateModified.Ticks;
 
-                var extract = !previouslyFailedImages.Contains(key, StringComparer.OrdinalIgnoreCase);
+                var extract = !previouslyFailedImages.Contains(key, StringComparison.OrdinalIgnoreCase);
 
                 try
                 {

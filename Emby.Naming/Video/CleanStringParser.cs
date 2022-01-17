@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
@@ -17,38 +16,39 @@ namespace Emby.Naming.Video
         /// <param name="expressions">List of regex to parse name and year from.</param>
         /// <param name="newName">Parsing result string.</param>
         /// <returns>True if parsing was successful.</returns>
-        public static bool TryClean([NotNullWhen(true)] string? name, IReadOnlyList<Regex> expressions, out ReadOnlySpan<char> newName)
+        public static bool TryClean([NotNullWhen(true)] string? name, IReadOnlyList<Regex> expressions, out string newName)
         {
             if (string.IsNullOrEmpty(name))
             {
-                newName = ReadOnlySpan<char>.Empty;
+                newName = string.Empty;
                 return false;
             }
 
-            var len = expressions.Count;
-            for (int i = 0; i < len; i++)
+            // Iteratively apply the regexps to clean the string.
+            bool cleaned = false;
+            for (int i = 0; i < expressions.Count; i++)
             {
                 if (TryClean(name, expressions[i], out newName))
                 {
-                    return true;
+                    cleaned = true;
+                    name = newName;
                 }
             }
 
-            newName = ReadOnlySpan<char>.Empty;
-            return false;
+            newName = cleaned ? name : string.Empty;
+            return cleaned;
         }
 
-        private static bool TryClean(string name, Regex expression, out ReadOnlySpan<char> newName)
+        private static bool TryClean(string name, Regex expression, out string newName)
         {
             var match = expression.Match(name);
-            int index = match.Index;
-            if (match.Success && index != 0)
+            if (match.Success && match.Groups.TryGetValue("cleaned", out var cleaned))
             {
-                newName = name.AsSpan().Slice(0, match.Index);
+                newName = cleaned.Value;
                 return true;
             }
 
-            newName = ReadOnlySpan<char>.Empty;
+            newName = string.Empty;
             return false;
         }
     }

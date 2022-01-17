@@ -134,7 +134,7 @@
         PlaylistsFolder,
 
         /// <summary>
-        /// Item is program
+        /// Item is program.
         /// </summary>
         Program,
 

@@ -48,7 +48,7 @@
     "HeaderFavoriteArtists": "Artistas Favoritos",
     "HeaderFavoriteAlbums": "Álbunes Favoritos",
     "HeaderContinueWatching": "Seguir mirando",
-    "HeaderAlbumArtists": "Artistas de Album",
+    "HeaderAlbumArtists": "Artistas do Album",
     "Genres": "Xéneros",
     "Forced": "Forzado",
     "Folders": "Cartafoles",
@@ -117,5 +117,7 @@
     "UserPolicyUpdatedWithName": "A política de usuario foi actualizada para {0}",
     "UserPasswordChangedWithName": "Cambiouse o contrasinal para o usuario {0}",
     "UserOnlineFromDevice": "{0} está en liña desde {1}",
-    "UserOfflineFromDevice": "{0} desconectouse desde {1}"
+    "UserOfflineFromDevice": "{0} desconectouse desde {1}",
+    "TaskOptimizeDatabaseDescription": "Compacta e libera o espazo libre da base de datos. Executar esta tarefa logo de realizar mudanzas que impliquen modificacións da base de datos ou despois de escanear a biblioteca pode traer mellorías de desempeño.",
+    "TaskOptimizeDatabase": "Optimizar base de datos"
 }

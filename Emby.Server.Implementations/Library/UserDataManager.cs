@@ -25,8 +25,6 @@ namespace Emby.Server.Implementations.Library
     /// </summary>
     public class UserDataManager : IUserDataManager
     {
-        public event EventHandler<UserDataSaveEventArgs> UserDataSaved;
-
         private readonly ConcurrentDictionary<string, UserItemData> _userData =
             new ConcurrentDictionary<string, UserItemData>(StringComparer.OrdinalIgnoreCase);
 
@@ -43,6 +41,8 @@ namespace Emby.Server.Implementations.Library
             _userManager = userManager;
             _repository = repository;
         }
+
+        public event EventHandler<UserDataSaveEventArgs> UserDataSaved;
 
         public void SaveUserData(Guid userId, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
         {
@@ -75,7 +75,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             var cacheKey = GetCacheKey(userId, item.Id);
-            _userData.AddOrUpdate(cacheKey, userData, (k, v) => userData);
+            _userData.AddOrUpdate(cacheKey, userData, (_, _) => userData);
 
             UserDataSaved?.Invoke(this, new UserDataSaveEventArgs
             {
@@ -90,10 +90,9 @@ namespace Emby.Server.Implementations.Library
         /// <summary>
         /// Save the provided user data for the given user.  Batch operation. Does not fire any events or update the cache.
         /// </summary>
-        /// <param name="userId"></param>
-        /// <param name="userData"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="userId">The user id.</param>
+        /// <param name="userData">The user item data.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         public void SaveAllUserData(Guid userId, UserItemData[] userData, CancellationToken cancellationToken)
         {
             var user = _userManager.GetUserById(userId);
@@ -104,8 +103,8 @@ namespace Emby.Server.Implementations.Library
         /// <summary>
         /// Retrieve all user data for the given user.
         /// </summary>
-        /// <param name="userId"></param>
-        /// <returns></returns>
+        /// <param name="userId">The user id.</param>
+        /// <returns>A <see cref="List{UserItemData}"/> containing all of the user's item data.</returns>
         public List<UserItemData> GetAllUserData(Guid userId)
         {
             var user = _userManager.GetUserById(userId);
@@ -126,7 +125,7 @@ namespace Emby.Server.Implementations.Library
 
             var cacheKey = GetCacheKey(userId, itemId);
 
-            return _userData.GetOrAdd(cacheKey, k => GetUserDataInternal(userId, keys));
+            return _userData.GetOrAdd(cacheKey, _ => GetUserDataInternal(userId, keys));
         }
 
         private UserItemData GetUserDataInternal(long internalUserId, List<string> keys)

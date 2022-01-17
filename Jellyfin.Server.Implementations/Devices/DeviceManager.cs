@@ -7,6 +7,7 @@ using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.Data.Queries;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Devices;
@@ -23,7 +24,7 @@ namespace Jellyfin.Server.Implementations.Devices
     {
         private readonly JellyfinDbProvider _dbProvider;
         private readonly IUserManager _userManager;
-        private readonly ConcurrentDictionary<string, ClientCapabilities> _capabilitiesMap = new ();
+        private readonly ConcurrentDictionary<string, ClientCapabilities> _capabilitiesMap = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceManager"/> class.
@@ -172,8 +173,8 @@ namespace Jellyfin.Server.Implementations.Devices
             var sessions = dbContext.Devices
                 .Include(d => d.User)
                 .AsQueryable()
-                .OrderBy(d => d.DeviceId)
-                .ThenByDescending(d => d.DateLastActivity)
+                .OrderByDescending(d => d.DateLastActivity)
+                .ThenBy(d => d.DeviceId)
                 .AsAsyncEnumerable();
 
             if (supportsSync.HasValue)
@@ -219,7 +220,7 @@ namespace Jellyfin.Server.Implementations.Devices
                 return true;
             }
 
-            return user.GetPreference(PreferenceKind.EnabledDevices).Contains(deviceId, StringComparer.OrdinalIgnoreCase)
+            return user.GetPreference(PreferenceKind.EnabledDevices).Contains(deviceId, StringComparison.OrdinalIgnoreCase)
                    || !GetCapabilities(deviceId).SupportsPersistentIdentifier;
         }
 

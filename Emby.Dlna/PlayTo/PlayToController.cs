@@ -30,8 +30,6 @@ namespace Emby.Dlna.PlayTo
 {
     public class PlayToController : ISessionController, IDisposable
     {
-        private static readonly CultureInfo _usCulture = CultureInfo.ReadOnly(new CultureInfo("en-US"));
-
         private readonly SessionInfo _session;
         private readonly ISessionManager _sessionManager;
         private readonly ILibraryManager _libraryManager;
@@ -212,9 +210,9 @@ namespace Emby.Dlna.PlayTo
 
                 var mediaSource = await streamInfo.GetMediaSource(CancellationToken.None).ConfigureAwait(false);
 
-                var duration = mediaSource == null ?
-                    (_device.Duration == null ? (long?)null : _device.Duration.Value.Ticks) :
-                    mediaSource.RunTimeTicks;
+                var duration = mediaSource == null
+                    ? _device.Duration?.Ticks
+                    : mediaSource.RunTimeTicks;
 
                 var playedToCompletion = positionTicks.HasValue && positionTicks.Value == 0;
 
@@ -716,7 +714,7 @@ namespace Emby.Dlna.PlayTo
                 case GeneralCommandType.SetAudioStreamIndex:
                     if (command.Arguments.TryGetValue("Index", out string index))
                     {
-                        if (int.TryParse(index, NumberStyles.Integer, _usCulture, out var val))
+                        if (int.TryParse(index, NumberStyles.Integer, CultureInfo.InvariantCulture, out var val))
                         {
                             return SetAudioStreamIndex(val);
                         }
@@ -728,7 +726,7 @@ namespace Emby.Dlna.PlayTo
                 case GeneralCommandType.SetSubtitleStreamIndex:
                     if (command.Arguments.TryGetValue("Index", out index))
                     {
-                        if (int.TryParse(index, NumberStyles.Integer, _usCulture, out var val))
+                        if (int.TryParse(index, NumberStyles.Integer, CultureInfo.InvariantCulture, out var val))
                         {
                             return SetSubtitleStreamIndex(val);
                         }
@@ -740,7 +738,7 @@ namespace Emby.Dlna.PlayTo
                 case GeneralCommandType.SetVolume:
                     if (command.Arguments.TryGetValue("Volume", out string vol))
                     {
-                        if (int.TryParse(vol, NumberStyles.Integer, _usCulture, out var volume))
+                        if (int.TryParse(vol, NumberStyles.Integer, CultureInfo.InvariantCulture, out var volume))
                         {
                             return _device.SetVolume(volume, cancellationToken);
                         }

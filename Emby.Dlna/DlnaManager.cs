@@ -5,7 +5,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -84,8 +83,7 @@ namespace Emby.Dlna
         {
             lock (_profiles)
             {
-                var list = _profiles.Values.ToList();
-                return list
+                return _profiles.Values
                     .OrderBy(i => i.Item1.Info.Type == DeviceProfileType.User ? 0 : 1)
                     .ThenBy(i => i.Item1.Info.Name)
                     .Select(i => i.Item2)
@@ -112,7 +110,7 @@ namespace Emby.Dlna
 
             if (profile == null)
             {
-                LogUnmatchedProfile(deviceInfo);
+                _logger.LogInformation("No matching device profile found. The default will need to be used. \n{@Profile}", deviceInfo);
             }
             else
             {
@@ -120,23 +118,6 @@ namespace Emby.Dlna
             }
 
             return profile;
-        }
-
-        private void LogUnmatchedProfile(DeviceIdentification profile)
-        {
-            var builder = new StringBuilder();
-
-            builder.AppendLine("No matching device profile found. The default will need to be used.");
-            builder.Append("FriendlyName: ").AppendLine(profile.FriendlyName);
-            builder.Append("Manufacturer: ").AppendLine(profile.Manufacturer);
-            builder.Append("ManufacturerUrl: ").AppendLine(profile.ManufacturerUrl);
-            builder.Append("ModelDescription: ").AppendLine(profile.ModelDescription);
-            builder.Append("ModelName: ").AppendLine(profile.ModelName);
-            builder.Append("ModelNumber: ").AppendLine(profile.ModelNumber);
-            builder.Append("ModelUrl: ").AppendLine(profile.ModelUrl);
-            builder.Append("SerialNumber: ").AppendLine(profile.SerialNumber);
-
-            _logger.LogInformation(builder.ToString());
         }
 
         /// <summary>
@@ -244,11 +225,8 @@ namespace Emby.Dlna
         {
             try
             {
-                var xmlFies = _fileSystem.GetFilePaths(path)
+                return _fileSystem.GetFilePaths(path)
                     .Where(i => string.Equals(Path.GetExtension(i), ".xml", StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-
-                return xmlFies
                     .Select(i => ParseProfileFile(i, type))
                     .Where(i => i != null)
                     .ToList()!; // We just filtered out all the nulls
@@ -270,11 +248,8 @@ namespace Emby.Dlna
 
                 try
                 {
-                    DeviceProfile profile;
-
                     var tempProfile = (DeviceProfile)_xmlSerializer.DeserializeFromFile(typeof(DeviceProfile), path);
-
-                    profile = ReserializeProfile(tempProfile);
+                    var profile = ReserializeProfile(tempProfile);
 
                     profile.Id = path.ToLowerInvariant().GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
@@ -313,8 +288,7 @@ namespace Emby.Dlna
         {
             lock (_profiles)
             {
-                var list = _profiles.Values.ToList();
-                return list
+                return _profiles.Values
                     .Select(i => i.Item1)
                     .OrderBy(i => i.Info.Type == DeviceProfileType.User ? 0 : 1)
                     .ThenBy(i => i.Info.Name);
@@ -359,14 +333,17 @@ namespace Emby.Dlna
                 // The stream should exist as we just got its name from GetManifestResourceNames
                 using (var stream = _assembly.GetManifestResourceStream(name)!)
                 {
+                    var length = stream.Length;
                     var fileInfo = _fileSystem.GetFileInfo(path);
 
-                    if (!fileInfo.Exists || fileInfo.Length != stream.Length)
+                    if (!fileInfo.Exists || fileInfo.Length != length)
                     {
                         Directory.CreateDirectory(systemProfilesPath);
 
-                        // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-                        using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, AsyncFile.UseAsyncIO))
+                        var fileOptions = AsyncFile.WriteOptions;
+                        fileOptions.Mode = FileMode.Create;
+                        fileOptions.PreallocationSize = length;
+                        using (var fileStream = new FileStream(path, fileOptions))
                         {
                             await stream.CopyToAsync(fileStream).ConfigureAwait(false);
                         }
@@ -413,7 +390,7 @@ namespace Emby.Dlna
         }
 
         /// <inheritdoc />
-        public void UpdateProfile(DeviceProfile profile)
+        public void UpdateProfile(string profileId, DeviceProfile profile)
         {
             profile = ReserializeProfile(profile);
 
@@ -427,7 +404,7 @@ namespace Emby.Dlna
                 throw new ArgumentException("Profile is missing Name");
             }
 
-            var current = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, profile.Id, StringComparison.OrdinalIgnoreCase));
+            var current = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, profileId, StringComparison.OrdinalIgnoreCase));
 
             var newFilename = _fileSystem.GetValidFilename(profile.Name) + ".xml";
             var path = Path.Combine(UserProfilesPath, newFilename);
@@ -486,18 +463,22 @@ namespace Emby.Dlna
         }
 
         /// <inheritdoc />
-        public ImageStream GetIcon(string filename)
+        public ImageStream? GetIcon(string filename)
         {
             var format = filename.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
                 ? ImageFormat.Png
                 : ImageFormat.Jpg;
 
             var resource = GetType().Namespace + ".Images." + filename.ToLowerInvariant();
-
-            return new ImageStream
+            var stream = _assembly.GetManifestResourceStream(resource);
+            if (stream == null)
             {
-                Format = format,
-                Stream = _assembly.GetManifestResourceStream(resource)
+                return null;
+            }
+
+            return new ImageStream(stream)
+            {
+                Format = format
             };
         }
 

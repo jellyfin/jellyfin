@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.PlaybackDtos;
@@ -40,7 +41,7 @@ namespace Jellyfin.Api.Helpers
 
             // Can't dispose the response as it's required up the call chain.
             var response = await httpClient.GetAsync(new Uri(state.MediaPath), cancellationToken).ConfigureAwait(false);
-            var contentType = response.Content.Headers.ContentType?.ToString();
+            var contentType = response.Content.Headers.ContentType?.ToString() ?? MediaTypeNames.Text.Plain;
 
             httpContext.Response.Headers[HeaderNames.AcceptRanges] = "none";
 

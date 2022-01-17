@@ -1,5 +1,3 @@
-#nullable disable
-
 using System.Text.Json.Serialization;
 
 namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
@@ -13,7 +11,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// Gets or sets the url.
         /// </summary>
         [JsonPropertyName("URL")]
-        public string Url { get; set; }
+        public string? Url { get; set; }
 
         /// <summary>
         /// Gets or sets the height.
@@ -31,6 +29,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// Gets or sets the md5.
         /// </summary>
         [JsonPropertyName("md5")]
-        public string Md5 { get; set; }
+        public string? Md5 { get; set; }
     }
 }

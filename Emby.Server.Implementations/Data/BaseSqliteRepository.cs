@@ -4,8 +4,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
+using Jellyfin.Extensions;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
 
@@ -98,7 +98,7 @@ namespace Emby.Server.Implementations.Data
         /// <value>The write connection.</value>
         protected SQLiteDatabaseConnection WriteConnection { get; set; }
 
-        protected ManagedConnection GetConnection(bool _ = false)
+        protected ManagedConnection GetConnection(bool readOnly = false)
         {
             WriteLock.Wait();
             if (WriteConnection != null)
@@ -160,21 +160,22 @@ namespace Emby.Server.Implementations.Data
         protected bool TableExists(ManagedConnection connection, string name)
         {
             return connection.RunInTransaction(
-            db =>
-            {
-                using (var statement = PrepareStatement(db, "select DISTINCT tbl_name from sqlite_master"))
+                db =>
                 {
-                    foreach (var row in statement.ExecuteQuery())
+                    using (var statement = PrepareStatement(db, "select DISTINCT tbl_name from sqlite_master"))
                     {
-                        if (string.Equals(name, row.GetString(0), StringComparison.OrdinalIgnoreCase))
+                        foreach (var row in statement.ExecuteQuery())
                         {
-                            return true;
+                            if (string.Equals(name, row.GetString(0), StringComparison.OrdinalIgnoreCase))
+                            {
+                                return true;
+                            }
                         }
                     }
-                }
 
-                return false;
-            }, ReadTransactionMode);
+                    return false;
+                },
+                ReadTransactionMode);
         }
 
         protected List<string> GetColumnNames(IDatabaseConnection connection, string table)
@@ -194,7 +195,7 @@ namespace Emby.Server.Implementations.Data
 
         protected void AddColumn(IDatabaseConnection connection, string table, string columnName, string type, List<string> existingColumnNames)
         {
-            if (existingColumnNames.Contains(columnName, StringComparer.OrdinalIgnoreCase))
+            if (existingColumnNames.Contains(columnName, StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
@@ -248,56 +249,5 @@ namespace Emby.Server.Implementations.Data
 
             _disposed = true;
         }
-    }
-
-    /// <summary>
-    /// The disk synchronization mode, controls how aggressively SQLite will write data
-    /// all the way out to physical storage.
-    /// </summary>
-    public enum SynchronousMode
-    {
-        /// <summary>
-        /// SQLite continues without syncing as soon as it has handed data off to the operating system.
-        /// </summary>
-        Off = 0,
-
-        /// <summary>
-        /// SQLite database engine will still sync at the most critical moments.
-        /// </summary>
-        Normal = 1,
-
-        /// <summary>
-        /// SQLite database engine will use the xSync method of the VFS
-        /// to ensure that all content is safely written to the disk surface prior to continuing.
-        /// </summary>
-        Full = 2,
-
-        /// <summary>
-        /// EXTRA synchronous is like FULL with the addition that the directory containing a rollback journal
-        /// is synced after that journal is unlinked to commit a transaction in DELETE mode.
-        /// </summary>
-        Extra = 3
-    }
-
-    /// <summary>
-    /// Storage mode used by temporary database files.
-    /// </summary>
-    public enum TempStoreMode
-    {
-        /// <summary>
-        /// The compile-time C preprocessor macro SQLITE_TEMP_STORE
-        /// is used to determine where temporary tables and indices are stored.
-        /// </summary>
-        Default = 0,
-
-        /// <summary>
-        /// Temporary tables and indices are stored in a file.
-        /// </summary>
-        File = 1,
-
-        /// <summary>
-        /// Temporary tables and indices are kept in as if they were pure in-memory databases memory.
-        /// </summary>
-        Memory = 2
     }
 }

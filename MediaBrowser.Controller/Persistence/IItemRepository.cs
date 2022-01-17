@@ -161,17 +161,17 @@ namespace MediaBrowser.Controller.Persistence
 
         int GetCount(InternalItemsQuery query);
 
-        QueryResult<(BaseItem, ItemCounts)> GetGenres(InternalItemsQuery query);
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery query);
 
-        QueryResult<(BaseItem, ItemCounts)> GetMusicGenres(InternalItemsQuery query);
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery query);
 
-        QueryResult<(BaseItem, ItemCounts)> GetStudios(InternalItemsQuery query);
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery query);
 
-        QueryResult<(BaseItem, ItemCounts)> GetArtists(InternalItemsQuery query);
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery query);
 
-        QueryResult<(BaseItem, ItemCounts)> GetAlbumArtists(InternalItemsQuery query);
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery query);
 
-        QueryResult<(BaseItem, ItemCounts)> GetAllArtists(InternalItemsQuery query);
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery query);
 
         List<string> GetMusicGenreNames();
 

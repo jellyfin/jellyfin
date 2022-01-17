@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Providers;
 
@@ -29,6 +30,7 @@ namespace MediaBrowser.Controller.Providers
             ReplaceAllImages = copy.ReplaceAllImages;
             ReplaceImages = copy.ReplaceImages;
             SearchResult = copy.SearchResult;
+            RemoveOldMetadata = copy.RemoveOldMetadata;
 
             if (copy.RefreshPaths != null && copy.RefreshPaths.Length > 0)
             {
@@ -58,7 +60,7 @@ namespace MediaBrowser.Controller.Providers
         {
             if (RefreshPaths != null && RefreshPaths.Length > 0)
             {
-                return RefreshPaths.Contains(item.Path ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+                return RefreshPaths.Contains(item.Path ?? string.Empty, StringComparison.OrdinalIgnoreCase);
             }
 
             return true;

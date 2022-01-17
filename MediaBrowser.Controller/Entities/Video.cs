@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
@@ -33,6 +34,7 @@ namespace MediaBrowser.Controller.Entities
             AdditionalParts = Array.Empty<string>();
             LocalAlternateVersions = Array.Empty<string>();
             SubtitleFiles = Array.Empty<string>();
+            AudioFiles = Array.Empty<string>();
             LinkedAlternateVersions = Array.Empty<LinkedChild>();
         }
 
@@ -96,6 +98,12 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The subtitle paths.</value>
         public string[] SubtitleFiles { get; set; }
+
+        /// <summary>
+        /// Gets or sets the audio paths.
+        /// </summary>
+        /// <value>The audio paths.</value>
+        public string[] AudioFiles { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has subtitles.
@@ -185,7 +193,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (SourceType == SourceType.Channel)
                 {
-                    return !Tags.Contains("livestream", StringComparer.OrdinalIgnoreCase);
+                    return !Tags.Contains("livestream", StringComparison.OrdinalIgnoreCase);
                 }
 
                 return !IsActiveRecording();
@@ -509,35 +517,35 @@ namespace MediaBrowser.Controller.Entities
             }).FirstOrDefault();
         }
 
-        protected override List<Tuple<BaseItem, MediaSourceType>> GetAllItemsForMediaSources()
+        protected override IEnumerable<(BaseItem Item, MediaSourceType MediaSourceType)> GetAllItemsForMediaSources()
         {
-            var list = new List<Tuple<BaseItem, MediaSourceType>>();
+            var list = new List<(BaseItem, MediaSourceType)>
+            {
+                (this, MediaSourceType.Default)
+            };
 
-            list.Add(new Tuple<BaseItem, MediaSourceType>(this, MediaSourceType.Default));
-            list.AddRange(GetLinkedAlternateVersions().Select(i => new Tuple<BaseItem, MediaSourceType>(i, MediaSourceType.Grouping)));
+            list.AddRange(GetLinkedAlternateVersions().Select(i => ((BaseItem)i, MediaSourceType.Grouping)));
 
             if (!string.IsNullOrEmpty(PrimaryVersionId))
             {
-                var primary = LibraryManager.GetItemById(PrimaryVersionId) as Video;
-                if (primary != null)
+                if (LibraryManager.GetItemById(PrimaryVersionId) is Video primary)
                 {
                     var existingIds = list.Select(i => i.Item1.Id).ToList();
-                    list.Add(new Tuple<BaseItem, MediaSourceType>(primary, MediaSourceType.Grouping));
-                    list.AddRange(primary.GetLinkedAlternateVersions().Where(i => !existingIds.Contains(i.Id)).Select(i => new Tuple<BaseItem, MediaSourceType>(i, MediaSourceType.Grouping)));
+                    list.Add((primary, MediaSourceType.Grouping));
+                    list.AddRange(primary.GetLinkedAlternateVersions().Where(i => !existingIds.Contains(i.Id)).Select(i => ((BaseItem)i, MediaSourceType.Grouping)));
                 }
             }
 
             var localAlternates = list
                 .SelectMany(i =>
                 {
-                    var video = i.Item1 as Video;
-                    return video == null ? new List<Guid>() : video.GetLocalAlternateVersionIds();
+                    return i.Item1 is Video video ? video.GetLocalAlternateVersionIds() : Enumerable.Empty<Guid>();
                 })
                 .Select(LibraryManager.GetItemById)
                 .Where(i => i != null)
                 .ToList();
 
-            list.AddRange(localAlternates.Select(i => new Tuple<BaseItem, MediaSourceType>(i, MediaSourceType.Default)));
+            list.AddRange(localAlternates.Select(i => (i, MediaSourceType.Default)));
 
             return list;
         }

@@ -5,7 +5,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
@@ -13,7 +12,6 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.Data.Events.Users;
 using MediaBrowser.Common;
-using MediaBrowser.Common.Cryptography;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
@@ -396,12 +394,12 @@ namespace Jellyfin.Server.Implementations.Users
             var user = Users.FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
             var authResult = await AuthenticateLocalUser(username, password, user, remoteEndPoint)
                 .ConfigureAwait(false);
-            var authenticationProvider = authResult.authenticationProvider;
-            var success = authResult.success;
+            var authenticationProvider = authResult.AuthenticationProvider;
+            var success = authResult.Success;
 
             if (user == null)
             {
-                string updatedUsername = authResult.username;
+                string updatedUsername = authResult.Username;
 
                 if (success
                     && authenticationProvider != null
@@ -530,11 +528,7 @@ namespace Jellyfin.Server.Implementations.Users
                 }
             }
 
-            return new PinRedeemResult
-            {
-                Success = false,
-                UsersReset = Array.Empty<string>()
-            };
+            return new PinRedeemResult();
         }
 
         /// <inheritdoc />
@@ -701,6 +695,11 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task ClearProfileImageAsync(User user)
         {
+            if (user.ProfileImage == null)
+            {
+                return;
+            }
+
             await using var dbContext = _dbProvider.CreateContext();
             dbContext.Remove(user.ProfileImage);
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
@@ -786,7 +785,7 @@ namespace Jellyfin.Server.Implementations.Users
             return providers;
         }
 
-        private async Task<(IAuthenticationProvider? authenticationProvider, string username, bool success)> AuthenticateLocalUser(
+        private async Task<(IAuthenticationProvider? AuthenticationProvider, string Username, bool Success)> AuthenticateLocalUser(
                 string username,
                 string password,
                 User? user,
@@ -799,8 +798,8 @@ namespace Jellyfin.Server.Implementations.Users
             {
                 var providerAuthResult =
                     await AuthenticateWithProvider(provider, username, password, user).ConfigureAwait(false);
-                var updatedUsername = providerAuthResult.username;
-                success = providerAuthResult.success;
+                var updatedUsername = providerAuthResult.Username;
+                success = providerAuthResult.Success;
 
                 if (success)
                 {
@@ -817,17 +816,13 @@ namespace Jellyfin.Server.Implementations.Users
             {
                 // Check easy password
                 var passwordHash = PasswordHash.Parse(user.EasyPassword);
-                var hash = _cryptoProvider.ComputeHash(
-                    passwordHash.Id,
-                    Encoding.UTF8.GetBytes(password),
-                    passwordHash.Salt.ToArray());
-                success = passwordHash.Hash.SequenceEqual(hash);
+                success = _cryptoProvider.Verify(passwordHash, password);
             }
 
             return (authenticationProvider, username, success);
         }
 
-        private async Task<(string username, bool success)> AuthenticateWithProvider(
+        private async Task<(string Username, bool Success)> AuthenticateWithProvider(
             IAuthenticationProvider provider,
             string username,
             string password,

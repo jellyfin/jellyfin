@@ -1,5 +1,3 @@
-#nullable disable
-
 using System.Text.Json.Serialization;
 
 namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
@@ -13,19 +11,25 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// Gets or sets the station id.
         /// </summary>
         [JsonPropertyName("stationID")]
-        public string StationId { get; set; }
+        public string? StationId { get; set; }
 
         /// <summary>
         /// Gets or sets the channel.
         /// </summary>
         [JsonPropertyName("channel")]
-        public string Channel { get; set; }
+        public string? Channel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the provider callsign.
+        /// </summary>
+        [JsonPropertyName("providerCallsign")]
+        public string? ProvderCallsign { get; set; }
 
         /// <summary>
         /// Gets or sets the logical channel number.
         /// </summary>
         [JsonPropertyName("logicalChannelNumber")]
-        public string LogicalChannelNumber { get; set; }
+        public string? LogicalChannelNumber { get; set; }
 
         /// <summary>
         /// Gets or sets the uhfvhf.
@@ -44,5 +48,11 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// </summary>
         [JsonPropertyName("atscMinor")]
         public int AtscMinor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the match type.
+        /// </summary>
+        [JsonPropertyName("matchType")]
+        public string? MatchType { get; set; }
     }
 }

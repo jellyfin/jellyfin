@@ -1,3 +1,5 @@
+using Jellyfin.Data.Enums;
+
 #nullable disable
 namespace MediaBrowser.Model.Session
 {
@@ -8,10 +10,9 @@ namespace MediaBrowser.Model.Session
     {
         /// <summary>
         /// Gets or sets the item type.
-        /// Artist, Genre, Studio, Person, or any kind of BaseItem.
         /// </summary>
         /// <value>The type of the item.</value>
-        public string ItemType { get; set; }
+        public BaseItemKind ItemType { get; set; }
 
         /// <summary>
         /// Gets or sets the item id.
