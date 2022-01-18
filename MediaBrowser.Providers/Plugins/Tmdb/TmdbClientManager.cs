@@ -165,9 +165,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         private async Task<TvGroupCollection> GetSeriesGroupAsync(int tvShowId, string displayOrder, string language, string imageLanguages, CancellationToken cancellationToken)
         {
             TvGroupType? groupType =
-                string.Equals(displayOrder, "production", StringComparison.Ordinal) ? TvGroupType.Production :
+                string.Equals(displayOrder, "originalAirDate", StringComparison.Ordinal) ? TvGroupType.OriginalAirDate :
                 string.Equals(displayOrder, "absolute", StringComparison.Ordinal) ? TvGroupType.Absolute :
                 string.Equals(displayOrder, "dvd", StringComparison.Ordinal) ? TvGroupType.DVD :
+                string.Equals(displayOrder, "digital", StringComparison.Ordinal) ? TvGroupType.Digital :
+                string.Equals(displayOrder, "storyArc", StringComparison.Ordinal) ? TvGroupType.StoryArc :
+                string.Equals(displayOrder, "production", StringComparison.Ordinal) ? TvGroupType.Production :
                 string.Equals(displayOrder, "tv", StringComparison.Ordinal) ? TvGroupType.TV :
                 null;
 
