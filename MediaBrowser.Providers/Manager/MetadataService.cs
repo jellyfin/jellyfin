@@ -8,8 +8,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Diacritics.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
@@ -74,14 +76,10 @@ namespace MediaBrowser.Providers.Manager
             var itemOfType = (TItemType)item;
 
             var updateType = ItemUpdateType.None;
-            var requiresRefresh = false;
 
             var libraryOptions = LibraryManager.GetLibraryOptions(item);
 
-            if (!requiresRefresh && libraryOptions.AutomaticRefreshIntervalDays > 0 && (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= libraryOptions.AutomaticRefreshIntervalDays)
-            {
-                requiresRefresh = true;
-            }
+            var requiresRefresh = libraryOptions.AutomaticRefreshIntervalDays > 0 && (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= libraryOptions.AutomaticRefreshIntervalDays;
 
             if (!requiresRefresh && refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
             {
@@ -90,13 +88,21 @@ namespace MediaBrowser.Providers.Manager
 
                 if (requiresRefresh)
                 {
-                    Logger.LogDebug("Refreshing {0} {1} because item.RequiresRefresh() returned true", typeof(TItemType).Name, item.Path ?? item.Name);
+                    Logger.LogDebug("Refreshing {Type} {Item} because item.RequiresRefresh() returned true", typeof(TItemType).Name, item.Path ?? item.Name);
                 }
             }
 
             var localImagesFailed = false;
 
             var allImageProviders = ((ProviderManager)ProviderManager).GetImageProviders(item, refreshOptions).ToList();
+
+            if (refreshOptions.RemoveOldMetadata && refreshOptions.ReplaceAllImages)
+            {
+                if (ImageProvider.RemoveImages(item))
+                {
+                    updateType |= ItemUpdateType.ImageUpdate;
+                }
+            }
 
             // Start by validating images
             try
@@ -110,7 +116,7 @@ namespace MediaBrowser.Providers.Manager
             catch (Exception ex)
             {
                 localImagesFailed = true;
-                Logger.LogError(ex, "Error validating images for {0}", item.Path ?? item.Name ?? "Unknown name");
+                Logger.LogError(ex, "Error validating images for {Item}", item.Path ?? item.Name ?? "Unknown name");
             }
 
             var metadataResult = new MetadataResult<TItemType>
@@ -380,8 +386,7 @@ namespace MediaBrowser.Providers.Manager
         {
             var updateType = ItemUpdateType.None;
 
-            var folder = item as Folder;
-            if (folder != null && folder.SupportsDateLastMediaAdded)
+            if (item is Folder folder && folder.SupportsDateLastMediaAdded)
             {
                 var dateLastMediaAdded = DateTime.MinValue;
                 var any = false;
@@ -668,7 +673,7 @@ namespace MediaBrowser.Providers.Manager
             foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>().ToList())
             {
                 var providerName = provider.GetType().Name;
-                Logger.LogDebug("Running {0} for {1}", providerName, logName);
+                Logger.LogDebug("Running {Provider} for {Item}", providerName, logName);
 
                 var itemInfo = new ItemInfo(item);
 
@@ -713,7 +718,7 @@ namespace MediaBrowser.Providers.Manager
                         break;
                     }
 
-                    Logger.LogDebug("{0} returned no metadata for {1}", providerName, logName);
+                    Logger.LogDebug("{Provider} returned no metadata for {Item}", providerName, logName);
                 }
                 catch (OperationCanceledException)
                 {
@@ -749,8 +754,11 @@ namespace MediaBrowser.Providers.Manager
                     }
                     else
                     {
-                        // TODO: If the new metadata from above has some blank data, this can cause old data to get filled into those empty fields
-                        MergeData(metadata, temp, Array.Empty<MetadataField>(), false, false);
+                        if (!options.RemoveOldMetadata)
+                        {
+                            MergeData(metadata, temp, Array.Empty<MetadataField>(), false, false);
+                        }
+
                         MergeData(temp, metadata, item.LockedFields, true, false);
                     }
                 }
@@ -780,7 +788,7 @@ namespace MediaBrowser.Providers.Manager
 
         private async Task RunCustomProvider(ICustomMetadataProvider<TItemType> provider, TItemType item, string logName, MetadataRefreshOptions options, RefreshResult refreshResult, CancellationToken cancellationToken)
         {
-            Logger.LogDebug("Running {0} for {1}", provider.GetType().Name, logName);
+            Logger.LogDebug("Running {Provider} for {Item}", provider.GetType().Name, logName);
 
             try
             {
@@ -811,7 +819,7 @@ namespace MediaBrowser.Providers.Manager
             foreach (var provider in providers)
             {
                 var providerName = provider.GetType().Name;
-                Logger.LogDebug("Running {0} for {1}", providerName, logName);
+                Logger.LogDebug("Running {Provider} for {Item}", providerName, logName);
 
                 if (id != null && !tmpDataMerged)
                 {
@@ -834,7 +842,7 @@ namespace MediaBrowser.Providers.Manager
                     }
                     else
                     {
-                        Logger.LogDebug("{0} returned no metadata for {1}", providerName, logName);
+                        Logger.LogDebug("{Provider} returned no metadata for {Item}", providerName, logName);
                     }
                 }
                 catch (OperationCanceledException)
@@ -867,13 +875,6 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        protected abstract void MergeData(
-            MetadataResult<TItemType> source,
-            MetadataResult<TItemType> target,
-            MetadataField[] lockedFields,
-            bool replaceData,
-            bool mergeMetadataSettings);
-
         private bool HasChanged(BaseItem item, IHasItemChangeMonitor changeMonitor, IDirectoryService directoryService)
         {
             try
@@ -882,15 +883,311 @@ namespace MediaBrowser.Providers.Manager
 
                 if (hasChanged)
                 {
-                    Logger.LogDebug("{0} reports change to {1}", changeMonitor.GetType().Name, item.Path ?? item.Name);
+                    Logger.LogDebug("{Monitor} reports change to {Item}", changeMonitor.GetType().Name, item.Path ?? item.Name);
                 }
 
                 return hasChanged;
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error in {0}.HasChanged", changeMonitor.GetType().Name);
+                Logger.LogError(ex, "Error in {Monitor}.HasChanged", changeMonitor.GetType().Name);
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Merges metadata from source into target.
+        /// </summary>
+        /// <param name="source">The source for new metadata.</param>
+        /// <param name="target">The target to insert new metadata into.</param>
+        /// <param name="lockedFields">The fields that are locked and should not be updated.</param>
+        /// <param name="replaceData"><c>true</c> if existing data should be replaced.</param>
+        /// <param name="mergeMetadataSettings"><c>true</c> if the metadata settings in target should be updated to match source.</param>
+        /// <exception cref="ArgumentException">Thrown if source or target are null.</exception>
+        protected virtual void MergeData(
+            MetadataResult<TItemType> source,
+            MetadataResult<TItemType> target,
+            MetadataField[] lockedFields,
+            bool replaceData,
+            bool mergeMetadataSettings)
+        {
+            MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
+        }
+
+        internal static void MergeBaseItemData(
+            MetadataResult<TItemType> sourceResult,
+            MetadataResult<TItemType> targetResult,
+            MetadataField[] lockedFields,
+            bool replaceData,
+            bool mergeMetadataSettings)
+        {
+            var source = sourceResult.Item;
+            var target = targetResult.Item;
+
+            if (source == null)
+            {
+                throw new ArgumentException("Item cannot be null.", nameof(sourceResult));
+            }
+
+            if (target == null)
+            {
+                throw new ArgumentException("Item cannot be null.", nameof(targetResult));
+            }
+
+            if (!lockedFields.Contains(MetadataField.Name))
+            {
+                if (replaceData || string.IsNullOrEmpty(target.Name))
+                {
+                    // Safeguard against incoming data having an empty name
+                    if (!string.IsNullOrWhiteSpace(source.Name))
+                    {
+                        target.Name = source.Name;
+                    }
+                }
+            }
+
+            if (replaceData || string.IsNullOrEmpty(target.OriginalTitle))
+            {
+                // Safeguard against incoming data having an empty name
+                if (!string.IsNullOrWhiteSpace(source.OriginalTitle))
+                {
+                    target.OriginalTitle = source.OriginalTitle;
+                }
+            }
+
+            if (replaceData || !target.CommunityRating.HasValue)
+            {
+                target.CommunityRating = source.CommunityRating;
+            }
+
+            if (replaceData || !target.EndDate.HasValue)
+            {
+                target.EndDate = source.EndDate;
+            }
+
+            if (!lockedFields.Contains(MetadataField.Genres))
+            {
+                if (replaceData || target.Genres.Length == 0)
+                {
+                    target.Genres = source.Genres;
+                }
+            }
+
+            if (replaceData || !target.IndexNumber.HasValue)
+            {
+                target.IndexNumber = source.IndexNumber;
+            }
+
+            if (!lockedFields.Contains(MetadataField.OfficialRating))
+            {
+                if (replaceData || string.IsNullOrEmpty(target.OfficialRating))
+                {
+                    target.OfficialRating = source.OfficialRating;
+                }
+            }
+
+            if (replaceData || string.IsNullOrEmpty(target.CustomRating))
+            {
+                target.CustomRating = source.CustomRating;
+            }
+
+            if (replaceData || string.IsNullOrEmpty(target.Tagline))
+            {
+                target.Tagline = source.Tagline;
+            }
+
+            if (!lockedFields.Contains(MetadataField.Overview))
+            {
+                if (replaceData || string.IsNullOrEmpty(target.Overview))
+                {
+                    target.Overview = source.Overview;
+                }
+            }
+
+            if (replaceData || !target.ParentIndexNumber.HasValue)
+            {
+                target.ParentIndexNumber = source.ParentIndexNumber;
+            }
+
+            if (!lockedFields.Contains(MetadataField.Cast))
+            {
+                if (replaceData || targetResult.People == null || targetResult.People.Count == 0)
+                {
+                    targetResult.People = sourceResult.People;
+                }
+                else if (targetResult.People != null && sourceResult.People != null)
+                {
+                    MergePeople(sourceResult.People, targetResult.People);
+                }
+            }
+
+            if (replaceData || !target.PremiereDate.HasValue)
+            {
+                target.PremiereDate = source.PremiereDate;
+            }
+
+            if (replaceData || !target.ProductionYear.HasValue)
+            {
+                target.ProductionYear = source.ProductionYear;
+            }
+
+            if (!lockedFields.Contains(MetadataField.Runtime))
+            {
+                if (replaceData || !target.RunTimeTicks.HasValue)
+                {
+                    if (target is not Audio && target is not Video)
+                    {
+                        target.RunTimeTicks = source.RunTimeTicks;
+                    }
+                }
+            }
+
+            if (!lockedFields.Contains(MetadataField.Studios))
+            {
+                if (replaceData || target.Studios.Length == 0)
+                {
+                    target.Studios = source.Studios;
+                }
+            }
+
+            if (!lockedFields.Contains(MetadataField.Tags))
+            {
+                if (replaceData || target.Tags.Length == 0)
+                {
+                    target.Tags = source.Tags;
+                }
+            }
+
+            if (!lockedFields.Contains(MetadataField.ProductionLocations))
+            {
+                if (replaceData || target.ProductionLocations.Length == 0)
+                {
+                    target.ProductionLocations = source.ProductionLocations;
+                }
+            }
+
+            foreach (var id in source.ProviderIds)
+            {
+                var key = id.Key;
+
+                // Don't replace existing Id's.
+                if (replaceData)
+                {
+                    target.ProviderIds[key] = id.Value;
+                }
+                else
+                {
+                    target.ProviderIds.TryAdd(key, id.Value);
+                }
+            }
+
+            MergeAlbumArtist(source, target, replaceData);
+            MergeCriticRating(source, target, replaceData);
+            MergeTrailers(source, target, replaceData);
+            MergeVideoInfo(source, target, replaceData);
+            MergeDisplayOrder(source, target, replaceData);
+
+            if (replaceData || string.IsNullOrEmpty(target.ForcedSortName))
+            {
+                var forcedSortName = source.ForcedSortName;
+
+                if (!string.IsNullOrWhiteSpace(forcedSortName))
+                {
+                    target.ForcedSortName = forcedSortName;
+                }
+            }
+
+            if (mergeMetadataSettings)
+            {
+                target.LockedFields = source.LockedFields;
+                target.IsLocked = source.IsLocked;
+
+                // Grab the value if it's there, but if not then don't overwrite with the default
+                if (source.DateCreated != default)
+                {
+                    target.DateCreated = source.DateCreated;
+                }
+
+                target.PreferredMetadataCountryCode = source.PreferredMetadataCountryCode;
+                target.PreferredMetadataLanguage = source.PreferredMetadataLanguage;
+            }
+        }
+
+        private static void MergePeople(List<PersonInfo> source, List<PersonInfo> target)
+        {
+            foreach (var person in target)
+            {
+                var normalizedName = person.Name.RemoveDiacritics();
+                var personInSource = source.FirstOrDefault(i => string.Equals(i.Name.RemoveDiacritics(), normalizedName, StringComparison.OrdinalIgnoreCase));
+
+                if (personInSource != null)
+                {
+                    foreach (var providerId in personInSource.ProviderIds)
+                    {
+                        person.ProviderIds.TryAdd(providerId.Key, providerId.Value);
+                    }
+
+                    if (string.IsNullOrWhiteSpace(person.ImageUrl))
+                    {
+                        person.ImageUrl = personInSource.ImageUrl;
+                    }
+                }
+            }
+        }
+
+        private static void MergeDisplayOrder(BaseItem source, BaseItem target, bool replaceData)
+        {
+            if (source is IHasDisplayOrder sourceHasDisplayOrder
+                && target is IHasDisplayOrder targetHasDisplayOrder)
+            {
+                if (replaceData || string.IsNullOrEmpty(targetHasDisplayOrder.DisplayOrder))
+                {
+                    var displayOrder = sourceHasDisplayOrder.DisplayOrder;
+
+                    if (!string.IsNullOrWhiteSpace(displayOrder))
+                    {
+                        targetHasDisplayOrder.DisplayOrder = displayOrder;
+                    }
+                }
+            }
+        }
+
+        private static void MergeAlbumArtist(BaseItem source, BaseItem target, bool replaceData)
+        {
+            if (source is IHasAlbumArtist sourceHasAlbumArtist
+                && target is IHasAlbumArtist targetHasAlbumArtist)
+            {
+                if (replaceData || targetHasAlbumArtist.AlbumArtists.Count == 0)
+                {
+                    targetHasAlbumArtist.AlbumArtists = sourceHasAlbumArtist.AlbumArtists;
+                }
+            }
+        }
+
+        private static void MergeCriticRating(BaseItem source, BaseItem target, bool replaceData)
+        {
+            if (replaceData || !target.CriticRating.HasValue)
+            {
+                target.CriticRating = source.CriticRating;
+            }
+        }
+
+        private static void MergeTrailers(BaseItem source, BaseItem target, bool replaceData)
+        {
+            if (replaceData || target.RemoteTrailers.Count == 0)
+            {
+                target.RemoteTrailers = source.RemoteTrailers;
+            }
+        }
+
+        private static void MergeVideoInfo(BaseItem source, BaseItem target, bool replaceData)
+        {
+            if (source is Video sourceCast && target is Video targetCast)
+            {
+                if (replaceData || targetCast.Video3DFormat == null)
+                {
+                    targetCast.Video3DFormat = sourceCast.Video3DFormat;
+                }
             }
         }
     }

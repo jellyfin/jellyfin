@@ -59,6 +59,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 Overview = seasonResult.Overview
             };
 
+            if (Plugin.Instance.Configuration.ImportSeasonName)
+            {
+                result.Item.Name = seasonResult.Name;
+            }
+
             if (!string.IsNullOrEmpty(seasonResult.ExternalIds?.TvdbId))
             {
                 result.Item.SetProviderId(MetadataProvider.Tvdb, seasonResult.ExternalIds.TvdbId);

@@ -263,7 +263,8 @@ namespace Jellyfin.Api.Controllers
                     ImageRefreshMode = MetadataRefreshMode.FullRefresh,
                     ReplaceAllMetadata = true,
                     ReplaceAllImages = replaceAllImages,
-                    SearchResult = searchResult
+                    SearchResult = searchResult,
+                    RemoveOldMetadata = true
                 },
                 CancellationToken.None).ConfigureAwait(false);
 

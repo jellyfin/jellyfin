@@ -23,6 +23,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         public bool ExcludeTagsMovies { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether season name should be imported from TMDb.
+        /// </summary>
+        public bool ImportSeasonName { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating the maximum number of cast members to fetch for an item.
         /// </summary>
         public int MaxCastMembers { get; set; } = 15;
