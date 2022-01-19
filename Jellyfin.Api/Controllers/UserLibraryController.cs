@@ -206,21 +206,16 @@ namespace Jellyfin.Api.Controllers
                 : _libraryManager.GetItemById(itemId);
 
             var dtoOptions = new DtoOptions().AddClientFields(Request);
-            var dtosExtras = item.GetExtras(new[] { ExtraType.Trailer })
-                .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item))
-                .ToArray();
 
             if (item is IHasTrailers hasTrailers)
             {
                 var trailers = hasTrailers.LocalTrailers;
-                var dtosTrailers = _dtoService.GetBaseItemDtos(trailers, dtoOptions, user, item);
-                var allTrailers = new BaseItemDto[dtosExtras.Length + dtosTrailers.Count];
-                dtosExtras.CopyTo(allTrailers, 0);
-                dtosTrailers.CopyTo(allTrailers, dtosExtras.Length);
-                return allTrailers;
+                return Ok(_dtoService.GetBaseItemDtos(trailers, dtoOptions, user, item));
             }
 
-            return dtosExtras;
+            return Ok(item.GetExtras()
+                .Where(e => e.ExtraType == ExtraType.Trailer)
+                .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item)));
         }
 
         /// <summary>

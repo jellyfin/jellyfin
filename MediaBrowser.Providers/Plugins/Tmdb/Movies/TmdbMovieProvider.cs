@@ -312,7 +312,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 var trailers = new List<MediaUrl>();
                 for (var i = 0; i < movieResult.Videos.Results.Count; i++)
                 {
-                    var video = movieResult.Videos.Results[0];
+                    var video = movieResult.Videos.Results[i];
                     if (!TmdbUtils.IsTrailerType(video))
                     {
                         continue;
