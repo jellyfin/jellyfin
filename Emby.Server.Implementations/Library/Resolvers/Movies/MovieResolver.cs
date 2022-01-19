@@ -128,10 +128,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 return movie?.ExtraType == null ? movie : null;
             }
 
-            // Owned items will be caught by the video extra resolver
             if (args.Parent == null)
             {
-                return null;
+                return base.Resolve(args);
             }
 
             if (IsInvalid(args.Parent, collectionType))
