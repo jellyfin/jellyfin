@@ -915,7 +915,7 @@ namespace MediaBrowser.Providers.Manager
             return provider.GetImageResponse(url, cancellationToken);
         }
 
-        private IEnumerable<IExternalId> GetExternalIds(IHasProviderIds item)
+        private IEnumerable<IExternalId> GetExternalIdProviders(IHasProviderIds item)
         {
             return _externalIds.Where(i =>
             {
@@ -925,7 +925,7 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error in {0}.Suports", i.GetType().Name);
+                    _logger.LogError(ex, "Error in {Provider}.Suports", i.GetType().Name);
                     return false;
                 }
             });
@@ -934,36 +934,51 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public IEnumerable<ExternalUrl> GetExternalUrls(BaseItem item)
         {
-            return GetExternalIds(item)
-                .Select(i =>
+            var externalIdProviders = GetExternalIdProviders(item);
+            foreach (var externalIdProvider in externalIdProviders)
             {
-                if (string.IsNullOrEmpty(i.UrlFormatString))
+                IEnumerable<ExternalUrl> externalUrls = null;
+                try
                 {
-                    return null;
+                    externalUrls = externalIdProvider.GetExternalUrls(item);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Error in {Provider}.GetExternalUrls", externalIdProvider.GetType().Name);
                 }
 
-                var value = item.GetProviderId(i.Key);
-
-                if (string.IsNullOrEmpty(value))
+                if (externalUrls != null)
                 {
-                    return null;
+                    foreach (var externalUrl in externalUrls)
+                    {
+                        yield return externalUrl;
+                    }
                 }
 
-                return new ExternalUrl
+                if (string.IsNullOrEmpty(externalIdProvider.UrlFormatString))
                 {
-                    Name = i.ProviderName,
-                    Url = string.Format(
+                    continue;
+                }
+
+                var providerId = item.GetProviderId(externalIdProvider.Key);
+                if (string.IsNullOrEmpty(providerId))
+                {
+                    continue;
+                }
+
+                yield return new ExternalUrl(
+                    externalIdProvider.ProviderName,
+                    string.Format(
                         CultureInfo.InvariantCulture,
-                        i.UrlFormatString,
-                        value)
-                };
-            }).Where(i => i != null).Concat(item.GetRelatedUrls());
+                        externalIdProvider.UrlFormatString,
+                        providerId));
+            }
         }
 
         /// <inheritdoc/>
         public IEnumerable<ExternalIdInfo> GetExternalIdInfos(IHasProviderIds item)
         {
-            return GetExternalIds(item)
+            return GetExternalIdProviders(item)
                 .Select(i => new ExternalIdInfo(
                     name: i.ProviderName,
                     key: i.Key,

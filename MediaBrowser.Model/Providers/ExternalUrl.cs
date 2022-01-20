@@ -1,20 +1,29 @@
-#nullable disable
-#pragma warning disable CS1591
+namespace MediaBrowser.Model.Providers;
 
-namespace MediaBrowser.Model.Providers
+/// <summary>
+/// Item external url.
+/// </summary>
+public class ExternalUrl
 {
-    public class ExternalUrl
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ExternalUrl"/> class.
+    /// </summary>
+    /// <param name="name">The name.</param>
+    /// <param name="url">The url.</param>
+    public ExternalUrl(string name, string url)
     {
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type of the item.
-        /// </summary>
-        /// <value>The type of the item.</value>
-        public string Url { get; set; }
+        Name = name;
+        Url = url;
     }
+
+    /// <summary>
+    /// Gets the name.
+    /// </summary>
+    /// <remarks>This is the display name.</remarks>
+    public string Name { get; }
+
+    /// <summary>
+    /// Gets the external url.
+    /// </summary>
+    public string Url { get; }
 }

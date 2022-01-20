@@ -7,39 +7,39 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Providers.Plugins.MusicBrainz.Configuration;
 
-namespace MediaBrowser.Providers.Plugins.MusicBrainz
+namespace MediaBrowser.Providers.Plugins.MusicBrainz;
+
+public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
 {
-    public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
+    public const string DefaultServer = "https://musicbrainz.org";
+
+    public const long DefaultRateLimit = 2000u;
+
+    public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
+        : base(applicationPaths, xmlSerializer)
     {
-        public const string DefaultServer = "https://musicbrainz.org";
+        Instance = this;
+    }
 
-        public const long DefaultRateLimit = 2000u;
+    public static Plugin Instance { get; private set; }
 
-        public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
-            : base(applicationPaths, xmlSerializer)
+    public override Guid Id => new Guid("8c95c4d2-e50c-4fb0-a4f3-6c06ff0f9a1a");
+
+    public override string Name => "MusicBrainz";
+
+    public override string Description => "Get artist and album metadata from any MusicBrainz server.";
+
+    // TODO remove when plugin removed from server.
+    public override string ConfigurationFileName => "Jellyfin.Plugin.MusicBrainz.xml";
+
+    public IEnumerable<PluginPageInfo> GetPages()
+    {
+        yield return new PluginPageInfo
         {
-            Instance = this;
-        }
-
-        public static Plugin Instance { get; private set; }
-
-        public override Guid Id => new Guid("8c95c4d2-e50c-4fb0-a4f3-6c06ff0f9a1a");
-
-        public override string Name => "MusicBrainz";
-
-        public override string Description => "Get artist and album metadata from any MusicBrainz server.";
-
-        // TODO remove when plugin removed from server.
-        public override string ConfigurationFileName => "Jellyfin.Plugin.MusicBrainz.xml";
-
-        public IEnumerable<PluginPageInfo> GetPages()
-        {
-            yield return new PluginPageInfo
-            {
-                Name = Name,
-                EmbeddedResourcePath = GetType().Namespace + ".Configuration.config.html"
-            };
-        }
+            Name = Name,
+            EmbeddedResourcePath = GetType().Namespace + ".Configuration.config.html"
+        };
     }
 }

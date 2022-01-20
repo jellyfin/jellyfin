@@ -2,36 +2,35 @@
 
 using MediaBrowser.Model.Plugins;
 
-namespace MediaBrowser.Providers.Plugins.MusicBrainz
+namespace MediaBrowser.Providers.Plugins.MusicBrainz.Configuration;
+
+public class PluginConfiguration : BasePluginConfiguration
 {
-    public class PluginConfiguration : BasePluginConfiguration
+    private string _server = Plugin.DefaultServer;
+
+    private long _rateLimit = Plugin.DefaultRateLimit;
+
+    public string Server
     {
-        private string _server = Plugin.DefaultServer;
+        get => _server;
+        set => _server = value.TrimEnd('/');
+    }
 
-        private long _rateLimit = Plugin.DefaultRateLimit;
-
-        public string Server
+    public long RateLimit
+    {
+        get => _rateLimit;
+        set
         {
-            get => _server;
-            set => _server = value.TrimEnd('/');
-        }
-
-        public long RateLimit
-        {
-            get => _rateLimit;
-            set
+            if (value < Plugin.DefaultRateLimit && _server == Plugin.DefaultServer)
             {
-                if (value < Plugin.DefaultRateLimit && _server == Plugin.DefaultServer)
-                {
-                    _rateLimit = Plugin.DefaultRateLimit;
-                }
-                else
-                {
-                    _rateLimit = value;
-                }
+                _rateLimit = Plugin.DefaultRateLimit;
+            }
+            else
+            {
+                _rateLimit = value;
             }
         }
-
-        public bool ReplaceArtistName { get; set; }
     }
+
+    public bool ReplaceArtistName { get; set; }
 }

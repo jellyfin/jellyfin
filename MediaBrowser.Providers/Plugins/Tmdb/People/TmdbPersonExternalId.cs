@@ -1,31 +1,37 @@
+using System.Collections.Generic;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 
-namespace MediaBrowser.Providers.Plugins.Tmdb.People
+namespace MediaBrowser.Providers.Plugins.Tmdb.People;
+
+/// <summary>
+/// External ID for a TMDB person.
+/// </summary>
+public class TmdbPersonExternalId : IExternalId
 {
-    /// <summary>
-    /// External ID for a TMDB person.
-    /// </summary>
-    public class TmdbPersonExternalId : IExternalId
+    /// <inheritdoc />
+    public string ProviderName => TmdbUtils.ProviderName;
+
+    /// <inheritdoc />
+    public string Key => MetadataProvider.Tmdb.ToString();
+
+    /// <inheritdoc />
+    public ExternalIdMediaType? Type => ExternalIdMediaType.Person;
+
+    /// <inheritdoc />
+    public string? UrlFormatString => TmdbUtils.BaseTmdbUrl + "person/{0}";
+
+    /// <inheritdoc />
+    public bool Supports(IHasProviderIds item)
     {
-        /// <inheritdoc />
-        public string ProviderName => TmdbUtils.ProviderName;
+        return item is Person;
+    }
 
-        /// <inheritdoc />
-        public string Key => MetadataProvider.Tmdb.ToString();
-
-        /// <inheritdoc />
-        public ExternalIdMediaType? Type => ExternalIdMediaType.Person;
-
-        /// <inheritdoc />
-        public string? UrlFormatString => TmdbUtils.BaseTmdbUrl + "person/{0}";
-
-        /// <inheritdoc />
-        public bool Supports(IHasProviderIds item)
-        {
-            return item is Person;
-        }
+    /// <inheritdoc />
+    public IEnumerable<ExternalUrl>? GetExternalUrls(IHasProviderIds item)
+    {
+        return null;
     }
 }

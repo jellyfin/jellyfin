@@ -1,28 +1,35 @@
-#pragma warning disable CS1591
-
+using System.Collections.Generic;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 
-namespace MediaBrowser.Providers.Music
+namespace MediaBrowser.Providers.Music;
+
+/// <summary>
+/// IMVDb external id provider.
+/// </summary>
+public class ImvdbId : IExternalId
 {
-    public class ImvdbId : IExternalId
+    /// <inheritdoc />
+    public string ProviderName => "IMVDb";
+
+    /// <inheritdoc />
+    public string Key => "IMVDb";
+
+    /// <inheritdoc />
+    public ExternalIdMediaType? Type => null;
+
+    /// <inheritdoc />
+    public string? UrlFormatString => null;
+
+    /// <inheritdoc />
+    public bool Supports(IHasProviderIds item)
+        => item is MusicVideo;
+
+    /// <inheritdoc />
+    public IEnumerable<ExternalUrl>? GetExternalUrls(IHasProviderIds item)
     {
-        /// <inheritdoc />
-        public string ProviderName => "IMVDb";
-
-        /// <inheritdoc />
-        public string Key => "IMVDb";
-
-        /// <inheritdoc />
-        public ExternalIdMediaType? Type => null;
-
-        /// <inheritdoc />
-        public string? UrlFormatString => null;
-
-        /// <inheritdoc />
-        public bool Supports(IHasProviderIds item)
-            => item is MusicVideo;
+        return null;
     }
 }

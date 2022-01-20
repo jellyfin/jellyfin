@@ -2552,11 +2552,6 @@ namespace MediaBrowser.Controller.Entities
             return new[] { Id };
         }
 
-        public virtual List<ExternalUrl> GetRelatedUrls()
-        {
-            return new List<ExternalUrl>();
-        }
-
         public virtual double? GetRefreshProgress()
         {
             return null;

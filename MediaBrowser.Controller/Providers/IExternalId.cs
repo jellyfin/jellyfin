@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 
@@ -41,5 +43,12 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="item">The item.</param>
         /// <returns>True if this item is supported, otherwise false.</returns>
         bool Supports(IHasProviderIds item);
+
+        /// <summary>
+        /// Get the list of external urls for a given item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>The list of external urls.</returns>
+        IEnumerable<ExternalUrl>? GetExternalUrls(IHasProviderIds item);
     }
 }
