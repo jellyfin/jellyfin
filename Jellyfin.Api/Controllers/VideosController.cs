@@ -134,12 +134,7 @@ namespace Jellyfin.Api.Controllers
                 items = Array.Empty<BaseItemDto>();
             }
 
-            var result = new QueryResult<BaseItemDto>
-            {
-                Items = items,
-                TotalRecordCount = items.Length
-            };
-
+            var result = new QueryResult<BaseItemDto>(items);
             return result;
         }
 

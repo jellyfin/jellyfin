@@ -136,8 +136,6 @@ namespace Jellyfin.Api.Controllers
 
             IEnumerable<BaseItem> ibnItems = ibnItemsArray;
 
-            var result = new QueryResult<BaseItemDto> { TotalRecordCount = ibnItemsArray.Count };
-
             if (startIndex.HasValue || limit.HasValue)
             {
                 if (startIndex.HasValue)
@@ -155,8 +153,10 @@ namespace Jellyfin.Api.Controllers
 
             var dtos = tuples.Select(i => _dtoService.GetItemByNameDto(i.Item1, dtoOptions, i.Item2, user));
 
-            result.Items = dtos.Where(i => i != null).ToArray();
-
+            var result = new QueryResult<BaseItemDto>(
+                startIndex,
+                ibnItemsArray.Count,
+                dtos.Where(i => i != null).ToArray());
             return result;
         }
 

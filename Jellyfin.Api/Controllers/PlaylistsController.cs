@@ -208,11 +208,10 @@ namespace Jellyfin.Api.Controllers
                 dtos[index].PlaylistItemId = items[index].Item1.Id;
             }
 
-            var result = new QueryResult<BaseItemDto>
-            {
-                Items = dtos,
-                TotalRecordCount = count
-            };
+            var result = new QueryResult<BaseItemDto>(
+                startIndex,
+                count,
+                dtos);
 
             return result;
         }

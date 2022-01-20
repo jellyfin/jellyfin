@@ -131,11 +131,10 @@ namespace Jellyfin.Api.Helpers
                 return dto;
             });
 
-            return new QueryResult<BaseItemDto>
-            {
-                Items = dtos.ToArray(),
-                TotalRecordCount = result.TotalRecordCount
-            };
+            return new QueryResult<BaseItemDto>(
+                result.StartIndex,
+                result.TotalRecordCount,
+                dtos.ToArray());
         }
     }
 }

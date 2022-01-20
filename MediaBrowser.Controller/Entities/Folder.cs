@@ -783,11 +783,10 @@ namespace MediaBrowser.Controller.Entities
                 returnItems = returnItems.Skip(startIndex.Value);
             }
 
-            return new QueryResult<BaseItem>
-            {
-                TotalRecordCount = totalCount,
-                Items = returnItems.ToArray()
-            };
+            return new QueryResult<BaseItem>(
+                query.StartIndex,
+                totalCount,
+                returnItems.ToArray());
         }
 
         private bool RequiresPostFiltering2(InternalItemsQuery query)

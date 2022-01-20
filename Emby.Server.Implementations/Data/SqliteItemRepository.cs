@@ -2810,11 +2810,10 @@ namespace Emby.Server.Implementations.Data
             if (!query.EnableTotalRecordCount || (!query.Limit.HasValue && (query.StartIndex ?? 0) == 0))
             {
                 var returnList = GetItemList(query);
-                return new QueryResult<BaseItem>
-                {
-                    Items = returnList,
-                    TotalRecordCount = returnList.Count
-                };
+                return new QueryResult<BaseItem>(
+                    query.StartIndex,
+                    returnList.Count,
+                    returnList);
             }
 
             var now = DateTime.UtcNow;
@@ -2978,6 +2977,7 @@ namespace Emby.Server.Implementations.Data
                     ReadTransactionMode);
             }
 
+            result.StartIndex = query.StartIndex ?? 0;
             result.Items = list;
             return result;
         }
@@ -3265,11 +3265,10 @@ namespace Emby.Server.Implementations.Data
             if (!query.EnableTotalRecordCount || (!query.Limit.HasValue && (query.StartIndex ?? 0) == 0))
             {
                 var returnList = GetItemIdsList(query);
-                return new QueryResult<Guid>
-                {
-                    Items = returnList,
-                    TotalRecordCount = returnList.Count
-                };
+                return new QueryResult<Guid>(
+                    query.StartIndex,
+                    returnList.Count,
+                    returnList);
             }
 
             var now = DateTime.UtcNow;
@@ -3395,6 +3394,7 @@ namespace Emby.Server.Implementations.Data
 
             LogQueryTime("GetItemIds", commandText, now);
 
+            result.StartIndex = query.StartIndex ?? 0;
             result.Items = list;
             return result;
         }
@@ -5599,6 +5599,7 @@ AND Type = @InternalPersonType)");
                 result.TotalRecordCount = list.Count;
             }
 
+            result.StartIndex = query.StartIndex ?? 0;
             result.Items = list;
 
             return result;

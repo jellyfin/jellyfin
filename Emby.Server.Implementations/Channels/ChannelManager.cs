@@ -264,11 +264,10 @@ namespace Emby.Server.Implementations.Channels
                 }
             }
 
-            return new QueryResult<Channel>
-            {
-                Items = all,
-                TotalRecordCount = totalCount
-            };
+            return new QueryResult<Channel>(
+                query.StartIndex,
+                totalCount,
+                all);
         }
 
         /// <inheritdoc />
@@ -285,11 +284,10 @@ namespace Emby.Server.Implementations.Channels
             // TODO Fix The co-variant conversion (internalResult.Items) between Folder[] and BaseItem[], this can generate runtime issues.
             var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user);
 
-            var result = new QueryResult<BaseItemDto>
-            {
-                Items = returnItems,
-                TotalRecordCount = internalResult.TotalRecordCount
-            };
+            var result = new QueryResult<BaseItemDto>(
+                query.StartIndex,
+                internalResult.TotalRecordCount,
+                returnItems);
 
             return result;
         }
@@ -620,11 +618,10 @@ namespace Emby.Server.Implementations.Channels
 
             var returnItems = _dtoService.GetBaseItemDtos(items, query.DtoOptions, query.User);
 
-            var result = new QueryResult<BaseItemDto>
-            {
-                Items = returnItems,
-                TotalRecordCount = totalRecordCount
-            };
+            var result = new QueryResult<BaseItemDto>(
+                query.StartIndex,
+                totalRecordCount,
+                returnItems);
 
             return result;
         }
@@ -786,11 +783,10 @@ namespace Emby.Server.Implementations.Channels
 
             var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, query.DtoOptions, query.User);
 
-            var result = new QueryResult<BaseItemDto>
-            {
-                Items = returnItems,
-                TotalRecordCount = internalResult.TotalRecordCount
-            };
+            var result = new QueryResult<BaseItemDto>(
+                query.StartIndex,
+                internalResult.TotalRecordCount,
+                returnItems);
 
             return result;
         }

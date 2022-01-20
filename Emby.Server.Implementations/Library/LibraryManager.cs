@@ -1360,10 +1360,10 @@ namespace Emby.Server.Implementations.Library
                 return _itemRepository.GetItems(query);
             }
 
-            return new QueryResult<BaseItem>
-            {
-                Items = _itemRepository.GetItemList(query)
-            };
+            return new QueryResult<BaseItem>(
+                query.StartIndex,
+                null,
+                _itemRepository.GetItemList(query));
         }
 
         public List<Guid> GetItemIds(InternalItemsQuery query)
@@ -1493,10 +1493,10 @@ namespace Emby.Server.Implementations.Library
                 return _itemRepository.GetItems(query);
             }
 
-            return new QueryResult<BaseItem>
-            {
-                Items = _itemRepository.GetItemList(query)
-            };
+            return new QueryResult<BaseItem>(
+                query.StartIndex,
+                null,
+                _itemRepository.GetItemList(query));
         }
 
         private void SetTopParentIdsOrAncestors(InternalItemsQuery query, List<BaseItem> parents)
