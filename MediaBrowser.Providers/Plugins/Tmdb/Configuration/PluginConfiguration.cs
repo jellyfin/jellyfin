@@ -43,6 +43,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         public string? BackdropSize { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating the logo image size to fetch.
+        /// </summary>
+        public string? LogoSize { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating the profile image size to fetch.
         /// </summary>
         public string? ProfileSize { get; set; }
