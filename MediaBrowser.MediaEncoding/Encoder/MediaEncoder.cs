@@ -92,6 +92,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <inheritdoc />
         public string EncoderPath => _ffmpegPath;
 
+        /// <inheritdoc />
+        public string ProbePath => _ffprobePath;
+
         public Version EncoderVersion => _ffmpegVersion;
 
         public bool IsVaapiDeviceAmd => _isVaapiDeviceAmd;
