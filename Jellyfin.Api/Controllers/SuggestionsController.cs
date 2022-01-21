@@ -81,11 +81,10 @@ namespace Jellyfin.Api.Controllers
 
             var dtoList = _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user);
 
-            return new QueryResult<BaseItemDto>
-            {
-                TotalRecordCount = result.TotalRecordCount,
-                Items = dtoList
-            };
+            return new QueryResult<BaseItemDto>(
+                startIndex,
+                result.TotalRecordCount,
+                dtoList);
         }
     }
 }

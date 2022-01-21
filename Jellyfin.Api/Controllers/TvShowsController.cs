@@ -110,11 +110,10 @@ namespace Jellyfin.Api.Controllers
 
             var returnItems = _dtoService.GetBaseItemDtos(result.Items, options, user);
 
-            return new QueryResult<BaseItemDto>
-            {
-                TotalRecordCount = result.TotalRecordCount,
-                Items = returnItems
-            };
+            return new QueryResult<BaseItemDto>(
+                startIndex,
+                result.TotalRecordCount,
+                returnItems);
         }
 
         /// <summary>
@@ -169,11 +168,10 @@ namespace Jellyfin.Api.Controllers
 
             var returnItems = _dtoService.GetBaseItemDtos(itemsResult, options, user);
 
-            return new QueryResult<BaseItemDto>
-            {
-                TotalRecordCount = itemsResult.Count,
-                Items = returnItems
-            };
+            return new QueryResult<BaseItemDto>(
+                startIndex,
+                itemsResult.Count,
+                returnItems);
         }
 
         /// <summary>
@@ -296,11 +294,10 @@ namespace Jellyfin.Api.Controllers
 
             var dtos = _dtoService.GetBaseItemDtos(returnItems, dtoOptions, user);
 
-            return new QueryResult<BaseItemDto>
-            {
-                TotalRecordCount = episodes.Count,
-                Items = dtos
-            };
+            return new QueryResult<BaseItemDto>(
+                startIndex,
+                episodes.Count,
+                dtos);
         }
 
         /// <summary>
@@ -354,11 +351,7 @@ namespace Jellyfin.Api.Controllers
 
             var returnItems = _dtoService.GetBaseItemDtos(seasons, dtoOptions, user);
 
-            return new QueryResult<BaseItemDto>
-            {
-                TotalRecordCount = returnItems.Count,
-                Items = returnItems
-            };
+            return new QueryResult<BaseItemDto>(returnItems);
         }
 
         /// <summary>

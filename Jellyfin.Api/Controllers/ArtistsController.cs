@@ -243,11 +243,10 @@ namespace Jellyfin.Api.Controllers
                 return dto;
             });
 
-            return new QueryResult<BaseItemDto>
-            {
-                Items = dtos.ToArray(),
-                TotalRecordCount = result.TotalRecordCount
-            };
+            return new QueryResult<BaseItemDto>(
+                query.StartIndex,
+                result.TotalRecordCount,
+                dtos.ToArray());
         }
 
         /// <summary>
@@ -447,11 +446,10 @@ namespace Jellyfin.Api.Controllers
                 return dto;
             });
 
-            return new QueryResult<BaseItemDto>
-            {
-                Items = dtos.ToArray(),
-                TotalRecordCount = result.TotalRecordCount
-            };
+            return new QueryResult<BaseItemDto>(
+                query.StartIndex,
+                result.TotalRecordCount,
+                dtos.ToArray());
         }
 
         /// <summary>

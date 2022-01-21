@@ -19,6 +19,13 @@ namespace MediaBrowser.Model.Querying
             TotalRecordCount = items.Count;
         }
 
+        public QueryResult(int? startIndex, int? totalRecordCount, IReadOnlyList<T> items)
+        {
+            StartIndex = startIndex ?? 0;
+            TotalRecordCount = totalRecordCount ?? items.Count;
+            Items = items;
+        }
+
         /// <summary>
         /// Gets or sets the items.
         /// </summary>

@@ -341,10 +341,7 @@ namespace Jellyfin.Api.Controllers
         {
             var list = items;
 
-            var result = new QueryResult<BaseItemDto>
-            {
-                TotalRecordCount = list.Count
-            };
+            var totalCount = list.Count;
 
             if (limit.HasValue && limit < list.Count)
             {
@@ -353,7 +350,10 @@ namespace Jellyfin.Api.Controllers
 
             var returnList = _dtoService.GetBaseItemDtos(list, dtoOptions, user);
 
-            result.Items = returnList;
+            var result = new QueryResult<BaseItemDto>(
+                0,
+                totalCount,
+                returnList);
 
             return result;
         }

@@ -857,11 +857,10 @@ namespace Emby.Server.Implementations.LiveTv
 
             var returnArray = _dtoService.GetBaseItemDtos(queryResult.Items, options, user);
 
-            return new QueryResult<BaseItemDto>
-            {
-                Items = returnArray,
-                TotalRecordCount = queryResult.TotalRecordCount
-            };
+            return new QueryResult<BaseItemDto>(
+                query.StartIndex,
+                queryResult.TotalRecordCount,
+                returnArray);
         }
 
         public QueryResult<BaseItem> GetRecommendedProgramsInternal(InternalItemsQuery query, DtoOptions options, CancellationToken cancellationToken)
@@ -910,11 +909,10 @@ namespace Emby.Server.Implementations.LiveTv
                 programs = programs.Take(query.Limit.Value);
             }
 
-            return new QueryResult<BaseItem>
-            {
-                Items = programs.ToArray(),
-                TotalRecordCount = totalCount
-            };
+            return new QueryResult<BaseItem>(
+                query.StartIndex,
+                totalCount,
+                programs.ToArray());
         }
 
         public QueryResult<BaseItemDto> GetRecommendedPrograms(InternalItemsQuery query, DtoOptions options, CancellationToken cancellationToken)
@@ -928,11 +926,10 @@ namespace Emby.Server.Implementations.LiveTv
 
             var internalResult = GetRecommendedProgramsInternal(query, options, cancellationToken);
 
-            return new QueryResult<BaseItemDto>
-            {
-                Items = _dtoService.GetBaseItemDtos(internalResult.Items, options, query.User),
-                TotalRecordCount = internalResult.TotalRecordCount
-            };
+            return new QueryResult<BaseItemDto>(
+                query.StartIndex,
+                internalResult.TotalRecordCount,
+                _dtoService.GetBaseItemDtos(internalResult.Items, options, query.User));
         }
 
         private int GetRecommendationScore(LiveTvProgram program, User user, bool factorChannelWatchCount)
@@ -1541,11 +1538,10 @@ namespace Emby.Server.Implementations.LiveTv
 
             var returnArray = _dtoService.GetBaseItemDtos(internalResult.Items, options, user);
 
-            return new QueryResult<BaseItemDto>
-            {
-                Items = returnArray,
-                TotalRecordCount = internalResult.TotalRecordCount
-            };
+            return new QueryResult<BaseItemDto>(
+                query.StartIndex,
+                internalResult.TotalRecordCount,
+                returnArray);
         }
 
         private async Task<QueryResult<TimerInfo>> GetTimersInternal(TimerQuery query, CancellationToken cancellationToken)
@@ -1615,11 +1611,7 @@ namespace Emby.Server.Implementations.LiveTv
                 .OrderBy(i => i.StartDate)
                 .ToArray();
 
-            return new QueryResult<TimerInfo>
-            {
-                Items = returnArray,
-                TotalRecordCount = returnArray.Length
-            };
+            return new QueryResult<TimerInfo>(returnArray);
         }
 
         public async Task<QueryResult<TimerInfoDto>> GetTimers(TimerQuery query, CancellationToken cancellationToken)
@@ -1701,11 +1693,7 @@ namespace Emby.Server.Implementations.LiveTv
                 .OrderBy(i => i.StartDate)
                 .ToArray();
 
-            return new QueryResult<TimerInfoDto>
-            {
-                Items = returnArray,
-                TotalRecordCount = returnArray.Length
-            };
+            return new QueryResult<TimerInfoDto>(returnArray);
         }
 
         public async Task CancelTimer(string id)
@@ -1801,11 +1789,7 @@ namespace Emby.Server.Implementations.LiveTv
                 .Select(i => i.Item1)
                 .ToArray();
 
-            return new QueryResult<SeriesTimerInfo>
-            {
-                Items = returnArray,
-                TotalRecordCount = returnArray.Length
-            };
+            return new QueryResult<SeriesTimerInfo>(returnArray);
         }
 
         public async Task<QueryResult<SeriesTimerInfoDto>> GetSeriesTimers(SeriesTimerQuery query, CancellationToken cancellationToken)
@@ -1855,11 +1839,7 @@ namespace Emby.Server.Implementations.LiveTv
                 })
                 .ToArray();
 
-            return new QueryResult<SeriesTimerInfoDto>
-            {
-                Items = returnArray,
-                TotalRecordCount = returnArray.Length
-            };
+            return new QueryResult<SeriesTimerInfoDto>(returnArray);
         }
 
         public BaseItem GetLiveTvChannel(TimerInfo timer, ILiveTvService service)

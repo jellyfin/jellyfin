@@ -48,12 +48,10 @@ namespace Emby.Server.Implementations.Library
                 results = results.GetRange(0, Math.Min(query.Limit.Value, results.Count));
             }
 
-            return new QueryResult<SearchHintInfo>
-            {
-                TotalRecordCount = totalRecordCount,
-
-                Items = results
-            };
+            return new QueryResult<SearchHintInfo>(
+                query.StartIndex,
+                totalRecordCount,
+                results);
         }
 
         private static void AddIfMissing(List<BaseItemKind> list, BaseItemKind value)

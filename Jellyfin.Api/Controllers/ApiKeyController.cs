@@ -38,11 +38,7 @@ namespace Jellyfin.Api.Controllers
         {
             var keys = await _authenticationManager.GetApiKeys();
 
-            return new QueryResult<AuthenticationInfo>
-            {
-                Items = keys,
-                TotalRecordCount = keys.Count
-            };
+            return new QueryResult<AuthenticationInfo>(keys);
         }
 
         /// <summary>

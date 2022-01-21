@@ -124,11 +124,7 @@ namespace Jellyfin.Api.Controllers
             var dtoOptions = new DtoOptions().AddClientFields(Request);
             var dtos = items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user)).ToArray();
 
-            return new QueryResult<BaseItemDto>
-            {
-                Items = dtos,
-                TotalRecordCount = dtos.Length
-            };
+            return new QueryResult<BaseItemDto>(dtos);
         }
 
         /// <summary>

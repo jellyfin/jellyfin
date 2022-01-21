@@ -304,11 +304,10 @@ namespace Emby.Server.Implementations.TV
                 items = items.Take(query.Limit.Value);
             }
 
-            return new QueryResult<BaseItem>
-            {
-                TotalRecordCount = totalCount,
-                Items = items.ToArray()
-            };
+            return new QueryResult<BaseItem>(
+                query.StartIndex,
+                totalCount,
+                items.ToArray());
         }
     }
 }

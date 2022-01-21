@@ -193,11 +193,10 @@ namespace Jellyfin.Api.Controllers
             dtoOptions.AddCurrentProgram = addCurrentProgram;
 
             var returnArray = _dtoService.GetBaseItemDtos(channelResult.Items, dtoOptions, user);
-            return new QueryResult<BaseItemDto>
-            {
-                Items = returnArray,
-                TotalRecordCount = channelResult.TotalRecordCount
-            };
+            return new QueryResult<BaseItemDto>(
+                startIndex,
+                channelResult.TotalRecordCount,
+                returnArray);
         }
 
         /// <summary>
@@ -390,11 +389,7 @@ namespace Jellyfin.Api.Controllers
 
             var returnArray = _dtoService.GetBaseItemDtos(folders, new DtoOptions(), user);
 
-            return new QueryResult<BaseItemDto>
-            {
-                Items = returnArray,
-                TotalRecordCount = returnArray.Count
-            };
+            return new QueryResult<BaseItemDto>(returnArray);
         }
 
         /// <summary>

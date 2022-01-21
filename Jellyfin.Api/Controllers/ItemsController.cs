@@ -491,10 +491,13 @@ namespace Jellyfin.Api.Controllers
             else
             {
                 var itemsArray = folder.GetChildren(user, true);
-                result = new QueryResult<BaseItem> { Items = itemsArray, TotalRecordCount = itemsArray.Count, StartIndex = 0 };
+                result = new QueryResult<BaseItem>(itemsArray);
             }
 
-            return new QueryResult<BaseItemDto> { StartIndex = startIndex.GetValueOrDefault(), TotalRecordCount = result.TotalRecordCount, Items = _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user) };
+            return new QueryResult<BaseItemDto>(
+                startIndex,
+                result.TotalRecordCount,
+                _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user));
         }
 
         /// <summary>
@@ -836,12 +839,10 @@ namespace Jellyfin.Api.Controllers
 
             var returnItems = _dtoService.GetBaseItemDtos(itemsResult.Items, dtoOptions, user);
 
-            return new QueryResult<BaseItemDto>
-            {
-                StartIndex = startIndex.GetValueOrDefault(),
-                TotalRecordCount = itemsResult.TotalRecordCount,
-                Items = returnItems
-            };
+            return new QueryResult<BaseItemDto>(
+                startIndex,
+                itemsResult.TotalRecordCount,
+                returnItems);
         }
     }
 }

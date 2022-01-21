@@ -59,17 +59,16 @@ namespace Jellyfin.Server.Implementations.Activity
                 entries = entries.Where(entry => entry.UserId != Guid.Empty == query.HasUserId.Value );
             }
 
-            return new QueryResult<ActivityLogEntry>
-            {
-                Items = await entries
+            return new QueryResult<ActivityLogEntry>(
+                query.Skip,
+                await entries.CountAsync().ConfigureAwait(false),
+                await entries
                     .Skip(query.Skip ?? 0)
                     .Take(query.Limit ?? 100)
                     .AsAsyncEnumerable()
                     .Select(ConvertToOldModel)
                     .ToListAsync()
-                    .ConfigureAwait(false),
-                TotalRecordCount = await entries.CountAsync().ConfigureAwait(false)
-            };
+                    .ConfigureAwait(false));
         }
 
         /// <inheritdoc />
