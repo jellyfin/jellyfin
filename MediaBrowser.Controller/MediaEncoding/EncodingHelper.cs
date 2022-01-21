@@ -1283,7 +1283,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (string.Equals(videoEncoder, "h264_v4l2m2m", StringComparison.OrdinalIgnoreCase))
             {
-                param += " -pix_fmt nv21";
+                param += " -pix_fmt yuv420p";
             }
 
             var isVc1 = string.Equals(state.VideoStream?.Codec, "vc1", StringComparison.OrdinalIgnoreCase);
