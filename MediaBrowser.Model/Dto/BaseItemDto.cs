@@ -297,13 +297,13 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets wether the item has a logo, this will hold the Id of the Parent that has one.
         /// </summary>
         /// <value>The parent logo item id.</value>
-        public string ParentLogoItemId { get; set; }
+        public Guid? ParentLogoItemId { get; set; }
 
         /// <summary>
         /// Gets or sets wether the item has any backdrops, this will hold the Id of the Parent that has one.
         /// </summary>
         /// <value>The parent backdrop item id.</value>
-        public string ParentBackdropItemId { get; set; }
+        public Guid? ParentBackdropItemId { get; set; }
 
         /// <summary>
         /// Gets or sets the parent backdrop image tags.
@@ -509,7 +509,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets wether the item has fan art, this will hold the Id of the Parent that has one.
         /// </summary>
         /// <value>The parent art item id.</value>
-        public string ParentArtItemId { get; set; }
+        public Guid? ParentArtItemId { get; set; }
 
         /// <summary>
         /// Gets or sets the parent art image tag.
@@ -540,7 +540,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the parent thumb item id.
         /// </summary>
         /// <value>The parent thumb item id.</value>
-        public string ParentThumbItemId { get; set; }
+        public Guid? ParentThumbItemId { get; set; }
 
         /// <summary>
         /// Gets or sets the parent thumb image tag.

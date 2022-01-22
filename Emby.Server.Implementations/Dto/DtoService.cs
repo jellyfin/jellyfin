@@ -458,11 +458,6 @@ namespace Emby.Server.Implementations.Dto
             }
         }
 
-        private string GetDtoId(BaseItem item)
-        {
-            return item.Id.ToString("N", CultureInfo.InvariantCulture);
-        }
-
         private void SetMusicVideoProperties(BaseItemDto dto, MusicVideo item)
         {
             if (!string.IsNullOrEmpty(item.Album))
@@ -1324,7 +1319,7 @@ namespace Emby.Server.Implementations.Dto
 
                     if (image != null)
                     {
-                        dto.ParentLogoItemId = GetDtoId(parent);
+                        dto.ParentLogoItemId = parent.Id;
                         dto.ParentLogoImageTag = GetTagAndFillBlurhash(dto, parent, image);
                     }
                 }
@@ -1335,7 +1330,7 @@ namespace Emby.Server.Implementations.Dto
 
                     if (image != null)
                     {
-                        dto.ParentArtItemId = GetDtoId(parent);
+                        dto.ParentArtItemId = parent.Id;
                         dto.ParentArtImageTag = GetTagAndFillBlurhash(dto, parent, image);
                     }
                 }
@@ -1346,7 +1341,7 @@ namespace Emby.Server.Implementations.Dto
 
                     if (image != null)
                     {
-                        dto.ParentThumbItemId = GetDtoId(parent);
+                        dto.ParentThumbItemId = parent.Id;
                         dto.ParentThumbImageTag = GetTagAndFillBlurhash(dto, parent, image);
                     }
                 }
@@ -1357,7 +1352,7 @@ namespace Emby.Server.Implementations.Dto
 
                     if (images.Count > 0)
                     {
-                        dto.ParentBackdropItemId = GetDtoId(parent);
+                        dto.ParentBackdropItemId = parent.Id;
                         dto.ParentBackdropImageTags = GetTagsAndFillBlurhashes(dto, parent, ImageType.Backdrop, images);
                     }
                 }
