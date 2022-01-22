@@ -73,7 +73,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             SetTempFilePath("ts");
 
-            var taskCompletionSource = new TaskCompletionSource<bool>();
+            var taskCompletionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             _ = StartStreaming(response, taskCompletionSource, LiveStreamCancellationTokenSource.Token);
 
