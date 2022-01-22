@@ -368,11 +368,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private void FetchEmbeddedInfo(Video video, Model.MediaInfo.MediaInfo data, MetadataRefreshOptions refreshOptions, LibraryOptions libraryOptions)
         {
-            var isFullRefresh = refreshOptions.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
+            var replaceData = refreshOptions.ReplaceAllMetadata;
 
             if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.OfficialRating))
             {
-                if (!string.IsNullOrWhiteSpace(data.OfficialRating) || isFullRefresh)
+                if (string.IsNullOrWhiteSpace(video.OfficialRating) || replaceData)
                 {
                     video.OfficialRating = data.OfficialRating;
                 }
@@ -380,7 +380,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.Genres))
             {
-                if (video.Genres.Length == 0 || isFullRefresh)
+                if (video.Genres.Length == 0 || replaceData)
                 {
                     video.Genres = Array.Empty<string>();
 
@@ -393,21 +393,28 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.Studios))
             {
-                if (video.Studios.Length == 0 || isFullRefresh)
+                if (video.Studios.Length == 0 || replaceData)
                 {
                     video.SetStudios(data.Studios);
                 }
             }
 
-            if (video is MusicVideo musicVideo)
+            if (!video.IsLocked && video is MusicVideo musicVideo)
             {
-                musicVideo.Album = data.Album;
-                musicVideo.Artists = data.Artists;
+                if (string.IsNullOrEmpty(musicVideo.Album) || replaceData)
+                {
+                    musicVideo.Album = data.Album;
+                }
+
+                if (musicVideo.Artists.Count == 0 || replaceData)
+                {
+                    musicVideo.Artists = data.Artists;
+                }
             }
 
             if (data.ProductionYear.HasValue)
             {
-                if (!video.ProductionYear.HasValue || isFullRefresh)
+                if (!video.ProductionYear.HasValue || replaceData)
                 {
                     video.ProductionYear = data.ProductionYear;
                 }
@@ -415,7 +422,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (data.PremiereDate.HasValue)
             {
-                if (!video.PremiereDate.HasValue || isFullRefresh)
+                if (!video.PremiereDate.HasValue || replaceData)
                 {
                     video.PremiereDate = data.PremiereDate;
                 }
@@ -423,7 +430,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (data.IndexNumber.HasValue)
             {
-                if (!video.IndexNumber.HasValue || isFullRefresh)
+                if (!video.IndexNumber.HasValue || replaceData)
                 {
                     video.IndexNumber = data.IndexNumber;
                 }
@@ -431,7 +438,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (data.ParentIndexNumber.HasValue)
             {
-                if (!video.ParentIndexNumber.HasValue || isFullRefresh)
+                if (!video.ParentIndexNumber.HasValue || replaceData)
                 {
                     video.ParentIndexNumber = data.ParentIndexNumber;
                 }
@@ -462,7 +469,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.Overview))
             {
-                if (string.IsNullOrWhiteSpace(video.Overview) || isFullRefresh)
+                if (string.IsNullOrWhiteSpace(video.Overview) || replaceData)
                 {
                     video.Overview = data.Overview;
                 }
@@ -471,11 +478,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private void FetchPeople(Video video, Model.MediaInfo.MediaInfo data, MetadataRefreshOptions options)
         {
-            var isFullRefresh = options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
+            var replaceData = options.ReplaceAllMetadata;
 
             if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.Cast))
             {
-                if (isFullRefresh || _libraryManager.GetPeople(video).Count == 0)
+                if (replaceData || _libraryManager.GetPeople(video).Count == 0)
                 {
                     var people = new List<PersonInfo>();
 
