@@ -343,7 +343,8 @@ namespace Emby.Dlna
                         var fileOptions = AsyncFile.WriteOptions;
                         fileOptions.Mode = FileMode.Create;
                         fileOptions.PreallocationSize = length;
-                        using (var fileStream = new FileStream(path, fileOptions))
+                        var fileStream = new FileStream(path, fileOptions);
+                        await using (fileStream.ConfigureAwait(false))
                         {
                             await stream.CopyToAsync(fileStream).ConfigureAwait(false);
                         }

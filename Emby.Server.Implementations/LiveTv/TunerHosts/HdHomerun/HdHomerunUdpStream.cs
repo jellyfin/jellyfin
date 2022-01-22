@@ -186,7 +186,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             var resolved = false;
 
-            using (var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.Read))
+            var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.Read);
+            await using (fileStream.ConfigureAwait(false))
             {
                 while (true)
                 {

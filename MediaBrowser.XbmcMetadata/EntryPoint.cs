@@ -47,7 +47,7 @@ namespace MediaBrowser.XbmcMetadata
             {
                 if (!string.IsNullOrWhiteSpace(_config.GetNfoConfiguration().UserId))
                 {
-                    SaveMetadataForItem(e.Item, ItemUpdateType.MetadataDownload);
+                    _ = SaveMetadataForItemAsync(e.Item, ItemUpdateType.MetadataDownload);
                 }
             }
         }
@@ -58,7 +58,7 @@ namespace MediaBrowser.XbmcMetadata
             _userDataManager.UserDataSaved -= OnUserDataSaved;
         }
 
-        private void SaveMetadataForItem(BaseItem item, ItemUpdateType updateReason)
+        private async Task SaveMetadataForItemAsync(BaseItem item, ItemUpdateType updateReason)
         {
             if (!item.IsFileProtocol || !item.SupportsLocalMetadata)
             {
@@ -67,7 +67,7 @@ namespace MediaBrowser.XbmcMetadata
 
             try
             {
-                _providerManager.SaveMetadata(item, updateReason, new[] { BaseNfoSaver.SaverName });
+                await _providerManager.SaveMetadataAsync(item, updateReason, new[] { BaseNfoSaver.SaverName }).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
