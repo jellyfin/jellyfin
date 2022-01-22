@@ -682,7 +682,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Programs/Recommended")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<QueryResult<BaseItemDto>> GetRecommendedPrograms(
+        public async Task<ActionResult<QueryResult<BaseItemDto>>> GetRecommendedPrograms(
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
             [FromQuery] bool? isAiring,
@@ -721,7 +721,7 @@ namespace Jellyfin.Api.Controllers
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
-            return _liveTvManager.GetRecommendedPrograms(query, dtoOptions, CancellationToken.None);
+            return await _liveTvManager.GetRecommendedProgramsAsync(query, dtoOptions, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
