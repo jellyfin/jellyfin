@@ -136,4 +136,9 @@
     <!-- disable warning CA2234: Pass System.Uri objects instead of strings -->
     <Rule Id="CA2234" Action="None" />
   </Rules>
+
+  <Rules AnalyzerId="Microsoft.CodeAnalysis.BannedApiAnalyzers" RuleNamespace="Microsoft.Design">
+    <!-- error on RS0030: Do not used banned APIs -->
+    <Rule Id="RS0030" Action="Error" />
+  </Rules>
 </RuleSet>

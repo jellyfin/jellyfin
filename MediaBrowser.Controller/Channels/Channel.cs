@@ -53,7 +53,7 @@ namespace MediaBrowser.Controller.Channels
                 query.ChannelIds = new Guid[] { Id };
 
                 // Don't blow up here because it could cause parent screens with other content to fail
-                return ChannelManager.GetChannelItemsInternal(query, new SimpleProgress<double>(), CancellationToken.None).Result;
+                return ChannelManager.GetChannelItemsInternal(query, new SimpleProgress<double>(), CancellationToken.None).GetAwaiter().GetResult();
             }
             catch
             {

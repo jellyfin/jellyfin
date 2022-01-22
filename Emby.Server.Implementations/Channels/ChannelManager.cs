@@ -331,7 +331,7 @@ namespace Emby.Server.Implementations.Channels
 
         private Channel GetChannelEntity(IChannel channel)
         {
-            return GetChannel(GetInternalChannelId(channel.Name)) ?? GetChannel(channel, CancellationToken.None).Result;
+            return GetChannel(GetInternalChannelId(channel.Name)) ?? GetChannel(channel, CancellationToken.None).GetAwaiter().GetResult();
         }
 
         private MediaSourceInfo[] GetSavedMediaSources(BaseItem item)

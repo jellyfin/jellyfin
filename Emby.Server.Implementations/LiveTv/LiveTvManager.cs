@@ -915,21 +915,21 @@ namespace Emby.Server.Implementations.LiveTv
                 programs.ToArray());
         }
 
-        public QueryResult<BaseItemDto> GetRecommendedPrograms(InternalItemsQuery query, DtoOptions options, CancellationToken cancellationToken)
+        public Task<QueryResult<BaseItemDto>> GetRecommendedProgramsAsync(InternalItemsQuery query, DtoOptions options, CancellationToken cancellationToken)
         {
             if (!(query.IsAiring ?? false))
             {
-                return GetPrograms(query, options, cancellationToken).Result;
+                return GetPrograms(query, options, cancellationToken);
             }
 
             RemoveFields(options);
 
             var internalResult = GetRecommendedProgramsInternal(query, options, cancellationToken);
 
-            return new QueryResult<BaseItemDto>(
+            return Task.FromResult(new QueryResult<BaseItemDto>(
                 query.StartIndex,
                 internalResult.TotalRecordCount,
-                _dtoService.GetBaseItemDtos(internalResult.Items, options, query.User));
+                _dtoService.GetBaseItemDtos(internalResult.Items, options, query.User)));
         }
 
         private int GetRecommendationScore(LiveTvProgram program, User user, bool factorChannelWatchCount)
