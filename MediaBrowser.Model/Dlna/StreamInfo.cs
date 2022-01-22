@@ -675,7 +675,7 @@ namespace MediaBrowser.Model.Dlna
             return string.Format(CultureInfo.InvariantCulture, "{0}/videos/{1}/stream{2}?{3}", baseUrl, ItemId, extension, queryString);
         }
 
-        private static List<NameValuePair> BuildParams(StreamInfo item, string accessToken)
+        private static IEnumerable<NameValuePair> BuildParams(StreamInfo item, string accessToken)
         {
             var list = new List<NameValuePair>();
 
@@ -805,34 +805,12 @@ namespace MediaBrowser.Model.Dlna
             return list;
         }
 
-        public List<SubtitleStreamInfo> GetExternalSubtitles(ITranscoderSupport transcoderSupport, bool includeSelectedTrackOnly, string baseUrl, string accessToken)
-        {
-            return GetExternalSubtitles(transcoderSupport, includeSelectedTrackOnly, false, baseUrl, accessToken);
-        }
-
-        public List<SubtitleStreamInfo> GetExternalSubtitles(ITranscoderSupport transcoderSupport, bool includeSelectedTrackOnly, bool enableAllProfiles, string baseUrl, string accessToken)
-        {
-            var list = GetSubtitleProfiles(transcoderSupport, includeSelectedTrackOnly, enableAllProfiles, baseUrl, accessToken);
-            var newList = new List<SubtitleStreamInfo>();
-
-            // First add the selected track
-            foreach (SubtitleStreamInfo stream in list)
-            {
-                if (stream.DeliveryMethod == SubtitleDeliveryMethod.External)
-                {
-                    newList.Add(stream);
-                }
-            }
-
-            return newList;
-        }
-
-        public List<SubtitleStreamInfo> GetSubtitleProfiles(ITranscoderSupport transcoderSupport, bool includeSelectedTrackOnly, string baseUrl, string accessToken)
+        public IEnumerable<SubtitleStreamInfo> GetSubtitleProfiles(ITranscoderSupport transcoderSupport, bool includeSelectedTrackOnly, string baseUrl, string accessToken)
         {
             return GetSubtitleProfiles(transcoderSupport, includeSelectedTrackOnly, false, baseUrl, accessToken);
         }
 
-        public List<SubtitleStreamInfo> GetSubtitleProfiles(ITranscoderSupport transcoderSupport, bool includeSelectedTrackOnly, bool enableAllProfiles, string baseUrl, string accessToken)
+        public IEnumerable<SubtitleStreamInfo> GetSubtitleProfiles(ITranscoderSupport transcoderSupport, bool includeSelectedTrackOnly, bool enableAllProfiles, string baseUrl, string accessToken)
         {
             var list = new List<SubtitleStreamInfo>();
 

@@ -115,7 +115,7 @@ namespace MediaBrowser.Model.Dlna
             return "DLNA.ORG_PN=" + orgPn + orgOp + orgCi + dlnaflags;
         }
 
-        public static List<string> BuildVideoHeader(
+        public static IEnumerable<string> BuildVideoHeader(
             DeviceProfile profile,
             string container,
             string videoCodec,

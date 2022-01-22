@@ -15,7 +15,7 @@ namespace MediaBrowser.Model.Dto
         public MediaSourceInfo()
         {
             Formats = Array.Empty<string>();
-            MediaStreams = new List<MediaStream>();
+            MediaStreams = Array.Empty<MediaStream>();
             MediaAttachments = Array.Empty<MediaAttachment>();
             RequiredHttpHeaders = new Dictionary<string, string>();
             SupportsTranscoding = true;
@@ -88,7 +88,7 @@ namespace MediaBrowser.Model.Dto
 
         public Video3DFormat? Video3DFormat { get; set; }
 
-        public List<MediaStream> MediaStreams { get; set; }
+        public IReadOnlyList<MediaStream> MediaStreams { get; set; }
 
         public IReadOnlyList<MediaAttachment> MediaAttachments { get; set; }
 

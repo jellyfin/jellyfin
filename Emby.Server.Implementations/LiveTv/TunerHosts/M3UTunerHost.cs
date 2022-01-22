@@ -170,7 +170,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             {
                 Path = path,
                 Protocol = protocol,
-                MediaStreams = new List<MediaStream>
+                MediaStreams = new MediaStream[]
                 {
                     new MediaStream
                     {

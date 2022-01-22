@@ -5914,7 +5914,7 @@ AND Type = @InternalPersonType)");
             }
         }
 
-        public void SaveMediaStreams(Guid id, List<MediaStream> streams, CancellationToken cancellationToken)
+        public void SaveMediaStreams(Guid id, IReadOnlyList<MediaStream> streams, CancellationToken cancellationToken)
         {
             CheckDisposed();
 
@@ -5946,7 +5946,7 @@ AND Type = @InternalPersonType)");
             }
         }
 
-        private void InsertMediaStreams(byte[] idBlob, List<MediaStream> streams, IDatabaseConnection db)
+        private void InsertMediaStreams(byte[] idBlob, IReadOnlyList<MediaStream> streams, IDatabaseConnection db)
         {
             const int Limit = 10;
             var startIndex = 0;

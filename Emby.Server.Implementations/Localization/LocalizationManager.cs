@@ -147,13 +147,7 @@ namespace Emby.Server.Implementations.Localization
                         threeletterNames = new[] { parts[0], parts[1] };
                     }
 
-                    list.Add(new CultureDto
-                    {
-                        DisplayName = name,
-                        Name = name,
-                        ThreeLetterISOLanguageNames = threeletterNames,
-                        TwoLetterISOLanguageName = twoCharName
-                    });
+                    list.Add(new CultureDto(name, name, twoCharName, threeletterNames));
                 }
             }
 

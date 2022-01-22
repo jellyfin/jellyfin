@@ -312,7 +312,7 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 if (isVideo)
                 {
-                    mediaSource.MediaStreams.AddRange(new List<MediaStream>
+                    mediaSource.MediaStreams = new MediaStream[]
                     {
                         new MediaStream
                         {
@@ -329,11 +329,11 @@ namespace Emby.Server.Implementations.LiveTv
                             // Set the index to -1 because we don't know the exact index of the audio stream within the container
                             Index = -1
                         }
-                    });
+                    };
                 }
                 else
                 {
-                    mediaSource.MediaStreams.AddRange(new List<MediaStream>
+                    mediaSource.MediaStreams = new MediaStream[]
                     {
                         new MediaStream
                         {
@@ -341,7 +341,7 @@ namespace Emby.Server.Implementations.LiveTv
                             // Set the index to -1 because we don't know the exact index of the audio stream within the container
                             Index = -1
                         }
-                    });
+                    };
                 }
             }
 
