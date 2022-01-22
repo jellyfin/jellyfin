@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using MediaBrowser.Model.Entities;
@@ -20,7 +21,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the identifier.
         /// </summary>
         /// <value>The identifier.</value>
-        public string Id { get; set; }
+        public Guid Id { get; set; }
 
         /// <summary>
         /// Gets or sets the role.

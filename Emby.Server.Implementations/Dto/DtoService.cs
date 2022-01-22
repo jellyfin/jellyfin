@@ -584,7 +584,7 @@ namespace Emby.Server.Implementations.Dto
                 if (dictionary.TryGetValue(person.Name, out Person entity))
                 {
                     baseItemPerson.PrimaryImageTag = GetTagAndFillBlurhash(dto, entity, ImageType.Primary);
-                    baseItemPerson.Id = entity.Id.ToString("N", CultureInfo.InvariantCulture);
+                    baseItemPerson.Id = entity.Id;
                     if (dto.ImageBlurHashes != null)
                     {
                         // Only add BlurHash for the person's image.
