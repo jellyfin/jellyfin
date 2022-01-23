@@ -109,7 +109,7 @@ namespace MediaBrowser.Model.Dto
         public int? AnalyzeDurationMs { get; set; }
 
         [JsonIgnore]
-        public TranscodeReason[] TranscodeReasons { get; set; }
+        public TranscodeReason TranscodeReasons { get; set; }
 
         public int? DefaultAudioStreamIndex { get; set; }
 

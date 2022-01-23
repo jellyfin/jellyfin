@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json.Serialization;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
@@ -23,7 +24,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         public int? OutputAudioBitrate;
         public int? OutputAudioChannels;
 
-        private TranscodeReason[] _transcodeReasons = null;
+        private TranscodeReason? _transcodeReasons = null;
 
         public EncodingJobInfo(TranscodingJobType jobType)
         {
@@ -34,25 +35,27 @@ namespace MediaBrowser.Controller.MediaEncoding
             SupportedSubtitleCodecs = Array.Empty<string>();
         }
 
-        public TranscodeReason[] TranscodeReasons
+        public TranscodeReason[] TranscodeReasons { get => TranscodeReason.ToArray(); }
+
+        [JsonIgnore]
+        public TranscodeReason TranscodeReason
         {
             get
             {
-                if (_transcodeReasons == null)
+                if (!_transcodeReasons.HasValue)
                 {
                     if (BaseRequest.TranscodeReasons == null)
                     {
-                        return Array.Empty<TranscodeReason>();
+                        _transcodeReasons = TranscodeReason.None;
+                        return TranscodeReason.None;
                     }
 
-                    _transcodeReasons = BaseRequest.TranscodeReasons
-                        .Split(',')
-                        .Where(i => !string.IsNullOrEmpty(i))
-                        .Select(v => (TranscodeReason)Enum.Parse(typeof(TranscodeReason), v, true))
-                        .ToArray();
+                    TranscodeReason reason = TranscodeReason.None;
+                    Enum.TryParse<TranscodeReason>(BaseRequest.TranscodeReasons, out reason);
+                    _transcodeReasons = reason;
                 }
 
-                return _transcodeReasons;
+                return _transcodeReasons.Value;
             }
         }
 
