@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/stale@v4.1.0
         with:
-          repo-token: ${{ github.token }}
+          repo-token: ${{ secrets.JF_BOT_TOKEN }}
           days-before-stale: 120
           days-before-pr-stale: -1
           days-before-close: 21
