@@ -31,7 +31,7 @@ namespace MediaBrowser.Model.Session
 
         public HardwareEncodingType? HardwareAccelerationType { get; set; }
 
-        public TranscodeReason[] TranscodeReasons { get => TranscodeReason.ToArray(); }
+        public TranscodeReason[] TranscodeReasons => TranscodeReason.ToArray();
 
         [JsonIgnore]
         public TranscodeReason TranscodeReason { get; set; }

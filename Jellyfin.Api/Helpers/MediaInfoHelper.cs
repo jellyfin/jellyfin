@@ -191,7 +191,9 @@ namespace Jellyfin.Api.Helpers
                 DeviceId = auth.DeviceId,
                 ItemId = item.Id,
                 Profile = profile,
-                MaxAudioChannels = maxAudioChannels
+                MaxAudioChannels = maxAudioChannels,
+                AllowAudioStreamCopy = allowAudioStreamCopy,
+                AllowVideoStreamCopy = allowVideoStreamCopy
             };
 
             if (string.Equals(mediaSourceId, mediaSource.Id, StringComparison.OrdinalIgnoreCase))
@@ -208,7 +210,7 @@ namespace Jellyfin.Api.Helpers
                 mediaSource.SupportsDirectPlay = false;
             }
 
-            if (!enableDirectStream)
+            if (!enableDirectStream || !allowVideoStreamCopy)
             {
                 mediaSource.SupportsDirectStream = false;
             }
@@ -235,168 +237,79 @@ namespace Jellyfin.Api.Helpers
                     user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding));
             }
 
-            // Beginning of Playback Determination: Attempt DirectPlay first
-            if (mediaSource.SupportsDirectPlay)
+            options.MaxBitrate = GetMaxBitrate(maxBitrate, user, ipAddress);
+
+            if (!options.ForceDirectStream)
             {
+                // direct-stream http streaming is currently broken
+                options.EnableDirectStream = false;
+            }
+
+            // Beginning of Playback Determination
+            var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase)
+                ? streamBuilder.BuildAudioItem(options)
+                : streamBuilder.BuildVideoItem(options);
+
+            if (streamInfo != null)
+            {
+                streamInfo.PlaySessionId = playSessionId;
+                streamInfo.StartPositionTicks = startTimeTicks;
+
+                mediaSource.SupportsDirectPlay = streamInfo.PlayMethod == PlayMethod.DirectPlay;
+                // Players do not handle this being set according to PlayMethod
+                mediaSource.SupportsDirectStream = options.EnableDirectStream ? streamInfo.PlayMethod == PlayMethod.DirectPlay || streamInfo.PlayMethod == PlayMethod.DirectStream : streamInfo.PlayMethod == PlayMethod.DirectPlay;
+                mediaSource.SupportsTranscoding = streamInfo.PlayMethod == PlayMethod.DirectStream || mediaSource.TranscodingContainer != null;
+
+                if (item is Audio)
+                {
+                    if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding))
+                    {
+                        mediaSource.SupportsTranscoding = false;
+                    }
+                }
+                else if (item is Video)
+                {
+                    if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding)
+                        && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding)
+                        && !user.HasPermission(PermissionKind.EnablePlaybackRemuxing))
+                    {
+                        mediaSource.SupportsTranscoding = false;
+                    }
+                }
+
                 if (mediaSource.IsRemote && user.HasPermission(PermissionKind.ForceRemoteSourceTranscoding))
                 {
                     mediaSource.SupportsDirectPlay = false;
-                }
-                else
-                {
-                    var supportsDirectStream = mediaSource.SupportsDirectStream;
-
-                    // Dummy this up to fool StreamBuilder
-                    mediaSource.SupportsDirectStream = true;
-                    options.MaxBitrate = maxBitrate;
-
-                    if (item is Audio)
-                    {
-                        if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding))
-                        {
-                            options.ForceDirectPlay = true;
-                        }
-                    }
-                    else if (item is Video)
-                    {
-                        if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding)
-                            && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding)
-                            && !user.HasPermission(PermissionKind.EnablePlaybackRemuxing))
-                        {
-                            options.ForceDirectPlay = true;
-                        }
-                    }
-
-                    // The MediaSource supports direct stream, now test to see if the client supports it
-                    var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase)
-                        ? streamBuilder.BuildAudioItem(options)
-                        : streamBuilder.BuildVideoItem(options);
-
-                    if (streamInfo == null || !streamInfo.IsDirectStream)
-                    {
-                        mediaSource.SupportsDirectPlay = false;
-                    }
-
-                    // Set this back to what it was
-                    mediaSource.SupportsDirectStream = supportsDirectStream;
-
-                    if (streamInfo != null)
-                    {
-                        SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
-                        mediaSource.DefaultAudioStreamIndex = streamInfo.AudioStreamIndex;
-                    }
-                }
-            }
-
-            if (mediaSource.SupportsDirectStream)
-            {
-                if (mediaSource.IsRemote && user.HasPermission(PermissionKind.ForceRemoteSourceTranscoding))
-                {
                     mediaSource.SupportsDirectStream = false;
+
+                    mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).TrimStart('-');
+                    mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
+                    mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
+                    mediaSource.TranscodingContainer = streamInfo.Container;
+                    mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
                 }
                 else
                 {
-                    options.MaxBitrate = GetMaxBitrate(maxBitrate, user, ipAddress);
-
-                    if (item is Audio)
+                    if (mediaSource.SupportsTranscoding || mediaSource.SupportsDirectStream)
                     {
-                        if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding))
-                        {
-                            options.ForceDirectStream = true;
-                        }
-                    }
-                    else if (item is Video)
-                    {
-                        if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding)
-                            && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding)
-                            && user.HasPermission(PermissionKind.EnablePlaybackRemuxing))
-                        {
-                            options.ForceDirectStream = true;
-                        }
-                    }
-
-                    // The MediaSource supports direct stream, now test to see if the client supports it
-                    var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase)
-                        ? streamBuilder.BuildAudioItem(options)
-                        : streamBuilder.BuildVideoItem(options);
-
-                    if (streamInfo == null || !streamInfo.IsDirectStream)
-                    {
-                        mediaSource.SupportsDirectStream = false;
-                    }
-
-                    if (streamInfo != null)
-                    {
-                        SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
-                        mediaSource.DefaultAudioStreamIndex = streamInfo.AudioStreamIndex;
-                    }
-                }
-            }
-
-            if (mediaSource.SupportsTranscoding)
-            {
-                options.MaxBitrate = GetMaxBitrate(maxBitrate, user, ipAddress);
-
-                // The MediaSource supports direct stream, now test to see if the client supports it
-                var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase)
-                    ? streamBuilder.BuildAudioItem(options)
-                    : streamBuilder.BuildVideoItem(options);
-
-                if (mediaSource.IsRemote && user.HasPermission(PermissionKind.ForceRemoteSourceTranscoding))
-                {
-                    if (streamInfo != null)
-                    {
-                        streamInfo.PlaySessionId = playSessionId;
-                        streamInfo.StartPositionTicks = startTimeTicks;
+                        streamInfo.PlayMethod = PlayMethod.Transcode;
                         mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).TrimStart('-');
-                        mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
-                        mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
-                        mediaSource.TranscodingContainer = streamInfo.Container;
-                        mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
 
-                        // Do this after the above so that StartPositionTicks is set
-                        SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
-                        mediaSource.DefaultAudioStreamIndex = streamInfo.AudioStreamIndex;
-                    }
-                }
-                else
-                {
-                    if (streamInfo != null)
-                    {
-                        streamInfo.PlaySessionId = playSessionId;
-
-                        if (streamInfo.PlayMethod == PlayMethod.Transcode)
+                        if (!allowVideoStreamCopy)
                         {
-                            streamInfo.StartPositionTicks = startTimeTicks;
-                            mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).TrimStart('-');
-
-                            if (!allowVideoStreamCopy)
-                            {
-                                mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
-                            }
-
-                            if (!allowAudioStreamCopy)
-                            {
-                                mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
-                            }
-
-                            mediaSource.TranscodingContainer = streamInfo.Container;
-                            mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
+                            mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
                         }
 
                         if (!allowAudioStreamCopy)
                         {
                             mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
                         }
-
-                        mediaSource.TranscodingContainer = streamInfo.Container;
-                        mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
-
-                        // Do this after the above so that StartPositionTicks is set
-                        SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
-                        mediaSource.DefaultAudioStreamIndex = streamInfo.AudioStreamIndex;
                     }
                 }
+
+                // Do this after the above so that StartPositionTicks is set
+                SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                mediaSource.DefaultAudioStreamIndex = streamInfo.AudioStreamIndex;
             }
 
             foreach (var attachment in mediaSource.MediaAttachments)

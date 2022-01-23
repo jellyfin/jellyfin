@@ -35,7 +35,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             SupportedSubtitleCodecs = Array.Empty<string>();
         }
 
-        public TranscodeReason[] TranscodeReasons { get => TranscodeReason.ToArray(); }
+        public TranscodeReason[] TranscodeReasons => TranscodeReason.ToArray();
 
         [JsonIgnore]
         public TranscodeReason TranscodeReason
@@ -50,8 +50,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         return TranscodeReason.None;
                     }
 
-                    TranscodeReason reason = TranscodeReason.None;
-                    Enum.TryParse<TranscodeReason>(BaseRequest.TranscodeReasons, out reason);
+                    _ = Enum.TryParse<TranscodeReason>(BaseRequest.TranscodeReasons, out var reason);
                     _transcodeReasons = reason;
                 }
 

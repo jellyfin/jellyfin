@@ -31,21 +31,16 @@ namespace MediaBrowser.Model.Session
         AudioChannelsNotSupported = 1 << 14,
         AudioProfileNotSupported = 1 << 15,
         AudioSampleRateNotSupported = 1 << 16,
-        AudioBitDepthNotSupported = 1 << 20,
+        AudioBitDepthNotSupported = 1 << 17,
 
         // Bitrate Constraints
-        ContainerBitrateExceedsLimit = 1 << 17,
-        VideoBitrateNotSupported = 1 << 18,
-        AudioBitrateNotSupported = 1 << 19,
+        ContainerBitrateExceedsLimit = 1 << 18,
+        VideoBitrateNotSupported = 1 << 19,
+        AudioBitrateNotSupported = 1 << 20,
 
         // Errors
-        UnknownVideoStreamInfo = 1 << 20,
-        UnknownAudioStreamInfo = 1 << 21,
-        DirectPlayError = 1 << 22,
-
-        // Aliases
-        ContainerReasons = ContainerNotSupported | ContainerBitrateExceedsLimit,
-        AudioReasons = AudioCodecNotSupported | AudioBitrateNotSupported | AudioChannelsNotSupported | AudioProfileNotSupported | AudioSampleRateNotSupported | SecondaryAudioNotSupported | AudioBitDepthNotSupported | AudioIsExternal,
-        VideoReasons = VideoCodecNotSupported | VideoResolutionNotSupported | AnamorphicVideoNotSupported | InterlacedVideoNotSupported | VideoBitDepthNotSupported | VideoBitrateNotSupported | VideoFramerateNotSupported | VideoLevelNotSupported | RefFramesNotSupported,
+        UnknownVideoStreamInfo = 1 << 21,
+        UnknownAudioStreamInfo = 1 << 22,
+        DirectPlayError = 1 << 23,
     }
 }

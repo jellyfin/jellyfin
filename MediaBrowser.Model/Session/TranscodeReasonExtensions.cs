@@ -1,22 +1,34 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Linq;
 
 namespace MediaBrowser.Model.Session
 {
+    /// <summary>
+    /// Extension methods for serializing TranscodeReason.
+    /// </summary>
     public static class TranscodeReasonExtensions
     {
-        private static TranscodeReason[] values = Enum.GetValues<TranscodeReason>();
+        private static readonly TranscodeReason[] _values = Enum.GetValues<TranscodeReason>();
 
-        public static string Serialize(this MediaBrowser.Model.Session.TranscodeReason reasons, string sep = ",")
+        /// <summary>
+        /// Serializes a TranscodeReason into a delimiter-separated string.
+        /// </summary>
+        /// <param name="reasons">The <see cref="TranscodeReason"/> enumeration.</param>
+        /// <param name="sep">The string separator to use. defualt <c>,</c>.</param>
+        /// <returns>string of transcode reasons delimited.</returns>
+        public static string Serialize(this TranscodeReason reasons, string sep = ",")
         {
             return string.Join(sep, reasons.ToArray());
         }
 
-        public static TranscodeReason[] ToArray(this MediaBrowser.Model.Session.TranscodeReason reasons)
+        /// <summary>
+        /// Serializes a TranscodeReason into an array of individual TranscodeReason bits.
+        /// </summary>
+        /// <param name="reasons">The <see cref="TranscodeReason"/> enumeration.</param>
+        /// <returns>Array of <c>TranscodeReason</c>.</returns>
+        public static TranscodeReason[] ToArray(this TranscodeReason reasons)
         {
-            return values.Where(r => r != 0 && reasons.HasFlag(r)).ToArray();
+            return _values.Where(r => r != 0 && reasons.HasFlag(r)).ToArray();
         }
     }
 }

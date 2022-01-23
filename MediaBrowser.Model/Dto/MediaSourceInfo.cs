@@ -161,7 +161,7 @@ namespace MediaBrowser.Model.Dto
 
         public MediaStream GetDefaultAudioStream(int? defaultIndex)
         {
-            if (defaultIndex.HasValue)
+            if (defaultIndex.HasValue && defaultIndex != -1)
             {
                 var val = defaultIndex.Value;
 
