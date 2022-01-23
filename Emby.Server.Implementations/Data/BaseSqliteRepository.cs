@@ -103,8 +103,8 @@ namespace Emby.Server.Implementations.Data
         {
             if (readOnly)
             {
-                ReadConnection ??= SQLite3.Open(DbFilePath, DefaultConnectionFlags | ConnectionFlags.ReadOnly, null);
-                return new ManagedConnection(ReadConnection, null);
+                ReadConnection ??= SQLite3.Open(DbFilePath, ConnectionFlags.ReadOnly, null);
+                return new ManagedConnection(ReadConnection, null!);
             }
 
             WriteLock.Wait();
