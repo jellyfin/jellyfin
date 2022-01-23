@@ -434,7 +434,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="fileSystemChildren">The file system children.</param>
         /// <param name="directoryService">An instance of <see cref="IDirectoryService"/>.</param>
         /// <returns>IEnumerable&lt;BaseItem&gt;.</returns>
-        IEnumerable<BaseItem> FindExtras(BaseItem owner, List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService);
+        IEnumerable<BaseItem> FindExtras(BaseItem owner, IReadOnlyList<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService);
 
         /// <summary>
         /// Gets the collection folders.
