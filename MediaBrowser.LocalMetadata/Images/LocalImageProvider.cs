@@ -473,13 +473,14 @@ namespace MediaBrowser.LocalMetadata.Images
             for (var i = 0; i < files.Count; i++)
             {
                 var file = files[i];
-                if (file.IsDirectory || file.Length <= 0 || file.FullName.Length != fileNameLength)
+                if (file.IsDirectory || file.Length <= 0)
                 {
                     continue;
                 }
 
                 var fileName = Path.GetFileNameWithoutExtension(file.FullName.AsSpan());
-                if (fileName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+                if (fileName.Length == fileNameLength
+                    && fileName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
                     && fileName.EndsWith(name, StringComparison.OrdinalIgnoreCase))
                 {
                     return file;
