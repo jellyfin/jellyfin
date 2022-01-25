@@ -12,6 +12,7 @@ permissions:
 jobs:
   stale:
     runs-on: ubuntu-latest
+    if: ${{ contains(github.repository, 'jellyfin/') }}
     steps:
       - uses: actions/stale@v4.1.0
         with:
