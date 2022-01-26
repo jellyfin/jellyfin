@@ -68,6 +68,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="nextUpDateCutoff">Optional. Starting date of shows to show in Next Up section.</param>
         /// <param name="enableTotalRecordCount">Whether to enable the total records count. Defaults to true.</param>
         /// <param name="disableFirstEpisode">Whether to disable sending the first episode in a series as next up.</param>
+        /// <param name="rewatching">Whether to get a rewatching next up instead of standard next up.</param>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the next up episodes.</returns>
         [HttpGet("NextUp")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -84,7 +85,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableUserData,
             [FromQuery] DateTime? nextUpDateCutoff,
             [FromQuery] bool enableTotalRecordCount = true,
-            [FromQuery] bool disableFirstEpisode = false)
+            [FromQuery] bool disableFirstEpisode = false,
+            [FromQuery] bool rewatching = false)
         {
             var options = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
@@ -100,7 +102,8 @@ namespace Jellyfin.Api.Controllers
                     UserId = userId ?? Guid.Empty,
                     EnableTotalRecordCount = enableTotalRecordCount,
                     DisableFirstEpisode = disableFirstEpisode,
-                    NextUpDateCutoff = nextUpDateCutoff ?? DateTime.MinValue
+                    NextUpDateCutoff = nextUpDateCutoff ?? DateTime.MinValue,
+                    Rewatching = rewatching
                 },
                 options);
 
