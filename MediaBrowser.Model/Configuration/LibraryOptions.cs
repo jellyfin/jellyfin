@@ -15,6 +15,7 @@ namespace MediaBrowser.Model.Configuration
 
             SkipSubtitlesIfAudioTrackMatches = true;
             RequirePerfectSubtitleMatch = true;
+            AllowEmbeddedSubtitles = EmbeddedSubtitleOptions.AllowAll;
 
             AutomaticallyAddToCollection = true;
             EnablePhotos = true;
@@ -84,9 +85,7 @@ namespace MediaBrowser.Model.Configuration
 
         public bool AutomaticallyAddToCollection { get; set; }
 
-        public bool DisableEmbeddedTextSubtitles { get; set; }
-
-        public bool DisableEmbeddedImageSubtitles { get; set; }
+        public EmbeddedSubtitleOptions AllowEmbeddedSubtitles { get; set; }
 
         public TypeOptions[] TypeOptions { get; set; }
 
