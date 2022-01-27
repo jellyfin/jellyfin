@@ -43,7 +43,6 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly AudioResolver _audioResolver;
         private readonly FFProbeVideoInfo _videoProber;
         private readonly FFProbeAudioInfo _audioProber;
-
         private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
 
         public FFProbeProvider(
@@ -62,7 +61,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             _logger = logger;
             _audioResolver = new AudioResolver(localization, mediaEncoder, namingOptions);
-            _subtitleResolver = new SubtitleResolver(BaseItem.LocalizationManager);
+            _subtitleResolver = new SubtitleResolver(BaseItem.LocalizationManager, mediaEncoder, namingOptions);
             _videoProber = new FFProbeVideoInfo(
                 _logger,
                 mediaSourceManager,
@@ -75,6 +74,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 subtitleManager,
                 chapterManager,
                 libraryManager,
+                _subtitleResolver,
                 _audioResolver);
             _audioProber = new FFProbeAudioInfo(mediaSourceManager, mediaEncoder, itemRepo, libraryManager);
         }
@@ -104,7 +104,9 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (item.SupportsLocalMetadata && video != null && !video.IsPlaceHolder
                 && !video.SubtitleFiles.SequenceEqual(
-                        _subtitleResolver.GetExternalSubtitleFiles(video, directoryService, false), StringComparer.Ordinal))
+                    _subtitleResolver.GetExternalSubtitleFiles(video, directoryService, false)
+                    .Select(info => info.Path).ToList(),
+                    StringComparer.Ordinal))
             {
                 _logger.LogDebug("Refreshing {ItemPath} due to external subtitles change.", item.Path);
                 return true;
@@ -112,7 +114,9 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (item.SupportsLocalMetadata && video != null && !video.IsPlaceHolder
                 && !video.AudioFiles.SequenceEqual(
-                        _audioResolver.GetExternalAudioFiles(video, directoryService, false), StringComparer.Ordinal))
+                    _audioResolver.GetExternalAudioFiles(video, directoryService, false)
+                    .Select(info => info.Path).ToList(),
+                    StringComparer.Ordinal))
             {
                 _logger.LogDebug("Refreshing {ItemPath} due to external audio change.", item.Path);
                 return true;

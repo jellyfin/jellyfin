@@ -149,10 +149,14 @@ namespace Emby.Naming.Common
 
             SubtitleFileExtensions = new[]
             {
+                ".ass",
+                ".smi",
+                ".sami",
                 ".srt",
                 ".ssa",
-                ".ass",
-                ".sub"
+                ".sub",
+                ".vtt",
+                ".mks"
             };
 
             SubtitleFlagDelimiters = new[]
@@ -244,6 +248,22 @@ namespace Emby.Naming.Common
                 ".oga",
                 ".dsf",
                 ".mka"
+            };
+
+            ExternalAudioFlagDelimiters = new[]
+            {
+                '.'
+            };
+
+            ExternalAudioForcedFlags = new[]
+            {
+                "foreign",
+                "forced"
+            };
+
+            ExternalAudioDefaultFlags = new[]
+            {
+                "default"
             };
 
             EpisodeExpressions = new[]
@@ -648,9 +668,7 @@ namespace Emby.Naming.Common
                 @"^\s*(?<name>[^ ].*?)\s*$"
             };
 
-            var extensions = VideoFileExtensions.ToList();
-
-            extensions.AddRange(new[]
+            VideoFileExtensions = new[]
             {
                 ".mkv",
                 ".m2t",
@@ -681,11 +699,7 @@ namespace Emby.Naming.Common
                 ".m2v",
                 ".rec",
                 ".mxf"
-            });
-
-            VideoFileExtensions = extensions
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToArray();
+            };
 
             MultipleEpisodeExpressions = new[]
             {
@@ -716,6 +730,21 @@ namespace Emby.Naming.Common
         /// Gets or sets list of audio file extensions.
         /// </summary>
         public string[] AudioFileExtensions { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of external audio flag delimiters.
+        /// </summary>
+        public char[] ExternalAudioFlagDelimiters { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of external audio forced flags.
+        /// </summary>
+        public string[] ExternalAudioForcedFlags { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of external audio default flags.
+        /// </summary>
+        public string[] ExternalAudioDefaultFlags { get; set; }
 
         /// <summary>
         /// Gets or sets list of album stacking prefixes.

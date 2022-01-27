@@ -9,25 +9,25 @@ namespace Emby.Naming.Subtitles
     /// <summary>
     /// Subtitle Parser class.
     /// </summary>
-    public class SubtitleParser
+    public class SubtitleFilePathParser
     {
         private readonly NamingOptions _options;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SubtitleParser"/> class.
+        /// Initializes a new instance of the <see cref="SubtitleFilePathParser"/> class.
         /// </summary>
         /// <param name="options"><see cref="NamingOptions"/> object containing SubtitleFileExtensions, SubtitleDefaultFlags, SubtitleForcedFlags and SubtitleFlagDelimiters.</param>
-        public SubtitleParser(NamingOptions options)
+        public SubtitleFilePathParser(NamingOptions options)
         {
             _options = options;
         }
 
         /// <summary>
-        /// Parse file to determine if is subtitle and <see cref="SubtitleInfo"/>.
+        /// Parse file to determine if it is a subtitle and <see cref="SubtitleFileInfo"/>.
         /// </summary>
         /// <param name="path">Path to file.</param>
-        /// <returns>Returns null or <see cref="SubtitleInfo"/> object if parsing is successful.</returns>
-        public SubtitleInfo? ParseFile(string path)
+        /// <returns>Returns null or <see cref="SubtitleFileInfo"/> object if parsing is successful.</returns>
+        public SubtitleFileInfo? ParseFile(string path)
         {
             if (path.Length == 0)
             {
@@ -40,30 +40,18 @@ namespace Emby.Naming.Subtitles
                 return null;
             }
 
-            var flags = GetFlags(path);
-            var info = new SubtitleInfo(
+            var flags = GetFileFlags(path);
+            var info = new SubtitleFileInfo(
                 path,
                 _options.SubtitleDefaultFlags.Any(i => flags.Contains(i, StringComparison.OrdinalIgnoreCase)),
                 _options.SubtitleForcedFlags.Any(i => flags.Contains(i, StringComparison.OrdinalIgnoreCase)));
 
-            var parts = flags.Where(i => !_options.SubtitleDefaultFlags.Contains(i, StringComparison.OrdinalIgnoreCase)
-                && !_options.SubtitleForcedFlags.Contains(i, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            // Should have a name, language and file extension
-            if (parts.Count >= 3)
-            {
-                info.Language = parts[^2];
-            }
-
             return info;
         }
 
-        private string[] GetFlags(string path)
+        private string[] GetFileFlags(string path)
         {
-            // Note: the tags need be surrounded be either a space ( ), hyphen -, dot . or underscore _.
-
-            var file = Path.GetFileName(path);
+            var file = Path.GetFileNameWithoutExtension(path);
 
             return file.Split(_options.SubtitleFlagDelimiters, StringSplitOptions.RemoveEmptyEntries);
         }

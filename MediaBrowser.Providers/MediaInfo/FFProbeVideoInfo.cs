@@ -45,6 +45,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IChapterManager _chapterManager;
         private readonly ILibraryManager _libraryManager;
         private readonly AudioResolver _audioResolver;
+        private readonly SubtitleResolver _subtitleResolver;
         private readonly IMediaSourceManager _mediaSourceManager;
 
         private readonly long _dummyChapterDuration = TimeSpan.FromMinutes(5).Ticks;
@@ -61,6 +62,7 @@ namespace MediaBrowser.Providers.MediaInfo
             ISubtitleManager subtitleManager,
             IChapterManager chapterManager,
             ILibraryManager libraryManager,
+            SubtitleResolver subtitleResolver,
             AudioResolver audioResolver)
         {
             _logger = logger;
@@ -74,6 +76,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _chapterManager = chapterManager;
             _libraryManager = libraryManager;
             _audioResolver = audioResolver;
+            _subtitleResolver = subtitleResolver;
             _mediaSourceManager = mediaSourceManager;
         }
 
@@ -215,7 +218,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 chapters = Array.Empty<ChapterInfo>();
             }
 
-            await AddExternalSubtitles(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
+            await AddExternalSubtitlesAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
 
             await AddExternalAudioAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
 
@@ -526,16 +529,21 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="options">The refreshOptions.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task AddExternalSubtitles(
+        private async Task AddExternalSubtitlesAsync(
             Video video,
             List<MediaStream> currentStreams,
             MetadataRefreshOptions options,
             CancellationToken cancellationToken)
         {
-            var subtitleResolver = new SubtitleResolver(_localization);
-
             var startIndex = currentStreams.Count == 0 ? 0 : (currentStreams.Select(i => i.Index).Max() + 1);
-            var externalSubtitleStreams = subtitleResolver.GetExternalSubtitleStreams(video, startIndex, options.DirectoryService, false);
+            var externalSubtitleStreamsAsync = _subtitleResolver.GetExternalSubtitleStreams(video, startIndex, options.DirectoryService, false, cancellationToken);
+
+            List<MediaStream> externalSubtitleStreams = new List<MediaStream>();
+
+            await foreach (MediaStream externalSubtitleStream in externalSubtitleStreamsAsync)
+            {
+                externalSubtitleStreams.Add(externalSubtitleStream);
+            }
 
             var enableSubtitleDownloading = options.MetadataRefreshMode == MetadataRefreshMode.Default ||
                                             options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
@@ -589,7 +597,10 @@ namespace MediaBrowser.Providers.MediaInfo
                 // Rescan
                 if (downloadedLanguages.Count > 0)
                 {
-                    externalSubtitleStreams = subtitleResolver.GetExternalSubtitleStreams(video, startIndex, options.DirectoryService, true);
+                    await foreach (MediaStream externalSubtitleStream in _subtitleResolver.GetExternalSubtitleStreams(video, startIndex, options.DirectoryService, true, cancellationToken))
+                    {
+                        externalSubtitleStreams.Add(externalSubtitleStream);
+                    }
                 }
             }
 

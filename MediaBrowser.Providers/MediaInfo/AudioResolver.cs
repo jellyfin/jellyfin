@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Naming.Audio;
 using Emby.Naming.Common;
-using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
@@ -26,6 +27,9 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ILocalizationManager _localizationManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly NamingOptions _namingOptions;
+        private readonly ExternalAudioFilePathParser _externalAudioFilePathParser;
+        private readonly CompareInfo _compareInfo = CultureInfo.InvariantCulture.CompareInfo;
+        private const CompareOptions CompareOptions = System.Globalization.CompareOptions.IgnoreCase | System.Globalization.CompareOptions.IgnoreNonSpace | System.Globalization.CompareOptions.IgnoreSymbols;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AudioResolver"/> class.
@@ -41,6 +45,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _localizationManager = localizationManager;
             _mediaEncoder = mediaEncoder;
             _namingOptions = namingOptions;
+            _externalAudioFilePathParser = new ExternalAudioFilePathParser(_namingOptions);
         }
 
         /// <summary>
@@ -66,37 +71,38 @@ namespace MediaBrowser.Providers.MediaInfo
                 yield break;
             }
 
-            IEnumerable<string> paths = GetExternalAudioFiles(video, directoryService, clearCache);
-            foreach (string path in paths)
-            {
-                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(path);
-                Model.MediaInfo.MediaInfo mediaInfo = await GetMediaInfo(path, cancellationToken).ConfigureAwait(false);
+            string videoFileNameWithoutExtension = Path.GetFileNameWithoutExtension(video.Path);
 
-                foreach (MediaStream mediaStream in mediaInfo.MediaStreams)
+            var externalAudioFileInfos = GetExternalAudioFiles(video, directoryService, clearCache);
+            foreach (var externalAudioFileInfo in externalAudioFileInfos)
+            {
+                string fileName = Path.GetFileName(externalAudioFileInfo.Path);
+                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(externalAudioFileInfo.Path);
+                Model.MediaInfo.MediaInfo mediaInfo = await GetMediaInfo(externalAudioFileInfo.Path, cancellationToken).ConfigureAwait(false);
+
+                if (mediaInfo.MediaStreams.Count == 1)
                 {
+                    MediaStream mediaStream = mediaInfo.MediaStreams.First();
                     mediaStream.Index = startIndex++;
                     mediaStream.Type = MediaStreamType.Audio;
                     mediaStream.IsExternal = true;
-                    mediaStream.Path = path;
-                    mediaStream.IsDefault = false;
-                    mediaStream.Title = null;
+                    mediaStream.Path = externalAudioFileInfo.Path;
+                    mediaStream.IsDefault = externalAudioFileInfo.IsDefault || mediaStream.IsDefault;
+                    mediaStream.IsForced = externalAudioFileInfo.IsForced || mediaStream.IsForced;
 
-                    if (string.IsNullOrEmpty(mediaStream.Language))
+                    yield return DetectLanguage(mediaStream, fileNameWithoutExtension, videoFileNameWithoutExtension);
+                }
+                else
+                {
+                    foreach (MediaStream mediaStream in mediaInfo.MediaStreams)
                     {
-                        // Try to translate to three character code
-                        // Be flexible and check against both the full and three character versions
-                        var language = StringExtensions.RightPart(fileNameWithoutExtension, '.').ToString();
+                        mediaStream.Index = startIndex++;
+                        mediaStream.Type = MediaStreamType.Audio;
+                        mediaStream.IsExternal = true;
+                        mediaStream.Path = externalAudioFileInfo.Path;
 
-                        if (language != fileNameWithoutExtension)
-                        {
-                            var culture = _localizationManager.FindLanguageInfo(language);
-
-                            language = culture == null ? language : culture.ThreeLetterISOLanguageName;
-                            mediaStream.Language = language;
-                        }
+                        yield return DetectLanguage(mediaStream, fileNameWithoutExtension, videoFileNameWithoutExtension);
                     }
-
-                    yield return mediaStream;
                 }
             }
         }
@@ -108,7 +114,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="directoryService">The directory service to search for files.</param>
         /// <param name="clearCache">True if the directory service cache should be cleared before searching.</param>
         /// <returns>A list of external audio file paths.</returns>
-        public IEnumerable<string> GetExternalAudioFiles(
+        public IEnumerable<ExternalAudioFileInfo> GetExternalAudioFiles(
             Video video,
             IDirectoryService directoryService,
             bool clearCache)
@@ -125,28 +131,19 @@ namespace MediaBrowser.Providers.MediaInfo
                 yield break;
             }
 
-            string videoFileNameWithoutExtension = Path.GetFileNameWithoutExtension(video.Path);
+            var videoFileNameWithoutExtension = Path.GetFileNameWithoutExtension(video.Path);
 
             var files = directoryService.GetFilePaths(folder, clearCache, true);
             for (int i = 0; i < files.Count; i++)
             {
-                string file = files[i];
-                if (string.Equals(video.Path, file, StringComparison.OrdinalIgnoreCase)
-                    || !AudioFileParser.IsAudioFile(file, _namingOptions)
-                    || Path.GetExtension(file.AsSpan()).Equals(".strm", StringComparison.OrdinalIgnoreCase))
+                var subtitleFileInfo = _externalAudioFilePathParser.ParseFile(files[i]);
+
+                if (subtitleFileInfo == null)
                 {
                     continue;
                 }
 
-                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file);
-                // The audio filename must either be equal to the video filename or start with the video filename followed by a dot
-                if (videoFileNameWithoutExtension.Equals(fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase)
-                    || (fileNameWithoutExtension.Length > videoFileNameWithoutExtension.Length
-                        && fileNameWithoutExtension[videoFileNameWithoutExtension.Length] == '.'
-                        && fileNameWithoutExtension.StartsWith(videoFileNameWithoutExtension, StringComparison.OrdinalIgnoreCase)))
-                {
-                    yield return file;
-                }
+                yield return subtitleFileInfo;
             }
         }
 
@@ -171,6 +168,49 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
                 },
                 cancellationToken);
+        }
+
+        private MediaStream DetectLanguage(MediaStream mediaStream, string fileNameWithoutExtension, string videoFileNameWithoutExtension)
+        {
+            // Support xbmc naming conventions - 300.spanish.srt
+            var languageString = fileNameWithoutExtension;
+            while (languageString.Length > 0)
+            {
+                var lastDot = languageString.LastIndexOf('.');
+                if (lastDot < videoFileNameWithoutExtension.Length)
+                {
+                    break;
+                }
+
+                var currentSlice = languageString[lastDot..];
+                languageString = languageString[..lastDot];
+
+                if (currentSlice.Equals(".default", StringComparison.OrdinalIgnoreCase)
+                    || currentSlice.Equals(".forced", StringComparison.OrdinalIgnoreCase)
+                    || currentSlice.Equals(".foreign", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var currentSliceString = currentSlice[1..];
+
+                // Try to translate to three character code
+                var culture = _localizationManager.FindLanguageInfo(currentSliceString);
+
+                if (culture == null || mediaStream.Language != null)
+                {
+                    if (mediaStream.Title == null)
+                    {
+                        mediaStream.Title = currentSliceString;
+                    }
+                }
+                else
+                {
+                    mediaStream.Language = culture.ThreeLetterISOLanguageName;
+                }
+            }
+
+            return mediaStream;
         }
     }
 }

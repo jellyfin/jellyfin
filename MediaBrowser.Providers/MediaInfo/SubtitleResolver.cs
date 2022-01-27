@@ -1,10 +1,22 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using Emby.Naming.Common;
+using Emby.Naming.Subtitles;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.MediaInfo;
+
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -13,15 +25,28 @@ namespace MediaBrowser.Providers.MediaInfo
     /// </summary>
     public class SubtitleResolver
     {
-        private readonly ILocalizationManager _localization;
+        private readonly ILocalizationManager _localizationManager;
+        private readonly IMediaEncoder _mediaEncoder;
+        private readonly NamingOptions _namingOptions;
+        private readonly SubtitleFilePathParser _subtitleFilePathParser;
+        private readonly CompareInfo _compareInfo = CultureInfo.InvariantCulture.CompareInfo;
+        private const CompareOptions CompareOptions = System.Globalization.CompareOptions.IgnoreCase | System.Globalization.CompareOptions.IgnoreNonSpace | System.Globalization.CompareOptions.IgnoreSymbols;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SubtitleResolver"/> class.
         /// </summary>
         /// <param name="localization">The localization manager.</param>
-        public SubtitleResolver(ILocalizationManager localization)
+        /// <param name="mediaEncoder">The media encoder.</param>
+        /// <param name="namingOptions">The naming Options.</param>
+        public SubtitleResolver(
+            ILocalizationManager localization,
+            IMediaEncoder mediaEncoder,
+            NamingOptions namingOptions)
         {
-            _localization = localization;
+            _localizationManager = localization;
+            _mediaEncoder = mediaEncoder;
+            _namingOptions = namingOptions;
+            _subtitleFilePathParser = new SubtitleFilePathParser(_namingOptions);
         }
 
         /// <summary>
@@ -31,40 +56,58 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="startIndex">The stream index to start adding subtitle streams at.</param>
         /// <param name="directoryService">The directory service to search for files.</param>
         /// <param name="clearCache">True if the directory service cache should be cleared before searching.</param>
+        /// <param name="cancellationToken">The cancellation token to cancel operation.</param>
         /// <returns>The external subtitle streams located.</returns>
-        public List<MediaStream> GetExternalSubtitleStreams(
+        public async IAsyncEnumerable<MediaStream> GetExternalSubtitleStreams(
             Video video,
             int startIndex,
             IDirectoryService directoryService,
-            bool clearCache)
+            bool clearCache,
+            [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var streams = new List<MediaStream>();
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             if (!video.IsFileProtocol)
             {
-                return streams;
+                yield break;
             }
 
-            AddExternalSubtitleStreams(streams, video.ContainingFolderPath, video.Path, startIndex, directoryService, clearCache);
+            var subtitleFileInfos = GetExternalSubtitleFiles(video, directoryService, clearCache);
 
-            startIndex += streams.Count;
+            var videoFileNameWithoutExtension = Path.GetFileNameWithoutExtension(video.Path);
 
-            string folder = video.GetInternalMetadataPath();
-
-            if (!Directory.Exists(folder))
+            foreach (var subtitleFileInfo in subtitleFileInfos)
             {
-                return streams;
-            }
+                string fileName = Path.GetFileName(subtitleFileInfo.Path);
+                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(subtitleFileInfo.Path);
+                Model.MediaInfo.MediaInfo mediaInfo = await GetMediaInfo(subtitleFileInfo.Path, cancellationToken).ConfigureAwait(false);
 
-            try
-            {
-                AddExternalSubtitleStreams(streams, folder, video.Path, startIndex, directoryService, clearCache);
-            }
-            catch (IOException)
-            {
-            }
+                if (mediaInfo.MediaStreams.Count == 1)
+                {
+                    MediaStream mediaStream = mediaInfo.MediaStreams.First();
+                    mediaStream.Index = startIndex++;
+                    mediaStream.Type = MediaStreamType.Subtitle;
+                    mediaStream.IsExternal = true;
+                    mediaStream.Path = subtitleFileInfo.Path;
+                    mediaStream.IsDefault = subtitleFileInfo.IsDefault || mediaStream.IsDefault;
+                    mediaStream.IsForced = subtitleFileInfo.IsForced || mediaStream.IsForced;
 
-            return streams;
+                    yield return DetectLanguage(mediaStream, fileNameWithoutExtension, videoFileNameWithoutExtension);
+                }
+                else
+                {
+                    foreach (MediaStream mediaStream in mediaInfo.MediaStreams)
+                    {
+                        mediaStream.Index = startIndex++;
+                        mediaStream.Type = MediaStreamType.Subtitle;
+                        mediaStream.IsExternal = true;
+                        mediaStream.Path = subtitleFileInfo.Path;
+
+                        yield return DetectLanguage(mediaStream, fileNameWithoutExtension, videoFileNameWithoutExtension);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -74,7 +117,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="directoryService">The directory service to search for files.</param>
         /// <param name="clearCache">True if the directory service cache should be cleared before searching.</param>
         /// <returns>The external subtitle file paths located.</returns>
-        public IEnumerable<string> GetExternalSubtitleFiles(
+        public IEnumerable<SubtitleFileInfo> GetExternalSubtitleFiles(
             Video video,
             IDirectoryService directoryService,
             bool clearCache)
@@ -84,152 +127,93 @@ namespace MediaBrowser.Providers.MediaInfo
                 yield break;
             }
 
-            var streams = GetExternalSubtitleStreams(video, 0, directoryService, clearCache);
-
-            foreach (var stream in streams)
+            // Check if video folder exists
+            string folder = video.ContainingFolderPath;
+            if (!Directory.Exists(folder))
             {
-                yield return stream.Path;
+                yield break;
+            }
+
+            var videoFileNameWithoutExtension = Path.GetFileNameWithoutExtension(video.Path);
+
+            var files = directoryService.GetFilePaths(folder, clearCache, true);
+            for (int i = 0; i < files.Count; i++)
+            {
+                var subtitleFileInfo = _subtitleFilePathParser.ParseFile(files[i]);
+
+                if (subtitleFileInfo == null)
+                {
+                    continue;
+                }
+
+                yield return subtitleFileInfo;
             }
         }
 
         /// <summary>
-        /// Extracts the subtitle files from the provided list and adds them to the list of streams.
+        /// Returns the media info of the given subtitle file.
         /// </summary>
-        /// <param name="streams">The list of streams to add external subtitles to.</param>
-        /// <param name="videoPath">The path to the video file.</param>
-        /// <param name="startIndex">The stream index to start adding subtitle streams at.</param>
-        /// <param name="files">The files to add if they are subtitles.</param>
-        public void AddExternalSubtitleStreams(
-            List<MediaStream> streams,
-            string videoPath,
-            int startIndex,
-            IReadOnlyList<string> files)
+        /// <param name="path">The path to the subtitle file.</param>
+        /// <param name="cancellationToken">The cancellation token to cancel operation.</param>
+        /// <returns>The media info for the given subtitle file.</returns>
+        private Task<Model.MediaInfo.MediaInfo> GetMediaInfo(string path, CancellationToken cancellationToken)
         {
-            var videoFileNameWithoutExtension = NormalizeFilenameForSubtitleComparison(videoPath);
+            cancellationToken.ThrowIfCancellationRequested();
 
-            for (var i = 0; i < files.Count; i++)
+            return _mediaEncoder.GetMediaInfo(
+                new MediaInfoRequest
+                {
+                    MediaType = DlnaProfileType.Subtitle,
+                    MediaSource = new MediaSourceInfo
+                    {
+                        Path = path,
+                        Protocol = MediaProtocol.File
+                    }
+                },
+                cancellationToken);
+        }
+
+        private MediaStream DetectLanguage(MediaStream mediaStream, string fileNameWithoutExtension, string videoFileNameWithoutExtension)
+        {
+            // Support xbmc naming conventions - 300.spanish.srt
+            var languageString = fileNameWithoutExtension;
+            while (languageString.Length > 0)
             {
-                var fullName = files[i];
-                var extension = Path.GetExtension(fullName.AsSpan());
-                if (!IsSubtitleExtension(extension))
+                var lastDot = languageString.LastIndexOf('.');
+                if (lastDot < videoFileNameWithoutExtension.Length)
+                {
+                    break;
+                }
+
+                var currentSlice = languageString[lastDot..];
+                languageString = languageString[..lastDot];
+
+                if (currentSlice.Equals(".default", StringComparison.OrdinalIgnoreCase)
+                    || currentSlice.Equals(".forced", StringComparison.OrdinalIgnoreCase)
+                    || currentSlice.Equals(".foreign", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
 
-                var fileNameWithoutExtension = NormalizeFilenameForSubtitleComparison(fullName);
+                var currentSliceString = currentSlice[1..];
 
-                MediaStream mediaStream;
+                // Try to translate to three character code
+                var culture = _localizationManager.FindLanguageInfo(currentSliceString);
 
-                // The subtitle filename must either be equal to the video filename or start with the video filename followed by a dot
-                if (videoFileNameWithoutExtension.Equals(fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
+                if (culture == null || mediaStream.Language != null)
                 {
-                    mediaStream = new MediaStream
+                    if (mediaStream.Title == null)
                     {
-                        Index = startIndex++,
-                        Type = MediaStreamType.Subtitle,
-                        IsExternal = true,
-                        Path = fullName
-                    };
-                }
-                else if (fileNameWithoutExtension.Length > videoFileNameWithoutExtension.Length
-                         && fileNameWithoutExtension[videoFileNameWithoutExtension.Length] == '.'
-                         && fileNameWithoutExtension.StartsWith(videoFileNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
-                {
-                    var isForced = fullName.Contains(".forced.", StringComparison.OrdinalIgnoreCase)
-                                   || fullName.Contains(".foreign.", StringComparison.OrdinalIgnoreCase);
-
-                    var isDefault = fullName.Contains(".default.", StringComparison.OrdinalIgnoreCase);
-
-                    // Support xbmc naming conventions - 300.spanish.srt
-                    var languageSpan = fileNameWithoutExtension;
-                    while (languageSpan.Length > 0)
-                    {
-                        var lastDot = languageSpan.LastIndexOf('.');
-                        if (lastDot < videoFileNameWithoutExtension.Length)
-                        {
-                            languageSpan = ReadOnlySpan<char>.Empty;
-                            break;
-                        }
-
-                        var currentSlice = languageSpan[lastDot..];
-                        if (currentSlice.Equals(".default", StringComparison.OrdinalIgnoreCase)
-                            || currentSlice.Equals(".forced", StringComparison.OrdinalIgnoreCase)
-                            || currentSlice.Equals(".foreign", StringComparison.OrdinalIgnoreCase))
-                        {
-                            languageSpan = languageSpan[..lastDot];
-                            continue;
-                        }
-
-                        languageSpan = languageSpan[(lastDot + 1)..];
-                        break;
+                        mediaStream.Title = currentSliceString;
                     }
-
-                    var language = languageSpan.ToString();
-                    if (string.IsNullOrWhiteSpace(language))
-                    {
-                        language = null;
-                    }
-                    else
-                    {
-                        // Try to translate to three character code
-                        // Be flexible and check against both the full and three character versions
-                        var culture = _localization.FindLanguageInfo(language);
-
-                        language = culture == null ? language : culture.ThreeLetterISOLanguageName;
-                    }
-
-                    mediaStream = new MediaStream
-                    {
-                        Index = startIndex++,
-                        Type = MediaStreamType.Subtitle,
-                        IsExternal = true,
-                        Path = fullName,
-                        Language = language,
-                        IsForced = isForced,
-                        IsDefault = isDefault
-                    };
                 }
                 else
                 {
-                    continue;
+                    mediaStream.Language = culture.ThreeLetterISOLanguageName;
                 }
-
-                mediaStream.Codec = extension.TrimStart('.').ToString().ToLowerInvariant();
-
-                streams.Add(mediaStream);
             }
-        }
 
-        private static bool IsSubtitleExtension(ReadOnlySpan<char> extension)
-        {
-            return extension.Equals(".srt", StringComparison.OrdinalIgnoreCase)
-                   || extension.Equals(".ssa", StringComparison.OrdinalIgnoreCase)
-                   || extension.Equals(".ass", StringComparison.OrdinalIgnoreCase)
-                   || extension.Equals(".sub", StringComparison.OrdinalIgnoreCase)
-                   || extension.Equals(".vtt", StringComparison.OrdinalIgnoreCase)
-                   || extension.Equals(".smi", StringComparison.OrdinalIgnoreCase)
-                   || extension.Equals(".sami", StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static ReadOnlySpan<char> NormalizeFilenameForSubtitleComparison(string filename)
-        {
-            // Try to account for sloppy file naming
-            filename = filename.Replace("_", string.Empty, StringComparison.Ordinal);
-            filename = filename.Replace(" ", string.Empty, StringComparison.Ordinal);
-            return Path.GetFileNameWithoutExtension(filename.AsSpan());
-        }
-
-        private void AddExternalSubtitleStreams(
-            List<MediaStream> streams,
-            string folder,
-            string videoPath,
-            int startIndex,
-            IDirectoryService directoryService,
-            bool clearCache)
-        {
-            var files = directoryService.GetFilePaths(folder, clearCache, true);
-
-            AddExternalSubtitleStreams(streams, videoPath, startIndex, files);
+            return mediaStream;
         }
     }
 }
