@@ -291,7 +291,7 @@ namespace MediaBrowser.LocalMetadata.Images
 
             foreach (var name in imageFileNames)
             {
-                if (AddImage(files, images, imagePrefix + name, ImageType.Primary))
+                if (AddImage(files, images, name, ImageType.Primary, imagePrefix))
                 {
                     return;
                 }
@@ -317,7 +317,7 @@ namespace MediaBrowser.LocalMetadata.Images
 
                 if (!string.IsNullOrEmpty(name))
                 {
-                    AddImage(files, images, imagePrefix + name + "-fanart", ImageType.Backdrop);
+                    AddImage(files, images, name + "-fanart", ImageType.Backdrop, imagePrefix);
 
                     // Support without the prefix if it's in it's own folder
                     if (!isInMixedFolder)
@@ -436,7 +436,7 @@ namespace MediaBrowser.LocalMetadata.Images
 
         private bool AddImage(List<FileSystemMetadata> files, List<LocalImageInfo> images, string name, string imagePrefix, bool isInMixedFolder, ImageType type)
         {
-            var added = AddImage(files, images, imagePrefix + name, type);
+            var added = AddImage(files, images, name, type, imagePrefix);
 
             if (!isInMixedFolder)
             {
@@ -449,32 +449,39 @@ namespace MediaBrowser.LocalMetadata.Images
             return added;
         }
 
-        private bool AddImage(List<FileSystemMetadata> files, List<LocalImageInfo> images, string name, ImageType type)
+        private static bool AddImage(IReadOnlyList<FileSystemMetadata> files, List<LocalImageInfo> images, string name, ImageType type, string? prefix = null)
         {
-            var image = GetImage(files, name);
+            var image = GetImage(files, name, prefix);
 
-            if (image != null)
+            if (image == null)
             {
-                images.Add(new LocalImageInfo
-                {
-                    FileInfo = image,
-                    Type = type
-                });
-
-                return true;
+                return false;
             }
 
-            return false;
+            images.Add(new LocalImageInfo
+            {
+                FileInfo = image,
+                Type = type
+            });
+
+            return true;
         }
 
-        private static FileSystemMetadata? GetImage(IReadOnlyList<FileSystemMetadata> files, string name)
+        private static FileSystemMetadata? GetImage(IReadOnlyList<FileSystemMetadata> files, string name, string? prefix = null)
         {
+            var fileNameLength = name.Length + (prefix?.Length ?? 0);
             for (var i = 0; i < files.Count; i++)
             {
                 var file = files[i];
-                if (!file.IsDirectory
-                    && file.Length > 0
-                    && Path.GetFileNameWithoutExtension(file.FullName.AsSpan()).Equals(name, StringComparison.OrdinalIgnoreCase))
+                if (file.IsDirectory || file.Length <= 0)
+                {
+                    continue;
+                }
+
+                var fileName = Path.GetFileNameWithoutExtension(file.FullName.AsSpan());
+                if (fileName.Length == fileNameLength
+                    && fileName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+                    && fileName.EndsWith(name, StringComparison.OrdinalIgnoreCase))
                 {
                     return file;
                 }
