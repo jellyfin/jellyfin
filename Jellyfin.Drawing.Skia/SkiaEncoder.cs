@@ -492,6 +492,14 @@ namespace Jellyfin.Drawing.Skia
             }
         }
 
+        /// <inheritdoc />
+        public void CreateSplashscreen(IReadOnlyList<string> posters, IReadOnlyList<string> backdrops)
+        {
+            var splashBuilder = new SplashscreenBuilder(this);
+            var outputPath = Path.Combine(_appPaths.DataPath, "splashscreen.png");
+            splashBuilder.GenerateSplash(posters, backdrops, outputPath);
+        }
+
         private void DrawIndicator(SKCanvas canvas, int imageWidth, int imageHeight, ImageProcessingOptions options)
         {
             try

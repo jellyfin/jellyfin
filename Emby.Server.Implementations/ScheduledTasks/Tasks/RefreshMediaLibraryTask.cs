@@ -25,8 +25,8 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// <summary>
         /// Initializes a new instance of the <see cref="RefreshMediaLibraryTask" /> class.
         /// </summary>
-        /// <param name="libraryManager">The library manager.</param>
-        /// <param name="localization">The localization manager.</param>
+        /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+        /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
         public RefreshMediaLibraryTask(ILibraryManager libraryManager, ILocalizationManager localization)
         {
             _libraryManager = libraryManager;

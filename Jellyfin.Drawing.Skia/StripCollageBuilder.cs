@@ -99,7 +99,7 @@ namespace Jellyfin.Drawing.Skia
             using var canvas = new SKCanvas(bitmap);
             canvas.Clear(SKColors.Black);
 
-            using var backdrop = GetNextValidImage(paths, 0, out _);
+            using var backdrop = SkiaHelper.GetNextValidImage(_skiaEncoder, paths, 0, out _);
             if (backdrop == null)
             {
                 return bitmap;
@@ -152,34 +152,6 @@ namespace Jellyfin.Drawing.Skia
             return bitmap;
         }
 
-        private SKBitmap? GetNextValidImage(IReadOnlyList<string> paths, int currentIndex, out int newIndex)
-        {
-            var imagesTested = new Dictionary<int, int>();
-            SKBitmap? bitmap = null;
-
-            while (imagesTested.Count < paths.Count)
-            {
-                if (currentIndex >= paths.Count)
-                {
-                    currentIndex = 0;
-                }
-
-                bitmap = _skiaEncoder.Decode(paths[currentIndex], false, null, out _);
-
-                imagesTested[currentIndex] = 0;
-
-                currentIndex++;
-
-                if (bitmap != null)
-                {
-                    break;
-                }
-            }
-
-            newIndex = currentIndex;
-            return bitmap;
-        }
-
         private SKBitmap BuildSquareCollageBitmap(IReadOnlyList<string> paths, int width, int height)
         {
             var bitmap = new SKBitmap(width, height);
@@ -192,7 +164,7 @@ namespace Jellyfin.Drawing.Skia
             {
                 for (var y = 0; y < 2; y++)
                 {
-                    using var currentBitmap = GetNextValidImage(paths, imageIndex, out int newIndex);
+                    using var currentBitmap = SkiaHelper.GetNextValidImage(_skiaEncoder, paths, imageIndex, out int newIndex);
                     imageIndex = newIndex;
 
                     if (currentBitmap == null)
