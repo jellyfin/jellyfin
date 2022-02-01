@@ -46,7 +46,7 @@ public class DynamicHlsPlaylistGenerator : IDynamicHlsPlaylistGenerator
         var segmentExtension = EncodingHelper.GetSegmentFileExtension(request.SegmentContainer);
 
         // http://ffmpeg.org/ffmpeg-all.html#toc-hls-2
-        var isHlsInFmp4 = string.Equals(segmentExtension, "mp4", StringComparison.OrdinalIgnoreCase);
+        var isHlsInFmp4 = string.Equals(segmentExtension, ".mp4", StringComparison.OrdinalIgnoreCase);
         var hlsVersion = isHlsInFmp4 ? "7" : "3";
 
         var builder = new StringBuilder(128);
@@ -65,11 +65,14 @@ public class DynamicHlsPlaylistGenerator : IDynamicHlsPlaylistGenerator
 
         if (isHlsInFmp4)
         {
+            // Init file that only includes fMP4 headers
             builder.Append("#EXT-X-MAP:URI=\"")
                 .Append(request.EndpointPrefix)
                 .Append("-1")
                 .Append(segmentExtension)
                 .Append(request.QueryString)
+                .Append("&runtimeTicks=0")
+                .Append("&actualSegmentLengthTicks=0")
                 .Append('"')
                 .AppendLine();
         }
