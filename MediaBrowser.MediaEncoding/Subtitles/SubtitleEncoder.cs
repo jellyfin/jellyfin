@@ -141,12 +141,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             var inputFormat = subtitle.Format;
 
-            // Return the original if we don't have any way of converting it
-            if (!TryGetWriter(outputFormat, out var writer))
-            {
-                return subtitle.Stream;
-            }
-
             // Return the original if the same format is being requested
             // Character encoding was already handled in GetSubtitleStream
             if (string.Equals(inputFormat, outputFormat, StringComparison.OrdinalIgnoreCase))
