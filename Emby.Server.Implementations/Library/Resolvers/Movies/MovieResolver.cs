@@ -32,7 +32,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 CollectionType.Movies,
                 CollectionType.HomeVideos,
                 CollectionType.MusicVideos,
-                CollectionType.Movies,
+                CollectionType.TvShows,
                 CollectionType.Photos
         };
 
@@ -219,6 +219,11 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             if (string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase))
             {
                 return ResolveVideos<Movie>(parent, files, true, collectionType, true);
+            }
+
+            if (string.Equals(collectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
+            {
+                return ResolveVideos<Episode>(parent, files, true, collectionType, true);
             }
 
             return null;
