@@ -76,6 +76,7 @@
  - [mitchfizz05](https://github.com/mitchfizz05)
  - [MrTimscampi](https://github.com/MrTimscampi)
  - [n8225](https://github.com/n8225)
+ - [Nalsai](https://github.com/Nalsai)
  - [Narfinger](https://github.com/Narfinger)
  - [NathanPickard](https://github.com/NathanPickard)
  - [neilsb](https://github.com/neilsb)

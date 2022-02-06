@@ -18,6 +18,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
@@ -42,6 +43,8 @@ namespace Jellyfin.Api.Helpers
         /// </summary>
         private static readonly Dictionary<string, SemaphoreSlim> _transcodingLocks = new Dictionary<string, SemaphoreSlim>();
 
+        private readonly IAttachmentExtractor _attachmentExtractor;
+        private readonly IApplicationPaths _appPaths;
         private readonly IAuthorizationContext _authorizationContext;
         private readonly EncodingHelper _encodingHelper;
         private readonly IFileSystem _fileSystem;
@@ -55,6 +58,8 @@ namespace Jellyfin.Api.Helpers
         /// <summary>
         /// Initializes a new instance of the <see cref="TranscodingJobHelper"/> class.
         /// </summary>
+        /// <param name="attachmentExtractor">Instance of the <see cref="IAttachmentExtractor"/> interface.</param>
+        /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{TranscodingJobHelpers}"/> interface.</param>
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
@@ -65,6 +70,8 @@ namespace Jellyfin.Api.Helpers
         /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
         /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
         public TranscodingJobHelper(
+            IAttachmentExtractor attachmentExtractor,
+            IApplicationPaths appPaths,
             ILogger<TranscodingJobHelper> logger,
             IMediaSourceManager mediaSourceManager,
             IFileSystem fileSystem,
@@ -75,6 +82,8 @@ namespace Jellyfin.Api.Helpers
             EncodingHelper encodingHelper,
             ILoggerFactory loggerFactory)
         {
+            _attachmentExtractor = attachmentExtractor;
+            _appPaths = appPaths;
             _logger = logger;
             _mediaSourceManager = mediaSourceManager;
             _fileSystem = fileSystem;
@@ -511,6 +520,13 @@ namespace Jellyfin.Api.Helpers
             if (string.IsNullOrEmpty(_mediaEncoder.EncoderPath))
             {
                 throw new ArgumentException("FFmpeg path not set.");
+            }
+
+            // If subtitles get burned in fonts may need to be extracted from the media file
+            if (state.SubtitleStream != null && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode)
+            {
+                var attachmentPath = Path.Combine(_appPaths.CachePath, "attachments", state.MediaSource.Id);
+                await _attachmentExtractor.ExtractAllAttachments(state.MediaPath, state.MediaSource, attachmentPath, CancellationToken.None).ConfigureAwait(false);
             }
 
             var process = new Process
