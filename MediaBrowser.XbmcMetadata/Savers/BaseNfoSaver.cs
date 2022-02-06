@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
@@ -180,7 +181,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
         }
 
         /// <inheritdoc />
-        public void Save(BaseItem item, CancellationToken cancellationToken)
+        public async Task SaveAsync(BaseItem item, CancellationToken cancellationToken)
         {
             var path = GetSavePath(item);
 
@@ -192,11 +193,11 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                SaveToFile(memoryStream, path);
+                await SaveToFileAsync(memoryStream, path).ConfigureAwait(false);
             }
         }
 
-        private void SaveToFile(Stream stream, string path)
+        private async Task SaveToFileAsync(Stream stream, string path)
         {
             var directory = Path.GetDirectoryName(path) ?? throw new ArgumentException($"Provided path ({path}) is not valid.", nameof(path));
             Directory.CreateDirectory(directory);
@@ -209,12 +210,14 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 Mode = FileMode.Create,
                 Access = FileAccess.Write,
                 Share = FileShare.None,
-                PreallocationSize = stream.Length
+                PreallocationSize = stream.Length,
+                Options = FileOptions.Asynchronous
             };
 
-            using (var filestream = new FileStream(path, fileStreamOptions))
+            var filestream = new FileStream(path, fileStreamOptions);
+            await using (filestream.ConfigureAwait(false))
             {
-                stream.CopyTo(filestream);
+                await stream.CopyToAsync(filestream).ConfigureAwait(false);
             }
 
             if (ConfigurationManager.Configuration.SaveMetadataHidden)

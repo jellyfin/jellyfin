@@ -156,7 +156,8 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="updateType">Type of the update.</param>
-        void SaveMetadata(BaseItem item, ItemUpdateType updateType);
+        /// <returns>The task object representing the asynchronous operation.</returns>
+        Task SaveMetadataAsync(BaseItem item, ItemUpdateType updateType);
 
         /// <summary>
         /// Saves the metadata.
@@ -164,7 +165,8 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="item">The item.</param>
         /// <param name="updateType">Type of the update.</param>
         /// <param name="savers">The metadata savers.</param>
-        void SaveMetadata(BaseItem item, ItemUpdateType updateType, IEnumerable<string> savers);
+        /// <returns>The task object representing the asynchronous operation.</returns>
+        Task SaveMetadataAsync(BaseItem item, ItemUpdateType updateType, IEnumerable<string> savers);
 
         /// <summary>
         /// Gets the metadata options.

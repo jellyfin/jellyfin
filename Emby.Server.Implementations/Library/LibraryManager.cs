@@ -2014,16 +2014,16 @@ namespace Emby.Server.Implementations.Library
         public Task UpdateItemAsync(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
             => UpdateItemsAsync(new[] { item }, parent, updateReason, cancellationToken);
 
-        public Task RunMetadataSavers(BaseItem item, ItemUpdateType updateReason)
+        public async Task RunMetadataSavers(BaseItem item, ItemUpdateType updateReason)
         {
             if (item.IsFileProtocol)
             {
-                ProviderManager.SaveMetadata(item, updateReason);
+                await ProviderManager.SaveMetadataAsync(item, updateReason).ConfigureAwait(false);
             }
 
             item.DateLastSaved = DateTime.UtcNow;
 
-            return UpdateImagesAsync(item, updateReason >= ItemUpdateType.ImageUpdate);
+            await UpdateImagesAsync(item, updateReason >= ItemUpdateType.ImageUpdate).ConfigureAwait(false);
         }
 
         /// <summary>

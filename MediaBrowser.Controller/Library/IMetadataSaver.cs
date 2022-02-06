@@ -1,6 +1,5 @@
-#nullable disable
-
 using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Controller.Library
@@ -29,6 +28,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void Save(BaseItem item, CancellationToken cancellationToken);
+        /// <returns>The task object representing the asynchronous operation.</returns>
+        Task SaveAsync(BaseItem item, CancellationToken cancellationToken);
     }
 }

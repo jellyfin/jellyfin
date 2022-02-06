@@ -1819,16 +1819,16 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 if (timer.IsProgramSeries)
                 {
-                    SaveSeriesNfo(timer, seriesPath);
-                    SaveVideoNfo(timer, recordingPath, program, false);
+                    await SaveSeriesNfoAsync(timer, seriesPath).ConfigureAwait(false);
+                    await SaveVideoNfoAsync(timer, recordingPath, program, false).ConfigureAwait(false);
                 }
                 else if (!timer.IsMovie || timer.IsSports || timer.IsNews)
                 {
-                    SaveVideoNfo(timer, recordingPath, program, true);
+                    await SaveVideoNfoAsync(timer, recordingPath, program, true).ConfigureAwait(false);
                 }
                 else
                 {
-                    SaveVideoNfo(timer, recordingPath, program, false);
+                    await SaveVideoNfoAsync(timer, recordingPath, program, false).ConfigureAwait(false);
                 }
 
                 await SaveRecordingImages(recordingPath, program).ConfigureAwait(false);
@@ -1839,7 +1839,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private void SaveSeriesNfo(TimerInfo timer, string seriesPath)
+        private async Task SaveSeriesNfoAsync(TimerInfo timer, string seriesPath)
         {
             var nfoPath = Path.Combine(seriesPath, "tvshow.nfo");
 
@@ -1848,61 +1848,62 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 return;
             }
 
-            using (var stream = new FileStream(nfoPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            await using (var stream = new FileStream(nfoPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             {
                 var settings = new XmlWriterSettings
                 {
                     Indent = true,
-                    Encoding = Encoding.UTF8
+                    Encoding = Encoding.UTF8,
+                    Async = true
                 };
 
-                using (var writer = XmlWriter.Create(stream, settings))
+                await using (var writer = XmlWriter.Create(stream, settings))
                 {
-                    writer.WriteStartDocument(true);
-                    writer.WriteStartElement("tvshow");
+                    await writer.WriteStartDocumentAsync(true).ConfigureAwait(false);
+                    await writer.WriteStartElementAsync(null, "tvshow", null).ConfigureAwait(false);
                     string id;
                     if (timer.SeriesProviderIds.TryGetValue(MetadataProvider.Tvdb.ToString(), out id))
                     {
-                        writer.WriteElementString("id", id);
+                        await writer.WriteElementStringAsync(null, "id", null, id).ConfigureAwait(false);
                     }
 
                     if (timer.SeriesProviderIds.TryGetValue(MetadataProvider.Imdb.ToString(), out id))
                     {
-                        writer.WriteElementString("imdb_id", id);
+                        await writer.WriteElementStringAsync(null, "imdb_id", null, id).ConfigureAwait(false);
                     }
 
                     if (timer.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out id))
                     {
-                        writer.WriteElementString("tmdbid", id);
+                        await writer.WriteElementStringAsync(null, "tmdbid", null, id).ConfigureAwait(false);
                     }
 
                     if (timer.SeriesProviderIds.TryGetValue(MetadataProvider.Zap2It.ToString(), out id))
                     {
-                        writer.WriteElementString("zap2itid", id);
+                        await writer.WriteElementStringAsync(null, "zap2itid", null, id).ConfigureAwait(false);
                     }
 
                     if (!string.IsNullOrWhiteSpace(timer.Name))
                     {
-                        writer.WriteElementString("title", timer.Name);
+                        await writer.WriteElementStringAsync(null, "title", null, timer.Name).ConfigureAwait(false);
                     }
 
                     if (!string.IsNullOrWhiteSpace(timer.OfficialRating))
                     {
-                        writer.WriteElementString("mpaa", timer.OfficialRating);
+                        await writer.WriteElementStringAsync(null, "mpaa", null, timer.OfficialRating).ConfigureAwait(false);
                     }
 
                     foreach (var genre in timer.Genres)
                     {
-                        writer.WriteElementString("genre", genre);
+                        await writer.WriteElementStringAsync(null, "genre", null, genre).ConfigureAwait(false);
                     }
 
-                    writer.WriteEndElement();
-                    writer.WriteEndDocument();
+                    await writer.WriteEndElementAsync().ConfigureAwait(false);
+                    await writer.WriteEndDocumentAsync().ConfigureAwait(false);
                 }
             }
         }
 
-        private void SaveVideoNfo(TimerInfo timer, string recordingPath, BaseItem item, bool lockData)
+        private async Task SaveVideoNfoAsync(TimerInfo timer, string recordingPath, BaseItem item, bool lockData)
         {
             var nfoPath = Path.ChangeExtension(recordingPath, ".nfo");
 
@@ -1911,29 +1912,30 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 return;
             }
 
-            using (var stream = new FileStream(nfoPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            await using (var stream = new FileStream(nfoPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             {
                 var settings = new XmlWriterSettings
                 {
                     Indent = true,
-                    Encoding = Encoding.UTF8
+                    Encoding = Encoding.UTF8,
+                    Async = true
                 };
 
                 var options = _config.GetNfoConfiguration();
 
                 var isSeriesEpisode = timer.IsProgramSeries;
 
-                using (var writer = XmlWriter.Create(stream, settings))
+                await using (var writer = XmlWriter.Create(stream, settings))
                 {
-                    writer.WriteStartDocument(true);
+                    await writer.WriteStartDocumentAsync(true).ConfigureAwait(false);
 
                     if (isSeriesEpisode)
                     {
-                        writer.WriteStartElement("episodedetails");
+                        await writer.WriteStartElementAsync(null, "episodedetails", null).ConfigureAwait(false);
 
                         if (!string.IsNullOrWhiteSpace(timer.EpisodeTitle))
                         {
-                            writer.WriteElementString("title", timer.EpisodeTitle);
+                            await writer.WriteElementStringAsync(null, "title", null, timer.EpisodeTitle).ConfigureAwait(false);
                         }
 
                         var premiereDate = item.PremiereDate ?? (!timer.IsRepeat ? DateTime.UtcNow : null);
@@ -1942,76 +1944,84 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                         {
                             var formatString = options.ReleaseDateFormat;
 
-                            writer.WriteElementString(
+                            await writer.WriteElementStringAsync(
+                                null,
                                 "aired",
-                                premiereDate.Value.ToLocalTime().ToString(formatString, CultureInfo.InvariantCulture));
+                                null,
+                                premiereDate.Value.ToLocalTime().ToString(formatString, CultureInfo.InvariantCulture)).ConfigureAwait(false);
                         }
 
                         if (item.IndexNumber.HasValue)
                         {
-                            writer.WriteElementString("episode", item.IndexNumber.Value.ToString(CultureInfo.InvariantCulture));
+                            await writer.WriteElementStringAsync(null, "episode", null, item.IndexNumber.Value.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
                         }
 
                         if (item.ParentIndexNumber.HasValue)
                         {
-                            writer.WriteElementString("season", item.ParentIndexNumber.Value.ToString(CultureInfo.InvariantCulture));
+                            await writer.WriteElementStringAsync(null, "season", null, item.ParentIndexNumber.Value.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
                         }
                     }
                     else
                     {
-                        writer.WriteStartElement("movie");
+                        await writer.WriteStartElementAsync(null, "movie", null);
 
                         if (!string.IsNullOrWhiteSpace(item.Name))
                         {
-                            writer.WriteElementString("title", item.Name);
+                            await writer.WriteElementStringAsync(null, "title", null, item.Name).ConfigureAwait(false);
                         }
 
                         if (!string.IsNullOrWhiteSpace(item.OriginalTitle))
                         {
-                            writer.WriteElementString("originaltitle", item.OriginalTitle);
+                            await writer.WriteElementStringAsync(null, "originaltitle", null, item.OriginalTitle).ConfigureAwait(false);
                         }
 
                         if (item.PremiereDate.HasValue)
                         {
                             var formatString = options.ReleaseDateFormat;
 
-                            writer.WriteElementString(
+                            await writer.WriteElementStringAsync(
+                                null,
                                 "premiered",
-                                item.PremiereDate.Value.ToLocalTime().ToString(formatString, CultureInfo.InvariantCulture));
-                            writer.WriteElementString(
+                                null,
+                                item.PremiereDate.Value.ToLocalTime().ToString(formatString, CultureInfo.InvariantCulture)).ConfigureAwait(false);
+                            await writer.WriteElementStringAsync(
+                                null,
                                 "releasedate",
-                                item.PremiereDate.Value.ToLocalTime().ToString(formatString, CultureInfo.InvariantCulture));
+                                null,
+                                item.PremiereDate.Value.ToLocalTime().ToString(formatString, CultureInfo.InvariantCulture)).ConfigureAwait(false);
                         }
                     }
 
-                    writer.WriteElementString(
+                    await writer.WriteElementStringAsync(
+                        null,
                         "dateadded",
-                        DateTime.Now.ToString(DateAddedFormat, CultureInfo.InvariantCulture));
+                        null,
+                        DateTime.Now.ToString(DateAddedFormat, CultureInfo.InvariantCulture)).ConfigureAwait(false);
 
                     if (item.ProductionYear.HasValue)
                     {
-                        writer.WriteElementString("year", item.ProductionYear.Value.ToString(CultureInfo.InvariantCulture));
+                        await writer.WriteElementStringAsync(null, "year", null, item.ProductionYear.Value.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
                     }
 
                     if (!string.IsNullOrEmpty(item.OfficialRating))
                     {
-                        writer.WriteElementString("mpaa", item.OfficialRating);
+                        await writer.WriteElementStringAsync(null, "mpaa", null, item.OfficialRating).ConfigureAwait(false);
                     }
 
                     var overview = (item.Overview ?? string.Empty)
                         .StripHtml()
                         .Replace("&quot;", "'", StringComparison.Ordinal);
 
-                    writer.WriteElementString("plot", overview);
+                    await writer.WriteElementStringAsync(null, "plot", null, overview).ConfigureAwait(false);
 
                     if (item.CommunityRating.HasValue)
                     {
-                        writer.WriteElementString("rating", item.CommunityRating.Value.ToString(CultureInfo.InvariantCulture));
+                        await writer.WriteElementStringAsync(null, "rating", null, item.CommunityRating.Value.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
                     }
 
                     foreach (var genre in item.Genres)
                     {
-                        writer.WriteElementString("genre", genre);
+                        await writer.WriteElementStringAsync(null, "genre", null, genre).ConfigureAwait(false);
                     }
 
                     var people = item.Id.Equals(Guid.Empty) ? new List<PersonInfo>() : _libraryManager.GetPeople(item);
@@ -2023,7 +2033,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                     foreach (var person in directors)
                     {
-                        writer.WriteElementString("director", person);
+                        await writer.WriteElementStringAsync(null, "director", null, person).ConfigureAwait(false);
                     }
 
                     var writers = people
@@ -2034,19 +2044,19 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                     foreach (var person in writers)
                     {
-                        writer.WriteElementString("writer", person);
+                        await writer.WriteElementStringAsync(null, "writer", null, person).ConfigureAwait(false);
                     }
 
                     foreach (var person in writers)
                     {
-                        writer.WriteElementString("credits", person);
+                        await writer.WriteElementStringAsync(null, "credits", null, person).ConfigureAwait(false);
                     }
 
                     var tmdbCollection = item.GetProviderId(MetadataProvider.TmdbCollection);
 
                     if (!string.IsNullOrEmpty(tmdbCollection))
                     {
-                        writer.WriteElementString("collectionnumber", tmdbCollection);
+                        await writer.WriteElementStringAsync(null, "collectionnumber", null, tmdbCollection).ConfigureAwait(false);
                     }
 
                     var imdb = item.GetProviderId(MetadataProvider.Imdb);
@@ -2054,10 +2064,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     {
                         if (!isSeriesEpisode)
                         {
-                            writer.WriteElementString("id", imdb);
+                            await writer.WriteElementStringAsync(null, "id", null, imdb).ConfigureAwait(false);
                         }
 
-                        writer.WriteElementString("imdbid", imdb);
+                        await writer.WriteElementStringAsync(null, "imdbid", null, imdb).ConfigureAwait(false);
 
                         // No need to lock if we have identified the content already
                         lockData = false;
@@ -2066,7 +2076,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     var tvdb = item.GetProviderId(MetadataProvider.Tvdb);
                     if (!string.IsNullOrEmpty(tvdb))
                     {
-                        writer.WriteElementString("tvdbid", tvdb);
+                        await writer.WriteElementStringAsync(null, "tvdbid", null, tvdb).ConfigureAwait(false);
 
                         // No need to lock if we have identified the content already
                         lockData = false;
@@ -2075,7 +2085,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     var tmdb = item.GetProviderId(MetadataProvider.Tmdb);
                     if (!string.IsNullOrEmpty(tmdb))
                     {
-                        writer.WriteElementString("tmdbid", tmdb);
+                        await writer.WriteElementStringAsync(null, "tmdbid", null, tmdb).ConfigureAwait(false);
 
                         // No need to lock if we have identified the content already
                         lockData = false;
@@ -2083,26 +2093,26 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                     if (lockData)
                     {
-                        writer.WriteElementString("lockdata", true.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
+                        await writer.WriteElementStringAsync(null, "lockdata", null, "true").ConfigureAwait(false);
                     }
 
                     if (item.CriticRating.HasValue)
                     {
-                        writer.WriteElementString("criticrating", item.CriticRating.Value.ToString(CultureInfo.InvariantCulture));
+                        await writer.WriteElementStringAsync(null, "criticrating", null, item.CriticRating.Value.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
                     }
 
                     if (!string.IsNullOrWhiteSpace(item.Tagline))
                     {
-                        writer.WriteElementString("tagline", item.Tagline);
+                        await writer.WriteElementStringAsync(null, "tagline", null, item.Tagline).ConfigureAwait(false);
                     }
 
                     foreach (var studio in item.Studios)
                     {
-                        writer.WriteElementString("studio", studio);
+                        await writer.WriteElementStringAsync(null, "studio", null, studio).ConfigureAwait(false);
                     }
 
-                    writer.WriteEndElement();
-                    writer.WriteEndDocument();
+                    await writer.WriteEndElementAsync().ConfigureAwait(false);
+                    await writer.WriteEndDocumentAsync().ConfigureAwait(false);
                 }
             }
         }

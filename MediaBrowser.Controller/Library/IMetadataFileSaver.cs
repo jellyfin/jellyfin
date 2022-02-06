@@ -13,9 +13,4 @@ namespace MediaBrowser.Controller.Library
         /// <returns>System.String.</returns>
         string GetSavePath(BaseItem item);
     }
-
-    public interface IConfigurableProvider
-    {
-        bool IsEnabled { get; }
-    }
 }
