@@ -1,13 +1,14 @@
+using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Naming.Common;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Providers.MediaInfo;
@@ -18,8 +19,9 @@ namespace Jellyfin.Providers.Tests.MediaInfo
 {
     public class SubtitleResolverTests
     {
-        private const string DirectoryPath = "Test Data/Video";
-        private readonly SubtitleResolver _subtitleResolver;
+        private const string VideoDirectoryPath = "Test Data/Video";
+        private const string MetadataDirectoryPath = "Test Data/Metadata";
+        private readonly MediaInfoResolver _subtitleResolver;
 
         public SubtitleResolverTests()
         {
@@ -54,7 +56,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
                     }
                 }));
 
-            _subtitleResolver = new SubtitleResolver(localizationManager.Object, mediaEncoder.Object, new NamingOptions());
+            _subtitleResolver = new MediaInfoResolver(localizationManager.Object, mediaEncoder.Object, new NamingOptions(), DlnaProfileType.Subtitle);
         }
 
         [Fact]
@@ -64,52 +66,68 @@ namespace Jellyfin.Providers.Tests.MediaInfo
             var index = startIndex;
             var files = new[]
             {
-                DirectoryPath + "/My.Video.mp3",
-                DirectoryPath + "/My.Video.png",
-                DirectoryPath + "/My.Video.srt",
-                // DirectoryPath + "/Some.Other.Video.srt", // TODO should not be picked up
-                DirectoryPath + "/My.Video.txt",
-                DirectoryPath + "/My.Video.vtt",
-                DirectoryPath + "/My.Video.ass",
-                DirectoryPath + "/My.Video.sub",
-                DirectoryPath + "/My.Video.ssa",
-                DirectoryPath + "/My.Video.smi",
-                DirectoryPath + "/My.Video.sami",
-                DirectoryPath + "/My.Video.en.srt",
-                DirectoryPath + "/My.Video.default.en.srt",
-                DirectoryPath + "/My.Video.default.forced.en.srt",
-                DirectoryPath + "/My.Video.en.default.forced.srt",
-                DirectoryPath + "/My.Video.With.Additional.Garbage.en.srt",
-                // DirectoryPath + "/My.Video With Additional Garbage.srt" // TODO no "." after "My.Video", previously would be picked up
+                VideoDirectoryPath + "/MyVideo.en.srt",
+                VideoDirectoryPath + "/MyVideo.en.forced.default.sub",
+                VideoDirectoryPath + "/My.Video.mp3",
+                VideoDirectoryPath + "/My.Video.png",
+                VideoDirectoryPath + "/My.Video.srt",
+                VideoDirectoryPath + "/My.Video.txt",
+                VideoDirectoryPath + "/My.Video.vtt",
+                VideoDirectoryPath + "/My.Video.ass",
+                VideoDirectoryPath + "/My.Video.sub",
+                VideoDirectoryPath + "/My.Video.ssa",
+                VideoDirectoryPath + "/My.Video.smi",
+                VideoDirectoryPath + "/My.Video.sami",
+                VideoDirectoryPath + "/My.Video.mks",
+                VideoDirectoryPath + "/My.Video.en.srt",
+                VideoDirectoryPath + "/My.Video.default.en.srt",
+                VideoDirectoryPath + "/My.Video.default.forced.en.srt",
+                VideoDirectoryPath + "/My.Video.en.default.forced.srt",
+                VideoDirectoryPath + "/My.Video.en.With Additional Garbage.sub",
+                VideoDirectoryPath + "/My.Video.With Additional Garbage.English.sub",
+                VideoDirectoryPath + "/My.Video.With.Additional.Garbage.en.srt",
+                VideoDirectoryPath + "/Some.Other.Video.srt"
+            };
+            var metadataFiles = new[]
+            {
+                MetadataDirectoryPath + "/My.Video.en.srt"
             };
             var expectedResult = new[]
             {
-                CreateMediaStream(DirectoryPath + "/My.Video.srt", "srt", null, null, index++),
-                CreateMediaStream(DirectoryPath + "/My.Video.vtt", "vtt", null, null, index++),
-                CreateMediaStream(DirectoryPath + "/My.Video.ass", "ass", null, null, index++),
-                CreateMediaStream(DirectoryPath + "/My.Video.sub", "sub", null, null, index++),
-                CreateMediaStream(DirectoryPath + "/My.Video.ssa", "ssa", null, null, index++),
-                CreateMediaStream(DirectoryPath + "/My.Video.smi", "smi", null, null, index++),
-                CreateMediaStream(DirectoryPath + "/My.Video.sami", "sami", null, null, index++),
-                CreateMediaStream(DirectoryPath + "/My.Video.en.srt", "srt", "eng", null, index++),
-                CreateMediaStream(DirectoryPath + "/My.Video.default.en.srt", "srt", "eng", null, index++, isDefault: true),
-                CreateMediaStream(DirectoryPath + "/My.Video.default.forced.en.srt", "srt", "eng", null, index++, isForced: true, isDefault: true),
-                CreateMediaStream(DirectoryPath + "/My.Video.en.default.forced.srt", "srt", "eng", null, index++, isForced: true, isDefault: true),
-                CreateMediaStream(DirectoryPath + "/My.Video.With.Additional.Garbage.en.srt", "srt", "eng", "Garbage", index) // TODO only "Garbage" is picked up as title, none of the other extra text
+                CreateMediaStream(VideoDirectoryPath + "/MyVideo.en.srt", "srt", "eng", null, index++),
+                CreateMediaStream(VideoDirectoryPath + "/MyVideo.en.forced.default.sub", "sub", "eng", null, index++, isDefault: true, isForced: true),
+                CreateMediaStream(VideoDirectoryPath + "/My.Video.srt", "srt", null, null, index++),
+                CreateMediaStream(VideoDirectoryPath + "/My.Video.vtt", "vtt", null, null, index++),
+                CreateMediaStream(VideoDirectoryPath + "/My.Video.ass", "ass", null, null, index++),
+                CreateMediaStream(VideoDirectoryPath + "/My.Video.sub", "sub", null, null, index++),
+                CreateMediaStream(VideoDirectoryPath + "/My.Video.ssa", "ssa", null, null, index++),
+                CreateMediaStream(VideoDirectoryPath + "/My.Video.smi", "smi", null, null, index++),
+                CreateMediaStream(VideoDirectoryPath + "/My.Video.sami", "sami", null, null, index++),
+                CreateMediaStream(VideoDirectoryPath + "/My.Video.mks", "mks", null, null, index++),
+                CreateMediaStream(VideoDirectoryPath + "/My.Video.en.srt", "srt", "eng", null, index++),
+                CreateMediaStream(VideoDirectoryPath + "/My.Video.default.en.srt", "srt", "eng", null, index++, isDefault: true),
+                CreateMediaStream(VideoDirectoryPath + "/My.Video.default.forced.en.srt", "srt", "eng", null, index++, isForced: true, isDefault: true),
+                CreateMediaStream(VideoDirectoryPath + "/My.Video.en.default.forced.srt", "srt", "eng", null, index++, isForced: true, isDefault: true),
+                CreateMediaStream(VideoDirectoryPath + "/My.Video.en.With Additional Garbage.sub", "sub", "eng", "With Additional Garbage", index++),
+                CreateMediaStream(VideoDirectoryPath + "/My.Video.With Additional Garbage.English.sub", "sub", "eng", "With Additional Garbage", index++),
+                CreateMediaStream(VideoDirectoryPath + "/My.Video.With.Additional.Garbage.en.srt", "srt", "eng", "With.Additional.Garbage", index++),
+                CreateMediaStream(MetadataDirectoryPath + "/My.Video.en.srt", "srt", "eng", null, index)
             };
 
             BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
-            var video = new Movie
-            {
-                // Must be valid for video.IsFileProtocol check
-                Path = DirectoryPath + "/My.Video.mkv"
-            };
+
+            var video = new Mock<Video>();
+            video.CallBase = true;
+            video.Setup(moq => moq.Path).Returns(VideoDirectoryPath + "/My.Video.mkv");
+            video.Setup(moq => moq.GetInternalMetadataPath()).Returns(MetadataDirectoryPath);
 
             var directoryService = new Mock<IDirectoryService>(MockBehavior.Strict);
             directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(@"Test Data[/\\]Video"), It.IsAny<bool>(), It.IsAny<bool>()))
                 .Returns(files);
+            directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(@"Test Data[/\\]Metadata"), It.IsAny<bool>(), It.IsAny<bool>()))
+                .Returns(metadataFiles);
 
-            var asyncStreams = _subtitleResolver.GetExternalSubtitleStreams(video, startIndex, directoryService.Object, false, CancellationToken.None).ConfigureAwait(false);
+            var asyncStreams = _subtitleResolver.GetExternalStreamsAsync(video.Object, startIndex, directoryService.Object, false, CancellationToken.None).ConfigureAwait(false);
 
             var streams = new List<MediaStream>();
             await foreach (var stream in asyncStreams)
@@ -124,7 +142,6 @@ namespace Jellyfin.Providers.Tests.MediaInfo
                 var actual = streams[i];
 
                 Assert.Equal(expected.Index, actual.Index);
-                // Assert.Equal(expected.Codec, actual.Codec); TODO should codec still be set to file extension?
                 Assert.Equal(expected.Type, actual.Type);
                 Assert.Equal(expected.IsExternal, actual.IsExternal);
                 Assert.Equal(expected.Path, actual.Path);
@@ -136,14 +153,10 @@ namespace Jellyfin.Providers.Tests.MediaInfo
         }
 
         [Theory]
-        [InlineData("My Video.srt", "srt", null, null, false, false)]
-        [InlineData("My Video.ass", "ass", null, null, false, false)]
-        [InlineData("my video.srt", "srt", null, null, false, false)]
-        [InlineData("My Vidèo.srt", "srt", null, null, false, false)]
-        [InlineData("My. Video.srt", "srt", null, null, false, false)]
+        [InlineData("MyVideo.en.srt", "srt", "eng", null, false, false)]
+        [InlineData("MyVideo.en.forced.default.srt", "srt", "eng", null, true, true)]
         [InlineData("My.Video.srt", "srt", null, null, false, false)]
         [InlineData("My.Video.foreign.srt", "srt", null, null, true, false)]
-        [InlineData("My Video.forced.srt", "srt", null, null, true, false)]
         [InlineData("My.Video.default.srt", "srt", null, null, false, true)]
         [InlineData("My.Video.forced.default.srt", "srt", null, null, true, true)]
         [InlineData("My.Video.en.srt", "srt", "eng", null, false, false)]
@@ -153,24 +166,25 @@ namespace Jellyfin.Providers.Tests.MediaInfo
         [InlineData("My.Video.default.forced.en.srt", "srt", "eng", null, true, true)]
         [InlineData("My.Video.en.default.forced.srt", "srt", "eng", null, true, true)]
         [InlineData("My.Video.Track Label.srt", "srt", null, "Track Label", false, false)]
-        // [InlineData("My.Video.Track.Label.srt", "srt", null, "Track.Label", false, false)] // TODO fails - only "Label" is picked up for title, not "Track.Label"
-        // [InlineData("MyVideo.Track Label.srt", "srt", null, "Track Label", false, false)] // TODO fails - fuzzy match doesn't pick up on end of matching segment being shorter?
+        [InlineData("My.Video.Track.Label.srt", "srt", null, "Track.Label", false, false)]
         [InlineData("My.Video.Track Label.en.default.forced.srt", "srt", "eng", "Track Label", true, true)]
         [InlineData("My.Video.en.default.forced.Track Label.srt", "srt", "eng", "Track Label", true, true)]
         public async void AddExternalSubtitleStreams_GivenSingleFile_ReturnsExpectedSubtitle(string file, string codec, string? language, string? title, bool isForced, bool isDefault)
         {
             BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
-            var video = new Movie
-            {
-                // Must be valid for video.IsFileProtocol check
-                Path = DirectoryPath + "/My.Video.mkv"
-            };
+
+            var video = new Mock<Video>();
+            video.CallBase = true;
+            video.Setup(moq => moq.Path).Returns(VideoDirectoryPath + "/My.Video.mkv");
+            video.Setup(moq => moq.GetInternalMetadataPath()).Returns(MetadataDirectoryPath);
 
             var directoryService = new Mock<IDirectoryService>(MockBehavior.Strict);
             directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(@"Test Data[/\\]Video"), It.IsAny<bool>(), It.IsAny<bool>()))
-                .Returns(new[] { DirectoryPath + "/" + file });
+                .Returns(new[] { VideoDirectoryPath + "/" + file });
+            directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(@"Test Data[/\\]Metadata"), It.IsAny<bool>(), It.IsAny<bool>()))
+                .Returns(Array.Empty<string>());
 
-            var asyncStreams = _subtitleResolver.GetExternalSubtitleStreams(video, 0, directoryService.Object, false, CancellationToken.None).ConfigureAwait(false);
+            var asyncStreams = _subtitleResolver.GetExternalStreamsAsync(video.Object, 0, directoryService.Object, false, CancellationToken.None).ConfigureAwait(false);
 
             var streams = new List<MediaStream>();
             await foreach (var stream in asyncStreams)
@@ -181,9 +195,8 @@ namespace Jellyfin.Providers.Tests.MediaInfo
             Assert.Single(streams);
             var actual = streams[0];
 
-            var expected = CreateMediaStream(DirectoryPath + "/" + file, codec, language, title, 0, isForced, isDefault);
+            var expected = CreateMediaStream(VideoDirectoryPath + "/" + file, codec, language, title, 0, isForced, isDefault);
             Assert.Equal(expected.Index, actual.Index);
-            // Assert.Equal(expected.Codec, actual.Codec); TODO should codec still be set to file extension?
             Assert.Equal(expected.Type, actual.Type);
             Assert.Equal(expected.IsExternal, actual.IsExternal);
             Assert.Equal(expected.Path, actual.Path);

@@ -887,7 +887,7 @@ namespace MediaBrowser.Controller.Entities
             return Name;
         }
 
-        public string GetInternalMetadataPath()
+        public virtual string GetInternalMetadataPath()
         {
             var basePath = ConfigurationManager.ApplicationPaths.InternalMetadataPath;
 

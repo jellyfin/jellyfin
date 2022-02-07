@@ -1,13 +1,14 @@
+using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Naming.Common;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Providers.MediaInfo;
@@ -18,8 +19,9 @@ namespace Jellyfin.Providers.Tests.MediaInfo
 {
     public class AudioResolverTests
     {
-        private const string DirectoryPath = "Test Data/Video";
-        private readonly AudioResolver _audioResolver;
+        private const string VideoDirectoryPath = "Test Data/Video";
+        private const string MetadataDirectoryPath = "Test Data/Metadata";
+        private readonly MediaInfoResolver _audioResolver;
 
         public AudioResolverTests()
         {
@@ -45,52 +47,68 @@ namespace Jellyfin.Providers.Tests.MediaInfo
                     }
                 }));
 
-            _audioResolver = new AudioResolver(localizationManager.Object, mediaEncoder.Object, new NamingOptions());
+            _audioResolver = new MediaInfoResolver(localizationManager.Object, mediaEncoder.Object, new NamingOptions(), DlnaProfileType.Audio);
         }
 
         [Fact]
-        public async void AddExternalAudioStreams_GivenMixedFilenames_ReturnsValidSubtitles()
+        public async void AddExternalStreams_GivenMixedFilenames_ReturnsValidSubtitles()
         {
             var startIndex = 0;
             var index = startIndex;
             var files = new[]
             {
-                DirectoryPath + "/My.Video.mp3",
-                // DirectoryPath + "/Some.Other.Video.mp3", // TODO should not be picked up
-                DirectoryPath + "/My.Video.png",
-                DirectoryPath + "/My.Video.srt",
-                DirectoryPath + "/My.Video.txt",
-                DirectoryPath + "/My.Video.vtt",
-                DirectoryPath + "/My.Video.ass",
-                DirectoryPath + "/My.Video.sub",
-                DirectoryPath + "/My.Video.ssa",
-                DirectoryPath + "/My.Video.smi",
-                DirectoryPath + "/My.Video.sami",
-                DirectoryPath + "/My.Video.en.mp3",
-                DirectoryPath + "/My.Video.Label.mp3",
-                DirectoryPath + "/My.Video.With.Additional.Garbage.en.mp3",
-                // DirectoryPath + "/My.Video With Additional Garbage.mp3" // TODO no "." after "My.Video", previously would be picked up
+                VideoDirectoryPath + "/MyVideo.en.aac",
+                VideoDirectoryPath + "/MyVideo.en.forced.default.dts",
+                VideoDirectoryPath + "/My.Video.mp3",
+                VideoDirectoryPath + "/Some.Other.Video.mp3",
+                VideoDirectoryPath + "/My.Video.png",
+                VideoDirectoryPath + "/My.Video.srt",
+                VideoDirectoryPath + "/My.Video.txt",
+                VideoDirectoryPath + "/My.Video.vtt",
+                VideoDirectoryPath + "/My.Video.ass",
+                VideoDirectoryPath + "/My.Video.sub",
+                VideoDirectoryPath + "/My.Video.ssa",
+                VideoDirectoryPath + "/My.Video.smi",
+                VideoDirectoryPath + "/My.Video.sami",
+                VideoDirectoryPath + "/My.Video.en.mp3",
+                VideoDirectoryPath + "/My.Video.en.forced.mp3",
+                VideoDirectoryPath + "/My.Video.en.default.forced.aac",
+                VideoDirectoryPath + "/My.Video.Label.mp3",
+                VideoDirectoryPath + "/My.Video.With Additional Garbage.en.aac",
+                VideoDirectoryPath + "/My.Video.With.Additional.Garbage.en.mp3"
+            };
+            var metadataFiles = new[]
+            {
+                MetadataDirectoryPath + "/My.Video.en.aac"
             };
             var expectedResult = new[]
             {
-                CreateMediaStream(DirectoryPath + "/My.Video.mp3", null, null, index++),
-                CreateMediaStream(DirectoryPath + "/My.Video.en.mp3", "eng", null, index++),
-                CreateMediaStream(DirectoryPath + "/My.Video.Label.mp3", null, "Label", index++),
-                CreateMediaStream(DirectoryPath + "/My.Video.With.Additional.Garbage.en.mp3", "eng", "Garbage", index) // TODO only "Garbage" is picked up as title, none of the other extra text
+                CreateMediaStream(VideoDirectoryPath + "/MyVideo.en.aac", "eng", null, index++),
+                CreateMediaStream(VideoDirectoryPath + "/MyVideo.en.forced.default.dts", "eng", null, index++, isDefault: true, isForced: true),
+                CreateMediaStream(VideoDirectoryPath + "/My.Video.mp3", null, null, index++),
+                CreateMediaStream(VideoDirectoryPath + "/My.Video.en.mp3", "eng", null, index++),
+                CreateMediaStream(VideoDirectoryPath + "/My.Video.en.forced.mp3", "eng", null, index++, isDefault: false, isForced: true),
+                CreateMediaStream(VideoDirectoryPath + "/My.Video.en.default.forced.aac", "eng", null, index++, isDefault: true, isForced: true),
+                CreateMediaStream(VideoDirectoryPath + "/My.Video.Label.mp3", null, "Label", index++),
+                CreateMediaStream(VideoDirectoryPath + "/My.Video.With Additional Garbage.en.aac", "eng", "With Additional Garbage", index++),
+                CreateMediaStream(VideoDirectoryPath + "/My.Video.With.Additional.Garbage.en.mp3", "eng", "With.Additional.Garbage", index++),
+                CreateMediaStream(MetadataDirectoryPath + "/My.Video.en.aac", "eng", null, index)
             };
 
             BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
-            var video = new Movie
-            {
-                // Must be valid for video.IsFileProtocol check
-                Path = DirectoryPath + "/My.Video.mkv"
-            };
+
+            var video = new Mock<Video>();
+            video.CallBase = true;
+            video.Setup(moq => moq.Path).Returns(VideoDirectoryPath + "/My.Video.mkv");
+            video.Setup(moq => moq.GetInternalMetadataPath()).Returns(MetadataDirectoryPath);
 
             var directoryService = new Mock<IDirectoryService>(MockBehavior.Strict);
             directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(@"Test Data[/\\]Video"), It.IsAny<bool>(), It.IsAny<bool>()))
                 .Returns(files);
+            directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(@"Test Data[/\\]Metadata"), It.IsAny<bool>(), It.IsAny<bool>()))
+                .Returns(metadataFiles);
 
-            var asyncStreams = _audioResolver.GetExternalAudioStreams(video, startIndex, directoryService.Object, false, CancellationToken.None).ConfigureAwait(false);
+            var asyncStreams = _audioResolver.GetExternalStreamsAsync(video.Object, startIndex, directoryService.Object, false, CancellationToken.None).ConfigureAwait(false);
 
             var streams = new List<MediaStream>();
             await foreach (var stream in asyncStreams)
@@ -114,6 +132,8 @@ namespace Jellyfin.Providers.Tests.MediaInfo
         }
 
         [Theory]
+        [InlineData("MyVideo.en.aac", "eng", null, false, false)]
+        [InlineData("MyVideo.en.forced.default.dts", "eng", null, true, true)]
         [InlineData("My.Video.mp3", null, null, false, false)]
         [InlineData("My.Video.English.mp3", "eng", null, false, false)]
         [InlineData("My.Video.Title.mp3", null, "Title", false, false)]
@@ -123,17 +143,19 @@ namespace Jellyfin.Providers.Tests.MediaInfo
         public async void GetExternalAudioStreams_GivenSingleFile_ReturnsExpectedStream(string file, string? language, string? title, bool isForced, bool isDefault)
         {
             BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
-            var video = new Movie
-            {
-                // Must be valid for video.IsFileProtocol check
-                Path = DirectoryPath + "/My.Video.mkv"
-            };
+
+            var video = new Mock<Video>();
+            video.CallBase = true;
+            video.Setup(moq => moq.Path).Returns(VideoDirectoryPath + "/My.Video.mkv");
+            video.Setup(moq => moq.GetInternalMetadataPath()).Returns(MetadataDirectoryPath);
 
             var directoryService = new Mock<IDirectoryService>(MockBehavior.Strict);
             directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(@"Test Data[/\\]Video"), It.IsAny<bool>(), It.IsAny<bool>()))
-                .Returns(new[] { DirectoryPath + "/" + file });
+                .Returns(new[] { VideoDirectoryPath + "/" + file });
+            directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(@"Test Data[/\\]Metadata"), It.IsAny<bool>(), It.IsAny<bool>()))
+                .Returns(Array.Empty<string>());
 
-            var asyncStreams = _audioResolver.GetExternalAudioStreams(video, 0, directoryService.Object, false, CancellationToken.None).ConfigureAwait(false);
+            var asyncStreams = _audioResolver.GetExternalStreamsAsync(video.Object, 0, directoryService.Object, false, CancellationToken.None).ConfigureAwait(false);
 
             var streams = new List<MediaStream>();
             await foreach (var stream in asyncStreams)
@@ -145,7 +167,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
 
             var actual = streams[0];
 
-            var expected = CreateMediaStream(DirectoryPath + "/" + file, language, title, 0, isForced, isDefault);
+            var expected = CreateMediaStream(VideoDirectoryPath + "/" + file, language, title, 0, isForced, isDefault);
             Assert.Equal(expected.Index, actual.Index);
             Assert.Equal(expected.Type, actual.Type);
             Assert.Equal(expected.IsExternal, actual.IsExternal);

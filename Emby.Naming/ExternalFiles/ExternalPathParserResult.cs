@@ -1,17 +1,17 @@
-namespace Emby.Naming.Audio
+namespace Emby.Naming.ExternalFiles
 {
     /// <summary>
-    /// Class holding information about external audio files.
+    /// Class holding information about external files.
     /// </summary>
-    public class ExternalAudioFileInfo
+    public class ExternalPathParserResult
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ExternalAudioFileInfo"/> class.
+        /// Initializes a new instance of the <see cref="ExternalPathParserResult"/> class.
         /// </summary>
         /// <param name="path">Path to file.</param>
         /// <param name="isDefault">Is default.</param>
         /// <param name="isForced">Is forced.</param>
-        public ExternalAudioFileInfo(string path, bool isDefault, bool isForced)
+        public ExternalPathParserResult(string path, bool isDefault = false, bool isForced = false)
         {
             Path = path;
             IsDefault = isDefault;
@@ -41,7 +41,6 @@ namespace Emby.Naming.Audio
         /// </summary>
         /// <value><c>true</c> if this instance is default; otherwise, <c>false</c>.</value>
         public bool IsDefault { get; set; }
-
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is forced.

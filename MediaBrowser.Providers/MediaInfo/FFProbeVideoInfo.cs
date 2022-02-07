@@ -44,8 +44,8 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ISubtitleManager _subtitleManager;
         private readonly IChapterManager _chapterManager;
         private readonly ILibraryManager _libraryManager;
-        private readonly AudioResolver _audioResolver;
-        private readonly SubtitleResolver _subtitleResolver;
+        private readonly MediaInfoResolver _audioResolver;
+        private readonly MediaInfoResolver _subtitleResolver;
         private readonly IMediaSourceManager _mediaSourceManager;
 
         private readonly long _dummyChapterDuration = TimeSpan.FromMinutes(5).Ticks;
@@ -62,8 +62,8 @@ namespace MediaBrowser.Providers.MediaInfo
             ISubtitleManager subtitleManager,
             IChapterManager chapterManager,
             ILibraryManager libraryManager,
-            SubtitleResolver subtitleResolver,
-            AudioResolver audioResolver)
+            MediaInfoResolver subtitleResolver,
+            MediaInfoResolver audioResolver)
         {
             _logger = logger;
             _mediaEncoder = mediaEncoder;
@@ -536,7 +536,7 @@ namespace MediaBrowser.Providers.MediaInfo
             CancellationToken cancellationToken)
         {
             var startIndex = currentStreams.Count == 0 ? 0 : (currentStreams.Select(i => i.Index).Max() + 1);
-            var externalSubtitleStreamsAsync = _subtitleResolver.GetExternalSubtitleStreams(video, startIndex, options.DirectoryService, false, cancellationToken);
+            var externalSubtitleStreamsAsync = _subtitleResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, false, cancellationToken);
 
             List<MediaStream> externalSubtitleStreams = new List<MediaStream>();
 
@@ -597,7 +597,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 // Rescan
                 if (downloadedLanguages.Count > 0)
                 {
-                    await foreach (MediaStream externalSubtitleStream in _subtitleResolver.GetExternalSubtitleStreams(video, startIndex, options.DirectoryService, true, cancellationToken))
+                    await foreach (MediaStream externalSubtitleStream in _subtitleResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, true, cancellationToken))
                     {
                         externalSubtitleStreams.Add(externalSubtitleStream);
                     }
@@ -623,7 +623,7 @@ namespace MediaBrowser.Providers.MediaInfo
             CancellationToken cancellationToken)
         {
             var startIndex = currentStreams.Count == 0 ? 0 : currentStreams.Max(i => i.Index) + 1;
-            var externalAudioStreams = _audioResolver.GetExternalAudioStreams(video, startIndex, options.DirectoryService, false, cancellationToken);
+            var externalAudioStreams = _audioResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, false, cancellationToken);
 
             await foreach (MediaStream externalAudioStream in externalAudioStreams)
             {

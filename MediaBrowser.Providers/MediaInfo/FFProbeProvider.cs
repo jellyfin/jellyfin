@@ -19,6 +19,7 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.MediaInfo;
@@ -39,8 +40,8 @@ namespace MediaBrowser.Providers.MediaInfo
         IHasItemChangeMonitor
     {
         private readonly ILogger<FFProbeProvider> _logger;
-        private readonly SubtitleResolver _subtitleResolver;
-        private readonly AudioResolver _audioResolver;
+        private readonly MediaInfoResolver _subtitleResolver;
+        private readonly MediaInfoResolver _audioResolver;
         private readonly FFProbeVideoInfo _videoProber;
         private readonly FFProbeAudioInfo _audioProber;
         private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
@@ -60,8 +61,8 @@ namespace MediaBrowser.Providers.MediaInfo
             NamingOptions namingOptions)
         {
             _logger = logger;
-            _audioResolver = new AudioResolver(localization, mediaEncoder, namingOptions);
-            _subtitleResolver = new SubtitleResolver(BaseItem.LocalizationManager, mediaEncoder, namingOptions);
+            _audioResolver = new MediaInfoResolver(localization, mediaEncoder, namingOptions, DlnaProfileType.Audio);
+            _subtitleResolver = new MediaInfoResolver(localization, mediaEncoder, namingOptions, DlnaProfileType.Subtitle);
             _videoProber = new FFProbeVideoInfo(
                 _logger,
                 mediaSourceManager,
@@ -104,7 +105,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (item.SupportsLocalMetadata && video != null && !video.IsPlaceHolder
                 && !video.SubtitleFiles.SequenceEqual(
-                    _subtitleResolver.GetExternalSubtitleFiles(video, directoryService, false)
+                    _subtitleResolver.GetExternalFiles(video, directoryService, false)
                     .Select(info => info.Path).ToList(),
                     StringComparer.Ordinal))
             {
@@ -114,7 +115,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (item.SupportsLocalMetadata && video != null && !video.IsPlaceHolder
                 && !video.AudioFiles.SequenceEqual(
-                    _audioResolver.GetExternalAudioFiles(video, directoryService, false)
+                    _audioResolver.GetExternalFiles(video, directoryService, false)
                     .Select(info => info.Path).ToList(),
                     StringComparer.Ordinal))
             {
