@@ -123,6 +123,20 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
         }
 
         [Fact]
+        public void Parse_GivenFileWithThumbWithoutAspect_Success()
+        {
+            var result = new MetadataResult<Episode>()
+            {
+                Item = new Episode()
+            };
+
+            _parser.Fetch(result, "Test Data/Sonarr-Thumb.nfo", CancellationToken.None);
+
+            Assert.Single(result.RemoteImages.Where(x => x.Type == ImageType.Primary));
+            Assert.Equal("https://artworks.thetvdb.com/banners/episodes/359095/7081317.jpg", result.RemoteImages.First(x => x.Type == ImageType.Primary).Url);
+        }
+
+        [Fact]
         public void Fetch_WithNullItem_ThrowsArgumentException()
         {
             var result = new MetadataResult<Episode>();
