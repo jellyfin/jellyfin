@@ -9,22 +9,22 @@ namespace MediaBrowser.Model.Configuration
         /// <summary>
         /// Allow all embedded subs.
         /// </summary>
-        AllowAll,
+        AllowAll = 0,
 
         /// <summary>
         /// Allow only embedded subs that are text based.
         /// </summary>
-        AllowText,
+        AllowText = 1,
 
         /// <summary>
         /// Allow only embedded subs that are image based.
         /// </summary>
-        AllowImage,
+        AllowImage = 2,
 
         /// <summary>
         /// Disable all embedded subs.
         /// </summary>
-        AllowNone,
+        AllowNone = 3,
     }
 
 }
