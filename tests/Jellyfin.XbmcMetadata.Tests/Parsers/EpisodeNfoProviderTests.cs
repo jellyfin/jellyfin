@@ -125,7 +125,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
         [Fact]
         public void Parse_GivenFileWithThumbWithoutAspect_Success()
         {
-            var result = new MetadataResult<Episode>()
+            var result = new MetadataResult<Episode>
             {
                 Item = new Episode()
             };
