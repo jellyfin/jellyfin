@@ -1680,7 +1680,7 @@ namespace Jellyfin.Api.Controllers
             {
                 if (EncodingHelper.IsCopyCodec(audioCodec))
                 {
-                    var bitStreamArgs = EncodingHelper.GetAudioBitStreamArguments(state, state.Request.SegmentContainer, state.MediaSource.Container);
+                    var bitStreamArgs = EncodingHelper.GetAudioBitStreamArguments(state, state.Request.SegmentContainer, state.MediaSource.Container, state.TranscodingType);
 
                     return "-acodec copy -strict -2" + bitStreamArgs;
                 }
@@ -1711,7 +1711,7 @@ namespace Jellyfin.Api.Controllers
             if (EncodingHelper.IsCopyCodec(audioCodec))
             {
                 var videoCodec = _encodingHelper.GetVideoEncoder(state, _encodingOptions);
-                var bitStreamArgs = EncodingHelper.GetAudioBitStreamArguments(state, state.Request.SegmentContainer, state.MediaSource.Container);
+                var bitStreamArgs = EncodingHelper.GetAudioBitStreamArguments(state, state.Request.SegmentContainer, state.MediaSource.Container, state.TranscodingType);
 
                 if (EncodingHelper.IsCopyCodec(videoCodec) && state.EnableBreakOnNonKeyFrames(videoCodec))
                 {
