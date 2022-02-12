@@ -83,10 +83,10 @@ namespace Jellyfin.Api.Helpers
             int totalBytesRead = 0;
             var stopwatch = Stopwatch.StartNew();
 
-            while (KeepReading(stopwatch.ElapsedMilliseconds))
+            while (true)
             {
                 totalBytesRead += _stream.Read(buffer);
-                if (totalBytesRead > 0)
+                if (StopReading(totalBytesRead, stopwatch.ElapsedMilliseconds))
                 {
                     break;
                 }
@@ -109,10 +109,10 @@ namespace Jellyfin.Api.Helpers
             int totalBytesRead = 0;
             var stopwatch = Stopwatch.StartNew();
 
-            while (KeepReading(stopwatch.ElapsedMilliseconds))
+            while (true)
             {
                 totalBytesRead += await _stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
-                if (totalBytesRead > 0)
+                if (StopReading(totalBytesRead, stopwatch.ElapsedMilliseconds))
                 {
                     break;
                 }
@@ -172,10 +172,12 @@ namespace Jellyfin.Api.Helpers
             }
         }
 
-        private bool KeepReading(long elapsed)
+        private bool StopReading(int bytesRead, long elapsed)
         {
-            // If the job is null it's a live stream and will require user action to close, but don't keep it open indefinitely
-            return !_job?.HasExited ?? elapsed < _timeoutMs;
+            // It should stop reading when anything has been successfully read or if the job has exited
+            // If the job is null, however, it's a live stream and will require user action to close,
+            // but don't keep it open indefinitely if it isn't reading anything
+            return bytesRead > 0 || (_job?.HasExited ?? elapsed >= _timeoutMs);
         }
     }
 }
