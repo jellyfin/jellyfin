@@ -753,6 +753,8 @@ namespace Jellyfin.Api.Helpers
             job.HasExited = true;
             job.ExitCode = process.ExitCode;
 
+            ReportTranscodingProgress(job, state, null, null, null, null, null);
+
             _logger.LogDebug("Disposing stream resources");
             state.Dispose();
 
