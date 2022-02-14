@@ -446,7 +446,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             {
                 Path = url,
                 Protocol = MediaProtocol.Udp,
-                MediaStreams = new List<MediaStream>
+                MediaStreams = new MediaStream[]
                 {
                     new MediaStream
                     {

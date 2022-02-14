@@ -172,7 +172,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (mediaInfo != null)
             {
-                mediaStreams = mediaInfo.MediaStreams;
+                mediaStreams = mediaInfo.MediaStreams.ToList();
                 mediaAttachments = mediaInfo.MediaAttachments;
 
                 video.TotalBitrate = mediaInfo.Bitrate;
@@ -202,7 +202,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 video.Container = mediaInfo.Container;
 
-                chapters = mediaInfo.Chapters == null ? Array.Empty<ChapterInfo>() : mediaInfo.Chapters;
+                chapters = mediaInfo.Chapters ?? Array.Empty<ChapterInfo>();
                 if (blurayInfo != null)
                 {
                     FetchBdInfo(video, ref chapters, mediaStreams, blurayInfo);
@@ -246,7 +246,7 @@ namespace MediaBrowser.Providers.MediaInfo
             video.Height = videoStream?.Height ?? 0;
             video.Width = videoStream?.Width ?? 0;
 
-            video.DefaultVideoStreamIndex = videoStream == null ? (int?)null : videoStream.Index;
+            video.DefaultVideoStreamIndex = videoStream?.Index;
 
             video.HasSubtitles = mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle);
 

@@ -81,7 +81,7 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="id">The identifier.</param>
         /// <param name="streams">The streams.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void SaveMediaStreams(Guid id, List<MediaStream> streams, CancellationToken cancellationToken);
+        void SaveMediaStreams(Guid id, IReadOnlyList<MediaStream> streams, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the media attachments.

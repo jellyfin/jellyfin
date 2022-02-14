@@ -1,4 +1,5 @@
-#nullable disable
+using System.Collections.Generic;
+
 namespace MediaBrowser.Model.Search
 {
     /// <summary>
@@ -7,15 +8,26 @@ namespace MediaBrowser.Model.Search
     public class SearchHintResult
     {
         /// <summary>
-        /// Gets or sets the search hints.
+        /// Initializes a new instance of the <see cref="SearchHintResult" /> class.
         /// </summary>
-        /// <value>The search hints.</value>
-        public SearchHint[] SearchHints { get; set; }
+        /// <param name="searchHints">The search hints.</param>
+        /// <param name="totalRecordCount">The total record count.</param>
+        public SearchHintResult(IReadOnlyList<SearchHint> searchHints, int totalRecordCount)
+        {
+            SearchHints = searchHints;
+            TotalRecordCount = totalRecordCount;
+        }
 
         /// <summary>
-        /// Gets or sets the total record count.
+        /// Gets the search hints.
+        /// </summary>
+        /// <value>The search hints.</value>
+        public IReadOnlyList<SearchHint> SearchHints { get; }
+
+        /// <summary>
+        /// Gets the total record count.
         /// </summary>
         /// <value>The total record count.</value>
-        public int TotalRecordCount { get; set; }
+        public int TotalRecordCount { get; }
     }
 }

@@ -569,7 +569,7 @@ namespace Emby.Dlna.PlayTo
                         streamInfo.TargetVideoCodecTag,
                         streamInfo.IsTargetAVC);
 
-                return list.Count == 0 ? null : list[0];
+                return list.FirstOrDefault();
             }
 
             return null;
@@ -883,7 +883,7 @@ namespace Emby.Dlna.PlayTo
 
         private class StreamParams
         {
-            private MediaSourceInfo mediaSource;
+            private MediaSourceInfo _mediaSource;
             private IMediaSourceManager _mediaSourceManager;
 
             public Guid ItemId { get; set; }
@@ -908,24 +908,22 @@ namespace Emby.Dlna.PlayTo
 
             public async Task<MediaSourceInfo> GetMediaSource(CancellationToken cancellationToken)
             {
-                if (mediaSource != null)
+                if (_mediaSource != null)
                 {
-                    return mediaSource;
+                    return _mediaSource;
                 }
 
-                var hasMediaSources = Item as IHasMediaSources;
-
-                if (hasMediaSources == null)
+                if (Item is not IHasMediaSources)
                 {
                     return null;
                 }
 
                 if (_mediaSourceManager != null)
                 {
-                    mediaSource = await _mediaSourceManager.GetMediaSource(Item, MediaSourceId, LiveStreamId, false, cancellationToken).ConfigureAwait(false);
+                    _mediaSource = await _mediaSourceManager.GetMediaSource(Item, MediaSourceId, LiveStreamId, false, cancellationToken).ConfigureAwait(false);
                 }
 
-                return mediaSource;
+                return _mediaSource;
             }
 
             private static Guid GetItemId(string url)

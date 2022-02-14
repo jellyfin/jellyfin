@@ -84,8 +84,6 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="cancellationToken">The cancellation token.</param>
         protected void Fetch(Audio audio, Model.MediaInfo.MediaInfo mediaInfo, CancellationToken cancellationToken)
         {
-            var mediaStreams = mediaInfo.MediaStreams;
-
             audio.Container = mediaInfo.Container;
             audio.TotalBitrate = mediaInfo.Bitrate;
 
@@ -97,7 +95,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             FetchDataFromTags(audio, mediaInfo);
 
-            _itemRepo.SaveMediaStreams(audio.Id, mediaStreams, cancellationToken);
+            _itemRepo.SaveMediaStreams(audio.Id, mediaInfo.MediaStreams, cancellationToken);
         }
 
         /// <summary>
