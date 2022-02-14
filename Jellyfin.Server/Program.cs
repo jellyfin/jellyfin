@@ -13,7 +13,6 @@ using Emby.Server.Implementations;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +25,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
 using Serilog.Extensions.Logging;
 using SQLitePCL;
-using ConfigurationExtensions = MediaBrowser.Controller.Extensions.ConfigurationExtensions;
+using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Jellyfin.Server
@@ -168,7 +167,7 @@ namespace Jellyfin.Server
                         "server, you may set the '--nowebclient' command line flag, or set" +
                         "'{ConfigKey}=false' in your config settings.",
                         webContentPath,
-                        ConfigurationExtensions.HostWebClientKey);
+                        HostWebClientKey);
                     Environment.ExitCode = 1;
                     return;
                 }
@@ -583,7 +582,7 @@ namespace Jellyfin.Server
             var inMemoryDefaultConfig = ConfigurationOptions.DefaultConfiguration;
             if (startupConfig != null && !startupConfig.HostWebClient())
             {
-                inMemoryDefaultConfig[ConfigurationExtensions.DefaultRedirectKey] = "api-docs/swagger";
+                inMemoryDefaultConfig[DefaultRedirectKey] = "api-docs/swagger";
             }
 
             return config

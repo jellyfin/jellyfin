@@ -628,7 +628,6 @@ namespace Jellyfin.Networking.Manager
             }
 
             TrustAllIP6Interfaces = config.TrustAllIP6Interfaces;
-            // UdpHelper.EnableMultiSocketBinding = config.EnableMultiSocketBinding;
 
             if (string.IsNullOrEmpty(MockNetworkSettings))
             {
@@ -750,7 +749,7 @@ namespace Jellyfin.Networking.Manager
                 bool partial = token[^1] == '*';
                 if (partial)
                 {
-                    token = token[0..^1];
+                    token = token[..^1];
                 }
 
                 foreach ((string interfc, int interfcIndex) in _interfaceNames)

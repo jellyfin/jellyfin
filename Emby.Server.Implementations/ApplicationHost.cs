@@ -44,7 +44,6 @@ using Emby.Server.Implementations.Serialization;
 using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
-using Emby.Server.Implementations.Udp;
 using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
 using Jellyfin.MediaEncoding.Hls.Playlist;
@@ -104,6 +103,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prometheus.DotNetRuntime;
+using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 using WebSocketManager = Emby.Server.Implementations.HttpServer.WebSocketManager;
 
 namespace Emby.Server.Implementations
@@ -185,6 +185,11 @@ namespace Emby.Server.Implementations
         public event EventHandler HasPendingRestartChanged;
 
         /// <summary>
+        /// Gets the value of the PublishedServerUrl setting.
+        /// </summary>
+        private string PublishedServerUrl => _startupConfig[AddressOverrideKey];
+
+        /// <summary>
         /// Gets a value indicating whether this instance can self restart.
         /// </summary>
         public bool CanSelfRestart => _startupOptions.RestartPath != null;
@@ -259,11 +264,6 @@ namespace Emby.Server.Implementations
         /// Gets the https port for the webhost.
         /// </summary>
         public int HttpsPort { get; private set; }
-
-        /// <summary>
-        /// Gets the value of the PublishedServerUrl setting.
-        /// </summary>
-        public string PublishedServerUrl => _startupOptions.PublishedServerUrl ?? _startupConfig[UdpServer.AddressOverrideConfigKey];
 
         /// <inheritdoc />
         public Version ApplicationVersion { get; }
