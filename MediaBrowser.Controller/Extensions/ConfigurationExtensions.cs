@@ -15,6 +15,11 @@ namespace MediaBrowser.Controller.Extensions
         public const string DefaultRedirectKey = "DefaultRedirectPath";
 
         /// <summary>
+        /// The key for the address override option.
+        /// </summary>
+        public const string AddressOverrideKey = "PublishedServerUrl";
+
+        /// <summary>
         /// The key for a setting that indicates whether the application should host web client content.
         /// </summary>
         public const string HostWebClientKey = "hostwebclient";

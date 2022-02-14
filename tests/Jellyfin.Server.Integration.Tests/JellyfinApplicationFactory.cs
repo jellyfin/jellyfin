@@ -7,11 +7,11 @@ using MediaBrowser.Common;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Extensions.Logging;
+using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 
 namespace Jellyfin.Server.Integration.Tests
 {
@@ -74,7 +74,7 @@ namespace Jellyfin.Server.Integration.Tests
                 appPaths,
                 loggerFactory,
                 commandLineOpts,
-                new ConfigurationBuilder().Build());
+                startupConfig);
             _disposableComponents.Add(appHost);
             var serviceCollection = new ServiceCollection();
             appHost.Init(serviceCollection);
