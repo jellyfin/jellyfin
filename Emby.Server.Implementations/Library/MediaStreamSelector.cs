@@ -88,7 +88,7 @@ namespace Emby.Server.Implementations.Library
         {
             // Give some preference to external text subs for better performance
             return streams
-            .Where(i => i.Type == type)
+                .Where(i => i.Type == type)
                 .OrderBy(i =>
                 {
                     var index = languagePreferences.FindIndex(x => string.Equals(x, i.Language, StringComparison.OrdinalIgnoreCase));
