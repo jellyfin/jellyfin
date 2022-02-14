@@ -17,7 +17,12 @@ namespace Emby.Server.Implementations.Library
 
             if (preferDefaultTrack)
             {
-                return sortedStreams.FirstOrDefault(i => i.IsDefault)?.Index;
+                var defaultStream = streams.FirstOrDefault(i => i.IsDefault);
+
+                if (defaultStream != null)
+                {
+                    return defaultStream.Index;
+                }
             }
 
             return sortedStreams.FirstOrDefault()?.Index;
