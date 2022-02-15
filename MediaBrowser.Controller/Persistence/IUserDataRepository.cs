@@ -1,5 +1,6 @@
 #nullable disable
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using MediaBrowser.Controller.Entities;
@@ -9,7 +10,7 @@ namespace MediaBrowser.Controller.Persistence
     /// <summary>
     /// Provides an interface to implement a UserData repository.
     /// </summary>
-    public interface IUserDataRepository : IRepository
+    public interface IUserDataRepository : IDisposable
     {
         /// <summary>
         /// Saves the user data.
