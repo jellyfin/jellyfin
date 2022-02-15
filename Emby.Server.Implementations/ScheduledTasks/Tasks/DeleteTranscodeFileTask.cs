@@ -78,18 +78,13 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             };
         }
 
-        /// <summary>
-        /// Returns the task to be executed.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
+        /// <inheritdoc />
+        public Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
         {
             var minDateModified = DateTime.UtcNow.AddDays(-1);
             progress.Report(50);
 
-            DeleteTempFilesFromDirectory(cancellationToken, _configurationManager.GetTranscodePath(), minDateModified, progress);
+            DeleteTempFilesFromDirectory(_configurationManager.GetTranscodePath(), minDateModified, progress, cancellationToken);
 
             return Task.CompletedTask;
         }
@@ -97,11 +92,11 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// <summary>
         /// Deletes the transcoded temp files from directory with a last write time less than a given date.
         /// </summary>
-        /// <param name="cancellationToken">The task cancellation token.</param>
         /// <param name="directory">The directory.</param>
         /// <param name="minDateModified">The min date modified.</param>
         /// <param name="progress">The progress.</param>
-        private void DeleteTempFilesFromDirectory(CancellationToken cancellationToken, string directory, DateTime minDateModified, IProgress<double> progress)
+        /// <param name="cancellationToken">The task cancellation token.</param>
+        private void DeleteTempFilesFromDirectory(string directory, DateTime minDateModified, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var filesToDelete = _fileSystem.GetFiles(directory, true)
                 .Where(f => _fileSystem.GetLastWriteTimeUtc(f) < minDateModified)

@@ -51,7 +51,7 @@ public class KeyframeExtractionScheduledTask : IScheduledTask
     public string Category => _localizationManager.GetLocalizedString("TasksLibraryCategory");
 
     /// <inheritdoc />
-    public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
+    public Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
         var query = new InternalItemsQuery
         {

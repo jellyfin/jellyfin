@@ -63,7 +63,8 @@ namespace MediaBrowser.Providers.MediaInfo
             return _config.GetConfiguration<SubtitleOptions>("subtitles");
         }
 
-        public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
+        /// <inheritdoc />
+        public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
         {
             var options = GetOptions();
 
@@ -210,6 +211,7 @@ namespace MediaBrowser.Providers.MediaInfo
             return true;
         }
 
+        /// <inheritdoc />
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
             return new[]

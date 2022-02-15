@@ -1007,14 +1007,8 @@ namespace Emby.Server.Implementations.Library
             return GetNewItemIdInternal(path, typeof(T), forceCaseInsensitiveId);
         }
 
-        /// <summary>
-        /// Validate and refresh the People sub-set of the IBN.
-        /// The items are stored in the db but not loaded into memory until actually requested by an operation.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        public Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
+        /// <inheritdoc />
+        public Task ValidatePeopleAsync(IProgress<double> progress, CancellationToken cancellationToken)
         {
             // Ensure the location is available.
             Directory.CreateDirectory(_configurationManager.ApplicationPaths.PeoplePath);

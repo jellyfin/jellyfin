@@ -138,10 +138,10 @@ namespace MediaBrowser.Controller.Library
         /// Validate and refresh the People sub-set of the IBN.
         /// The items are stored in the db but not loaded into memory until actually requested by an operation.
         /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress);
+        Task ValidatePeopleAsync(IProgress<double> progress, CancellationToken cancellationToken);
 
         /// <summary>
         /// Reloads the root media folder.

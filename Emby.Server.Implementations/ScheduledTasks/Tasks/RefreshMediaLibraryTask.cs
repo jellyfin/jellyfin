@@ -58,13 +58,8 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             };
         }
 
-        /// <summary>
-        /// Executes the internal.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
+        /// <inheritdoc />
+        public Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 

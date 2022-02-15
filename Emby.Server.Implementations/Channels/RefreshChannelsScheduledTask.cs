@@ -62,7 +62,7 @@ namespace Emby.Server.Implementations.Channels
         public string Key => "RefreshInternetChannels";
 
         /// <inheritdoc />
-        public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
         {
             var manager = (ChannelManager)_channelManager;
 

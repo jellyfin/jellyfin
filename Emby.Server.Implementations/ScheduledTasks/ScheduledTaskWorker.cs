@@ -414,7 +414,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                     CurrentCancellationTokenSource.CancelAfter(TimeSpan.FromTicks(options.MaxRuntimeTicks.Value));
                 }
 
-                await ScheduledTask.Execute(CurrentCancellationTokenSource.Token, progress).ConfigureAwait(false);
+                await ScheduledTask.ExecuteAsync(progress, CurrentCancellationTokenSource.Token).ConfigureAwait(false);
 
                 status = TaskCompletionStatus.Completed;
             }
@@ -757,6 +757,10 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 var trigger = triggerInfo.Item2;
                 trigger.Triggered -= OnTriggerTriggered;
                 trigger.Stop();
+                if (trigger is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
             }
         }
     }

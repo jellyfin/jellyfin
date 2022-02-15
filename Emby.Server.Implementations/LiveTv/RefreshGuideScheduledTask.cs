@@ -50,7 +50,7 @@ namespace Emby.Server.Implementations.LiveTv
         public string Key => "RefreshGuide";
 
         /// <inheritdoc />
-        public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
+        public Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
         {
             var manager = (LiveTvManager)_liveTvManager;
 

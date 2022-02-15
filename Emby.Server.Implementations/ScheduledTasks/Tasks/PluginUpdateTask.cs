@@ -68,13 +68,8 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             yield return new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(24).Ticks };
         }
 
-        /// <summary>
-        /// Update installed plugins.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns><see cref="Task" />.</returns>
-        public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
+        /// <inheritdoc />
+        public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
         {
             progress.Report(0);
 
