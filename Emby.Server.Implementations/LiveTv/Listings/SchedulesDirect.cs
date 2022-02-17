@@ -28,7 +28,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.Listings
 {
-    public class SchedulesDirect : IListingsProvider
+    public class SchedulesDirect : IListingsProvider, IDisposable
     {
         private const string ApiUrl = "https://json.schedulesdirect.org/20141201";
 
@@ -39,6 +39,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         private readonly ConcurrentDictionary<string, NameValuePair> _tokens = new ConcurrentDictionary<string, NameValuePair>();
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private DateTime _lastErrorResponse;
+        private bool _disposed = false;
 
         public SchedulesDirect(
             ILogger<SchedulesDirect> logger,
@@ -58,8 +59,8 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         {
             var dates = new List<string>();
 
-            var start = new List<DateTime> { startDateUtc, startDateUtc.ToLocalTime() }.Min().Date;
-            var end = new List<DateTime> { endDateUtc, endDateUtc.ToLocalTime() }.Max().Date;
+            var start = new[] { startDateUtc, startDateUtc.ToLocalTime() }.Min().Date;
+            var end = new[] { endDateUtc, endDateUtc.ToLocalTime() }.Max().Date;
 
             while (start <= end)
             {
@@ -821,6 +822,32 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
 
             return list;
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and optionally managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _tokenSemaphore?.Dispose();
+            }
+
+            _disposed = true;
         }
     }
 }

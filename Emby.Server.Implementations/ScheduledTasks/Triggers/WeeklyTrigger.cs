@@ -8,11 +8,12 @@ namespace Emby.Server.Implementations.ScheduledTasks.Triggers
     /// <summary>
     /// Represents a task trigger that fires on a weekly basis.
     /// </summary>
-    public sealed class WeeklyTrigger : ITaskTrigger
+    public sealed class WeeklyTrigger : ITaskTrigger, IDisposable
     {
         private readonly TimeSpan _timeOfDay;
         private readonly DayOfWeek _dayOfWeek;
         private Timer? _timer;
+        private bool _disposed = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WeeklyTrigger"/> class.
@@ -94,6 +95,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Triggers
         private void DisposeTimer()
         {
             _timer?.Dispose();
+            _timer = null;
         }
 
         /// <summary>
@@ -102,6 +104,19 @@ namespace Emby.Server.Implementations.ScheduledTasks.Triggers
         private void OnTriggered()
         {
             Triggered?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            DisposeTimer();
+
+            _disposed = true;
         }
     }
 }

@@ -39,7 +39,7 @@ namespace Emby.Server.Implementations.Channels
     /// <summary>
     /// The LiveTV channel manager.
     /// </summary>
-    public class ChannelManager : IChannelManager
+    public class ChannelManager : IChannelManager, IDisposable
     {
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
@@ -52,6 +52,7 @@ namespace Emby.Server.Implementations.Channels
         private readonly IMemoryCache _memoryCache;
         private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+        private bool _disposed = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChannelManager"/> class.
@@ -1212,6 +1213,32 @@ namespace Emby.Server.Implementations.Channels
             }
 
             return result;
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and optionally managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _resourcePool?.Dispose();
+            }
+
+            _disposed = true;
         }
     }
 }
