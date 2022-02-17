@@ -8,7 +8,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Providers.MediaInfo;
@@ -21,24 +20,12 @@ namespace Jellyfin.Providers.Tests.MediaInfo
     {
         private const string VideoDirectoryPath = "Test Data/Video";
         private const string MetadataDirectoryPath = "Test Data/Metadata";
-        private readonly MediaInfoResolver _subtitleResolver;
+        private readonly SubtitleResolver _subtitleResolver;
 
         public SubtitleResolverTests()
         {
-            var englishCultureDto = new CultureDto
-            {
-                Name = "English",
-                DisplayName = "English",
-                ThreeLetterISOLanguageNames = new[] { "eng" },
-                TwoLetterISOLanguageName = "en"
-            };
-            var frenchCultureDto = new CultureDto
-            {
-                Name = "French",
-                DisplayName = "French",
-                ThreeLetterISOLanguageNames = new[] { "fre", "fra" },
-                TwoLetterISOLanguageName = "fr"
-            };
+            var englishCultureDto = new CultureDto("English", "English", "en", new[] { "eng" });
+            var frenchCultureDto = new CultureDto("French", "French", "fr", new[] { "fre", "fra" });
 
             var localizationManager = new Mock<ILocalizationManager>(MockBehavior.Loose);
             localizationManager.Setup(lm => lm.FindLanguageInfo(It.IsRegex(@"en.*", RegexOptions.IgnoreCase)))
@@ -56,11 +43,11 @@ namespace Jellyfin.Providers.Tests.MediaInfo
                     }
                 }));
 
-            _subtitleResolver = new MediaInfoResolver(localizationManager.Object, mediaEncoder.Object, new NamingOptions(), DlnaProfileType.Subtitle);
+            _subtitleResolver = new SubtitleResolver(localizationManager.Object, mediaEncoder.Object, new NamingOptions());
         }
 
         [Fact]
-        public async void AddExternalSubtitleStreams_GivenMixedFilenames_ReturnsValidSubtitles()
+        public async void AddExternalStreamsAsync_GivenMixedFilenames_ReturnsValidSubtitles()
         {
             var startIndex = 0;
             var index = startIndex;
@@ -127,13 +114,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
             directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(@"Test Data[/\\]Metadata"), It.IsAny<bool>(), It.IsAny<bool>()))
                 .Returns(metadataFiles);
 
-            var asyncStreams = _subtitleResolver.GetExternalStreamsAsync(video.Object, startIndex, directoryService.Object, false, CancellationToken.None).ConfigureAwait(false);
-
-            var streams = new List<MediaStream>();
-            await foreach (var stream in asyncStreams)
-            {
-                streams.Add(stream);
-            }
+            var streams = await _subtitleResolver.GetExternalStreamsAsync(video.Object, startIndex, directoryService.Object, false, CancellationToken.None);
 
             Assert.Equal(expectedResult.Length, streams.Count);
             for (var i = 0; i < expectedResult.Length; i++)
@@ -169,7 +150,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
         [InlineData("My.Video.Track.Label.srt", "srt", null, "Track.Label", false, false)]
         [InlineData("My.Video.Track Label.en.default.forced.srt", "srt", "eng", "Track Label", true, true)]
         [InlineData("My.Video.en.default.forced.Track Label.srt", "srt", "eng", "Track Label", true, true)]
-        public async void AddExternalSubtitleStreams_GivenSingleFile_ReturnsExpectedSubtitle(string file, string codec, string? language, string? title, bool isForced, bool isDefault)
+        public async void AddExternalStreamsAsync_GivenSingleFile_ReturnsExpectedSubtitle(string file, string codec, string? language, string? title, bool isForced, bool isDefault)
         {
             BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
 
@@ -184,13 +165,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
             directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(@"Test Data[/\\]Metadata"), It.IsAny<bool>(), It.IsAny<bool>()))
                 .Returns(Array.Empty<string>());
 
-            var asyncStreams = _subtitleResolver.GetExternalStreamsAsync(video.Object, 0, directoryService.Object, false, CancellationToken.None).ConfigureAwait(false);
-
-            var streams = new List<MediaStream>();
-            await foreach (var stream in asyncStreams)
-            {
-                streams.Add(stream);
-            }
+            var streams = await _subtitleResolver.GetExternalStreamsAsync(video.Object, 0, directoryService.Object, false, CancellationToken.None);
 
             Assert.Single(streams);
             var actual = streams[0];

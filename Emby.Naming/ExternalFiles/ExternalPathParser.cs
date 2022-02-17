@@ -9,7 +9,7 @@ using MediaBrowser.Model.Globalization;
 namespace Emby.Naming.ExternalFiles
 {
     /// <summary>
-    /// External file parser class.
+    /// External media file parser class.
     /// </summary>
     public class ExternalPathParser
     {
@@ -44,9 +44,8 @@ namespace Emby.Naming.ExternalFiles
             }
 
             var extension = Path.GetExtension(path);
-            if (!((_type == DlnaProfileType.Subtitle && _namingOptions.SubtitleFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
-                || (_type == DlnaProfileType.Audio && _namingOptions.AudioFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
-                || (_type == DlnaProfileType.Video && _namingOptions.VideoFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))))
+            if (!(_type == DlnaProfileType.Subtitle && _namingOptions.SubtitleFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
+                && !(_type == DlnaProfileType.Audio && _namingOptions.AudioFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase)))
             {
                 return null;
             }
@@ -66,7 +65,7 @@ namespace Emby.Naming.ExternalFiles
 
                 while (languageString.Length > 0)
                 {
-                    var lastSeparator = languageString.LastIndexOf(separator, StringComparison.OrdinalIgnoreCase);
+                    int lastSeparator = languageString.LastIndexOf(separator, StringComparison.OrdinalIgnoreCase);
 
                     if (lastSeparator == -1)
                     {
@@ -74,8 +73,9 @@ namespace Emby.Naming.ExternalFiles
                     }
 
                     string currentSlice = languageString[lastSeparator..];
+                    string currentSliceWithoutSeparator = currentSlice[separatorLength..];
 
-                    if (_namingOptions.MediaDefaultFlags.Any(s => currentSlice[separatorLength..].Contains(s, StringComparison.OrdinalIgnoreCase)))
+                    if (_namingOptions.MediaDefaultFlags.Any(s => currentSliceWithoutSeparator.Contains(s, StringComparison.OrdinalIgnoreCase)))
                     {
                         pathInfo.IsDefault = true;
                         extraString = extraString.Replace(currentSlice, string.Empty, StringComparison.OrdinalIgnoreCase);
@@ -83,7 +83,7 @@ namespace Emby.Naming.ExternalFiles
                         continue;
                     }
 
-                    if (_namingOptions.MediaForcedFlags.Any(s => currentSlice[separatorLength..].Contains(s, StringComparison.OrdinalIgnoreCase)))
+                    if (_namingOptions.MediaForcedFlags.Any(s => currentSliceWithoutSeparator.Contains(s, StringComparison.OrdinalIgnoreCase)))
                     {
                         pathInfo.IsForced = true;
                         extraString = extraString.Replace(currentSlice, string.Empty, StringComparison.OrdinalIgnoreCase);
@@ -92,7 +92,7 @@ namespace Emby.Naming.ExternalFiles
                     }
 
                     // Try to translate to three character code
-                    var culture = _localizationManager.FindLanguageInfo(currentSlice[separatorLength..]);
+                    var culture = _localizationManager.FindLanguageInfo(currentSliceWithoutSeparator);
 
                     if (culture != null && pathInfo.Language == null)
                     {

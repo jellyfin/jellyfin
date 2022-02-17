@@ -8,7 +8,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Providers.MediaInfo;
@@ -21,17 +20,11 @@ namespace Jellyfin.Providers.Tests.MediaInfo
     {
         private const string VideoDirectoryPath = "Test Data/Video";
         private const string MetadataDirectoryPath = "Test Data/Metadata";
-        private readonly MediaInfoResolver _audioResolver;
+        private readonly AudioResolver _audioResolver;
 
         public AudioResolverTests()
         {
-            var englishCultureDto = new CultureDto
-            {
-                Name = "English",
-                DisplayName = "English",
-                ThreeLetterISOLanguageNames = new[] { "eng" },
-                TwoLetterISOLanguageName = "en"
-            };
+            var englishCultureDto = new CultureDto("English", "English", "en", new[] { "eng" });
 
             var localizationManager = new Mock<ILocalizationManager>(MockBehavior.Loose);
             localizationManager.Setup(lm => lm.FindLanguageInfo(It.IsRegex(@"en.*", RegexOptions.IgnoreCase)))
@@ -47,11 +40,11 @@ namespace Jellyfin.Providers.Tests.MediaInfo
                     }
                 }));
 
-            _audioResolver = new MediaInfoResolver(localizationManager.Object, mediaEncoder.Object, new NamingOptions(), DlnaProfileType.Audio);
+            _audioResolver = new AudioResolver(localizationManager.Object, mediaEncoder.Object, new NamingOptions());
         }
 
         [Fact]
-        public async void AddExternalStreams_GivenMixedFilenames_ReturnsValidSubtitles()
+        public async void AddExternalStreamsAsync_GivenMixedFilenames_ReturnsValidSubtitles()
         {
             var startIndex = 0;
             var index = startIndex;
@@ -108,13 +101,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
             directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(@"Test Data[/\\]Metadata"), It.IsAny<bool>(), It.IsAny<bool>()))
                 .Returns(metadataFiles);
 
-            var asyncStreams = _audioResolver.GetExternalStreamsAsync(video.Object, startIndex, directoryService.Object, false, CancellationToken.None).ConfigureAwait(false);
-
-            var streams = new List<MediaStream>();
-            await foreach (var stream in asyncStreams)
-            {
-                streams.Add(stream);
-            }
+            var streams = await _audioResolver.GetExternalStreamsAsync(video.Object, startIndex, directoryService.Object, false, CancellationToken.None);
 
             Assert.Equal(expectedResult.Length, streams.Count);
             for (var i = 0; i < expectedResult.Length; i++)
@@ -140,7 +127,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
         [InlineData("My.Video.forced.English.mp3", "eng", null, true, false)]
         [InlineData("My.Video.default.English.mp3", "eng", null, false, true)]
         [InlineData("My.Video.English.forced.default.Title.mp3", "eng", "Title", true, true)]
-        public async void GetExternalAudioStreams_GivenSingleFile_ReturnsExpectedStream(string file, string? language, string? title, bool isForced, bool isDefault)
+        public async void AddExternalStreamsAsync_GivenSingleFile_ReturnsExpectedStream(string file, string? language, string? title, bool isForced, bool isDefault)
         {
             BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
 
@@ -155,13 +142,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
             directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(@"Test Data[/\\]Metadata"), It.IsAny<bool>(), It.IsAny<bool>()))
                 .Returns(Array.Empty<string>());
 
-            var asyncStreams = _audioResolver.GetExternalStreamsAsync(video.Object, 0, directoryService.Object, false, CancellationToken.None).ConfigureAwait(false);
-
-            var streams = new List<MediaStream>();
-            await foreach (var stream in asyncStreams)
-            {
-                streams.Add(stream);
-            }
+            var streams = await _audioResolver.GetExternalStreamsAsync(video.Object, 0, directoryService.Object, false, CancellationToken.None);
 
             Assert.Single(streams);
 

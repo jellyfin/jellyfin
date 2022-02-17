@@ -44,8 +44,8 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ISubtitleManager _subtitleManager;
         private readonly IChapterManager _chapterManager;
         private readonly ILibraryManager _libraryManager;
-        private readonly MediaInfoResolver _audioResolver;
-        private readonly MediaInfoResolver _subtitleResolver;
+        private readonly AudioResolver _audioResolver;
+        private readonly SubtitleResolver _subtitleResolver;
         private readonly IMediaSourceManager _mediaSourceManager;
 
         private readonly long _dummyChapterDuration = TimeSpan.FromMinutes(5).Ticks;
@@ -62,10 +62,11 @@ namespace MediaBrowser.Providers.MediaInfo
             ISubtitleManager subtitleManager,
             IChapterManager chapterManager,
             ILibraryManager libraryManager,
-            MediaInfoResolver subtitleResolver,
-            MediaInfoResolver audioResolver)
+            AudioResolver audioResolver,
+            SubtitleResolver subtitleResolver)
         {
             _logger = logger;
+            _mediaSourceManager = mediaSourceManager;
             _mediaEncoder = mediaEncoder;
             _itemRepo = itemRepo;
             _blurayExaminer = blurayExaminer;
@@ -77,7 +78,6 @@ namespace MediaBrowser.Providers.MediaInfo
             _libraryManager = libraryManager;
             _audioResolver = audioResolver;
             _subtitleResolver = subtitleResolver;
-            _mediaSourceManager = mediaSourceManager;
         }
 
         public async Task<ItemUpdateType> ProbeVideo<T>(
@@ -536,14 +536,7 @@ namespace MediaBrowser.Providers.MediaInfo
             CancellationToken cancellationToken)
         {
             var startIndex = currentStreams.Count == 0 ? 0 : (currentStreams.Select(i => i.Index).Max() + 1);
-            var externalSubtitleStreamsAsync = _subtitleResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, false, cancellationToken);
-
-            List<MediaStream> externalSubtitleStreams = new List<MediaStream>();
-
-            await foreach (MediaStream externalSubtitleStream in externalSubtitleStreamsAsync)
-            {
-                externalSubtitleStreams.Add(externalSubtitleStream);
-            }
+            var externalSubtitleStreams = await _subtitleResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, false, cancellationToken);
 
             var enableSubtitleDownloading = options.MetadataRefreshMode == MetadataRefreshMode.Default ||
                                             options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
@@ -597,10 +590,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 // Rescan
                 if (downloadedLanguages.Count > 0)
                 {
-                    await foreach (MediaStream externalSubtitleStream in _subtitleResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, true, cancellationToken))
-                    {
-                        externalSubtitleStreams.Add(externalSubtitleStream);
-                    }
+                    externalSubtitleStreams = await _subtitleResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, true, cancellationToken);
                 }
             }
 
@@ -623,12 +613,9 @@ namespace MediaBrowser.Providers.MediaInfo
             CancellationToken cancellationToken)
         {
             var startIndex = currentStreams.Count == 0 ? 0 : currentStreams.Max(i => i.Index) + 1;
-            var externalAudioStreams = _audioResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, false, cancellationToken);
+            var externalAudioStreams = await _audioResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, false, cancellationToken).ConfigureAwait(false);
 
-            await foreach (MediaStream externalAudioStream in externalAudioStreams)
-            {
-                currentStreams.Add(externalAudioStream);
-            }
+            currentStreams = currentStreams.Concat(externalAudioStreams).ToList();
 
             // Select all external audio file paths
             video.AudioFiles = currentStreams.Where(i => i.Type == MediaStreamType.Audio && i.IsExternal).Select(i => i.Path).Distinct().ToArray();

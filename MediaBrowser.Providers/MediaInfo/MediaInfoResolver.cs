@@ -1,8 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Naming.Common;
@@ -19,9 +19,9 @@ using MediaBrowser.Model.MediaInfo;
 namespace MediaBrowser.Providers.MediaInfo
 {
     /// <summary>
-    /// Resolves external files for videos.
+    /// Resolves external files for <see cref="Video"/>.
     /// </summary>
-    public class MediaInfoResolver
+    public abstract class MediaInfoResolver
     {
         /// <summary>
         /// The <see cref="CompareOptions"/> instance.
@@ -55,7 +55,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="mediaEncoder">The media encoder.</param>
         /// <param name="namingOptions">The <see cref="NamingOptions"/> object containing FileExtensions, MediaDefaultFlags, MediaForcedFlags and MediaFlagDelimiters.</param>
         /// <param name="type">The <see cref="DlnaProfileType"/> of the parsed file.</param>
-        public MediaInfoResolver(
+        protected MediaInfoResolver(
             ILocalizationManager localizationManager,
             IMediaEncoder mediaEncoder,
             NamingOptions namingOptions,
@@ -73,27 +73,32 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="startIndex">The stream index to start adding external streams at.</param>
         /// <param name="directoryService">The directory service to search for files.</param>
         /// <param name="clearCache">True if the directory service cache should be cleared before searching.</param>
-        /// <param name="cancellationToken">The cancellation token to cancel operation.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The external streams located.</returns>
-        public async IAsyncEnumerable<MediaStream> GetExternalStreamsAsync(
+        public async Task<IReadOnlyList<MediaStream>> GetExternalStreamsAsync(
             Video video,
             int startIndex,
             IDirectoryService directoryService,
             bool clearCache,
-            [EnumeratorCancellation] CancellationToken cancellationToken)
+            CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             if (!video.IsFileProtocol)
             {
-                yield break;
+                return Array.Empty<MediaStream>();
             }
 
             var pathInfos = GetExternalFiles(video, directoryService, clearCache);
 
+            if (!pathInfos.Any())
+            {
+                return Array.Empty<MediaStream>();
+            }
+
+            var mediaStreams = new List<MediaStream>();
+
             foreach (var pathInfo in pathInfos)
             {
-                Model.MediaInfo.MediaInfo mediaInfo = await GetMediaInfo(pathInfo.Path, _type, cancellationToken).ConfigureAwait(false);
+                var mediaInfo = await GetMediaInfo(pathInfo.Path, _type, cancellationToken).ConfigureAwait(false);
 
                 if (mediaInfo.MediaStreams.Count == 1)
                 {
@@ -102,7 +107,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     mediaStream.IsDefault = pathInfo.IsDefault || mediaStream.IsDefault;
                     mediaStream.IsForced = pathInfo.IsForced || mediaStream.IsForced;
 
-                    yield return MergeMetadata(mediaStream, pathInfo);
+                    mediaStreams.Add(MergeMetadata(mediaStream, pathInfo));
                 }
                 else
                 {
@@ -110,10 +115,12 @@ namespace MediaBrowser.Providers.MediaInfo
                     {
                         mediaStream.Index = startIndex++;
 
-                        yield return MergeMetadata(mediaStream, pathInfo);
+                        mediaStreams.Add(MergeMetadata(mediaStream, pathInfo));
                     }
                 }
             }
+
+            return mediaStreams.AsReadOnly();
         }
 
         /// <summary>
@@ -123,25 +130,32 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="directoryService">The directory service to search for files.</param>
         /// <param name="clearCache">True if the directory service cache should be cleared before searching.</param>
         /// <returns>The external file paths located.</returns>
-        public IEnumerable<ExternalPathParserResult> GetExternalFiles(
+        public IReadOnlyList<ExternalPathParserResult> GetExternalFiles(
             Video video,
             IDirectoryService directoryService,
             bool clearCache)
         {
             if (!video.IsFileProtocol)
             {
-                yield break;
+                return Array.Empty<ExternalPathParserResult>();
             }
 
             // Check if video folder exists
             string folder = video.ContainingFolderPath;
             if (!Directory.Exists(folder))
             {
-                yield break;
+                return Array.Empty<ExternalPathParserResult>();
             }
+
+            var externalPathInfos = new List<ExternalPathParserResult>();
 
             var files = directoryService.GetFilePaths(folder, clearCache).ToList();
             files.AddRange(directoryService.GetFilePaths(video.GetInternalMetadataPath(), clearCache));
+
+            if (!files.Any())
+            {
+                return Array.Empty<ExternalPathParserResult>();
+            }
 
             foreach (var file in files)
             {
@@ -151,10 +165,12 @@ namespace MediaBrowser.Providers.MediaInfo
 
                     if (externalPathInfo != null)
                     {
-                        yield return externalPathInfo;
+                        externalPathInfos.Add(externalPathInfo);
                     }
                 }
             }
+
+            return externalPathInfos.AsReadOnly();
         }
 
         /// <summary>
@@ -198,7 +214,6 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 DlnaProfileType.Audio => MediaStreamType.Audio,
                 DlnaProfileType.Subtitle => MediaStreamType.Subtitle,
-                DlnaProfileType.Video => MediaStreamType.Video,
                 _ => mediaStream.Type
             };
 

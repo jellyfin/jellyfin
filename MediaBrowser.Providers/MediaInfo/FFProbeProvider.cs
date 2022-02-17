@@ -40,8 +40,8 @@ namespace MediaBrowser.Providers.MediaInfo
         IHasItemChangeMonitor
     {
         private readonly ILogger<FFProbeProvider> _logger;
-        private readonly MediaInfoResolver _subtitleResolver;
-        private readonly MediaInfoResolver _audioResolver;
+        private readonly AudioResolver _audioResolver;
+        private readonly SubtitleResolver _subtitleResolver;
         private readonly FFProbeVideoInfo _videoProber;
         private readonly FFProbeAudioInfo _audioProber;
         private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
@@ -61,8 +61,8 @@ namespace MediaBrowser.Providers.MediaInfo
             NamingOptions namingOptions)
         {
             _logger = logger;
-            _audioResolver = new MediaInfoResolver(localization, mediaEncoder, namingOptions, DlnaProfileType.Audio);
-            _subtitleResolver = new MediaInfoResolver(localization, mediaEncoder, namingOptions, DlnaProfileType.Subtitle);
+            _audioResolver = new AudioResolver(localization, mediaEncoder, namingOptions);
+            _subtitleResolver = new SubtitleResolver(localization, mediaEncoder, namingOptions);
             _videoProber = new FFProbeVideoInfo(
                 _logger,
                 mediaSourceManager,
@@ -75,8 +75,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 subtitleManager,
                 chapterManager,
                 libraryManager,
-                _subtitleResolver,
-                _audioResolver);
+                _audioResolver,
+                _subtitleResolver);
             _audioProber = new FFProbeAudioInfo(mediaSourceManager, mediaEncoder, itemRepo, libraryManager);
         }
 
