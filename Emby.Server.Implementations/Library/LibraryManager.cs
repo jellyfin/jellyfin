@@ -45,7 +45,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Tasks;
-using MediaBrowser.Providers.MediaInfo;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
@@ -680,9 +679,7 @@ namespace Emby.Server.Implementations.Library
 
                     if (result?.Items.Count > 0)
                     {
-                        var items = new List<BaseItem>();
-                        items.AddRange(result.Items);
-
+                        var items = result.Items;
                         foreach (var item in items)
                         {
                             ResolverHelper.SetInitialItemValues(item, parent, this, directoryService);
@@ -1028,15 +1025,6 @@ namespace Emby.Server.Implementations.Library
             _taskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
 
             return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Queues the library scan.
-        /// </summary>
-        public void QueueLibraryScan()
-        {
-            // Just run the scheduled task so that the user can see it
-            _taskManager.QueueScheduledTask<RefreshMediaLibraryTask>();
         }
 
         /// <summary>
@@ -1642,27 +1630,6 @@ namespace Emby.Server.Implementations.Library
 
                 return new List<IntroInfo>();
             }
-        }
-
-        /// <summary>
-        /// Gets all intro files.
-        /// </summary>
-        /// <returns>IEnumerable{System.String}.</returns>
-        public IEnumerable<string> GetAllIntroFiles()
-        {
-            return IntroProviders.SelectMany(i =>
-            {
-                try
-                {
-                    return i.GetAllIntroFiles().ToList();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error getting intro files");
-
-                    return new List<string>();
-                }
-            });
         }
 
         /// <summary>
@@ -2463,24 +2430,6 @@ namespace Emby.Server.Implementations.Library
             return item;
         }
 
-        public void AddExternalSubtitleStreams(
-            List<MediaStream> streams,
-            string videoPath,
-            string[] files)
-        {
-            new SubtitleResolver(BaseItem.LocalizationManager).AddExternalSubtitleStreams(streams, videoPath, streams.Count, files);
-        }
-
-        public BaseItem GetParentItem(string parentId, Guid? userId)
-        {
-            if (string.IsNullOrEmpty(parentId))
-            {
-                return GetParentItem((Guid?)null, userId);
-            }
-
-            return GetParentItem(new Guid(parentId), userId);
-        }
-
         public BaseItem GetParentItem(Guid? parentId, Guid? userId)
         {
             if (parentId.HasValue)
@@ -2488,7 +2437,7 @@ namespace Emby.Server.Implementations.Library
                 return GetItemById(parentId.Value);
             }
 
-            if (userId.HasValue && userId != Guid.Empty)
+            if (userId.HasValue && !userId.Equals(default))
             {
                 return GetUserRootFolder();
             }
@@ -2773,16 +2722,6 @@ namespace Emby.Server.Implementations.Library
                 {
                     return newPath;
                 }
-            }
-
-            return path;
-        }
-
-        public string SubstitutePath(string path, string from, string to)
-        {
-            if (path.TryReplaceSubPath(from, to, out var newPath))
-            {
-                return newPath;
             }
 
             return path;

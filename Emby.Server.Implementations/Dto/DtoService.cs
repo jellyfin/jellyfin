@@ -21,7 +21,6 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -738,8 +737,7 @@ namespace Emby.Server.Implementations.Dto
                 dto.Tags = item.Tags;
             }
 
-            var hasAspectRatio = item as IHasAspectRatio;
-            if (hasAspectRatio != null)
+            if (item is IHasAspectRatio hasAspectRatio)
             {
                 dto.AspectRatio = hasAspectRatio.AspectRatio;
             }
@@ -889,15 +887,13 @@ namespace Emby.Server.Implementations.Dto
                 dto.CommunityRating = item.CommunityRating;
             }
 
-            var supportsPlaceHolders = item as ISupportsPlaceHolders;
-            if (supportsPlaceHolders != null && supportsPlaceHolders.IsPlaceHolder)
+            if (item is ISupportsPlaceHolders supportsPlaceHolders && supportsPlaceHolders.IsPlaceHolder)
             {
                 dto.IsPlaceHolder = supportsPlaceHolders.IsPlaceHolder;
             }
 
             // Add audio info
-            var audio = item as Audio;
-            if (audio != null)
+            if (item is Audio audio)
             {
                 dto.Album = audio.Album;
                 if (audio.ExtraType.HasValue)
@@ -970,8 +966,7 @@ namespace Emby.Server.Implementations.Dto
                     }).Where(i => i != null).ToArray();
             }
 
-            var hasAlbumArtist = item as IHasAlbumArtist;
-            if (hasAlbumArtist != null)
+            if (item is IHasAlbumArtist hasAlbumArtist)
             {
                 dto.AlbumArtist = hasAlbumArtist.AlbumArtists.FirstOrDefault();
 
