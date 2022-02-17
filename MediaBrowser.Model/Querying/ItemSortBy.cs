@@ -102,5 +102,9 @@ namespace MediaBrowser.Model.Querying
         public const string DateLastContentAdded = "DateLastContentAdded";
 
         public const string SeriesDatePlayed = "SeriesDatePlayed";
+
+        public const string ParentIndexNumber = "ParentIndexNumber";
+
+        public const string IndexNumber = "IndexNumber";
     }
 }
