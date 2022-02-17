@@ -15,15 +15,8 @@ namespace MediaBrowser.Controller.Persistence
     /// <summary>
     /// Provides an interface to implement an Item repository.
     /// </summary>
-    public interface IItemRepository : IRepository
+    public interface IItemRepository : IDisposable
     {
-        /// <summary>
-        /// Saves an item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        void SaveItem(BaseItem item, CancellationToken cancellationToken);
-
         /// <summary>
         /// Deletes the item.
         /// </summary>
@@ -99,13 +92,6 @@ namespace MediaBrowser.Controller.Persistence
         void SaveMediaAttachments(Guid id, IReadOnlyList<MediaAttachment> attachments, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the item ids.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <returns>IEnumerable&lt;Guid&gt;.</returns>
-        QueryResult<Guid> GetItemIds(InternalItemsQuery query);
-
-        /// <summary>
         /// Gets the items.
         /// </summary>
         /// <param name="query">The query.</param>
@@ -139,13 +125,6 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="query">The query.</param>
         /// <returns>List&lt;System.String&gt;.</returns>
         List<string> GetPeopleNames(InternalPeopleQuery query);
-
-        /// <summary>
-        /// Gets the item ids with path.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <returns>QueryResult&lt;Tuple&lt;Guid, System.String&gt;&gt;.</returns>
-        List<Tuple<Guid, string>> GetItemIdsWithPath(InternalItemsQuery query);
 
         /// <summary>
         /// Gets the item list.

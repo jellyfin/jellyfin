@@ -26,9 +26,6 @@ namespace Emby.Server.Implementations.Data
             DbFilePath = Path.Combine(appPaths.DataPath, "library.db");
         }
 
-        /// <inheritdoc />
-        public string Name => "SQLite";
-
         /// <summary>
         /// Opens the connection to the database.
         /// </summary>
@@ -102,7 +99,7 @@ namespace Emby.Server.Implementations.Data
                         continue;
                     }
 
-                    statement.TryBind("@UserId", user.Id.ToByteArray());
+                    statement.TryBind("@UserId", user.Id);
                     statement.TryBind("@InternalUserId", user.InternalId);
 
                     statement.MoveNext();
