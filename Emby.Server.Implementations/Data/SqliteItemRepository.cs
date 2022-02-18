@@ -171,7 +171,8 @@ namespace Emby.Server.Implementations.Data
             "CodecTimeBase",
             "ColorPrimaries",
             "ColorSpace",
-            "ColorTransfer"
+            "ColorTransfer",
+            "IsHearingImpaired"
         };
 
         private static readonly string _mediaStreamSaveColumnsInsertQuery =
@@ -342,7 +343,7 @@ namespace Emby.Server.Implementations.Data
         public void Initialize(SqliteUserDataRepository userDataRepo, IUserManager userManager)
         {
             const string CreateMediaStreamsTableCommand
-                    = "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, CodecTag TEXT NULL, Comment TEXT NULL, NalLengthSize TEXT NULL, IsAvc BIT NULL, Title TEXT NULL, TimeBase TEXT NULL, CodecTimeBase TEXT NULL, ColorPrimaries TEXT NULL, ColorSpace TEXT NULL, ColorTransfer TEXT NULL, PRIMARY KEY (ItemId, StreamIndex))";
+                    = "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, CodecTag TEXT NULL, Comment TEXT NULL, NalLengthSize TEXT NULL, IsAvc BIT NULL, Title TEXT NULL, TimeBase TEXT NULL, CodecTimeBase TEXT NULL, ColorPrimaries TEXT NULL, ColorSpace TEXT NULL, ColorTransfer TEXT NULL, IsHearingImpaired BIT NULL, PRIMARY KEY (ItemId, StreamIndex))";
             const string CreateMediaAttachmentsTableCommand
                     = "create table if not exists mediaattachments (ItemId GUID, AttachmentIndex INT, Codec TEXT, CodecTag TEXT NULL, Comment TEXT NULL, Filename TEXT NULL, MIMEType TEXT NULL, PRIMARY KEY (ItemId, AttachmentIndex))";
 
@@ -556,6 +557,8 @@ namespace Emby.Server.Implementations.Data
                         AddColumn(db, "MediaStreams", "ColorPrimaries", "TEXT", existingColumnNames);
                         AddColumn(db, "MediaStreams", "ColorSpace", "TEXT", existingColumnNames);
                         AddColumn(db, "MediaStreams", "ColorTransfer", "TEXT", existingColumnNames);
+
+                        AddColumn(db, "MediaStreams", "IsHearingImpaired", "TEXT", existingColumnNames);
                     },
                     TransactionMode);
 
@@ -5794,6 +5797,8 @@ AND Type = @InternalPersonType)");
                         statement.TryBind("@ColorPrimaries" + index, stream.ColorPrimaries);
                         statement.TryBind("@ColorSpace" + index, stream.ColorSpace);
                         statement.TryBind("@ColorTransfer" + index, stream.ColorTransfer);
+
+                        statement.TryBind("@IsHearingImpaired" + index, stream.IsHearingImpaired);
                     }
 
                     statement.Reset();
@@ -5965,12 +5970,15 @@ AND Type = @InternalPersonType)");
                 item.ColorTransfer = colorTransfer;
             }
 
+            item.IsHearingImpaired = reader.GetBoolean(35);
+
             if (item.Type == MediaStreamType.Subtitle)
             {
                 item.LocalizedUndefined = _localization.GetLocalizedString("Undefined");
                 item.LocalizedDefault = _localization.GetLocalizedString("Default");
                 item.LocalizedForced = _localization.GetLocalizedString("Forced");
                 item.LocalizedExternal = _localization.GetLocalizedString("External");
+                item.LocalizedHearingImpaired = _localization.GetLocalizedString("Hearing Impaired");
             }
 
             return item;

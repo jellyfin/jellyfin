@@ -83,6 +83,19 @@ namespace Jellyfin.Model.Tests.Entities
                 });
 
             data.Add(
+                "Title - EN - Hearing Impaired - Default - Forced - SRT",
+                new MediaStream
+                {
+                    Type = MediaStreamType.Subtitle,
+                    Title = "Title",
+                    Language = "EN",
+                    IsForced = true,
+                    IsDefault = true,
+                    IsHearingImpaired = true,
+                    Codec = "SRT"
+                });
+
+            data.Add(
                 "Title - AAC - Default - External",
                 new MediaStream
                 {

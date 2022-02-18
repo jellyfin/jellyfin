@@ -718,6 +718,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.LocalizedDefault = _localization.GetLocalizedString("Default");
                 stream.LocalizedForced = _localization.GetLocalizedString("Forced");
                 stream.LocalizedExternal = _localization.GetLocalizedString("External");
+                stream.LocalizedHearingImpaired = _localization.GetLocalizedString("Hearing Impaired");
 
                 if (string.IsNullOrEmpty(stream.Title))
                 {
@@ -916,6 +917,11 @@ namespace MediaBrowser.MediaEncoding.Probing
                 if (disposition.GetValueOrDefault("forced") == 1)
                 {
                     stream.IsForced = true;
+                }
+
+                if (disposition.GetValueOrDefault("hearing_impaired") == 1)
+                {
+                    stream.IsHearingImpaired = true;
                 }
             }
 
