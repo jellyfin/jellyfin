@@ -39,7 +39,7 @@ namespace Emby.Server.Implementations.LiveTv
     /// <summary>
     /// Class LiveTvManager.
     /// </summary>
-    public class LiveTvManager : ILiveTvManager, IDisposable
+    public class LiveTvManager : ILiveTvManager
     {
         private const int MaxGuideDays = 14;
         private const string ExternalServiceTag = "ExternalServiceId";
@@ -62,8 +62,6 @@ namespace Emby.Server.Implementations.LiveTv
         private ILiveTvService[] _services = Array.Empty<ILiveTvService>();
         private ITunerHost[] _tunerHosts = Array.Empty<ITunerHost>();
         private IListingsProvider[] _listingProviders = Array.Empty<IListingsProvider>();
-
-        private bool _disposed = false;
 
         public LiveTvManager(
             IServerConfigurationManager config,
@@ -2090,36 +2088,6 @@ namespace Emby.Server.Implementations.LiveTv
                 StartDate = startDate,
                 EndDate = endDate
             };
-        }
-
-        /// <inheritdoc />
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            if (dispose)
-            {
-                // TODO: Dispose stuff
-            }
-
-            _services = null;
-            _listingProviders = null;
-            _tunerHosts = null;
-
-            _disposed = true;
         }
 
         private LiveTvServiceInfo[] GetServiceInfos()

@@ -151,11 +151,6 @@ namespace MediaBrowser.Controller.Library
         /// <returns>Task.</returns>
         Task ValidateMediaLibrary(IProgress<double> progress, CancellationToken cancellationToken);
 
-        /// <summary>
-        /// Queues the library scan.
-        /// </summary>
-        void QueueLibraryScan();
-
         Task UpdateImagesAsync(BaseItem item, bool forceUpdate = false);
 
         /// <summary>
@@ -180,12 +175,6 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{System.String}.</returns>
         Task<IEnumerable<Video>> GetIntros(BaseItem item, User user);
-
-        /// <summary>
-        /// Gets all intro files.
-        /// </summary>
-        /// <returns>IEnumerable{System.String}.</returns>
-        IEnumerable<string> GetAllIntroFiles();
 
         /// <summary>
         /// Adds the parts.
@@ -508,15 +497,6 @@ namespace MediaBrowser.Controller.Library
         string GetPathAfterNetworkSubstitution(string path, BaseItem ownerItem = null);
 
         /// <summary>
-        /// Substitutes the path.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="from">From.</param>
-        /// <param name="to">To.</param>
-        /// <returns>System.String.</returns>
-        string SubstitutePath(string path, string from, string to);
-
-        /// <summary>
         /// Converts the image to local.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -587,14 +567,7 @@ namespace MediaBrowser.Controller.Library
 
         int GetCount(InternalItemsQuery query);
 
-        void AddExternalSubtitleStreams(
-            List<MediaStream> streams,
-            string videoPath,
-            string[] files);
-
         Task RunMetadataSavers(BaseItem item, ItemUpdateType updateReason);
-
-        BaseItem GetParentItem(string parentId, Guid? userId);
 
         BaseItem GetParentItem(Guid? parentId, Guid? userId);
     }
