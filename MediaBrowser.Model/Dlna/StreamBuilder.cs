@@ -749,13 +749,20 @@ namespace MediaBrowser.Model.Dlna
                 transcodingProfiles = transcodingProfiles.ToLookup(transcodingProfile =>
                 {
                     var videoCodecs = ContainerProfile.SplitValue(transcodingProfile.VideoCodec);
-                    var match = ContainerProfile.ContainsContainer(videoCodecs, item.VideoStream.Codec) &&
-                        options.Profile.CodecProfiles
-                        .Any(i => i.Type == CodecType.Video &&
-                            i.ContainsAnyCodec(transcodingProfile.VideoCodec, transcodingProfile.Container) &&
-                            i.ApplyConditions.Any(applyCondition => !ConditionProcessor.IsVideoConditionSatisfied(applyCondition, videoStream?.Width, videoStream?.Height, videoStream?.BitDepth, videoStream?.BitRate, videoStream?.Profile, videoStream?.Level, videoFramerate,  videoStream?.PacketLength, timestamp, videoStream?.IsAnamorphic, videoStream?.IsInterlaced, videoStream?.RefFrames, numVideoStreams, numAudioStreams, videoStream?.CodecTag, videoStream?.IsAVC)));
 
-                    return match ? 1 : 2;
+                    if (ContainerProfile.ContainsContainer(videoCodecs, item.VideoStream.Codec)) {
+                        var videoCodec = transcodingProfile.VideoCodec;
+                        var container = transcodingProfile.Container;
+                        var appliedVideoConditions = options.Profile.CodecProfiles
+                            .Where(i => i.Type == CodecType.Video &&
+                                i.ContainsAnyCodec(videoCodec, container))
+                            .Select(i =>
+                                i.ApplyConditions.Any(applyCondition => ConditionProcessor.IsVideoConditionSatisfied(applyCondition, videoStream?.Width, videoStream?.Height, videoStream?.BitDepth, videoStream?.BitRate, videoStream?.Profile, videoStream?.Level, videoFramerate, videoStream?.PacketLength, timestamp, videoStream?.IsAnamorphic, videoStream?.IsInterlaced, videoStream?.RefFrames, numVideoStreams, numAudioStreams, videoStream?.CodecTag, videoStream?.IsAVC)));
+                        var conditionsSatisfied = !appliedVideoConditions.Any() || !appliedVideoConditions.Any(satisfied => !satisfied);
+                        return conditionsSatisfied ? 1 : 2;
+                    }
+
+                    return 3;
                 })
                 .OrderBy(lookup => lookup.Key)
                 .SelectMany(lookup => lookup);
