@@ -170,7 +170,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            return externalPathInfos.AsReadOnly();
+            return externalPathInfos;
         }
 
         /// <summary>
