@@ -45,6 +45,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IChapterManager _chapterManager;
         private readonly ILibraryManager _libraryManager;
         private readonly AudioResolver _audioResolver;
+        private readonly SubtitleResolver _subtitleResolver;
         private readonly IMediaSourceManager _mediaSourceManager;
 
         private readonly long _dummyChapterDuration = TimeSpan.FromMinutes(5).Ticks;
@@ -61,9 +62,11 @@ namespace MediaBrowser.Providers.MediaInfo
             ISubtitleManager subtitleManager,
             IChapterManager chapterManager,
             ILibraryManager libraryManager,
-            AudioResolver audioResolver)
+            AudioResolver audioResolver,
+            SubtitleResolver subtitleResolver)
         {
             _logger = logger;
+            _mediaSourceManager = mediaSourceManager;
             _mediaEncoder = mediaEncoder;
             _itemRepo = itemRepo;
             _blurayExaminer = blurayExaminer;
@@ -74,7 +77,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _chapterManager = chapterManager;
             _libraryManager = libraryManager;
             _audioResolver = audioResolver;
-            _mediaSourceManager = mediaSourceManager;
+            _subtitleResolver = subtitleResolver;
         }
 
         public async Task<ItemUpdateType> ProbeVideo<T>(
@@ -215,7 +218,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 chapters = Array.Empty<ChapterInfo>();
             }
 
-            await AddExternalSubtitles(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
+            await AddExternalSubtitlesAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
 
             await AddExternalAudioAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
 
@@ -526,16 +529,14 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="options">The refreshOptions.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task AddExternalSubtitles(
+        private async Task AddExternalSubtitlesAsync(
             Video video,
             List<MediaStream> currentStreams,
             MetadataRefreshOptions options,
             CancellationToken cancellationToken)
         {
-            var subtitleResolver = new SubtitleResolver(_localization);
-
             var startIndex = currentStreams.Count == 0 ? 0 : (currentStreams.Select(i => i.Index).Max() + 1);
-            var externalSubtitleStreams = subtitleResolver.GetExternalSubtitleStreams(video, startIndex, options.DirectoryService, false);
+            var externalSubtitleStreams = await _subtitleResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, false, cancellationToken);
 
             var enableSubtitleDownloading = options.MetadataRefreshMode == MetadataRefreshMode.Default ||
                                             options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
@@ -589,7 +590,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 // Rescan
                 if (downloadedLanguages.Count > 0)
                 {
-                    externalSubtitleStreams = subtitleResolver.GetExternalSubtitleStreams(video, startIndex, options.DirectoryService, true);
+                    externalSubtitleStreams = await _subtitleResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, true, cancellationToken);
                 }
             }
 
@@ -612,12 +613,9 @@ namespace MediaBrowser.Providers.MediaInfo
             CancellationToken cancellationToken)
         {
             var startIndex = currentStreams.Count == 0 ? 0 : currentStreams.Max(i => i.Index) + 1;
-            var externalAudioStreams = _audioResolver.GetExternalAudioStreams(video, startIndex, options.DirectoryService, false, cancellationToken);
+            var externalAudioStreams = await _audioResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, false, cancellationToken).ConfigureAwait(false);
 
-            await foreach (MediaStream externalAudioStream in externalAudioStreams)
-            {
-                currentStreams.Add(externalAudioStream);
-            }
+            currentStreams = currentStreams.Concat(externalAudioStreams).ToList();
 
             // Select all external audio file paths
             video.AudioFiles = currentStreams.Where(i => i.Type == MediaStreamType.Audio && i.IsExternal).Select(i => i.Path).Distinct().ToArray();
