@@ -113,7 +113,7 @@ public class MediaInfoResolverTests
     [InlineData("My.Video.mp3")]
     [InlineData("My.Video.png")]
     [InlineData("My.Video.txt")]
-    // [InlineData("My.Video Sequel.srt")]
+    [InlineData("My.Video Sequel.srt")]
     [InlineData("Some.Other.Video.srt")]
     public void GetExternalFiles_FuzzyMatching_RejectsNonMatches(string file)
     {
