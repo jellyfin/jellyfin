@@ -102,7 +102,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (mediaInfo.MediaStreams.Count == 1)
                 {
-                    MediaStream mediaStream = mediaInfo.MediaStreams.First();
+                    MediaStream mediaStream = mediaInfo.MediaStreams[0];
                     mediaStream.Index = startIndex++;
                     mediaStream.IsDefault = pathInfo.IsDefault || mediaStream.IsDefault;
                     mediaStream.IsForced = pathInfo.IsForced || mediaStream.IsForced;
