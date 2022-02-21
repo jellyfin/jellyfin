@@ -1677,8 +1677,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // Source and target codecs must match
-            if (string.IsNullOrEmpty(videoStream.Codec) || (state.SupportedVideoCodecs.Any()
-                && !state.SupportedVideoCodecs.Contains(videoStream.Codec, StringComparison.OrdinalIgnoreCase)))
+            if (string.IsNullOrEmpty(videoStream.Codec)
+                || (state.SupportedVideoCodecs.Length != 0
+                    && !state.SupportedVideoCodecs.Contains(videoStream.Codec, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }
