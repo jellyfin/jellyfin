@@ -750,7 +750,8 @@ namespace MediaBrowser.Model.Dlna
                 {
                     var videoCodecs = ContainerProfile.SplitValue(transcodingProfile.VideoCodec);
 
-                    if (ContainerProfile.ContainsContainer(videoCodecs, item.VideoStream.Codec)) {
+                    if (ContainerProfile.ContainsContainer(videoCodecs, item.VideoStream.Codec))
+                    {
                         var videoCodec = transcodingProfile.VideoCodec;
                         var container = transcodingProfile.Container;
                         var appliedVideoConditions = options.Profile.CodecProfiles
