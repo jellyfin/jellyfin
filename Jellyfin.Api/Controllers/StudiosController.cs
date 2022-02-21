@@ -91,7 +91,9 @@ namespace Jellyfin.Api.Controllers
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
-            User? user = userId.HasValue && userId != Guid.Empty ? _userManager.GetUserById(userId.Value) : null;
+            User? user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
 
             var parentItem = _libraryManager.GetParentItem(parentId, userId);
 
@@ -141,7 +143,7 @@ namespace Jellyfin.Api.Controllers
             var dtoOptions = new DtoOptions().AddClientFields(Request);
 
             var item = _libraryManager.GetStudio(name);
-            if (userId.HasValue && !userId.Equals(Guid.Empty))
+            if (userId.HasValue && !userId.Equals(default))
             {
                 var user = _userManager.GetUserById(userId.Value);
 

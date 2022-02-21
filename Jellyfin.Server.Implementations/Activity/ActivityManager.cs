@@ -56,7 +56,7 @@ namespace Jellyfin.Server.Implementations.Activity
 
             if (query.HasUserId.HasValue)
             {
-                entries = entries.Where(entry => entry.UserId != Guid.Empty == query.HasUserId.Value );
+                entries = entries.Where(entry => (!entry.UserId.Equals(default)) == query.HasUserId.Value);
             }
 
             return new QueryResult<ActivityLogEntry>(

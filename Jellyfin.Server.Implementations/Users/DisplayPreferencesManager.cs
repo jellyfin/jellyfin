@@ -32,7 +32,7 @@ namespace Jellyfin.Server.Implementations.Users
             var prefs = _dbContext.DisplayPreferences
                 .Include(pref => pref.HomeSections)
                 .FirstOrDefault(pref =>
-                    pref.UserId == userId && string.Equals(pref.Client, client) && pref.ItemId == itemId);
+                    pref.UserId.Equals(userId) && string.Equals(pref.Client, client) && pref.ItemId.Equals(itemId));
 
             if (prefs == null)
             {
@@ -47,7 +47,7 @@ namespace Jellyfin.Server.Implementations.Users
         public ItemDisplayPreferences GetItemDisplayPreferences(Guid userId, Guid itemId, string client)
         {
             var prefs = _dbContext.ItemDisplayPreferences
-                .FirstOrDefault(pref => pref.UserId == userId && pref.ItemId == itemId && string.Equals(pref.Client, client));
+                .FirstOrDefault(pref => pref.UserId.Equals(userId) && pref.ItemId.Equals(itemId) && string.Equals(pref.Client, client));
 
             if (prefs == null)
             {
@@ -63,7 +63,7 @@ namespace Jellyfin.Server.Implementations.Users
         {
             return _dbContext.ItemDisplayPreferences
                 .AsQueryable()
-                .Where(prefs => prefs.UserId == userId && prefs.ItemId != Guid.Empty && string.Equals(prefs.Client, client))
+                .Where(prefs => prefs.UserId.Equals(userId) && !prefs.ItemId.Equals(default) && string.Equals(prefs.Client, client))
                 .ToList();
         }
 
@@ -72,8 +72,8 @@ namespace Jellyfin.Server.Implementations.Users
         {
             return _dbContext.CustomItemDisplayPreferences
                 .AsQueryable()
-                .Where(prefs => prefs.UserId == userId
-                                && prefs.ItemId == itemId
+                .Where(prefs => prefs.UserId.Equals(userId)
+                                && prefs.ItemId.Equals(itemId)
                                 && string.Equals(prefs.Client, client))
                 .ToDictionary(prefs => prefs.Key, prefs => prefs.Value);
         }
@@ -83,8 +83,8 @@ namespace Jellyfin.Server.Implementations.Users
         {
             var existingPrefs = _dbContext.CustomItemDisplayPreferences
                 .AsQueryable()
-                .Where(prefs => prefs.UserId == userId
-                                && prefs.ItemId == itemId
+                .Where(prefs => prefs.UserId.Equals(userId)
+                                && prefs.ItemId.Equals(itemId)
                                 && string.Equals(prefs.Client, client));
             _dbContext.CustomItemDisplayPreferences.RemoveRange(existingPrefs);
 

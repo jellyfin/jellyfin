@@ -174,7 +174,7 @@ namespace Emby.Dlna.PlayTo
                 await _sessionManager.OnPlaybackStart(newItemProgress).ConfigureAwait(false);
 
                 // Send a message to the DLNA device to notify what is the next track in the playlist.
-                var currentItemIndex = _playlist.FindIndex(item => item.StreamInfo.ItemId == streamInfo.ItemId);
+                var currentItemIndex = _playlist.FindIndex(item => item.StreamInfo.ItemId.Equals(streamInfo.ItemId));
                 if (currentItemIndex >= 0)
                 {
                     _currentPlaylistIndex = currentItemIndex;
@@ -349,7 +349,9 @@ namespace Emby.Dlna.PlayTo
         {
             _logger.LogDebug("{0} - Received PlayRequest: {1}", _session.DeviceName, command.PlayCommand);
 
-            var user = command.ControllingUserId.Equals(Guid.Empty) ? null : _userManager.GetUserById(command.ControllingUserId);
+            var user = command.ControllingUserId.Equals(default)
+                ? null :
+                _userManager.GetUserById(command.ControllingUserId);
 
             var items = new List<BaseItem>();
             foreach (var id in command.ItemIds)
@@ -392,7 +394,7 @@ namespace Emby.Dlna.PlayTo
                 _playlist.AddRange(playlist);
             }
 
-            if (!command.ControllingUserId.Equals(Guid.Empty))
+            if (!command.ControllingUserId.Equals(default))
             {
                 _sessionManager.LogSessionActivity(
                     _session.Client,
@@ -446,7 +448,9 @@ namespace Emby.Dlna.PlayTo
 
                 if (info.Item != null && !EnableClientSideSeek(info))
                 {
-                    var user = !_session.UserId.Equals(Guid.Empty) ? _userManager.GetUserById(_session.UserId) : null;
+                    var user = _session.UserId.Equals(default)
+                        ? null
+                        : _userManager.GetUserById(_session.UserId);
                     var newItem = CreatePlaylistItem(info.Item, user, newPosition, info.MediaSourceId, info.AudioStreamIndex, info.SubtitleStreamIndex);
 
                     await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl, CancellationToken.None).ConfigureAwait(false);
@@ -764,7 +768,9 @@ namespace Emby.Dlna.PlayTo
                 {
                     var newPosition = GetProgressPositionTicks(info) ?? 0;
 
-                    var user = !_session.UserId.Equals(Guid.Empty) ? _userManager.GetUserById(_session.UserId) : null;
+                    var user = _session.UserId.Equals(default)
+                        ? null
+                        : _userManager.GetUserById(_session.UserId);
                     var newItem = CreatePlaylistItem(info.Item, user, newPosition, info.MediaSourceId, newIndex, info.SubtitleStreamIndex);
 
                     await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl, CancellationToken.None).ConfigureAwait(false);
@@ -793,7 +799,9 @@ namespace Emby.Dlna.PlayTo
                 {
                     var newPosition = GetProgressPositionTicks(info) ?? 0;
 
-                    var user = !_session.UserId.Equals(Guid.Empty) ? _userManager.GetUserById(_session.UserId) : null;
+                    var user = _session.UserId.Equals(default)
+                        ? null
+                        : _userManager.GetUserById(_session.UserId);
                     var newItem = CreatePlaylistItem(info.Item, user, newPosition, info.MediaSourceId, info.AudioStreamIndex, newIndex);
 
                     await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl, CancellationToken.None).ConfigureAwait(false);
@@ -949,7 +957,7 @@ namespace Emby.Dlna.PlayTo
                     }
                 }
 
-                return Guid.Empty;
+                return default;
             }
 
             public static StreamParams ParseFromUrl(string url, ILibraryManager libraryManager, IMediaSourceManager mediaSourceManager)
@@ -964,7 +972,7 @@ namespace Emby.Dlna.PlayTo
                     ItemId = GetItemId(url)
                 };
 
-                if (request.ItemId.Equals(Guid.Empty))
+                if (request.ItemId.Equals(default))
                 {
                     return request;
                 }

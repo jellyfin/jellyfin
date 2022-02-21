@@ -553,7 +553,7 @@ namespace Emby.Server.Implementations.SyncPlay
             if (playingItemRemoved)
             {
                 var itemId = PlayQueue.GetPlayingItemId();
-                if (!itemId.Equals(Guid.Empty))
+                if (!itemId.Equals(default))
                 {
                     var item = _libraryManager.GetItemById(itemId);
                     RunTimeTicks = item.RunTimeTicks ?? 0;

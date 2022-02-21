@@ -80,7 +80,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     return Guid.Empty;
                 }
-            }).Where(i => !i.Equals(Guid.Empty)).ToArray();
+            }).Where(i => !i.Equals(default)).ToArray();
 
             return GetInstantMixFromGenreIds(genreIds, user, dtoOptions);
         }

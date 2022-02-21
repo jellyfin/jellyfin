@@ -2024,7 +2024,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                         await writer.WriteElementStringAsync(null, "genre", null, genre).ConfigureAwait(false);
                     }
 
-                    var people = item.Id.Equals(Guid.Empty) ? new List<PersonInfo>() : _libraryManager.GetPeople(item);
+                    var people = item.Id.Equals(default) ? new List<PersonInfo>() : _libraryManager.GetPeople(item);
 
                     var directors = people
                         .Where(i => IsPersonType(i, PersonType.Director))
@@ -2382,7 +2382,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             string channelId = seriesTimer.RecordAnyChannel ? null : seriesTimer.ChannelId;
 
-            if (string.IsNullOrWhiteSpace(channelId) && !parent.ChannelId.Equals(Guid.Empty))
+            if (string.IsNullOrWhiteSpace(channelId) && !parent.ChannelId.Equals(default))
             {
                 if (!tempChannelCache.TryGetValue(parent.ChannelId, out LiveTvChannel channel))
                 {
@@ -2441,7 +2441,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             string channelId = null;
 
-            if (!programInfo.ChannelId.Equals(Guid.Empty))
+            if (!programInfo.ChannelId.Equals(default))
             {
                 if (!tempChannelCache.TryGetValue(programInfo.ChannelId, out LiveTvChannel channel))
                 {

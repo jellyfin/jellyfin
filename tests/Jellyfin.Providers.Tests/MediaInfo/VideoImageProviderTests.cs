@@ -116,9 +116,9 @@ namespace Jellyfin.Providers.Tests.MediaInfo
             }
 
             var mediaSourceManager = new Mock<IMediaSourceManager>(MockBehavior.Strict);
-            mediaSourceManager.Setup(i => i.GetMediaStreams(It.Is<MediaStreamQuery>(q => q.ItemId == item.Id && q.Index == item.DefaultVideoStreamIndex)))
+            mediaSourceManager.Setup(i => i.GetMediaStreams(It.Is<MediaStreamQuery>(q => q.ItemId.Equals(item.Id) && q.Index == item.DefaultVideoStreamIndex)))
                 .Returns(defaultStreamList);
-            mediaSourceManager.Setup(i => i.GetMediaStreams(It.Is<MediaStreamQuery>(q => q.ItemId == item.Id && q.Type == MediaStreamType.Video)))
+            mediaSourceManager.Setup(i => i.GetMediaStreams(It.Is<MediaStreamQuery>(q => q.ItemId.Equals(item.Id) && q.Type == MediaStreamType.Video)))
                 .Returns(mediaStreams);
             return mediaSourceManager.Object;
         }

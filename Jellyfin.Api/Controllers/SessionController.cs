@@ -74,7 +74,7 @@ namespace Jellyfin.Api.Controllers
                 result = result.Where(i => string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase));
             }
 
-            if (controllableByUserId.HasValue && !controllableByUserId.Equals(Guid.Empty))
+            if (controllableByUserId.HasValue && !controllableByUserId.Equals(default))
             {
                 result = result.Where(i => i.SupportsRemoteControl);
 
@@ -82,12 +82,12 @@ namespace Jellyfin.Api.Controllers
 
                 if (!user.HasPermission(PermissionKind.EnableRemoteControlOfOtherUsers))
                 {
-                    result = result.Where(i => i.UserId.Equals(Guid.Empty) || i.ContainsUser(controllableByUserId.Value));
+                    result = result.Where(i => i.UserId.Equals(default) || i.ContainsUser(controllableByUserId.Value));
                 }
 
                 if (!user.HasPermission(PermissionKind.EnableSharedDeviceControl))
                 {
-                    result = result.Where(i => !i.UserId.Equals(Guid.Empty));
+                    result = result.Where(i => !i.UserId.Equals(default));
                 }
 
                 if (activeWithinSeconds.HasValue && activeWithinSeconds.Value > 0)

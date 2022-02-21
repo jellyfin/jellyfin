@@ -139,7 +139,9 @@ namespace Emby.Server.Implementations.Playlists
                     {
                         new Share
                         {
-                            UserId = options.UserId.Equals(Guid.Empty) ? null : options.UserId.ToString("N", CultureInfo.InvariantCulture),
+                            UserId = options.UserId.Equals(default)
+                                ? null
+                                : options.UserId.ToString("N", CultureInfo.InvariantCulture),
                             CanEdit = true
                         }
                     }
@@ -188,7 +190,7 @@ namespace Emby.Server.Implementations.Playlists
 
         public Task AddToPlaylistAsync(Guid playlistId, IReadOnlyCollection<Guid> itemIds, Guid userId)
         {
-            var user = userId.Equals(Guid.Empty) ? null : _userManager.GetUserById(userId);
+            var user = userId.Equals(default) ? null : _userManager.GetUserById(userId);
 
             return AddToPlaylistInternal(playlistId, itemIds, user, new DtoOptions(false)
             {

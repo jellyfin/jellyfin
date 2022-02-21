@@ -47,7 +47,9 @@ namespace Emby.Server.Implementations.HttpServer.Security
         {
             var session = await GetSession(requestContext).ConfigureAwait(false);
 
-            return session.UserId.Equals(Guid.Empty) ? null : _userManager.GetUserById(session.UserId);
+            return session.UserId.Equals(default)
+                ? null
+                : _userManager.GetUserById(session.UserId);
         }
 
         public Task<User?> GetUser(object requestContext)

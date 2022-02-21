@@ -142,7 +142,7 @@ namespace Emby.Server.Implementations.Library
 
                     if (index == -1
                         && i is UserView view
-                        && view.DisplayParentId != Guid.Empty)
+                        && !view.DisplayParentId.Equals(default))
                     {
                         index = Array.IndexOf(orders, view.DisplayParentId);
                     }
@@ -214,7 +214,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 else
                 {
-                    var current = list.FirstOrDefault(i => i.Item1 != null && i.Item1.Id == container.Id);
+                    var current = list.FirstOrDefault(i => i.Item1 != null && i.Item1.Id.Equals(container.Id));
 
                     if (current != null)
                     {
@@ -244,7 +244,7 @@ namespace Emby.Server.Implementations.Library
 
             var parents = new List<BaseItem>();
 
-            if (!parentId.Equals(Guid.Empty))
+            if (!parentId.Equals(default))
             {
                 var parentItem = _libraryManager.GetItemById(parentId);
                 if (parentItem is Channel)

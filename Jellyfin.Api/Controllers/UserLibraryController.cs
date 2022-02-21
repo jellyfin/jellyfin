@@ -76,7 +76,7 @@ namespace Jellyfin.Api.Controllers
         {
             var user = _userManager.GetUserById(userId);
 
-            var item = itemId.Equals(Guid.Empty)
+            var item = itemId.Equals(default)
                 ? _libraryManager.GetUserRootFolder()
                 : _libraryManager.GetItemById(itemId);
 
@@ -116,7 +116,7 @@ namespace Jellyfin.Api.Controllers
         {
             var user = _userManager.GetUserById(userId);
 
-            var item = itemId.Equals(Guid.Empty)
+            var item = itemId.Equals(default)
                 ? _libraryManager.GetUserRootFolder()
                 : _libraryManager.GetItemById(itemId);
 
@@ -197,7 +197,7 @@ namespace Jellyfin.Api.Controllers
         {
             var user = _userManager.GetUserById(userId);
 
-            var item = itemId.Equals(Guid.Empty)
+            var item = itemId.Equals(default)
                 ? _libraryManager.GetUserRootFolder()
                 : _libraryManager.GetItemById(itemId);
 
@@ -227,7 +227,7 @@ namespace Jellyfin.Api.Controllers
         {
             var user = _userManager.GetUserById(userId);
 
-            var item = itemId.Equals(Guid.Empty)
+            var item = itemId.Equals(default)
                 ? _libraryManager.GetUserRootFolder()
                 : _libraryManager.GetItemById(itemId);
 
@@ -347,7 +347,7 @@ namespace Jellyfin.Api.Controllers
         {
             var user = _userManager.GetUserById(userId);
 
-            var item = itemId.Equals(Guid.Empty) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(itemId);
+            var item = itemId.Equals(default) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(itemId);
 
             // Get the user data for this item
             var data = _userDataRepository.GetUserData(user, item);
@@ -370,7 +370,7 @@ namespace Jellyfin.Api.Controllers
         {
             var user = _userManager.GetUserById(userId);
 
-            var item = itemId.Equals(Guid.Empty) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(itemId);
+            var item = itemId.Equals(default) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(itemId);
 
             // Get the user data for this item
             var data = _userDataRepository.GetUserData(user, item);

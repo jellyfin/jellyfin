@@ -82,12 +82,9 @@ namespace Jellyfin.Api.Controllers
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
-            User? user = null;
-
-            if (userId.HasValue && !userId.Equals(Guid.Empty))
-            {
-                user = _userManager.GetUserById(userId.Value);
-            }
+            User? user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
 
             var isFavoriteInFilters = filters.Any(f => f == ItemFilter.IsFavorite);
             var peopleItems = _libraryManager.GetPeopleItems(new InternalPeopleQuery(
@@ -127,7 +124,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            if (userId.HasValue && !userId.Equals(Guid.Empty))
+            if (userId.HasValue && !userId.Value.Equals(default))
             {
                 var user = _userManager.GetUserById(userId.Value);
                 return _dtoService.GetBaseItemDto(item, dtoOptions, user);

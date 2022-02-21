@@ -412,7 +412,7 @@ namespace MediaBrowser.Providers.Manager
             }
 
             // If this restriction is ever lifted, movie xml providers will have to be updated to prevent owned items like trailers from reading those files
-            if (!item.OwnerId.Equals(Guid.Empty))
+            if (!item.OwnerId.Equals(default))
             {
                 if (provider is ILocalMetadataProvider || provider is IRemoteMetadataProvider)
                 {
@@ -781,7 +781,7 @@ namespace MediaBrowser.Providers.Manager
         {
             BaseItem referenceItem = null;
 
-            if (!searchInfo.ItemId.Equals(Guid.Empty))
+            if (!searchInfo.ItemId.Equals(default))
             {
                 referenceItem = _libraryManager.GetItemById(searchInfo.ItemId);
             }

@@ -30,7 +30,7 @@ namespace Emby.Server.Implementations.Library
         public QueryResult<SearchHintInfo> GetSearchHints(SearchQuery query)
         {
             User user = null;
-            if (query.UserId != Guid.Empty)
+            if (!query.UserId.Equals(default))
             {
                 user = _userManager.GetUserById(query.UserId);
             }
@@ -168,10 +168,10 @@ namespace Emby.Server.Implementations.Library
                 {
                     Fields = new ItemFields[]
                     {
-                         ItemFields.AirTime,
-                         ItemFields.DateCreated,
-                         ItemFields.ChannelInfo,
-                         ItemFields.ParentId
+                        ItemFields.AirTime,
+                        ItemFields.DateCreated,
+                        ItemFields.ChannelInfo,
+                        ItemFields.ParentId
                     }
                 }
             };
@@ -180,12 +180,12 @@ namespace Emby.Server.Implementations.Library
 
             if (searchQuery.IncludeItemTypes.Length == 1 && searchQuery.IncludeItemTypes[0] == BaseItemKind.MusicArtist)
             {
-                if (!searchQuery.ParentId.Equals(Guid.Empty))
+                if (!searchQuery.ParentId.Equals(default))
                 {
                     searchQuery.AncestorIds = new[] { searchQuery.ParentId };
+                    searchQuery.ParentId = Guid.Empty;
                 }
 
-                searchQuery.ParentId = Guid.Empty;
                 searchQuery.IncludeItemsByName = true;
                 searchQuery.IncludeItemTypes = Array.Empty<BaseItemKind>();
                 mediaItems = _libraryManager.GetAllArtists(searchQuery).Items.Select(i => i.Item).ToList();

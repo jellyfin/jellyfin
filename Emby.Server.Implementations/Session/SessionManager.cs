@@ -373,7 +373,7 @@ namespace Emby.Server.Implementations.Session
                 info.MediaSourceId = info.ItemId.ToString("N", CultureInfo.InvariantCulture);
             }
 
-            if (!info.ItemId.Equals(Guid.Empty) && info.Item == null && libraryItem != null)
+            if (!info.ItemId.Equals(default) && info.Item == null && libraryItem != null)
             {
                 var current = session.NowPlayingItem;
 
@@ -553,21 +553,23 @@ namespace Emby.Server.Implementations.Session
         {
             var users = new List<User>();
 
-            if (session.UserId != Guid.Empty)
+            if (session.UserId.Equals(default))
             {
-                var user = _userManager.GetUserById(session.UserId);
-
-                if (user == null)
-                {
-                    throw new InvalidOperationException("User not found");
-                }
-
-                users.Add(user);
-
-                users.AddRange(session.AdditionalUsers
-                    .Select(i => _userManager.GetUserById(i.UserId))
-                    .Where(i => i != null));
+                return users;
             }
+
+            var user = _userManager.GetUserById(session.UserId);
+
+            if (user == null)
+            {
+                throw new InvalidOperationException("User not found");
+            }
+
+            users.Add(user);
+
+            users.AddRange(session.AdditionalUsers
+                .Select(i => _userManager.GetUserById(i.UserId))
+                .Where(i => i != null));
 
             return users;
         }
@@ -660,7 +662,7 @@ namespace Emby.Server.Implementations.Session
 
             var session = GetSession(info.SessionId);
 
-            var libraryItem = info.ItemId == Guid.Empty
+            var libraryItem = info.ItemId.Equals(default)
                 ? null
                 : GetNowPlayingItem(session, info.ItemId);
 
@@ -755,7 +757,7 @@ namespace Emby.Server.Implementations.Session
 
             var session = GetSession(info.SessionId);
 
-            var libraryItem = info.ItemId.Equals(Guid.Empty)
+            var libraryItem = info.ItemId.Equals(default)
                 ? null
                 : GetNowPlayingItem(session, info.ItemId);
 
@@ -892,7 +894,7 @@ namespace Emby.Server.Implementations.Session
 
             session.StopAutomaticProgress();
 
-            var libraryItem = info.ItemId.Equals(Guid.Empty)
+            var libraryItem = info.ItemId.Equals(default)
                 ? null
                 : GetNowPlayingItem(session, info.ItemId);
 
@@ -902,7 +904,7 @@ namespace Emby.Server.Implementations.Session
                 info.MediaSourceId = info.ItemId.ToString("N", CultureInfo.InvariantCulture);
             }
 
-            if (!info.ItemId.Equals(Guid.Empty) && info.Item == null && libraryItem != null)
+            if (!info.ItemId.Equals(default) && info.Item == null && libraryItem != null)
             {
                 var current = session.NowPlayingItem;
 
@@ -1122,7 +1124,7 @@ namespace Emby.Server.Implementations.Session
 
             var session = GetSessionToRemoteControl(sessionId);
 
-            var user = session.UserId == Guid.Empty ? null : _userManager.GetUserById(session.UserId);
+            var user = session.UserId.Equals(default) ? null : _userManager.GetUserById(session.UserId);
 
             List<BaseItem> items;
 
@@ -1177,7 +1179,7 @@ namespace Emby.Server.Implementations.Session
                                 EnableImages = false
                             })
                         .Where(i => !i.IsVirtualItem)
-                        .SkipWhile(i => i.Id != episode.Id)
+                        .SkipWhile(i => !i.Id.Equals(episode.Id))
                         .ToList();
 
                     if (episodes.Count > 0)
@@ -1191,7 +1193,7 @@ namespace Emby.Server.Implementations.Session
             {
                 var controllingSession = GetSession(controllingSessionId);
                 AssertCanControl(session, controllingSession);
-                if (!controllingSession.UserId.Equals(Guid.Empty))
+                if (!controllingSession.UserId.Equals(default))
                 {
                     command.ControllingUserId = controllingSession.UserId;
                 }
@@ -1310,7 +1312,7 @@ namespace Emby.Server.Implementations.Session
             {
                 var controllingSession = GetSession(controllingSessionId);
                 AssertCanControl(session, controllingSession);
-                if (!controllingSession.UserId.Equals(Guid.Empty))
+                if (!controllingSession.UserId.Equals(default))
                 {
                     command.ControllingUserId = controllingSession.UserId.ToString("N", CultureInfo.InvariantCulture);
                 }
@@ -1383,12 +1385,12 @@ namespace Emby.Server.Implementations.Session
 
             var session = GetSession(sessionId);
 
-            if (session.UserId == userId)
+            if (session.UserId.Equals(userId))
             {
                 throw new ArgumentException("The requested user is already the primary user of the session.");
             }
 
-            if (session.AdditionalUsers.All(i => i.UserId != userId))
+            if (session.AdditionalUsers.All(i => !i.UserId.Equals(userId)))
             {
                 var user = _userManager.GetUserById(userId);
 
@@ -1458,7 +1460,7 @@ namespace Emby.Server.Implementations.Session
             CheckDisposed();
 
             User user = null;
-            if (request.UserId != Guid.Empty)
+            if (!request.UserId.Equals(default))
             {
                 user = _userManager.GetUserById(request.UserId);
             }
@@ -1787,7 +1789,7 @@ namespace Emby.Server.Implementations.Session
                 throw new ArgumentNullException(nameof(info));
             }
 
-            var user = info.UserId == Guid.Empty
+            var user = info.UserId.Equals(default)
                 ? null
                 : _userManager.GetUserById(info.UserId);
 

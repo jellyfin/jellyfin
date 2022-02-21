@@ -126,7 +126,7 @@ namespace Jellyfin.Api.Controllers
             User? user = null;
             BaseItem parentItem = _libraryManager.GetParentItem(parentId, userId);
 
-            if (userId.HasValue && !userId.Equals(Guid.Empty))
+            if (userId.HasValue && !userId.Equals(default))
             {
                 user = _userManager.GetUserById(userId.Value);
             }
@@ -329,7 +329,7 @@ namespace Jellyfin.Api.Controllers
             User? user = null;
             BaseItem parentItem = _libraryManager.GetParentItem(parentId, userId);
 
-            if (userId.HasValue && !userId.Equals(Guid.Empty))
+            if (userId.HasValue && !userId.Equals(default))
             {
                 user = _userManager.GetUserById(userId.Value);
             }
@@ -467,7 +467,7 @@ namespace Jellyfin.Api.Controllers
 
             var item = _libraryManager.GetArtist(name, dtoOptions);
 
-            if (userId.HasValue && !userId.Equals(Guid.Empty))
+            if (userId.HasValue && !userId.Value.Equals(default))
             {
                 var user = _userManager.GetUserById(userId.Value);
 

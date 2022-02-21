@@ -181,7 +181,9 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            var user = !userId.Equals(Guid.Empty) ? _userManager.GetUserById(userId) : null;
+            var user = userId.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId);
 
             var items = playlist.GetManageableItems().ToArray();
 

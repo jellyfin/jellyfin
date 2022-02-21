@@ -102,7 +102,7 @@ namespace Jellyfin.Api.Helpers
             };
 
             var auth = await authorizationContext.GetAuthorizationInfo(httpRequest).ConfigureAwait(false);
-            if (!auth.UserId.Equals(Guid.Empty))
+            if (!auth.UserId.Equals(default))
             {
                 state.User = userManager.GetUserById(auth.UserId);
             }
@@ -151,7 +151,7 @@ namespace Jellyfin.Api.Helpers
                         ? mediaSources[0]
                         : mediaSources.Find(i => string.Equals(i.Id, streamingRequest.MediaSourceId, StringComparison.Ordinal));
 
-                    if (mediaSource == null && Guid.Parse(streamingRequest.MediaSourceId) == streamingRequest.Id)
+                    if (mediaSource == null && Guid.Parse(streamingRequest.MediaSourceId).Equals(streamingRequest.Id))
                     {
                         mediaSource = mediaSources[0];
                     }
