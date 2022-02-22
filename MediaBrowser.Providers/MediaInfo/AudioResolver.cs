@@ -12,7 +12,7 @@ namespace MediaBrowser.Providers.MediaInfo
     public class AudioResolver : MediaInfoResolver
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="MediaInfoResolver"/> class for external audio file processing.
+        /// Initializes a new instance of the <see cref="AudioResolver"/> class for external audio file processing.
         /// </summary>
         /// <param name="localizationManager">The localization manager.</param>
         /// <param name="mediaEncoder">The media encoder.</param>

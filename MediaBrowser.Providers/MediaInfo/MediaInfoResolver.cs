@@ -44,6 +44,11 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IMediaEncoder _mediaEncoder;
 
         /// <summary>
+        /// The <see cref="NamingOptions"/> instance.
+        /// </summary>
+        private readonly NamingOptions _namingOptions;
+
+        /// <summary>
         /// The <see cref="DlnaProfileType"/> of the files this resolver should resolve.
         /// </summary>
         private readonly DlnaProfileType _type;
@@ -62,6 +67,7 @@ namespace MediaBrowser.Providers.MediaInfo
             DlnaProfileType type)
         {
             _mediaEncoder = mediaEncoder;
+            _namingOptions = namingOptions;
             _type = type;
             _externalPathParser = new ExternalPathParser(namingOptions, localizationManager, _type);
         }
@@ -102,7 +108,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (mediaInfo.MediaStreams.Count == 1)
                 {
-                    MediaStream mediaStream = mediaInfo.MediaStreams.First();
+                    MediaStream mediaStream = mediaInfo.MediaStreams[0];
                     mediaStream.Index = startIndex++;
                     mediaStream.IsDefault = pathInfo.IsDefault || mediaStream.IsDefault;
                     mediaStream.IsForced = pathInfo.IsForced || mediaStream.IsForced;
@@ -159,9 +165,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
             foreach (var file in files)
             {
-                if (_compareInfo.IsPrefix(Path.GetFileNameWithoutExtension(file), video.FileNameWithoutExtension, CompareOptions, out int matchLength))
+                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file);
+                if (_compareInfo.IsPrefix(fileNameWithoutExtension, video.FileNameWithoutExtension, CompareOptions, out int matchLength)
+                    && (fileNameWithoutExtension.Length == matchLength || _namingOptions.MediaFlagDelimiters.Contains(fileNameWithoutExtension[matchLength].ToString())))
                 {
-                    var externalPathInfo = _externalPathParser.ParseFile(file, Path.GetFileNameWithoutExtension(file)[matchLength..]);
+                    var externalPathInfo = _externalPathParser.ParseFile(file, fileNameWithoutExtension[matchLength..]);
 
                     if (externalPathInfo != null)
                     {
