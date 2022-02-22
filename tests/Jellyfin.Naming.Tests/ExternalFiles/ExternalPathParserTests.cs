@@ -29,41 +29,54 @@ public class ExternalPathParserTests
     }
 
     [Theory]
-    [InlineData("", false)]
-    [InlineData("MyVideo.srt", false)]
-    [InlineData("MyVideo.mka", true)]
-    public void ParseFile_AudioFile_ReturnsPathWhenAudio(string path, bool valid)
+    [InlineData("")]
+    [InlineData("MyVideo.ass")]
+    [InlineData("MyVideo.mks")]
+    [InlineData("MyVideo.sami")]
+    [InlineData("MyVideo.srt")]
+    [InlineData("MyVideo.m4v")]
+    public void ParseFile_AudioExtensionsNotMatched_ReturnsNull(string path)
     {
-        var actual = _audioPathParser.ParseFile(path, string.Empty);
-
-        if (valid)
-        {
-            Assert.NotNull(actual);
-            Assert.Equal(path, actual!.Path);
-        }
-        else
-        {
-            Assert.Null(actual);
-        }
+        Assert.Null(_audioPathParser.ParseFile(path, string.Empty));
     }
 
     [Theory]
-    [InlineData("", false)]
-    [InlineData("MyVideo.srt", true)]
-    [InlineData("MyVideo.mka", false)]
-    public void ParseFile_SubtitleFile_ReturnsPathWhenSubtitle(string path, bool valid)
+    [InlineData("MyVideo.aa")]
+    [InlineData("MyVideo.aac")]
+    [InlineData("MyVideo.flac")]
+    [InlineData("MyVideo.m4a")]
+    [InlineData("MyVideo.mka")]
+    [InlineData("MyVideo.mp3")]
+    public void ParseFile_AudioExtensionsMatched_ReturnsPath(string path)
+    {
+        var actual = _audioPathParser.ParseFile(path, string.Empty);
+        Assert.NotNull(actual);
+        Assert.Equal(path, actual!.Path);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("MyVideo.aa")]
+    [InlineData("MyVideo.aac")]
+    [InlineData("MyVideo.flac")]
+    [InlineData("MyVideo.mka")]
+    [InlineData("MyVideo.m4v")]
+    public void ParseFile_SubtitleExtensionsNotMatched_ReturnsNull(string path)
+    {
+        Assert.Null(_subtitlePathParser.ParseFile(path, string.Empty));
+    }
+
+    [Theory]
+    [InlineData("MyVideo.ass")]
+    [InlineData("MyVideo.mks")]
+    [InlineData("MyVideo.sami")]
+    [InlineData("MyVideo.srt")]
+    [InlineData("MyVideo.vtt")]
+    public void ParseFile_SubtitleExtensionsMatched_ReturnsPath(string path)
     {
         var actual = _subtitlePathParser.ParseFile(path, string.Empty);
-
-        if (valid)
-        {
-            Assert.NotNull(actual);
-            Assert.Equal(path, actual!.Path);
-        }
-        else
-        {
-            Assert.Null(actual);
-        }
+        Assert.NotNull(actual);
+        Assert.Equal(path, actual!.Path);
     }
 
     [Theory]
