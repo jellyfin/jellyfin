@@ -1281,11 +1281,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 param += " -low_power 1";
             }
 
-            if (string.Equals(videoEncoder, "h264_v4l2m2m", StringComparison.OrdinalIgnoreCase))
-            {
-                param += " -pix_fmt yuv420p";
-            }
-
             var isVc1 = string.Equals(state.VideoStream?.Codec, "vc1", StringComparison.OrdinalIgnoreCase);
             var isLibX265 = string.Equals(videoEncoder, "libx265", StringComparison.OrdinalIgnoreCase);
 
@@ -2695,6 +2690,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var vidDecoder = GetHardwareVideoDecoder(state, options) ?? string.Empty;
             var isSwDecoder = string.IsNullOrEmpty(vidDecoder);
             var isVaapiEncoder = vidEncoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase);
+            var isV4l2Encoder = vidEncoder.Contains("h264_v4l2m2m", StringComparison.OrdinalIgnoreCase);
 
             var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
             var doDeintHevc = state.DeInterlace("h265", true) || state.DeInterlace("hevc", true);
@@ -2722,6 +2718,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (isVaapiEncoder)
             {
                 outFormat = "nv12";
+            }
+            else if (isV4l2Encoder)
+            {
+                outFormat = "yuv420p";
             }
 
             // sw scale
