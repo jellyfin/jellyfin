@@ -134,7 +134,7 @@ namespace MediaBrowser.Controller.LiveTv
             {
                 Id = Id.ToString("N", CultureInfo.InvariantCulture),
                 Protocol = PathProtocol ?? MediaProtocol.File,
-                MediaStreams = new List<MediaStream>(),
+                MediaStreams = Array.Empty<MediaStream>(),
                 Name = Name,
                 Path = Path,
                 RunTimeTicks = RunTimeTicks,

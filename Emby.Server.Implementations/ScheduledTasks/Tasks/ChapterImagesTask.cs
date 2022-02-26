@@ -88,13 +88,8 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             };
         }
 
-        /// <summary>
-        /// Returns the task to be executed.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
+        /// <inheritdoc />
+        public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
         {
             var videos = _libraryManager.GetItemList(new InternalItemsQuery
             {

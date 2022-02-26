@@ -24,11 +24,5 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{System.String}.</returns>
         Task<IEnumerable<IntroInfo>> GetIntros(BaseItem item, Jellyfin.Data.Entities.User user);
-
-        /// <summary>
-        /// Gets all intro files.
-        /// </summary>
-        /// <returns>IEnumerable{System.String}.</returns>
-        IEnumerable<string> GetAllIntroFiles();
     }
 }

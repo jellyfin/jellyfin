@@ -1,4 +1,4 @@
-﻿using Emby.Naming.Common;
+using Emby.Naming.Common;
 using Emby.Server.Implementations.Library.Resolvers.TV;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -21,7 +22,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         {
             var parent = new Folder { Name = "extras" };
 
-            var episodeResolver = new EpisodeResolver(_namingOptions);
+            var episodeResolver = new EpisodeResolver(Mock.Of<ILogger<EpisodeResolver>>(), _namingOptions);
             var itemResolveArgs = new ItemResolveArgs(
                 Mock.Of<IServerApplicationPaths>(),
                 Mock.Of<IDirectoryService>())
@@ -44,7 +45,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library
 
             // Have to create a mock because of moq proxies not being castable to a concrete implementation
             // https://github.com/jellyfin/jellyfin/blob/ab0cff8556403e123642dc9717ba778329554634/Emby.Server.Implementations/Library/Resolvers/BaseVideoResolver.cs#L48
-            var episodeResolver = new EpisodeResolverMock(_namingOptions);
+            var episodeResolver = new EpisodeResolverMock(Mock.Of<ILogger<EpisodeResolver>>(), _namingOptions);
             var itemResolveArgs = new ItemResolveArgs(
                 Mock.Of<IServerApplicationPaths>(),
                 Mock.Of<IDirectoryService>())
@@ -61,7 +62,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library
 
         private class EpisodeResolverMock : EpisodeResolver
         {
-            public EpisodeResolverMock(NamingOptions namingOptions) : base(namingOptions)
+            public EpisodeResolverMock(ILogger<EpisodeResolver> logger, NamingOptions namingOptions) : base(logger, namingOptions)
             {
             }
 

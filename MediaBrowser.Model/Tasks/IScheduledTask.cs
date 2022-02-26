@@ -36,10 +36,10 @@ namespace MediaBrowser.Model.Tasks
         /// <summary>
         /// Executes the task.
         /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task Execute(CancellationToken cancellationToken, IProgress<double> progress);
+        Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the default triggers that define when the task will run.

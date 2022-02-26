@@ -199,6 +199,6 @@ namespace MediaBrowser.Model.IO
 
         void SetAttributes(string path, bool isHidden, bool readOnly);
 
-        List<FileSystemMetadata> GetDrives();
+        IEnumerable<FileSystemMetadata> GetDrives();
     }
 }

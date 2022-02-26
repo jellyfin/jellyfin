@@ -5,7 +5,7 @@ using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using ConfigurationExtensions = MediaBrowser.Controller.Extensions.ConfigurationExtensions;
+using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 
 namespace Jellyfin.Server.Middleware
 {
@@ -65,7 +65,7 @@ namespace Jellyfin.Server.Middleware
                 {
                     // Always redirect back to the default path if the base prefix is invalid, missing, or is the full path.
                     _logger.LogDebug("Normalizing an URL at {LocalPath}", localPath);
-                    httpContext.Response.Redirect(baseUrlPrefix + "/" + _configuration[ConfigurationExtensions.DefaultRedirectKey]);
+                    httpContext.Response.Redirect(baseUrlPrefix + "/" + _configuration[DefaultRedirectKey]);
                     return;
                 }
             }
@@ -74,7 +74,7 @@ namespace Jellyfin.Server.Middleware
             {
                 // Always redirect back to the default path if root is requested.
                 _logger.LogDebug("Normalizing an URL at {LocalPath}", localPath);
-                httpContext.Response.Redirect("/" + _configuration[ConfigurationExtensions.DefaultRedirectKey]);
+                httpContext.Response.Redirect("/" + _configuration[DefaultRedirectKey]);
                 return;
             }
 

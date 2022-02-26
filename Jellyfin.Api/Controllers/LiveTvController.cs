@@ -193,11 +193,10 @@ namespace Jellyfin.Api.Controllers
             dtoOptions.AddCurrentProgram = addCurrentProgram;
 
             var returnArray = _dtoService.GetBaseItemDtos(channelResult.Items, dtoOptions, user);
-            return new QueryResult<BaseItemDto>
-            {
-                Items = returnArray,
-                TotalRecordCount = channelResult.TotalRecordCount
-            };
+            return new QueryResult<BaseItemDto>(
+                startIndex,
+                channelResult.TotalRecordCount,
+                returnArray);
         }
 
         /// <summary>
@@ -390,11 +389,7 @@ namespace Jellyfin.Api.Controllers
 
             var returnArray = _dtoService.GetBaseItemDtos(folders, new DtoOptions(), user);
 
-            return new QueryResult<BaseItemDto>
-            {
-                Items = returnArray,
-                TotalRecordCount = returnArray.Count
-            };
+            return new QueryResult<BaseItemDto>(returnArray);
         }
 
         /// <summary>
@@ -687,7 +682,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Programs/Recommended")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<QueryResult<BaseItemDto>> GetRecommendedPrograms(
+        public async Task<ActionResult<QueryResult<BaseItemDto>>> GetRecommendedPrograms(
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
             [FromQuery] bool? isAiring,
@@ -726,7 +721,7 @@ namespace Jellyfin.Api.Controllers
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
-            return _liveTvManager.GetRecommendedPrograms(query, dtoOptions, CancellationToken.None);
+            return await _liveTvManager.GetRecommendedProgramsAsync(query, dtoOptions, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>

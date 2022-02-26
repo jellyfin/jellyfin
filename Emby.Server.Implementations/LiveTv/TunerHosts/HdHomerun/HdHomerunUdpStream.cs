@@ -133,7 +133,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
             }
 
-            var taskCompletionSource = new TaskCompletionSource<bool>();
+            var taskCompletionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             _ = StartStreaming(
                 udpClient,
@@ -186,7 +186,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             var resolved = false;
 
-            using (var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.Read))
+            var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.Read);
+            await using (fileStream.ConfigureAwait(false))
             {
                 while (true)
                 {

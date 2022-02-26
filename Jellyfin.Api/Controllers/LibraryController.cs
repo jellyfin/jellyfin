@@ -506,13 +506,8 @@ namespace Jellyfin.Api.Controllers
             }
 
             var dtoOptions = new DtoOptions().AddClientFields(Request);
-            var result = new QueryResult<BaseItemDto>
-            {
-                TotalRecordCount = items.Count,
-                Items = items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions)).ToArray()
-            };
-
-            return result;
+            var resultArray = _dtoService.GetBaseItemDtos(items, dtoOptions);
+            return new QueryResult<BaseItemDto>(resultArray);
         }
 
         /// <summary>
@@ -759,11 +754,10 @@ namespace Jellyfin.Api.Controllers
 
             var returnList = _dtoService.GetBaseItemDtos(itemsResult, dtoOptions, user);
 
-            return new QueryResult<BaseItemDto>
-            {
-                Items = returnList,
-                TotalRecordCount = itemsResult.Count
-            };
+            return new QueryResult<BaseItemDto>(
+                query.StartIndex,
+                itemsResult.Count,
+                returnList);
         }
 
         /// <summary>

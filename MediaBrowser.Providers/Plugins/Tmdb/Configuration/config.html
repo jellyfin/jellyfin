@@ -37,6 +37,9 @@
                             <select is="emby-select" id="selectBackdropSize" label="Backdrop"></select>
                         </div>
                         <div class="selectContainer">
+                            <select is="emby-select" id="selectLogoSize" label="Logo"></select>
+                        </div>
+                        <div class="selectContainer">
                             <select is="emby-select" id="selectProfileSize" label="Profile"></select>
                         </div>
                         <div class="selectContainer">
@@ -75,6 +78,10 @@
                         var selBackdropSize = document.querySelector('#selectBackdropSize');
                         selBackdropSize.innerHTML = clientConfig.BackdropSizes.map(sizeOptionsGenerator);
                         selBackdropSize.value = pluginConfig.BackdropSize;
+
+                        var selLogoSize = document.querySelector('#selectLogoSize');
+                        selLogoSize.innerHTML = clientConfig.LogoSizes.map(sizeOptionsGenerator);
+                        selLogoSize.value = pluginConfig.LogoSize;
 
                         var selProfileSize = document.querySelector('#selectProfileSize');
                         selProfileSize.innerHTML = clientConfig.ProfileSizes.map(sizeOptionsGenerator);
@@ -129,6 +136,7 @@
                         config.MaxCastMembers = document.querySelector('#maxCastMembers').value;
                         config.PosterSize = document.querySelector('#selectPosterSize').value;
                         config.BackdropSize = document.querySelector('#selectBackdropSize').value;
+                        config.LogoSize = document.querySelector('#selectLogoSize').value;
                         config.ProfileSize = document.querySelector('#selectProfileSize').value;
                         config.StillSize = document.querySelector('#selectStillSize').value;
                         ApiClient.updatePluginConfiguration(PluginConfig.pluginId, config).then(Dashboard.processPluginConfigurationUpdateResult);

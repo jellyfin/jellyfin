@@ -248,8 +248,11 @@ namespace MediaBrowser.Providers.Subtitles
                     var fileOptions = AsyncFile.WriteOptions;
                     fileOptions.Mode = FileMode.CreateNew;
                     fileOptions.PreallocationSize = stream.Length;
-                    using var fs = new FileStream(savePath, fileOptions);
-                    await stream.CopyToAsync(fs).ConfigureAwait(false);
+                    var fs = new FileStream(savePath, fileOptions);
+                    await using (fs.ConfigureAwait(false))
+                    {
+                        await stream.CopyToAsync(fs).ConfigureAwait(false);
+                    }
 
                     return;
                 }

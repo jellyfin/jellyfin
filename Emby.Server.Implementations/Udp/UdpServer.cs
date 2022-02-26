@@ -9,6 +9,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Model.ApiClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 
 namespace Emby.Server.Implementations.Udp
 {
@@ -17,11 +18,6 @@ namespace Emby.Server.Implementations.Udp
     /// </summary>
     public sealed class UdpServer : IDisposable
     {
-        /// <summary>
-        /// Address Override Configuration Key.
-        /// </summary>
-        public const string AddressOverrideConfigKey = "PublishedServerUrl";
-
         /// <summary>
         /// The _logger.
         /// </summary>
@@ -60,7 +56,7 @@ namespace Emby.Server.Implementations.Udp
 
         private async Task RespondToV2Message(EndPoint endpoint, CancellationToken cancellationToken)
         {
-            string? localUrl = _config[AddressOverrideConfigKey];
+            string? localUrl = _config[AddressOverrideKey];
             if (string.IsNullOrEmpty(localUrl))
             {
                 localUrl = _appHost.GetSmartApiUrl(((IPEndPoint)endpoint).Address);
@@ -68,7 +64,7 @@ namespace Emby.Server.Implementations.Udp
 
             if (string.IsNullOrEmpty(localUrl))
             {
-                _logger.LogWarning("Unable to respond to udp request because the local ip address could not be determined.");
+                _logger.LogWarning("Unable to respond to server discovery request because the local ip address could not be determined.");
                 return;
             }
 

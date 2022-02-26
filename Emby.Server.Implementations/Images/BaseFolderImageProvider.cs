@@ -22,7 +22,7 @@ namespace Emby.Server.Implementations.Images
     {
         private readonly ILibraryManager _libraryManager;
 
-        public BaseFolderImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor, ILibraryManager libraryManager)
+        protected BaseFolderImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor, ILibraryManager libraryManager)
             : base(fileSystem, providerManager, applicationPaths, imageProcessor)
         {
             _libraryManager = libraryManager;

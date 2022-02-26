@@ -42,7 +42,7 @@ namespace Rssdp.Infrastructure
         /// Raised for when
         /// <list type="bullet">
         /// <item>An 'alive' notification is received that a device, regardless of whether or not that device is not already in the cache or has previously raised this event.</item>
-        /// <item>For each item found during a device <see cref="SearchAsync()"/> (cached or not), allowing clients to respond to found devices before the entire search is complete.</item>
+        /// <item>For each item found during a device <see cref="SearchAsync(System.Threading.CancellationToken)"/> (cached or not), allowing clients to respond to found devices before the entire search is complete.</item>
         /// <item>Only if the notification type matches the <see cref="NotificationFilter"/> property. By default the filter is null, meaning all notifications raise events (regardless of ant </item>
         /// </list>
         /// <para>This event may be raised from a background thread, if interacting with UI or other objects with specific thread affinity invoking to the relevant thread is required.</para>

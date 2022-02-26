@@ -42,6 +42,10 @@ namespace Emby.Server.Implementations.Images
             {
                 includeItemTypes = new[] { BaseItemKind.MusicAlbum };
             }
+            else if (string.Equals(viewType, CollectionType.MusicVideos, StringComparison.Ordinal))
+            {
+                includeItemTypes = new[] { BaseItemKind.MusicVideo };
+            }
             else if (string.Equals(viewType, CollectionType.Books, StringComparison.Ordinal))
             {
                 includeItemTypes = new[] { BaseItemKind.Book, BaseItemKind.AudioBook };

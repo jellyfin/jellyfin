@@ -778,7 +778,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 case "thumb":
                     {
-                        FetchThumbNode(reader, itemResult);
+                        FetchThumbNode(reader, itemResult, "thumb");
                         break;
                     }
 
@@ -796,7 +796,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             break;
                         }
 
-                        FetchThumbNode(subtree, itemResult);
+                        FetchThumbNode(subtree, itemResult, "fanart");
                         break;
                     }
 
@@ -819,16 +819,21 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             }
         }
 
-        private void FetchThumbNode(XmlReader reader, MetadataResult<T> itemResult)
+        private void FetchThumbNode(XmlReader reader, MetadataResult<T> itemResult, string parentNode)
         {
             var artType = reader.GetAttribute("aspect");
             var val = reader.ReadElementContentAsString();
 
             // artType is null if the thumb node is a child of the fanart tag
             // -> set image type to fanart
-            if (string.IsNullOrWhiteSpace(artType))
+            if (string.IsNullOrWhiteSpace(artType) && parentNode.Equals("fanart", StringComparison.Ordinal))
             {
                 artType = "fanart";
+            }
+            else if (string.IsNullOrWhiteSpace(artType))
+            {
+                // Sonarr writes thumb tags for posters without aspect property
+                artType = "poster";
             }
 
             // skip:

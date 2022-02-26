@@ -8,10 +8,11 @@ namespace Emby.Server.Implementations.ScheduledTasks.Triggers
     /// <summary>
     /// Represents a task trigger that fires everyday.
     /// </summary>
-    public sealed class DailyTrigger : ITaskTrigger
+    public sealed class DailyTrigger : ITaskTrigger, IDisposable
     {
         private readonly TimeSpan _timeOfDay;
         private Timer? _timer;
+        private bool _disposed = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DailyTrigger"/> class.
@@ -71,6 +72,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Triggers
         private void DisposeTimer()
         {
             _timer?.Dispose();
+            _timer = null;
         }
 
         /// <summary>
@@ -79,6 +81,19 @@ namespace Emby.Server.Implementations.ScheduledTasks.Triggers
         private void OnTriggered()
         {
             Triggered?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            DisposeTimer();
+
+            _disposed = true;
         }
     }
 }

@@ -45,8 +45,8 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Tasks;
-using MediaBrowser.Providers.MediaInfo;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using EpisodeInfo = Emby.Naming.TV.EpisodeInfo;
@@ -100,7 +100,7 @@ namespace Emby.Server.Implementations.Library
         /// Initializes a new instance of the <see cref="LibraryManager" /> class.
         /// </summary>
         /// <param name="appHost">The application host.</param>
-        /// <param name="logger">The logger.</param>
+        /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="taskManager">The task manager.</param>
         /// <param name="userManager">The user manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
@@ -116,7 +116,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="namingOptions">The naming options.</param>
         public LibraryManager(
             IServerApplicationHost appHost,
-            ILogger<LibraryManager> logger,
+            ILoggerFactory loggerFactory,
             ITaskManager taskManager,
             IUserManager userManager,
             IServerConfigurationManager configurationManager,
@@ -132,7 +132,7 @@ namespace Emby.Server.Implementations.Library
             NamingOptions namingOptions)
         {
             _appHost = appHost;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<LibraryManager>();
             _taskManager = taskManager;
             _userManager = userManager;
             _configurationManager = configurationManager;
@@ -147,7 +147,7 @@ namespace Emby.Server.Implementations.Library
             _memoryCache = memoryCache;
             _namingOptions = namingOptions;
 
-            _extraResolver = new ExtraResolver(namingOptions);
+            _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions);
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
 
@@ -680,9 +680,7 @@ namespace Emby.Server.Implementations.Library
 
                     if (result?.Items.Count > 0)
                     {
-                        var items = new List<BaseItem>();
-                        items.AddRange(result.Items);
-
+                        var items = result.Items;
                         foreach (var item in items)
                         {
                             ResolverHelper.SetInitialItemValues(item, parent, this, directoryService);
@@ -1007,14 +1005,8 @@ namespace Emby.Server.Implementations.Library
             return GetNewItemIdInternal(path, typeof(T), forceCaseInsensitiveId);
         }
 
-        /// <summary>
-        /// Validate and refresh the People sub-set of the IBN.
-        /// The items are stored in the db but not loaded into memory until actually requested by an operation.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        public Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress)
+        /// <inheritdoc />
+        public Task ValidatePeopleAsync(IProgress<double> progress, CancellationToken cancellationToken)
         {
             // Ensure the location is available.
             Directory.CreateDirectory(_configurationManager.ApplicationPaths.PeoplePath);
@@ -1034,15 +1026,6 @@ namespace Emby.Server.Implementations.Library
             _taskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
 
             return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Queues the library scan.
-        /// </summary>
-        public void QueueLibraryScan()
-        {
-            // Just run the scheduled task so that the user can see it
-            _taskManager.QueueScheduledTask<RefreshMediaLibraryTask>();
         }
 
         /// <summary>
@@ -1360,10 +1343,10 @@ namespace Emby.Server.Implementations.Library
                 return _itemRepository.GetItems(query);
             }
 
-            return new QueryResult<BaseItem>
-            {
-                Items = _itemRepository.GetItemList(query)
-            };
+            return new QueryResult<BaseItem>(
+                query.StartIndex,
+                null,
+                _itemRepository.GetItemList(query));
         }
 
         public List<Guid> GetItemIds(InternalItemsQuery query)
@@ -1493,10 +1476,10 @@ namespace Emby.Server.Implementations.Library
                 return _itemRepository.GetItems(query);
             }
 
-            return new QueryResult<BaseItem>
-            {
-                Items = _itemRepository.GetItemList(query)
-            };
+            return new QueryResult<BaseItem>(
+                query.StartIndex,
+                null,
+                _itemRepository.GetItemList(query));
         }
 
         private void SetTopParentIdsOrAncestors(InternalItemsQuery query, List<BaseItem> parents)
@@ -1648,27 +1631,6 @@ namespace Emby.Server.Implementations.Library
 
                 return new List<IntroInfo>();
             }
-        }
-
-        /// <summary>
-        /// Gets all intro files.
-        /// </summary>
-        /// <returns>IEnumerable{System.String}.</returns>
-        public IEnumerable<string> GetAllIntroFiles()
-        {
-            return IntroProviders.SelectMany(i =>
-            {
-                try
-                {
-                    return i.GetAllIntroFiles().ToList();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error getting intro files");
-
-                    return new List<string>();
-                }
-            });
         }
 
         /// <summary>
@@ -2014,16 +1976,16 @@ namespace Emby.Server.Implementations.Library
         public Task UpdateItemAsync(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
             => UpdateItemsAsync(new[] { item }, parent, updateReason, cancellationToken);
 
-        public Task RunMetadataSavers(BaseItem item, ItemUpdateType updateReason)
+        public async Task RunMetadataSavers(BaseItem item, ItemUpdateType updateReason)
         {
             if (item.IsFileProtocol)
             {
-                ProviderManager.SaveMetadata(item, updateReason);
+                await ProviderManager.SaveMetadataAsync(item, updateReason).ConfigureAwait(false);
             }
 
             item.DateLastSaved = DateTime.UtcNow;
 
-            return UpdateImagesAsync(item, updateReason >= ItemUpdateType.ImageUpdate);
+            await UpdateImagesAsync(item, updateReason >= ItemUpdateType.ImageUpdate).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -2469,24 +2431,6 @@ namespace Emby.Server.Implementations.Library
             return item;
         }
 
-        public void AddExternalSubtitleStreams(
-            List<MediaStream> streams,
-            string videoPath,
-            string[] files)
-        {
-            new SubtitleResolver(BaseItem.LocalizationManager).AddExternalSubtitleStreams(streams, videoPath, streams.Count, files);
-        }
-
-        public BaseItem GetParentItem(string parentId, Guid? userId)
-        {
-            if (string.IsNullOrEmpty(parentId))
-            {
-                return GetParentItem((Guid?)null, userId);
-            }
-
-            return GetParentItem(new Guid(parentId), userId);
-        }
-
         public BaseItem GetParentItem(Guid? parentId, Guid? userId)
         {
             if (parentId.HasValue)
@@ -2494,7 +2438,7 @@ namespace Emby.Server.Implementations.Library
                 return GetItemById(parentId.Value);
             }
 
-            if (userId.HasValue && userId != Guid.Empty)
+            if (userId.HasValue && !userId.Equals(default))
             {
                 return GetUserRootFolder();
             }
@@ -2686,7 +2630,7 @@ namespace Emby.Server.Implementations.Library
             };
         }
 
-        public IEnumerable<BaseItem> FindExtras(BaseItem owner, List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
+        public IEnumerable<BaseItem> FindExtras(BaseItem owner, IReadOnlyList<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
             var ownerVideoInfo = VideoResolver.Resolve(owner.Path, owner.IsFolder, _namingOptions);
             if (ownerVideoInfo == null)
@@ -2779,16 +2723,6 @@ namespace Emby.Server.Implementations.Library
                 {
                     return newPath;
                 }
-            }
-
-            return path;
-        }
-
-        public string SubstitutePath(string path, string from, string to)
-        {
-            if (path.TryReplaceSubPath(from, to, out var newPath))
-            {
-                return newPath;
             }
 
             return path;

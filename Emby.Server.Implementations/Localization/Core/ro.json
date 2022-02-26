@@ -117,5 +117,7 @@
     "TaskCleanActivityLog": "Curăță Jurnalul de Activitate",
     "Undefined": "Nedefinit",
     "Forced": "Forțat",
-    "Default": "Implicit"
+    "Default": "Implicit",
+    "TaskOptimizeDatabaseDescription": "Compactează baza de date și trunchiază spațiul liber. Rularea acestei sarcini după scanarea bibliotecii sau după efectuarea altor modificări care implică modificări ale bazei de date poate îmbunătăți performanța.",
+    "TaskOptimizeDatabase": "Optimizează baza de date"
 }

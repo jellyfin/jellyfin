@@ -79,19 +79,14 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             };
         }
 
-        /// <summary>
-        /// Returns the task to be executed.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="progress">The progress.</param>
-        /// <returns>Task.</returns>
-        public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
+        /// <inheritdoc />
+        public Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
         {
             var minDateModified = DateTime.UtcNow.AddDays(-30);
 
             try
             {
-                DeleteCacheFilesFromDirectory(cancellationToken, _applicationPaths.CachePath, minDateModified, progress);
+                DeleteCacheFilesFromDirectory(_applicationPaths.CachePath, minDateModified, progress, cancellationToken);
             }
             catch (DirectoryNotFoundException)
             {
@@ -104,7 +99,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 
             try
             {
-                DeleteCacheFilesFromDirectory(cancellationToken, _applicationPaths.TempDirectory, minDateModified, progress);
+                DeleteCacheFilesFromDirectory(_applicationPaths.TempDirectory, minDateModified, progress, cancellationToken);
             }
             catch (DirectoryNotFoundException)
             {
@@ -117,11 +112,11 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// <summary>
         /// Deletes the cache files from directory with a last write time less than a given date.
         /// </summary>
-        /// <param name="cancellationToken">The task cancellation token.</param>
         /// <param name="directory">The directory.</param>
         /// <param name="minDateModified">The min date modified.</param>
         /// <param name="progress">The progress.</param>
-        private void DeleteCacheFilesFromDirectory(CancellationToken cancellationToken, string directory, DateTime minDateModified, IProgress<double> progress)
+        /// <param name="cancellationToken">The task cancellation token.</param>
+        private void DeleteCacheFilesFromDirectory(string directory, DateTime minDateModified, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var filesToDelete = _fileSystem.GetFiles(directory, true)
                 .Where(f => _fileSystem.GetLastWriteTimeUtc(f) < minDateModified)

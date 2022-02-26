@@ -17,6 +17,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Resolvers.Movies
 {
@@ -32,7 +33,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 CollectionType.Movies,
                 CollectionType.HomeVideos,
                 CollectionType.MusicVideos,
-                CollectionType.Movies,
+                CollectionType.TvShows,
                 CollectionType.Photos
         };
 
@@ -40,9 +41,10 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         /// Initializes a new instance of the <see cref="MovieResolver"/> class.
         /// </summary>
         /// <param name="imageProcessor">The image processor.</param>
+        /// <param name="logger">The logger.</param>
         /// <param name="namingOptions">The naming options.</param>
-        public MovieResolver(IImageProcessor imageProcessor, NamingOptions namingOptions)
-            : base(namingOptions)
+        public MovieResolver(IImageProcessor imageProcessor, ILogger<MovieResolver> logger, NamingOptions namingOptions)
+            : base(logger, namingOptions)
         {
             _imageProcessor = imageProcessor;
         }
@@ -128,10 +130,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 return movie?.ExtraType == null ? movie : null;
             }
 
-            // Owned items will be caught by the video extra resolver
             if (args.Parent == null)
             {
-                return null;
+                return base.Resolve(args);
             }
 
             if (IsInvalid(args.Parent, collectionType))
@@ -220,6 +221,11 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             if (string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase))
             {
                 return ResolveVideos<Movie>(parent, files, true, collectionType, true);
+            }
+
+            if (string.Equals(collectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
+            {
+                return ResolveVideos<Episode>(parent, files, true, collectionType, true);
             }
 
             return null;

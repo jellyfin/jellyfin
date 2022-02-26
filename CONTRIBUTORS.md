@@ -151,6 +151,7 @@
  - [peterspenler](https://github.com/peterspenler)
  - [MBR-0001](https://github.com/MBR-0001)
  - [jonas-resch](https://github.com/jonas-resch)
+ - [vgambier](https://github.com/vgambier)
 
 # Emby Contributors
 
@@ -217,3 +218,4 @@
  - [olsh](https://github.com/olsh)
  - [lbenini](https://github.com/lbenini)
  - [gnuyent](https://github.com/gnuyent)
+ - [Matthew Jones](https://github.com/matthew-jones-uk)

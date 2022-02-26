@@ -44,9 +44,9 @@ using Emby.Server.Implementations.Serialization;
 using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
-using Emby.Server.Implementations.Udp;
 using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
+using Jellyfin.MediaEncoding.Hls.Playlist;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
 using MediaBrowser.Common;
@@ -103,6 +103,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prometheus.DotNetRuntime;
+using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 using WebSocketManager = Emby.Server.Implementations.HttpServer.WebSocketManager;
 
 namespace Emby.Server.Implementations
@@ -149,7 +150,7 @@ namespace Emby.Server.Implementations
         /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
         /// <param name="options">Instance of the <see cref="IStartupOptions"/> interface.</param>
         /// <param name="startupConfig">The <see cref="IConfiguration" /> interface.</param>
-        public ApplicationHost(
+        protected ApplicationHost(
             IServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
             IStartupOptions options,
@@ -182,6 +183,11 @@ namespace Emby.Server.Implementations
         /// Occurs when [has pending restart changed].
         /// </summary>
         public event EventHandler HasPendingRestartChanged;
+
+        /// <summary>
+        /// Gets the value of the PublishedServerUrl setting.
+        /// </summary>
+        private string PublishedServerUrl => _startupConfig[AddressOverrideKey];
 
         /// <summary>
         /// Gets a value indicating whether this instance can self restart.
@@ -258,11 +264,6 @@ namespace Emby.Server.Implementations
         /// Gets the https port for the webhost.
         /// </summary>
         public int HttpsPort { get; private set; }
-
-        /// <summary>
-        /// Gets the value of the PublishedServerUrl setting.
-        /// </summary>
-        public string PublishedServerUrl => _startupOptions.PublishedServerUrl ?? _startupConfig[UdpServer.AddressOverrideConfigKey];
 
         /// <inheritdoc />
         public Version ApplicationVersion { get; }
@@ -998,6 +999,9 @@ namespace Emby.Server.Implementations
 
             // Network
             yield return typeof(NetworkManager).Assembly;
+
+            // Hls
+            yield return typeof(DynamicHlsPlaylistGenerator).Assembly;
 
             foreach (var i in GetAssembliesWithPartsInternal())
             {

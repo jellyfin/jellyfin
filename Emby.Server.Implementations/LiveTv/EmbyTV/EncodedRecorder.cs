@@ -24,18 +24,19 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
-    public class EncodedRecorder : IRecorder
+    public class EncodedRecorder : IRecorder, IDisposable
     {
         private readonly ILogger _logger;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IServerApplicationPaths _appPaths;
-        private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
+        private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private bool _hasExited;
         private Stream _logFileStream;
         private string _targetPath;
         private Process _process;
+        private bool _disposed = false;
 
         public EncodedRecorder(
             ILogger logger,
@@ -322,6 +323,36 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 _logger.LogError(ex, "Error reading ffmpeg recording log");
             }
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and optionally managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _logFileStream?.Dispose();
+                _process?.Dispose();
+            }
+
+            _logFileStream = null;
+            _process = null;
+
+            _disposed = true;
         }
     }
 }

@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -1286,7 +1287,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     if (IsFileProtocol)
                     {
-                        requiresSave = await RefreshedOwnedItems(options, GetFileSystemChildren(options.DirectoryService).ToList(), cancellationToken).ConfigureAwait(false);
+                        requiresSave = await RefreshedOwnedItems(options, GetFileSystemChildren(options.DirectoryService), cancellationToken).ConfigureAwait(false);
                     }
 
                     await LibraryManager.UpdateImagesAsync(this).ConfigureAwait(false); // ensure all image properties in DB are fresh
@@ -1363,7 +1364,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="fileSystemChildren">The list of filesystem children.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns><c>true</c> if any items have changed, else <c>false</c>.</returns>
-        protected virtual async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
+        protected virtual async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, IReadOnlyList<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
             if (!IsFileProtocol || !SupportsOwnedItems || IsInMixedFolder || this is ICollectionFolder or UserRootFolder or AggregateFolder || this.GetType() == typeof(Folder))
             {
@@ -1380,7 +1381,7 @@ namespace MediaBrowser.Controller.Entities
             return directoryService.GetFileSystemEntries(path);
         }
 
-        private async Task<bool> RefreshExtras(BaseItem item, MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
+        private async Task<bool> RefreshExtras(BaseItem item, MetadataRefreshOptions options, IReadOnlyList<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
             var extras = LibraryManager.FindExtras(item, fileSystemChildren, options.DirectoryService).ToArray();
             var newExtraIds = extras.Select(i => i.Id).ToArray();
@@ -2041,27 +2042,32 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Validates that images within the item are still on the filesystem.
         /// </summary>
-        /// <param name="directoryService">The directory service to use.</param>
         /// <returns><c>true</c> if the images validate, <c>false</c> if not.</returns>
-        public bool ValidateImages(IDirectoryService directoryService)
+        public bool ValidateImages()
         {
-            var allFiles = ImageInfos
-                .Where(i => i.IsLocalFile)
-                .Select(i => System.IO.Path.GetDirectoryName(i.Path))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .SelectMany(path => directoryService.GetFilePaths(path))
-                .ToList();
+            List<ItemImageInfo> deletedImages = null;
+            foreach (var imageInfo in ImageInfos)
+            {
+                if (!imageInfo.IsLocalFile)
+                {
+                    continue;
+                }
 
-            var deletedImages = ImageInfos
-                .Where(image => image.IsLocalFile && !allFiles.Contains(image.Path, StringComparison.OrdinalIgnoreCase))
-                .ToList();
+                if (File.Exists(imageInfo.Path))
+                {
+                    continue;
+                }
 
-            if (deletedImages.Count > 0)
+                (deletedImages ??= new List<ItemImageInfo>()).Add(imageInfo);
+            }
+
+            var anyImagesRemoved = deletedImages?.Count > 0;
+            if (anyImagesRemoved)
             {
                 RemoveImages(deletedImages);
             }
 
-            return deletedImages.Count > 0;
+            return anyImagesRemoved;
         }
 
         /// <summary>

@@ -141,12 +141,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             var inputFormat = subtitle.Format;
 
-            // Return the original if we don't have any way of converting it
-            if (!TryGetWriter(outputFormat, out var writer))
-            {
-                return subtitle.Stream;
-            }
-
             // Return the original if the same format is being requested
             // Character encoding was already handled in GetSubtitleStream
             if (string.Equals(inputFormat, outputFormat, StringComparison.OrdinalIgnoreCase))
@@ -440,7 +434,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     throw;
                 }
 
-                var ranToCompletion = await process.WaitForExitAsync(TimeSpan.FromMinutes(5)).ConfigureAwait(false);
+                var ranToCompletion = await process.WaitForExitAsync(TimeSpan.FromMinutes(30)).ConfigureAwait(false);
 
                 if (!ranToCompletion)
                 {
@@ -677,8 +671,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             if (!string.Equals(text, newText, StringComparison.Ordinal))
             {
-                using (var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous))
-                using (var writer = new StreamWriter(fileStream, encoding))
+                var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+                var writer = new StreamWriter(fileStream, encoding);
+                await using (fileStream.ConfigureAwait(false))
+                await using (writer.ConfigureAwait(false))
                 {
                     await writer.WriteAsync(newText.AsMemory(), cancellationToken).ConfigureAwait(false);
                 }

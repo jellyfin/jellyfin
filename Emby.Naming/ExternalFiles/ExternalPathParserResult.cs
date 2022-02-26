@@ -1,17 +1,17 @@
-namespace Emby.Naming.Subtitles
+namespace Emby.Naming.ExternalFiles
 {
     /// <summary>
-    /// Class holding information about subtitle.
+    /// Class holding information about external files.
     /// </summary>
-    public class SubtitleInfo
+    public class ExternalPathParserResult
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="SubtitleInfo"/> class.
+        /// Initializes a new instance of the <see cref="ExternalPathParserResult"/> class.
         /// </summary>
         /// <param name="path">Path to file.</param>
-        /// <param name="isDefault">Is subtitle default.</param>
-        /// <param name="isForced">Is subtitle forced.</param>
-        public SubtitleInfo(string path, bool isDefault, bool isForced)
+        /// <param name="isDefault">Is default.</param>
+        /// <param name="isForced">Is forced.</param>
+        public ExternalPathParserResult(string path, bool isDefault = false, bool isForced = false)
         {
             Path = path;
             IsDefault = isDefault;
@@ -29,6 +29,12 @@ namespace Emby.Naming.Subtitles
         /// </summary>
         /// <value>The language.</value>
         public string? Language { get; set; }
+
+        /// <summary>
+        /// Gets or sets the title.
+        /// </summary>
+        /// <value>The title.</value>
+        public string? Title { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is default.

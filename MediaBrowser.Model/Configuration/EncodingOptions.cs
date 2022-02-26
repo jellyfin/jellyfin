@@ -1,3 +1,5 @@
+using System;
+
 #nullable disable
 #pragma warning disable CS1591
 
@@ -37,6 +39,7 @@ namespace MediaBrowser.Model.Configuration
             EnableHardwareEncoding = true;
             AllowHevcEncoding = false;
             EnableSubtitleExtraction = true;
+            AllowOnDemandMetadataBasedKeyframeExtractionForExtensions = Array.Empty<string>();
             HardwareDecodingCodecs = new string[] { "h264", "vc1" };
         }
 
@@ -115,5 +118,7 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableSubtitleExtraction { get; set; }
 
         public string[] HardwareDecodingCodecs { get; set; }
+
+        public string[] AllowOnDemandMetadataBasedKeyframeExtractionForExtensions { get; set; }
     }
 }

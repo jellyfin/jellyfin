@@ -101,11 +101,7 @@ namespace Jellyfin.Api.Controllers
                 Limit = limit ?? 0
             });
 
-            return new QueryResult<BaseItemDto>
-            {
-                Items = peopleItems.Select(person => _dtoService.GetItemByNameDto(person, dtoOptions, null, user)).ToArray(),
-                TotalRecordCount = peopleItems.Count
-            };
+            return new QueryResult<BaseItemDto>(peopleItems.Select(person => _dtoService.GetItemByNameDto(person, dtoOptions, null, user)).ToArray());
         }
 
         /// <summary>

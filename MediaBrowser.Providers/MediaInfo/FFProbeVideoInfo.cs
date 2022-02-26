@@ -45,6 +45,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IChapterManager _chapterManager;
         private readonly ILibraryManager _libraryManager;
         private readonly AudioResolver _audioResolver;
+        private readonly SubtitleResolver _subtitleResolver;
         private readonly IMediaSourceManager _mediaSourceManager;
 
         private readonly long _dummyChapterDuration = TimeSpan.FromMinutes(5).Ticks;
@@ -61,9 +62,11 @@ namespace MediaBrowser.Providers.MediaInfo
             ISubtitleManager subtitleManager,
             IChapterManager chapterManager,
             ILibraryManager libraryManager,
-            AudioResolver audioResolver)
+            AudioResolver audioResolver,
+            SubtitleResolver subtitleResolver)
         {
             _logger = logger;
+            _mediaSourceManager = mediaSourceManager;
             _mediaEncoder = mediaEncoder;
             _itemRepo = itemRepo;
             _blurayExaminer = blurayExaminer;
@@ -74,7 +77,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _chapterManager = chapterManager;
             _libraryManager = libraryManager;
             _audioResolver = audioResolver;
-            _mediaSourceManager = mediaSourceManager;
+            _subtitleResolver = subtitleResolver;
         }
 
         public async Task<ItemUpdateType> ProbeVideo<T>(
@@ -172,7 +175,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (mediaInfo != null)
             {
-                mediaStreams = mediaInfo.MediaStreams;
+                mediaStreams = mediaInfo.MediaStreams.ToList();
                 mediaAttachments = mediaInfo.MediaAttachments;
 
                 video.TotalBitrate = mediaInfo.Bitrate;
@@ -202,7 +205,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 video.Container = mediaInfo.Container;
 
-                chapters = mediaInfo.Chapters == null ? Array.Empty<ChapterInfo>() : mediaInfo.Chapters;
+                chapters = mediaInfo.Chapters ?? Array.Empty<ChapterInfo>();
                 if (blurayInfo != null)
                 {
                     FetchBdInfo(video, ref chapters, mediaStreams, blurayInfo);
@@ -215,7 +218,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 chapters = Array.Empty<ChapterInfo>();
             }
 
-            await AddExternalSubtitles(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
+            await AddExternalSubtitlesAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
 
             await AddExternalAudioAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
 
@@ -229,12 +232,24 @@ namespace MediaBrowser.Providers.MediaInfo
                 video.Video3DFormat ??= mediaInfo.Video3DFormat;
             }
 
+            if (libraryOptions.AllowEmbeddedSubtitles == EmbeddedSubtitleOptions.AllowText || libraryOptions.AllowEmbeddedSubtitles == EmbeddedSubtitleOptions.AllowNone)
+            {
+                _logger.LogDebug("Disabling embedded image subtitles for {Path} due to DisableEmbeddedImageSubtitles setting", video.Path);
+                mediaStreams.RemoveAll(i => i.Type == MediaStreamType.Subtitle && !i.IsExternal && !i.IsTextSubtitleStream);
+            }
+
+            if (libraryOptions.AllowEmbeddedSubtitles == EmbeddedSubtitleOptions.AllowImage || libraryOptions.AllowEmbeddedSubtitles == EmbeddedSubtitleOptions.AllowNone)
+            {
+                _logger.LogDebug("Disabling embedded text subtitles for {Path} due to DisableEmbeddedTextSubtitles setting", video.Path);
+                mediaStreams.RemoveAll(i => i.Type == MediaStreamType.Subtitle && !i.IsExternal && i.IsTextSubtitleStream);
+            }
+
             var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
 
             video.Height = videoStream?.Height ?? 0;
             video.Width = videoStream?.Width ?? 0;
 
-            video.DefaultVideoStreamIndex = videoStream == null ? (int?)null : videoStream.Index;
+            video.DefaultVideoStreamIndex = videoStream?.Index;
 
             video.HasSubtitles = mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle);
 
@@ -368,11 +383,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private void FetchEmbeddedInfo(Video video, Model.MediaInfo.MediaInfo data, MetadataRefreshOptions refreshOptions, LibraryOptions libraryOptions)
         {
-            var isFullRefresh = refreshOptions.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
+            var replaceData = refreshOptions.ReplaceAllMetadata;
 
             if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.OfficialRating))
             {
-                if (!string.IsNullOrWhiteSpace(data.OfficialRating) || isFullRefresh)
+                if (string.IsNullOrWhiteSpace(video.OfficialRating) || replaceData)
                 {
                     video.OfficialRating = data.OfficialRating;
                 }
@@ -380,7 +395,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.Genres))
             {
-                if (video.Genres.Length == 0 || isFullRefresh)
+                if (video.Genres.Length == 0 || replaceData)
                 {
                     video.Genres = Array.Empty<string>();
 
@@ -393,21 +408,28 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.Studios))
             {
-                if (video.Studios.Length == 0 || isFullRefresh)
+                if (video.Studios.Length == 0 || replaceData)
                 {
                     video.SetStudios(data.Studios);
                 }
             }
 
-            if (video is MusicVideo musicVideo)
+            if (!video.IsLocked && video is MusicVideo musicVideo)
             {
-                musicVideo.Album = data.Album;
-                musicVideo.Artists = data.Artists;
+                if (string.IsNullOrEmpty(musicVideo.Album) || replaceData)
+                {
+                    musicVideo.Album = data.Album;
+                }
+
+                if (musicVideo.Artists.Count == 0 || replaceData)
+                {
+                    musicVideo.Artists = data.Artists;
+                }
             }
 
             if (data.ProductionYear.HasValue)
             {
-                if (!video.ProductionYear.HasValue || isFullRefresh)
+                if (!video.ProductionYear.HasValue || replaceData)
                 {
                     video.ProductionYear = data.ProductionYear;
                 }
@@ -415,7 +437,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (data.PremiereDate.HasValue)
             {
-                if (!video.PremiereDate.HasValue || isFullRefresh)
+                if (!video.PremiereDate.HasValue || replaceData)
                 {
                     video.PremiereDate = data.PremiereDate;
                 }
@@ -423,7 +445,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (data.IndexNumber.HasValue)
             {
-                if (!video.IndexNumber.HasValue || isFullRefresh)
+                if (!video.IndexNumber.HasValue || replaceData)
                 {
                     video.IndexNumber = data.IndexNumber;
                 }
@@ -431,7 +453,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (data.ParentIndexNumber.HasValue)
             {
-                if (!video.ParentIndexNumber.HasValue || isFullRefresh)
+                if (!video.ParentIndexNumber.HasValue || replaceData)
                 {
                     video.ParentIndexNumber = data.ParentIndexNumber;
                 }
@@ -462,7 +484,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.Overview))
             {
-                if (string.IsNullOrWhiteSpace(video.Overview) || isFullRefresh)
+                if (string.IsNullOrWhiteSpace(video.Overview) || replaceData)
                 {
                     video.Overview = data.Overview;
                 }
@@ -471,11 +493,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private void FetchPeople(Video video, Model.MediaInfo.MediaInfo data, MetadataRefreshOptions options)
         {
-            var isFullRefresh = options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
+            var replaceData = options.ReplaceAllMetadata;
 
             if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.Cast))
             {
-                if (isFullRefresh || _libraryManager.GetPeople(video).Count == 0)
+                if (replaceData || _libraryManager.GetPeople(video).Count == 0)
                 {
                     var people = new List<PersonInfo>();
 
@@ -507,16 +529,14 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="options">The refreshOptions.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task AddExternalSubtitles(
+        private async Task AddExternalSubtitlesAsync(
             Video video,
             List<MediaStream> currentStreams,
             MetadataRefreshOptions options,
             CancellationToken cancellationToken)
         {
-            var subtitleResolver = new SubtitleResolver(_localization);
-
             var startIndex = currentStreams.Count == 0 ? 0 : (currentStreams.Select(i => i.Index).Max() + 1);
-            var externalSubtitleStreams = subtitleResolver.GetExternalSubtitleStreams(video, startIndex, options.DirectoryService, false);
+            var externalSubtitleStreams = await _subtitleResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, false, cancellationToken);
 
             var enableSubtitleDownloading = options.MetadataRefreshMode == MetadataRefreshMode.Default ||
                                             options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
@@ -570,7 +590,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 // Rescan
                 if (downloadedLanguages.Count > 0)
                 {
-                    externalSubtitleStreams = subtitleResolver.GetExternalSubtitleStreams(video, startIndex, options.DirectoryService, true);
+                    externalSubtitleStreams = await _subtitleResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, true, cancellationToken);
                 }
             }
 
@@ -593,12 +613,9 @@ namespace MediaBrowser.Providers.MediaInfo
             CancellationToken cancellationToken)
         {
             var startIndex = currentStreams.Count == 0 ? 0 : currentStreams.Max(i => i.Index) + 1;
-            var externalAudioStreams = _audioResolver.GetExternalAudioStreams(video, startIndex, options.DirectoryService, false, cancellationToken);
+            var externalAudioStreams = await _audioResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, false, cancellationToken).ConfigureAwait(false);
 
-            await foreach (MediaStream externalAudioStream in externalAudioStreams)
-            {
-                currentStreams.Add(externalAudioStream);
-            }
+            currentStreams = currentStreams.Concat(externalAudioStreams).ToList();
 
             // Select all external audio file paths
             video.AudioFiles = currentStreams.Where(i => i.Type == MediaStreamType.Audio && i.IsExternal).Select(i => i.Path).Distinct().ToArray();

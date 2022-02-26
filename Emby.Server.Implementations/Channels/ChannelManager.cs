@@ -39,7 +39,7 @@ namespace Emby.Server.Implementations.Channels
     /// <summary>
     /// The LiveTV channel manager.
     /// </summary>
-    public class ChannelManager : IChannelManager
+    public class ChannelManager : IChannelManager, IDisposable
     {
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
@@ -52,6 +52,7 @@ namespace Emby.Server.Implementations.Channels
         private readonly IMemoryCache _memoryCache;
         private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+        private bool _disposed = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChannelManager"/> class.
@@ -264,11 +265,10 @@ namespace Emby.Server.Implementations.Channels
                 }
             }
 
-            return new QueryResult<Channel>
-            {
-                Items = all,
-                TotalRecordCount = totalCount
-            };
+            return new QueryResult<Channel>(
+                query.StartIndex,
+                totalCount,
+                all);
         }
 
         /// <inheritdoc />
@@ -285,11 +285,10 @@ namespace Emby.Server.Implementations.Channels
             // TODO Fix The co-variant conversion (internalResult.Items) between Folder[] and BaseItem[], this can generate runtime issues.
             var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user);
 
-            var result = new QueryResult<BaseItemDto>
-            {
-                Items = returnItems,
-                TotalRecordCount = internalResult.TotalRecordCount
-            };
+            var result = new QueryResult<BaseItemDto>(
+                query.StartIndex,
+                internalResult.TotalRecordCount,
+                returnItems);
 
             return result;
         }
@@ -333,7 +332,7 @@ namespace Emby.Server.Implementations.Channels
 
         private Channel GetChannelEntity(IChannel channel)
         {
-            return GetChannel(GetInternalChannelId(channel.Name)) ?? GetChannel(channel, CancellationToken.None).Result;
+            return GetChannel(GetInternalChannelId(channel.Name)) ?? GetChannel(channel, CancellationToken.None).GetAwaiter().GetResult();
         }
 
         private MediaSourceInfo[] GetSavedMediaSources(BaseItem item)
@@ -620,11 +619,10 @@ namespace Emby.Server.Implementations.Channels
 
             var returnItems = _dtoService.GetBaseItemDtos(items, query.DtoOptions, query.User);
 
-            var result = new QueryResult<BaseItemDto>
-            {
-                Items = returnItems,
-                TotalRecordCount = totalRecordCount
-            };
+            var result = new QueryResult<BaseItemDto>(
+                query.StartIndex,
+                totalRecordCount,
+                returnItems);
 
             return result;
         }
@@ -786,11 +784,10 @@ namespace Emby.Server.Implementations.Channels
 
             var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, query.DtoOptions, query.User);
 
-            var result = new QueryResult<BaseItemDto>
-            {
-                Items = returnItems,
-                TotalRecordCount = internalResult.TotalRecordCount
-            };
+            var result = new QueryResult<BaseItemDto>(
+                query.StartIndex,
+                internalResult.TotalRecordCount,
+                returnItems);
 
             return result;
         }
@@ -1216,6 +1213,32 @@ namespace Emby.Server.Implementations.Channels
             }
 
             return result;
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and optionally managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _resourcePool?.Dispose();
+            }
+
+            _disposed = true;
         }
     }
 }

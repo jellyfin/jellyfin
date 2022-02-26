@@ -159,7 +159,7 @@ namespace Emby.Server.Implementations.Net
         {
             ThrowIfDisposed();
 
-            var taskCompletion = new TaskCompletionSource<SocketReceiveResult>();
+            var taskCompletion = new TaskCompletionSource<SocketReceiveResult>(TaskCreationOptions.RunContinuationsAsynchronously);
             bool isResultSet = false;
 
             Action<IAsyncResult> callback = callbackResult =>
@@ -195,7 +195,7 @@ namespace Emby.Server.Implementations.Net
         {
             ThrowIfDisposed();
 
-            var taskCompletion = new TaskCompletionSource<int>();
+            var taskCompletion = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             bool isResultSet = false;
 
             Action<IAsyncResult> callback = callbackResult =>

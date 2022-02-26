@@ -344,7 +344,7 @@ namespace Emby.Server.Implementations.Library
             return sources;
         }
 
-        private string[] NormalizeLanguage(string language)
+        private IReadOnlyList<string> NormalizeLanguage(string language)
         {
             if (string.IsNullOrEmpty(language))
             {

@@ -14,4 +14,8 @@
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
   </PropertyGroup>
 
+  <ItemGroup>
+    <AdditionalFiles Include="$(SolutionDir)/BannedSymbols.txt" />
+  </ItemGroup>
+
 </Project>

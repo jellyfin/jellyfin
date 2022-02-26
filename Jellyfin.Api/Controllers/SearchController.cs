@@ -121,11 +121,7 @@ namespace Jellyfin.Api.Controllers
                 IsSports = isSports
             });
 
-            return new SearchHintResult
-            {
-                TotalRecordCount = result.TotalRecordCount,
-                SearchHints = result.Items.Select(GetSearchHintResult).ToArray()
-            };
+            return new SearchHintResult(result.Items.Select(GetSearchHintResult).ToArray(), result.TotalRecordCount);
         }
 
         /// <summary>

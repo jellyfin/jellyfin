@@ -4,7 +4,7 @@ using System.Net;
 namespace Rssdp
 {
     /// <summary>
-    /// Event arguments for the <see cref="Infrastructure.SsdpDeviceLocatorBase.DeviceAvailable"/> event.
+    /// Event arguments for the <see cref="Infrastructure.SsdpDeviceLocator.DeviceAvailable"/> event.
     /// </summary>
     public sealed class DeviceAvailableEventArgs : EventArgs
     {

@@ -23,47 +23,60 @@ namespace Emby.Naming.Common
         {
             VideoFileExtensions = new[]
             {
-                ".m4v",
+                ".001",
+                ".3g2",
                 ".3gp",
-                ".nsv",
-                ".ts",
-                ".ty",
-                ".strm",
-                ".rm",
-                ".rmvb",
-                ".ifo",
-                ".mov",
-                ".qt",
-                ".divx",
-                ".xvid",
-                ".bivx",
-                ".vob",
-                ".nrg",
-                ".img",
-                ".iso",
-                ".pva",
-                ".wmv",
+                ".amv",
                 ".asf",
                 ".asx",
-                ".ogm",
-                ".m2v",
                 ".avi",
                 ".bin",
-                ".dvr-ms",
-                ".mpg",
-                ".mpeg",
-                ".mp4",
-                ".mkv",
-                ".avc",
-                ".vp3",
-                ".svq3",
-                ".nuv",
-                ".viv",
+                ".bivx",
+                ".divx",
                 ".dv",
+                ".dvr-ms",
+                ".f4v",
                 ".fli",
                 ".flv",
-                ".001",
-                ".tp"
+                ".ifo",
+                ".img",
+                ".iso",
+                ".m2t",
+                ".m2ts",
+                ".m2v",
+                ".m4v",
+                ".mkv",
+                ".mk3d",
+                ".mov",
+                ".mp2",
+                ".mp4",
+                ".mpe",
+                ".mpeg",
+                ".mpg",
+                ".mts",
+                ".mxf",
+                ".nrg",
+                ".nsv",
+                ".nuv",
+                ".ogg",
+                ".ogm",
+                ".ogv",
+                ".pva",
+                ".qt",
+                ".rec",
+                ".rm",
+                ".rmvb",
+                ".svq3",
+                ".tp",
+                ".ts",
+                ".ty",
+                ".viv",
+                ".vob",
+                ".vp3",
+                ".webm",
+                ".wmv",
+                ".wtv",
+                ".xvid"
             };
 
             VideoFlagDelimiters = new[]
@@ -149,32 +162,20 @@ namespace Emby.Naming.Common
 
             SubtitleFileExtensions = new[]
             {
+                ".ass",
+                ".mks",
+                ".sami",
+                ".smi",
                 ".srt",
                 ".ssa",
-                ".ass",
-                ".sub"
-            };
-
-            SubtitleFlagDelimiters = new[]
-            {
-                '.'
-            };
-
-            SubtitleForcedFlags = new[]
-            {
-                "foreign",
-                "forced"
-            };
-
-            SubtitleDefaultFlags = new[]
-            {
-                "default"
+                ".sub",
+                ".vtt",
             };
 
             AlbumStackingPrefixes = new[]
             {
-                "disc",
                 "cd",
+                "disc",
                 "disk",
                 "vol",
                 "volume"
@@ -182,68 +183,101 @@ namespace Emby.Naming.Common
 
             AudioFileExtensions = new[]
             {
-                ".nsv",
-                ".m4a",
-                ".flac",
-                ".aac",
-                ".strm",
-                ".pls",
-                ".rm",
-                ".mpa",
-                ".wav",
-                ".wma",
-                ".ogg",
-                ".opus",
-                ".mp3",
-                ".mp2",
-                ".mod",
-                ".amf",
                 ".669",
+                ".3gp",
+                ".aa",
+                ".aac",
+                ".aax",
+                ".ac3",
+                ".act",
+                ".adp",
+                ".adplug",
+                ".adx",
+                ".afc",
+                ".amf",
+                ".aif",
+                ".aiff",
+                ".alac",
+                ".amr",
+                ".ape",
+                ".ast",
+                ".au",
+                ".awb",
+                ".cda",
+                ".cue",
                 ".dmf",
+                ".dsf",
                 ".dsm",
+                ".dsp",
+                ".dts",
+                ".dvf",
                 ".far",
+                ".flac",
                 ".gdm",
+                ".gsm",
+                ".gym",
+                ".hps",
                 ".imf",
                 ".it",
                 ".m15",
+                ".m4a",
+                ".m4b",
+                ".mac",
                 ".med",
+                ".mka",
+                ".mmf",
+                ".mod",
+                ".mogg",
+                ".mp2",
+                ".mp3",
+                ".mpa",
+                ".mpc",
+                ".mpp",
+                ".mp+",
+                ".msv",
+                ".nmf",
+                ".nsf",
+                ".nsv",
+                ".oga",
+                ".ogg",
                 ".okt",
+                ".opus",
+                ".pls",
+                ".ra",
+                ".rf64",
+                ".rm",
                 ".s3m",
-                ".stm",
                 ".sfx",
+                ".shn",
+                ".sid",
+                ".spc",
+                ".stm",
+                ".strm",
                 ".ult",
                 ".uni",
-                ".xm",
-                ".sid",
-                ".ac3",
-                ".dts",
-                ".cue",
-                ".aif",
-                ".aiff",
-                ".ape",
-                ".mac",
-                ".mpc",
-                ".mp+",
-                ".mpp",
-                ".shn",
+                ".vox",
+                ".wav",
+                ".wma",
                 ".wv",
-                ".nsf",
-                ".spc",
-                ".gym",
-                ".adplug",
-                ".adx",
-                ".dsp",
-                ".adp",
-                ".ymf",
-                ".ast",
-                ".afc",
-                ".hps",
+                ".xm",
                 ".xsp",
-                ".acc",
-                ".m4b",
-                ".oga",
-                ".dsf",
-                ".mka"
+                ".ymf"
+            };
+
+            MediaFlagDelimiters = new[]
+            {
+                "."
+            };
+
+            MediaForcedFlags = new[]
+            {
+                "foreign",
+                "forced"
+            };
+
+            MediaDefaultFlags = new[]
+            {
+                "default"
             };
 
             EpisodeExpressions = new[]
@@ -591,6 +625,10 @@ namespace Emby.Naming.Common
                     MediaType.Video)
             };
 
+            AllExtrasTypesFolderNames = VideoExtraRules
+                .Where(i => i.RuleType == ExtraRuleType.DirectoryName)
+                .ToDictionary(i => i.Token, i => i.ExtraType, StringComparer.OrdinalIgnoreCase);
+
             Format3DRules = new[]
             {
                 // Kodi rules:
@@ -644,41 +682,6 @@ namespace Emby.Naming.Common
                 @"^\s*(?<name>[^ ].*?)\s*$"
             };
 
-            var extensions = VideoFileExtensions.ToList();
-
-            extensions.AddRange(new[]
-            {
-                ".mkv",
-                ".m2t",
-                ".m2ts",
-                ".img",
-                ".iso",
-                ".mk3d",
-                ".ts",
-                ".rmvb",
-                ".mov",
-                ".avi",
-                ".mpg",
-                ".mpeg",
-                ".wmv",
-                ".mp4",
-                ".divx",
-                ".dvr-ms",
-                ".wtv",
-                ".ogm",
-                ".ogv",
-                ".asf",
-                ".m4v",
-                ".flv",
-                ".f4v",
-                ".3gp",
-                ".webm",
-                ".mts",
-                ".m2v",
-                ".rec",
-                ".mxf"
-            });
-
             MultipleEpisodeExpressions = new[]
             {
                 @".*(\\|\/)[sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3})((-| - )[0-9]{1,4}[eExX](?<endingepnumber>[0-9]{1,3}))+[^\\\/]*$",
@@ -696,25 +699,6 @@ namespace Emby.Naming.Common
                 IsNamed = true
             }).ToArray();
 
-            VideoFileExtensions = extensions
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToArray();
-
-            AllExtrasTypesFolderNames = new Dictionary<string, ExtraType>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["trailers"] = ExtraType.Trailer,
-                ["theme-music"] = ExtraType.ThemeSong,
-                ["backdrops"] = ExtraType.ThemeVideo,
-                ["extras"] = ExtraType.Unknown,
-                ["behind the scenes"] = ExtraType.BehindTheScenes,
-                ["deleted scenes"] = ExtraType.DeletedScene,
-                ["interviews"] = ExtraType.Interview,
-                ["scenes"] = ExtraType.Scene,
-                ["samples"] = ExtraType.Sample,
-                ["shorts"] = ExtraType.Clip,
-                ["featurettes"] = ExtraType.Clip
-            };
-
             Compile();
         }
 
@@ -729,6 +713,21 @@ namespace Emby.Naming.Common
         public string[] AudioFileExtensions { get; set; }
 
         /// <summary>
+        /// Gets or sets list of external media flag delimiters.
+        /// </summary>
+        public string[] MediaFlagDelimiters { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of external media forced flags.
+        /// </summary>
+        public string[] MediaForcedFlags { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of external media default flags.
+        /// </summary>
+        public string[] MediaDefaultFlags { get; set; }
+
+        /// <summary>
         /// Gets or sets list of album stacking prefixes.
         /// </summary>
         public string[] AlbumStackingPrefixes { get; set; }
@@ -737,21 +736,6 @@ namespace Emby.Naming.Common
         /// Gets or sets list of subtitle file extensions.
         /// </summary>
         public string[] SubtitleFileExtensions { get; set; }
-
-        /// <summary>
-        /// Gets or sets list of subtitles flag delimiters.
-        /// </summary>
-        public char[] SubtitleFlagDelimiters { get; set; }
-
-        /// <summary>
-        /// Gets or sets list of subtitle forced flags.
-        /// </summary>
-        public string[] SubtitleForcedFlags { get; set; }
-
-        /// <summary>
-        /// Gets or sets list of subtitle default flags.
-        /// </summary>
-        public string[] SubtitleDefaultFlags { get; set; }
 
         /// <summary>
         /// Gets or sets list of episode regular expressions.

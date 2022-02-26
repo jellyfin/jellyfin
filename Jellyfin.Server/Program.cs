@@ -13,7 +13,6 @@ using Emby.Server.Implementations;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +25,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
 using Serilog.Extensions.Logging;
 using SQLitePCL;
-using ConfigurationExtensions = MediaBrowser.Controller.Extensions.ConfigurationExtensions;
+using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Jellyfin.Server
@@ -168,7 +167,7 @@ namespace Jellyfin.Server
                         "server, you may set the '--nowebclient' command line flag, or set" +
                         "'{ConfigKey}=false' in your config settings.",
                         webContentPath,
-                        ConfigurationExtensions.HostWebClientKey);
+                        HostWebClientKey);
                     Environment.ExitCode = 1;
                     return;
                 }
@@ -224,12 +223,16 @@ namespace Jellyfin.Server
             }
             finally
             {
-                _logger.LogInformation("Running query planner optimizations in the database... This might take a while");
-                // Run before disposing the application
-                using var context = appHost.Resolve<JellyfinDbProvider>().CreateContext();
-                if (context.Database.IsSqlite())
+                // Don't throw additional exception if startup failed.
+                if (appHost.ServiceProvider != null)
                 {
-                    context.Database.ExecuteSqlRaw("PRAGMA optimize");
+                    _logger.LogInformation("Running query planner optimizations in the database... This might take a while");
+                    // Run before disposing the application
+                    using var context = appHost.Resolve<JellyfinDbProvider>().CreateContext();
+                    if (context.Database.IsSqlite())
+                    {
+                        context.Database.ExecuteSqlRaw("PRAGMA optimize");
+                    }
                 }
 
                 appHost.Dispose();
@@ -545,12 +548,15 @@ namespace Jellyfin.Server
             // Get a stream of the resource contents
             // NOTE: The .csproj name is used instead of the assembly name in the resource path
             const string ResourcePath = "Jellyfin.Server.Resources.Configuration.logging.json";
-            await using Stream resource = typeof(Program).Assembly.GetManifestResourceStream(ResourcePath)
+            Stream resource = typeof(Program).Assembly.GetManifestResourceStream(ResourcePath)
                 ?? throw new InvalidOperationException($"Invalid resource path: '{ResourcePath}'");
-
-            // Copy the resource contents to the expected file path for the config file
-            await using Stream dst = new FileStream(configPath, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
-            await resource.CopyToAsync(dst).ConfigureAwait(false);
+            Stream dst = new FileStream(configPath, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+            await using (resource.ConfigureAwait(false))
+            await using (dst.ConfigureAwait(false))
+            {
+                // Copy the resource contents to the expected file path for the config file
+                await resource.CopyToAsync(dst).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -576,7 +582,7 @@ namespace Jellyfin.Server
             var inMemoryDefaultConfig = ConfigurationOptions.DefaultConfiguration;
             if (startupConfig != null && !startupConfig.HostWebClient())
             {
-                inMemoryDefaultConfig[ConfigurationExtensions.DefaultRedirectKey] = "api-docs/swagger";
+                inMemoryDefaultConfig[DefaultRedirectKey] = "api-docs/swagger";
             }
 
             return config

@@ -1,4 +1,5 @@
 using System.IO;
+using System.Threading.Tasks;
 using System.Xml;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -38,9 +39,8 @@ namespace MediaBrowser.LocalMetadata.Savers
         }
 
         /// <inheritdoc />
-        protected override void WriteCustomElements(BaseItem item, XmlWriter writer)
-        {
-        }
+        protected override Task WriteCustomElementsAsync(BaseItem item, XmlWriter writer)
+            => Task.CompletedTask;
 
         /// <inheritdoc />
         protected override string GetLocalSavePath(BaseItem item)

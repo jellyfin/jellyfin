@@ -145,12 +145,10 @@ namespace Jellyfin.Server.Implementations.Devices
                 devices = devices.Take(query.Limit.Value);
             }
 
-            return new QueryResult<Device>
-            {
-                Items = await devices.ToListAsync().ConfigureAwait(false),
-                StartIndex = query.Skip ?? 0,
-                TotalRecordCount = count
-            };
+            return new QueryResult<Device>(
+                query.Skip,
+                count,
+                await devices.ToListAsync().ConfigureAwait(false));
         }
 
         /// <inheritdoc />
@@ -158,12 +156,10 @@ namespace Jellyfin.Server.Implementations.Devices
         {
             var devices = await GetDevices(query).ConfigureAwait(false);
 
-            return new QueryResult<DeviceInfo>
-            {
-                Items = devices.Items.Select(device => ToDeviceInfo(device)).ToList(),
-                StartIndex = devices.StartIndex,
-                TotalRecordCount = devices.TotalRecordCount
-            };
+            return new QueryResult<DeviceInfo>(
+                devices.StartIndex,
+                devices.TotalRecordCount,
+                devices.Items.Select(device => ToDeviceInfo(device)).ToList());
         }
 
         /// <inheritdoc />

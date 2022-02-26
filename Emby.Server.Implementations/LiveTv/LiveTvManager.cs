@@ -39,7 +39,7 @@ namespace Emby.Server.Implementations.LiveTv
     /// <summary>
     /// Class LiveTvManager.
     /// </summary>
-    public class LiveTvManager : ILiveTvManager, IDisposable
+    public class LiveTvManager : ILiveTvManager
     {
         private const int MaxGuideDays = 14;
         private const string ExternalServiceTag = "ExternalServiceId";
@@ -62,8 +62,6 @@ namespace Emby.Server.Implementations.LiveTv
         private ILiveTvService[] _services = Array.Empty<ILiveTvService>();
         private ITunerHost[] _tunerHosts = Array.Empty<ITunerHost>();
         private IListingsProvider[] _listingProviders = Array.Empty<IListingsProvider>();
-
-        private bool _disposed = false;
 
         public LiveTvManager(
             IServerConfigurationManager config,
@@ -312,7 +310,7 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 if (isVideo)
                 {
-                    mediaSource.MediaStreams.AddRange(new List<MediaStream>
+                    mediaSource.MediaStreams = new MediaStream[]
                     {
                         new MediaStream
                         {
@@ -329,11 +327,11 @@ namespace Emby.Server.Implementations.LiveTv
                             // Set the index to -1 because we don't know the exact index of the audio stream within the container
                             Index = -1
                         }
-                    });
+                    };
                 }
                 else
                 {
-                    mediaSource.MediaStreams.AddRange(new List<MediaStream>
+                    mediaSource.MediaStreams = new MediaStream[]
                     {
                         new MediaStream
                         {
@@ -341,7 +339,7 @@ namespace Emby.Server.Implementations.LiveTv
                             // Set the index to -1 because we don't know the exact index of the audio stream within the container
                             Index = -1
                         }
-                    });
+                    };
                 }
             }
 
@@ -857,11 +855,10 @@ namespace Emby.Server.Implementations.LiveTv
 
             var returnArray = _dtoService.GetBaseItemDtos(queryResult.Items, options, user);
 
-            return new QueryResult<BaseItemDto>
-            {
-                Items = returnArray,
-                TotalRecordCount = queryResult.TotalRecordCount
-            };
+            return new QueryResult<BaseItemDto>(
+                query.StartIndex,
+                queryResult.TotalRecordCount,
+                returnArray);
         }
 
         public QueryResult<BaseItem> GetRecommendedProgramsInternal(InternalItemsQuery query, DtoOptions options, CancellationToken cancellationToken)
@@ -910,29 +907,27 @@ namespace Emby.Server.Implementations.LiveTv
                 programs = programs.Take(query.Limit.Value);
             }
 
-            return new QueryResult<BaseItem>
-            {
-                Items = programs.ToArray(),
-                TotalRecordCount = totalCount
-            };
+            return new QueryResult<BaseItem>(
+                query.StartIndex,
+                totalCount,
+                programs.ToArray());
         }
 
-        public QueryResult<BaseItemDto> GetRecommendedPrograms(InternalItemsQuery query, DtoOptions options, CancellationToken cancellationToken)
+        public Task<QueryResult<BaseItemDto>> GetRecommendedProgramsAsync(InternalItemsQuery query, DtoOptions options, CancellationToken cancellationToken)
         {
             if (!(query.IsAiring ?? false))
             {
-                return GetPrograms(query, options, cancellationToken).Result;
+                return GetPrograms(query, options, cancellationToken);
             }
 
             RemoveFields(options);
 
             var internalResult = GetRecommendedProgramsInternal(query, options, cancellationToken);
 
-            return new QueryResult<BaseItemDto>
-            {
-                Items = _dtoService.GetBaseItemDtos(internalResult.Items, options, query.User),
-                TotalRecordCount = internalResult.TotalRecordCount
-            };
+            return Task.FromResult(new QueryResult<BaseItemDto>(
+                query.StartIndex,
+                internalResult.TotalRecordCount,
+                _dtoService.GetBaseItemDtos(internalResult.Items, options, query.User)));
         }
 
         private int GetRecommendationScore(LiveTvProgram program, User user, bool factorChannelWatchCount)
@@ -1541,11 +1536,10 @@ namespace Emby.Server.Implementations.LiveTv
 
             var returnArray = _dtoService.GetBaseItemDtos(internalResult.Items, options, user);
 
-            return new QueryResult<BaseItemDto>
-            {
-                Items = returnArray,
-                TotalRecordCount = internalResult.TotalRecordCount
-            };
+            return new QueryResult<BaseItemDto>(
+                query.StartIndex,
+                internalResult.TotalRecordCount,
+                returnArray);
         }
 
         private async Task<QueryResult<TimerInfo>> GetTimersInternal(TimerQuery query, CancellationToken cancellationToken)
@@ -1615,11 +1609,7 @@ namespace Emby.Server.Implementations.LiveTv
                 .OrderBy(i => i.StartDate)
                 .ToArray();
 
-            return new QueryResult<TimerInfo>
-            {
-                Items = returnArray,
-                TotalRecordCount = returnArray.Length
-            };
+            return new QueryResult<TimerInfo>(returnArray);
         }
 
         public async Task<QueryResult<TimerInfoDto>> GetTimers(TimerQuery query, CancellationToken cancellationToken)
@@ -1701,11 +1691,7 @@ namespace Emby.Server.Implementations.LiveTv
                 .OrderBy(i => i.StartDate)
                 .ToArray();
 
-            return new QueryResult<TimerInfoDto>
-            {
-                Items = returnArray,
-                TotalRecordCount = returnArray.Length
-            };
+            return new QueryResult<TimerInfoDto>(returnArray);
         }
 
         public async Task CancelTimer(string id)
@@ -1801,11 +1787,7 @@ namespace Emby.Server.Implementations.LiveTv
                 .Select(i => i.Item1)
                 .ToArray();
 
-            return new QueryResult<SeriesTimerInfo>
-            {
-                Items = returnArray,
-                TotalRecordCount = returnArray.Length
-            };
+            return new QueryResult<SeriesTimerInfo>(returnArray);
         }
 
         public async Task<QueryResult<SeriesTimerInfoDto>> GetSeriesTimers(SeriesTimerQuery query, CancellationToken cancellationToken)
@@ -1855,11 +1837,7 @@ namespace Emby.Server.Implementations.LiveTv
                 })
                 .ToArray();
 
-            return new QueryResult<SeriesTimerInfoDto>
-            {
-                Items = returnArray,
-                TotalRecordCount = returnArray.Length
-            };
+            return new QueryResult<SeriesTimerInfoDto>(returnArray);
         }
 
         public BaseItem GetLiveTvChannel(TimerInfo timer, ILiveTvService service)
@@ -2110,36 +2088,6 @@ namespace Emby.Server.Implementations.LiveTv
                 StartDate = startDate,
                 EndDate = endDate
             };
-        }
-
-        /// <inheritdoc />
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            if (dispose)
-            {
-                // TODO: Dispose stuff
-            }
-
-            _services = null;
-            _listingProviders = null;
-            _tunerHosts = null;
-
-            _disposed = true;
         }
 
         private LiveTvServiceInfo[] GetServiceInfos()

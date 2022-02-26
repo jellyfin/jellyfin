@@ -125,18 +125,20 @@ namespace Jellyfin.Server.Infrastructure
             // Copied from SendFileFallback.SendFileAsync
             const int BufferSize = 1024 * 16;
 
-            await using var fileStream = new FileStream(
+            var fileStream = new FileStream(
                 filePath,
                 FileMode.Open,
                 FileAccess.Read,
                 FileShare.ReadWrite,
                 bufferSize: BufferSize,
                 options: FileOptions.Asynchronous | FileOptions.SequentialScan);
-
-            fileStream.Seek(offset, SeekOrigin.Begin);
-            await StreamCopyOperation
-                .CopyToAsync(fileStream, response.Body, count, BufferSize, CancellationToken.None)
-                .ConfigureAwait(true);
+            await using (fileStream.ConfigureAwait(false))
+            {
+                fileStream.Seek(offset, SeekOrigin.Begin);
+                await StreamCopyOperation
+                    .CopyToAsync(fileStream, response.Body, count, BufferSize, CancellationToken.None)
+                    .ConfigureAwait(true);
+            }
         }
 
         private static bool IsSymLink(string path) => (File.GetAttributes(path) & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint;
