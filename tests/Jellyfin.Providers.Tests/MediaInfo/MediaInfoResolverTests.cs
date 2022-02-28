@@ -64,10 +64,8 @@ public class MediaInfoResolverTests
         _subtitleResolver = new SubtitleResolver(_localizationManager, mediaEncoder.Object, new NamingOptions());
     }
 
-    [Theory]
-    [InlineData("https://url.com/My.Video.mkv")]
-    [InlineData("non-existent/path")]
-    public void GetExternalFiles_BadPaths_ReturnsNoSubtitles(string path)
+    [Fact]
+    public void GetExternalFiles_BadProtocol_ReturnsNoSubtitles()
     {
         // need a media source manager capable of returning something other than file protocol
         var mediaSourceManager = new Mock<IMediaSourceManager>();
@@ -77,12 +75,41 @@ public class MediaInfoResolverTests
 
         var video = new Movie
         {
-            Path = path
+            Path = "https://url.com/My.Video.mkv"
         };
 
-        var files = _subtitleResolver.GetExternalFiles(video, Mock.Of<IDirectoryService>(), false);
+        Assert.Empty(_subtitleResolver.GetExternalFiles(video, Mock.Of<IDirectoryService>(), false));
+    }
 
-        Assert.Empty(files);
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void GetExternalFiles_MissingDirectory_DirectoryNotQueried(bool metadataDirectory)
+    {
+        BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
+
+        var video = new Movie
+        {
+            Path = VideoDirectoryPath + "/My.Video.mkv"
+        };
+
+        string pathNotFoundRegex = metadataDirectory ? MetadataDirectoryRegex : VideoDirectoryRegex;
+
+        var directoryService = new Mock<IDirectoryService>(MockBehavior.Strict);
+        // any path other than test target exists and provides an empty listing
+        directoryService.Setup(ds => ds.PathExists(It.IsAny<string>()))
+            .Returns(true);
+        directoryService.Setup(ds => ds.GetFilePaths(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
+            .Returns(Array.Empty<string>());
+
+        directoryService.Setup(ds => ds.PathExists(It.IsRegex(pathNotFoundRegex)))
+            .Returns(false);
+
+        _subtitleResolver.GetExternalFiles(video, directoryService.Object, false);
+
+        directoryService.Verify(
+            ds => ds.GetFilePaths(It.IsRegex(pathNotFoundRegex), It.IsAny<bool>(), It.IsAny<bool>()),
+            Times.Never);
     }
 
     [Theory]
@@ -132,7 +159,6 @@ public class MediaInfoResolverTests
 
     [Theory]
     [InlineData("https://url.com/My.Video.mkv")]
-    [InlineData("non-existent/path")]
     [InlineData(VideoDirectoryPath)] // valid but no files found for this test
     public async void GetExternalStreams_BadPaths_ReturnsNoSubtitles(string path)
     {
