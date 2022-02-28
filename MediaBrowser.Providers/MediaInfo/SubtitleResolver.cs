@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -16,13 +17,20 @@ namespace MediaBrowser.Providers.MediaInfo
         /// </summary>
         /// <param name="localizationManager">The localization manager.</param>
         /// <param name="mediaEncoder">The media encoder.</param>
+        /// <param name="fileSystem">The file system.</param>
         /// <param name="namingOptions">The <see cref="NamingOptions"/> object containing FileExtensions, MediaDefaultFlags, MediaForcedFlags and MediaFlagDelimiters.</param>
         public SubtitleResolver(
             ILocalizationManager localizationManager,
             IMediaEncoder mediaEncoder,
+            IFileSystem fileSystem,
             NamingOptions namingOptions)
-            : base(localizationManager, mediaEncoder, namingOptions, DlnaProfileType.Subtitle)
-            {
+            : base(
+                localizationManager,
+                mediaEncoder,
+                fileSystem,
+                namingOptions,
+                DlnaProfileType.Subtitle)
+        {
         }
     }
 }

@@ -79,9 +79,5 @@ namespace MediaBrowser.Controller.Providers
 
             return filePaths;
         }
-
-        /// <inheritdoc />
-        public bool PathExists(string path)
-            => Directory.Exists(path);
     }
 }

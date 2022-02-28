@@ -11,6 +11,7 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.MediaInfo;
 using Moq;
 using Xunit;
@@ -45,7 +46,13 @@ public class AudioResolverTests
                 }
             }));
 
-        _audioResolver = new AudioResolver(localizationManager, mediaEncoder.Object, new NamingOptions());
+        var fileSystem = new Mock<IFileSystem>(MockBehavior.Strict);
+        fileSystem.Setup(fs => fs.Exists(It.IsRegex(MediaInfoResolverTests.VideoDirectoryRegex)))
+            .Returns(true);
+        fileSystem.Setup(fs => fs.Exists(It.IsRegex(MediaInfoResolverTests.MetadataDirectoryRegex)))
+            .Returns(true);
+
+        _audioResolver = new AudioResolver(localizationManager, mediaEncoder.Object, fileSystem.Object, new NamingOptions());
     }
 
     [Theory]

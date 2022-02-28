@@ -16,12 +16,5 @@ namespace MediaBrowser.Controller.Providers
         IReadOnlyList<string> GetFilePaths(string path);
 
         IReadOnlyList<string> GetFilePaths(string path, bool clearCache, bool sort = false);
-
-        /// <summary>
-        /// Does the path exist.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>Whether the path exists.</returns>
-        bool PathExists(string path);
     }
 }
