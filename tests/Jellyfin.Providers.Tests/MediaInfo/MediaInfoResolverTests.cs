@@ -150,6 +150,8 @@ public class MediaInfoResolverTests
         var directoryService = new Mock<IDirectoryService>(MockBehavior.Strict);
         directoryService.Setup(ds => ds.GetFilePaths(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
             .Returns(Array.Empty<string>());
+        directoryService.Setup(ds => ds.PathExists(It.IsAny<string>()))
+            .Returns(true);
 
         var mediaEncoder = Mock.Of<IMediaEncoder>(MockBehavior.Strict);
 
@@ -299,6 +301,10 @@ public class MediaInfoResolverTests
             .Returns(files);
         directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(MetadataDirectoryRegex), It.IsAny<bool>(), It.IsAny<bool>()))
             .Returns(Array.Empty<string>());
+        directoryService.Setup(ds => ds.PathExists(It.IsRegex(MetadataDirectoryRegex)))
+            .Returns(true);
+        directoryService.Setup(ds => ds.PathExists(It.IsRegex(VideoDirectoryRegex)))
+            .Returns(true);
 
         List<MediaStream> GenerateMediaStreams()
         {
@@ -369,6 +375,11 @@ public class MediaInfoResolverTests
             directoryService.Setup(ds => ds.GetFilePaths(It.IsRegex(MetadataDirectoryRegex), It.IsAny<bool>(), It.IsAny<bool>()))
                 .Returns(Array.Empty<string>());
         }
+
+        directoryService.Setup(ds => ds.PathExists(It.IsRegex(MetadataDirectoryRegex)))
+            .Returns(true);
+        directoryService.Setup(ds => ds.PathExists(It.IsRegex(VideoDirectoryRegex)))
+            .Returns(true);
 
         return directoryService.Object;
     }

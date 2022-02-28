@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using MediaBrowser.Model.IO;
 
@@ -78,5 +79,9 @@ namespace MediaBrowser.Controller.Providers
 
             return filePaths;
         }
+
+        /// <inheritdoc />
+        public bool PathExists(string path)
+            => Directory.Exists(path);
     }
 }

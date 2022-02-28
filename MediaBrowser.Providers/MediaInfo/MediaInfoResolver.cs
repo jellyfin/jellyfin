@@ -148,7 +148,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             // Check if video folder exists
             string folder = video.ContainingFolderPath;
-            if (!Directory.Exists(folder))
+            if (!directoryService.PathExists(folder))
             {
                 return Array.Empty<ExternalPathParserResult>();
             }
@@ -156,7 +156,11 @@ namespace MediaBrowser.Providers.MediaInfo
             var externalPathInfos = new List<ExternalPathParserResult>();
 
             var files = directoryService.GetFilePaths(folder, clearCache).ToList();
-            files.AddRange(directoryService.GetFilePaths(video.GetInternalMetadataPath(), clearCache));
+            var internalMetadataPath = video.GetInternalMetadataPath();
+            if (directoryService.PathExists(internalMetadataPath))
+            {
+                files.AddRange(directoryService.GetFilePaths(video.GetInternalMetadataPath(), clearCache));
+            }
 
             if (!files.Any())
             {
