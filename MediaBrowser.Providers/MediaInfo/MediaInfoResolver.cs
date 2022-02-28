@@ -159,7 +159,7 @@ namespace MediaBrowser.Providers.MediaInfo
             var internalMetadataPath = video.GetInternalMetadataPath();
             if (directoryService.PathExists(internalMetadataPath))
             {
-                files.AddRange(directoryService.GetFilePaths(video.GetInternalMetadataPath(), clearCache));
+                files.AddRange(directoryService.GetFilePaths(internalMetadataPath, clearCache));
             }
 
             if (!files.Any())
