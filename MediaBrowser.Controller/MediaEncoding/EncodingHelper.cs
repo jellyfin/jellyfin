@@ -1338,29 +1338,37 @@ namespace MediaBrowser.Controller.MediaEncoding
                 switch (encodingOptions.EncoderPreset)
                 {
                     case "veryslow":
-
-                        param += " -preset slow"; // lossless is only supported on maxwell and newer(2014+)
+                        param += " -preset p7";
                         break;
 
                     case "slow":
+                        param += " -preset p6";
+                        break;
+
                     case "slower":
-                        param += " -preset slow";
+                        param += " -preset p5";
                         break;
 
                     case "medium":
-                        param += " -preset medium";
+                        param += " -preset p4";
                         break;
 
                     case "fast":
+                        param += " -preset p3";
+                        break;
+
                     case "faster":
+                        param += " -preset p2";
+                        break;
+
                     case "veryfast":
                     case "superfast":
                     case "ultrafast":
-                        param += " -preset fast";
+                        param += " -preset p1";
                         break;
 
                     default:
-                        param += " -preset default";
+                        param += " -preset p4";
                         break;
                 }
             }
