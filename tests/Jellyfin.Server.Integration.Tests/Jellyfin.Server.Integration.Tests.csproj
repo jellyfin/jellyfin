@@ -16,7 +16,7 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" />
     <PackageReference Include="Xunit.Priority" Version="1.1.6" />
     <PackageReference Include="coverlet.collector" Version="3.1.2" />
-    <PackageReference Include="Moq" Version="4.16.1" />
+    <PackageReference Include="Moq" Version="4.17.1" />
   </ItemGroup>
 
   <ItemGroup>
