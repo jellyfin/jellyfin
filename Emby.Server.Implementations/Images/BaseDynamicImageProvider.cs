@@ -135,7 +135,7 @@ namespace Emby.Server.Implementations.Images
 
         protected virtual IEnumerable<string> GetStripCollageImagePaths(BaseItem primaryItem, IEnumerable<BaseItem> items)
         {
-            var useBackdrop = primaryItem is CollectionFolder;
+            var useBackdrop = primaryItem is CollectionFolder || primaryItem is UserView;
             return items
                 .Select(i =>
                 {

@@ -84,16 +84,20 @@ namespace Emby.Server.Implementations.Images
             }).GroupBy(x => x.Id)
             .Select(x => x.First());
 
+            List<BaseItem> returnItems;
             if (isUsingCollectionStrip)
             {
-                return items
+                returnItems = items
                     .Where(i => i.HasImage(ImageType.Primary) || i.HasImage(ImageType.Thumb))
                     .ToList();
+                returnItems.Shuffle();
+                return returnItems;
             }
-
-            return items
+            returnItems = items
                 .Where(i => i.HasImage(ImageType.Primary))
                 .ToList();
+            returnItems.Shuffle();
+            return returnItems;
         }
 
         protected override bool Supports(BaseItem item)
