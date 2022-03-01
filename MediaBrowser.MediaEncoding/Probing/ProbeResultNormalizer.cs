@@ -691,9 +691,9 @@ namespace MediaBrowser.MediaEncoding.Probing
 
                 if (string.IsNullOrEmpty(stream.Title))
                 {
-                    // mp4 missing track title workaround: fall back to handler_name if populated
+                    // mp4 missing track title workaround: fall back to handler_name if populated and not the default "SoundHandler"
                     string handlerName = GetDictionaryValue(streamInfo.Tags, "handler_name");
-                    if (!string.IsNullOrEmpty(handlerName))
+                    if (!string.IsNullOrEmpty(handlerName) && !string.Equals(handlerName, "SoundHandler", StringComparison.OrdinalIgnoreCase))
                     {
                         stream.Title = handlerName;
                     }

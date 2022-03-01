@@ -45,6 +45,7 @@
  - [Froghut](https://github.com/Froghut)
  - [fruhnow](https://github.com/fruhnow)
  - [geilername](https://github.com/geilername)
+ - [GermanCoding](https://github.com/GermanCoding)
  - [gnattu](https://github.com/gnattu)
  - [GodTamIt](https://github.com/GodTamIt)
  - [grafixeyehero](https://github.com/grafixeyehero)
