@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
@@ -28,7 +29,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         private const string VideotoolboxAlias = "vt";
         private const string OpenclAlias = "ocl";
         private const string CudaAlias = "cu";
-
+        private readonly IApplicationPaths _appPaths;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ISubtitleEncoder _subtitleEncoder;
 
@@ -51,9 +52,11 @@ namespace MediaBrowser.Controller.MediaEncoding
         };
 
         public EncodingHelper(
+            IApplicationPaths appPaths,
             IMediaEncoder mediaEncoder,
             ISubtitleEncoder subtitleEncoder)
         {
+            _appPaths = appPaths;
             _mediaEncoder = mediaEncoder;
             _subtitleEncoder = subtitleEncoder;
         }
@@ -1080,6 +1083,12 @@ namespace MediaBrowser.Controller.MediaEncoding
             var alphaParam = enableAlpha ? ":alpha=1" : string.Empty;
             var sub2videoParam = enableSub2video ? ":sub2video=1" : string.Empty;
 
+            var fontPath = Path.Combine(_appPaths.CachePath, "attachments", state.MediaSource.Id);
+            var fontParam = string.Format(
+                CultureInfo.InvariantCulture,
+                ":fontsdir={0}",
+                _mediaEncoder.EscapeSubtitleFilterPath(fontPath));
+
             // TODO
             // var fallbackFontPath = Path.Combine(_appPaths.ProgramDataPath, "fonts", "DroidSansFallback.ttf");
             // string fallbackFontParam = string.Empty;
@@ -1120,11 +1129,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // TODO: Perhaps also use original_size=1920x800 ??
                 return string.Format(
                     CultureInfo.InvariantCulture,
-                    "subtitles=f='{0}'{1}{2}{3}{4}",
+                    "subtitles=f='{0}'{1}{2}{3}{4}{5}",
                     _mediaEncoder.EscapeSubtitleFilterPath(subtitlePath),
                     charsetParam,
                     alphaParam,
                     sub2videoParam,
+                    fontParam,
                     // fallbackFontParam,
                     setPtsParam);
             }
@@ -1133,11 +1143,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             return string.Format(
                 CultureInfo.InvariantCulture,
-                "subtitles='{0}:si={1}{2}{3}'{4}",
+                "subtitles='{0}:si={1}{2}{3}{4}'{5}",
                 _mediaEncoder.EscapeSubtitleFilterPath(mediaPath),
                 state.InternalSubtitleStreamOffset.ToString(CultureInfo.InvariantCulture),
                 alphaParam,
                 sub2videoParam,
+                fontParam,
                 // fallbackFontParam,
                 setPtsParam);
         }

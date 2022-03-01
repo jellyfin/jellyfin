@@ -83,6 +83,130 @@ namespace MediaBrowser.MediaEncoding.Attachments
             return (mediaAttachment, attachmentStream);
         }
 
+        public async Task ExtractAllAttachments(
+            string inputFile,
+            MediaSourceInfo mediaSource,
+            string outputPath,
+            CancellationToken cancellationToken)
+        {
+            var semaphore = _semaphoreLocks.GetOrAdd(outputPath, key => new SemaphoreSlim(1, 1));
+
+            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                if (!Directory.Exists(outputPath))
+                {
+                    await ExtractAllAttachmentsInternal(
+                        _mediaEncoder.GetInputArgument(inputFile, mediaSource),
+                        outputPath,
+                        cancellationToken).ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        }
+
+        private async Task ExtractAllAttachmentsInternal(
+            string inputPath,
+            string outputPath,
+            CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(inputPath))
+            {
+                throw new ArgumentNullException(nameof(inputPath));
+            }
+
+            if (string.IsNullOrEmpty(outputPath))
+            {
+                throw new ArgumentNullException(nameof(outputPath));
+            }
+
+            Directory.CreateDirectory(outputPath);
+
+            var processArgs = string.Format(
+                CultureInfo.InvariantCulture,
+                "-dump_attachment:t \"\" -i {0} -t 0 -f null null",
+                inputPath);
+
+            int exitCode;
+
+            using (var process = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        Arguments = processArgs,
+                        FileName = _mediaEncoder.EncoderPath,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        WorkingDirectory = outputPath,
+                        ErrorDialog = false
+                    },
+                    EnableRaisingEvents = true
+                })
+            {
+                _logger.LogInformation("{File} {Arguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
+
+                process.Start();
+
+                var ranToCompletion = await ProcessExtensions.WaitForExitAsync(process, cancellationToken).ConfigureAwait(false);
+
+                if (!ranToCompletion)
+                {
+                    try
+                    {
+                        _logger.LogWarning("Killing ffmpeg attachment extraction process");
+                        process.Kill();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error killing attachment extraction process");
+                    }
+                }
+
+                exitCode = ranToCompletion ? process.ExitCode : -1;
+            }
+
+            var failed = false;
+
+            if (exitCode != 0)
+            {
+                failed = true;
+
+                _logger.LogWarning("Deleting extracted attachments {Path} due to failure: {ExitCode}", outputPath, exitCode);
+                try
+                {
+                    if (Directory.Exists(outputPath))
+                    {
+                        Directory.Delete(outputPath);
+                    }
+                }
+                catch (IOException ex)
+                {
+                    _logger.LogError(ex, "Error deleting extracted attachments {Path}", outputPath);
+                }
+            }
+            else if (!Directory.Exists(outputPath))
+            {
+                failed = true;
+            }
+
+            if (failed)
+            {
+                _logger.LogError("ffmpeg attachment extraction failed for {InputPath} to {OutputPath}", inputPath, outputPath);
+
+                throw new InvalidOperationException(
+                    string.Format(CultureInfo.InvariantCulture, "ffmpeg attachment extraction failed for {0} to {1}", inputPath, outputPath));
+            }
+            else
+            {
+                _logger.LogInformation("ffmpeg attachment extraction completed for {Path} to {Path}", inputPath, outputPath);
+            }
+        }
+
         private async Task<Stream> GetAttachmentStream(
             MediaSourceInfo mediaSource,
             MediaAttachment mediaAttachment,
