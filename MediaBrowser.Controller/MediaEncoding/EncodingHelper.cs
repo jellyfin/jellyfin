@@ -1086,7 +1086,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var fontPath = Path.Combine(_appPaths.CachePath, "attachments", state.MediaSource.Id);
             var fontParam = string.Format(
                 CultureInfo.InvariantCulture,
-                ":fontsdir={0}",
+                ":fontsdir='{0}'",
                 _mediaEncoder.EscapeSubtitleFilterPath(fontPath));
 
             // TODO
@@ -1143,7 +1143,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             return string.Format(
                 CultureInfo.InvariantCulture,
-                "subtitles='{0}:si={1}{2}{3}{4}'{5}",
+                "subtitles=f='{0}':si={1}{2}{3}{4}{5}",
                 _mediaEncoder.EscapeSubtitleFilterPath(mediaPath),
                 state.InternalSubtitleStreamOffset.ToString(CultureInfo.InvariantCulture),
                 alphaParam,
