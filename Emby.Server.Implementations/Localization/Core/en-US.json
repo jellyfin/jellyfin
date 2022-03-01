@@ -119,5 +119,7 @@
     "TaskDownloadMissingSubtitles": "Download missing subtitles",
     "TaskDownloadMissingSubtitlesDescription": "Searches the internet for missing subtitles based on metadata configuration.",
     "TaskOptimizeDatabase": "Optimize database",
-    "TaskOptimizeDatabaseDescription": "Compacts database and truncates free space. Running this task after scanning the library or doing other changes that imply database modifications might improve performance."
+    "TaskOptimizeDatabaseDescription": "Compacts database and truncates free space. Running this task after scanning the library or doing other changes that imply database modifications might improve performance.",
+    "TaskKeyframeExtractor": "Keyframe Extractor",
+    "TaskKeyframeExtractorDescription": "Extracts keyframes from video files to create more precise HLS playlists. This task may run for a long time."
 }
