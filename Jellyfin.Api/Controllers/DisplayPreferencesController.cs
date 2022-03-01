@@ -126,9 +126,11 @@ namespace Jellyfin.Api.Controllers
                 HomeSectionType.SmallLibraryTiles,
                 HomeSectionType.Resume,
                 HomeSectionType.ResumeAudio,
+                HomeSectionType.ResumeBook,
                 HomeSectionType.LiveTv,
                 HomeSectionType.NextUp,
-                HomeSectionType.LatestMedia, HomeSectionType.None,
+                HomeSectionType.LatestMedia,
+                HomeSectionType.None,
             };
 
             if (!Guid.TryParse(displayPreferencesId, out var itemId))
@@ -182,7 +184,7 @@ namespace Jellyfin.Api.Controllers
                 var order = int.Parse(key.AsSpan().Slice("homesection".Length));
                 if (!Enum.TryParse<HomeSectionType>(displayPreferences.CustomPrefs[key], true, out var type))
                 {
-                    type = order < 7 ? defaults[order] : HomeSectionType.None;
+                    type = order < 8 ? defaults[order] : HomeSectionType.None;
                 }
 
                 displayPreferences.CustomPrefs.Remove(key);
