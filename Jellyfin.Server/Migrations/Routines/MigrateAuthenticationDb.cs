@@ -58,13 +58,18 @@ namespace Jellyfin.Server.Migrations.Routines
 
                 foreach (var row in authenticatedDevices)
                 {
+                    var dateCreatedStr = row[9].ToString();
+                    _ = DateTime.TryParse(dateCreatedStr, out var dateCreated);
+                    var dateLastActivityStr = row[10].ToString();
+                    _ = DateTime.TryParse(dateLastActivityStr, out var dateLastActivity);
+
                     if (row[6].IsDbNull())
                     {
                         dbContext.ApiKeys.Add(new ApiKey(row[3].ToString())
                         {
                             AccessToken = row[1].ToString(),
-                            DateCreated = row[9].ToDateTime(),
-                            DateLastActivity = row[10].ToDateTime()
+                            DateCreated = dateCreated,
+                            DateLastActivity = dateLastActivity
                         });
                     }
                     else
@@ -78,8 +83,8 @@ namespace Jellyfin.Server.Migrations.Routines
                         {
                             AccessToken = row[1].ToString(),
                             IsActive = row[8].ToBool(),
-                            DateCreated = row[9].ToDateTime(),
-                            DateLastActivity = row[10].ToDateTime()
+                            DateCreated = dateCreated,
+                            DateLastActivity = dateLastActivity
                         });
                     }
                 }
