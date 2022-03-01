@@ -771,10 +771,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 args.Append(GetCudaDeviceArgs(0, CudaAlias))
                      .Append(GetFilterHwDeviceArgs(CudaAlias));
-
-                // workaround for "No decoder surfaces left" error,
-                // but will increase vram usage. https://trac.ffmpeg.org/ticket/7562
-                args.Append(" -extra_hw_frames 3");
             }
             else if (string.Equals(optHwaccelType, "amf", StringComparison.OrdinalIgnoreCase))
             {
@@ -4431,7 +4427,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (options.EnableEnhancedNvdecDecoder && isCudaSupported && isCodecAvailable)
                 {
-                    return " -hwaccel cuda" + (outputHwSurface ? " -hwaccel_output_format cuda" : string.Empty) + (isAv1 ? " -c:v av1" : string.Empty);
+                    // set -threads 1 to nvdec decoder explicitly since it doesn't implement threading support.
+                    return " -hwaccel cuda" + (outputHwSurface ? " -hwaccel_output_format cuda" : string.Empty) + " -threads 1" + (isAv1 ? " -c:v av1" : string.Empty);
                 }
             }
 
