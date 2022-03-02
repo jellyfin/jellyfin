@@ -120,5 +120,7 @@
     "Forced": "Kényszerített",
     "Default": "Alapértelmezett",
     "TaskOptimizeDatabaseDescription": "Tömöríti az adatbázist és csonkolja a szabad helyet. A feladat futtatása a könyvtár beolvasása után, vagy egyéb, adatbázis-módosítást igénylő változtatások végrehajtása javíthatja a teljesítményt.",
-    "TaskOptimizeDatabase": "Adatbázis optimalizálása"
+    "TaskOptimizeDatabase": "Adatbázis optimalizálása",
+    "TaskKeyframeExtractor": "Kulcskockák kibontása",
+    "TaskKeyframeExtractorDescription": "Kulcskockákat bont ki a videofájlokból, hogy pontosabb HLS lejátszási listákat hozzon létre. Ez a feladat hosszú ideig tarthat."
 }
