@@ -126,7 +126,8 @@ namespace Emby.Server.Implementations.TV
                     parentsFolders.ToList())
                 .Cast<Episode>()
                 .Where(episode => !string.IsNullOrEmpty(episode.SeriesPresentationUniqueKey))
-                .Select(GetUniqueSeriesKey);
+                .Select(GetUniqueSeriesKey)
+                .ToList();
 
             // Avoid implicitly captured closure
             var episodes = GetNextUpEpisodes(request, user, items, options);
@@ -134,7 +135,7 @@ namespace Emby.Server.Implementations.TV
             return GetResult(episodes, request);
         }
 
-        public IEnumerable<Episode> GetNextUpEpisodes(NextUpQuery request, User user, IEnumerable<string> seriesKeys, DtoOptions dtoOptions)
+        public IEnumerable<Episode> GetNextUpEpisodes(NextUpQuery request, User user, IReadOnlyList<string> seriesKeys, DtoOptions dtoOptions)
         {
             // Avoid implicitly captured closure
             var currentUser = user;
