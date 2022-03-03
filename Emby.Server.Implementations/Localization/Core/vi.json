@@ -119,5 +119,7 @@
     "Forced": "Bắt Buộc",
     "Default": "Mặc Định",
     "TaskOptimizeDatabaseDescription": "Thu gọn cơ sở dữ liệu và cắt bớt dung lượng trống. Chạy tác vụ này sau khi quét thư viện hoặc thực hiện các thay đổi khác ngụ ý sửa đổi cơ sở dữ liệu có thể cải thiện hiệu suất.",
-    "TaskOptimizeDatabase": "Tối ưu hóa cơ sở dữ liệu"
+    "TaskOptimizeDatabase": "Tối ưu hóa cơ sở dữ liệu",
+    "TaskKeyframeExtractor": "Trích Xuất Khung Hình",
+    "TaskKeyframeExtractorDescription": "Trích xuất khung hình chính từ các tệp video để tạo danh sách phát HLS chính xác hơn. Tác vụ này có thể chạy trong một thời gian dài."
 }
