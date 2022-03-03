@@ -154,7 +154,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             // Check if video folder exists
             string folder = video.ContainingFolderPath;
-            if (!_fileSystem.Exists(folder))
+            if (!_fileSystem.DirectoryExists(folder))
             {
                 return Array.Empty<ExternalPathParserResult>();
             }
@@ -163,7 +163,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             var files = directoryService.GetFilePaths(folder, clearCache).ToList();
             var internalMetadataPath = video.GetInternalMetadataPath();
-            if (_fileSystem.Exists(internalMetadataPath))
+            if (_fileSystem.DirectoryExists(internalMetadataPath))
             {
                 files.AddRange(directoryService.GetFilePaths(internalMetadataPath, clearCache));
             }

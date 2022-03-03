@@ -47,9 +47,9 @@ public class SubtitleResolverTests
             }));
 
         var fileSystem = new Mock<IFileSystem>(MockBehavior.Strict);
-        fileSystem.Setup(fs => fs.Exists(It.IsRegex(MediaInfoResolverTests.VideoDirectoryRegex)))
+        fileSystem.Setup(fs => fs.DirectoryExists(It.IsRegex(MediaInfoResolverTests.VideoDirectoryRegex)))
             .Returns(true);
-        fileSystem.Setup(fs => fs.Exists(It.IsRegex(MediaInfoResolverTests.MetadataDirectoryRegex)))
+        fileSystem.Setup(fs => fs.DirectoryExists(It.IsRegex(MediaInfoResolverTests.MetadataDirectoryRegex)))
             .Returns(true);
 
         _subtitleResolver = new SubtitleResolver(localizationManager, mediaEncoder.Object, fileSystem.Object, new NamingOptions());

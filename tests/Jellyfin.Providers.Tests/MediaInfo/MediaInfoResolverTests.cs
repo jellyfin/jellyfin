@@ -63,11 +63,11 @@ public class MediaInfoResolverTests
             }));
 
         var fileSystem = new Mock<IFileSystem>(MockBehavior.Strict);
-        fileSystem.Setup(fs => fs.Exists(It.IsAny<string>()))
+        fileSystem.Setup(fs => fs.DirectoryExists(It.IsAny<string>()))
             .Returns(false);
-        fileSystem.Setup(fs => fs.Exists(It.IsRegex(VideoDirectoryRegex)))
+        fileSystem.Setup(fs => fs.DirectoryExists(It.IsRegex(VideoDirectoryRegex)))
             .Returns(true);
-        fileSystem.Setup(fs => fs.Exists(It.IsRegex(MetadataDirectoryRegex)))
+        fileSystem.Setup(fs => fs.DirectoryExists(It.IsRegex(MetadataDirectoryRegex)))
             .Returns(true);
 
         _subtitleResolver = new SubtitleResolver(_localizationManager, mediaEncoder.Object, fileSystem.Object, new NamingOptions());
@@ -300,9 +300,9 @@ public class MediaInfoResolverTests
             }));
 
         var fileSystem = new Mock<IFileSystem>(MockBehavior.Strict);
-        fileSystem.Setup(fs => fs.Exists(It.IsRegex(VideoDirectoryRegex)))
+        fileSystem.Setup(fs => fs.DirectoryExists(It.IsRegex(VideoDirectoryRegex)))
             .Returns(true);
-        fileSystem.Setup(fs => fs.Exists(It.IsRegex(MetadataDirectoryRegex)))
+        fileSystem.Setup(fs => fs.DirectoryExists(It.IsRegex(MetadataDirectoryRegex)))
             .Returns(true);
 
         var subtitleResolver = new SubtitleResolver(_localizationManager, mediaEncoder.Object, fileSystem.Object, new NamingOptions());
@@ -372,9 +372,9 @@ public class MediaInfoResolverTests
             }));
 
         var fileSystem = new Mock<IFileSystem>(MockBehavior.Strict);
-        fileSystem.Setup(fs => fs.Exists(It.IsRegex(VideoDirectoryRegex)))
+        fileSystem.Setup(fs => fs.DirectoryExists(It.IsRegex(VideoDirectoryRegex)))
             .Returns(true);
-        fileSystem.Setup(fs => fs.Exists(It.IsRegex(MetadataDirectoryRegex)))
+        fileSystem.Setup(fs => fs.DirectoryExists(It.IsRegex(MetadataDirectoryRegex)))
             .Returns(true);
 
         var subtitleResolver = new SubtitleResolver(_localizationManager, mediaEncoder.Object, fileSystem.Object, new NamingOptions());

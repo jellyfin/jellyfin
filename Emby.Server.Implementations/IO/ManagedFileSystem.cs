@@ -705,9 +705,15 @@ namespace Emby.Server.Implementations.IO
         }
 
         /// <inheritdoc />
-        public virtual bool Exists(string path)
+        public virtual bool DirectoryExists(string path)
         {
-            return Directory.Exists(path) || File.Exists(path);
+            return Directory.Exists(path);
+        }
+
+        /// <inheritdoc />
+        public virtual bool FileExists(string path)
+        {
+            return File.Exists(path);
         }
 
         private EnumerationOptions GetEnumerationOptions(bool recursive)
