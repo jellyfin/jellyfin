@@ -86,18 +86,20 @@ public class MediaInfoResolverTests
     }
 
     [Theory]
-    [InlineData("My.Video.srt", null)] // exact
-    [InlineData("My.Video.en.srt", "eng")]
-    [InlineData("MyVideo.en.srt", "eng")] // shorter title
-    [InlineData("My _ Video.en.srt", "eng")] // longer title
-    [InlineData("My.Video.en.srt", "eng", true)]
-    public void GetExternalFiles_FuzzyMatching_MatchesAndParsesToken(string file, string? language, bool metadataDirectory = false)
+    [InlineData("My.Video.mkv", "My.Video.srt", null)] // exact
+    [InlineData("My.Video.mkv", "My.Video.en.srt", "eng")]
+    [InlineData("My.Video.mkv", "MyVideo.en.srt", "eng")] // shorter title
+    [InlineData("My.Video.mkv", "My _ Video.en.srt", "eng")] // longer title
+    [InlineData("My.Video.mkv", "My.Video.en.srt", "eng", true)]
+    [InlineData("Example Movie (2021).mp4", "Example Movie (2021).English.Srt", "eng")]
+    [InlineData("[LTDB] Who Framed Roger Rabbit (1998) - [Bluray-1080p].mkv", "[LTDB] Who Framed Roger Rabbit (1998) - [Bluray-1080p].en.srt", "eng")]
+    public void GetExternalFiles_FuzzyMatching_MatchesAndParsesToken(string movie, string file, string? language, bool metadataDirectory = false)
     {
         BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
 
         var video = new Movie
         {
-            Path = VideoDirectoryPath + "/My.Video.mkv"
+            Path = VideoDirectoryPath + "/" + movie
         };
 
         var directoryService = GetDirectoryServiceForExternalFile(file, metadataDirectory);

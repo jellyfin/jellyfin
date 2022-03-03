@@ -61,11 +61,11 @@ namespace Emby.Naming.ExternalFiles
             {
                 var languageString = extraString;
                 var titleString = string.Empty;
-                int separatorLength = separator.Length;
+                const int SeparatorLength = 1;
 
                 while (languageString.Length > 0)
                 {
-                    int lastSeparator = languageString.LastIndexOf(separator, StringComparison.OrdinalIgnoreCase);
+                    int lastSeparator = languageString.LastIndexOf(separator);
 
                     if (lastSeparator == -1)
                     {
@@ -73,7 +73,7 @@ namespace Emby.Naming.ExternalFiles
                     }
 
                     string currentSlice = languageString[lastSeparator..];
-                    string currentSliceWithoutSeparator = currentSlice[separatorLength..];
+                    string currentSliceWithoutSeparator = currentSlice[SeparatorLength..];
 
                     if (_namingOptions.MediaDefaultFlags.Any(s => currentSliceWithoutSeparator.Contains(s, StringComparison.OrdinalIgnoreCase)))
                     {
@@ -107,7 +107,7 @@ namespace Emby.Naming.ExternalFiles
                     languageString = languageString[..lastSeparator];
                 }
 
-                pathInfo.Title = separatorLength <= titleString.Length ? titleString[separatorLength..] : null;
+                pathInfo.Title = titleString.Length >= SeparatorLength ? titleString[SeparatorLength..] : null;
             }
 
             return pathInfo;

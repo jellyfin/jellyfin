@@ -166,14 +166,26 @@ namespace MediaBrowser.Providers.MediaInfo
             foreach (var file in files)
             {
                 var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file);
-                if (_compareInfo.IsPrefix(fileNameWithoutExtension, video.FileNameWithoutExtension, CompareOptions, out int matchLength)
-                    && (fileNameWithoutExtension.Length == matchLength || _namingOptions.MediaFlagDelimiters.Contains(fileNameWithoutExtension[matchLength].ToString())))
-                {
-                    var externalPathInfo = _externalPathParser.ParseFile(file, fileNameWithoutExtension[matchLength..]);
 
-                    if (externalPathInfo != null)
+                // strip ignored characters off the start of the potential external file - they mess with the prefix matching
+                while (_compareInfo.Compare(fileNameWithoutExtension[0].ToString(), string.Empty, CompareOptions) == 0)
+                {
+                    fileNameWithoutExtension = fileNameWithoutExtension[1..];
+                }
+
+                if (_compareInfo.IsPrefix(fileNameWithoutExtension, video.FileNameWithoutExtension, CompareOptions, out int matchLength))
+                {
+                    // ensure any characters between matchLength and next delimiter are ignored symbols
+                    int nextDelimiter = fileNameWithoutExtension.IndexOfAny(_namingOptions.MediaFlagDelimiters, matchLength);
+                    if (fileNameWithoutExtension.Length == matchLength
+                        || (nextDelimiter > 0 && _compareInfo.Compare(string.Empty, fileNameWithoutExtension[matchLength..nextDelimiter], CompareOptions) == 0))
                     {
-                        externalPathInfos.Add(externalPathInfo);
+                        var externalPathInfo = _externalPathParser.ParseFile(file, fileNameWithoutExtension[Math.Max(matchLength, nextDelimiter)..]);
+
+                        if (externalPathInfo != null)
+                        {
+                            externalPathInfos.Add(externalPathInfo);
+                        }
                     }
                 }
             }
