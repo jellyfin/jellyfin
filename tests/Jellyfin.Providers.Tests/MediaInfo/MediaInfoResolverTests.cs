@@ -15,6 +15,7 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Providers.MediaInfo;
 using Moq;
@@ -25,9 +26,9 @@ namespace Jellyfin.Providers.Tests.MediaInfo;
 public class MediaInfoResolverTests
 {
     public const string VideoDirectoryPath = "Test Data/Video";
-    private const string VideoDirectoryRegex = @"Test Data[/\\]Video";
-    private const string MetadataDirectoryPath = "library/00/00000000000000000000000000000000";
-    private const string MetadataDirectoryRegex = @"library.*";
+    public const string VideoDirectoryRegex = @"Test Data[/\\]Video";
+    public const string MetadataDirectoryPath = "library/00/00000000000000000000000000000000";
+    public const string MetadataDirectoryRegex = @"library.*";
 
     private readonly ILocalizationManager _localizationManager;
     private readonly MediaInfoResolver _subtitleResolver;
@@ -61,13 +62,19 @@ public class MediaInfoResolverTests
                 }
             }));
 
-        _subtitleResolver = new SubtitleResolver(_localizationManager, mediaEncoder.Object, new NamingOptions());
+        var fileSystem = new Mock<IFileSystem>(MockBehavior.Strict);
+        fileSystem.Setup(fs => fs.DirectoryExists(It.IsAny<string>()))
+            .Returns(false);
+        fileSystem.Setup(fs => fs.DirectoryExists(It.IsRegex(VideoDirectoryRegex)))
+            .Returns(true);
+        fileSystem.Setup(fs => fs.DirectoryExists(It.IsRegex(MetadataDirectoryRegex)))
+            .Returns(true);
+
+        _subtitleResolver = new SubtitleResolver(_localizationManager, mediaEncoder.Object, fileSystem.Object, new NamingOptions());
     }
 
-    [Theory]
-    [InlineData("https://url.com/My.Video.mkv")]
-    [InlineData("non-existent/path")]
-    public void GetExternalFiles_BadPaths_ReturnsNoSubtitles(string path)
+    [Fact]
+    public void GetExternalFiles_BadProtocol_ReturnsNoSubtitles()
     {
         // need a media source manager capable of returning something other than file protocol
         var mediaSourceManager = new Mock<IMediaSourceManager>();
@@ -77,12 +84,52 @@ public class MediaInfoResolverTests
 
         var video = new Movie
         {
-            Path = path
+            Path = "https://url.com/My.Video.mkv"
         };
 
-        var files = _subtitleResolver.GetExternalFiles(video, Mock.Of<IDirectoryService>(), false);
+        Assert.Empty(_subtitleResolver.GetExternalFiles(video, Mock.Of<IDirectoryService>(), false));
+    }
 
-        Assert.Empty(files);
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void GetExternalFiles_MissingDirectory_DirectoryNotQueried(bool metadataDirectory)
+    {
+        BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
+
+        string containingFolderPath, metadataPath;
+
+        if (metadataDirectory)
+        {
+            containingFolderPath = VideoDirectoryPath;
+            metadataPath = "invalid";
+        }
+        else
+        {
+            containingFolderPath = "invalid";
+            metadataPath = MetadataDirectoryPath;
+        }
+
+        var video = new Mock<Movie>();
+        video.Setup(m => m.Path)
+            .Returns(VideoDirectoryPath + "/My.Video.mkv");
+        video.Setup(m => m.ContainingFolderPath)
+            .Returns(containingFolderPath);
+        video.Setup(m => m.GetInternalMetadataPath())
+            .Returns(metadataPath);
+
+        string pathNotFoundRegex = metadataDirectory ? MetadataDirectoryRegex : VideoDirectoryRegex;
+
+        var directoryService = new Mock<IDirectoryService>(MockBehavior.Strict);
+        // any path other than test target exists and provides an empty listing
+        directoryService.Setup(ds => ds.GetFilePaths(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
+            .Returns(Array.Empty<string>());
+
+        _subtitleResolver.GetExternalFiles(video.Object, directoryService.Object, false);
+
+        directoryService.Verify(
+            ds => ds.GetFilePaths(It.IsRegex(pathNotFoundRegex), It.IsAny<bool>(), It.IsAny<bool>()),
+            Times.Never);
     }
 
     [Theory]
@@ -132,7 +179,6 @@ public class MediaInfoResolverTests
 
     [Theory]
     [InlineData("https://url.com/My.Video.mkv")]
-    [InlineData("non-existent/path")]
     [InlineData(VideoDirectoryPath)] // valid but no files found for this test
     public async void GetExternalStreams_BadPaths_ReturnsNoSubtitles(string path)
     {
@@ -152,8 +198,9 @@ public class MediaInfoResolverTests
             .Returns(Array.Empty<string>());
 
         var mediaEncoder = Mock.Of<IMediaEncoder>(MockBehavior.Strict);
+        var fileSystem = Mock.Of<IFileSystem>();
 
-        var subtitleResolver = new SubtitleResolver(_localizationManager, mediaEncoder, new NamingOptions());
+        var subtitleResolver = new SubtitleResolver(_localizationManager, mediaEncoder, fileSystem, new NamingOptions());
 
         var streams = await subtitleResolver.GetExternalStreamsAsync(video, 0, directoryService.Object, false, CancellationToken.None);
 
@@ -252,7 +299,13 @@ public class MediaInfoResolverTests
                 MediaStreams = inputStreams.ToList()
             }));
 
-        var subtitleResolver = new SubtitleResolver(_localizationManager, mediaEncoder.Object, new NamingOptions());
+        var fileSystem = new Mock<IFileSystem>(MockBehavior.Strict);
+        fileSystem.Setup(fs => fs.DirectoryExists(It.IsRegex(VideoDirectoryRegex)))
+            .Returns(true);
+        fileSystem.Setup(fs => fs.DirectoryExists(It.IsRegex(MetadataDirectoryRegex)))
+            .Returns(true);
+
+        var subtitleResolver = new SubtitleResolver(_localizationManager, mediaEncoder.Object, fileSystem.Object, new NamingOptions());
 
         var directoryService = GetDirectoryServiceForExternalFile(file);
         var streams = await subtitleResolver.GetExternalStreamsAsync(video, 0, directoryService, false, CancellationToken.None);
@@ -318,7 +371,13 @@ public class MediaInfoResolverTests
                 MediaStreams = GenerateMediaStreams()
             }));
 
-        var subtitleResolver = new SubtitleResolver(_localizationManager, mediaEncoder.Object, new NamingOptions());
+        var fileSystem = new Mock<IFileSystem>(MockBehavior.Strict);
+        fileSystem.Setup(fs => fs.DirectoryExists(It.IsRegex(VideoDirectoryRegex)))
+            .Returns(true);
+        fileSystem.Setup(fs => fs.DirectoryExists(It.IsRegex(MetadataDirectoryRegex)))
+            .Returns(true);
+
+        var subtitleResolver = new SubtitleResolver(_localizationManager, mediaEncoder.Object, fileSystem.Object, new NamingOptions());
 
         int startIndex = 1;
         var streams = await subtitleResolver.GetExternalStreamsAsync(video, startIndex, directoryService.Object, false, CancellationToken.None);

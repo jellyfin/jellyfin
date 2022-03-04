@@ -200,5 +200,19 @@ namespace MediaBrowser.Model.IO
         void SetAttributes(string path, bool isHidden, bool readOnly);
 
         IEnumerable<FileSystemMetadata> GetDrives();
+
+        /// <summary>
+        /// Determines whether the directory exists.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>Whether the path exists.</returns>
+        bool DirectoryExists(string path);
+
+        /// <summary>
+        /// Determines whether the file exists.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>Whether the path exists.</returns>
+        bool FileExists(string path);
     }
 }

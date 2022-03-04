@@ -19,9 +19,9 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
-using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
 
@@ -58,11 +58,12 @@ namespace MediaBrowser.Providers.MediaInfo
             ISubtitleManager subtitleManager,
             IChapterManager chapterManager,
             ILibraryManager libraryManager,
+            IFileSystem fileSystem,
             NamingOptions namingOptions)
         {
             _logger = logger;
-            _audioResolver = new AudioResolver(localization, mediaEncoder, namingOptions);
-            _subtitleResolver = new SubtitleResolver(localization, mediaEncoder, namingOptions);
+            _audioResolver = new AudioResolver(localization, mediaEncoder, fileSystem, namingOptions);
+            _subtitleResolver = new SubtitleResolver(localization, mediaEncoder, fileSystem, namingOptions);
             _videoProber = new FFProbeVideoInfo(
                 _logger,
                 mediaSourceManager,

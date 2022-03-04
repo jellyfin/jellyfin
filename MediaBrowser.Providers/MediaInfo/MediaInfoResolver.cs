@@ -14,6 +14,7 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Providers.MediaInfo
@@ -43,6 +44,8 @@ namespace MediaBrowser.Providers.MediaInfo
         /// </summary>
         private readonly IMediaEncoder _mediaEncoder;
 
+        private readonly IFileSystem _fileSystem;
+
         /// <summary>
         /// The <see cref="NamingOptions"/> instance.
         /// </summary>
@@ -58,15 +61,18 @@ namespace MediaBrowser.Providers.MediaInfo
         /// </summary>
         /// <param name="localizationManager">The localization manager.</param>
         /// <param name="mediaEncoder">The media encoder.</param>
+        /// <param name="fileSystem">The file system.</param>
         /// <param name="namingOptions">The <see cref="NamingOptions"/> object containing FileExtensions, MediaDefaultFlags, MediaForcedFlags and MediaFlagDelimiters.</param>
         /// <param name="type">The <see cref="DlnaProfileType"/> of the parsed file.</param>
         protected MediaInfoResolver(
             ILocalizationManager localizationManager,
             IMediaEncoder mediaEncoder,
+            IFileSystem fileSystem,
             NamingOptions namingOptions,
             DlnaProfileType type)
         {
             _mediaEncoder = mediaEncoder;
+            _fileSystem = fileSystem;
             _namingOptions = namingOptions;
             _type = type;
             _externalPathParser = new ExternalPathParser(namingOptions, localizationManager, _type);
@@ -148,7 +154,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             // Check if video folder exists
             string folder = video.ContainingFolderPath;
-            if (!Directory.Exists(folder))
+            if (!_fileSystem.DirectoryExists(folder))
             {
                 return Array.Empty<ExternalPathParserResult>();
             }
@@ -156,7 +162,11 @@ namespace MediaBrowser.Providers.MediaInfo
             var externalPathInfos = new List<ExternalPathParserResult>();
 
             var files = directoryService.GetFilePaths(folder, clearCache).ToList();
-            files.AddRange(directoryService.GetFilePaths(video.GetInternalMetadataPath(), clearCache));
+            var internalMetadataPath = video.GetInternalMetadataPath();
+            if (_fileSystem.DirectoryExists(internalMetadataPath))
+            {
+                files.AddRange(directoryService.GetFilePaths(internalMetadataPath, clearCache));
+            }
 
             if (!files.Any())
             {

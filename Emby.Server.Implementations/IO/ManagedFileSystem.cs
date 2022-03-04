@@ -704,6 +704,18 @@ namespace Emby.Server.Implementations.IO
             return Directory.EnumerateFileSystemEntries(path, "*", GetEnumerationOptions(recursive));
         }
 
+        /// <inheritdoc />
+        public virtual bool DirectoryExists(string path)
+        {
+            return Directory.Exists(path);
+        }
+
+        /// <inheritdoc />
+        public virtual bool FileExists(string path)
+        {
+            return File.Exists(path);
+        }
+
         private EnumerationOptions GetEnumerationOptions(bool recursive)
         {
             return new EnumerationOptions
