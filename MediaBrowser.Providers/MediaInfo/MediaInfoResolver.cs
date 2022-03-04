@@ -149,8 +149,6 @@ namespace MediaBrowser.Providers.MediaInfo
                 return Array.Empty<ExternalPathParserResult>();
             }
 
-            var externalPathInfos = new List<ExternalPathParserResult>();
-
             var files = directoryService.GetFilePaths(folder, clearCache).ToList();
             var internalMetadataPath = video.GetInternalMetadataPath();
             if (_fileSystem.DirectoryExists(internalMetadataPath))
@@ -163,14 +161,15 @@ namespace MediaBrowser.Providers.MediaInfo
                 return Array.Empty<ExternalPathParserResult>();
             }
 
+            var externalPathInfos = new List<ExternalPathParserResult>();
+            ReadOnlySpan<char> prefix = video.FileNameWithoutExtension;
             foreach (var file in files)
             {
-                var prefixLength = video.FileNameWithoutExtension.Length;
-                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file);
-                if (video.FileNameWithoutExtension.Equals(fileNameWithoutExtension[..prefixLength], StringComparison.OrdinalIgnoreCase)
-                    && (fileNameWithoutExtension.Length == prefixLength || _namingOptions.MediaFlagDelimiters.Contains(fileNameWithoutExtension[prefixLength])))
+                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file.AsSpan());
+                if (prefix.Equals(fileNameWithoutExtension[..prefix.Length], StringComparison.OrdinalIgnoreCase)
+                    && (fileNameWithoutExtension.Length == prefix.Length || _namingOptions.MediaFlagDelimiters.Contains(fileNameWithoutExtension[prefix.Length])))
                 {
-                    var externalPathInfo = _externalPathParser.ParseFile(file, fileNameWithoutExtension[prefixLength..]);
+                    var externalPathInfo = _externalPathParser.ParseFile(file, fileNameWithoutExtension[prefix.Length..].ToString());
 
                     if (externalPathInfo != null)
                     {
