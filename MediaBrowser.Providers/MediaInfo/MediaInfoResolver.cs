@@ -25,16 +25,6 @@ namespace MediaBrowser.Providers.MediaInfo
     public abstract class MediaInfoResolver
     {
         /// <summary>
-        /// The <see cref="CompareOptions"/> instance.
-        /// </summary>
-        private const CompareOptions CompareOptions = System.Globalization.CompareOptions.IgnoreCase | System.Globalization.CompareOptions.IgnoreNonSpace | System.Globalization.CompareOptions.IgnoreSymbols;
-
-        /// <summary>
-        /// The <see cref="CompareInfo"/> instance.
-        /// </summary>
-        private readonly CompareInfo _compareInfo = CultureInfo.InvariantCulture.CompareInfo;
-
-        /// <summary>
         /// The <see cref="ExternalPathParser"/> instance.
         /// </summary>
         private readonly ExternalPathParser _externalPathParser;
@@ -175,11 +165,12 @@ namespace MediaBrowser.Providers.MediaInfo
 
             foreach (var file in files)
             {
+                var prefixLength = video.FileNameWithoutExtension.Length;
                 var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file);
-                if (_compareInfo.IsPrefix(fileNameWithoutExtension, video.FileNameWithoutExtension, CompareOptions, out int matchLength)
-                    && (fileNameWithoutExtension.Length == matchLength || _namingOptions.MediaFlagDelimiters.Contains(fileNameWithoutExtension[matchLength].ToString())))
+                if (video.FileNameWithoutExtension.Equals(fileNameWithoutExtension[..prefixLength], StringComparison.OrdinalIgnoreCase)
+                    && (fileNameWithoutExtension.Length == prefixLength || _namingOptions.MediaFlagDelimiters.Contains(fileNameWithoutExtension[prefixLength])))
                 {
-                    var externalPathInfo = _externalPathParser.ParseFile(file, fileNameWithoutExtension[matchLength..]);
+                    var externalPathInfo = _externalPathParser.ParseFile(file, fileNameWithoutExtension[prefixLength..]);
 
                     if (externalPathInfo != null)
                     {

@@ -266,7 +266,7 @@ namespace Emby.Naming.Common
 
             MediaFlagDelimiters = new[]
             {
-                "."
+                '.'
             };
 
             MediaForcedFlags = new[]
@@ -715,7 +715,7 @@ namespace Emby.Naming.Common
         /// <summary>
         /// Gets or sets list of external media flag delimiters.
         /// </summary>
-        public string[] MediaFlagDelimiters { get; set; }
+        public char[] MediaFlagDelimiters { get; set; }
 
         /// <summary>
         /// Gets or sets list of external media forced flags.

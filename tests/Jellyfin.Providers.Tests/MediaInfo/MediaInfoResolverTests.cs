@@ -133,18 +133,18 @@ public class MediaInfoResolverTests
     }
 
     [Theory]
-    [InlineData("My.Video.srt", null)] // exact
-    [InlineData("My.Video.en.srt", "eng")]
-    [InlineData("MyVideo.en.srt", "eng")] // shorter title
-    [InlineData("My _ Video.en.srt", "eng")] // longer title
-    [InlineData("My.Video.en.srt", "eng", true)]
-    public void GetExternalFiles_FuzzyMatching_MatchesAndParsesToken(string file, string? language, bool metadataDirectory = false)
+    [InlineData("My.Video.mkv", "My.Video.srt", null)]
+    [InlineData("My.Video.mkv", "My.Video.en.srt", "eng")]
+    [InlineData("My.Video.mkv", "My.Video.en.srt", "eng", true)]
+    [InlineData("Example Movie (2021).mp4", "Example Movie (2021).English.Srt", "eng")]
+    [InlineData("[LTDB] Who Framed Roger Rabbit (1998) - [Bluray-1080p].mkv", "[LTDB] Who Framed Roger Rabbit (1998) - [Bluray-1080p].en.srt", "eng")]
+    public void GetExternalFiles_NameMatching_MatchesAndParsesToken(string movie, string file, string? language, bool metadataDirectory = false)
     {
         BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
 
         var video = new Movie
         {
-            Path = VideoDirectoryPath + "/My.Video.mkv"
+            Path = VideoDirectoryPath + "/" + movie
         };
 
         var directoryService = GetDirectoryServiceForExternalFile(file, metadataDirectory);
@@ -162,7 +162,7 @@ public class MediaInfoResolverTests
     [InlineData("My.Video.txt")]
     [InlineData("My.Video Sequel.srt")]
     [InlineData("Some.Other.Video.srt")]
-    public void GetExternalFiles_FuzzyMatching_RejectsNonMatches(string file)
+    public void GetExternalFiles_NameMatching_RejectsNonMatches(string file)
     {
         BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
 
@@ -344,7 +344,7 @@ public class MediaInfoResolverTests
         var files = new string[fileCount];
         for (int i = 0; i < fileCount; i++)
         {
-            files[i] = $"{VideoDirectoryPath}/MyVideo.{i}.srt";
+            files[i] = $"{VideoDirectoryPath}/My.Video.{i}.srt";
         }
 
         var directoryService = new Mock<IDirectoryService>(MockBehavior.Strict);
