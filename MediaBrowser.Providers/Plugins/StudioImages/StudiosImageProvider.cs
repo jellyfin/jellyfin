@@ -110,19 +110,19 @@ namespace MediaBrowser.Providers.Studios
 
         private string GetUrl(string image, string filename)
         {
-            return string.Format(CultureInfo.InvariantCulture, "{0}/{1}/{2}.jpg", repositoryUrl, image, filename);
+            return string.Format(CultureInfo.InvariantCulture, "{0}/images/{1}/{2}.jpg", repositoryUrl, image, filename);
         }
 
         private Task<string> EnsureThumbsList(string file, CancellationToken cancellationToken)
         {
-            string url = string.Format(CultureInfo.InvariantCulture, "{0}/studiothumbs.txt", repositoryUrl);
+            string url = string.Format(CultureInfo.InvariantCulture, "{0}/thumbs.txt", repositoryUrl);
 
             return EnsureList(url, file, _fileSystem, cancellationToken);
         }
 
         private Task<string> EnsurePosterList(string file, CancellationToken cancellationToken)
         {
-            string url = string.Format(CultureInfo.InvariantCulture, "{0}/studioposters.txt", repositoryUrl);
+            string url = string.Format(CultureInfo.InvariantCulture, "{0}/posters.txt", repositoryUrl);
 
             return EnsureList(url, file, _fileSystem, cancellationToken);
         }
