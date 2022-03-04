@@ -103,7 +103,7 @@
     "TaskCleanTranscodeDescription": "刪除超過一天的轉碼文件。",
     "TaskCleanTranscode": "清理轉碼目錄",
     "TaskUpdatePluginsDescription": "下載並安裝配置為自動更新的插件的更新。",
-    "TaskRefreshPeopleDescription": "更新媒體庫中演員和導演的metadata。",
+    "TaskRefreshPeopleDescription": "更新媒體庫中演員和導演的元數據。",
     "TaskCleanLogsDescription": "刪除超過{0}天的日誌文件。",
     "TaskCleanLogs": "清理日誌目錄",
     "TaskRefreshLibrary": "掃描媒體庫",
