@@ -15,8 +15,7 @@ namespace Emby.Server.Implementations.Data
 
         private bool _disposed;
 
-
-        public ManagedConnection(SQLiteDatabaseConnection db, SemaphoreSlim writeLock)
+        public ManagedConnection(SQLiteDatabaseConnection db, SemaphoreSlim? writeLock)
         {
             _db = db;
             _writeLock = writeLock;
