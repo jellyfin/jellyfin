@@ -9,9 +9,9 @@ namespace Jellyfin.Extensions.Json.Converters;
 /// </summary>
 /// <typeparam name="T">The type of enum.</typeparam>
 public class JsonFlagEnumConverter<T> : JsonConverter<T>
-    where T : Enum
+    where T : struct, Enum
 {
-    private static readonly T[] _enumValues = (T[])Enum.GetValues(typeof(T));
+    private static readonly T[] _enumValues = Enum.GetValues<T>();
 
     /// <inheritdoc />
     public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
