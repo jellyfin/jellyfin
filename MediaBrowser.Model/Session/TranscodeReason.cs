@@ -7,8 +7,6 @@ namespace MediaBrowser.Model.Session
     [Flags]
     public enum TranscodeReason
     {
-        None = 0,
-
         // Primary
         ContainerNotSupported = 1 << 0,
         VideoCodecNotSupported = 1 << 1,

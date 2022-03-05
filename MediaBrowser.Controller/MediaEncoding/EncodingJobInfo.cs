@@ -43,8 +43,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     if (BaseRequest.TranscodeReasons == null)
                     {
-                        _transcodeReasons = TranscodeReason.None;
-                        return TranscodeReason.None;
+                        _transcodeReasons = 0;
+                        return 0;
                     }
 
                     _ = Enum.TryParse<TranscodeReason>(BaseRequest.TranscodeReasons, out var reason);
