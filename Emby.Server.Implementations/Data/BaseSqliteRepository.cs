@@ -98,8 +98,16 @@ namespace Emby.Server.Implementations.Data
         /// <value>The write connection.</value>
         protected SQLiteDatabaseConnection WriteConnection { get; set; }
 
+        protected SQLiteDatabaseConnection ReadConnection { get; set; }
+
         protected ManagedConnection GetConnection(bool readOnly = false)
         {
+            if (readOnly)
+            {
+                ReadConnection ??= SQLite3.Open(DbFilePath, ConnectionFlags.ReadOnly, null);
+                return new ManagedConnection(ReadConnection, null);
+            }
+
             WriteLock.Wait();
             if (WriteConnection != null)
             {
