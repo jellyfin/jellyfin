@@ -25,16 +25,6 @@ namespace MediaBrowser.Providers.MediaInfo
     public abstract class MediaInfoResolver
     {
         /// <summary>
-        /// The <see cref="CompareOptions"/> instance.
-        /// </summary>
-        private const CompareOptions CompareOptions = System.Globalization.CompareOptions.IgnoreCase | System.Globalization.CompareOptions.IgnoreNonSpace | System.Globalization.CompareOptions.IgnoreSymbols;
-
-        /// <summary>
-        /// The <see cref="CompareInfo"/> instance.
-        /// </summary>
-        private readonly CompareInfo _compareInfo = CultureInfo.InvariantCulture.CompareInfo;
-
-        /// <summary>
         /// The <see cref="ExternalPathParser"/> instance.
         /// </summary>
         private readonly ExternalPathParser _externalPathParser;
@@ -159,8 +149,6 @@ namespace MediaBrowser.Providers.MediaInfo
                 return Array.Empty<ExternalPathParserResult>();
             }
 
-            var externalPathInfos = new List<ExternalPathParserResult>();
-
             var files = directoryService.GetFilePaths(folder, clearCache).ToList();
             var internalMetadataPath = video.GetInternalMetadataPath();
             if (_fileSystem.DirectoryExists(internalMetadataPath))
@@ -173,13 +161,15 @@ namespace MediaBrowser.Providers.MediaInfo
                 return Array.Empty<ExternalPathParserResult>();
             }
 
+            var externalPathInfos = new List<ExternalPathParserResult>();
+            ReadOnlySpan<char> prefix = video.FileNameWithoutExtension;
             foreach (var file in files)
             {
-                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file);
-                if (_compareInfo.IsPrefix(fileNameWithoutExtension, video.FileNameWithoutExtension, CompareOptions, out int matchLength)
-                    && (fileNameWithoutExtension.Length == matchLength || _namingOptions.MediaFlagDelimiters.Contains(fileNameWithoutExtension[matchLength].ToString())))
+                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file.AsSpan());
+                if (prefix.Equals(fileNameWithoutExtension[..prefix.Length], StringComparison.OrdinalIgnoreCase)
+                    && (fileNameWithoutExtension.Length == prefix.Length || _namingOptions.MediaFlagDelimiters.Contains(fileNameWithoutExtension[prefix.Length])))
                 {
-                    var externalPathInfo = _externalPathParser.ParseFile(file, fileNameWithoutExtension[matchLength..]);
+                    var externalPathInfo = _externalPathParser.ParseFile(file, fileNameWithoutExtension[prefix.Length..].ToString());
 
                     if (externalPathInfo != null)
                     {
