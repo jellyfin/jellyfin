@@ -581,13 +581,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                 options);
         }
 
-        private string GetVaapiDeviceArgs(string renderNodePath, string kernelDriver, string driver, string alias)
+        private string GetVaapiDeviceArgs(string renderNodePath, string driver, string kernelDriver, string alias)
         {
             alias ??= VaapiAlias;
             renderNodePath = renderNodePath ?? "/dev/dri/renderD128";
-            var options = string.IsNullOrEmpty(kernelDriver) || string.IsNullOrEmpty(driver)
+            var options = string.IsNullOrEmpty(driver)
                 ? renderNodePath
-                : ",kernel_driver=" + kernelDriver + ",driver=" + driver;
+                : ",driver=" + driver + (string.IsNullOrEmpty(kernelDriver) ? string.Empty : ",kernel_driver=" + kernelDriver);
 
             return string.Format(
                 CultureInfo.InvariantCulture,
@@ -602,7 +602,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (OperatingSystem.IsLinux())
             {
                 // derive qsv from vaapi device
-                return GetVaapiDeviceArgs(null, "i915", "iHD", VaapiAlias) + arg + "@" + VaapiAlias;
+                return GetVaapiDeviceArgs(null, "iHD", "i915", VaapiAlias) + arg + "@" + VaapiAlias;
             }
 
             if (OperatingSystem.IsWindows())
@@ -691,7 +691,19 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return string.Empty;
                 }
 
-                args.Append(GetVaapiDeviceArgs(options.VaapiDevice, null, null, VaapiAlias));
+                if (_mediaEncoder.IsVaapiDeviceInteliHD)
+                {
+                    args.Append(GetVaapiDeviceArgs(null, "iHD", null, VaapiAlias));
+                }
+                else if (_mediaEncoder.IsVaapiDeviceInteli965)
+                {
+                    args.Append(GetVaapiDeviceArgs(null, "i965", null, VaapiAlias));
+                }
+                else
+                {
+                    args.Append(GetVaapiDeviceArgs(options.VaapiDevice, null, null, VaapiAlias));
+                }
+
                 var filterDevArgs = GetFilterHwDeviceArgs(VaapiAlias);
 
                 if (isHwTonemapAvailable && IsOpenclFullSupported())
