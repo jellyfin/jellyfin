@@ -1770,8 +1770,7 @@ namespace Jellyfin.Api.Controllers
             return await GetImageResult(
                     options,
                     cacheDuration,
-                    ImmutableDictionary<string, string>.Empty,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                    ImmutableDictionary<string, string>.Empty)
                 .ConfigureAwait(false);
         }
 
