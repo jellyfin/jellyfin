@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using Jellyfin.Extensions;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
@@ -17,6 +18,18 @@ namespace MediaBrowser.Model.Entities
     /// </summary>
     public class MediaStream
     {
+        private static readonly string[] _specialCodes =
+        {
+            // Uncoded languages.
+            "mis",
+            // Multiple languages.
+            "mul",
+            // Undetermined.
+            "und",
+            // No linguistic content; not applicable.
+            "zxx"
+        };
+
         /// <summary>
         /// Gets or sets the codec.
         /// </summary>
@@ -137,7 +150,8 @@ namespace MediaBrowser.Model.Entities
                     {
                         var attributes = new List<string>();
 
-                        if (!string.IsNullOrEmpty(Language))
+                        // Do not display the language code in display titles if unset or set to a special code. Show it in all other cases (possibly expanded).
+                        if (!string.IsNullOrEmpty(Language) && !_specialCodes.Contains(Language, StringComparison.OrdinalIgnoreCase))
                         {
                             // Get full language string i.e. eng -> English. Will not work for some languages which use ISO 639-2/B instead of /T codes.
                             string fullLanguage = CultureInfo
