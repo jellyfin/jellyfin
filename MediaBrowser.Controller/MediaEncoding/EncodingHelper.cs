@@ -84,7 +84,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                     { "vaapi",                hwEncoder + "_vaapi" },
                     { "videotoolbox",         hwEncoder + "_videotoolbox" },
                     { "v4l2m2m",              hwEncoder + "_v4l2m2m" },
-                    { "omx",                  hwEncoder + "_omx" },
                 };
 
                 if (!string.IsNullOrEmpty(hwType)
@@ -1581,10 +1580,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (!string.IsNullOrEmpty(profile))
             {
-                if (!string.Equals(videoEncoder, "h264_omx", StringComparison.OrdinalIgnoreCase)
-                    && !string.Equals(videoEncoder, "h264_v4l2m2m", StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(videoEncoder, "h264_v4l2m2m", StringComparison.OrdinalIgnoreCase))
                 {
-                    // not supported by h264_omx
                     param += " -profile:v:0 " + profile;
                 }
             }
@@ -1623,8 +1620,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     // NVENC cannot adjust the given level, just throw an error.
                     // level option may cause corrupted frames on AMD VAAPI.
                 }
-                else if (!string.Equals(videoEncoder, "h264_omx", StringComparison.OrdinalIgnoreCase)
-                         || !string.Equals(videoEncoder, "libx265", StringComparison.OrdinalIgnoreCase))
+                else if (!string.Equals(videoEncoder, "libx265", StringComparison.OrdinalIgnoreCase))
                 {
                     param += " -level " + level;
                 }
@@ -4284,11 +4280,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     return GetVideotoolboxVidDecoder(state, options, videoStream, bitDepth);
                 }
-
-                if (string.Equals(options.HardwareAccelerationType, "omx", StringComparison.OrdinalIgnoreCase))
-                {
-                    return GetOmxVidDecoder(state, options, videoStream, bitDepth);
-                }
             }
 
             var whichCodec = videoStream.Codec;
@@ -4758,43 +4749,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (string.Equals("vp9", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
                 {
                     return GetHwaccelType(state, options, "vp9", bitDepth, false);
-                }
-            }
-
-            return null;
-        }
-
-        public string GetOmxVidDecoder(EncodingJobInfo state, EncodingOptions options, MediaStream videoStream, int bitDepth)
-        {
-            if (!OperatingSystem.IsLinux()
-                || !string.Equals(options.HardwareAccelerationType, "omx", StringComparison.OrdinalIgnoreCase))
-            {
-                return null;
-            }
-
-            var is8bitSwFormatsOmx = string.Equals("yuv420p", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase);
-
-            if (is8bitSwFormatsOmx)
-            {
-                if (string.Equals("avc", videoStream.Codec, StringComparison.OrdinalIgnoreCase)
-                    || string.Equals("h264", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
-                {
-                    return GetHwDecoderName(options, "h264", "mmal", "h264", bitDepth);
-                }
-
-                if (string.Equals("mpeg2video", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
-                {
-                    return GetHwDecoderName(options, "mpeg2", "mmal", "mpeg2video", bitDepth);
-                }
-
-                if (string.Equals("mpeg4", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
-                {
-                    return GetHwDecoderName(options, "mpeg4", "mmal", "mpeg4", bitDepth);
-                }
-
-                if (string.Equals("vc1", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
-                {
-                    return GetHwDecoderName(options, "vc1", "mmal", "vc1", bitDepth);
                 }
             }
 
