@@ -126,7 +126,8 @@ namespace Emby.Server.Implementations.TV
                     parentsFolders.ToList())
                 .Cast<Episode>()
                 .Where(episode => !string.IsNullOrEmpty(episode.SeriesPresentationUniqueKey))
-                .Select(GetUniqueSeriesKey);
+                .Select(GetUniqueSeriesKey)
+                .ToList();
 
             // Avoid implicitly captured closure
             var episodes = GetNextUpEpisodes(request, user, items, options);
@@ -134,13 +135,21 @@ namespace Emby.Server.Implementations.TV
             return GetResult(episodes, request);
         }
 
-        public IEnumerable<Episode> GetNextUpEpisodes(NextUpQuery request, User user, IEnumerable<string> seriesKeys, DtoOptions dtoOptions)
+        public IEnumerable<Episode> GetNextUpEpisodes(NextUpQuery request, User user, IReadOnlyList<string> seriesKeys, DtoOptions dtoOptions)
         {
             // Avoid implicitly captured closure
             var currentUser = user;
 
             var allNextUp = seriesKeys
-                .Select(i => GetNextUp(i, currentUser, dtoOptions, request.Rewatching));
+                .Select(i => GetNextUp(i, currentUser, dtoOptions, false));
+
+            if (request.EnableRewatching)
+            {
+                allNextUp = allNextUp.Concat(
+                    seriesKeys.Select(i => GetNextUp(i, currentUser, dtoOptions, true))
+                )
+                .OrderByDescending(i => i.Item1);
+            }
 
             // If viewing all next up for all series, remove first episodes
             // But if that returns empty, keep those first episodes (avoid completely empty view)

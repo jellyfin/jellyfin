@@ -14,7 +14,7 @@ namespace MediaBrowser.Model.Querying
             EnableTotalRecordCount = true;
             DisableFirstEpisode = false;
             NextUpDateCutoff = DateTime.MinValue;
-            Rewatching = false;
+            EnableRewatching = false;
         }
 
         /// <summary>
@@ -86,6 +86,6 @@ namespace MediaBrowser.Model.Querying
         /// <summary>
         /// Gets or sets a value indicating whether getting rewatching next up list.
         /// </summary>
-        public bool Rewatching { get; set; }
+        public bool EnableRewatching { get; set; }
     }
 }
