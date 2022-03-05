@@ -66,6 +66,7 @@ namespace Emby.Naming.Common
                 ".rec",
                 ".rm",
                 ".rmvb",
+                ".strm",
                 ".svq3",
                 ".tp",
                 ".ts",
