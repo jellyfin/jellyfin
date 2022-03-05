@@ -21,28 +21,18 @@
         NVENC = 2,
 
         /// <summary>
-        /// OpenMax OMX.
+        /// Video4Linux2 V4L2.
         /// </summary>
-        OMX = 3,
-
-        /// <summary>
-        /// Exynos V4L2 MFC.
-        /// </summary>
-        V4L2M2M = 4,
-
-        /// <summary>
-        /// MediaCodec Android.
-        /// </summary>
-        MediaCodec = 5,
+        V4L2M2M = 3,
 
         /// <summary>
         /// Video Acceleration API (VAAPI).
         /// </summary>
-        VAAPI = 6,
+        VAAPI = 4,
 
         /// <summary>
         /// Video ToolBox.
         /// </summary>
-        VideoToolBox = 7
+        VideoToolBox = 5
     }
 }

@@ -44,18 +44,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "mpeg4_cuvid",
             "vp8_cuvid",
             "vp9_cuvid",
-            "av1_cuvid",
-            "h264_mmal",
-            "mpeg2_mmal",
-            "mpeg4_mmal",
-            "vc1_mmal",
-            "h264_opencl",
-            "hevc_opencl",
-            "mpeg2_opencl",
-            "mpeg4_opencl",
-            "vp8_opencl",
-            "vp9_opencl",
-            "vc1_opencl"
+            "av1_cuvid"
         };
 
         private static readonly string[] _requiredEncoders = new[]
@@ -82,8 +71,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "hevc_nvenc",
             "h264_vaapi",
             "hevc_vaapi",
-            "h264_omx",
-            "hevc_omx",
             "h264_v4l2m2m",
             "h264_videotoolbox",
             "hevc_videotoolbox"
