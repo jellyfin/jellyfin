@@ -22,14 +22,12 @@ namespace Jellyfin.Api.Helpers
         /// Returns a static file from a remote source.
         /// </summary>
         /// <param name="state">The current <see cref="StreamState"/>.</param>
-        /// <param name="isHeadRequest">Whether the current request is a HTTP HEAD request so only the headers get returned.</param>
         /// <param name="httpClient">The <see cref="HttpClient"/> making the remote request.</param>
         /// <param name="httpContext">The current http context.</param>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
         /// <returns>A <see cref="Task{ActionResult}"/> containing the API response.</returns>
         public static async Task<ActionResult> GetStaticRemoteStreamResult(
             StreamState state,
-            bool isHeadRequest,
             HttpClient httpClient,
             HttpContext httpContext,
             CancellationToken cancellationToken = default)
@@ -45,12 +43,6 @@ namespace Jellyfin.Api.Helpers
 
             httpContext.Response.Headers[HeaderNames.AcceptRanges] = "none";
 
-            if (isHeadRequest)
-            {
-                httpContext.Response.Headers[HeaderNames.ContentType] = contentType;
-                return new OkResult();
-            }
-
             return new FileStreamResult(await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false), contentType);
         }
 
@@ -59,23 +51,11 @@ namespace Jellyfin.Api.Helpers
         /// </summary>
         /// <param name="path">The path to the file.</param>
         /// <param name="contentType">The content type of the file.</param>
-        /// <param name="isHeadRequest">Whether the current request is a HTTP HEAD request so only the headers get returned.</param>
-        /// <param name="httpContext">The current http context.</param>
         /// <returns>An <see cref="ActionResult"/> the file.</returns>
         public static ActionResult GetStaticFileResult(
             string path,
-            string contentType,
-            bool isHeadRequest,
-            HttpContext httpContext)
+            string contentType)
         {
-            httpContext.Response.ContentType = contentType;
-
-            // if the request is a head request, return an OkResult (200) with the same headers as it would with a GET request
-            if (isHeadRequest)
-            {
-                return new OkResult();
-            }
-
             return new PhysicalFileResult(path, contentType) { EnableRangeProcessing = true };
         }
 

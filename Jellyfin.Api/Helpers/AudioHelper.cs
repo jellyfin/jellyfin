@@ -138,7 +138,7 @@ namespace Jellyfin.Api.Helpers
                 StreamingHelpers.AddDlnaHeaders(state, _httpContextAccessor.HttpContext.Response.Headers, true, streamingRequest.StartTimeTicks, _httpContextAccessor.HttpContext.Request, _dlnaManager);
 
                 var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-                return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, isHeadRequest, httpClient, _httpContextAccessor.HttpContext).ConfigureAwait(false);
+                return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, httpClient, _httpContextAccessor.HttpContext).ConfigureAwait(false);
             }
 
             if (streamingRequest.Static && state.InputProtocol != MediaProtocol.File)
@@ -167,9 +167,7 @@ namespace Jellyfin.Api.Helpers
 
                 return FileStreamResponseHelpers.GetStaticFileResult(
                     state.MediaPath,
-                    contentType,
-                    isHeadRequest,
-                    _httpContextAccessor.HttpContext);
+                    contentType);
             }
 
             // Need to start ffmpeg (because media can't be returned directly)

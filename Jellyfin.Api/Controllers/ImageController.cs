@@ -570,8 +570,7 @@ namespace Jellyfin.Api.Controllers
                     blur,
                     backgroundColor,
                     foregroundLayer,
-                    item,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                    item)
                 .ConfigureAwait(false);
         }
 
@@ -654,8 +653,7 @@ namespace Jellyfin.Api.Controllers
                     blur,
                     backgroundColor,
                     foregroundLayer,
-                    item,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                    item)
                 .ConfigureAwait(false);
         }
 
@@ -738,8 +736,7 @@ namespace Jellyfin.Api.Controllers
                     blur,
                     backgroundColor,
                     foregroundLayer,
-                    item,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                    item)
                 .ConfigureAwait(false);
         }
 
@@ -822,8 +819,7 @@ namespace Jellyfin.Api.Controllers
                     blur,
                     backgroundColor,
                     foregroundLayer,
-                    item,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                    item)
                 .ConfigureAwait(false);
         }
 
@@ -906,8 +902,7 @@ namespace Jellyfin.Api.Controllers
                     blur,
                     backgroundColor,
                     foregroundLayer,
-                    item,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                    item)
                 .ConfigureAwait(false);
         }
 
@@ -990,8 +985,7 @@ namespace Jellyfin.Api.Controllers
                     blur,
                     backgroundColor,
                     foregroundLayer,
-                    item,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                    item)
                 .ConfigureAwait(false);
         }
 
@@ -1074,8 +1068,7 @@ namespace Jellyfin.Api.Controllers
                     blur,
                     backgroundColor,
                     foregroundLayer,
-                    item,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                    item)
                 .ConfigureAwait(false);
         }
 
@@ -1158,8 +1151,7 @@ namespace Jellyfin.Api.Controllers
                     blur,
                     backgroundColor,
                     foregroundLayer,
-                    item,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                    item)
                 .ConfigureAwait(false);
         }
 
@@ -1242,8 +1234,7 @@ namespace Jellyfin.Api.Controllers
                     blur,
                     backgroundColor,
                     foregroundLayer,
-                    item,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                    item)
                 .ConfigureAwait(false);
         }
 
@@ -1326,8 +1317,7 @@ namespace Jellyfin.Api.Controllers
                     blur,
                     backgroundColor,
                     foregroundLayer,
-                    item,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                    item)
                 .ConfigureAwait(false);
         }
 
@@ -1410,8 +1400,7 @@ namespace Jellyfin.Api.Controllers
                     blur,
                     backgroundColor,
                     foregroundLayer,
-                    item,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                    item)
                 .ConfigureAwait(false);
         }
 
@@ -1494,8 +1483,7 @@ namespace Jellyfin.Api.Controllers
                     blur,
                     backgroundColor,
                     foregroundLayer,
-                    item,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                    item)
                 .ConfigureAwait(false);
         }
 
@@ -1596,7 +1584,6 @@ namespace Jellyfin.Api.Controllers
                     backgroundColor,
                     foregroundLayer,
                     null,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase),
                     info)
                 .ConfigureAwait(false);
         }
@@ -1698,7 +1685,6 @@ namespace Jellyfin.Api.Controllers
                     backgroundColor,
                     foregroundLayer,
                     null,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase),
                     info)
                 .ConfigureAwait(false);
         }
@@ -1907,7 +1893,6 @@ namespace Jellyfin.Api.Controllers
             string? backgroundColor,
             string? foregroundLayer,
             BaseItem? item,
-            bool isHeadRequest,
             ItemImageInfo? imageInfo = null)
         {
             if (percentPlayed.HasValue)
@@ -1988,8 +1973,7 @@ namespace Jellyfin.Api.Controllers
             return await GetImageResult(
                 options,
                 cacheDuration,
-                responseHeaders,
-                isHeadRequest).ConfigureAwait(false);
+                responseHeaders).ConfigureAwait(false);
         }
 
         private ImageFormat[] GetOutputFormats(ImageFormat? format)
@@ -2068,8 +2052,7 @@ namespace Jellyfin.Api.Controllers
         private async Task<ActionResult> GetImageResult(
             ImageProcessingOptions imageProcessingOptions,
             TimeSpan? cacheDuration,
-            IDictionary<string, string> headers,
-            bool isHeadRequest)
+            IDictionary<string, string> headers)
         {
             var (imagePath, imageContentType, dateImageModified) = await _imageProcessor.ProcessImage(imageProcessingOptions).ConfigureAwait(false);
 
@@ -2118,12 +2101,6 @@ namespace Jellyfin.Api.Controllers
                         return new ContentResult();
                     }
                 }
-            }
-
-            // if the request is a head request, return a NoContent result with the same headers as it would with a GET request
-            if (isHeadRequest)
-            {
-                return NoContent();
             }
 
             return PhysicalFile(imagePath, imageContentType ?? MediaTypeNames.Text.Plain);
