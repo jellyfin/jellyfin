@@ -117,6 +117,7 @@
  - [ssenart](https://github.com/ssenart)
  - [stanionascu](https://github.com/stanionascu)
  - [stevehayles](https://github.com/stevehayles)
+ - [StollD](https://github.com/StollD)
  - [SuperSandro2000](https://github.com/SuperSandro2000)
  - [tbraeutigam](https://github.com/tbraeutigam)
  - [teacupx](https://github.com/teacupx)
