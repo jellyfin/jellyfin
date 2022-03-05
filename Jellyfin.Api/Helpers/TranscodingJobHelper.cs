@@ -458,9 +458,12 @@ namespace Jellyfin.Api.Helpers
                 var audioCodec = state.ActualOutputAudioCodec;
                 var videoCodec = state.ActualOutputVideoCodec;
                 var hardwareAccelerationTypeString = _serverConfigurationManager.GetEncodingOptions().HardwareAccelerationType;
-                HardwareEncodingType? hardwareAccelerationType = string.IsNullOrEmpty(hardwareAccelerationTypeString)
-                    ? null
-                    : (HardwareEncodingType)Enum.Parse(typeof(HardwareEncodingType), hardwareAccelerationTypeString, true);
+                HardwareEncodingType? hardwareAccelerationType = null;
+                if (!string.IsNullOrEmpty(hardwareAccelerationTypeString)
+                    && Enum.TryParse<HardwareEncodingType>(hardwareAccelerationTypeString, out var parsedHardwareAccelerationType))
+                {
+                    hardwareAccelerationType = parsedHardwareAccelerationType;
+                }
 
                 _sessionManager.ReportTranscodingInfo(deviceId, new TranscodingInfo
                 {
