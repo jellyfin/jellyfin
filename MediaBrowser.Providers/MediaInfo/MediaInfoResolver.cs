@@ -166,7 +166,8 @@ namespace MediaBrowser.Providers.MediaInfo
             foreach (var file in files)
             {
                 var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file.AsSpan());
-                if (prefix.Equals(fileNameWithoutExtension[..prefix.Length], StringComparison.OrdinalIgnoreCase)
+                if (fileNameWithoutExtension.Length >= prefix.Length
+                    && prefix.Equals(fileNameWithoutExtension[..prefix.Length], StringComparison.OrdinalIgnoreCase)
                     && (fileNameWithoutExtension.Length == prefix.Length || _namingOptions.MediaFlagDelimiters.Contains(fileNameWithoutExtension[prefix.Length])))
                 {
                     var externalPathInfo = _externalPathParser.ParseFile(file, fileNameWithoutExtension[prefix.Length..].ToString());

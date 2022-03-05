@@ -157,6 +157,7 @@ public class MediaInfoResolverTests
     }
 
     [Theory]
+    [InlineData("cover.jpg")]
     [InlineData("My.Video.mp3")]
     [InlineData("My.Video.png")]
     [InlineData("My.Video.txt")]
