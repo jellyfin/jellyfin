@@ -1,8 +1,6 @@
 #nullable disable
 #pragma warning disable CS1591
 
-using System.Text.Json.Serialization;
-
 namespace MediaBrowser.Model.Session
 {
     public class TranscodingInfo
@@ -31,9 +29,6 @@ namespace MediaBrowser.Model.Session
 
         public HardwareEncodingType? HardwareAccelerationType { get; set; }
 
-        public TranscodeReason[] TranscodeReasons => TranscodeReason.ToArray();
-
-        [JsonIgnore]
         public TranscodeReason TranscodeReason { get; set; }
     }
 }

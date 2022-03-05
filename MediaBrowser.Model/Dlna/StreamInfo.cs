@@ -798,7 +798,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (!item.IsDirectStream)
             {
-                list.Add(new NameValuePair("TranscodeReasons", item.TranscodeReasons.Serialize()));
+                list.Add(new NameValuePair("TranscodeReasons", item.TranscodeReasons.ToString()));
             }
 
             return list;

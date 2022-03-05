@@ -224,7 +224,7 @@ namespace Jellyfin.Api.Controllers
                     DeInterlace = false,
                     RequireNonAnamorphic = false,
                     EnableMpegtsM2TsMode = false,
-                    TranscodeReasons = mediaSource.TranscodeReasons == MediaBrowser.Model.Session.TranscodeReason.None ? null : mediaSource.TranscodeReasons.Serialize(),
+                    TranscodeReasons = mediaSource.TranscodeReasons == TranscodeReason.None ? null : mediaSource.TranscodeReasons.ToString(),
                     Context = EncodingContext.Static,
                     StreamOptions = new Dictionary<string, string>(),
                     EnableAdaptiveBitrateStreaming = true
@@ -255,7 +255,7 @@ namespace Jellyfin.Api.Controllers
                 CopyTimestamps = true,
                 StartTimeTicks = startTimeTicks,
                 SubtitleMethod = SubtitleDeliveryMethod.Embed,
-                TranscodeReasons = mediaSource.TranscodeReasons == MediaBrowser.Model.Session.TranscodeReason.None ? null : mediaSource.TranscodeReasons.Serialize(),
+                TranscodeReasons = mediaSource.TranscodeReasons == TranscodeReason.None ? null : mediaSource.TranscodeReasons.ToString(),
                 Context = EncodingContext.Static
             };
 

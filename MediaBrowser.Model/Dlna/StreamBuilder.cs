@@ -915,13 +915,13 @@ namespace MediaBrowser.Model.Dlna
             }
 
             _logger.LogInformation(
-                "Transcode Result for Profile: {0}, Path: {1}, PlayMethod: {2}, AudioStreamIndex: {3}, SubtitleStreamIndex: {4}, Reasons: {5}",
-                options.Profile.Name ?? "Anonymous Profile",
+                "Transcode Result for Profile: {Profile}, Path: {Path}, PlayMethod: {PlayMethod}, AudioStreamIndex: {AudioStreamIndex}, SubtitleStreamIndex: {SubtitleStreamIndex}, Reasons: {TranscodeReason}",
+                options.Profile?.Name ?? "Anonymous Profile",
                 item.Path ?? "Unknown path",
-                playlistItem.PlayMethod,
-                audioStream.Index,
-                playlistItem.SubtitleStreamIndex,
-                playlistItem.TranscodeReasons);
+                playlistItem?.PlayMethod,
+                audioStream?.Index,
+                playlistItem?.SubtitleStreamIndex,
+                playlistItem?.TranscodeReasons);
         }
 
         private static int GetDefaultAudioBitrate(string audioCodec, int? audioChannels)
