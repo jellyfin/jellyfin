@@ -2797,16 +2797,15 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isSwDecoder = string.IsNullOrEmpty(vidDecoder);
             var isSwEncoder = !vidEncoder.Contains("nvenc", StringComparison.OrdinalIgnoreCase);
 
-            // legacy cuvid(resize/deint/sw) pipeline(copy-back)
+            // legacy cuvid pipeline(copy-back)
             if ((isSwDecoder && isSwEncoder)
                 || !IsCudaFullSupported()
-                || !options.EnableEnhancedNvdecDecoder
                 || !_mediaEncoder.SupportsFilter("alphasrc"))
             {
                 return GetSwVidFilterChain(state, options, vidEncoder);
             }
 
-            // prefered nvdec + cuda filters + nvenc pipeline
+            // prefered nvdec/cuvid + cuda filters + nvenc pipeline
             return GetNvidiaVidFiltersPrefered(state, options, vidDecoder, vidEncoder);
         }
 
@@ -2824,11 +2823,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             var reqMaxH = state.BaseRequest.MaxHeight;
             var threeDFormat = state.MediaSource.Video3DFormat;
 
-            var isNvdecDecoder = vidDecoder.Contains("cuda", StringComparison.OrdinalIgnoreCase);
+            var isNvDecoder = vidDecoder.Contains("cuda", StringComparison.OrdinalIgnoreCase);
             var isNvencEncoder = vidEncoder.Contains("nvenc", StringComparison.OrdinalIgnoreCase);
             var isSwDecoder = string.IsNullOrEmpty(vidDecoder);
             var isSwEncoder = !isNvencEncoder;
-            var isCuInCuOut = isNvdecDecoder && isNvencEncoder;
+            var isCuInCuOut = isNvDecoder && isNvencEncoder;
 
             var doubleRateDeint = options.DeinterlaceDoubleRate && (state.VideoStream?.AverageFrameRate ?? 60) <= 30;
             var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
@@ -2871,7 +2870,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
-            if (isNvdecDecoder)
+            if (isNvDecoder)
             {
                 // INPUT cuda surface(vram)
                 // hw deint
@@ -2896,7 +2895,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var memoryOutput = false;
             var isUploadForOclTonemap = isSwDecoder && doCuTonemap;
-            if ((isNvdecDecoder && isSwEncoder) || isUploadForOclTonemap)
+            if ((isNvDecoder && isSwEncoder) || isUploadForOclTonemap)
             {
                 memoryOutput = true;
 
@@ -4428,10 +4427,18 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Nvidia cuda
             if (string.Equals(options.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase))
             {
-                if (options.EnableEnhancedNvdecDecoder && isCudaSupported && isCodecAvailable)
+                if (isCudaSupported && isCodecAvailable)
                 {
-                    // set -threads 1 to nvdec decoder explicitly since it doesn't implement threading support.
-                    return " -hwaccel cuda" + (outputHwSurface ? " -hwaccel_output_format cuda" : string.Empty) + " -threads 1" + (isAv1 ? " -c:v av1" : string.Empty);
+                    if (options.EnableEnhancedNvdecDecoder)
+                    {
+                        // set -threads 1 to nvdec decoder explicitly since it doesn't implement threading support.
+                        return " -hwaccel cuda" + (outputHwSurface ? " -hwaccel_output_format cuda" : string.Empty) + " -threads 1" + (isAv1 ? " -c:v av1" : string.Empty);
+                    }
+                    else
+                    {
+                        // cuvid decoder doesn't have threading issue.
+                        return " -hwaccel cuda" + (outputHwSurface ? " -hwaccel_output_format cuda" : string.Empty);
+                    }
                 }
             }
 
@@ -4541,9 +4548,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return null;
             }
 
-            var hwSurface = IsCudaFullSupported()
-                && options.EnableEnhancedNvdecDecoder
-                && _mediaEncoder.SupportsFilter("alphasrc");
+            var hwSurface = IsCudaFullSupported() && _mediaEncoder.SupportsFilter("alphasrc");
             var is8bitSwFormatsNvdec = string.Equals("yuv420p", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase);
             var is8_10bitSwFormatsNvdec = is8bitSwFormatsNvdec || string.Equals("yuv420p10le", videoStream.PixelFormat, StringComparison.OrdinalIgnoreCase);
             // TODO: add more 8/10/12bit and 4:4:4 formats for Nvdec after finishing the ffcheck tool
