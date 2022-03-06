@@ -155,6 +155,7 @@
  - [MBR-0001](https://github.com/MBR-0001)
  - [jonas-resch](https://github.com/jonas-resch)
  - [vgambier](https://github.com/vgambier)
+ - [MinecraftPlaye](https://github.com/MinecraftPlaye)
 
 # Emby Contributors
 

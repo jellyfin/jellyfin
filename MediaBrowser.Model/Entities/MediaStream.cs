@@ -161,7 +161,7 @@ namespace MediaBrowser.Model.Entities
                             attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? Language));
                         }
 
-                        if (!string.IsNullOrEmpty(Codec) && !string.Equals(Codec, "dca", StringComparison.OrdinalIgnoreCase))
+                        if (!string.IsNullOrEmpty(Codec) && !string.Equals(Codec, "dca", StringComparison.OrdinalIgnoreCase) && !string.Equals(Codec, "dts", StringComparison.OrdinalIgnoreCase))
                         {
                             attributes.Add(AudioCodec.GetFriendlyName(Codec));
                         }
