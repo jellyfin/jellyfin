@@ -23,7 +23,7 @@ jobs:
           reactions: '+1'
 
       - name: Checkout the latest code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
           fetch-depth: 0
@@ -47,7 +47,7 @@ jobs:
           reactions: eyes
 
       - name: Checkout the latest code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
           fetch-depth: 0
