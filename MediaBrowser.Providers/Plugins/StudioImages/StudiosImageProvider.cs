@@ -50,39 +50,21 @@ namespace MediaBrowser.Providers.Studios
         {
             return new List<ImageType>
             {
-                ImageType.Primary,
                 ImageType.Thumb
             };
         }
 
-        public Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
-        {
-            return GetImages(item, true, true, cancellationToken);
-        }
-
-        private async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, bool posters, bool thumbs, CancellationToken cancellationToken)
+        public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             var list = new List<RemoteImageInfo>();
 
-            if (posters)
-            {
-                var posterPath = Path.Combine(_config.ApplicationPaths.CachePath, "imagesbyname", "remotestudioposters.txt");
-
-                posterPath = await EnsurePosterList(posterPath, cancellationToken).ConfigureAwait(false);
-
-                list.Add(GetImage(item, posterPath, ImageType.Primary, "folder"));
-            }
-
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (thumbs)
-            {
-                var thumbsPath = Path.Combine(_config.ApplicationPaths.CachePath, "imagesbyname", "remotestudiothumbs.txt");
+            var thumbsPath = Path.Combine(_config.ApplicationPaths.CachePath, "imagesbyname", "remotestudiothumbs.txt");
 
-                thumbsPath = await EnsureThumbsList(thumbsPath, cancellationToken).ConfigureAwait(false);
+            thumbsPath = await EnsureThumbsList(thumbsPath, cancellationToken).ConfigureAwait(false);
 
-                list.Add(GetImage(item, thumbsPath, ImageType.Thumb, "thumb"));
-            }
+            list.Add(GetImage(item, thumbsPath, ImageType.Thumb, "thumb"));
 
             return list.Where(i => i != null);
         }
@@ -116,13 +98,6 @@ namespace MediaBrowser.Providers.Studios
         private Task<string> EnsureThumbsList(string file, CancellationToken cancellationToken)
         {
             string url = string.Format(CultureInfo.InvariantCulture, "{0}/thumbs.txt", repositoryUrl);
-
-            return EnsureList(url, file, _fileSystem, cancellationToken);
-        }
-
-        private Task<string> EnsurePosterList(string file, CancellationToken cancellationToken)
-        {
-            string url = string.Format(CultureInfo.InvariantCulture, "{0}/posters.txt", repositoryUrl);
 
             return EnsureList(url, file, _fileSystem, cancellationToken);
         }
