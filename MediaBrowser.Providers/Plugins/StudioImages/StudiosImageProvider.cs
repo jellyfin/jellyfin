@@ -56,17 +56,23 @@ namespace MediaBrowser.Providers.Studios
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
-            var list = new List<RemoteImageInfo>();
-
-            cancellationToken.ThrowIfCancellationRequested();
-
             var thumbsPath = Path.Combine(_config.ApplicationPaths.CachePath, "imagesbyname", "remotestudiothumbs.txt");
 
             thumbsPath = await EnsureThumbsList(thumbsPath, cancellationToken).ConfigureAwait(false);
 
-            list.Add(GetImage(item, thumbsPath, ImageType.Thumb, "thumb"));
+            cancellationToken.ThrowIfCancellationRequested();
 
-            return list.Where(i => i != null);
+            var imageInfo = GetImage(item, thumbsPath, ImageType.Thumb, "thumb");
+
+            if (imageInfo == null)
+            {
+                return Enumerable.Empty<RemoteImageInfo>();
+            }
+
+            return new RemoteImageInfo[]
+            {
+                imageInfo
+            };
         }
 
         private RemoteImageInfo GetImage(BaseItem item, string filename, ImageType type, string remoteFilename)
