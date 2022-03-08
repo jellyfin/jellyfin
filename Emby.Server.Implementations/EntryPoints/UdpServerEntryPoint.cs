@@ -61,7 +61,7 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             CheckDisposed();
 
-            if (_configurationManager.GetNetworkConfiguration().AutoDiscovery)
+            if (!_configurationManager.GetNetworkConfiguration().AutoDiscovery)
             {
                 return Task.CompletedTask;
             }
