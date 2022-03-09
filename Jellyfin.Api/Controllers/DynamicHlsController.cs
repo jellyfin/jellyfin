@@ -1599,7 +1599,6 @@ namespace Jellyfin.Api.Controllers
                 state.BaseRequest.BreakOnNonKeyFrames = false;
             }
 
-            var inputModifier = _encodingHelper.GetInputModifier(state, _encodingOptions);
             var mapArgs = state.IsOutputVideo ? _encodingHelper.GetMapArgs(state) : string.Empty;
 
             var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
@@ -1608,12 +1607,15 @@ namespace Jellyfin.Api.Controllers
             var outputExtension = EncodingHelper.GetSegmentFileExtension(state.Request.SegmentContainer);
             var outputTsArg = outputPrefix + "%d" + outputExtension;
 
-            var segmentFormat = outputExtension.TrimStart('.');
-            if (string.Equals(segmentFormat, "ts", StringComparison.OrdinalIgnoreCase))
+            var segmentFormat = string.Empty;
+            var segmentContainer = outputExtension.TrimStart('.');
+            var inputModifier = _encodingHelper.GetInputModifier(state, _encodingOptions, segmentContainer);
+
+            if (string.Equals(segmentContainer, "ts", StringComparison.OrdinalIgnoreCase))
             {
                 segmentFormat = "mpegts";
             }
-            else if (string.Equals(segmentFormat, "mp4", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(segmentContainer, "mp4", StringComparison.OrdinalIgnoreCase))
             {
                 var outputFmp4HeaderArg = OperatingSystem.IsWindows() switch
                 {
@@ -1627,7 +1629,8 @@ namespace Jellyfin.Api.Controllers
             }
             else
             {
-                _logger.LogError("Invalid HLS segment container: {SegmentFormat}", segmentFormat);
+                _logger.LogError("Invalid HLS segment container: {SegmentContainer}, default to mpegts", segmentContainer);
+                segmentFormat = "mpegts";
             }
 
             var maxMuxingQueueSize = _encodingOptions.MaxMuxingQueueSize > 128
@@ -1647,7 +1650,7 @@ namespace Jellyfin.Api.Controllers
                 CultureInfo.InvariantCulture,
                 "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -max_muxing_queue_size {6} -f hls -max_delay 5000000 -hls_time {7} -hls_segment_type {8} -start_number {9}{10} -hls_segment_filename \"{12}\" -hls_playlist_type {11} -hls_list_size 0 -y \"{13}\"",
                 inputModifier,
-                _encodingHelper.GetInputArgument(state, _encodingOptions),
+                _encodingHelper.GetInputArgument(state, _encodingOptions, segmentContainer),
                 threads,
                 mapArgs,
                 GetVideoArguments(state, startNumber, isEventPlaylist),

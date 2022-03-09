@@ -842,8 +842,9 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// </summary>
         /// <param name="state">Encoding state.</param>
         /// <param name="options">Encoding options.</param>
+        /// <param name="segmentContainer">Segment Container.</param>
         /// <returns>Input arguments.</returns>
-        public string GetInputArgument(EncodingJobInfo state, EncodingOptions options)
+        public string GetInputArgument(EncodingJobInfo state, EncodingOptions options, string segmentContainer)
         {
             var arg = new StringBuilder();
             var inputVidHwaccelArgs = GetInputVideoHwaccelArgs(state, options);
@@ -880,7 +881,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 // Also seek the external subtitles stream.
-                var seekSubParam = GetFastSeekCommandLineParameter(state, options);
+                var seekSubParam = GetFastSeekCommandLineParameter(state, options, segmentContainer);
                 if (!string.IsNullOrEmpty(seekSubParam))
                 {
                     arg.Append(' ').Append(seekSubParam);
@@ -897,7 +898,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (state.AudioStream != null && state.AudioStream.IsExternal)
             {
                 // Also seek the external audio stream.
-                var seekAudioParam = GetFastSeekCommandLineParameter(state, options);
+                var seekAudioParam = GetFastSeekCommandLineParameter(state, options, segmentContainer);
                 if (!string.IsNullOrEmpty(seekAudioParam))
                 {
                     arg.Append(' ').Append(seekAudioParam);
@@ -2167,9 +2168,10 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// </summary>
         /// <param name="state">The state.</param>
         /// <param name="options">The options.</param>
+        /// <param name="segmentContainer">Segment Container.</param>
         /// <returns>System.String.</returns>
         /// <value>The fast seek command line parameter.</value>
-        public string GetFastSeekCommandLineParameter(EncodingJobInfo state, EncodingOptions options)
+        public string GetFastSeekCommandLineParameter(EncodingJobInfo state, EncodingOptions options, string segmentContainer)
         {
             var time = state.BaseRequest.StartTimeTicks ?? 0;
             var seekParam = string.Empty;
@@ -2181,11 +2183,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (state.IsVideoRequest)
                 {
                     var outputVideoCodec = GetVideoEncoder(state, options);
+                    var segmentFormat = GetSegmentFileExtension(segmentContainer).TrimStart('.');
 
                     // Important: If this is ever re-enabled, make sure not to use it with wtv because it breaks seeking
+                    // Disable -noaccurate_seek on mpegts container due to the timestamps issue on some clients,
+                    // but it's still required for fMP4 container otherwise the audio can't be synced to the video.
                     if (!string.Equals(state.InputContainer, "wtv", StringComparison.OrdinalIgnoreCase)
+                        && !string.Equals(segmentFormat, "ts", StringComparison.OrdinalIgnoreCase)
                         && state.TranscodingType != TranscodingJobType.Progressive
-                        && state.TranscodingType != TranscodingJobType.Hls
                         && !state.EnableBreakOnNonKeyFrames(outputVideoCodec)
                         && (state.BaseRequest.StartTimeTicks ?? 0) > 0)
                     {
@@ -4836,7 +4841,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
-        public string GetInputModifier(EncodingJobInfo state, EncodingOptions encodingOptions)
+        public string GetInputModifier(EncodingJobInfo state, EncodingOptions encodingOptions, string segmentContainer)
         {
             var inputModifier = string.Empty;
             var probeSizeArgument = string.Empty;
@@ -4872,7 +4877,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             inputModifier = inputModifier.Trim();
 
-            inputModifier += " " + GetFastSeekCommandLineParameter(state, encodingOptions);
+            inputModifier += " " + GetFastSeekCommandLineParameter(state, encodingOptions, segmentContainer);
             inputModifier = inputModifier.Trim();
 
             if (state.InputProtocol == MediaProtocol.Rtsp)
@@ -5179,13 +5184,13 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var threads = GetNumberOfThreads(state, encodingOptions, videoCodec);
 
-            var inputModifier = GetInputModifier(state, encodingOptions);
+            var inputModifier = GetInputModifier(state, encodingOptions, null);
 
             return string.Format(
                 CultureInfo.InvariantCulture,
                 "{0} {1}{2} {3} {4} -map_metadata -1 -map_chapters -1 -threads {5} {6}{7}{8} -y \"{9}\"",
                 inputModifier,
-                GetInputArgument(state, encodingOptions),
+                GetInputArgument(state, encodingOptions, null),
                 keyFrame,
                 GetMapArgs(state),
                 GetProgressiveVideoArguments(state, encodingOptions, videoCodec, defaultPreset),
@@ -5367,13 +5372,13 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var threads = GetNumberOfThreads(state, encodingOptions, null);
 
-            var inputModifier = GetInputModifier(state, encodingOptions);
+            var inputModifier = GetInputModifier(state, encodingOptions, null);
 
             return string.Format(
                 CultureInfo.InvariantCulture,
                 "{0} {1}{7}{8} -threads {2}{3} {4} -id3v2_version 3 -write_id3v1 1{6} -y \"{5}\"",
                 inputModifier,
-                GetInputArgument(state, encodingOptions),
+                GetInputArgument(state, encodingOptions, null),
                 threads,
                 " -vn",
                 string.Join(' ', audioTranscodeParams),
