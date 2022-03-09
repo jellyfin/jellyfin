@@ -23,5 +23,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             MediaSourceInfo mediaSource,
             string outputPath,
             CancellationToken cancellationToken);
+        Task ExtractAllAttachmentsExternal(
+            string inputArgument,
+            string id,
+            string outputPath,
+            CancellationToken cancellationToken);
     }
 }

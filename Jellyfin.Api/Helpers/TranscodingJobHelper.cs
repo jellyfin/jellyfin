@@ -13,6 +13,7 @@ using Jellyfin.Api.Models.StreamingDtos;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -530,6 +531,15 @@ namespace Jellyfin.Api.Helpers
             {
                 var attachmentPath = Path.Combine(_appPaths.CachePath, "attachments", state.MediaSource.Id);
                 await _attachmentExtractor.ExtractAllAttachments(state.MediaPath, state.MediaSource, attachmentPath, CancellationToken.None).ConfigureAwait(false);
+
+                if (state.SubtitleStream.IsExternal)
+                {
+                    string subtitlePath = state.SubtitleStream.Path;
+                    string subtitlePathArgument = string.Format(CultureInfo.InvariantCulture, "file:\"{0}\"", subtitlePath.Replace("\"", "\\\"", StringComparison.Ordinal));
+                    string subtitleId = subtitlePath.GetMD5().ToString("N", CultureInfo.InvariantCulture);
+
+                    await _attachmentExtractor.ExtractAllAttachmentsExternal(subtitlePathArgument, subtitleId, attachmentPath, CancellationToken.None).ConfigureAwait(false);
+                }
             }
 
             var process = new Process
