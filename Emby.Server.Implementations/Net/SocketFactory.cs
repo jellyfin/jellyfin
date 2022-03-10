@@ -80,6 +80,8 @@ namespace Emby.Server.Implementations.Net
 
             var retVal = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
+            retVal.ExclusiveAddressUse = false;
+
             try
             {
                 // seeing occasional exceptions thrown on qnap
