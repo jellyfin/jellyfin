@@ -140,6 +140,8 @@ namespace MediaBrowser.Model.Entities
 
         public string LocalizedForced { get; set; }
 
+        public string LocalizedExternal { get; set; }
+
         public string DisplayTitle
         {
             get
@@ -182,6 +184,11 @@ namespace MediaBrowser.Model.Entities
                         if (IsDefault)
                         {
                             attributes.Add(string.IsNullOrEmpty(LocalizedDefault) ? "Default" : LocalizedDefault);
+                        }
+
+                        if (IsExternal)
+                        {
+                            attributes.Add(string.IsNullOrEmpty(LocalizedExternal) ? "External" : LocalizedExternal);
                         }
 
                         if (!string.IsNullOrEmpty(Title))
@@ -272,6 +279,11 @@ namespace MediaBrowser.Model.Entities
                         if (!string.IsNullOrEmpty(Codec))
                         {
                             attributes.Add(Codec.ToUpperInvariant());
+                        }
+
+                        if (IsExternal)
+                        {
+                            attributes.Add(string.IsNullOrEmpty(LocalizedExternal) ? "External" : LocalizedExternal);
                         }
 
                         if (!string.IsNullOrEmpty(Title))

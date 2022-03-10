@@ -706,6 +706,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.LocalizedUndefined = _localization.GetLocalizedString("Undefined");
                 stream.LocalizedDefault = _localization.GetLocalizedString("Default");
                 stream.LocalizedForced = _localization.GetLocalizedString("Forced");
+                stream.LocalizedExternal = _localization.GetLocalizedString("External");
 
                 if (string.IsNullOrEmpty(stream.Title))
                 {

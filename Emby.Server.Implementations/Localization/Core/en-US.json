@@ -12,6 +12,7 @@
     "Default": "Default",
     "DeviceOfflineWithName": "{0} has disconnected",
     "DeviceOnlineWithName": "{0} is connected",
+    "External": "External",
     "FailedLoginAttemptWithUserName": "Failed login try from {0}",
     "Favorites": "Favorites",
     "Folders": "Folders",
