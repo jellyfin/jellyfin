@@ -31,6 +31,16 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
         public void GetFrameRate_Success(string value, float? expected)
             => Assert.Equal(expected, ProbeResultNormalizer.GetFrameRate(value));
 
+        [Theory]
+        [InlineData(0.5f, "0/1", false)]
+        [InlineData(24.5f, "8/196", false)]
+        [InlineData(63.5f, "1/127", true)]
+        [InlineData(null, "1/60", false)]
+        [InlineData(30f, "2/120", true)]
+        [InlineData(59.999996f, "1563/187560", true)]
+        public void IsCodecTimeBaseDoubleTheFrameRate_Success(float? frameRate, string codecTimeBase, bool expected)
+            => Assert.Equal(expected, ProbeResultNormalizer.IsCodecTimeBaseDoubleTheFrameRate(frameRate, codecTimeBase));
+
         [Fact]
         public void GetMediaInfo_MetaData_Success()
         {
