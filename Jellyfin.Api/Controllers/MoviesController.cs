@@ -68,9 +68,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int categoryLimit = 5,
             [FromQuery] int itemLimit = 8)
         {
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request);
 

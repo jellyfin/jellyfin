@@ -160,7 +160,7 @@ namespace Emby.Dlna.Didl
             else
             {
                 var parent = item.DisplayParentId;
-                if (!parent.Equals(Guid.Empty))
+                if (!parent.Equals(default))
                 {
                     writer.WriteAttributeString("parentID", GetClientId(parent, null));
                 }
@@ -657,7 +657,7 @@ namespace Emby.Dlna.Didl
                 else
                 {
                     var parent = folder.DisplayParentId;
-                    if (parent.Equals(Guid.Empty))
+                    if (parent.Equals(default))
                     {
                         writer.WriteAttributeString("parentID", "0");
                     }

@@ -483,7 +483,7 @@ namespace Emby.Server.Implementations.Plugins
                     var pluginStr = instance.Version.ToString();
                     bool changed = false;
                     if (string.Equals(manifest.Version, pluginStr, StringComparison.Ordinal)
-                        || manifest.Id != instance.Id)
+                        || !manifest.Id.Equals(instance.Id))
                     {
                         // If a plugin without a manifest failed to load due to an external issue (eg config),
                         // this updates the manifest to the actual plugin values.

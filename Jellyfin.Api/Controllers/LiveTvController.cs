@@ -180,9 +180,9 @@ namespace Jellyfin.Api.Controllers
                 dtoOptions,
                 CancellationToken.None);
 
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
 
             var fieldsList = dtoOptions.Fields.ToList();
             fieldsList.Remove(ItemFields.CanDelete);
@@ -211,10 +211,10 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         public ActionResult<BaseItemDto> GetChannel([FromRoute, Required] Guid channelId, [FromQuery] Guid? userId)
         {
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
-            var item = channelId.Equals(Guid.Empty)
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
+            var item = channelId.Equals(default)
                 ? _libraryManager.GetUserRootFolder()
                 : _libraryManager.GetItemById(channelId);
 
@@ -382,9 +382,9 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         public ActionResult<QueryResult<BaseItemDto>> GetRecordingFolders([FromQuery] Guid? userId)
         {
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
             var folders = _liveTvManager.GetRecordingFolders(user);
 
             var returnArray = _dtoService.GetBaseItemDtos(folders, new DtoOptions(), user);
@@ -404,10 +404,10 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         public ActionResult<BaseItemDto> GetRecording([FromRoute, Required] Guid recordingId, [FromQuery] Guid? userId)
         {
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
-            var item = recordingId.Equals(Guid.Empty) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(recordingId);
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
+            var item = recordingId.Equals(default) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(recordingId);
 
             var dtoOptions = new DtoOptions()
                 .AddClientFields(Request);
@@ -561,9 +561,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] bool enableTotalRecordCount = true)
         {
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
 
             var query = new InternalItemsQuery(user)
             {
@@ -588,7 +588,7 @@ namespace Jellyfin.Api.Controllers
                 GenreIds = genreIds
             };
 
-            if (librarySeriesId != null && !librarySeriesId.Equals(Guid.Empty))
+            if (librarySeriesId.HasValue && !librarySeriesId.Equals(default))
             {
                 query.IsSeries = true;
 
@@ -617,7 +617,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         public async Task<ActionResult<QueryResult<BaseItemDto>>> GetPrograms([FromBody] GetProgramsDto body)
         {
-            var user = body.UserId.Equals(Guid.Empty) ? null : _userManager.GetUserById(body.UserId);
+            var user = body.UserId.Equals(default) ? null : _userManager.GetUserById(body.UserId);
 
             var query = new InternalItemsQuery(user)
             {
@@ -642,7 +642,7 @@ namespace Jellyfin.Api.Controllers
                 GenreIds = body.GenreIds
             };
 
-            if (!body.LibrarySeriesId.Equals(Guid.Empty))
+            if (!body.LibrarySeriesId.Equals(default))
             {
                 query.IsSeries = true;
 
@@ -700,9 +700,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableUserData,
             [FromQuery] bool enableTotalRecordCount = true)
         {
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
 
             var query = new InternalItemsQuery(user)
             {
@@ -738,9 +738,9 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string programId,
             [FromQuery] Guid? userId)
         {
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
 
             return await _liveTvManager.GetProgram(programId, CancellationToken.None, user).ConfigureAwait(false);
         }

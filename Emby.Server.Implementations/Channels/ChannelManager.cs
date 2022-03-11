@@ -162,7 +162,7 @@ namespace Emby.Server.Implementations.Channels
         /// <inheritdoc />
         public QueryResult<Channel> GetChannelsInternal(ChannelQuery query)
         {
-            var user = query.UserId.Equals(Guid.Empty)
+            var user = query.UserId.Equals(default)
                 ? null
                 : _userManager.GetUserById(query.UserId);
 
@@ -274,7 +274,7 @@ namespace Emby.Server.Implementations.Channels
         /// <inheritdoc />
         public QueryResult<BaseItemDto> GetChannels(ChannelQuery query)
         {
-            var user = query.UserId.Equals(Guid.Empty)
+            var user = query.UserId.Equals(default)
                 ? null
                 : _userManager.GetUserById(query.UserId);
 
@@ -474,7 +474,7 @@ namespace Emby.Server.Implementations.Channels
 
             item.ChannelId = id;
 
-            if (item.ParentId != parentFolderId)
+            if (!item.ParentId.Equals(parentFolderId))
             {
                 forceUpdate = true;
             }
@@ -715,7 +715,9 @@ namespace Emby.Server.Implementations.Channels
             // Find the corresponding channel provider plugin
             var channelProvider = GetChannelProvider(channel);
 
-            var parentItem = query.ParentId == Guid.Empty ? channel : _libraryManager.GetItemById(query.ParentId);
+            var parentItem = query.ParentId.Equals(default)
+                ? channel
+                : _libraryManager.GetItemById(query.ParentId);
 
             var itemsResult = await GetChannelItems(
                 channelProvider,
@@ -726,7 +728,7 @@ namespace Emby.Server.Implementations.Channels
                 cancellationToken)
                 .ConfigureAwait(false);
 
-            if (query.ParentId == Guid.Empty)
+            if (query.ParentId.Equals(default))
             {
                 query.Parent = channel;
             }

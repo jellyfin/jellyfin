@@ -176,7 +176,9 @@ namespace Emby.Server.Implementations.LiveTv
 
         public QueryResult<BaseItem> GetInternalChannels(LiveTvChannelQuery query, DtoOptions dtoOptions, CancellationToken cancellationToken)
         {
-            var user = query.UserId == Guid.Empty ? null : _userManager.GetUserById(query.UserId);
+            var user = query.UserId.Equals(default)
+                ? null
+                : _userManager.GetUserById(query.UserId);
 
             var topFolder = GetInternalLiveTvFolder(cancellationToken);
 
@@ -1268,7 +1270,7 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (itemId.Equals(Guid.Empty))
+                if (itemId.Equals(default))
                 {
                     // Somehow some invalid data got into the db. It probably predates the boundary checking
                     continue;
@@ -1528,7 +1530,9 @@ namespace Emby.Server.Implementations.LiveTv
 
         public QueryResult<BaseItemDto> GetRecordings(RecordingQuery query, DtoOptions options)
         {
-            var user = query.UserId.Equals(Guid.Empty) ? null : _userManager.GetUserById(query.UserId);
+            var user = query.UserId.Equals(default)
+                ? null
+                : _userManager.GetUserById(query.UserId);
 
             RemoveFields(options);
 
@@ -1587,7 +1591,7 @@ namespace Emby.Server.Implementations.LiveTv
             if (!string.IsNullOrEmpty(query.ChannelId))
             {
                 var guid = new Guid(query.ChannelId);
-                timers = timers.Where(i => guid == _tvDtoService.GetInternalChannelId(i.Item2.Name, i.Item1.ChannelId));
+                timers = timers.Where(i => _tvDtoService.GetInternalChannelId(i.Item2.Name, i.Item1.ChannelId).Equals(guid));
             }
 
             if (!string.IsNullOrEmpty(query.SeriesTimerId))
@@ -1595,7 +1599,7 @@ namespace Emby.Server.Implementations.LiveTv
                 var guid = new Guid(query.SeriesTimerId);
 
                 timers = timers
-                    .Where(i => _tvDtoService.GetInternalSeriesTimerId(i.Item1.SeriesTimerId) == guid);
+                    .Where(i => _tvDtoService.GetInternalSeriesTimerId(i.Item1.SeriesTimerId).Equals(guid));
             }
 
             if (!string.IsNullOrEmpty(query.Id))
@@ -1657,7 +1661,7 @@ namespace Emby.Server.Implementations.LiveTv
             if (!string.IsNullOrEmpty(query.ChannelId))
             {
                 var guid = new Guid(query.ChannelId);
-                timers = timers.Where(i => guid == _tvDtoService.GetInternalChannelId(i.Item2.Name, i.Item1.ChannelId));
+                timers = timers.Where(i => _tvDtoService.GetInternalChannelId(i.Item2.Name, i.Item1.ChannelId).Equals(guid));
             }
 
             if (!string.IsNullOrEmpty(query.SeriesTimerId))
@@ -1665,7 +1669,7 @@ namespace Emby.Server.Implementations.LiveTv
                 var guid = new Guid(query.SeriesTimerId);
 
                 timers = timers
-                    .Where(i => _tvDtoService.GetInternalSeriesTimerId(i.Item1.SeriesTimerId) == guid);
+                    .Where(i => _tvDtoService.GetInternalSeriesTimerId(i.Item1.SeriesTimerId).Equals(guid));
             }
 
             if (!string.IsNullOrEmpty(query.Id))

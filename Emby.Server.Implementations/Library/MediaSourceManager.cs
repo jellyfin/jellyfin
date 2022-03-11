@@ -514,10 +514,10 @@ namespace Emby.Server.Implementations.Library
             _logger.LogInformation("Live stream opened: {@MediaSource}", mediaSource);
             var clone = JsonSerializer.Deserialize<MediaSourceInfo>(json, _jsonOptions);
 
-            if (!request.UserId.Equals(Guid.Empty))
+            if (!request.UserId.Equals(default))
             {
                 var user = _userManager.GetUserById(request.UserId);
-                var item = request.ItemId.Equals(Guid.Empty)
+                var item = request.ItemId.Equals(default)
                     ? null
                     : _libraryManager.GetItemById(request.ItemId);
                 SetDefaultAudioAndSubtitleStreamIndexes(item, clone, user);

@@ -534,7 +534,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<UserDto> GetCurrentUser()
         {
             var userId = ClaimHelpers.GetUserId(Request.HttpContext.User);
-            if (userId == null)
+            if (userId is null)
             {
                 return BadRequest();
             }

@@ -756,7 +756,7 @@ namespace Emby.Server.Implementations.Library
                 Path = path
             };
 
-            if (folder.Id.Equals(Guid.Empty))
+            if (folder.Id.Equals(default))
             {
                 if (string.IsNullOrEmpty(folder.Path))
                 {
@@ -775,7 +775,7 @@ namespace Emby.Server.Implementations.Library
                 folder = dbItem;
             }
 
-            if (folder.ParentId != rootFolder.Id)
+            if (!folder.ParentId.Equals(rootFolder.Id))
             {
                 folder.ParentId = rootFolder.Id;
                 folder.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, CancellationToken.None).GetAwaiter().GetResult();
@@ -1253,7 +1253,7 @@ namespace Emby.Server.Implementations.Library
         /// <exception cref="ArgumentNullException"><paramref name="id"/> is <c>null</c>.</exception>
         public BaseItem GetItemById(Guid id)
         {
-            if (id == Guid.Empty)
+            if (id.Equals(default))
             {
                 throw new ArgumentException("Guid can't be empty", nameof(id));
             }
@@ -1275,7 +1275,7 @@ namespace Emby.Server.Implementations.Library
 
         public List<BaseItem> GetItemList(InternalItemsQuery query, bool allowExternalContent)
         {
-            if (query.Recursive && query.ParentId != Guid.Empty)
+            if (query.Recursive && !query.ParentId.Equals(default))
             {
                 var parent = GetItemById(query.ParentId);
                 if (parent != null)
@@ -1299,7 +1299,7 @@ namespace Emby.Server.Implementations.Library
 
         public int GetCount(InternalItemsQuery query)
         {
-            if (query.Recursive && !query.ParentId.Equals(Guid.Empty))
+            if (query.Recursive && !query.ParentId.Equals(default))
             {
                 var parent = GetItemById(query.ParentId);
                 if (parent != null)
@@ -1457,7 +1457,7 @@ namespace Emby.Server.Implementations.Library
 
         public QueryResult<BaseItem> GetItemsResult(InternalItemsQuery query)
         {
-            if (query.Recursive && !query.ParentId.Equals(Guid.Empty))
+            if (query.Recursive && !query.ParentId.Equals(default))
             {
                 var parent = GetItemById(query.ParentId);
                 if (parent != null)
@@ -1513,7 +1513,7 @@ namespace Emby.Server.Implementations.Library
         private void AddUserToQuery(InternalItemsQuery query, User user, bool allowExternalContent = true)
         {
             if (query.AncestorIds.Length == 0 &&
-                query.ParentId.Equals(Guid.Empty) &&
+                query.ParentId.Equals(default) &&
                 query.ChannelIds.Count == 0 &&
                 query.TopParentIds.Length == 0 &&
                 string.IsNullOrEmpty(query.AncestorWithPresentationUniqueKey) &&
@@ -1541,7 +1541,7 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 // Translate view into folders
-                if (!view.DisplayParentId.Equals(Guid.Empty))
+                if (!view.DisplayParentId.Equals(default))
                 {
                     var displayParent = GetItemById(view.DisplayParentId);
                     if (displayParent != null)
@@ -1552,7 +1552,7 @@ namespace Emby.Server.Implementations.Library
                     return Array.Empty<Guid>();
                 }
 
-                if (!view.ParentId.Equals(Guid.Empty))
+                if (!view.ParentId.Equals(default))
                 {
                     var displayParent = GetItemById(view.ParentId);
                     if (displayParent != null)
@@ -2154,7 +2154,7 @@ namespace Emby.Server.Implementations.Library
                 return null;
             }
 
-            while (!item.ParentId.Equals(Guid.Empty))
+            while (!item.ParentId.Equals(default))
             {
                 var parent = item.GetParent();
                 if (parent == null || parent is AggregateFolder)
@@ -2232,7 +2232,9 @@ namespace Emby.Server.Implementations.Library
             string viewType,
             string sortName)
         {
-            var parentIdString = parentId.Equals(Guid.Empty) ? null : parentId.ToString("N", CultureInfo.InvariantCulture);
+            var parentIdString = parentId.Equals(default)
+                ? null
+                : parentId.ToString("N", CultureInfo.InvariantCulture);
             var idValues = "38_namedview_" + name + user.Id.ToString("N", CultureInfo.InvariantCulture) + (parentIdString ?? string.Empty) + (viewType ?? string.Empty);
 
             var id = GetNewItemId(idValues, typeof(UserView));
@@ -2266,7 +2268,7 @@ namespace Emby.Server.Implementations.Library
 
             var refresh = isNew || DateTime.UtcNow - item.DateLastRefreshed >= _viewRefreshInterval;
 
-            if (!refresh && !item.DisplayParentId.Equals(Guid.Empty))
+            if (!refresh && !item.DisplayParentId.Equals(default))
             {
                 var displayParent = GetItemById(item.DisplayParentId);
                 refresh = displayParent != null && displayParent.DateLastSaved > item.DateLastRefreshed;
@@ -2333,7 +2335,7 @@ namespace Emby.Server.Implementations.Library
 
             var refresh = isNew || DateTime.UtcNow - item.DateLastRefreshed >= _viewRefreshInterval;
 
-            if (!refresh && !item.DisplayParentId.Equals(Guid.Empty))
+            if (!refresh && !item.DisplayParentId.Equals(default))
             {
                 var displayParent = GetItemById(item.DisplayParentId);
                 refresh = displayParent != null && displayParent.DateLastSaved > item.DateLastRefreshed;
@@ -2366,7 +2368,9 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(name));
             }
 
-            var parentIdString = parentId.Equals(Guid.Empty) ? null : parentId.ToString("N", CultureInfo.InvariantCulture);
+            var parentIdString = parentId.Equals(default)
+                ? null
+                : parentId.ToString("N", CultureInfo.InvariantCulture);
             var idValues = "37_namedview_" + name + (parentIdString ?? string.Empty) + (viewType ?? string.Empty);
             if (!string.IsNullOrEmpty(uniqueId))
             {
@@ -2410,7 +2414,7 @@ namespace Emby.Server.Implementations.Library
 
             var refresh = isNew || DateTime.UtcNow - item.DateLastRefreshed >= _viewRefreshInterval;
 
-            if (!refresh && !item.DisplayParentId.Equals(Guid.Empty))
+            if (!refresh && !item.DisplayParentId.Equals(default))
             {
                 var displayParent = GetItemById(item.DisplayParentId);
                 refresh = displayParent != null && displayParent.DateLastSaved > item.DateLastRefreshed;

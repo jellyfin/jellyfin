@@ -1444,7 +1444,7 @@ namespace MediaBrowser.Model.Dlna
 
         private static void ValidateAudioInput(AudioOptions options)
         {
-            if (options.ItemId.Equals(Guid.Empty))
+            if (options.ItemId.Equals(default))
             {
                 throw new ArgumentException("ItemId is required");
             }

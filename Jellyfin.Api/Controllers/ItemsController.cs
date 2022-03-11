@@ -228,7 +228,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool enableTotalRecordCount = true,
             [FromQuery] bool? enableImages = true)
         {
-            var user = userId == Guid.Empty ? null : _userManager.GetUserById(userId);
+            var user = userId.Equals(default) ? null : _userManager.GetUserById(userId);
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
@@ -799,7 +799,7 @@ namespace Jellyfin.Api.Controllers
             var ancestorIds = Array.Empty<Guid>();
 
             var excludeFolderIds = user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes);
-            if (parentIdGuid.Equals(Guid.Empty) && excludeFolderIds.Length > 0)
+            if (parentIdGuid.Equals(default) && excludeFolderIds.Length > 0)
             {
                 ancestorIds = _libraryManager.GetUserRootFolder().GetChildren(user, true)
                     .Where(i => i is Folder)
@@ -812,7 +812,7 @@ namespace Jellyfin.Api.Controllers
             if (excludeActiveSessions)
             {
                 excludeItemIds = _sessionManager.Sessions
-                    .Where(s => s.UserId == userId && s.NowPlayingItem != null)
+                    .Where(s => s.UserId.Equals(userId) && s.NowPlayingItem != null)
                     .Select(s => s.NowPlayingItem.Id)
                     .ToArray();
             }

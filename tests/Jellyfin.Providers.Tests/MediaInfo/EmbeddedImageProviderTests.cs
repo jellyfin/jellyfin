@@ -148,7 +148,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
             var mediaSourceManager = new Mock<IMediaSourceManager>(MockBehavior.Strict);
             mediaSourceManager.Setup(i => i.GetMediaAttachments(item.Id))
                 .Returns(mediaAttachments);
-            mediaSourceManager.Setup(i => i.GetMediaStreams(It.Is<MediaStreamQuery>(q => q.ItemId == item.Id && q.Type == MediaStreamType.EmbeddedImage)))
+            mediaSourceManager.Setup(i => i.GetMediaStreams(It.Is<MediaStreamQuery>(q => q.ItemId.Equals(item.Id) && q.Type == MediaStreamType.EmbeddedImage)))
                 .Returns(mediaStreams);
             return mediaSourceManager.Object;
         }

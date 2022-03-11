@@ -1308,7 +1308,7 @@ namespace Emby.Server.Implementations.Dto
 
                 var allImages = parent.ImageInfos;
 
-                if (logoLimit > 0 && !(imageTags != null && imageTags.ContainsKey(ImageType.Logo)) && dto.ParentLogoItemId == null)
+                if (logoLimit > 0 && !(imageTags != null && imageTags.ContainsKey(ImageType.Logo)) && dto.ParentLogoItemId is null)
                 {
                     var image = allImages.FirstOrDefault(i => i.Type == ImageType.Logo);
 
@@ -1319,7 +1319,7 @@ namespace Emby.Server.Implementations.Dto
                     }
                 }
 
-                if (artLimit > 0 && !(imageTags != null && imageTags.ContainsKey(ImageType.Art)) && dto.ParentArtItemId == null)
+                if (artLimit > 0 && !(imageTags != null && imageTags.ContainsKey(ImageType.Art)) && dto.ParentArtItemId is null)
                 {
                     var image = allImages.FirstOrDefault(i => i.Type == ImageType.Art);
 
@@ -1330,7 +1330,7 @@ namespace Emby.Server.Implementations.Dto
                     }
                 }
 
-                if (thumbLimit > 0 && !(imageTags != null && imageTags.ContainsKey(ImageType.Thumb)) && (dto.ParentThumbItemId == null || parent is Series) && parent is not ICollectionFolder && parent is not UserView)
+                if (thumbLimit > 0 && !(imageTags != null && imageTags.ContainsKey(ImageType.Thumb)) && (dto.ParentThumbItemId is null || parent is Series) && parent is not ICollectionFolder && parent is not UserView)
                 {
                     var image = allImages.FirstOrDefault(i => i.Type == ImageType.Thumb);
 

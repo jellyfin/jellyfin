@@ -74,12 +74,12 @@ namespace MediaBrowser.Controller.Entities.TV
             get
             {
                 var seriesId = SeriesId;
-                if (seriesId.Equals(Guid.Empty))
+                if (seriesId.Equals(default))
                 {
                     seriesId = FindSeriesId();
                 }
 
-                return !seriesId.Equals(Guid.Empty) ? (LibraryManager.GetItemById(seriesId) as Series) : null;
+                return seriesId.Equals(default) ? null : (LibraryManager.GetItemById(seriesId) as Series);
             }
         }
 
@@ -89,12 +89,12 @@ namespace MediaBrowser.Controller.Entities.TV
             get
             {
                 var seasonId = SeasonId;
-                if (seasonId.Equals(Guid.Empty))
+                if (seasonId.Equals(default))
                 {
                     seasonId = FindSeasonId();
                 }
 
-                return !seasonId.Equals(Guid.Empty) ? (LibraryManager.GetItemById(seasonId) as Season) : null;
+                return seasonId.Equals(default) ? null : (LibraryManager.GetItemById(seasonId) as Season);
             }
         }
 
@@ -271,7 +271,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
             var seasonId = SeasonId;
 
-            if (!seasonId.Equals(Guid.Empty) && !list.Contains(seasonId))
+            if (!seasonId.Equals(default) && !list.Contains(seasonId))
             {
                 list.Add(seasonId);
             }

@@ -48,12 +48,12 @@ namespace MediaBrowser.Controller.Entities.TV
             get
             {
                 var seriesId = SeriesId;
-                if (seriesId == Guid.Empty)
+                if (seriesId.Equals(default))
                 {
                     seriesId = FindSeriesId();
                 }
 
-                return seriesId == Guid.Empty ? null : (LibraryManager.GetItemById(seriesId) as Series);
+                return seriesId.Equals(default) ? null : (LibraryManager.GetItemById(seriesId) as Series);
             }
         }
 

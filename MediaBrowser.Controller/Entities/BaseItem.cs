@@ -231,7 +231,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (!ChannelId.Equals(Guid.Empty))
+                if (!ChannelId.Equals(default))
                 {
                     return SourceType.Channel;
                 }
@@ -521,7 +521,7 @@ namespace MediaBrowser.Controller.Entities
             get
             {
                 var id = DisplayParentId;
-                if (id.Equals(Guid.Empty))
+                if (id.Equals(default))
                 {
                     return null;
                 }
@@ -737,7 +737,7 @@ namespace MediaBrowser.Controller.Entities
         public virtual bool StopRefreshIfLocalMetadataFound => true;
 
         [JsonIgnore]
-        protected virtual bool SupportsOwnedItems => !ParentId.Equals(Guid.Empty) && IsFileProtocol;
+        protected virtual bool SupportsOwnedItems => !ParentId.Equals(default) && IsFileProtocol;
 
         [JsonIgnore]
         public virtual bool SupportsPeople => false;
@@ -848,7 +848,7 @@ namespace MediaBrowser.Controller.Entities
         public BaseItem GetOwner()
         {
             var ownerId = OwnerId;
-            return ownerId.Equals(Guid.Empty) ? null : LibraryManager.GetItemById(ownerId);
+            return ownerId.Equals(default) ? null : LibraryManager.GetItemById(ownerId);
         }
 
         public bool CanDelete(User user, List<Folder> allCollectionFolders)
@@ -984,12 +984,12 @@ namespace MediaBrowser.Controller.Entities
         public BaseItem GetParent()
         {
             var parentId = ParentId;
-            if (!parentId.Equals(Guid.Empty))
+            if (parentId.Equals(default))
             {
-                return LibraryManager.GetItemById(parentId);
+                return null;
             }
 
-            return null;
+            return LibraryManager.GetItemById(parentId);
         }
 
         public IEnumerable<BaseItem> GetParents()
@@ -1397,7 +1397,7 @@ namespace MediaBrowser.Controller.Entities
             var tasks = extras.Select(i =>
             {
                 var subOptions = new MetadataRefreshOptions(options);
-                if (i.OwnerId != ownerId || i.ParentId != Guid.Empty)
+                if (!i.OwnerId.Equals(ownerId) || !i.ParentId.Equals(default))
                 {
                     i.OwnerId = ownerId;
                     i.ParentId = Guid.Empty;
@@ -1736,7 +1736,7 @@ namespace MediaBrowser.Controller.Entities
             // First get using the cached Id
             if (info.ItemId.HasValue)
             {
-                if (info.ItemId.Value.Equals(Guid.Empty))
+                if (info.ItemId.Value.Equals(default))
                 {
                     return null;
                 }
@@ -2657,7 +2657,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <inheritdoc />
-        public bool Equals(BaseItem other) => Id == other?.Id;
+        public bool Equals(BaseItem other) => other is not null && other.Id.Equals(Id);
 
         /// <inheritdoc />
         public override int GetHashCode() => HashCode.Combine(Id);

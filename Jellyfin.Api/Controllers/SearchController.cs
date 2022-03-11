@@ -205,7 +205,7 @@ namespace Jellyfin.Api.Controllers
                     break;
             }
 
-            if (!item.ChannelId.Equals(Guid.Empty))
+            if (!item.ChannelId.Equals(default))
             {
                 var channel = _libraryManager.GetItemById(item.ChannelId);
                 result.ChannelName = channel?.Name;

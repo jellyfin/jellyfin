@@ -213,7 +213,7 @@ namespace MediaBrowser.Controller.Entities
         {
             item.SetParent(this);
 
-            if (item.Id.Equals(Guid.Empty))
+            if (item.Id.Equals(default))
             {
                 item.Id = LibraryManager.GetNewItemId(item.Path, item.GetType());
             }
@@ -730,7 +730,9 @@ namespace MediaBrowser.Controller.Entities
                 return PostFilterAndSort(items, query, true);
             }
 
-            if (this is not UserRootFolder && this is not AggregateFolder && query.ParentId == Guid.Empty)
+            if (this is not UserRootFolder
+                && this is not AggregateFolder
+                && query.ParentId.Equals(default))
             {
                 query.Parent = this;
             }
@@ -1504,7 +1506,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (i.ItemId.HasValue)
                 {
-                    if (i.ItemId.Value == itemId)
+                    if (i.ItemId.Value.Equals(itemId))
                     {
                         return true;
                     }
@@ -1514,7 +1516,7 @@ namespace MediaBrowser.Controller.Entities
 
                 var child = GetLinkedChild(i);
 
-                if (child != null && child.Id == itemId)
+                if (child != null && child.Id.Equals(itemId))
                 {
                     return true;
                 }

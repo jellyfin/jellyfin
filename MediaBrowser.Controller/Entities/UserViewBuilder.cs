@@ -988,7 +988,7 @@ namespace MediaBrowser.Controller.Entities
         public static IEnumerable<BaseItem> FilterForAdjacency(List<BaseItem> list, string adjacentToId)
         {
             var adjacentToIdGuid = new Guid(adjacentToId);
-            var adjacentToItem = list.FirstOrDefault(i => i.Id == adjacentToIdGuid);
+            var adjacentToItem = list.FirstOrDefault(i => i.Id.Equals(adjacentToIdGuid));
 
             var index = list.IndexOf(adjacentToItem);
 
@@ -1005,7 +1005,7 @@ namespace MediaBrowser.Controller.Entities
                 nextId = list[index + 1].Id;
             }
 
-            return list.Where(i => i.Id == previousId || i.Id == nextId || i.Id == adjacentToIdGuid);
+            return list.Where(i => i.Id.Equals(previousId) || i.Id.Equals(nextId) || i.Id.Equals(adjacentToIdGuid));
         }
     }
 }

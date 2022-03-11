@@ -149,14 +149,14 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] Guid? userId,
             [FromQuery] bool inheritFromParent = false)
         {
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
 
-            var item = itemId.Equals(Guid.Empty)
-                ? (!userId.Equals(Guid.Empty)
-                    ? _libraryManager.GetUserRootFolder()
-                    : _libraryManager.RootFolder)
+            var item = itemId.Equals(default)
+                ? (userId is null || userId.Value.Equals(default)
+                    ? _libraryManager.RootFolder
+                    : _libraryManager.GetUserRootFolder())
                 : _libraryManager.GetItemById(itemId);
 
             if (item == null)
@@ -215,14 +215,14 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] Guid? userId,
             [FromQuery] bool inheritFromParent = false)
         {
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
 
-            var item = itemId.Equals(Guid.Empty)
-                ? (!userId.Equals(Guid.Empty)
-                    ? _libraryManager.GetUserRootFolder()
-                    : _libraryManager.RootFolder)
+            var item = itemId.Equals(default)
+                ? (userId is null || userId.Value.Equals(default)
+                    ? _libraryManager.RootFolder
+                    : _libraryManager.GetUserRootFolder())
                 : _libraryManager.GetItemById(itemId);
 
             if (item == null)
@@ -407,9 +407,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] Guid? userId,
             [FromQuery] bool? isFavorite)
         {
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
 
             var counts = new ItemCounts
             {
@@ -449,9 +449,9 @@ namespace Jellyfin.Api.Controllers
 
             var baseItemDtos = new List<BaseItemDto>();
 
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
 
             var dtoOptions = new DtoOptions().AddClientFields(Request);
             BaseItem? parent = item.GetParent();
@@ -689,10 +689,10 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? limit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields)
         {
-            var item = itemId.Equals(Guid.Empty)
-                ? (!userId.Equals(Guid.Empty)
-                    ? _libraryManager.GetUserRootFolder()
-                    : _libraryManager.RootFolder)
+            var item = itemId.Equals(default)
+                ? (userId is null || userId.Value.Equals(default)
+                    ? _libraryManager.RootFolder
+                    : _libraryManager.GetUserRootFolder())
                 : _libraryManager.GetItemById(itemId);
 
             if (item is Episode || (item is IItemByName && item is not MusicArtist))
@@ -700,9 +700,9 @@ namespace Jellyfin.Api.Controllers
                 return new QueryResult<BaseItemDto>();
             }
 
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request);
 

@@ -120,7 +120,7 @@ namespace Jellyfin.Server.Implementations.Devices
 
             if (query.UserId.HasValue)
             {
-                devices = devices.Where(device => device.UserId == query.UserId.Value);
+                devices = devices.Where(device => device.UserId.Equals(query.UserId.Value));
             }
 
             if (query.DeviceId != null)

@@ -63,7 +63,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? limit,
             [FromQuery] bool enableTotalRecordCount = false)
         {
-            var user = !userId.Equals(Guid.Empty) ? _userManager.GetUserById(userId) : null;
+            var user = userId.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId);
 
             var dtoOptions = new DtoOptions().AddClientFields(Request);
             var result = _libraryManager.GetItemsResult(new InternalItemsQuery(user)

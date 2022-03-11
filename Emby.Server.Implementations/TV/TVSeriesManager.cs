@@ -280,7 +280,7 @@ namespace Emby.Server.Implementations.TV
                         .Cast<Episode>();
                     if (lastWatchedEpisode != null)
                     {
-                        sortedConsideredEpisodes = sortedConsideredEpisodes.SkipWhile(episode => episode.Id != lastWatchedEpisode.Id).Skip(1);
+                        sortedConsideredEpisodes = sortedConsideredEpisodes.SkipWhile(episode => !episode.Id.Equals(lastWatchedEpisode.Id)).Skip(1);
                     }
 
                     nextEpisode = sortedConsideredEpisodes.FirstOrDefault();
