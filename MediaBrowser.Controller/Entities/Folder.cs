@@ -189,21 +189,6 @@ namespace MediaBrowser.Controller.Entities
             return baseResult;
         }
 
-        protected override bool IsAllowTagFilterEnforced()
-        {
-            if (this is ICollectionFolder)
-            {
-                return false;
-            }
-
-            if (this is UserView)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
         /// <summary>
         /// Adds the child.
         /// </summary>
