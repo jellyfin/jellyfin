@@ -5970,6 +5970,7 @@ AND Type = @InternalPersonType)");
                 item.LocalizedUndefined = _localization.GetLocalizedString("Undefined");
                 item.LocalizedDefault = _localization.GetLocalizedString("Default");
                 item.LocalizedForced = _localization.GetLocalizedString("Forced");
+                item.LocalizedExternal = _localization.GetLocalizedString("External");
             }
 
             return item;

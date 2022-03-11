@@ -5,23 +5,24 @@ namespace Jellyfin.Model.Tests.Entities
 {
     public class MediaStreamTests
     {
-        public static TheoryData<MediaStream, string> Get_DisplayTitle_TestData()
+        public static TheoryData<string, MediaStream> Get_DisplayTitle_TestData()
         {
-            var data = new TheoryData<MediaStream, string>();
+            var data = new TheoryData<string, MediaStream>();
 
             data.Add(
-                    new MediaStream
-                    {
-                        Type = MediaStreamType.Subtitle,
-                        Title = "English",
-                        Language = string.Empty,
-                        IsForced = false,
-                        IsDefault = false,
-                        Codec = "ASS"
-                    },
-                    "English - Und - ASS");
+                "English - Und - ASS",
+                new MediaStream
+                {
+                    Type = MediaStreamType.Subtitle,
+                    Title = "English",
+                    Language = string.Empty,
+                    IsForced = false,
+                    IsDefault = false,
+                    Codec = "ASS"
+                });
 
             data.Add(
+                "English - Und",
                 new MediaStream
                 {
                     Type = MediaStreamType.Subtitle,
@@ -30,10 +31,10 @@ namespace Jellyfin.Model.Tests.Entities
                     IsForced = false,
                     IsDefault = false,
                     Codec = string.Empty
-                },
-                "English - Und");
+                });
 
             data.Add(
+                "English",
                 new MediaStream
                 {
                     Type = MediaStreamType.Subtitle,
@@ -42,10 +43,10 @@ namespace Jellyfin.Model.Tests.Entities
                     IsForced = false,
                     IsDefault = false,
                     Codec = string.Empty
-                },
-                "English");
+                });
 
             data.Add(
+                "English - Default - Forced - SRT",
                 new MediaStream
                 {
                     Type = MediaStreamType.Subtitle,
@@ -54,10 +55,23 @@ namespace Jellyfin.Model.Tests.Entities
                     IsForced = true,
                     IsDefault = true,
                     Codec = "SRT"
-                },
-                "English - Default - Forced - SRT");
+                });
 
             data.Add(
+                "Title - EN - Default - Forced - SRT - External",
+                new MediaStream
+                {
+                    Type = MediaStreamType.Subtitle,
+                    Title = "Title",
+                    Language = "EN",
+                    IsForced = true,
+                    IsDefault = true,
+                    Codec = "SRT",
+                    IsExternal = true
+                });
+
+            data.Add(
+                "Und",
                 new MediaStream
                 {
                     Type = MediaStreamType.Subtitle,
@@ -66,15 +80,27 @@ namespace Jellyfin.Model.Tests.Entities
                     IsForced = false,
                     IsDefault = false,
                     Codec = null
-                },
-                "Und");
+                });
+
+            data.Add(
+                "Title - AAC - Default - External",
+                new MediaStream
+                {
+                    Type = MediaStreamType.Audio,
+                    Title = "Title",
+                    Language = null,
+                    IsForced = false,
+                    IsDefault = true,
+                    Codec = "AAC",
+                    IsExternal = true
+                });
 
             return data;
         }
 
         [Theory]
         [MemberData(nameof(Get_DisplayTitle_TestData))]
-        public void Get_DisplayTitle_should_return_valid_title(MediaStream mediaStream, string expected)
+        public void Get_DisplayTitle_should_return_valid_title(string expected, MediaStream mediaStream)
         {
             Assert.Equal(expected, mediaStream.DisplayTitle);
         }
