@@ -594,7 +594,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            video.SubtitleFiles = externalSubtitleStreams.Select(i => i.Path).ToArray();
+            video.SubtitleFiles = externalSubtitleStreams.Select(i => i.Path).Distinct().ToArray();
 
             currentStreams.AddRange(externalSubtitleStreams);
         }
@@ -615,10 +615,9 @@ namespace MediaBrowser.Providers.MediaInfo
             var startIndex = currentStreams.Count == 0 ? 0 : currentStreams.Max(i => i.Index) + 1;
             var externalAudioStreams = await _audioResolver.GetExternalStreamsAsync(video, startIndex, options.DirectoryService, false, cancellationToken).ConfigureAwait(false);
 
-            currentStreams = currentStreams.Concat(externalAudioStreams).ToList();
+            video.AudioFiles = externalAudioStreams.Select(i => i.Path).Distinct().ToArray();
 
-            // Select all external audio file paths
-            video.AudioFiles = currentStreams.Where(i => i.Type == MediaStreamType.Audio && i.IsExternal).Select(i => i.Path).Distinct().ToArray();
+            currentStreams.AddRange(externalAudioStreams);
         }
 
         /// <summary>
