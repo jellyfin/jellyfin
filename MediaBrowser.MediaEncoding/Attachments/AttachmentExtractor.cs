@@ -89,12 +89,12 @@ namespace MediaBrowser.MediaEncoding.Attachments
             string outputPath,
             CancellationToken cancellationToken)
         {
+            var semaphore = _semaphoreLocks.GetOrAdd(outputPath, key => new SemaphoreSlim(1, 1));
+
+            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
             if (!Directory.Exists(outputPath))
             {
-                var semaphore = _semaphoreLocks.GetOrAdd(outputPath, key => new SemaphoreSlim(1, 1));
-
-                await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
                 try
                 {
                     await ExtractAllAttachmentsInternal(
@@ -116,12 +116,12 @@ namespace MediaBrowser.MediaEncoding.Attachments
             string outputPath,
             CancellationToken cancellationToken)
         {
+            var semaphore = _semaphoreLocks.GetOrAdd(outputPath, key => new SemaphoreSlim(1, 1));
+
+            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
             if (!File.Exists(Path.Join(outputPath, id)))
             {
-                var semaphore = _semaphoreLocks.GetOrAdd(outputPath, key => new SemaphoreSlim(1, 1));
-
-                await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
                 try
                 {
                     await ExtractAllAttachmentsInternal(
@@ -158,10 +158,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 throw new ArgumentNullException(nameof(outputPath));
             }
 
-            if (!Directory.Exists(outputPath))
-            {
-                Directory.CreateDirectory(outputPath);
-            }
+            Directory.CreateDirectory(outputPath);
 
             var processArgs = string.Format(
                 CultureInfo.InvariantCulture,
