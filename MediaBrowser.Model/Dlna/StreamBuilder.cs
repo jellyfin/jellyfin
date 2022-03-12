@@ -910,7 +910,7 @@ namespace MediaBrowser.Model.Dlna
 
                 // Make sure the video bitrate is lower than bitrate settings but at least 64k
                 var currentValue = playlistItem.VideoBitrate ?? availableBitrateForVideo;
-                playlistItem.VideoBitrate = Math.Clamp(currentValue, availableBitrateForVideo, 64_000);
+                playlistItem.VideoBitrate = Math.Clamp(currentValue, 64_000, availableBitrateForVideo);
             }
 
             _logger.LogInformation(
