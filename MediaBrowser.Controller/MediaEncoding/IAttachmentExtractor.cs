@@ -18,11 +18,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             string mediaSourceId,
             int attachmentStreamIndex,
             CancellationToken cancellationToken);
+
         Task ExtractAllAttachments(
             string inputFile,
             MediaSourceInfo mediaSource,
             string outputPath,
             CancellationToken cancellationToken);
+
         Task ExtractAllAttachmentsExternal(
             string inputArgument,
             string id,

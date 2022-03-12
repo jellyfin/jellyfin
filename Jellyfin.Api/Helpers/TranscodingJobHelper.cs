@@ -530,7 +530,7 @@ namespace Jellyfin.Api.Helpers
             if (state.SubtitleStream != null && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode)
             {
                 var attachmentPath = Path.Combine(_appPaths.CachePath, "attachments", state.MediaSource.Id);
-                await _attachmentExtractor.ExtractAllAttachments(state.MediaPath, state.MediaSource, attachmentPath, CancellationToken.None).ConfigureAwait(false);
+                await _attachmentExtractor.ExtractAllAttachments(state.MediaPath, state.MediaSource, attachmentPath, cancellationTokenSource.Token).ConfigureAwait(false);
 
                 if (state.SubtitleStream.IsExternal)
                 {
@@ -538,7 +538,7 @@ namespace Jellyfin.Api.Helpers
                     string subtitlePathArgument = string.Format(CultureInfo.InvariantCulture, "file:\"{0}\"", subtitlePath.Replace("\"", "\\\"", StringComparison.Ordinal));
                     string subtitleId = subtitlePath.GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
-                    await _attachmentExtractor.ExtractAllAttachmentsExternal(subtitlePathArgument, subtitleId, attachmentPath, CancellationToken.None).ConfigureAwait(false);
+                    await _attachmentExtractor.ExtractAllAttachmentsExternal(subtitlePathArgument, subtitleId, attachmentPath, cancellationTokenSource.Token).ConfigureAwait(false);
                 }
             }
 
