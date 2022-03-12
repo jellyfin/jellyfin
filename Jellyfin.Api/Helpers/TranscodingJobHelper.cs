@@ -532,7 +532,7 @@ namespace Jellyfin.Api.Helpers
                 var attachmentPath = Path.Combine(_appPaths.CachePath, "attachments", state.MediaSource.Id);
                 await _attachmentExtractor.ExtractAllAttachments(state.MediaPath, state.MediaSource, attachmentPath, cancellationTokenSource.Token).ConfigureAwait(false);
 
-                if (state.SubtitleStream.IsExternal)
+                if (state.SubtitleStream.IsExternal && string.Equals(Path.GetExtension(state.SubtitleStream.Path), ".mks", StringComparison.OrdinalIgnoreCase))
                 {
                     string subtitlePath = state.SubtitleStream.Path;
                     string subtitlePathArgument = string.Format(CultureInfo.InvariantCulture, "file:\"{0}\"", subtitlePath.Replace("\"", "\\\"", StringComparison.Ordinal));
