@@ -15,7 +15,7 @@ namespace Jellyfin.Api.Controllers
     /// Item Refresh Controller.
     /// </summary>
     [Route("Items")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize(Policy = Policies.RequiresElevation)]
     public class ItemRefreshController : BaseJellyfinApiController
     {
         private readonly ILibraryManager _libraryManager;
