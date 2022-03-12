@@ -1799,7 +1799,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return false;
             }
 
-            return request.EnableAutoStreamCopy;
+            return true;
         }
 
         public bool CanStreamCopyAudio(EncodingJobInfo state, MediaStream audioStream, IEnumerable<string> supportedAudioCodecs)
@@ -1856,17 +1856,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // Video bitrate must fall within requested value
-            if (request.AudioBitRate.HasValue)
+            if (request.AudioBitRate.HasValue
+                && audioStream.BitDepth.HasValue
+                && audioStream.BitRate.Value > request.AudioBitRate.Value)
             {
-                if (!audioStream.BitRate.HasValue || audioStream.BitRate.Value <= 0)
-                {
-                    return false;
-                }
-
-                if (audioStream.BitRate.Value > request.AudioBitRate.Value)
-                {
-                    return false;
-                }
+                return false;
             }
 
             return request.EnableAutoStreamCopy;

@@ -1,17 +1,10 @@
 #nullable disable
 #pragma warning disable CS1591
 
-using System;
-
 namespace MediaBrowser.Model.Session
 {
     public class TranscodingInfo
     {
-        public TranscodingInfo()
-        {
-            TranscodeReasons = Array.Empty<TranscodeReason>();
-        }
-
         public string AudioCodec { get; set; }
 
         public string VideoCodec { get; set; }
@@ -36,6 +29,6 @@ namespace MediaBrowser.Model.Session
 
         public HardwareEncodingType? HardwareAccelerationType { get; set; }
 
-        public TranscodeReason[] TranscodeReasons { get; set; }
+        public TranscodeReason TranscodeReason { get; set; }
     }
 }

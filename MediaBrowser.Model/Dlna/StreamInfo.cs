@@ -23,7 +23,6 @@ namespace MediaBrowser.Model.Dlna
             AudioCodecs = Array.Empty<string>();
             VideoCodecs = Array.Empty<string>();
             SubtitleCodecs = Array.Empty<string>();
-            TranscodeReasons = Array.Empty<TranscodeReason>();
             StreamOptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
@@ -103,7 +102,7 @@ namespace MediaBrowser.Model.Dlna
 
         public string PlaySessionId { get; set; }
 
-        public TranscodeReason[] TranscodeReasons { get; set; }
+        public TranscodeReason TranscodeReasons { get; set; }
 
         public Dictionary<string, string> StreamOptions { get; private set; }
 
@@ -799,7 +798,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (!item.IsDirectStream)
             {
-                list.Add(new NameValuePair("TranscodeReasons", string.Join(',', item.TranscodeReasons.Distinct())));
+                list.Add(new NameValuePair("TranscodeReasons", item.TranscodeReasons.ToString()));
             }
 
             return list;

@@ -16,6 +16,7 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -223,7 +224,7 @@ namespace Jellyfin.Api.Controllers
                     DeInterlace = false,
                     RequireNonAnamorphic = false,
                     EnableMpegtsM2TsMode = false,
-                    TranscodeReasons = mediaSource.TranscodeReasons == null ? null : string.Join(',', mediaSource.TranscodeReasons.Select(i => i.ToString()).ToArray()),
+                    TranscodeReasons = mediaSource.TranscodeReasons == 0 ? null : mediaSource.TranscodeReasons.ToString(),
                     Context = EncodingContext.Static,
                     StreamOptions = new Dictionary<string, string>(),
                     EnableAdaptiveBitrateStreaming = true
@@ -254,7 +255,7 @@ namespace Jellyfin.Api.Controllers
                 CopyTimestamps = true,
                 StartTimeTicks = startTimeTicks,
                 SubtitleMethod = SubtitleDeliveryMethod.Embed,
-                TranscodeReasons = mediaSource.TranscodeReasons == null ? null : string.Join(',', mediaSource.TranscodeReasons.Select(i => i.ToString()).ToArray()),
+                TranscodeReasons = mediaSource.TranscodeReasons == 0 ? null : mediaSource.TranscodeReasons.ToString(),
                 Context = EncodingContext.Static
             };
 

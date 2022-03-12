@@ -109,7 +109,7 @@ namespace MediaBrowser.Model.Dto
         public int? AnalyzeDurationMs { get; set; }
 
         [JsonIgnore]
-        public TranscodeReason[] TranscodeReasons { get; set; }
+        public TranscodeReason TranscodeReasons { get; set; }
 
         public int? DefaultAudioStreamIndex { get; set; }
 
@@ -161,7 +161,7 @@ namespace MediaBrowser.Model.Dto
 
         public MediaStream GetDefaultAudioStream(int? defaultIndex)
         {
-            if (defaultIndex.HasValue)
+            if (defaultIndex.HasValue && defaultIndex != -1)
             {
                 var val = defaultIndex.Value;
 

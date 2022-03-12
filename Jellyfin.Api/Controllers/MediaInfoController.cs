@@ -126,7 +126,7 @@ namespace Jellyfin.Api.Controllers
             var authInfo = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
 
             var profile = playbackInfoDto?.DeviceProfile;
-            _logger.LogInformation("GetPostedPlaybackInfo profile: {@Profile}", profile);
+            _logger.LogDebug("GetPostedPlaybackInfo profile: {@Profile}", profile);
 
             if (profile == null)
             {
@@ -222,14 +222,6 @@ namespace Jellyfin.Api.Controllers
                         }).ConfigureAwait(false);
 
                     info.MediaSources = new[] { openStreamResult.MediaSource };
-                }
-            }
-
-            if (info.MediaSources != null)
-            {
-                foreach (var mediaSource in info.MediaSources)
-                {
-                    _mediaInfoHelper.NormalizeMediaSourceContainer(mediaSource, profile!, DlnaProfileType.Video);
                 }
             }
 
