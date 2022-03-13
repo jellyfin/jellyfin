@@ -93,9 +93,9 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
             await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            if (!Directory.Exists(outputPath))
+            try
             {
-                try
+                if (!Directory.Exists(outputPath))
                 {
                     await ExtractAllAttachmentsInternal(
                         _mediaEncoder.GetInputArgument(inputFile, mediaSource),
@@ -103,10 +103,10 @@ namespace MediaBrowser.MediaEncoding.Attachments
                         false,
                         cancellationToken).ConfigureAwait(false);
                 }
-                finally
-                {
-                    semaphore.Release();
-                }
+            }
+            finally
+            {
+                semaphore.Release();
             }
         }
 
@@ -120,25 +120,25 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
             await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            if (!File.Exists(Path.Join(outputPath, id)))
+            try
             {
-                try
+                if (!File.Exists(Path.Join(outputPath, id)))
                 {
                     await ExtractAllAttachmentsInternal(
                         inputArgument,
                         outputPath,
                         true,
                         cancellationToken).ConfigureAwait(false);
-                }
-                finally
-                {
+
                     if (Directory.Exists(outputPath))
                     {
                         File.Create(Path.Join(outputPath, id));
                     }
-
-                    semaphore.Release();
                 }
+            }
+            finally
+            {
+                semaphore.Release();
             }
         }
 
