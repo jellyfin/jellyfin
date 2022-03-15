@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
-namespace Jellyfin.MediaBrowser.Model.Tests
+namespace Jellyfin.Model.Tests
 {
     public class StreamBuilderTests
     {
@@ -453,8 +453,8 @@ namespace Jellyfin.MediaBrowser.Model.Tests
             var queryString = href.ElementAtOrDefault(1);
             var query = string.IsNullOrEmpty(queryString) ? System.Web.HttpUtility.ParseQueryString(queryString ?? string.Empty) : new NameValueCollection();
 
-            var filename = System.IO.Path.GetFileNameWithoutExtension(path);
-            var extension = System.IO.Path.GetExtension(path);
+            var filename = Path.GetFileNameWithoutExtension(path);
+            var extension = Path.GetExtension(path);
             if (extension.Length > 0)
             {
                 extension = extension.Substring(1);
