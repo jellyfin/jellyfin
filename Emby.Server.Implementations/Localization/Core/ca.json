@@ -120,5 +120,8 @@
     "Forced": "Forçat",
     "Default": "Defecto",
     "TaskOptimizeDatabaseDescription": "Compacta la base de dades i trunca l'espai lliure. Executar aquesta tasca després d’escanejar la biblioteca o fer altres canvis que impliquin modificacions a la base de dades pot millorar el rendiment.",
-    "TaskOptimizeDatabase": "Optimitzar la base de dades"
+    "TaskOptimizeDatabase": "Optimitzar la base de dades",
+    "TaskKeyframeExtractorDescription": "Extreu fotogrames clau dels fitxers de vídeo per crear llistes de reproducció HLS més precises. Aquesta tasca pot durar molt de temps.",
+    "TaskKeyframeExtractor": "Extractor de fotogrames clau",
+    "External": "Extern"
 }
