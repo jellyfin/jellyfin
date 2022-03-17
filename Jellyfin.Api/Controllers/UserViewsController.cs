@@ -65,7 +65,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the user views.</returns>
         [HttpGet("Users/{userId}/Views")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<QueryResult<BaseItemDto>>> GetUserViews(
+        public Task<ActionResult<QueryResult<BaseItemDto>>> GetUserViews(
             [FromRoute, Required] Guid userId,
             [FromQuery] bool? includeExternalContent,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] presetViews,
@@ -102,7 +102,7 @@ namespace Jellyfin.Api.Controllers
             var dtos = folders.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user))
                 .ToArray();
 
-            return new QueryResult<BaseItemDto>(dtos);
+            return Task.FromResult<ActionResult<QueryResult<BaseItemDto>>>(new QueryResult<BaseItemDto>(dtos));
         }
 
         /// <summary>
