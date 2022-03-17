@@ -87,12 +87,6 @@ namespace Jellyfin.Api.Controllers
                 query.PresetViews = presetViews;
             }
 
-            var app = (await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false)).Client ?? string.Empty;
-            if (app.IndexOf("emby rt", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                query.PresetViews = new[] { CollectionType.Movies, CollectionType.TvShows };
-            }
-
             var folders = _userViewManager.GetUserViews(query);
 
             var dtoOptions = new DtoOptions().AddClientFields(Request);
