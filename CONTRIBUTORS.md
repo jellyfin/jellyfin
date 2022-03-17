@@ -224,3 +224,4 @@
  - [lbenini](https://github.com/lbenini)
  - [gnuyent](https://github.com/gnuyent)
  - [Matthew Jones](https://github.com/matthew-jones-uk)
+ - [Jakob Kukla](https://github.com/jakobkukla)
