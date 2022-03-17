@@ -122,5 +122,6 @@
     "TaskOptimizeDatabase": "Optimera databasen",
     "TaskOptimizeDatabaseDescription": "Komprimerar databasen och trunkerar ledigt utrymme. Prestandan kan förbättras genom att köra denna task efter att du har skannat biblioteket eller gjort andra förändringar som indikerar att databasen har modifierats.",
     "TaskKeyframeExtractorDescription": "Expoterar nyckelram från video filer för att skapa mer exakta HLS-spellistor. Denna uppgift kan pågå under lång tid.",
-    "TaskKeyframeExtractor": "Nyckelram Extraktor"
+    "TaskKeyframeExtractor": "Nyckelram Extraktor",
+    "External": "Extern"
 }
