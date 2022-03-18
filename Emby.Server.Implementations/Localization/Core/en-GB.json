@@ -122,5 +122,6 @@
     "TaskOptimizeDatabaseDescription": "Compacts database and truncates free space. Running this task after scanning the library or doing other changes that imply database modifications might improve performance.",
     "TaskOptimizeDatabase": "Optimise database",
     "TaskKeyframeExtractorDescription": "Extracts keyframes from video files to create more precise HLS playlists. This task may run for a long time.",
-    "TaskKeyframeExtractor": "Keyframe Extractor"
+    "TaskKeyframeExtractor": "Keyframe Extractor",
+    "External": "External"
 }
