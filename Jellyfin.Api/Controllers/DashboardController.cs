@@ -4,10 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Net.Mime;
 using Jellyfin.Api.Attributes;
+using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Plugins;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -46,6 +48,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("web/ConfigurationPages")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         public ActionResult<IEnumerable<ConfigurationPageInfo>> GetConfigurationPages(
             [FromQuery] bool? enableInMainMenu)
         {
