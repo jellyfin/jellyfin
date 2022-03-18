@@ -1,1 +1,21 @@
-{}
+{
+    "ValueSpecialEpisodeName": "Berezia - {0}",
+    "Sync": "Sinkronizatu",
+    "Songs": "Abestiak",
+    "Shows": "Serieak",
+    "Playlists": "Erreprodukzio-zerrendak",
+    "Photos": "Argazkiak",
+    "MusicVideos": "Bideo musikalak",
+    "Movies": "Filmak",
+    "HeaderContinueWatching": "Ikusten jarraitu",
+    "HeaderAlbumArtists": "Albumeko artistak",
+    "Genres": "Generoak",
+    "Folders": "Karpetak",
+    "Favorites": "Gogokoak",
+    "Default": "Lehenetsia",
+    "Collections": "Bildumak",
+    "Channels": "Kanalak",
+    "Books": "Liburuak",
+    "Artists": "Artistak",
+    "Albums": "Albumak"
+}
