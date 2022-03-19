@@ -6,23 +6,26 @@ After = network-online.target
 Type = simple
 EnvironmentFile = /etc/default/jellyfin
 User = jellyfin
+Group = jellyfin
+WorkingDirectory = /var/lib/jellyfin
 ExecStart = /usr/bin/jellyfin ${JELLYFIN_WEB_OPT} ${JELLYFIN_RESTART_OPT} ${JELLYFIN_FFMPEG_OPT} ${JELLYFIN_SERVICE_OPT} ${JELLYFIN_NOWEBAPP_OPT} ${JELLYFIN_ADDITIONAL_OPTS}
 Restart = on-failure
 TimeoutSec = 15
+SuccessExitStatus=0 143
 
 NoNewPrivileges=true
 SystemCallArchitectures=native
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
-RestrictNamespaces=true
+RestrictNamespaces=false
 RestrictRealtime=true
 RestrictSUIDSGID=true
-ProtectControlGroups=true
+ProtectControlGroups=false
 ProtectHostname=true
-ProtectKernelLogs=true
-ProtectKernelModules=true
-ProtectKernelTunables=true
+ProtectKernelLogs=false
+ProtectKernelModules=false
+ProtectKernelTunables=false
 LockPersonality=true
-PrivateTmp=true
+PrivateTmp=false
 PrivateDevices=false
 PrivateUsers=true
 RemoveIPC=true
@@ -42,7 +45,6 @@ SystemCallFilter=~@reboot
 SystemCallFilter=~@setuid
 SystemCallFilter=~@swap
 SystemCallErrorNumber=EPERM
-
 
 [Install]
 WantedBy = multi-user.target
