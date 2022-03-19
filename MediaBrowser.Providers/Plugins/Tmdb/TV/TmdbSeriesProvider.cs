@@ -264,7 +264,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             series.RunTimeTicks = seriesResult.EpisodeRunTime.Select(i => TimeSpan.FromMinutes(i).Ticks).FirstOrDefault();
 
-            if (string.Equals(seriesResult.Status, "Ended", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(seriesResult.Status, "Ended", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(seriesResult.Status, "Canceled", StringComparison.OrdinalIgnoreCase))
             {
                 series.Status = SeriesStatus.Ended;
                 series.EndDate = seriesResult.LastAirDate;
