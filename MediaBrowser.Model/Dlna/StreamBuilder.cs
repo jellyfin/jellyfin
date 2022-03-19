@@ -362,16 +362,6 @@ namespace MediaBrowser.Model.Dlna
             return playlistItem;
         }
 
-        private static long? GetBitrateForDirectPlayCheck(MediaSourceInfo item, AudioOptions options, bool isAudio)
-        {
-            if (item.Protocol == MediaProtocol.File)
-            {
-                return options.Profile.MaxStaticBitrate;
-            }
-
-            return options.GetMaxBitrate(isAudio);
-        }
-
         private (DirectPlayProfile Profile, PlayMethod? PlayMethod, TranscodeReason TranscodeReasons) GetAudioDirectPlayProfile(MediaSourceInfo item, MediaStream audioStream, AudioOptions options)
         {
             var directPlayProfile = options.Profile.DirectPlayProfiles
@@ -395,7 +385,7 @@ namespace MediaBrowser.Model.Dlna
             // If device requirements are satisfied then allow both direct stream and direct play
             if (item.SupportsDirectPlay)
             {
-                if (IsItemBitrateEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options, true) ?? 0, PlayMethod.DirectPlay))
+                if (IsItemBitrateEligibleForDirectPlay(item, options.GetMaxBitrate(true) ?? 0, PlayMethod.DirectPlay))
                 {
                     if (options.EnableDirectPlay)
                     {
@@ -614,8 +604,7 @@ namespace MediaBrowser.Model.Dlna
 
             var videoStream = item.VideoStream;
 
-            // TODO: This doesn't account for situations where the device is able to handle the media's bitrate, but the connection isn't fast enough
-            var directPlayEligibilityResult = IsEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options, true) ?? 0, options, PlayMethod.DirectPlay);
+            var directPlayEligibilityResult = IsEligibleForDirectPlay(item, options.GetMaxBitrate(false) ?? 0, options, PlayMethod.DirectPlay);
             var directStreamEligibilityResult = IsEligibleForDirectPlay(item, options.GetMaxBitrate(false) ?? 0, options, PlayMethod.DirectStream);
             bool isEligibleForDirectPlay = options.EnableDirectPlay && (options.ForceDirectPlay || directPlayEligibilityResult == 0);
             bool isEligibleForDirectStream = options.EnableDirectStream && (options.ForceDirectStream || directPlayEligibilityResult == 0);
