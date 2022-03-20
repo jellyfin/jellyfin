@@ -878,10 +878,7 @@ namespace MediaBrowser.Controller.Entities
             return CanDownload() && IsAuthorizedToDownload(user);
         }
 
-        /// <summary>
-        /// Returns a <see cref="string" /> that represents this instance.
-        /// </summary>
-        /// <returns>A <see cref="string" /> that represents this instance.</returns>
+        /// <inheritdoc />
         public override string ToString()
         {
             return Name;
@@ -1595,23 +1592,6 @@ namespace MediaBrowser.Controller.Entities
             return value.Value <= maxAllowedRating.Value;
         }
 
-        public int? GetParentalRatingValue()
-        {
-            var rating = CustomRating;
-
-            if (string.IsNullOrEmpty(rating))
-            {
-                rating = OfficialRating;
-            }
-
-            if (string.IsNullOrEmpty(rating))
-            {
-                return null;
-            }
-
-            return LocalizationManager.GetRatingLevel(rating);
-        }
-
         public int? GetInheritedParentalRatingValue()
         {
             var rating = CustomRatingForComparison;
@@ -1649,11 +1629,6 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            return true;
-        }
-
-        protected virtual bool IsAllowTagFilterEnforced()
-        {
             return true;
         }
 
