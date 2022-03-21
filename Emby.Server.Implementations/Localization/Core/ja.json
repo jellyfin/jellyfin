@@ -119,5 +119,8 @@
     "Forced": "強制",
     "Default": "デフォルト",
     "TaskOptimizeDatabaseDescription": "データベースをコンパクトにして、空き領域を切り詰めます。メディアライブラリのスキャン後でこのタスクを実行するとパフォーマンスが向上する可能性があります。",
-    "TaskOptimizeDatabase": "データベースの最適化"
+    "TaskOptimizeDatabase": "データベースの最適化",
+    "TaskKeyframeExtractorDescription": "より正確なHLSプレイリストを作成するため、動画ファイルからキーフレームを抽出する。この処理には時間がかかる場合があります。",
+    "TaskKeyframeExtractor": "キーフレーム抽出",
+    "External": "外部"
 }
