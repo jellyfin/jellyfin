@@ -2893,8 +2893,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             var memoryOutput = false;
-            var isUploadForOclTonemap = isSwDecoder && doCuTonemap;
-            if ((isNvDecoder && isSwEncoder) || isUploadForOclTonemap)
+            var isUploadForCuTonemap = isSwDecoder && doCuTonemap;
+            if ((isNvDecoder && isSwEncoder) || (isUploadForCuTonemap && hasSubs))
             {
                 memoryOutput = true;
 
@@ -2904,7 +2904,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // OUTPUT yuv420p surface(memory)
-            if (isSwDecoder && isNvencEncoder)
+            if (isSwDecoder && isNvencEncoder && !isUploadForCuTonemap)
             {
                 memoryOutput = true;
             }
