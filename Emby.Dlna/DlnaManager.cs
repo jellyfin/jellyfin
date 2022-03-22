@@ -456,7 +456,7 @@ namespace Emby.Dlna
         /// <inheritdoc />
         public string GetServerDescriptionXml(IHeaderDictionary headers, string serverUuId, string serverAddress)
         {
-            var profile = GetDefaultProfile();
+            var profile = GetProfile(headers) ?? GetDefaultProfile();
 
             var serverId = _appHost.SystemId;
 
