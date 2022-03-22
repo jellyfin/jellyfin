@@ -447,7 +447,7 @@ namespace Jellyfin.Model.Tests
 
         private static (string Path, NameValueCollection Query, string Filename, string Extension) ParseUri(StreamInfo val)
         {
-            var href = val.ToUrl("media:", "ACCESSTOKEN").Split("?", 2);
+            var href = val.ToUrl("media:", "ACCESSTOKEN", false).Split("?", 2);
             var path = href[0];
 
             var queryString = href.ElementAtOrDefault(1);

@@ -79,11 +79,6 @@ namespace Emby.Dlna.Didl
             _libraryManager = libraryManager;
         }
 
-        public static string NormalizeDlnaMediaUrl(string url)
-        {
-            return url + "&dlnaheaders=true";
-        }
-
         public string GetItemDidl(BaseItem item, User user, BaseItem context, string deviceId, Filter filter, StreamInfo streamInfo)
         {
             var settings = new XmlWriterSettings
@@ -309,7 +304,7 @@ namespace Emby.Dlna.Didl
         {
             writer.WriteStartElement(string.Empty, "res", NsDidl);
 
-            var url = NormalizeDlnaMediaUrl(streamInfo.ToUrl(_serverAddress, _accessToken));
+            var url = streamInfo.ToUrl(_serverAddress, _accessToken, true);
 
             var mediaSource = streamInfo.MediaSource;
 
@@ -388,7 +383,8 @@ namespace Emby.Dlna.Didl
                 streamInfo.TargetVideoCodecTag,
                 streamInfo.IsTargetAVC);
 
-            var filename = url.Substring(0, url.IndexOf('?', StringComparison.Ordinal));
+            int queryStart = url.IndexOf('?', StringComparison.Ordinal);
+            var filename = (queryStart >= 0) ? url.Substring(0, queryStart) : url;
 
             var mimeType = mediaProfile == null || string.IsNullOrEmpty(mediaProfile.MimeType)
                ? MimeTypes.GetMimeType(filename)
@@ -544,7 +540,7 @@ namespace Emby.Dlna.Didl
                 });
             }
 
-            var url = NormalizeDlnaMediaUrl(streamInfo.ToUrl(_serverAddress, _accessToken));
+            var url = streamInfo.ToUrl(_serverAddress, _accessToken, true);
 
             var mediaSource = streamInfo.MediaSource;
 

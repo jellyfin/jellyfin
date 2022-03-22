@@ -596,7 +596,7 @@ namespace MediaBrowser.Model.Dlna
             return null;
         }
 
-        public string ToUrl(string baseUrl, string accessToken)
+        public string ToUrl(string baseUrl, string accessToken, bool normalizeDlnaMediaUrl)
         {
             if (PlayMethod == PlayMethod.DirectPlay)
             {
@@ -638,6 +638,11 @@ namespace MediaBrowser.Model.Dlna
                 var encodedValue = pair.Value.Replace(" ", "%20", StringComparison.Ordinal);
 
                 list.Add(string.Format(CultureInfo.InvariantCulture, "{0}={1}", pair.Name, encodedValue));
+            }
+
+            if (normalizeDlnaMediaUrl)
+            {
+                list.Add("dlnaheaders=true");
             }
 
             string queryString = string.Join('&', list);

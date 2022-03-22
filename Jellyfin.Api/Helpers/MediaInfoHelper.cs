@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -282,7 +282,7 @@ namespace Jellyfin.Api.Helpers
                     mediaSource.SupportsDirectPlay = false;
                     mediaSource.SupportsDirectStream = false;
 
-                    mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).TrimStart('-');
+                    mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token, false).TrimStart('-');
                     mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
                     mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
                     mediaSource.TranscodingContainer = streamInfo.Container;
@@ -293,7 +293,7 @@ namespace Jellyfin.Api.Helpers
                     if (mediaSource.SupportsTranscoding || mediaSource.SupportsDirectStream)
                     {
                         streamInfo.PlayMethod = PlayMethod.Transcode;
-                        mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).TrimStart('-');
+                        mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token, false).TrimStart('-');
 
                         if (!allowVideoStreamCopy)
                         {
