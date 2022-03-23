@@ -15,7 +15,7 @@
     "Folders": "Ffolderi",
     "Favorites": "Ffefrynnau",
     "LabelRunningTimeValue": "Amser rhedeg: {0}",
-    "TaskOptimizeDatabase": "Cronfa ddata Optimeiddio",
+    "TaskOptimizeDatabase": "Optimeiddio cronfa ddata",
     "TaskRefreshChannels": "Adnewyddu Sianeli",
     "TaskRefreshPeople": "Adnewyddu Pobl",
     "TasksChannelsCategory": "Sianeli Internet",
@@ -106,5 +106,9 @@
     "HeaderRecordingGroups": "Grwpiau Recordio",
     "HeaderFavoriteSongs": "Ffefryn Ganeuon",
     "HeaderFavoriteShows": "Ffefryn Shoeau",
-    "HeaderFavoriteEpisodes": "Ffefryn Rhaglenni"
+    "HeaderFavoriteEpisodes": "Ffefryn Rhaglenni",
+    "TaskDownloadMissingSubtitlesDescription": "Chwilio'r rhyngrwyd am is-deitlau coll yn seiliedig ar gosodiadau metaddata.",
+    "TaskDownloadMissingSubtitles": "Lawrlwytho isdeitlau coll",
+    "TaskCleanTranscodeDescription": "Dileu ffeiliau trawsgodio fwy nag un diwrnod oed.",
+    "External": "Allanol"
 }
