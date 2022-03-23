@@ -362,7 +362,7 @@ namespace Emby.Dlna.Main
                 guid = text.GetMD5();
             }
 
-            return guid.ToString("N", CultureInfo.InvariantCulture);
+            return guid.ToString("D", CultureInfo.InvariantCulture);
         }
 
         private void SetProperies(SsdpDevice device, string fullDeviceType)
