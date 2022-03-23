@@ -100,7 +100,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             foreach (var pathInfo in pathInfos)
             {
-                if (!pathInfo.Path.EndsWith(".strm"))
+                if (!pathInfo.Path.AsSpan().EndsWith(".strm", StringComparison.OrdinalIgnoreCase))
                 {
                     var mediaInfo = await GetMediaInfo(pathInfo.Path, _type, cancellationToken).ConfigureAwait(false);
 
