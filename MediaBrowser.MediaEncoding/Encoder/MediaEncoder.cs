@@ -458,10 +458,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 _logger.LogDebug("{ProcessFileName} {ProcessArgs}", process.StartInfo.FileName, process.StartInfo.Arguments);
             }
-            
             using (var processWrapper = new ProcessWrapper(process, this))
             {
-                MemoryStream memoryStream = new MemoryStream();
+                await using var memoryStream = new MemoryStream();
                 _logger.LogDebug("Starting ffprobe with args {Args}", args);
                 StartProcess(processWrapper);
                 await process.StandardOutput.BaseStream.CopyToAsync(memoryStream, cancellationToken: cancellationToken);
