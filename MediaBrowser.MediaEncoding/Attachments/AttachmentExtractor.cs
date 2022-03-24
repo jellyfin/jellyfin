@@ -100,7 +100,40 @@ namespace MediaBrowser.MediaEncoding.Attachments
                     await ExtractAllAttachmentsInternal(
                         _mediaEncoder.GetInputArgument(inputFile, mediaSource),
                         outputPath,
+                        false,
                         cancellationToken).ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        }
+
+        public async Task ExtractAllAttachmentsExternal(
+            string inputArgument,
+            string id,
+            string outputPath,
+            CancellationToken cancellationToken)
+        {
+            var semaphore = _semaphoreLocks.GetOrAdd(outputPath, key => new SemaphoreSlim(1, 1));
+
+            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                if (!File.Exists(Path.Join(outputPath, id)))
+                {
+                    await ExtractAllAttachmentsInternal(
+                        inputArgument,
+                        outputPath,
+                        true,
+                        cancellationToken).ConfigureAwait(false);
+
+                    if (Directory.Exists(outputPath))
+                    {
+                        File.Create(Path.Join(outputPath, id));
+                    }
                 }
             }
             finally
@@ -112,6 +145,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
         private async Task ExtractAllAttachmentsInternal(
             string inputPath,
             string outputPath,
+            bool isExternal,
             CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(inputPath))
@@ -128,7 +162,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
             var processArgs = string.Format(
                 CultureInfo.InvariantCulture,
-                "-dump_attachment:t \"\" -i {0} -t 0 -f null null",
+                "-dump_attachment:t \"\" -y -i {0} -t 0 -f null null",
                 inputPath);
 
             int exitCode;
@@ -174,19 +208,24 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
             if (exitCode != 0)
             {
-                failed = true;
-
-                _logger.LogWarning("Deleting extracted attachments {Path} due to failure: {ExitCode}", outputPath, exitCode);
-                try
+                if (isExternal && exitCode == 1)
                 {
-                    if (Directory.Exists(outputPath))
+                    // ffmpeg returns exitCode 1 because there is no video or audio stream
+                    // this can be ignored
+                }
+                else
+                {
+                    failed = true;
+
+                    _logger.LogWarning("Deleting extracted attachments {Path} due to failure: {ExitCode}", outputPath, exitCode);
+                    try
                     {
                         Directory.Delete(outputPath);
                     }
-                }
-                catch (IOException ex)
-                {
-                    _logger.LogError(ex, "Error deleting extracted attachments {Path}", outputPath);
+                    catch (IOException ex)
+                    {
+                        _logger.LogError(ex, "Error deleting extracted attachments {Path}", outputPath);
+                    }
                 }
             }
             else if (!Directory.Exists(outputPath))
