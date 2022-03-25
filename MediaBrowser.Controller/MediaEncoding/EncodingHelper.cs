@@ -950,7 +950,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
-        public static string GetAudioBitStreamArguments(EncodingJobInfo state, string segmentContainer, string mediaSourceContainer, TranscodingJobType transcodingType)
+        public static string GetAudioBitStreamArguments(EncodingJobInfo state, string segmentContainer, string mediaSourceContainer)
         {
             var bitStreamArgs = string.Empty;
             var segmentFormat = GetSegmentFileExtension(segmentContainer).TrimStart('.');
@@ -958,7 +958,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Apply aac_adtstoasc bitstream filter when media source is in mpegts.
             if (string.Equals(segmentFormat, "mp4", StringComparison.OrdinalIgnoreCase)
                 && (string.Equals(mediaSourceContainer, "mpegts", StringComparison.OrdinalIgnoreCase)
-                    || transcodingType == TranscodingJobType.Hls
+                    || string.Equals(mediaSourceContainer, "aac", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(mediaSourceContainer, "hls", StringComparison.OrdinalIgnoreCase)))
             {
                 bitStreamArgs = GetBitStreamArgs(state.AudioStream);
