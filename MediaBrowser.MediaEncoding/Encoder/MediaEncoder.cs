@@ -458,6 +458,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 _logger.LogDebug("{ProcessFileName} {ProcessArgs}", process.StartInfo.FileName, process.StartInfo.Arguments);
             }
+
             using (var processWrapper = new ProcessWrapper(process, this))
             {
                 await using var memoryStream = new MemoryStream();
