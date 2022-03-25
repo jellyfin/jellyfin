@@ -598,11 +598,6 @@ namespace MediaBrowser.Model.Dlna
 
         public string ToUrl(string baseUrl, string accessToken)
         {
-            if (PlayMethod == PlayMethod.DirectPlay)
-            {
-                return MediaSource.Path;
-            }
-
             if (string.IsNullOrEmpty(baseUrl))
             {
                 throw new ArgumentNullException(nameof(baseUrl));
