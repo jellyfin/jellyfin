@@ -100,24 +100,27 @@ namespace MediaBrowser.Providers.MediaInfo
 
             foreach (var pathInfo in pathInfos)
             {
-                var mediaInfo = await GetMediaInfo(pathInfo.Path, _type, cancellationToken).ConfigureAwait(false);
-
-                if (mediaInfo.MediaStreams.Count == 1)
+                if (!pathInfo.Path.AsSpan().EndsWith(".strm", StringComparison.OrdinalIgnoreCase))
                 {
-                    MediaStream mediaStream = mediaInfo.MediaStreams[0];
-                    mediaStream.Index = startIndex++;
-                    mediaStream.IsDefault = pathInfo.IsDefault || mediaStream.IsDefault;
-                    mediaStream.IsForced = pathInfo.IsForced || mediaStream.IsForced;
+                    var mediaInfo = await GetMediaInfo(pathInfo.Path, _type, cancellationToken).ConfigureAwait(false);
 
-                    mediaStreams.Add(MergeMetadata(mediaStream, pathInfo));
-                }
-                else
-                {
-                    foreach (MediaStream mediaStream in mediaInfo.MediaStreams)
+                    if (mediaInfo.MediaStreams.Count == 1)
                     {
+                        MediaStream mediaStream = mediaInfo.MediaStreams[0];
                         mediaStream.Index = startIndex++;
+                        mediaStream.IsDefault = pathInfo.IsDefault || mediaStream.IsDefault;
+                        mediaStream.IsForced = pathInfo.IsForced || mediaStream.IsForced;
 
                         mediaStreams.Add(MergeMetadata(mediaStream, pathInfo));
+                    }
+                    else
+                    {
+                        foreach (MediaStream mediaStream in mediaInfo.MediaStreams)
+                        {
+                            mediaStream.Index = startIndex++;
+
+                            mediaStreams.Add(MergeMetadata(mediaStream, pathInfo));
+                        }
                     }
                 }
             }
