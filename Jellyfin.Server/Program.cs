@@ -689,9 +689,9 @@ namespace Jellyfin.Server
             if (!string.IsNullOrEmpty(socketPerms))
             {
                 [DllImport("libc")]
-                static extern int chmod(string pathname, int mode);
+                static extern int Chmod(string pathname, int mode);
 
-                var exitCode = chmod(socketPath, Convert.ToInt32(socketPerms, 8));
+                var exitCode = Chmod(socketPath, Convert.ToInt32(socketPerms, 8));
 
                 if (exitCode < 0)
                 {
