@@ -1,8 +1,8 @@
-jellyfin-server (10.8.0-1) unstable; urgency=medium
+jellyfin-server (10.8.0~beta1) unstable; urgency=medium
 
-  * Forthcoming stable release
+  * New upstream version 10.8.0-beta1; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.8.0-beta1
 
- -- Jellyfin Packaging Team <packaging@jellyfin.org>  Fri, 04 Dec 2020 21:55:12 -0500
+ -- Jellyfin Packaging Team <packaging@jellyfin.org>  Fri, 25 Mar 2022 22:22:51 -0400
 
 jellyfin-server (10.7.0-1) unstable; urgency=medium
 
