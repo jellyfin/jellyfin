@@ -7,11 +7,11 @@ using MediaBrowser.Model.Dto;
 namespace MediaBrowser.Model.Dlna
 {
     /// <summary>
-    /// Class AudioOptions.
+    /// Class MediaOptions.
     /// </summary>
-    public class AudioOptions
+    public class MediaOptions
     {
-        public AudioOptions()
+        public MediaOptions()
         {
             Context = EncodingContext.Streaming;
 
@@ -27,7 +27,15 @@ namespace MediaBrowser.Model.Dlna
 
         public bool ForceDirectStream { get; set; }
 
+        /// <summary>
+        /// Gets or sets an override for allowing stream copy.
+        /// </summary>
         public bool AllowAudioStreamCopy { get; set; }
+
+        /// <summary>
+        /// Gets or sets an override for allowing stream copy.
+        /// </summary>
+        public bool AllowVideoStreamCopy { get; set; }
 
         public Guid ItemId { get; set; }
 
@@ -64,6 +72,16 @@ namespace MediaBrowser.Model.Dlna
         /// </summary>
         /// <value>The audio transcoding bitrate.</value>
         public int? AudioTranscodingBitrate { get; set; }
+
+        /// <summary>
+        /// Gets or sets an override for the audio stream index.
+        /// </summary>
+        public int? AudioStreamIndex { get; set; }
+
+        /// <summary>
+        /// Gets or sets an override for the subtitle stream index.
+        /// </summary>
+        public int? SubtitleStreamIndex { get; set; }
 
         /// <summary>
         /// Gets the maximum bitrate.

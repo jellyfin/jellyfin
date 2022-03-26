@@ -585,7 +585,7 @@ namespace Emby.Dlna.PlayTo
             {
                 return new PlaylistItem
                 {
-                    StreamInfo = new StreamBuilder(_mediaEncoder, _logger).BuildVideoItem(new VideoOptions
+                    StreamInfo = new StreamBuilder(_mediaEncoder, _logger).GetOptimalVideoStream(new MediaOptions
                     {
                         ItemId = item.Id,
                         MediaSources = mediaSources,
@@ -605,7 +605,7 @@ namespace Emby.Dlna.PlayTo
             {
                 return new PlaylistItem
                 {
-                    StreamInfo = new StreamBuilder(_mediaEncoder, _logger).BuildAudioItem(new AudioOptions
+                    StreamInfo = new StreamBuilder(_mediaEncoder, _logger).GetOptimalAudioStream(new MediaOptions
                     {
                         ItemId = item.Id,
                         MediaSources = mediaSources,
