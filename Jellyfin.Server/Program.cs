@@ -687,10 +687,12 @@ namespace Jellyfin.Server
 
             if (!string.IsNullOrEmpty(socketPerms))
             {
+                #pragma warning disable SA1300 // Entrypoint is case sensitive.
                 [DllImport("libc")]
-                static extern int Chmod(string pathname, int mode);
+                static extern int chmod(string pathname, int mode);
+                #pragma warning restore SA1300
 
-                var exitCode = Chmod(socketPath, Convert.ToInt32(socketPerms, 8));
+                var exitCode = chmod(socketPath, Convert.ToInt32(socketPerms, 8));
 
                 if (exitCode < 0)
                 {
