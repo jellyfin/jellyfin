@@ -480,7 +480,7 @@ namespace Jellyfin.Api.Helpers
                     IsAudioDirect = EncodingHelper.IsCopyCodec(state.OutputAudioCodec),
                     IsVideoDirect = EncodingHelper.IsCopyCodec(state.OutputVideoCodec),
                     HardwareAccelerationType = hardwareAccelerationType,
-                    TranscodeReason = state.TranscodeReason
+                    TranscodeReasons = state.TranscodeReasons
                 });
             }
         }
