@@ -29,6 +29,6 @@ namespace MediaBrowser.Model.Session
 
         public HardwareEncodingType? HardwareAccelerationType { get; set; }
 
-        public TranscodeReason TranscodeReason { get; set; }
+        public TranscodeReason TranscodeReasons { get; set; }
     }
 }
