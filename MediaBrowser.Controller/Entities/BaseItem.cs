@@ -1425,12 +1425,9 @@ namespace MediaBrowser.Controller.Entities
         {
             var list = new List<string>();
 
-            if (SourceType == SourceType.Channel)
+            if (!string.IsNullOrEmpty(ExternalId))
             {
-                if (!string.IsNullOrEmpty(ExternalId))
-                {
-                    list.Add(ExternalId);
-                }
+                list.Add(ExternalId);
             }
 
             list.Add(Id.ToString());
