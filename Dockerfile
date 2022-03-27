@@ -31,7 +31,7 @@ ARG LEVEL_ZERO_VERSION=1.3.22549
 # mesa-va-drivers: needed for AMD VAAPI. Mesa >= 20.1 is required for HEVC transcoding.
 # curl: healthcheck
 RUN apt-get update \
- && apt-get install --no-install-recommends --no-install-suggests -y ca-certificates gnupg wget apt-transport-https curl \
+ && apt-get install --no-install-recommends --no-install-suggests -y ca-certificates gnupg gpg-agent vainfo wget apt-transport-https curl \
  && wget -O - https://repo.jellyfin.org/jellyfin_team.gpg.key | apt-key add - \
  && echo "deb [arch=$( dpkg --print-architecture )] https://repo.jellyfin.org/$( awk -F'=' '/^ID=/{ print $NF }' /etc/os-release ) $( awk -F'=' '/^VERSION_CODENAME=/{ print $NF }' /etc/os-release ) main" | tee /etc/apt/sources.list.d/jellyfin.list \
  && apt-get update \
@@ -53,10 +53,18 @@ RUN apt-get update \
  && dpkg -i *.deb \
  && cd .. \
  && rm -rf intel-compute-runtime \
- && apt-get remove gnupg wget apt-transport-https -y \
+ # Intel QSV dependencies
+ && wget -qO - https://repositories.intel.com/graphics/intel-graphics.key | apt-key add - \
+ && echo "deb http://http.us.debian.org/debian stable main contrib non-free" | tee -a /etc/apt/sources.list \
+ && echo 'deb [arch=amd64] https://repositories.intel.com/graphics/ubuntu focal main' >> /etc/apt/sources.list \
+ && apt-get update \
+ && apt-get install --no-install-recommends --no-install-suggests -y -u ffmpeg intel-media-va-driver-non-free \
+ # Cleanup (keep vainfo for troubleshooting)
+ && apt-get remove gnupg gpg-agent wget apt-transport-https -y \
  && apt-get clean autoclean -y \
  && apt-get autoremove -y \
  && rm -rf /var/lib/apt/lists/* \
+ # Set dir permissions
  && mkdir -p /cache /config /media \
  && chmod 777 /cache /config /media \
  && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && locale-gen
