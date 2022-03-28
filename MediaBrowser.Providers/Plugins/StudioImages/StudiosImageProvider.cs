@@ -18,28 +18,23 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Providers.Plugins.StudioImages;
 
-namespace MediaBrowser.Providers.Studios
+namespace MediaBrowser.Providers.Plugins.StudioImages
 {
     public class StudiosImageProvider : IRemoteImageProvider
     {
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IFileSystem _fileSystem;
-        private readonly string repositoryUrl;
 
         public StudiosImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory, IFileSystem fileSystem)
         {
             _config = config;
             _httpClientFactory = httpClientFactory;
             _fileSystem = fileSystem;
-            repositoryUrl = Plugin.Instance.Configuration.RepositoryUrl;
         }
 
         public string Name => "Artwork Repository";
-
-        public int Order => 0;
 
         public bool Supports(BaseItem item)
         {
@@ -98,12 +93,12 @@ namespace MediaBrowser.Providers.Studios
 
         private string GetUrl(string image, string filename)
         {
-            return string.Format(CultureInfo.InvariantCulture, "{0}/images/{1}/{2}.jpg", repositoryUrl, image, filename);
+            return string.Format(CultureInfo.InvariantCulture, "{0}/images/{1}/{2}.jpg", GetRepositoryUrl(), image, filename);
         }
 
         private Task<string> EnsureThumbsList(string file, CancellationToken cancellationToken)
         {
-            string url = string.Format(CultureInfo.InvariantCulture, "{0}/thumbs.txt", repositoryUrl);
+            string url = string.Format(CultureInfo.InvariantCulture, "{0}/thumbs.txt", GetRepositoryUrl());
 
             return EnsureList(url, file, _fileSystem, cancellationToken);
         }
@@ -169,5 +164,8 @@ namespace MediaBrowser.Providers.Studios
                 }
             }
         }
+
+        private string GetRepositoryUrl()
+            => Plugin.Instance.Configuration.RepositoryUrl;
     }
 }
