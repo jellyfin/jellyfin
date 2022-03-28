@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -98,7 +99,15 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             // Args points to an album if parent is an Artist folder or it directly contains music
             if (args.IsDirectory)
             {
-                // if (args.Parent is MusicArtist) return true;  // saves us from testing children twice
+                foreach (var subfolder in _namingOptions.ArtistSubfolders)
+                {
+                    if (Path.GetDirectoryName(args.Path.AsSpan()).Equals(subfolder, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _logger.LogDebug("Found release folder: {Path}", args.Path);
+                        return false;
+                    }
+                }
+
                 if (ContainsMusic(args.FileSystemChildren, true, args.DirectoryService))
                 {
                     return true;

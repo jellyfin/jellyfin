@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
+using TagLib;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -93,7 +95,7 @@ namespace MediaBrowser.Providers.MediaInfo
             // var extension = (Path.GetExtension(audio.Path) ?? string.Empty).TrimStart('.');
             // audio.Container = extension;
 
-            FetchDataFromTags(audio, mediaInfo);
+            FetchDataFromTags(audio);
 
             _itemRepo.SaveMediaStreams(audio.Id, mediaInfo.MediaStreams, cancellationToken);
         }
@@ -102,71 +104,90 @@ namespace MediaBrowser.Providers.MediaInfo
         /// Fetches data from the tags dictionary.
         /// </summary>
         /// <param name="audio">The audio.</param>
-        /// <param name="data">The data.</param>
-        private void FetchDataFromTags(Audio audio, Model.MediaInfo.MediaInfo data)
+        private void FetchDataFromTags(Audio audio)
         {
-            // Only set Name if title was found in the dictionary
-            if (!string.IsNullOrEmpty(data.Name))
+            var file = TagLib.File.Create(audio.Path);
+            var tagTypes = file.TagTypesOnDisk;
+            Tag tags = null;
+
+            if (tagTypes.HasFlag(TagTypes.Id3v2))
             {
-                audio.Name = data.Name;
+                tags = file.GetTag(TagTypes.Id3v2);
+            }
+            else if (tagTypes.HasFlag(TagTypes.Ape))
+            {
+                tags = file.GetTag(TagTypes.Ape);
+            }
+            else if (tagTypes.HasFlag(TagTypes.FlacMetadata))
+            {
+                tags = file.GetTag(TagTypes.FlacMetadata);
+            }
+            else if (tagTypes.HasFlag(TagTypes.Id3v1))
+            {
+                tags = file.GetTag(TagTypes.Id3v1);
             }
 
-            if (!string.IsNullOrEmpty(data.ForcedSortName))
+            if (tags != null)
             {
-                audio.ForcedSortName = data.ForcedSortName;
-            }
-
-            if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataField.Cast))
-            {
-                var people = new List<PersonInfo>();
-
-                foreach (var person in data.People)
+                if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataField.Cast))
                 {
-                    PeopleHelper.AddPerson(people, new PersonInfo
+                    var people = new List<PersonInfo>();
+                    var albumArtists = tags.AlbumArtists;
+                    foreach (var albumArtist in albumArtists)
                     {
-                        Name = person.Name,
-                        Type = person.Type,
-                        Role = person.Role
-                    });
+                        PeopleHelper.AddPerson(people, new PersonInfo
+                        {
+                            Name = albumArtist,
+                            Type = "AlbumArtist"
+                        });
+                    }
+
+                    var performers = tags.Performers;
+                    foreach (var performer in performers)
+                    {
+                        PeopleHelper.AddPerson(people, new PersonInfo
+                        {
+                            Name = performer,
+                            Type = "Artist"
+                        });
+                    }
+
+                    foreach (var composer in tags.Composers)
+                    {
+                        PeopleHelper.AddPerson(people, new PersonInfo
+                        {
+                            Name = composer,
+                            Type = "Composer"
+                        });
+                    }
+
+                    _libraryManager.UpdatePeople(audio, people);
+                    audio.Artists = performers;
+                    audio.AlbumArtists = albumArtists;
                 }
 
-                _libraryManager.UpdatePeople(audio, people);
-            }
-
-            audio.Album = data.Album;
-            audio.Artists = data.Artists;
-            audio.AlbumArtists = data.AlbumArtists;
-            audio.IndexNumber = data.IndexNumber;
-            audio.ParentIndexNumber = data.ParentIndexNumber;
-            audio.ProductionYear = data.ProductionYear;
-            audio.PremiereDate = data.PremiereDate;
-
-            // If we don't have a ProductionYear try and get it from PremiereDate
-            if (audio.PremiereDate.HasValue && !audio.ProductionYear.HasValue)
-            {
-                audio.ProductionYear = audio.PremiereDate.Value.ToLocalTime().Year;
-            }
-
-            if (!audio.LockedFields.Contains(MetadataField.Genres))
-            {
-                audio.Genres = Array.Empty<string>();
-
-                foreach (var genre in data.Genres)
+                audio.Name = tags.Title;
+                audio.Album = tags.Album;
+                audio.IndexNumber = Convert.ToInt32(tags.Track);
+                audio.ParentIndexNumber = Convert.ToInt32(tags.Disc);
+                if(tags.Year != 0)
                 {
-                    audio.AddGenre(genre);
+                    var year = Convert.ToInt32(tags.Year);
+                    audio.ProductionYear = year;
+                    audio.PremiereDate = new DateTime(year, 01, 01);
                 }
-            }
 
-            if (!audio.LockedFields.Contains(MetadataField.Studios))
-            {
-                audio.SetStudios(data.Studios);
-            }
+                if (!audio.LockedFields.Contains(MetadataField.Genres))
+                {
+                    audio.Genres = tags.Genres.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                }
 
-            audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, data.GetProviderId(MetadataProvider.MusicBrainzAlbumArtist));
-            audio.SetProviderId(MetadataProvider.MusicBrainzArtist, data.GetProviderId(MetadataProvider.MusicBrainzArtist));
-            audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, data.GetProviderId(MetadataProvider.MusicBrainzAlbum));
-            audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, data.GetProviderId(MetadataProvider.MusicBrainzReleaseGroup));
-            audio.SetProviderId(MetadataProvider.MusicBrainzTrack, data.GetProviderId(MetadataProvider.MusicBrainzTrack));
+                audio.SetProviderId(MetadataProvider.MusicBrainzArtist, tags.MusicBrainzArtistId);
+                audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, tags.MusicBrainzReleaseArtistId);
+                audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, tags.MusicBrainzReleaseId);
+                audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, tags.MusicBrainzReleaseGroupId);
+                audio.SetProviderId(MetadataProvider.MusicBrainzTrack, tags.MusicBrainzTrackId);
+            }
         }
     }
 }
