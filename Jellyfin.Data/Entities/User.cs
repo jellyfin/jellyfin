@@ -362,7 +362,7 @@ namespace Jellyfin.Data.Entities
         /// <returns><c>True</c> if the user has the specified permission.</returns>
         public bool HasPermission(PermissionKind kind)
         {
-            return Permissions.First(p => p.Kind == kind).Value;
+            return Permissions.FirstOrDefault(p => p.Kind == kind)?.Value ?? false;
         }
 
         /// <summary>
@@ -372,7 +372,15 @@ namespace Jellyfin.Data.Entities
         /// <param name="value">The value to set.</param>
         public void SetPermission(PermissionKind kind, bool value)
         {
-            Permissions.First(p => p.Kind == kind).Value = value;
+            var currentPermission = Permissions.FirstOrDefault(p => p.Kind == kind);
+            if (currentPermission == null)
+            {
+                Permissions.Add(new Permission(kind, value));
+            }
+            else
+            {
+                currentPermission.Value = value;
+            }
         }
 
         /// <summary>
@@ -382,9 +390,9 @@ namespace Jellyfin.Data.Entities
         /// <returns>A string array containing the user's preferences.</returns>
         public string[] GetPreference(PreferenceKind preference)
         {
-            var val = Preferences.First(p => p.Kind == preference).Value;
+            var val = Preferences.FirstOrDefault(p => p.Kind == preference)?.Value;
 
-            return Equals(val, string.Empty) ? Array.Empty<string>() : val.Split(Delimiter);
+            return string.IsNullOrEmpty(val) ? Array.Empty<string>() : val.Split(Delimiter);
         }
 
         /// <summary>
@@ -395,7 +403,7 @@ namespace Jellyfin.Data.Entities
         /// <returns>A {T} array containing the user's preference.</returns>
         public T[] GetPreferenceValues<T>(PreferenceKind preference)
         {
-            var val = Preferences.First(p => p.Kind == preference).Value;
+            var val = Preferences.FirstOrDefault(p => p.Kind == preference)?.Value;
             if (string.IsNullOrEmpty(val))
             {
                 return Array.Empty<T>();
@@ -432,8 +440,16 @@ namespace Jellyfin.Data.Entities
         /// <param name="values">The values.</param>
         public void SetPreference(PreferenceKind preference, string[] values)
         {
-            Preferences.First(p => p.Kind == preference).Value
-                = string.Join(Delimiter, values);
+            var value = string.Join(Delimiter, values);
+            var currentPreference = Preferences.FirstOrDefault(p => p.Kind == preference);
+            if (currentPreference == null)
+            {
+                Preferences.Add(new Preference(preference, value));
+            }
+            else
+            {
+                currentPreference.Value = value;
+            }
         }
 
         /// <summary>
@@ -444,8 +460,16 @@ namespace Jellyfin.Data.Entities
         /// <typeparam name="T">The type of value.</typeparam>
         public void SetPreference<T>(PreferenceKind preference, T[] values)
         {
-            Preferences.First(p => p.Kind == preference).Value
-                = string.Join(Delimiter, values);
+            var value = string.Join(Delimiter, values);
+            var currentPreference = Preferences.FirstOrDefault(p => p.Kind == preference);
+            if (currentPreference == null)
+            {
+                Preferences.Add(new Preference(preference, value));
+            }
+            else
+            {
+                currentPreference.Value = value;
+            }
         }
 
         /// <summary>
