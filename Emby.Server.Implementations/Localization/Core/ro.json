@@ -121,5 +121,6 @@
     "TaskOptimizeDatabaseDescription": "Compactează baza de date și trunchiază spațiul liber. Rularea acestei sarcini după scanarea bibliotecii sau după efectuarea altor modificări care implică modificări ale bazei de date poate îmbunătăți performanța.",
     "TaskOptimizeDatabase": "Optimizează baza de date",
     "TaskKeyframeExtractorDescription": "Extrage cadrele cheie din fișierele video pentru a crea liste de redare HLS mai precise. Această sarcină poate rula o perioadă lungă de timp.",
-    "External": "Extern"
+    "External": "Extern",
+    "TaskKeyframeExtractor": "Extractor de cadre cheie"
 }
