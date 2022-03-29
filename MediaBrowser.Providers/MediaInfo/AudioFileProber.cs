@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,14 +21,14 @@ using TagLib;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
-    public class FFProbeAudioInfo
+    public class AudioFileProber
     {
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IItemRepository _itemRepo;
         private readonly ILibraryManager _libraryManager;
         private readonly IMediaSourceManager _mediaSourceManager;
 
-        public FFProbeAudioInfo(
+        public AudioFileProber(
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
             IItemRepository itemRepo,
@@ -170,7 +169,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 audio.Album = tags.Album;
                 audio.IndexNumber = Convert.ToInt32(tags.Track);
                 audio.ParentIndexNumber = Convert.ToInt32(tags.Disc);
-                if(tags.Year != 0)
+                if (tags.Year != 0)
                 {
                     var year = Convert.ToInt32(tags.Year);
                     audio.ProductionYear = year;

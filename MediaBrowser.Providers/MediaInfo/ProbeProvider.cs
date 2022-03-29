@@ -27,7 +27,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
-    public class FFProbeProvider : ICustomMetadataProvider<Episode>,
+    public class ProbeProvider : ICustomMetadataProvider<Episode>,
         ICustomMetadataProvider<MusicVideo>,
         ICustomMetadataProvider<Movie>,
         ICustomMetadataProvider<Trailer>,
@@ -39,14 +39,14 @@ namespace MediaBrowser.Providers.MediaInfo
         IPreRefreshProvider,
         IHasItemChangeMonitor
     {
-        private readonly ILogger<FFProbeProvider> _logger;
+        private readonly ILogger<ProbeProvider> _logger;
         private readonly AudioResolver _audioResolver;
         private readonly SubtitleResolver _subtitleResolver;
         private readonly FFProbeVideoInfo _videoProber;
-        private readonly FFProbeAudioInfo _audioProber;
+        private readonly AudioFileProber _audioProber;
         private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
 
-        public FFProbeProvider(
+        public ProbeProvider(
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
             IItemRepository itemRepo,
@@ -61,7 +61,8 @@ namespace MediaBrowser.Providers.MediaInfo
             ILoggerFactory loggerFactory,
             NamingOptions namingOptions)
         {
-            _logger = loggerFactory.CreateLogger<FFProbeProvider>();
+            _logger = loggerFactory.CreateLogger<ProbeProvider>();
+            _audioProber = new AudioFileProber(mediaSourceManager, mediaEncoder, itemRepo, libraryManager);
             _audioResolver = new AudioResolver(loggerFactory.CreateLogger<AudioResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
             _subtitleResolver = new SubtitleResolver(loggerFactory.CreateLogger<SubtitleResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
             _videoProber = new FFProbeVideoInfo(
@@ -78,10 +79,9 @@ namespace MediaBrowser.Providers.MediaInfo
                 libraryManager,
                 _audioResolver,
                 _subtitleResolver);
-            _audioProber = new FFProbeAudioInfo(mediaSourceManager, mediaEncoder, itemRepo, libraryManager);
         }
 
-        public string Name => "ffprobe";
+        public string Name => "filemetadataprober";
 
         // Run last
         public int Order => 100;
