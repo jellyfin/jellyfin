@@ -61,7 +61,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
 
             var isMusicMediaFolder = string.Equals(collectionType, CollectionType.Music, StringComparison.OrdinalIgnoreCase);
 
-            // If there's a collection type and it's not music, it can't be a series
+            // If there's a collection type and it's not music, it can't be a music artist
             if (!isMusicMediaFolder)
             {
                 return null;
@@ -87,6 +87,15 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
 
             var result = Parallel.ForEach(directories, (fileSystemInfo, state) =>
             {
+                foreach (var subfolder in _namingOptions.ArtistSubfolders)
+                {
+                    if (fileSystemInfo.Name.Equals(subfolder, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // stop once we see a artist subfolder
+                        state.Stop();
+                    }
+                }
+
                 if (albumResolver.IsMusicAlbum(fileSystemInfo.FullName, directoryService))
                 {
                     // stop once we see a music album
