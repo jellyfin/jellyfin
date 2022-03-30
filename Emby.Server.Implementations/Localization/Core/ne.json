@@ -81,5 +81,8 @@
     "Playlists": "प्लेलिस्टहरू",
     "Photos": "तस्बिरहरु",
     "NotificationOptionVideoPlaybackStopped": "भिडियो प्लेब्याक रोकियो",
-    "NotificationOptionVideoPlayback": "भिडियो प्लेब्याक सुरु भयो"
+    "NotificationOptionVideoPlayback": "भिडियो प्लेब्याक सुरु भयो",
+    "Forced": "जबरजस्ती",
+    "External": "बाह्य",
+    "Default": "पूर्वनिर्धारित"
 }
