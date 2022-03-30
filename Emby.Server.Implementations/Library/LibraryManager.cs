@@ -2840,10 +2840,12 @@ namespace Emby.Server.Implementations.Library
 
             var existingNameCount = 1; // first numbered name will be 2
             var virtualFolderPath = Path.Combine(rootFolderPath, name);
+            var originalName = name;
             while (Directory.Exists(virtualFolderPath))
             {
                 existingNameCount++;
-                virtualFolderPath = Path.Combine(rootFolderPath, name + " " + existingNameCount);
+                name = originalName + existingNameCount;
+                virtualFolderPath = Path.Combine(rootFolderPath, name);
             }
 
             var mediaPathInfos = options.PathInfos;
