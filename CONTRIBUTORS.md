@@ -1,5 +1,6 @@
 # Jellyfin Contributors
 
+ - [ddund](hhtps://github.com/ddund)
  - [1337joe](https://github.com/1337joe)
  - [97carmine](https://github.com/97carmine)
  - [Abbe98](https://github.com/Abbe98)
