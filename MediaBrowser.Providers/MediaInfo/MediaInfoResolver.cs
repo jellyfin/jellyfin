@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -153,6 +152,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             var files = directoryService.GetFilePaths(folder, clearCache).ToList();
+            files.Remove(video.Path);
             var internalMetadataPath = video.GetInternalMetadataPath();
             if (_fileSystem.DirectoryExists(internalMetadataPath))
             {
