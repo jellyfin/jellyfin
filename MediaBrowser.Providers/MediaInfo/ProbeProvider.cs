@@ -1,7 +1,5 @@
 #nullable disable
 
-#pragma warning disable CS1591
-
 using System;
 using System.IO;
 using System.Linq;
@@ -27,6 +25,9 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
+    /// <summary>
+    /// The probe provider.
+    /// </summary>
     public class ProbeProvider : ICustomMetadataProvider<Episode>,
         ICustomMetadataProvider<MusicVideo>,
         ICustomMetadataProvider<Movie>,
@@ -46,6 +47,22 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly AudioFileProber _audioProber;
         private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProbeProvider"/> class.
+        /// </summary>
+        /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
+        /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
+        /// <param name="itemRepo">Instance of the <see cref="IItemRepository"/> interface.</param>
+        /// <param name="blurayExaminer">Instance of the <see cref="IBlurayExaminer"/> interface.</param>
+        /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
+        /// <param name="encodingManager">Instance of the <see cref="IEncodingManager"/> interface.</param>
+        /// <param name="config">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+        /// <param name="subtitleManager">Instance of the <see cref="ISubtitleManager"/> interface.</param>
+        /// <param name="chapterManager">Instance of the <see cref="IChapterManager"/> interface.</param>
+        /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+        /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/>.</param>
+        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+        /// <param name="namingOptions">The <see cref="NamingOptions"/>.</param>
         public ProbeProvider(
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
@@ -81,11 +98,13 @@ namespace MediaBrowser.Providers.MediaInfo
                 _subtitleResolver);
         }
 
-        public string Name => "filemetadataprober";
+        /// <inheritdoc />
+        public string Name => "Probe Provider";
 
-        // Run last
+        /// <inheritdoc />
         public int Order => 100;
 
+        /// <inheritdoc />
         public bool HasChanged(BaseItem item, IDirectoryService directoryService)
         {
             var video = item as Video;
@@ -127,41 +146,56 @@ namespace MediaBrowser.Providers.MediaInfo
             return false;
         }
 
+        /// <inheritdoc />
         public Task<ItemUpdateType> FetchAsync(Episode item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             return FetchVideoInfo(item, options, cancellationToken);
         }
 
+        /// <inheritdoc />
         public Task<ItemUpdateType> FetchAsync(MusicVideo item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             return FetchVideoInfo(item, options, cancellationToken);
         }
 
+        /// <inheritdoc />
         public Task<ItemUpdateType> FetchAsync(Movie item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             return FetchVideoInfo(item, options, cancellationToken);
         }
 
+        /// <inheritdoc />
         public Task<ItemUpdateType> FetchAsync(Trailer item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             return FetchVideoInfo(item, options, cancellationToken);
         }
 
+        /// <inheritdoc />
         public Task<ItemUpdateType> FetchAsync(Video item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             return FetchVideoInfo(item, options, cancellationToken);
         }
 
+        /// <inheritdoc />
         public Task<ItemUpdateType> FetchAsync(Audio item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             return FetchAudioInfo(item, options, cancellationToken);
         }
 
+        /// <inheritdoc />
         public Task<ItemUpdateType> FetchAsync(AudioBook item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             return FetchAudioInfo(item, options, cancellationToken);
         }
 
+        /// <summary>
+        /// Fetches video information for an item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="options">The <see cref="MetadataRefreshOptions"/>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
+        /// <typeparam name="T">The type of item to resolve.</typeparam>
+        /// <returns>A <see cref="Task"/> fetching the <see cref="ItemUpdateType"/> for an item.</returns>
         public Task<ItemUpdateType> FetchVideoInfo<T>(T item, MetadataRefreshOptions options, CancellationToken cancellationToken)
             where T : Video
         {
@@ -208,6 +242,14 @@ namespace MediaBrowser.Providers.MediaInfo
                 .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i) && !i.StartsWith('#'));
         }
 
+        /// <summary>
+        /// Fetches audio information for an item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="options">The <see cref="MetadataRefreshOptions"/>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
+        /// <typeparam name="T">The type of item to resolve.</typeparam>
+        /// <returns>A <see cref="Task"/> fetching the <see cref="ItemUpdateType"/> for an item.</returns>
         public Task<ItemUpdateType> FetchAudioInfo<T>(T item, MetadataRefreshOptions options, CancellationToken cancellationToken)
             where T : Audio
         {

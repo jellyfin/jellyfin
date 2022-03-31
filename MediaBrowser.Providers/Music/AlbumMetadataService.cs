@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,8 +13,19 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Music
 {
+    /// <summary>
+    /// The album metadata service.
+    /// </summary>
     public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AlbumMetadataService"/> class.
+        /// </summary>
+        /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/>.</param>
+        /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
+        /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
+        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+        /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         public AlbumMetadataService(
             IServerConfigurationManager serverConfigurationManager,
             ILogger<AlbumMetadataService> logger,

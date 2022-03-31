@@ -1,7 +1,5 @@
 #nullable disable
 
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +19,9 @@ using TagLib;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
+    /// <summary>
+    /// Probes audio files for metadata.
+    /// </summary>
     public class AudioFileProber
     {
         private readonly IMediaEncoder _mediaEncoder;
@@ -28,6 +29,13 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ILibraryManager _libraryManager;
         private readonly IMediaSourceManager _mediaSourceManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AudioFileProber"/> class.
+        /// </summary>
+        /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
+        /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
+        /// <param name="itemRepo">Instance of the <see cref="IItemRepository"/> interface.</param>
+        /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         public AudioFileProber(
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
@@ -40,6 +48,14 @@ namespace MediaBrowser.Providers.MediaInfo
             _mediaSourceManager = mediaSourceManager;
         }
 
+        /// <summary>
+        /// Probes the specified item for metadata.
+        /// </summary>
+        /// <param name="item">The item to probe.</param>
+        /// <param name="options">The <see cref="MetadataRefreshOptions"/>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
+        /// <typeparam name="T">The type of item to resolve.</typeparam>
+        /// <returns>A <see cref="Task"/> probing the item for metadata.</returns>
         public async Task<ItemUpdateType> Probe<T>(
             T item,
             MetadataRefreshOptions options,
@@ -80,9 +96,9 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <summary>
         /// Fetches the specified audio.
         /// </summary>
-        /// <param name="audio">The audio.</param>
-        /// <param name="mediaInfo">The media information.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="audio">The <see cref="Audio"/>.</param>
+        /// <param name="mediaInfo">The <see cref="Model.MediaInfo.MediaInfo"/>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         protected void Fetch(Audio audio, Model.MediaInfo.MediaInfo mediaInfo, CancellationToken cancellationToken)
         {
             audio.Container = mediaInfo.Container;
@@ -91,18 +107,15 @@ namespace MediaBrowser.Providers.MediaInfo
             audio.RunTimeTicks = mediaInfo.RunTimeTicks;
             audio.Size = mediaInfo.Size;
 
-            // var extension = (Path.GetExtension(audio.Path) ?? string.Empty).TrimStart('.');
-            // audio.Container = extension;
-
             FetchDataFromTags(audio);
 
             _itemRepo.SaveMediaStreams(audio.Id, mediaInfo.MediaStreams, cancellationToken);
         }
 
         /// <summary>
-        /// Fetches data from the tags dictionary.
+        /// Fetches data from the tags.
         /// </summary>
-        /// <param name="audio">The audio.</param>
+        /// <param name="audio">The <see cref="Audio"/>.</param>
         private void FetchDataFromTags(Audio audio)
         {
             var file = TagLib.File.Create(audio.Path);
