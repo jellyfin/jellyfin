@@ -2228,13 +2228,14 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             var args = string.Empty;
+            var numberOfExternalStreams = state.MediaSource.MediaStreams.Where(stream => stream.IsExternal == true).Count();
 
             if (state.VideoStream != null)
             {
                 args += string.Format(
                     CultureInfo.InvariantCulture,
                     "-map 0:{0}",
-                    state.VideoStream.Index);
+                    state.VideoStream.Index - numberOfExternalStreams);
             }
             else
             {

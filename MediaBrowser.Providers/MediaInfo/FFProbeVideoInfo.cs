@@ -173,9 +173,22 @@ namespace MediaBrowser.Providers.MediaInfo
             IReadOnlyList<MediaAttachment> mediaAttachments;
             ChapterInfo[] chapters;
 
+            mediaStreams = new List<MediaStream>();
+
+            // Add external streams before adding the streams from the file to preserve stream IDs on remote videos
+            await AddExternalSubtitlesAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
+
+            await AddExternalAudioAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
+
             if (mediaInfo != null)
             {
-                mediaStreams = mediaInfo.MediaStreams.ToList();
+                var startIndex = mediaStreams.Count == 0 ? 0 : (mediaStreams.Select(i => i.Index).Max() + 1);
+                foreach (var mediaStream in mediaInfo.MediaStreams)
+                {
+                    mediaStream.Index = startIndex++;
+                    mediaStreams.Add(mediaStream);
+                }
+
                 mediaAttachments = mediaInfo.MediaAttachments;
 
                 video.TotalBitrate = mediaInfo.Bitrate;
@@ -213,14 +226,9 @@ namespace MediaBrowser.Providers.MediaInfo
             }
             else
             {
-                mediaStreams = new List<MediaStream>();
                 mediaAttachments = Array.Empty<MediaAttachment>();
                 chapters = Array.Empty<ChapterInfo>();
             }
-
-            await AddExternalSubtitlesAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
-
-            await AddExternalAudioAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
 
             var libraryOptions = _libraryManager.GetLibraryOptions(video);
 
