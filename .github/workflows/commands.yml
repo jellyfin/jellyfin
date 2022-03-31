@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Notify as seen
-        uses: peter-evans/create-or-update-comment@v1.4.5
+        uses: peter-evans/create-or-update-comment@v2
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
           comment-id: ${{ github.event.comment.id }}
@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Notify as seen
-        uses: peter-evans/create-or-update-comment@v1.4.5
+        uses: peter-evans/create-or-update-comment@v2
         if: ${{ github.event.comment != null }}
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
@@ -54,7 +54,7 @@ jobs:
 
       - name: Notify as running
         id: comment_running
-        uses: peter-evans/create-or-update-comment@v1.4.5
+        uses: peter-evans/create-or-update-comment@v2
         if: ${{ github.event.comment != null }}
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
@@ -89,7 +89,7 @@ jobs:
           exit ${retcode}
 
       - name: Notify with result success
-        uses: peter-evans/create-or-update-comment@v1.4.5
+        uses: peter-evans/create-or-update-comment@v2
         if: ${{ github.event.comment != null && success() }}
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
@@ -104,7 +104,7 @@ jobs:
           reactions: hooray
 
       - name: Notify with result failure
-        uses: peter-evans/create-or-update-comment@v1.4.5
+        uses: peter-evans/create-or-update-comment@v2
         if: ${{ github.event.comment != null && failure() }}
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
