@@ -750,10 +750,13 @@ namespace MediaBrowser.Model.Dlna
                         var container = transcodingProfile.Container;
                         var appliedVideoConditions = options.Profile.CodecProfiles
                             .Where(i => i.Type == CodecType.Video &&
-                                i.ContainsAnyCodec(videoCodec, container))
+                                i.ContainsAnyCodec(videoCodec, container) &&
+                                i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoConditionSatisfied(applyCondition, videoStream?.Width, videoStream?.Height, videoStream?.BitDepth, videoStream?.BitRate, videoStream?.Profile, videoStream?.Level, videoFramerate, videoStream?.PacketLength, timestamp, videoStream?.IsAnamorphic, videoStream?.IsInterlaced, videoStream?.RefFrames, numVideoStreams, numAudioStreams, videoStream?.CodecTag, videoStream?.IsAVC)))
                             .Select(i =>
-                                i.ApplyConditions.Any(applyCondition => ConditionProcessor.IsVideoConditionSatisfied(applyCondition, videoStream?.Width, videoStream?.Height, videoStream?.BitDepth, videoStream?.BitRate, videoStream?.Profile, videoStream?.Level, videoFramerate, videoStream?.PacketLength, timestamp, videoStream?.IsAnamorphic, videoStream?.IsInterlaced, videoStream?.RefFrames, numVideoStreams, numAudioStreams, videoStream?.CodecTag, videoStream?.IsAVC)));
-                        var conditionsSatisfied = !appliedVideoConditions.Any() || !appliedVideoConditions.Any(satisfied => !satisfied);
+                                i.Conditions.All(condition => ConditionProcessor.IsVideoConditionSatisfied(condition, videoStream?.Width, videoStream?.Height, videoStream?.BitDepth, videoStream?.BitRate, videoStream?.Profile, videoStream?.Level, videoFramerate, videoStream?.PacketLength, timestamp, videoStream?.IsAnamorphic, videoStream?.IsInterlaced, videoStream?.RefFrames, numVideoStreams, numAudioStreams, videoStream?.CodecTag, videoStream?.IsAVC)));
+
+                        // An empty appliedVideoConditions means that the codec has no conditions for the current video stream
+                        var conditionsSatisfied = appliedVideoConditions.All(satisfied => satisfied);
                         return conditionsSatisfied ? 1 : 2;
                     }
 
@@ -843,7 +846,7 @@ namespace MediaBrowser.Model.Dlna
             var appliedVideoConditions = options.Profile.CodecProfiles
                 .Where(i => i.Type == CodecType.Video &&
                     i.ContainsAnyCodec(videoCodec, container) &&
-                    i.ApplyConditions.Any(applyCondition => ConditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc)));
+                    i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc)));
             var isFirstAppliedCodecProfile = true;
             foreach (var i in appliedVideoConditions)
             {
@@ -873,9 +876,9 @@ namespace MediaBrowser.Model.Dlna
             int? inputAudioBitDepth = audioStream == null ? null : audioStream.BitDepth;
 
             var appliedAudioConditions = options.Profile.CodecProfiles
-                .Where(i => i.Type == CodecType.Video &&
+                .Where(i => i.Type == CodecType.VideoAudio &&
                     i.ContainsAnyCodec(audioCodec, container) &&
-                    i.ApplyConditions.Any(applyCondition => ConditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioChannels, inputAudioBitrate, inputAudioSampleRate, inputAudioBitDepth, audioProfile, isSecondaryAudio)));
+                    i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioChannels, inputAudioBitrate, inputAudioSampleRate, inputAudioBitDepth, audioProfile, isSecondaryAudio)));
             isFirstAppliedCodecProfile = true;
             foreach (var i in appliedAudioConditions)
             {
@@ -1108,18 +1111,9 @@ namespace MediaBrowser.Model.Dlna
                 profile,
                 "VideoCodecProfile",
                 profile.CodecProfiles
-                    .Where(codecProfile => codecProfile.Type == CodecType.Video && codecProfile.ContainsAnyCodec(videoStream?.Codec, container))
-                    .SelectMany(codecProfile =>
-                    {
-                        var failedApplyConditions = checkVideoConditions(codecProfile.ApplyConditions);
-                        if (!failedApplyConditions.Any())
-                        {
-                            return Array.Empty<ProfileCondition>();
-                        }
-
-                        var failedConditions = checkVideoConditions(codecProfile.Conditions);
-                        return failedApplyConditions.Concat(failedConditions);
-                    }));
+                    .Where(codecProfile => codecProfile.Type == CodecType.Video && codecProfile.ContainsAnyCodec(videoStream?.Codec, container) &&
+                        !checkVideoConditions(codecProfile.ApplyConditions).Any())
+                    .SelectMany(codecProfile => checkVideoConditions(codecProfile.Conditions)));
 
             // Check audiocandidates profile conditions
             var audioStreamMatches = candidateAudioStreams.ToDictionary(s => s, audioStream => CheckVideoAudioStreamDirectPlay(options, mediaSource, container, audioStream, defaultLanguage, defaultMarked));
