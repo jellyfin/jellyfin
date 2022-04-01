@@ -180,9 +180,10 @@ namespace MediaBrowser.Providers.MediaInfo
 
             await AddExternalAudioAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
 
+            var startIndex = mediaStreams.Count == 0 ? 0 : (mediaStreams.Select(i => i.Index).Max() + 1);
+
             if (mediaInfo != null)
             {
-                var startIndex = mediaStreams.Count == 0 ? 0 : (mediaStreams.Select(i => i.Index).Max() + 1);
                 foreach (var mediaStream in mediaInfo.MediaStreams)
                 {
                     mediaStream.Index = startIndex++;
@@ -226,6 +227,12 @@ namespace MediaBrowser.Providers.MediaInfo
             }
             else
             {
+                var nonExternalMediaStreams = video.GetMediaStreams().Where(i => !i.IsExternal);
+                foreach (var mediaStream in nonExternalMediaStreams)
+                {
+                    mediaStream.Index = startIndex++;
+                    mediaStreams.Add(mediaStream);
+                }
                 mediaAttachments = Array.Empty<MediaAttachment>();
                 chapters = Array.Empty<ChapterInfo>();
             }
@@ -262,7 +269,11 @@ namespace MediaBrowser.Providers.MediaInfo
             video.HasSubtitles = mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle);
 
             _itemRepo.SaveMediaStreams(video.Id, mediaStreams, cancellationToken);
-            _itemRepo.SaveMediaAttachments(video.Id, mediaAttachments, cancellationToken);
+
+            if (mediaAttachments.Any())
+            {
+                _itemRepo.SaveMediaAttachments(video.Id, mediaAttachments, cancellationToken);
+            }
 
             if (options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh ||
                 options.MetadataRefreshMode == MetadataRefreshMode.Default)

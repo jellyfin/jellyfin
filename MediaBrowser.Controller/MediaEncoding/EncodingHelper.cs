@@ -2228,14 +2228,14 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             var args = string.Empty;
-            var numberOfExternalStreams = state.MediaSource.MediaStreams.Where(stream => stream.IsExternal == true).Count();
+            int videoStreamIndex = state.MediaSource.MediaStreams.Where(i => i.Path == state.VideoStream.Path).ToList().IndexOf(state.VideoStream);
 
             if (state.VideoStream != null)
             {
                 args += string.Format(
                     CultureInfo.InvariantCulture,
                     "-map 0:{0}",
-                    state.VideoStream.Index - numberOfExternalStreams);
+                    videoStreamIndex);
             }
             else
             {
@@ -2249,20 +2249,22 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     bool hasExternalGraphicsSubs = state.SubtitleStream != null && state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream;
                     int externalAudioMapIndex = hasExternalGraphicsSubs ? 2 : 1;
-                    int externalAudioStream = state.MediaSource.MediaStreams.Where(i => i.Path == state.AudioStream.Path).ToList().IndexOf(state.AudioStream);
+                    int externalAudioStreamIndex = state.MediaSource.MediaStreams.Where(i => i.Path == state.AudioStream.Path).ToList().IndexOf(state.AudioStream);
 
                     args += string.Format(
                         CultureInfo.InvariantCulture,
                         " -map {0}:{1}",
                         externalAudioMapIndex,
-                        externalAudioStream);
+                        externalAudioStreamIndex);
                 }
                 else
                 {
+                    int subtitleStreamIndex = state.MediaSource.MediaStreams.Where(i => i.Path == state.AudioStream.Path).ToList().IndexOf(state.AudioStream);
+
                     args += string.Format(
                         CultureInfo.InvariantCulture,
                         " -map 0:{0}",
-                        state.AudioStream.Index);
+                        subtitleStreamIndex);
                 }
             }
             else
@@ -2277,14 +2279,21 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
             else if (subtitleMethod == SubtitleDeliveryMethod.Embed)
             {
+                int subtitleStreamIndex = state.MediaSource.MediaStreams.Where(i => i.Path == state.SubtitleStream.Path).ToList().IndexOf(state.SubtitleStream);
+
                 args += string.Format(
                     CultureInfo.InvariantCulture,
                     " -map 0:{0}",
-                    state.SubtitleStream.Index);
+                    subtitleStreamIndex);
             }
             else if (state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream)
             {
-                args += " -map 1:0 -sn";
+                int externalSubtitleStreamIndex = state.MediaSource.MediaStreams.Where(i => i.Path == state.SubtitleStream.Path).ToList().IndexOf(state.SubtitleStream);
+
+                args += string.Format(
+                    CultureInfo.InvariantCulture,
+                    " -map 1:{0} -sn",
+                    externalSubtitleStreamIndex);
             }
 
             return args;
@@ -4130,9 +4139,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                         string.Join(',', overlayFilters));
 
                 var mapPrefix = Convert.ToInt32(state.SubtitleStream.IsExternal);
-                var subtitleStreamIndex = state.SubtitleStream.IsExternal
-                    ? 0
-                    : state.SubtitleStream.Index;
+                var subtitleStreamIndex = state.MediaSource.MediaStreams.Where(i => i.Path == state.SubtitleStream.Path).ToList().IndexOf(state.SubtitleStream);
+                var videoStreamIndex = state.MediaSource.MediaStreams.Where(i => i.Path == state.VideoStream.Path).ToList().IndexOf(state.VideoStream);
 
                 if (hasSubs)
                 {
@@ -4153,7 +4161,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         filterStr,
                         mapPrefix,
                         subtitleStreamIndex,
-                        state.VideoStream.Index,
+                        videoStreamIndex,
                         mainStr,
                         subStr,
                         overlayStr);
