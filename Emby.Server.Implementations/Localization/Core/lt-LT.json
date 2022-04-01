@@ -119,5 +119,9 @@
     "Forced": "Priverstas",
     "Default": "Numatytas",
     "TaskCleanActivityLogDescription": "Ištrina veiklos žuranlo įrašus, kurie yra senesni nei nustatytas amžius.",
-    "TaskOptimizeDatabase": "Optimizuoti duomenų bazės"
+    "TaskOptimizeDatabase": "Optimizuoti duomenų bazės",
+    "TaskKeyframeExtractorDescription": "Iš vaizdo įrašo paruošia reikšminius kadrus, kad būtų sukuriamas tikslenis HLS grojaraštis. Šios užduoties vykdymas gali ilgai užtrukti.",
+    "TaskKeyframeExtractor": "Pagrindinių kadrų ištraukėjas",
+    "TaskOptimizeDatabaseDescription": "Suspaudžia duomenų bazę ir atlaisvina vietą. Paleidžiant šią užduotį, po bibliotekos skenavimo arba kitų veiksmų kurie galimai modifikuoja duomenų bazė, gali pagerinti greitaveiką.",
+    "External": "Išorinis"
 }
