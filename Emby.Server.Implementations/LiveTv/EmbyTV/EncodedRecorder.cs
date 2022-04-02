@@ -65,7 +65,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             await RecordFromFile(mediaSource, mediaSource.Path, targetFile, onStarted, cancellationTokenSource.Token).ConfigureAwait(false);
 
-            _logger.LogInformation("Recording completed to file {0}", targetFile);
+            _logger.LogInformation("Recording completed to file {Path}", targetFile);
         }
 
         private async Task RecordFromFile(MediaSourceInfo mediaSource, string inputFile, string targetFile, Action onStarted, CancellationToken cancellationToken)
@@ -115,7 +115,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
             _ = StartStreamingLog(_process.StandardError.BaseStream, _logFileStream);
 
-            _logger.LogInformation("ffmpeg recording process started for {0}", _targetPath);
+            _logger.LogInformation("ffmpeg recording process started for {Path}", _targetPath);
+
+            // Block until ffmpeg exits
+            await _taskCompletionSource.Task.ConfigureAwait(false);
         }
 
         private string GetCommandLineArgs(MediaSourceInfo mediaSource, string inputTempFile, string targetFile)
