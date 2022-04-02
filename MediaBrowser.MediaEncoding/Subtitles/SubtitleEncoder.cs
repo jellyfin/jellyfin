@@ -195,7 +195,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             MediaStream subtitleStream,
             CancellationToken cancellationToken)
         {
-            if (!subtitleStream.IsExternal || subtitleStream.Path.EndsWith(".mks"))
+            if (!subtitleStream.IsExternal || subtitleStream.Path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
             {
                 string outputFormat;
                 string outputCodec;
@@ -511,7 +511,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            var subtitleStreamIndex = mediaSource.MediaStreams.Where(i => i.Path == subtitleStream.Path).ToList().IndexOf(subtitleStream);
+            var subtitleStreamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
 
             try
             {

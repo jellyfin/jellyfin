@@ -180,7 +180,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             await AddExternalAudioAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
 
-            var startIndex = mediaStreams.Count == 0 ? 0 : (mediaStreams.Select(i => i.Index).Max() + 1);
+            var startIndex = mediaStreams.Count == 0 ? 0 : (mediaStreams.Max(i => i.Index) + 1);
 
             if (mediaInfo != null)
             {
@@ -196,7 +196,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 // video.FormatName = (mediaInfo.Container ?? string.Empty)
                 //    .Replace("matroska", "mkv", StringComparison.OrdinalIgnoreCase);
 
-                // For dvd's this may not always be accurate, so don't set the runtime if the item already has one
+                // For DVDs this may not always be accurate, so don't set the runtime if the item already has one
                 var needToSetRuntime = video.VideoType != VideoType.Dvd || video.RunTimeTicks == null || video.RunTimeTicks.Value == 0;
 
                 if (needToSetRuntime)
@@ -227,12 +227,16 @@ namespace MediaBrowser.Providers.MediaInfo
             }
             else
             {
-                var nonExternalMediaStreams = video.GetMediaStreams().Where(i => !i.IsExternal);
-                foreach (var mediaStream in nonExternalMediaStreams)
+                var currentMediaStreams = video.GetMediaStreams();
+                foreach (var mediaStream in currentMediaStreams)
                 {
-                    mediaStream.Index = startIndex++;
-                    mediaStreams.Add(mediaStream);
+                    if (!mediaStream.IsExternal)
+                    {
+                        mediaStream.Index = startIndex++;
+                        mediaStreams.Add(mediaStream);
+                    }
                 }
+
                 mediaAttachments = Array.Empty<MediaAttachment>();
                 chapters = Array.Empty<ChapterInfo>();
             }

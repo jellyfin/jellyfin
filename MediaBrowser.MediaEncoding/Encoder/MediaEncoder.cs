@@ -419,9 +419,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <exception cref="ArgumentException">Unrecognized InputType.</exception>
         public string GetExternalSubtitleInputArgument(string inputFile)
         {
-            var prefix = "file";
+            const string Prefix = "file";
 
-            return EncodingUtils.GetInputArgument(prefix, inputFile, MediaProtocol.File);
+            return EncodingUtils.GetInputArgument(Prefix, inputFile, MediaProtocol.File);
         }
 
         /// <summary>
