@@ -464,6 +464,18 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public bool IsInLocalNetwork(IPObject address)
         {
+            return IsInLocalNetwork(address.Address);
+        }
+
+        /// <inheritdoc/>
+        public bool IsInLocalNetwork(string address)
+        {
+            return IPHost.TryParse(address, out IPHost ipHost) && IsInLocalNetwork(ipHost);
+        }
+
+        /// <inheritdoc/>
+        public bool IsInLocalNetwork(IPAddress address)
+        {
             if (address == null)
             {
                 throw new ArgumentNullException(nameof(address));
@@ -481,36 +493,7 @@ namespace Jellyfin.Networking.Manager
             }
 
             // As private addresses can be redefined by Configuration.LocalNetworkAddresses
-            return address.IsLoopback() || (_lanSubnets.ContainsAddress(address) && !_excludedSubnets.ContainsAddress(address));
-        }
-
-        /// <inheritdoc/>
-        public bool IsInLocalNetwork(string address)
-        {
-            if (IPHost.TryParse(address, out IPHost ep))
-            {
-                return _lanSubnets.ContainsAddress(ep) && !_excludedSubnets.ContainsAddress(ep);
-            }
-
-            return false;
-        }
-
-        /// <inheritdoc/>
-        public bool IsInLocalNetwork(IPAddress address)
-        {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
-
-            // See conversation at https://github.com/jellyfin/jellyfin/pull/3515.
-            if (TrustAllIP6Interfaces && address.AddressFamily == AddressFamily.InterNetworkV6)
-            {
-                return true;
-            }
-
-            // As private addresses can be redefined by Configuration.LocalNetworkAddresses
-            return _lanSubnets.ContainsAddress(address) && !_excludedSubnets.ContainsAddress(address);
+            return IPAddress.IsLoopback(address) || (_lanSubnets.ContainsAddress(address) && !_excludedSubnets.ContainsAddress(address));
         }
 
         /// <inheritdoc/>
