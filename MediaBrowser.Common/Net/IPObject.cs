@@ -65,7 +65,7 @@ namespace MediaBrowser.Common.Net
                 address = address.MapToIPv4();
             }
 
-            if (IsLoopback(address))
+            if (IPAddress.IsLoopback(address))
             {
                 return (address, prefixLength);
             }
@@ -100,31 +100,6 @@ namespace MediaBrowser.Common.Net
 
             // Return the network address for the prefix.
             return (new IPAddress(addressBytes), prefixLength);
-        }
-
-        /// <summary>
-        /// Tests to see if the ip address is a Loopback address.
-        /// </summary>
-        /// <param name="address">Value to test.</param>
-        /// <returns>True if it is.</returns>
-        public static bool IsLoopback(IPAddress address)
-        {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
-
-            if (!address.Equals(IPAddress.None))
-            {
-                if (address.IsIPv4MappedToIPv6)
-                {
-                    address = address.MapToIPv4();
-                }
-
-                return address.Equals(IPAddress.Loopback) || address.Equals(IPAddress.IPv6Loopback);
-            }
-
-            return false;
         }
 
         /// <summary>
@@ -295,7 +270,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>True if it is.</returns>
         public virtual bool IsLoopback()
         {
-            return IsLoopback(Address);
+            return IPAddress.IsLoopback(Address);
         }
 
         /// <summary>
