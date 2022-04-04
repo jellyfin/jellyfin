@@ -34,6 +34,11 @@ namespace Emby.Server.Implementations.Sorting
                 throw new ArgumentNullException(nameof(y));
             }
 
+            if (!x.ParentIndexNumber.HasValue && !y.ParentIndexNumber.HasValue)
+            {
+                return 0;
+            }
+
             if (!x.ParentIndexNumber.HasValue)
             {
                 return -1;
