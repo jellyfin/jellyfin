@@ -744,7 +744,7 @@ namespace MediaBrowser.Model.Dlna
                 {
                     var videoCodecs = ContainerProfile.SplitValue(transcodingProfile.VideoCodec);
 
-                    if (ContainerProfile.ContainsContainer(videoCodecs, item.VideoStream.Codec))
+                    if (ContainerProfile.ContainsContainer(videoCodecs, item.VideoStream?.Codec))
                     {
                         var videoCodec = transcodingProfile.VideoCodec;
                         var container = transcodingProfile.Container;
@@ -770,28 +770,28 @@ namespace MediaBrowser.Model.Dlna
         {
             // prefer matching video codecs
             var videoCodecs = ContainerProfile.SplitValue(videoCodec);
-            var directVideoCodec = ContainerProfile.ContainsContainer(videoCodecs, videoStream.Codec) ? videoStream.Codec : null;
+            var directVideoCodec = ContainerProfile.ContainsContainer(videoCodecs, videoStream?.Codec) ? videoStream?.Codec : null;
             playlistItem.VideoCodecs = directVideoCodec != null ? new[] { directVideoCodec } : videoCodecs;
 
             // copy video codec options as a starting point, this applies to transcode and direct-stream
-            playlistItem.MaxFramerate = videoStream.AverageFrameRate;
-            var qualifier = videoStream.Codec;
-            if (videoStream.Level.HasValue)
+            playlistItem.MaxFramerate = videoStream?.AverageFrameRate;
+            var qualifier = videoStream?.Codec;
+            if (videoStream?.Level != null)
             {
                 playlistItem.SetOption(qualifier, "level", videoStream.Level.Value.ToString(CultureInfo.InvariantCulture));
             }
 
-            if (videoStream.BitDepth.HasValue)
+            if (videoStream?.BitDepth != null)
             {
                 playlistItem.SetOption(qualifier, "videobitdepth", videoStream.BitDepth.Value.ToString(CultureInfo.InvariantCulture));
             }
 
-            if (!string.IsNullOrEmpty(videoStream.Profile))
+            if (!string.IsNullOrEmpty(videoStream?.Profile))
             {
                 playlistItem.SetOption(qualifier, "profile", videoStream.Profile.ToLowerInvariant());
             }
 
-            if (videoStream.Level != 0)
+            if (videoStream != null && videoStream.Level != 0)
             {
                 playlistItem.SetOption(qualifier, "level", videoStream.Level.ToString());
             }

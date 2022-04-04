@@ -223,12 +223,17 @@ namespace Jellyfin.Model.Tests
         // RokuSSPlus
         [InlineData("RokuSSPlus", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")] // #6450
         [InlineData("RokuSSPlus", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")] // #6450
+        // no streams
+        [InlineData("Chrome", "no-streams", PlayMethod.Transcode, TranscodeReason.VideoCodecNotSupported, "Transcode")] // #6450
         public async Task BuildVideoItemWithDirectPlayExplicitStreams(string deviceName, string mediaSource, PlayMethod? playMethod, TranscodeReason why = (TranscodeReason)0, string transcodeMode = "DirectStream", string transcodeProtocol = "")
         {
             var options = await GetVideoOptions(deviceName, mediaSource);
             var streamCount = options.MediaSources[0].MediaStreams.Count;
-            options.AudioStreamIndex = streamCount - 2;
-            options.SubtitleStreamIndex = streamCount - 1;
+            if (streamCount > 0)
+            {
+                options.AudioStreamIndex = streamCount - 2;
+                options.SubtitleStreamIndex = streamCount - 1;
+            }
 
             var streamInfo = BuildVideoItemSimpleTest(options, playMethod, why, transcodeMode, transcodeProtocol);
             Assert.Equal(streamInfo?.AudioStreamIndex, options.AudioStreamIndex);
