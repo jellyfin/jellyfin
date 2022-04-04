@@ -3381,7 +3381,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
 
                     // qsv requires a fixed pool size.
-                    // default to 64 otherwise if will fails on certain iGPU.
+                    // default to 64 otherwise it will fail on certain iGPU.
                     subFilters.Add("hwupload=extra_hw_frames=64");
 
                     var (overlayW, overlayH) = GetFixedOutputSize(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
@@ -3590,7 +3590,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
 
                     // qsv requires a fixed pool size.
-                    // default to 64 otherwise if will fails on certain iGPU.
+                    // default to 64 otherwise it will fail on certain iGPU.
                     subFilters.Add("hwupload=extra_hw_frames=64");
 
                     var (overlayW, overlayH) = GetFixedOutputSize(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
