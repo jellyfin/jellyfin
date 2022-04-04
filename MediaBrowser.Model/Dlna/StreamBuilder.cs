@@ -1183,7 +1183,18 @@ namespace MediaBrowser.Model.Dlna
                         audioCodecProfileReasons = audioStreamMatches.GetValueOrDefault(selectedAudioStream);
                     }
 
-                    var failureReasons = directPlayProfileReasons | containerProfileReasons | videoCodecProfileReasons | audioCodecProfileReasons | subtitleProfileReasons;
+                    var failureReasons = directPlayProfileReasons | containerProfileReasons | subtitleProfileReasons;
+
+                    if ((failureReasons & TranscodeReason.VideoCodecNotSupported) == 0)
+                    {
+                        failureReasons |= videoCodecProfileReasons;
+                    }
+
+                    if ((failureReasons & TranscodeReason.AudioCodecNotSupported) == 0)
+                    {
+                        failureReasons |= audioCodecProfileReasons;
+                    }
+
                     var directStreamFailureReasons = failureReasons & (~DirectStreamReasons);
 
                     PlayMethod? playMethod = null;
