@@ -2,7 +2,7 @@
 
 using MediaBrowser.Model.Plugins;
 
-namespace MediaBrowser.Providers.Plugins.StudioImages
+namespace MediaBrowser.Providers.Plugins.StudioImages.Configuration
 {
     public class PluginConfiguration : BasePluginConfiguration
     {
@@ -12,12 +12,19 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
         {
             get
             {
+                if (string.IsNullOrEmpty(_repository))
+                {
+                    _repository = Plugin.DefaultServer;
+                }
+
                 return _repository;
             }
 
             set
             {
-                _repository = value.TrimEnd('/');
+                _repository = string.IsNullOrEmpty(value)
+                    ? Plugin.DefaultServer
+                    : value.TrimEnd('/');
             }
         }
     }
