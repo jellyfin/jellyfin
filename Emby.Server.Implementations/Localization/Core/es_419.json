@@ -119,5 +119,6 @@
     "Forced": "Forzado",
     "Default": "Por defecto",
     "TaskOptimizeDatabaseDescription": "Compacta la base de datos y libera espacio. Ejecutar esta tarea después de escanear la biblioteca o hacer otros cambios que impliquen modificaciones en la base de datos puede mejorar el rendimiento.",
-    "TaskOptimizeDatabase": "Optimizar base de datos"
+    "TaskOptimizeDatabase": "Optimizar base de datos",
+    "External": "Externo"
 }
