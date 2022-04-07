@@ -7,7 +7,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Providers.Music;
+using MediaBrowser.Providers.Plugins.MusicBrainz;
 using MediaBrowser.XbmcMetadata.Parsers;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
