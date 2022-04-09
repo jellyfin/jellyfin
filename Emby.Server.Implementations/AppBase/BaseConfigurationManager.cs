@@ -399,6 +399,12 @@ namespace Emby.Server.Implementations.AppBase
         }
 
         /// <inheritdoc />
+        public ConfigurationStore[] GetConfigurationStores()
+        {
+            return _configurationStores;
+        }
+
+        /// <inheritdoc />
         public Type GetConfigurationType(string key)
         {
             return GetConfigurationStore(key)
