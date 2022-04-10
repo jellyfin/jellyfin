@@ -48,7 +48,6 @@ namespace Emby.Naming.Common
                 ".mkv",
                 ".mk3d",
                 ".mov",
-                ".mp2",
                 ".mp4",
                 ".mpe",
                 ".mpeg",
