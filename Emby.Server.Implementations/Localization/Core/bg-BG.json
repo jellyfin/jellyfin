@@ -43,7 +43,7 @@
     "NameInstallFailed": "{0} не можа да се инсталира",
     "NameSeasonNumber": "Сезон {0}",
     "NameSeasonUnknown": "Неразпознат сезон",
-    "NewVersionIsAvailable": "Нова версия на Jellyfin сървъра е достъпна за сваляне.",
+    "NewVersionIsAvailable": "Нова версия на Джелифин сървъра е достъпна за сваляне.",
     "NotificationOptionApplicationUpdateAvailable": "Налично е обновление на програмата",
     "NotificationOptionApplicationUpdateInstalled": "Обновлението на програмата е инсталирано",
     "NotificationOptionAudioPlayback": "Възпроизвеждането на звук започна",
@@ -120,5 +120,8 @@
     "TaskCleanActivityLogDescription": "Изтрива записите в дневника с активност по стари от конфигурираната възраст.",
     "TaskCleanActivityLog": "Изчисти дневника с активност",
     "TaskOptimizeDatabaseDescription": "Прави базата данни по-компактна и освобождава място. Пускането на тази задача след сканиране на библиотеката или правене на други промени, свързани с модификации на базата данни, може да подобри производителността.",
-    "TaskOptimizeDatabase": "Оптимизирай базата данни"
+    "TaskOptimizeDatabase": "Оптимизирай базата данни",
+    "TaskKeyframeExtractorDescription": "Извличат се ключови кадри от видеофайловете ,за да се създаде по точен ХЛС списък . Задачата може да отнеме много време.",
+    "TaskKeyframeExtractor": "Извличане на ключови кадри",
+    "External": "Външен"
 }
