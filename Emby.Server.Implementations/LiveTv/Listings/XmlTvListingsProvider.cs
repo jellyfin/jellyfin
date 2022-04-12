@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions;
@@ -124,7 +125,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         {
             using (var stream = File.OpenRead(file))
             {
-                string tempFolder = Path.Combine(_config.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString());
+                string tempFolder = GetTempFolderPath(stream);
                 Directory.CreateDirectory(tempFolder);
 
                 _zipClient.ExtractFirstFileFromGz(stream, tempFolder, "data.xml");
@@ -137,13 +138,23 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         {
             using (var stream = File.OpenRead(file))
             {
-                string tempFolder = Path.Combine(_config.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString());
+                string tempFolder = GetTempFolderPath(stream);
                 Directory.CreateDirectory(tempFolder);
 
                 _zipClient.ExtractAllFromGz(stream, tempFolder, true);
 
                 return tempFolder;
             }
+        }
+
+        private string GetTempFolderPath(Stream stream)
+        {
+#pragma warning disable CA5351
+            using var md5 = MD5.Create();
+#pragma warning restore CA5351
+            var checksum = Convert.ToHexString(md5.ComputeHash(stream));
+            stream.Position = 0;
+            return Path.Combine(_config.ApplicationPaths.TempDirectory, checksum);
         }
 
         private string FindXmlFile(string directory)
