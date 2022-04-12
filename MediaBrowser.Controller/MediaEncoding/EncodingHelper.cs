@@ -2244,7 +2244,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (state.AudioStream.IsExternal)
                 {
-                    int externalAudioMapIndex = state.SubtitleStream != null && state.SubtitleStream.IsExternal ? 2 : 1;
+                    bool hasExternalGraphicsSubs = state.SubtitleStream != null && state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream;
+                    int externalAudioMapIndex = hasExternalGraphicsSubs ? 2 : 1;
                     int externalAudioStream = state.MediaSource.MediaStreams.Where(i => i.Path == state.AudioStream.Path).ToList().IndexOf(state.AudioStream);
 
                     args += string.Format(
