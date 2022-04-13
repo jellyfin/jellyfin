@@ -27,6 +27,8 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 {
     public class XmlTvListingsProvider : IListingsProvider
     {
+        private static readonly TimeSpan _maxCacheAge = TimeSpan.FromHours(1);
+
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<XmlTvListingsProvider> _logger;
@@ -70,13 +72,14 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 return UnzipIfNeeded(info.Path, info.Path);
             }
 
-            string cacheFilename = DateTime.UtcNow.DayOfYear.ToString(CultureInfo.InvariantCulture) + "-" + DateTime.UtcNow.Hour.ToString(CultureInfo.InvariantCulture) + "-" + info.Id + ".xml";
+            string cacheFilename = info.Id + ".xml";
             string cacheFile = Path.Combine(_config.ApplicationPaths.CachePath, "xmltv", cacheFilename);
-            if (File.Exists(cacheFile))
+            if (File.Exists(cacheFile) && File.GetLastWriteTimeUtc(cacheFile) >= DateTime.UtcNow.Subtract(_maxCacheAge))
             {
                 return UnzipIfNeeded(info.Path, cacheFile);
             }
 
+            File.Delete(cacheFile);
             _logger.LogInformation("Downloading xmltv listings from {Path}", info.Path);
 
             Directory.CreateDirectory(Path.GetDirectoryName(cacheFile));
