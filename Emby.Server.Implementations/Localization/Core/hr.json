@@ -118,5 +118,7 @@
     "TaskCleanActivityLog": "Očisti dnevnik aktivnosti",
     "Undefined": "Nedefinirano",
     "Forced": "Forsirani",
-    "Default": "Zadano"
+    "Default": "Zadano",
+    "TaskOptimizeDatabase": "Optimiziraj bazu podataka",
+    "External": "Vanjski"
 }
