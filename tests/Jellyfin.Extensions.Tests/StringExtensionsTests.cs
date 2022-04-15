@@ -6,6 +6,34 @@ namespace Jellyfin.Extensions.Tests
     public class StringExtensionsTests
     {
         [Theory]
+        [InlineData("", "")] // Identity edge-case (no diactritics)
+        [InlineData("Indiana Jones", "Indiana Jones")] // Identity (no diactritics)
+        [InlineData("a\ud800b", "ab")] // Invalid UTF-16 char stripping
+        [InlineData("Jön", "Jon")] // Issue #7484
+        [InlineData("Jönssonligan", "Jonssonligan")] // Issue #7484
+        [InlineData("Kieślowski", "Kieslowski")] // Issue #7450
+        [InlineData("Cidadão Kane", "Cidadao Kane")] // Issue #7560
+        public void RemoveDiacritics_ValidInput_Corrects(string input, string expectedResult)
+        {
+            string result = input.RemoveDiacritics();
+            Assert.Equal(expectedResult, result);
+        }
+
+        [Theory]
+        [InlineData("", false)] // Identity edge-case (no diactritics)
+        [InlineData("Indiana Jones", false)] // Identity (no diactritics)
+        [InlineData("a\ud800b", true)] // Invalid UTF-16 char stripping
+        [InlineData("Jön", true)] // Issue #7484
+        [InlineData("Jönssonligan", true)] // Issue #7484
+        [InlineData("Kieślowski", true)] // Issue #7450
+        [InlineData("Cidadão Kane", true)] // Issue #7560
+        public void HasDiacritics_ValidInput_Corrects(string input, bool expectedResult)
+        {
+            bool result = input.HasDiacritics();
+            Assert.Equal(expectedResult, result);
+        }
+
+        [Theory]
         [InlineData("", '_', 0)]
         [InlineData("___", '_', 3)]
         [InlineData("test\x00", '\x00', 1)]
