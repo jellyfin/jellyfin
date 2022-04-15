@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,20 +6,41 @@ using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Controller.Providers
 {
+    /// <summary>
+    /// Interface IRemoteMetadataProvider.
+    /// </summary>
     public interface IRemoteMetadataProvider : IMetadataProvider
     {
     }
 
+    /// <summary>
+    /// Interface IRemoteMetadataProvider.
+    /// </summary>
     public interface IRemoteMetadataProvider<TItemType, in TLookupInfoType> : IMetadataProvider<TItemType>, IRemoteMetadataProvider, IRemoteSearchProvider<TLookupInfoType>
         where TItemType : BaseItem, IHasLookupInfo<TLookupInfoType>
         where TLookupInfoType : ItemLookupInfo, new()
     {
+        /// <summary>
+        /// Gets the metadata for a specific LookupInfoType.
+        /// </summary>
+        /// <param name="info">The LookupInfoType to get metadata for.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
+        /// <returns>Task{MetadataResult{TItemType}}.</returns>
         Task<MetadataResult<TItemType>> GetMetadata(TLookupInfoType info, CancellationToken cancellationToken);
     }
 
+    /// <summary>
+    /// Interface IRemoteMetadataProvider.
+    /// </summary>
     public interface IRemoteSearchProvider<in TLookupInfoType> : IRemoteSearchProvider
         where TLookupInfoType : ItemLookupInfo
     {
+        /// <summary>
+        /// Gets the list of <see cref="RemoteSearchResult"/> for a specific LookupInfoType.
+        /// </summary>
+        /// <param name="searchInfo">The LookupInfoType to search for.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
+        /// <returns>Task{IEnumerable{RemoteSearchResult}}.</returns>
         Task<IEnumerable<RemoteSearchResult>> GetSearchResults(TLookupInfoType searchInfo, CancellationToken cancellationToken);
     }
 }

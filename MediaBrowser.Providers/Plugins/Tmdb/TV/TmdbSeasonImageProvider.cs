@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,10 +14,19 @@ using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 {
+    /// <summary>
+    /// TV season image provider powered by TheMovieDb.
+    /// </summary>
     public class TmdbSeasonImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly TmdbClientManager _tmdbClientManager;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TmdbSeasonImageProvider"/> class.
+        /// </summary>
+        /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
+        /// <param name="tmdbClientManager">The <see cref="TmdbClientManager"/>.</param>
 
         public TmdbSeasonImageProvider(IHttpClientFactory httpClientFactory, TmdbClientManager tmdbClientManager)
         {
@@ -27,15 +34,32 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             _tmdbClientManager = tmdbClientManager;
         }
 
+        /// <summary>
+        /// The order.
+        /// </summary>
         public int Order => 1;
 
+        /// <summary>
+        /// The name.
+        /// </summary>
         public string Name => TmdbUtils.ProviderName;
 
-        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public bool Supports(BaseItem item)
         {
-            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
+            return item is Season;
         }
 
+        /// <inheritdoc />
+        public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
+        {
+            return new List<ImageType>
+            {
+                ImageType.Primary
+            };
+        }
+
+        /// <inheritdoc />
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             var season = (Season)item;
@@ -68,17 +92,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             return remoteImages;
         }
 
-        public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
+        /// <inheritdoc />
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return new List<ImageType>
-            {
-                ImageType.Primary
-            };
-        }
-
-        public bool Supports(BaseItem item)
-        {
-            return item is Season;
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
     }
 }

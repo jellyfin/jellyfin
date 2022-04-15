@@ -1,7 +1,5 @@
 #nullable disable
 
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -18,12 +16,21 @@ using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
 {
+    /// <summary>
+    /// BoxSet provider powered by TMDb.
+    /// </summary>
     public class TmdbBoxSetProvider : IRemoteMetadataProvider<BoxSet, BoxSetInfo>
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly TmdbClientManager _tmdbClientManager;
         private readonly ILibraryManager _libraryManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TmdbBoxSetProvider"/> class.
+        /// </summary>
+        /// <param name="libraryManager">The <see cref="ILibraryManager"/>.</param>
+        /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
+        /// <param name="tmdbClientManager">The <see cref="TmdbClientManager"/>.</param>
         public TmdbBoxSetProvider(IHttpClientFactory httpClientFactory, TmdbClientManager tmdbClientManager, ILibraryManager libraryManager)
         {
             _httpClientFactory = httpClientFactory;
@@ -31,8 +38,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
             _libraryManager = libraryManager;
         }
 
+        /// <inheritdoc />
         public string Name => TmdbUtils.ProviderName;
 
+        /// <inheritdoc />
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(BoxSetInfo searchInfo, CancellationToken cancellationToken)
         {
             var tmdbId = Convert.ToInt32(searchInfo.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
@@ -81,6 +90,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
             return collections;
         }
 
+        /// <inheritdoc />
         public async Task<MetadataResult<BoxSet>> GetMetadata(BoxSetInfo info, CancellationToken cancellationToken)
         {
             var tmdbId = Convert.ToInt32(info.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
@@ -124,6 +134,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
             return result;
         }
 
+        /// <inheritdoc />
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);

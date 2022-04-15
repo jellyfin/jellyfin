@@ -170,7 +170,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 ParseProviderLinks(item.Item, endingXml);
 
-                // If the file is just an imdb url, don't go any further
+                // If the file is just an IMDb url, don't go any further
                 if (index == 0)
                 {
                     return;
@@ -1136,20 +1136,20 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     switch (reader.Name)
                     {
                         case "rating":
-                        {
-                            if (reader.IsEmptyElement)
                             {
-                                reader.Read();
-                                continue;
+                                if (reader.IsEmptyElement)
+                                {
+                                    reader.Read();
+                                    continue;
+                                }
+
+                                var ratingName = reader.GetAttribute("name");
+
+                                using var subtree = reader.ReadSubtree();
+                                FetchFromRatingNode(subtree, item, ratingName);
+
+                                break;
                             }
-
-                            var ratingName = reader.GetAttribute("name");
-
-                            using var subtree = reader.ReadSubtree();
-                            FetchFromRatingNode(subtree, item, ratingName);
-
-                            break;
-                        }
 
                         default:
                             reader.Skip();
