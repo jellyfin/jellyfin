@@ -1,7 +1,5 @@
 #nullable disable
 
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -21,12 +19,21 @@ using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.Plugins.StudioImages
 {
+    /// <summary>
+    /// Studio image provider.
+    /// </summary>
     public class StudiosImageProvider : IRemoteImageProvider
     {
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IFileSystem _fileSystem;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StudiosImageProvider"/> class.
+        /// </summary>
+        /// <param name="config">The <see cref="IServerConfigurationManager"/>.</param>
+        /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
+        /// <param name="fileSystem">The <see cref="IFileSystem"/>.</param>
         public StudiosImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory, IFileSystem fileSystem)
         {
             _config = config;
@@ -34,13 +41,16 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
             _fileSystem = fileSystem;
         }
 
+        /// <inheritdoc />
         public string Name => "Artwork Repository";
 
+        /// <inheritdoc />
         public bool Supports(BaseItem item)
         {
             return item is Studio;
         }
 
+        /// <inheritdoc />
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
             return new List<ImageType>
@@ -49,6 +59,7 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
             };
         }
 
+        /// <inheritdoc />
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             var thumbsPath = Path.Combine(_config.ApplicationPaths.CachePath, "imagesbyname", "remotestudiothumbs.txt");
@@ -103,6 +114,7 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
             return EnsureList(url, file, _fileSystem, cancellationToken);
         }
 
+        /// <inheritdoc />
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
@@ -134,6 +146,12 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
             return file;
         }
 
+        /// <summary>
+        /// Get matching image for an item.
+        /// </summary>
+        /// <param name="item">The <see cref="BaseItem"/>.</param>
+        /// <param name="images">The enumerable of image strings.</param>
+        /// <returns>String.</returns>
         public string FindMatch(BaseItem item, IEnumerable<string> images)
         {
             var name = GetComparableName(item.Name);
@@ -151,6 +169,11 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
                 .Replace("/", string.Empty, StringComparison.Ordinal);
         }
 
+        /// <summary>
+        /// Get available images for a file.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <returns>IEnumerable{string}.</returns>
         public IEnumerable<string> GetAvailableImages(string file)
         {
             using var fileStream = File.OpenRead(file);
