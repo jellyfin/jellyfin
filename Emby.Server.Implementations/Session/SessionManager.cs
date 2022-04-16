@@ -699,7 +699,9 @@ namespace Emby.Server.Implementations.Session
                 DeviceName = session.DeviceName,
                 ClientName = session.Client,
                 DeviceId = session.DeviceId,
-                Session = session
+                Session = session,
+                PlaybackPositionTicks = info.PositionTicks,
+                PlaySessionId = info.PlaySessionId
             };
 
             await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
@@ -985,7 +987,8 @@ namespace Emby.Server.Implementations.Session
                 DeviceName = session.DeviceName,
                 ClientName = session.Client,
                 DeviceId = session.DeviceId,
-                Session = session
+                Session = session,
+                PlaySessionId = info.PlaySessionId
             };
 
             await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
