@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Naming.Common;
@@ -28,10 +29,12 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
@@ -79,6 +82,7 @@ namespace Emby.Server.Implementations.Library
         private readonly IImageProcessor _imageProcessor;
         private readonly NamingOptions _namingOptions;
         private readonly ExtraResolver _extraResolver;
+        private readonly IEventManager _eventManager;
 
         /// <summary>
         /// The _root folder sync lock.
@@ -114,6 +118,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="imageProcessor">The image processor.</param>
         /// <param name="memoryCache">The memory cache.</param>
         /// <param name="namingOptions">The naming options.</param>
+        /// <param name="eventManager">The event manager.</param>
         public LibraryManager(
             IServerApplicationHost appHost,
             ILoggerFactory loggerFactory,
@@ -129,7 +134,8 @@ namespace Emby.Server.Implementations.Library
             IItemRepository itemRepository,
             IImageProcessor imageProcessor,
             IMemoryCache memoryCache,
-            NamingOptions namingOptions)
+            NamingOptions namingOptions,
+            IEventManager eventManager)
         {
             _appHost = appHost;
             _logger = loggerFactory.CreateLogger<LibraryManager>();
@@ -146,6 +152,7 @@ namespace Emby.Server.Implementations.Library
             _imageProcessor = imageProcessor;
             _memoryCache = memoryCache;
             _namingOptions = namingOptions;
+            _eventManager = eventManager;
 
             _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions);
 
@@ -3173,6 +3180,57 @@ namespace Emby.Server.Implementations.Library
                 .ToArray();
 
             CollectionFolder.SaveLibraryOptions(virtualFolderPath, libraryOptions);
+        }
+
+        public async Task<string> GetDownloadFile(BaseItem item, AuthorizationInfo auth)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            if (auth == null)
+            {
+                throw new ArgumentNullException(nameof(auth));
+            }
+
+            var user = auth.User;
+            if (user != null)
+            {
+                if (!item.CanDownload(user))
+                {
+                    throw new ArgumentException("Item does not support downloading");
+                }
+
+                await _eventManager.PublishAsync(new ItemDownloadEventArgs
+                {
+                    Item = item,
+                    AuthInfo = auth
+                }).ConfigureAwait(false);
+            }
+            else
+            {
+                if (!item.CanDownload())
+                {
+                    throw new ArgumentException("Item does not support downloading");
+                }
+            }
+
+            var path = item.Path;
+
+            // Quotes are valid in linux. They'll possibly cause issues here
+            var filename = (Path.GetFileName(path) ?? string.Empty).Replace("\"", string.Empty, StringComparison.Ordinal);
+            if (!string.IsNullOrWhiteSpace(filename))
+            {
+                // Kestrel doesn't support non-ASCII characters in headers
+                if (Regex.IsMatch(filename, @"[^\p{IsBasicLatin}]"))
+                {
+                    // Manually encoding non-ASCII characters, following https://tools.ietf.org/html/rfc5987#section-3.2.2
+                    filename = WebUtility.UrlEncode(filename);
+                }
+            }
+
+            return filename;
         }
     }
 }

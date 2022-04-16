@@ -11,6 +11,7 @@ using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
@@ -570,5 +571,7 @@ namespace MediaBrowser.Controller.Library
         Task RunMetadataSavers(BaseItem item, ItemUpdateType updateReason);
 
         BaseItem GetParentItem(Guid? parentId, Guid? userId);
+
+        Task<string> GetDownloadFile(BaseItem item, AuthorizationInfo auth);
     }
 }

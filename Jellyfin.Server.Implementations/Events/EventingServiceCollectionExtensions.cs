@@ -1,4 +1,4 @@
-﻿using Jellyfin.Data.Events;
+using Jellyfin.Data.Events;
 using Jellyfin.Data.Events.System;
 using Jellyfin.Data.Events.Users;
 using Jellyfin.Server.Implementations.Events.Consumers.Library;
@@ -33,6 +33,7 @@ namespace Jellyfin.Server.Implementations.Events
         {
             // Library consumers
             collection.AddScoped<IEventConsumer<SubtitleDownloadFailureEventArgs>, SubtitleDownloadFailureLogger>();
+            collection.AddScoped<IEventConsumer<ItemDownloadEventArgs>, ItemDownloadLogger>();
 
             // Security consumers
             collection.AddScoped<IEventConsumer<GenericEventArgs<AuthenticationRequest>>, AuthenticationFailedLogger>();

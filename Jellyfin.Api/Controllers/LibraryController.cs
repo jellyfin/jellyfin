@@ -51,8 +51,6 @@ namespace Jellyfin.Api.Controllers
         private readonly IUserManager _userManager;
         private readonly IDtoService _dtoService;
         private readonly IAuthorizationContext _authContext;
-        private readonly IActivityManager _activityManager;
-        private readonly ILocalizationManager _localization;
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly ILogger<LibraryController> _logger;
         private readonly IServerConfigurationManager _serverConfigurationManager;
@@ -65,8 +63,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
         /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
-        /// <param name="activityManager">Instance of the <see cref="IActivityManager"/> interface.</param>
-        /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
         /// <param name="libraryMonitor">Instance of the <see cref="ILibraryMonitor"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{LibraryController}"/> interface.</param>
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
@@ -76,8 +72,6 @@ namespace Jellyfin.Api.Controllers
             IUserManager userManager,
             IDtoService dtoService,
             IAuthorizationContext authContext,
-            IActivityManager activityManager,
-            ILocalizationManager localization,
             ILibraryMonitor libraryMonitor,
             ILogger<LibraryController> logger,
             IServerConfigurationManager serverConfigurationManager)
@@ -87,8 +81,6 @@ namespace Jellyfin.Api.Controllers
             _userManager = userManager;
             _dtoService = dtoService;
             _authContext = authContext;
-            _activityManager = activityManager;
-            _localization = localization;
             _libraryMonitor = libraryMonitor;
             _logger = logger;
             _serverConfigurationManager = serverConfigurationManager;
@@ -623,45 +615,10 @@ namespace Jellyfin.Api.Controllers
             }
 
             var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
-
-            var user = auth.User;
-
-            if (user != null)
-            {
-                if (!item.CanDownload(user))
-                {
-                    throw new ArgumentException("Item does not support downloading");
-                }
-            }
-            else
-            {
-                if (!item.CanDownload())
-                {
-                    throw new ArgumentException("Item does not support downloading");
-                }
-            }
-
-            if (user != null)
-            {
-                await LogDownloadAsync(item, user, auth).ConfigureAwait(false);
-            }
-
-            var path = item.Path;
-
-            // Quotes are valid in linux. They'll possibly cause issues here
-            var filename = (Path.GetFileName(path) ?? string.Empty).Replace("\"", string.Empty, StringComparison.Ordinal);
-            if (!string.IsNullOrWhiteSpace(filename))
-            {
-                // Kestrel doesn't support non-ASCII characters in headers
-                if (Regex.IsMatch(filename, @"[^\p{IsBasicLatin}]"))
-                {
-                    // Manually encoding non-ASCII characters, following https://tools.ietf.org/html/rfc5987#section-3.2.2
-                    filename = WebUtility.UrlEncode(filename);
-                }
-            }
+            var filename = await _libraryManager.GetDownloadFile(item, auth).ConfigureAwait(false);
 
             // TODO determine non-ASCII validity.
-            return PhysicalFile(path, MimeTypes.GetMimeType(path), filename, true);
+            return PhysicalFile(item.Path, MimeTypes.GetMimeType(item.Path), filename, true);
         }
 
         /// <summary>
@@ -890,24 +847,6 @@ namespace Jellyfin.Api.Controllers
                 ? _libraryManager.GetUserRootFolder().GetChildren(user, true)
                     .FirstOrDefault(i => i.PhysicalLocations.Contains(item.Path))
                 : item;
-        }
-
-        private async Task LogDownloadAsync(BaseItem item, User user, AuthorizationInfo auth)
-        {
-            try
-            {
-                await _activityManager.CreateAsync(new ActivityLog(
-                    string.Format(CultureInfo.InvariantCulture, _localization.GetLocalizedString("UserDownloadingItemWithValues"), user.Username, item.Name),
-                    "UserDownloadingContent",
-                    auth.UserId)
-                {
-                    ShortOverview = string.Format(CultureInfo.InvariantCulture, _localization.GetLocalizedString("AppDeviceValues"), auth.Client, auth.Device),
-                }).ConfigureAwait(false);
-            }
-            catch
-            {
-                // Logged at lower levels
-            }
         }
 
         private static string[] GetRepresentativeItemTypes(string? contentType)

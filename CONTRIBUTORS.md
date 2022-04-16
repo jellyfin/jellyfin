@@ -114,7 +114,7 @@
  - [Smith00101010](https://github.com/Smith00101010)
  - [sorinyo2004](https://github.com/sorinyo2004)
  - [sparky8251](https://github.com/sparky8251)
- - [spookbits](https://github.com/spookbits)
+ - [spooksbit](https://github.com/spooksbit)
  - [ssenart](https://github.com/ssenart)
  - [stanionascu](https://github.com/stanionascu)
  - [stevehayles](https://github.com/stevehayles)
