@@ -3,6 +3,7 @@
 using System;
 using System.Globalization;
 using MediaBrowser.Controller.LiveTv;
+using System.Text;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
@@ -48,12 +49,19 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 if (!string.IsNullOrWhiteSpace(info.EpisodeTitle))
                 {
+                    var tmpName = name;
                     if (addHyphen)
                     {
-                        name += " -";
+                        tmpName += " -";
                     }
-
-                    name += " " + info.EpisodeTitle;
+                    // Calculate the length of the resulting filename
+                    var recordingNameLength = Encoding.UTF8.GetByteCount(tmpName) + Encoding.UTF8.GetByteCount(info.EpisodeTitle);
+                    //  Since the filename will be used with file ext. (.mp4, .ts, etc)
+                    if (recordingNameLength < 250)
+                    {
+                        tmpName += " " + info.EpisodeTitle;
+                        name = tmpName;
+                    }
                 }
             }
             else if (info.IsMovie && info.ProductionYear != null)
