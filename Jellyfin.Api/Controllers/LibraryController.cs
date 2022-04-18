@@ -336,8 +336,16 @@ namespace Jellyfin.Api.Controllers
             var item = _libraryManager.GetItemById(itemId);
             var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
             var user = auth.User;
+            var authToken = auth.IsAuthenticated;
 
-            if (!item.CanDelete(user))
+            if (user != null)
+            {
+                if (!item.CanDelete(user))
+                {
+                    return Unauthorized("Unauthorized access");
+                }
+            }
+            else if (!authToken)
             {
                 return Unauthorized("Unauthorized access");
             }
@@ -373,16 +381,25 @@ namespace Jellyfin.Api.Controllers
                 var item = _libraryManager.GetItemById(i);
                 var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
                 var user = auth.User;
+                var authToken = auth.IsAuthenticated;
 
-                if (!item.CanDelete(user))
+                if (user != null)
                 {
-                    if (ids.Length > 1)
+                    if (!item.CanDelete(user))
                     {
-                        return Unauthorized("Unauthorized access");
+                        if (ids.Length > 1)
+                        {
+                            return Unauthorized("Unauthorized access");
+                        }
                     }
 
                     continue;
                 }
+                else if (!authToken)
+                {
+                    return Unauthorized("Unauthorized access");
+                }
+
 
                 _libraryManager.DeleteItem(
                     item,
