@@ -79,7 +79,12 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 return UnzipIfNeeded(info.Path, cacheFile);
             }
 
-            File.Delete(cacheFile);
+            // Must check if file exists as parent directory may not exist.
+            if (File.Exists(cacheFile))
+            {
+                File.Delete(cacheFile);
+            }
+
             _logger.LogInformation("Downloading xmltv listings from {Path}", info.Path);
 
             Directory.CreateDirectory(Path.GetDirectoryName(cacheFile));
