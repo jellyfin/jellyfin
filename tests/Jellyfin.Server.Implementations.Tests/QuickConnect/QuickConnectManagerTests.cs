@@ -50,7 +50,10 @@ namespace Jellyfin.Server.Implementations.Tests.QuickConnect
 
         [Fact]
         public void IsEnabled_QuickConnectUnavailable_False()
-            => Assert.False(_quickConnectManager.IsEnabled);
+        {
+            _config.QuickConnectAvailable = false;
+            Assert.False(_quickConnectManager.IsEnabled);
+        }
 
         [Theory]
         [InlineData("", "DeviceId", "Client", "1.0.0")]
@@ -69,19 +72,31 @@ namespace Jellyfin.Server.Implementations.Tests.QuickConnect
 
         [Fact]
         public void TryConnect_QuickConnectUnavailable_ThrowsAuthenticationException()
-            => Assert.Throws<AuthenticationException>(() => _quickConnectManager.TryConnect(_quickConnectAuthInfo));
+        {
+            _config.QuickConnectAvailable = false;
+            Assert.Throws<AuthenticationException>(() => _quickConnectManager.TryConnect(_quickConnectAuthInfo));
+        }
 
         [Fact]
         public void CheckRequestStatus_QuickConnectUnavailable_ThrowsAuthenticationException()
-            => Assert.Throws<AuthenticationException>(() => _quickConnectManager.CheckRequestStatus(string.Empty));
+        {
+            _config.QuickConnectAvailable = false;
+            Assert.Throws<AuthenticationException>(() => _quickConnectManager.CheckRequestStatus(string.Empty));
+        }
 
         [Fact]
         public void AuthorizeRequest_QuickConnectUnavailable_ThrowsAuthenticationException()
-            => Assert.ThrowsAsync<AuthenticationException>(() => _quickConnectManager.AuthorizeRequest(Guid.Empty, string.Empty));
+        {
+            _config.QuickConnectAvailable = false;
+            Assert.ThrowsAsync<AuthenticationException>(() => _quickConnectManager.AuthorizeRequest(Guid.Empty, string.Empty));
+        }
 
         [Fact]
         public void GetAuthorizedRequest_QuickConnectUnavailable_ThrowsAuthenticationException()
-            => Assert.Throws<AuthenticationException>(() => _quickConnectManager.GetAuthorizedRequest(string.Empty));
+        {
+            _config.QuickConnectAvailable = false;
+            Assert.Throws<AuthenticationException>(() => _quickConnectManager.GetAuthorizedRequest(string.Empty));
+        }
 
         [Fact]
         public void IsEnabled_QuickConnectAvailable_True()
