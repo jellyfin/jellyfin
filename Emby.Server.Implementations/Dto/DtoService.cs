@@ -1094,7 +1094,7 @@ namespace Emby.Server.Implementations.Dto
             {
                 if (item is IHasTrailers hasTrailers)
                 {
-                    dto.LocalTrailerCount = (item as IHasTrailers).LocalTrailers.Count;
+                    dto.LocalTrailerCount = hasTrailers.LocalTrailers.Count;
                 }
                 else
                 {
