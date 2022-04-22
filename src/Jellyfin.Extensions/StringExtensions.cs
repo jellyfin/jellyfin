@@ -36,8 +36,7 @@ namespace Jellyfin.Extensions
                 }
             }
 
-            string normalizedText = withoutDiactritics.ToString().Normalize(NormalizationForm.FormC);
-            return normalizedText;
+            return withoutDiactritics.ToString().Normalize(NormalizationForm.FormC);
         }
 
         /// <summary>
