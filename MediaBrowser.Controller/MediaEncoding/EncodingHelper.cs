@@ -1062,10 +1062,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
                 else if (string.Equals(state.ActualOutputVideoCodec, "h264", StringComparison.OrdinalIgnoreCase))
                 {
-                    // Clients may direct play higher than level 41, but there's no reason to transcode higher.
-                    if (requestLevel >= 41)
+                    // Transcode to level 5.1 and lower for maximum compatibility.
+                    // h264 4k 30fps requires at least level 5.1 otherwise it will break on safari fmp4.
+                    // https://en.wikipedia.org/wiki/Advanced_Video_Coding#Levels
+                    if (requestLevel >= 51)
                     {
-                        return "41";
+                        return "51";
                     }
                 }
             }
