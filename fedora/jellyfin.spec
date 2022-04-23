@@ -1,7 +1,7 @@
 %global         debug_package %{nil}
 # Set the dotnet runtime
 %if 0%{?fedora}
-%global         dotnet_runtime  fedora-x64
+%global         dotnet_runtime  fedora.%{fedora}-x64
 %else
 %global         dotnet_runtime  centos-x64
 %endif
@@ -25,13 +25,10 @@ Source17:       jellyfin-server-lowports.conf
 %{?systemd_requires}
 BuildRequires:  systemd
 BuildRequires:  libcurl-devel, fontconfig-devel, freetype-devel, openssl-devel, glibc-devel, libicu-devel
-# Requirements not packaged in main repos
-# COPR @dotnet-sig/dotnet or
+# Requirements not packaged in RHEL 7 main repos, added via Makefile
 # https://packages.microsoft.com/rhel/7/prod/
 BuildRequires:  dotnet-runtime-6.0, dotnet-sdk-6.0
 Requires: %{name}-server = %{version}-%{release}, %{name}-web = %{version}-%{release}
-# Disable Automatic Dependency Processing
-AutoReqProv:    no
 
 %description
 Jellyfin is a free software media system that puts you in control of managing and streaming your media.
@@ -60,14 +57,17 @@ the Jellyfin server to bind to ports 80 and/or 443 for example.
 %autosetup -n jellyfin-server-%{version} -b 0
 
 %build
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
+export PATH=$PATH:/usr/local/bin
+# cannot use --output due to https://github.com/dotnet/sdk/issues/22220
+dotnet publish --configuration Release --self-contained --runtime %{dotnet_runtime} \
+    "-p:DebugSymbols=false;DebugType=none" Jellyfin.Server
+
 
 %install
-export DOTNET_CLI_TELEMETRY_OPTOUT=1
-export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
-export PATH=$PATH:/usr/local/bin
-dotnet publish --configuration Release --output='%{buildroot}%{_libdir}/jellyfin' --self-contained --runtime %{dotnet_runtime} \
-    "-p:DebugSymbols=false;DebugType=none" Jellyfin.Server
-%{__install} -D -m 0644 LICENSE %{buildroot}%{_datadir}/licenses/jellyfin/LICENSE
+%{__mkdir} -p %{buildroot}%{_libdir}/%{name} %{buildroot}%{_bindir}
+%{__cp} -r Jellyfin.Server/bin/Release/net6.0/%{dotnet_runtime}/publish/* %{buildroot}%{_libdir}/%{name}
+
 %{__install} -D -m 0644 %{SOURCE15} %{buildroot}%{_sysconfdir}/systemd/system/jellyfin.service.d/override.conf
 %{__install} -D -m 0644 %{SOURCE17} %{buildroot}%{_unitdir}/jellyfin.service.d/jellyfin-server-lowports.conf
 %{__install} -D -m 0644 Jellyfin.Server/Resources/Configuration/logging.json %{buildroot}%{_sysconfdir}/jellyfin/logging.json
@@ -106,7 +106,7 @@ EOF
 %attr(750,jellyfin,jellyfin) %dir %{_sharedstatedir}/jellyfin
 %attr(-,jellyfin,jellyfin) %dir %{_var}/log/jellyfin
 %attr(750,jellyfin,jellyfin) %dir %{_var}/cache/jellyfin
-%{_datadir}/licenses/jellyfin/LICENSE
+%license LICENSE
 
 %files server-lowports
 %{_unitdir}/jellyfin.service.d/jellyfin-server-lowports.conf
