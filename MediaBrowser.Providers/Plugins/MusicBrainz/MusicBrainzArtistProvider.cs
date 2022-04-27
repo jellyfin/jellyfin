@@ -29,6 +29,12 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
     /// </summary>
     public MusicBrainzArtistProvider()
     {
+        MusicBrainz.Plugin.Instance!.ConfigurationChanged += (_, _) =>
+            {
+                Query.DefaultServer = MusicBrainz.Plugin.Instance.Configuration.Server;
+                Query.DelayBetweenRequests = MusicBrainz.Plugin.Instance.Configuration.RateLimit;
+            };
+
         _musicBrainzQuery = new Query();
     }
 
@@ -42,7 +48,7 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
 
         if (!string.IsNullOrWhiteSpace(artistId))
         {
-            var artistResult = await _musicBrainzQuery.LookupArtistAsync(new Guid(artistId), Include.Artists, null, null, cancellationToken).ConfigureAwait(false);
+            var artistResult = await _musicBrainzQuery.LookupArtistAsync(new Guid(artistId), Include.Aliases, null, null, cancellationToken).ConfigureAwait(false);
             return GetResultFromResponse(artistResult).SingleItemAsEnumerable();
         }
 
@@ -77,19 +83,6 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
         foreach (var result in releaseSearchResults)
         {
             yield return GetResultFromResponse(result.Item);
-        }
-    }
-
-    private IEnumerable<RemoteSearchResult> GetResultsFromResponse(IEnumerable<IArtist>? releaseSearchResults)
-    {
-        if (releaseSearchResults is null)
-        {
-            yield break;
-        }
-
-        foreach (var result in releaseSearchResults)
-        {
-            yield return GetResultFromResponse(result);
         }
     }
 
