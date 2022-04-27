@@ -33,5 +33,6 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
         }
 
         public bool ReplaceArtistName { get; set; }
+        public bool GetMissingTrackInfo { get; set; }
     }
 }

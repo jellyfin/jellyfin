@@ -226,6 +226,31 @@ namespace MediaBrowser.Providers.Music
                 result.HasMetadata = true;
             }
 
+
+            {
+                var artistMusicBrainzId = info.GetMusicBrainzArtistId();
+
+                var releaseResult = await GetReleaseResult(artistMusicBrainzId, info.GetAlbumArtist(), info.Name, cancellationToken).ConfigureAwait(false);
+
+                if (releaseResult != null)
+                {
+                    if (!string.IsNullOrWhiteSpace(releaseResult.ReleaseId))
+                    {
+                        releaseId = releaseResult.ReleaseId;
+                        result.HasMetadata = true;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(releaseResult.ReleaseGroupId))
+                    {
+                        releaseGroupId = releaseResult.ReleaseGroupId;
+                        result.HasMetadata = true;
+                    }
+
+                    result.Item.ProductionYear = releaseResult.Year;
+                    result.Item.Overview = releaseResult.Overview;
+                }
+            }
+
             if (result.HasMetadata)
             {
                 if (!string.IsNullOrEmpty(releaseId))
@@ -236,6 +261,85 @@ namespace MediaBrowser.Providers.Music
                 if (!string.IsNullOrEmpty(releaseGroupId))
                 {
                     result.Item.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, releaseGroupId);
+                }
+            }
+
+
+            if (Plugin.Instance.Configuration.GetMissingTrackInfo)
+            {
+                if (result.Item.Children.Any(s => s is Audio && s.IndexNumber == null))
+                {
+                    var rsp = await (await GetMusicBrainzResponse($"/ws/2/release/{releaseId}?inc=recordings&fmt=json", cancellationToken).ConfigureAwait(false)).Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                    var rspobj = Newtonsoft.Json.JsonConvert.DeserializeAnonymousType(
+                        rsp,
+                        new
+                        {
+                            media = new[]
+                            {
+                                new
+                                {
+                                    tracks = new[]
+                                    {
+                                        new
+                                        {
+                                            number = string.Empty,
+                                            position = 0,
+                                            recording= new
+                                            {
+                                                disambiguation=string.Empty,
+                                                length=0,
+                                                id=string.Empty,
+                                                video=false,
+                                                title=string.Empty
+                                            },
+                                            id=string.Empty,
+                                            title=string.Empty,
+                                            length=0
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    var tracks = rspobj.media.SelectMany(m => m.tracks);
+
+
+                    foreach (var c in result.Item.Children.Where(x =>
+                        x is Audio &&
+                        result.Item.Children.Any(p => Guid.Equals(p.Id, x.ParentId)) &&
+                        string.Equals(x.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) &&
+                        x.RunTimeTicks == null))
+                    {
+                        var newlength = tracks.Where(t => string.Equals(t.title, c.Name, StringComparison.OrdinalIgnoreCase)).FirstOrDefault()?.length;
+                        if (newlength != null)
+                        {
+                            c.RunTimeTicks = newlength;
+                            var parent = result.Item.Children.Where(p => Guid.Equals(p.Id, c.ParentId)).FirstOrDefault() as MusicAlbum;
+                            if (parent != null)
+                            {
+                                parent.AddChild(c);
+                                result.Item.AddChild(parent);
+                            }
+                        }
+                    }
+
+                    foreach (var c in result.Item.Children.Where(x =>
+                        x is Audio &&
+                        result.Item.Children.Any(p => Guid.Equals(p.Id, x.ParentId)) &&
+                        string.Equals(x.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) &&
+                        x.IndexNumber == null))
+                    {
+                        var newindex = tracks.Where(t => string.Equals(t.title, c.Name, StringComparison.OrdinalIgnoreCase)).FirstOrDefault()?.position;
+                        if (newindex != null)
+                        {
+                            c.IndexNumber = newindex;
+                            var parent = result.Item.Children.Where(p => Guid.Equals(p.Id, c.ParentId)).FirstOrDefault() as MusicAlbum;
+                            if (parent != null)
+                            {
+                                parent.AddChild(c);
+                                result.Item.AddChild(parent);
+                            }
+                        }
+                    }
                 }
             }
 

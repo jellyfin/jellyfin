@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
     <title>MusicBrainz</title>
@@ -19,6 +19,10 @@
                     <label class="checkboxContainer">
                         <input is="emby-checkbox" type="checkbox" id="replaceArtistName" />
                         <span>When an artist is found during a metadata search, replace the artist name with the value on the server.</span>
+                    </label>
+                    <label class="checkboxContainer">
+                        <input is="emby-checkbox" type="checkbox" id="getMissingTrackInfo" />
+                        <span>When track data is not found, retrieve it from MusicBrainz.</span>
                     </label>
                     <br />
                     <div>
@@ -64,6 +68,7 @@
                         config.Server = document.querySelector('#server').value;
                         config.RateLimit = document.querySelector('#rateLimit').value;
                         config.ReplaceArtistName = document.querySelector('#replaceArtistName').checked;
+                        config.GetMissingTrackInfo = document.querySelector('#getMissingTrackInfo').checked;
 
                         ApiClient.updatePluginConfiguration(MusicBrainzPluginConfig.uniquePluginId, config).then(Dashboard.processPluginConfigurationUpdateResult);
                     });
