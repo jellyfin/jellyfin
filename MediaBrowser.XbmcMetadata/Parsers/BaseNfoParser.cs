@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -23,6 +21,10 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
 {
+    /// <summary>
+    /// The BaseNfoParser class.
+    /// </summary>
+    /// <typeparam name="T">The type.</typeparam>
     public class BaseNfoParser<T>
         where T : BaseItem
     {
@@ -63,16 +65,22 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// </summary>
         protected ILogger Logger { get; }
 
+        /// <summary>
+        /// Gets the provider manager.
+        /// </summary>
         protected IProviderManager ProviderManager { get; }
 
+        /// <summary>
+        /// Gets a value indicating whether URLs after a closing XML tag are supporrted.
+        /// </summary>
         protected virtual bool SupportsUrlAfterClosingXmlTag => false;
 
         /// <summary>
         /// Fetches metadata for an item from one xml file.
         /// </summary>
-        /// <param name="item">The item.</param>
+        /// <param name="item">The <see cref="MetadataResult{T}"/>.</param>
         /// <param name="metadataFile">The metadata file.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         /// <exception cref="ArgumentNullException"><c>item</c> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException"><c>metadataFile</c> is <c>null</c> or empty.</exception>
         public void Fetch(MetadataResult<T> item, string metadataFile, CancellationToken cancellationToken)
@@ -111,10 +119,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <summary>
         /// Fetches the specified item.
         /// </summary>
-        /// <param name="item">The item.</param>
+        /// <param name="item">The <see cref="MetadataResult{T}"/>.</param>
         /// <param name="metadataFile">The metadata file.</param>
-        /// <param name="settings">The settings.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="settings">The <see cref="XmlReaderSettings"/>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         protected virtual void Fetch(MetadataResult<T> item, string metadataFile, XmlReaderSettings settings, CancellationToken cancellationToken)
         {
             if (!SupportsUrlAfterClosingXmlTag)
@@ -216,6 +224,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             }
         }
 
+        /// <summary>
+        /// Parses a XML tag to a provider id.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="xml">The xml tag.</param>
         protected void ParseProviderLinks(T item, ReadOnlySpan<char> xml)
         {
             if (ProviderIdParsers.TryFindImdbId(xml, out var imdbId))
@@ -245,6 +258,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             }
         }
 
+        /// <summary>
+        /// Fetches metadata from an XML node.
+        /// </summary>
+        /// <param name="reader">The <see cref="XmlReader"/>.</param>
+        /// <param name="itemResult">The <see cref="MetadataResult{T}"/>.</param>
         protected virtual void FetchDataFromXmlNode(XmlReader reader, MetadataResult<T> itemResult)
         {
             var item = itemResult.Item;
@@ -1100,16 +1118,13 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     switch (reader.Name)
                     {
                         case "language":
+                            _ = reader.ReadElementContentAsString();
+                            if (item is Video video)
                             {
-                                _ = reader.ReadElementContentAsString();
-
-                                if (item is Video video)
-                                {
-                                    video.HasSubtitles = true;
-                                }
-
-                                break;
+                                video.HasSubtitles = true;
                             }
+
+                            break;
 
                         default:
                             reader.Skip();
@@ -1210,9 +1225,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         }
 
         /// <summary>
-        /// Gets the persons from XML node.
+        /// Gets the persons from a XML node.
         /// </summary>
-        /// <param name="reader">The reader.</param>
+        /// <param name="reader">The <see cref="XmlReader"/>.</param>
         /// <returns>IEnumerable{PersonInfo}.</returns>
         private PersonInfo GetPersonFromXmlNode(XmlReader reader)
         {
@@ -1348,10 +1363,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         }
 
         /// <summary>
-        /// Parses the ImageType from the nfo aspect property.
+        /// Parses the <see cref="ImageType"/> from the NFO aspect property.
         /// </summary>
-        /// <param name="aspect">The nfo aspect property.</param>
-        /// <returns>The image type.</returns>
+        /// <param name="aspect">The NFO aspect property.</param>
+        /// <returns>The <see cref="ImageType"/>.</returns>
         private static ImageType GetImageType(string aspect)
         {
             return aspect switch

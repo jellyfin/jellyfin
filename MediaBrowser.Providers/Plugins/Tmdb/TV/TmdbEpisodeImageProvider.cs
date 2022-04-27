@@ -16,7 +16,7 @@ using MediaBrowser.Model.Providers;
 namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 {
     /// <summary>
-    /// TV episode iage provider powered by TheMovieDb.
+    /// TV episode image provider powered by TheMovieDb.
     /// </summary>
     public class TmdbEpisodeImageProvider : IRemoteImageProvider, IHasOrder
     {

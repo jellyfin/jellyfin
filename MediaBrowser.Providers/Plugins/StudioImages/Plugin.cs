@@ -50,10 +50,7 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
         /// <inheritdoc/>
         public override string ConfigurationFileName => "Jellyfin.Plugin.StudioImages.xml";
 
-        /// <summary>
-        /// Return the plugin configuration page.
-        /// </summary>
-        /// <returns>PluginPageInfo.</returns>
+        /// <inheritdoc/>
         public IEnumerable<PluginPageInfo> GetPages()
         {
             yield return new PluginPageInfo

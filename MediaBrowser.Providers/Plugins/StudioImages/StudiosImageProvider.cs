@@ -122,13 +122,13 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
         }
 
         /// <summary>
-        /// Ensures the list.
+        /// Ensures the existence of a file listing.
         /// </summary>
         /// <param name="url">The URL.</param>
         /// <param name="file">The file.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
+        /// <returns>A Task to ensure existence of a file listing.</returns>
         public async Task<string> EnsureList(string url, string file, IFileSystem fileSystem, CancellationToken cancellationToken)
         {
             var fileInfo = fileSystem.GetFileInfo(file);
@@ -151,7 +151,7 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
         /// </summary>
         /// <param name="item">The <see cref="BaseItem"/>.</param>
         /// <param name="images">The enumerable of image strings.</param>
-        /// <returns>String.</returns>
+        /// <returns>The matching image string.</returns>
         public string FindMatch(BaseItem item, IEnumerable<string> images)
         {
             var name = GetComparableName(item.Name);
@@ -170,10 +170,10 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
         }
 
         /// <summary>
-        /// Get available images for a file.
+        /// Get available image strings for a file.
         /// </summary>
         /// <param name="file">The file.</param>
-        /// <returns>IEnumerable{string}.</returns>
+        /// <returns>All images strings of a file.</returns>
         public IEnumerable<string> GetAvailableImages(string file)
         {
             using var fileStream = File.OpenRead(file);

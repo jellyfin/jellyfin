@@ -25,7 +25,7 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="info">The LookupInfoType to get metadata for.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
-        /// <returns>Task{MetadataResult{TItemType}}.</returns>
+        /// <returns>A task returning a MetadataResult for the specific LookupInfoType.</returns>
         Task<MetadataResult<TItemType>> GetMetadata(TLookupInfoType info, CancellationToken cancellationToken);
     }
 
@@ -40,7 +40,7 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="searchInfo">The LookupInfoType to search for.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
-        /// <returns>Task{IEnumerable{RemoteSearchResult}}.</returns>
+        /// <returns>A task returning RemoteSearchResults for the searchInfo.</returns>
         Task<IEnumerable<RemoteSearchResult>> GetSearchResults(TLookupInfoType searchInfo, CancellationToken cancellationToken);
     }
 }

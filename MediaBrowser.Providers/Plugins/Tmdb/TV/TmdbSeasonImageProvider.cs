@@ -27,21 +27,16 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         /// </summary>
         /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
         /// <param name="tmdbClientManager">The <see cref="TmdbClientManager"/>.</param>
-
         public TmdbSeasonImageProvider(IHttpClientFactory httpClientFactory, TmdbClientManager tmdbClientManager)
         {
             _httpClientFactory = httpClientFactory;
             _tmdbClientManager = tmdbClientManager;
         }
 
-        /// <summary>
-        /// The order.
-        /// </summary>
+        /// <inheritdoc/>
         public int Order => 1;
 
-        /// <summary>
-        /// The name.
-        /// </summary>
+        /// <inheritdoc/>
         public string Name => TmdbUtils.ProviderName;
 
         /// <inheritdoc />
