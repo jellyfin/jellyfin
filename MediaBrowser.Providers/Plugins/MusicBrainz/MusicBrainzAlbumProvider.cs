@@ -226,31 +226,6 @@ namespace MediaBrowser.Providers.Music
                 result.HasMetadata = true;
             }
 
-
-            {
-                var artistMusicBrainzId = info.GetMusicBrainzArtistId();
-
-                var releaseResult = await GetReleaseResult(artistMusicBrainzId, info.GetAlbumArtist(), info.Name, cancellationToken).ConfigureAwait(false);
-
-                if (releaseResult != null)
-                {
-                    if (!string.IsNullOrWhiteSpace(releaseResult.ReleaseId))
-                    {
-                        releaseId = releaseResult.ReleaseId;
-                        result.HasMetadata = true;
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(releaseResult.ReleaseGroupId))
-                    {
-                        releaseGroupId = releaseResult.ReleaseGroupId;
-                        result.HasMetadata = true;
-                    }
-
-                    result.Item.ProductionYear = releaseResult.Year;
-                    result.Item.Overview = releaseResult.Overview;
-                }
-            }
-
             if (result.HasMetadata)
             {
                 if (!string.IsNullOrEmpty(releaseId))
@@ -263,7 +238,6 @@ namespace MediaBrowser.Providers.Music
                     result.Item.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, releaseGroupId);
                 }
             }
-
 
             if (Plugin.Instance.Configuration.GetMissingTrackInfo)
             {
