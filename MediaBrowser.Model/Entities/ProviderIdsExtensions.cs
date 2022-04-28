@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace MediaBrowser.Model.Entities
 {
@@ -9,6 +10,16 @@ namespace MediaBrowser.Model.Entities
     /// </summary>
     public static class ProviderIdsExtensions
     {
+        /// <summary>
+        /// Case insensitive dictionary of <see cref="MetadataProvider"/> string representation.
+        /// </summary>
+        private static readonly Dictionary<string, string> _metadataProviderEnumDictionary =
+            Enum.GetValues<MetadataProvider>()
+                .ToDictionary(
+                    enumValue => enumValue.ToString(),
+                    enumValue => enumValue.ToString(),
+                    StringComparer.OrdinalIgnoreCase);
+
         /// <summary>
         /// Checks if this instance has an id for the given provider.
         /// </summary>
@@ -108,7 +119,7 @@ namespace MediaBrowser.Model.Entities
         /// <param name="instance">The instance.</param>
         /// <param name="name">The name.</param>
         /// <param name="value">The value.</param>
-        public static void SetProviderId(this IHasProviderIds instance, string name, string value)
+        public static void SetProviderId(this IHasProviderIds instance, string name, string? value)
         {
             if (instance == null)
             {
@@ -125,7 +136,15 @@ namespace MediaBrowser.Model.Entities
                 // Ensure it exists
                 instance.ProviderIds ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-                instance.ProviderIds[name] = value;
+                // Match on internal MetadataProvider enum string values before adding arbitrary providers
+                if (_metadataProviderEnumDictionary.TryGetValue(name, out var enumValue))
+                {
+                    instance.ProviderIds[enumValue] = value;
+                }
+                else
+                {
+                    instance.ProviderIds[name] = value;
+                }
             }
         }
 
