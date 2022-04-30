@@ -54,12 +54,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     {
                         tmpName += " -";
                     }
-                    // Calculate the length of the resulting filename
-                    var recordingNameLength = Encoding.UTF8.GetByteCount(tmpName) + Encoding.UTF8.GetByteCount(info.EpisodeTitle);
+
+                    tmpName += " " + info.EpisodeTitle;
                     //  Since the filename will be used with file ext. (.mp4, .ts, etc)
-                    if (recordingNameLength < 250)
+                    if (Encoding.UTF8.GetByteCount(tmpName) < 250)
                     {
-                        tmpName += " " + info.EpisodeTitle;
                         name = tmpName;
                     }
                 }
