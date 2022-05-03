@@ -45,8 +45,8 @@
         },
         {
             "Container": "wmv",
-            "AudioCodec": "",
-            "VideoCodec": "",
+            "AudioCodec": "wma",
+            "VideoCodec": "wmv,vc1",
             "Type": "Video",
             "$type": "DirectPlayProfile"
         },
@@ -59,8 +59,8 @@
         },
         {
             "Container": "asf",
-            "AudioCodec": "",
-            "VideoCodec": "",
+            "AudioCodec": "wma",
+            "VideoCodec": "wmv,vc1",
             "Type": "Video",
             "$type": "DirectPlayProfile"
         },
