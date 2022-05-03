@@ -120,7 +120,7 @@
     "Forced": "Tvingad",
     "Default": "Standard",
     "TaskOptimizeDatabase": "Optimera Databasen",
-    "TaskOptimizeDatabaseDescription": "Komprimerar databasen och trunkerar ledigt utrymme. Prestandan kan förbättras genom att köra denna task efter att du har skannat biblioteket eller gjort andra förändringar som indikerar att databasen har modifierats.",
+    "TaskOptimizeDatabaseDescription": "Komprimerar databasen och trunkerar ledigt utrymme. Prestandan kan förbättras genom att köra denna aktivitet efter att du har skannat biblioteket eller gjort andra förändringar som indikerar att databasen har modifierats.",
     "TaskKeyframeExtractorDescription": "Exporterar keyframes från videofiler för att skapa mer exakta HLS-spellistor. Denna rutin kan ta lång tid.",
     "TaskKeyframeExtractor": "Keyframe-Extraktor",
     "External": "Extern"
