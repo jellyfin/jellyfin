@@ -151,7 +151,11 @@ namespace Emby.Server.Implementations.Library
         {
             var mediaSources = GetStaticMediaSources(item, enablePathSubstitution, user);
 
-            if (allowMediaProbe && mediaSources[0].Type != MediaSourceType.Placeholder && !mediaSources[0].MediaStreams.Any(i => i.Type == MediaStreamType.Audio || i.Type == MediaStreamType.Video))
+            // If file is strm or main media stream is missing, force a metadata refresh with remote probing
+            if (allowMediaProbe && mediaSources[0].Type != MediaSourceType.Placeholder
+                && (item.Path.EndsWith(".strm", StringComparison.OrdinalIgnoreCase)
+                    || (item.MediaType == MediaType.Video && !mediaSources[0].MediaStreams.Any(i => i.Type == MediaStreamType.Video))
+                    || (item.MediaType == MediaType.Audio && !mediaSources[0].MediaStreams.Any(i => i.Type == MediaStreamType.Audio))))
             {
                 await item.RefreshMetadata(
                     new MetadataRefreshOptions(_directoryService)

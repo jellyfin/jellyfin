@@ -195,7 +195,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             MediaStream subtitleStream,
             CancellationToken cancellationToken)
         {
-            if (!subtitleStream.IsExternal)
+            if (!subtitleStream.IsExternal || subtitleStream.Path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
             {
                 string outputFormat;
                 string outputCodec;
@@ -224,7 +224,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 // Extract
                 var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + outputFormat);
 
-                await ExtractTextSubtitle(mediaSource, subtitleStream.Index, outputCodec, outputPath, cancellationToken)
+                await ExtractTextSubtitle(mediaSource, subtitleStream, outputCodec, outputPath, cancellationToken)
                         .ConfigureAwait(false);
 
                 return new SubtitleInfo(outputPath, MediaProtocol.File, outputFormat, false);
@@ -494,7 +494,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// Extracts the text subtitle.
         /// </summary>
         /// <param name="mediaSource">The mediaSource.</param>
-        /// <param name="subtitleStreamIndex">Index of the subtitle stream.</param>
+        /// <param name="subtitleStream">The subtitle stream.</param>
         /// <param name="outputCodec">The output codec.</param>
         /// <param name="outputPath">The output path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -502,7 +502,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <exception cref="ArgumentException">Must use inputPath list overload.</exception>
         private async Task ExtractTextSubtitle(
             MediaSourceInfo mediaSource,
-            int subtitleStreamIndex,
+            MediaStream subtitleStream,
             string outputCodec,
             string outputPath,
             CancellationToken cancellationToken)
@@ -511,12 +511,21 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
+            var subtitleStreamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
+
             try
             {
                 if (!File.Exists(outputPath))
                 {
+                    var args = _mediaEncoder.GetInputArgument(mediaSource.Path, mediaSource);
+
+                    if (subtitleStream.IsExternal)
+                    {
+                        args = _mediaEncoder.GetExternalSubtitleInputArgument(subtitleStream.Path);
+                    }
+
                     await ExtractTextSubtitleInternal(
-                        _mediaEncoder.GetInputArgument(mediaSource.Path, mediaSource),
+                        args,
                         subtitleStreamIndex,
                         outputCodec,
                         outputPath,

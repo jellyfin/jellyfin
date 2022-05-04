@@ -2215,13 +2215,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return state.IsInputVideo ? "-sn" : string.Empty;
             }
 
-            // We have media info, but we don't know the stream indexes
+            // We have media info, but we don't know the stream index
             if (state.VideoStream != null && state.VideoStream.Index == -1)
             {
                 return "-sn";
             }
 
-            // We have media info, but we don't know the stream indexes
+            // We have media info, but we don't know the stream index
             if (state.AudioStream != null && state.AudioStream.Index == -1)
             {
                 return state.IsInputVideo ? "-sn" : string.Empty;
@@ -2231,10 +2231,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (state.VideoStream != null)
             {
+                int videoStreamIndex = FindIndex(state.MediaSource.MediaStreams, state.VideoStream);
+
                 args += string.Format(
                     CultureInfo.InvariantCulture,
                     "-map 0:{0}",
-                    state.VideoStream.Index);
+                    videoStreamIndex);
             }
             else
             {
@@ -2244,24 +2246,24 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (state.AudioStream != null)
             {
+                int audioStreamIndex = FindIndex(state.MediaSource.MediaStreams, state.AudioStream);
                 if (state.AudioStream.IsExternal)
                 {
                     bool hasExternalGraphicsSubs = state.SubtitleStream != null && state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream;
                     int externalAudioMapIndex = hasExternalGraphicsSubs ? 2 : 1;
-                    int externalAudioStream = state.MediaSource.MediaStreams.Where(i => i.Path == state.AudioStream.Path).ToList().IndexOf(state.AudioStream);
 
                     args += string.Format(
                         CultureInfo.InvariantCulture,
                         " -map {0}:{1}",
                         externalAudioMapIndex,
-                        externalAudioStream);
+                        audioStreamIndex);
                 }
                 else
                 {
                     args += string.Format(
                         CultureInfo.InvariantCulture,
                         " -map 0:{0}",
-                        state.AudioStream.Index);
+                        audioStreamIndex);
                 }
             }
             else
@@ -2276,14 +2278,21 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
             else if (subtitleMethod == SubtitleDeliveryMethod.Embed)
             {
+                int subtitleStreamIndex = FindIndex(state.MediaSource.MediaStreams, state.SubtitleStream);
+
                 args += string.Format(
                     CultureInfo.InvariantCulture,
                     " -map 0:{0}",
-                    state.SubtitleStream.Index);
+                    subtitleStreamIndex);
             }
             else if (state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream)
             {
-                args += " -map 1:0 -sn";
+                int externalSubtitleStreamIndex = FindIndex(state.MediaSource.MediaStreams, state.SubtitleStream);
+
+                args += string.Format(
+                    CultureInfo.InvariantCulture,
+                    " -map 1:{0} -sn",
+                    externalSubtitleStreamIndex);
             }
 
             return args;
@@ -4129,9 +4138,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                         string.Join(',', overlayFilters));
 
                 var mapPrefix = Convert.ToInt32(state.SubtitleStream.IsExternal);
-                var subtitleStreamIndex = state.SubtitleStream.IsExternal
-                    ? 0
-                    : state.SubtitleStream.Index;
+                var subtitleStreamIndex = FindIndex(state.MediaSource.MediaStreams, state.SubtitleStream);
+                var videoStreamIndex = FindIndex(state.MediaSource.MediaStreams, state.VideoStream);
 
                 if (hasSubs)
                 {
@@ -4152,7 +4160,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         filterStr,
                         mapPrefix,
                         subtitleStreamIndex,
-                        state.VideoStream.Index,
+                        videoStreamIndex,
                         mainStr,
                         subStr,
                         overlayStr);
@@ -5387,6 +5395,28 @@ namespace MediaBrowser.Controller.MediaEncoding
                 string.Empty,
                 string.Empty,
                 string.Empty).Trim();
+        }
+
+        public static int FindIndex(IReadOnlyList<MediaStream> mediaStreams, MediaStream streamToFind)
+        {
+            var index = 0;
+            var length = mediaStreams.Count;
+
+            for (var i = 0; i < length; i++)
+            {
+                var currentMediaStream = mediaStreams[i];
+                if (currentMediaStream == streamToFind)
+                {
+                    return index;
+                }
+
+                 if (string.Equals(currentMediaStream.Path, streamToFind.Path, StringComparison.Ordinal))
+                {
+                    index++;
+                }
+            }
+
+            return -1;
         }
 
         public static bool IsCopyCodec(string codec)
