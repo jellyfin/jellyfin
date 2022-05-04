@@ -36,7 +36,7 @@
     "MessageApplicationUpdatedTo": "Jellyfin Server был обновлён до {0}",
     "MessageNamedServerConfigurationUpdatedWithValue": "Конфигурация сервера (раздел {0}) была обновлена",
     "MessageServerConfigurationUpdated": "Конфигурация сервера была обновлена",
-    "MixedContent": "Смешанное содержимое",
+    "MixedContent": "Смешанное содержание",
     "Movies": "Кино",
     "Music": "Музыка",
     "MusicVideos": "Муз. видео",
