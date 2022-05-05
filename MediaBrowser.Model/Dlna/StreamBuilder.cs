@@ -771,10 +771,17 @@ namespace MediaBrowser.Model.Dlna
 
         private void BuildStreamVideoItem(StreamInfo playlistItem, VideoOptions options, MediaSourceInfo item, MediaStream videoStream, MediaStream audioStream, IEnumerable<MediaStream> candidateAudioStreams, string container, string videoCodec, string audioCodec)
         {
-            // prefer matching video codecs
             var videoCodecs = ContainerProfile.SplitValue(videoCodec);
             var directVideoCodec = ContainerProfile.ContainsContainer(videoCodecs, videoStream?.Codec) ? videoStream?.Codec : null;
-            playlistItem.VideoCodecs = directVideoCodec != null ? new[] { directVideoCodec } : videoCodecs;
+            if (directVideoCodec != null)
+            {
+                // merge directVideoCodec to videoCodecs
+                videoCodecs = videoCodecs != null && videoCodecs.Length > 0
+                    ? videoCodecs.Union(new[] { directVideoCodec }).ToArray()
+                    : new[] { directVideoCodec };
+            }
+
+            playlistItem.VideoCodecs = videoCodecs;
 
             // copy video codec options as a starting point, this applies to transcode and direct-stream
             playlistItem.MaxFramerate = videoStream?.AverageFrameRate;
