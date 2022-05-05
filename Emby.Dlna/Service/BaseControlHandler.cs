@@ -6,8 +6,8 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
-using Diacritics.Extensions;
 using Emby.Dlna.Didl;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.Extensions.Logging;
 
