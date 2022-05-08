@@ -5370,12 +5370,22 @@ namespace MediaBrowser.Controller.MediaEncoding
                 audioTranscodeParams.Add("-ac " + state.OutputAudioChannels.Value.ToString(CultureInfo.InvariantCulture));
             }
 
-            // opus will fail on 44100
             if (!string.Equals(state.OutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase))
             {
-                if (state.OutputAudioSampleRate.HasValue)
+                // opus only supports specific sampling rates
+                var sampleRate = state.OutputAudioSampleRate;
+                if (sampleRate.HasValue)
                 {
-                    audioTranscodeParams.Add("-ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture));
+                    var sampleRateValue = sampleRate.Value switch
+                    {
+                        <= 8000 => 8000,
+                        <= 12000 => 12000,
+                        <= 16000 => 16000,
+                        <= 24000 => 24000,
+                        _ => 48000
+                    };
+
+                    audioTranscodeParams.Add("-ar " + sampleRateValue.ToString(CultureInfo.InvariantCulture));
                 }
             }
 
