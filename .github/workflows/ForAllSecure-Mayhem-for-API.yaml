@@ -1,0 +1,61 @@
+name: Mayhem for API
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - name: Start API
+      run: |
+        set -x
+
+        docker build -t test/jellyfin .
+
+        docker run -d -p 8096:8096 test/jellyfin &
+
+        for i in {1..120} ; do
+          curl http://localhost:8096/api-docs/openapi.json && break || sleep 1s;
+        done
+
+        # setup
+
+        headers=( -H 'Content-Type: application/json' -H 'X-Emby-Authorization: MediaBrowser Client="Jellyfin Web", Device="Chrome", DeviceId="42", Version="10.8.0"' )
+
+        curl -v 'http://localhost:8096/Startup/Configuration' "${headers[@]}" \
+            --data-raw '{"UICulture":"en-US","MetadataCountryCode":"US","PreferredMetadataLanguage":"en"}'
+
+        curl -v 'http://localhost:8096/Startup/User' "${headers[@]}" \
+            --data-raw '{"Name":"root","Password":"password"}'
+
+        curl 'http://localhost:8096/Startup/Configuration' "${headers[@]}" \
+            --data-raw '{"UICulture":"en-US","MetadataCountryCode":"US","PreferredMetadataLanguage":"en"}'
+
+        curl -v 'http://localhost:8096/Startup/RemoteAccess' "${headers[@]}" \
+          --data-raw '{"EnableRemoteAccess":true,"EnableAutomaticPortMapping":false}'
+
+        curl -v 'http://localhost:8096/Startup/Complete' "${headers[@]}" \
+            -X 'POST' -H 'Content-Length: 0'
+
+        curl -v 'http://localhost:8096/Users/authenticatebyname' "${headers[@]}" \
+          --data-raw '{"Username":"root","Pw":"password"}'
+
+        echo auth_token=$(curl 'http://localhost:8096/Users/authenticatebyname' "${headers[@]}" \
+          --data-raw '{"Username":"root","Pw":"password"}' | jq .AccessToken) >> $GITHUB_ENV
+
+
+
+    - name: Run Mayhem for API to check for vulnerabilities
+      uses: ForAllSecure/mapi-action@v1
+      with:
+        mapi-token: ${{secrets.MAPI_TOKEN}}
+        api-url: http://localhost:8096
+        api-spec: http://localhost:8096/api-docs/openapi.json
+        target: jellyfin
+        duration: 90sec
+        run-args: |
+          --header-auth
+          X-Emby-Authorization: MediaBrowser Client="Jellyfin Web", Device="Chrome", DeviceId="42", Version="10.8.0", Token='${{ env.auth_token}}
