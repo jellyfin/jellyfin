@@ -776,9 +776,8 @@ namespace MediaBrowser.Model.Dlna
             if (directVideoCodec != null)
             {
                 // merge directVideoCodec to videoCodecs
-                videoCodecs = videoCodecs != null && videoCodecs.Length > 0
-                    ? videoCodecs.Union(new[] { directVideoCodec }).ToArray()
-                    : new[] { directVideoCodec };
+                Array.Resize(ref videoCodecs, (videoCodecs?.Length ?? 0) + 1);
+                videoCodecs[^1] = directVideoCodec;
             }
 
             playlistItem.VideoCodecs = videoCodecs;
