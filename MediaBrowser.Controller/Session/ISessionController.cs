@@ -33,5 +33,11 @@ namespace MediaBrowser.Controller.Session
         /// <param name="cancellationToken">CancellationToken for operation.</param>
         /// <returns>A task.</returns>
         Task SendMessage<T>(SessionMessageType name, Guid messageId, T data, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gracefully closes all web sockets.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        void CloseAllWebSockets(CancellationToken cancellationToken);
     }
 }
