@@ -231,13 +231,10 @@ namespace Emby.Server.Implementations.HttpServer
                 CancellationToken.None);
         }
 
-        /// <summary>
-        /// Gracefully closes the socket.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        public void CloseSocket(CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public async Task CloseSocket(CancellationToken cancellationToken)
         {
-            _socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "System Shutdown", cancellationToken);
+            await _socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "System Shutdown", cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
