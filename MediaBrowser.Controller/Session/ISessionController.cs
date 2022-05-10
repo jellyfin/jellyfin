@@ -38,6 +38,7 @@ namespace MediaBrowser.Controller.Session
         /// Gracefully closes all web sockets.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void CloseAllWebSockets(CancellationToken cancellationToken);
+        /// <returns>A task.</returns>
+        Task CloseAllWebSockets(CancellationToken cancellationToken);
     }
 }

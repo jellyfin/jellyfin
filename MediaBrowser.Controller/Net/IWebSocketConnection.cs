@@ -62,7 +62,8 @@ namespace MediaBrowser.Controller.Net
         /// <summary>
         /// Gracefully closes the socket.
         /// </summary>
+        /// <returns>Task.</returns>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void CloseSocket(CancellationToken cancellationToken);
+        Task CloseSocket(CancellationToken cancellationToken);
     }
 }
