@@ -889,6 +889,11 @@ namespace Emby.Dlna.PlayTo
             return Task.CompletedTask;
         }
 
+        public void CloseAllWebSockets(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
         private class StreamParams
         {
             private MediaSourceInfo _mediaSource;

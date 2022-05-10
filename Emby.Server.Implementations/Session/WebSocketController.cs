@@ -88,6 +88,18 @@ namespace Emby.Server.Implementations.Session
                 cancellationToken);
         }
 
+        /// <summary>
+        /// Gracefully closes all web sockets.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        public void CloseAllWebSockets(CancellationToken cancellationToken)
+        {
+            foreach (var socket in _sockets)
+            {
+                socket.CloseSocket(cancellationToken);
+            }
+        }
+
         /// <inheritdoc />
         public void Dispose()
         {
