@@ -890,9 +890,9 @@ namespace Emby.Dlna.PlayTo
         }
 
         /// <inheritdoc />
-        public async Task CloseAllWebSockets(CancellationToken cancellationToken)
+        public Task CloseAllWebSockets(CancellationToken cancellationToken)
         {
-            await Task.CompletedTask;
+            return Task.CompletedTask;
         }
 
         private class StreamParams

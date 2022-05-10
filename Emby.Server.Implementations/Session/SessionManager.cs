@@ -1359,13 +1359,13 @@ namespace Emby.Server.Implementations.Session
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task SendServerShutdownNotification(CancellationToken cancellationToken)
+        public async Task SendServerShutdownNotification(CancellationToken cancellationToken)
         {
             CheckDisposed();
 
-            CloseAllWebSockets(cancellationToken).ConfigureAwait(false);
+            await CloseAllWebSockets(cancellationToken).ConfigureAwait(false);
 
-            return SendMessageToSessions(Sessions, SessionMessageType.ServerShuttingDown, string.Empty, cancellationToken);
+            await SendMessageToSessions(Sessions, SessionMessageType.ServerShuttingDown, string.Empty, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
