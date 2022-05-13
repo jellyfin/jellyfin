@@ -29,7 +29,7 @@
 <a href="https://features.jellyfin.org">
 <img alt="Submit Feature Requests" src="https://img.shields.io/badge/fider-vote%20on%20features-success.svg"/>
 </a>
-<a href="https://matrix.to/#/+jellyfin:matrix.org">
+<a href="https://matrix.to/#/#jellyfinorg:matrix.org">
 <img alt="Chat on Matrix" src="https://img.shields.io/matrix/jellyfin:matrix.org.svg?logo=matrix"/>
 </a>
 <a href="https://www.reddit.com/r/jellyfin">
