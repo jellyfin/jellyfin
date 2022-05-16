@@ -2521,7 +2521,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 return string.Format(
                         CultureInfo.InvariantCulture,
-                        "scale=trunc(min(max(iw\\,ih*dar)\\,min({0}\\,{1}*dar))/{2})*{2}:trunc(min(max(iw/dar\\,ih)\\,min({0}/dar\\,{1}))/2)*2",
+                        "scale=trunc(min(max(iw\\,ih*a)\\,min({0}\\,{1}*a))/{2})*{2}:trunc(min(max(iw/a\\,ih)\\,min({0}/a\\,{1}))/2)*2",
                         maxWidthParam,
                         maxHeightParam,
                         scaleVal);
@@ -2565,7 +2565,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 return string.Format(
                         CultureInfo.InvariantCulture,
-                        "scale=trunc(min(max(iw\\,ih*dar)\\,{0})/{1})*{1}:trunc(ow/dar/2)*2",
+                        "scale=trunc(min(max(iw\\,ih*a)\\,{0})/{1})*{1}:trunc(ow/a/2)*2",
                         maxWidthParam,
                         scaleVal);
             }
@@ -2577,7 +2577,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 return string.Format(
                         CultureInfo.InvariantCulture,
-                        "scale=trunc(oh*a/{1})*{1}:min(max(iw/dar\\,ih)\\,{0})",
+                        "scale=trunc(oh*a/{1})*{1}:min(max(iw/a\\,ih)\\,{0})",
                         maxHeightParam,
                         scaleVal);
             }
@@ -2626,7 +2626,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
                 else
                 {
-                    filter = "scale={0}:trunc({0}/dar/2)*2";
+                    filter = "scale={0}:trunc({0}/a/2)*2";
                 }
             }
 
@@ -2780,8 +2780,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
             else if (hasGraphicalSubs)
             {
-                // [0:s]scale=s=1280x720
-                var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                // [0:s]scale=expr
+                var subSwScaleFilter = GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH);
                 subFilters.Add(subSwScaleFilter);
                 overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
             }
@@ -2967,7 +2967,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subSwScaleFilter = isSwDecoder
+                        ? GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH)
+                        : GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
                     overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
                 }
@@ -3165,7 +3167,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subSwScaleFilter = isSwDecoder
+                        ? GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH)
+                        : GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
                     overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
                 }
@@ -3411,7 +3415,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subSwScaleFilter = isSwDecoder
+                        ? GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH)
+                        : GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
                     overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
                 }
@@ -3620,7 +3626,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subSwScaleFilter = isSwDecoder
+                        ? GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH)
+                        : GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
                     overlayFilters.Add("overlay=eof_action=pass:shortest=1:repeatlast=0");
                 }
@@ -3867,7 +3875,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subSwScaleFilter = isSwDecoder
+                        ? GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH)
+                        : GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
                     overlayFilters.Add("overlay=eof_action=pass:shortest=1:repeatlast=0");
 
@@ -4042,7 +4052,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subSwScaleFilter = isSwDecoder
+                        ? GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH)
+                        : GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
                     overlayFilters.Add("overlay=eof_action=pass:shortest=1:repeatlast=0");
 
