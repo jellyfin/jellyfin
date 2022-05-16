@@ -1773,13 +1773,23 @@ namespace Jellyfin.Api.Controllers
 
             var args = "-codec:v:0 " + codec;
 
-            // Prefer hvc1 to hev1.
             if (string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase))
             {
-                args += " -tag:v:0 hvc1";
+                if (EncodingHelper.IsCopyCodec(codec)
+                    && (string.Equals(state.VideoStream.CodecTag, "dvh1", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(state.VideoStream.CodecTag, "dvhe", StringComparison.OrdinalIgnoreCase)))
+                {
+                    // Prefer dvh1 to dvhe
+                    args += " -tag:v:0 dvh1";
+                }
+                else
+                {
+                    // Prefer hvc1 to hev1
+                    args += " -tag:v:0 hvc1";
+                }
             }
 
             // if  (state.EnableMpegtsM2TsMode)

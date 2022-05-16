@@ -7,7 +7,7 @@
 %endif
 
 Name:           jellyfin
-Version:        10.8.0~beta2
+Version:        10.8.0~beta3
 Release:        1%{?dist}
 Summary:        The Free Software Media System
 License:        GPLv3
@@ -153,6 +153,8 @@ fi
 %systemd_postun_with_restart jellyfin.service
 
 %changelog
+* Sun May 15 2022 Jellyfin Packaging Team <packaging@jellyfin.org>
+- New upstream version 10.8.0-beta3; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.8.0-beta3
 * Sun Apr 17 2022 Jellyfin Packaging Team <packaging@jellyfin.org>
 - New upstream version 10.8.0-beta2; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.8.0-beta2
 * Fri Mar 25 2022 Jellyfin Packaging Team <packaging@jellyfin.org>

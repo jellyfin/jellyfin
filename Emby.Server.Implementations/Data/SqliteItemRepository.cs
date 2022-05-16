@@ -11,7 +11,6 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
-using Diacritics.Extensions;
 using Emby.Server.Implementations.Playlists;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
@@ -5763,7 +5762,7 @@ AND Type = @InternalPersonType)");
                 {
                     var itemIdBlob = id.ToByteArray();
 
-                    // First delete chapters
+                    // Delete existing mediastreams
                     db.Execute("delete from mediastreams where ItemId=@ItemId", itemIdBlob);
 
                     InsertMediaStreams(itemIdBlob, streams, db);
@@ -5867,10 +5866,10 @@ AND Type = @InternalPersonType)");
         }
 
         /// <summary>
-        /// Gets the chapter.
+        /// Gets the media stream.
         /// </summary>
         /// <param name="reader">The reader.</param>
-        /// <returns>ChapterInfo.</returns>
+        /// <returns>MediaStream.</returns>
         private MediaStream GetMediaStream(IReadOnlyList<ResultSetValue> reader)
         {
             var item = new MediaStream

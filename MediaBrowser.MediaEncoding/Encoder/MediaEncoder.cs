@@ -412,6 +412,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         /// <summary>
+        /// Gets the input argument for an external subtitle file.
+        /// </summary>
+        /// <param name="inputFile">The input file.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="ArgumentException">Unrecognized InputType.</exception>
+        public string GetExternalSubtitleInputArgument(string inputFile)
+        {
+            const string Prefix = "file";
+
+            return EncodingUtils.GetInputArgument(Prefix, inputFile, MediaProtocol.File);
+        }
+
+        /// <summary>
         /// Gets the media info internal.
         /// </summary>
         /// <returns>Task{MediaInfoResult}.</returns>

@@ -142,6 +142,13 @@ namespace MediaBrowser.Controller.MediaEncoding
         string GetInputArgument(string inputFile, MediaSourceInfo mediaSource);
 
         /// <summary>
+        /// Gets the input argument for an external subtitle file.
+        /// </summary>
+        /// <param name="inputFile">The input file.</param>
+        /// <returns>System.String.</returns>
+        string GetExternalSubtitleInputArgument(string inputFile);
+
+        /// <summary>
         /// Gets the time parameter.
         /// </summary>
         /// <param name="ticks">The ticks.</param>

@@ -2215,13 +2215,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return state.IsInputVideo ? "-sn" : string.Empty;
             }
 
-            // We have media info, but we don't know the stream indexes
+            // We have media info, but we don't know the stream index
             if (state.VideoStream != null && state.VideoStream.Index == -1)
             {
                 return "-sn";
             }
 
-            // We have media info, but we don't know the stream indexes
+            // We have media info, but we don't know the stream index
             if (state.AudioStream != null && state.AudioStream.Index == -1)
             {
                 return state.IsInputVideo ? "-sn" : string.Empty;
@@ -2231,10 +2231,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (state.VideoStream != null)
             {
+                int videoStreamIndex = FindIndex(state.MediaSource.MediaStreams, state.VideoStream);
+
                 args += string.Format(
                     CultureInfo.InvariantCulture,
                     "-map 0:{0}",
-                    state.VideoStream.Index);
+                    videoStreamIndex);
             }
             else
             {
@@ -2244,24 +2246,24 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (state.AudioStream != null)
             {
+                int audioStreamIndex = FindIndex(state.MediaSource.MediaStreams, state.AudioStream);
                 if (state.AudioStream.IsExternal)
                 {
                     bool hasExternalGraphicsSubs = state.SubtitleStream != null && state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream;
                     int externalAudioMapIndex = hasExternalGraphicsSubs ? 2 : 1;
-                    int externalAudioStream = state.MediaSource.MediaStreams.Where(i => i.Path == state.AudioStream.Path).ToList().IndexOf(state.AudioStream);
 
                     args += string.Format(
                         CultureInfo.InvariantCulture,
                         " -map {0}:{1}",
                         externalAudioMapIndex,
-                        externalAudioStream);
+                        audioStreamIndex);
                 }
                 else
                 {
                     args += string.Format(
                         CultureInfo.InvariantCulture,
                         " -map 0:{0}",
-                        state.AudioStream.Index);
+                        audioStreamIndex);
                 }
             }
             else
@@ -2276,14 +2278,21 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
             else if (subtitleMethod == SubtitleDeliveryMethod.Embed)
             {
+                int subtitleStreamIndex = FindIndex(state.MediaSource.MediaStreams, state.SubtitleStream);
+
                 args += string.Format(
                     CultureInfo.InvariantCulture,
                     " -map 0:{0}",
-                    state.SubtitleStream.Index);
+                    subtitleStreamIndex);
             }
             else if (state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream)
             {
-                args += " -map 1:0 -sn";
+                int externalSubtitleStreamIndex = FindIndex(state.MediaSource.MediaStreams, state.SubtitleStream);
+
+                args += string.Format(
+                    CultureInfo.InvariantCulture,
+                    " -map 1:{0} -sn",
+                    externalSubtitleStreamIndex);
             }
 
             return args;
@@ -2512,7 +2521,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 return string.Format(
                         CultureInfo.InvariantCulture,
-                        "scale=trunc(min(max(iw\\,ih*dar)\\,min({0}\\,{1}*dar))/{2})*{2}:trunc(min(max(iw/dar\\,ih)\\,min({0}/dar\\,{1}))/2)*2",
+                        "scale=trunc(min(max(iw\\,ih*a)\\,min({0}\\,{1}*a))/{2})*{2}:trunc(min(max(iw/a\\,ih)\\,min({0}/a\\,{1}))/2)*2",
                         maxWidthParam,
                         maxHeightParam,
                         scaleVal);
@@ -2556,7 +2565,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 return string.Format(
                         CultureInfo.InvariantCulture,
-                        "scale=trunc(min(max(iw\\,ih*dar)\\,{0})/{1})*{1}:trunc(ow/dar/2)*2",
+                        "scale=trunc(min(max(iw\\,ih*a)\\,{0})/{1})*{1}:trunc(ow/a/2)*2",
                         maxWidthParam,
                         scaleVal);
             }
@@ -2568,7 +2577,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 return string.Format(
                         CultureInfo.InvariantCulture,
-                        "scale=trunc(oh*a/{1})*{1}:min(max(iw/dar\\,ih)\\,{0})",
+                        "scale=trunc(oh*a/{1})*{1}:min(max(iw/a\\,ih)\\,{0})",
                         maxHeightParam,
                         scaleVal);
             }
@@ -2617,7 +2626,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
                 else
                 {
-                    filter = "scale={0}:trunc({0}/dar/2)*2";
+                    filter = "scale={0}:trunc({0}/a/2)*2";
                 }
             }
 
@@ -2771,8 +2780,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
             else if (hasGraphicalSubs)
             {
-                // [0:s]scale=s=1280x720
-                var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                // [0:s]scale=expr
+                var subSwScaleFilter = GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH);
                 subFilters.Add(subSwScaleFilter);
                 overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
             }
@@ -2958,7 +2967,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subSwScaleFilter = isSwDecoder
+                        ? GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH)
+                        : GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
                     overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
                 }
@@ -3156,7 +3167,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subSwScaleFilter = isSwDecoder
+                        ? GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH)
+                        : GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
                     overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
                 }
@@ -3402,7 +3415,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subSwScaleFilter = isSwDecoder
+                        ? GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH)
+                        : GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
                     overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
                 }
@@ -3611,7 +3626,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subSwScaleFilter = isSwDecoder
+                        ? GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH)
+                        : GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
                     overlayFilters.Add("overlay=eof_action=pass:shortest=1:repeatlast=0");
                 }
@@ -3858,7 +3875,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subSwScaleFilter = isSwDecoder
+                        ? GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH)
+                        : GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
                     overlayFilters.Add("overlay=eof_action=pass:shortest=1:repeatlast=0");
 
@@ -4033,7 +4052,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subSwScaleFilter = isSwDecoder
+                        ? GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH)
+                        : GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
                     overlayFilters.Add("overlay=eof_action=pass:shortest=1:repeatlast=0");
 
@@ -4129,9 +4150,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                         string.Join(',', overlayFilters));
 
                 var mapPrefix = Convert.ToInt32(state.SubtitleStream.IsExternal);
-                var subtitleStreamIndex = state.SubtitleStream.IsExternal
-                    ? 0
-                    : state.SubtitleStream.Index;
+                var subtitleStreamIndex = FindIndex(state.MediaSource.MediaStreams, state.SubtitleStream);
+                var videoStreamIndex = FindIndex(state.MediaSource.MediaStreams, state.VideoStream);
 
                 if (hasSubs)
                 {
@@ -4152,7 +4172,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         filterStr,
                         mapPrefix,
                         subtitleStreamIndex,
-                        state.VideoStream.Index,
+                        videoStreamIndex,
                         mainStr,
                         subStr,
                         overlayStr);
@@ -5362,12 +5382,22 @@ namespace MediaBrowser.Controller.MediaEncoding
                 audioTranscodeParams.Add("-ac " + state.OutputAudioChannels.Value.ToString(CultureInfo.InvariantCulture));
             }
 
-            // opus will fail on 44100
             if (!string.Equals(state.OutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase))
             {
-                if (state.OutputAudioSampleRate.HasValue)
+                // opus only supports specific sampling rates
+                var sampleRate = state.OutputAudioSampleRate;
+                if (sampleRate.HasValue)
                 {
-                    audioTranscodeParams.Add("-ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture));
+                    var sampleRateValue = sampleRate.Value switch
+                    {
+                        <= 8000 => 8000,
+                        <= 12000 => 12000,
+                        <= 16000 => 16000,
+                        <= 24000 => 24000,
+                        _ => 48000
+                    };
+
+                    audioTranscodeParams.Add("-ar " + sampleRateValue.ToString(CultureInfo.InvariantCulture));
                 }
             }
 
@@ -5387,6 +5417,28 @@ namespace MediaBrowser.Controller.MediaEncoding
                 string.Empty,
                 string.Empty,
                 string.Empty).Trim();
+        }
+
+        public static int FindIndex(IReadOnlyList<MediaStream> mediaStreams, MediaStream streamToFind)
+        {
+            var index = 0;
+            var length = mediaStreams.Count;
+
+            for (var i = 0; i < length; i++)
+            {
+                var currentMediaStream = mediaStreams[i];
+                if (currentMediaStream == streamToFind)
+                {
+                    return index;
+                }
+
+                 if (string.Equals(currentMediaStream.Path, streamToFind.Path, StringComparison.Ordinal))
+                {
+                    index++;
+                }
+            }
+
+            return -1;
         }
 
         public static bool IsCopyCodec(string codec)
