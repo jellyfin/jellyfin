@@ -120,5 +120,7 @@
     "Default": "Por defecto",
     "TaskOptimizeDatabaseDescription": "Compacta la base de datos y libera espacio. Ejecutar esta tarea después de escanear la biblioteca o hacer otros cambios que impliquen modificaciones en la base de datos puede mejorar el rendimiento.",
     "TaskOptimizeDatabase": "Optimizar base de datos",
-    "External": "Externo"
+    "External": "Externo",
+    "TaskKeyframeExtractorDescription": "Extrae Fotogramas Clave de los archivos de vídeo para crear Listas de Reproducción HLS más precisas. Esta tarea puede durar mucho tiempo.",
+    "TaskKeyframeExtractor": "Extractor de Fotogramas Clave"
 }
