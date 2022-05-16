@@ -771,7 +771,14 @@ namespace MediaBrowser.Model.Dlna
             // Prefer matching video codecs
             var videoCodecs = ContainerProfile.SplitValue(videoCodec);
             var directVideoCodec = ContainerProfile.ContainsContainer(videoCodecs, videoStream?.Codec) ? videoStream?.Codec : null;
-            playlistItem.VideoCodecs = directVideoCodec != null ? new[] { directVideoCodec } : videoCodecs;
+            if (directVideoCodec != null)
+            {
+                // merge directVideoCodec to videoCodecs
+                Array.Resize(ref videoCodecs, videoCodecs.Length + 1);
+                videoCodecs[^1] = directVideoCodec;
+            }
+
+            playlistItem.VideoCodecs = videoCodecs;
 
             // Copy video codec options as a starting point, this applies to transcode and direct-stream
             playlistItem.MaxFramerate = videoStream?.AverageFrameRate;
