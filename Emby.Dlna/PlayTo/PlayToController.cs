@@ -889,12 +889,6 @@ namespace Emby.Dlna.PlayTo
             return Task.CompletedTask;
         }
 
-        /// <inheritdoc />
-        public Task CloseAllWebSockets(CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
-        }
-
         private class StreamParams
         {
             private MediaSourceInfo _mediaSource;

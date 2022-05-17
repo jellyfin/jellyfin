@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Session
 {
-    public sealed class WebSocketController : ISessionController, IDisposable
+    public sealed class WebSocketController : ISessionController, IAsyncDisposable, IDisposable
     {
         private readonly ILogger<WebSocketController> _logger;
         private readonly ISessionManager _sessionManager;
@@ -89,15 +89,6 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public async Task CloseAllWebSockets(CancellationToken cancellationToken)
-        {
-            foreach (var socket in _sockets)
-            {
-                await socket.CloseSocket(cancellationToken).ConfigureAwait(false);
-            }
-        }
-
-        /// <inheritdoc />
         public void Dispose()
         {
             if (_disposed)
@@ -108,6 +99,26 @@ namespace Emby.Server.Implementations.Session
             foreach (var socket in _sockets)
             {
                 socket.Closed -= OnConnectionClosed;
+            }
+
+            _disposed = true;
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            foreach (var socket in _sockets)
+            {
+                socket.Closed -= OnConnectionClosed;
+
+                if (socket is IAsyncDisposable disposableAsync)
+                {
+                    await disposableAsync.DisposeAsync().ConfigureAwait(false);
+                }
             }
 
             _disposed = true;

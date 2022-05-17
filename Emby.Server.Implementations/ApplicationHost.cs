@@ -111,7 +111,7 @@ namespace Emby.Server.Implementations
     /// <summary>
     /// Class CompositionRoot.
     /// </summary>
-    public abstract class ApplicationHost : IServerApplicationHost, IDisposable
+    public abstract class ApplicationHost : IServerApplicationHost, IAsyncDisposable, IDisposable
     {
         /// <summary>
         /// The environment variable prefixes to log at server startup.
@@ -1229,6 +1229,25 @@ namespace Emby.Server.Implementations
             }
 
             _disposed = true;
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await DisposeAsyncCore().ConfigureAwait(false);
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Used to perform asynchronous cleanup of managed resources or for cascading calls to <see cref="DisposeAsync"/>.
+        /// </summary>
+        /// <returns>A ValueTask.</returns>
+        protected virtual async ValueTask DisposeAsyncCore()
+        {
+            foreach (var session in _sessionManager.Sessions)
+            {
+                await session.DisposeAsync().ConfigureAwait(false);
+            }
         }
     }
 }

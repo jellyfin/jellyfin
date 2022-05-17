@@ -58,12 +58,5 @@ namespace MediaBrowser.Controller.Net
         Task SendAsync<T>(WebSocketMessage<T> message, CancellationToken cancellationToken);
 
         Task ProcessAsync(CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Gracefully closes the socket.
-        /// </summary>
-        /// <returns>Task.</returns>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        Task CloseSocket(CancellationToken cancellationToken);
     }
 }

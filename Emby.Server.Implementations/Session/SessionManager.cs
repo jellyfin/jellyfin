@@ -1363,24 +1363,7 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
-            await CloseAllWebSockets(cancellationToken).ConfigureAwait(false);
-
             await SendMessageToSessions(Sessions, SessionMessageType.ServerShuttingDown, string.Empty, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Gracefully closes all web sockets in all sessions.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        private async Task CloseAllWebSockets(CancellationToken cancellationToken)
-        {
-            foreach (var session in Sessions)
-            {
-                foreach (var sessionController in session.SessionControllers)
-                {
-                    await sessionController.CloseAllWebSockets(cancellationToken).ConfigureAwait(false);
-                }
-            }
         }
 
         /// <summary>
