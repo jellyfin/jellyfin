@@ -381,7 +381,7 @@ namespace MediaBrowser.Controller.Session
             {
                 if (controller is IDisposable disposable)
                 {
-                    _logger.LogInformation("Disposing session controller synchronously {0}", disposable.GetType().Name);
+                    _logger.LogDebug("Disposing session controller synchronously {0}", disposable.GetType().Name);
                     disposable.Dispose();
                 }
             }
@@ -399,7 +399,7 @@ namespace MediaBrowser.Controller.Session
             {
                 if (controller is IAsyncDisposable disposableAsync)
                 {
-                    _logger.LogInformation("Disposing session controller asynchronously {0}", disposableAsync.GetType().Name);
+                    _logger.LogDebug("Disposing session controller asynchronously {0}", disposableAsync.GetType().Name);
                     await disposableAsync.DisposeAsync().ConfigureAwait(false);
                 }
             }
