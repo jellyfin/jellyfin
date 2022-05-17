@@ -429,10 +429,16 @@ namespace MediaBrowser.Controller.Library
         /// Gets the collection folders.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <returns>IEnumerable&lt;Folder&gt;.</returns>
+        /// <returns>The folders that contain the item.</returns>
         List<Folder> GetCollectionFolders(BaseItem item);
 
-        List<Folder> GetCollectionFolders(BaseItem item, List<Folder> allUserRootChildren);
+        /// <summary>
+        /// Gets the collection folders.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="allUserRootChildren">The root folders to consider.</param>
+        /// <returns>The folders that contain the item.</returns>
+        List<Folder> GetCollectionFolders(BaseItem item, IEnumerable<Folder> allUserRootChildren);
 
         LibraryOptions GetLibraryOptions(BaseItem item);
 

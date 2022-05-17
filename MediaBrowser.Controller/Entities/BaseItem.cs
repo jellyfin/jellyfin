@@ -2451,6 +2451,11 @@ namespace MediaBrowser.Controller.Entities
                 return Task.FromResult(true);
             }
 
+            if (video.OwnerId.Equals(default))
+            {
+                video.OwnerId = this.Id;
+            }
+
             return RefreshMetadataForOwnedItem(video, copyTitleMetadata, newOptions, cancellationToken);
         }
 
