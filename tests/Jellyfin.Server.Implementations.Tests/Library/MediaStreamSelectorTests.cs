@@ -29,13 +29,21 @@ public class MediaStreamSelectorTests
         {
             new()
             {
+                Index = 0,
+                Type = MediaStreamType.Video,
+                IsDefault = true
+            },
+            new()
+            {
                 Index = 1,
+                Type = MediaStreamType.Audio,
                 Language = "fre",
                 IsDefault = true
             },
             new()
             {
                 Index = 2,
+                Type = MediaStreamType.Audio,
                 Language = "eng",
                 IsDefault = false
             }
