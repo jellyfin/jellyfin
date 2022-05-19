@@ -19,7 +19,7 @@ namespace Emby.Server.Implementations.HttpServer
     /// <summary>
     /// Class WebSocketConnection.
     /// </summary>
-    public class WebSocketConnection : IWebSocketConnection, IAsyncDisposable, IDisposable
+    public class WebSocketConnection : IWebSocketConnection
     {
         /// <summary>
         /// The logger.
@@ -35,6 +35,8 @@ namespace Emby.Server.Implementations.HttpServer
         /// The socket.
         /// </summary>
         private readonly WebSocket _socket;
+
+        private bool _disposed = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebSocketConnection" /> class.
@@ -244,10 +246,17 @@ namespace Emby.Server.Implementations.HttpServer
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool dispose)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             if (dispose)
             {
                 _socket.Dispose();
             }
+
+            _disposed = true;
         }
 
         /// <inheritdoc />

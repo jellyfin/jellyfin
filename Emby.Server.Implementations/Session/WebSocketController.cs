@@ -99,6 +99,7 @@ namespace Emby.Server.Implementations.Session
             foreach (var socket in _sockets)
             {
                 socket.Closed -= OnConnectionClosed;
+                socket.Dispose();
             }
 
             _disposed = true;
@@ -114,11 +115,7 @@ namespace Emby.Server.Implementations.Session
             foreach (var socket in _sockets)
             {
                 socket.Closed -= OnConnectionClosed;
-
-                if (socket is IAsyncDisposable disposableAsync)
-                {
-                    await disposableAsync.DisposeAsync().ConfigureAwait(false);
-                }
+                await socket.DisposeAsync().ConfigureAwait(false);
             }
 
             _disposed = true;
