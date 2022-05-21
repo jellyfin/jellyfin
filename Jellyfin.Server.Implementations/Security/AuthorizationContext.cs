@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Http;
@@ -16,11 +17,16 @@ namespace Jellyfin.Server.Implementations.Security
     {
         private readonly JellyfinDbProvider _jellyfinDbProvider;
         private readonly IUserManager _userManager;
+        private readonly IServerApplicationHost _serverApplicationHost;
 
-        public AuthorizationContext(JellyfinDbProvider jellyfinDb, IUserManager userManager)
+        public AuthorizationContext(
+            JellyfinDbProvider jellyfinDb,
+            IUserManager userManager,
+            IServerApplicationHost serverApplicationHost)
         {
             _jellyfinDbProvider = jellyfinDb;
             _userManager = userManager;
+            _serverApplicationHost = serverApplicationHost;
         }
 
         public Task<AuthorizationInfo> GetAuthorizationInfo(HttpContext requestContext)
@@ -187,17 +193,17 @@ namespace Jellyfin.Server.Implementations.Security
                     authInfo.Token = key.AccessToken;
                     if (string.IsNullOrWhiteSpace(authInfo.DeviceId))
                     {
-                        authInfo.DeviceId = string.Empty;
+                        authInfo.DeviceId = _serverApplicationHost.SystemId;
                     }
 
                     if (string.IsNullOrWhiteSpace(authInfo.Device))
                     {
-                        authInfo.Device = string.Empty;
+                        authInfo.Device = _serverApplicationHost.Name;
                     }
 
                     if (string.IsNullOrWhiteSpace(authInfo.Version))
                     {
-                        authInfo.Version = string.Empty;
+                        authInfo.Version = _serverApplicationHost.ApplicationVersionString;
                     }
 
                     authInfo.IsApiKey = true;
