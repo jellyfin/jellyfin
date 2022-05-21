@@ -196,7 +196,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 IsInfiniteStream = true,
                 IsRemote = isRemote,
 
-                IgnoreDts = true,
+                IgnoreDts = false,
                 SupportsDirectPlay = supportsDirectPlay,
                 SupportsDirectStream = supportsDirectStream,
 
