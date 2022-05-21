@@ -57,6 +57,11 @@ namespace Jellyfin.Api.Controllers
         /// <param name="hasImdbId">Optional filter by items that have an imdb id or not.</param>
         /// <param name="hasTmdbId">Optional filter by items that have a tmdb id or not.</param>
         /// <param name="hasTvdbId">Optional filter by items that have a tvdb id or not.</param>
+        /// <param name="isMovie">Optional filter for live tv movies.</param>
+        /// <param name="isSeries">Optional filter for live tv series.</param>
+        /// <param name="isNews">Optional filter for live tv news.</param>
+        /// <param name="isKids">Optional filter for live tv kids.</param>
+        /// <param name="isSports">Optional filter for live tv sports.</param>
         /// <param name="excludeItemIds">Optional. If specified, results will be filtered by excluding item ids. This allows multiple, comma delimited.</param>
         /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
@@ -140,6 +145,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? hasImdbId,
             [FromQuery] bool? hasTmdbId,
             [FromQuery] bool? hasTvdbId,
+            [FromQuery] bool? isMovie,
+            [FromQuery] bool? isSeries,
+            [FromQuery] bool? isNews,
+            [FromQuery] bool? isKids,
+            [FromQuery] bool? isSports,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] excludeItemIds,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
@@ -224,6 +234,11 @@ namespace Jellyfin.Api.Controllers
                     hasImdbId,
                     hasTmdbId,
                     hasTvdbId,
+                    isMovie,
+                    isSeries,
+                    isNews,
+                    isKids,
+                    isSports,
                     excludeItemIds,
                     startIndex,
                     limit,
