@@ -770,6 +770,11 @@ namespace Emby.Server.Implementations.Session
 
             await UpdateNowPlayingItem(session, info, libraryItem, !isAutomated).ConfigureAwait(false);
 
+            if (!string.IsNullOrEmpty(session.DeviceId) && info.PlayMethod != PlayMethod.Transcode)
+            {
+                ClearTranscodingInfo(session.DeviceId);
+            }
+
             var users = GetUsers(session);
 
             // only update saved user data on actual check-ins, not automated ones
