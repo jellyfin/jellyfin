@@ -255,27 +255,18 @@ namespace Jellyfin.Api.Helpers
                 streamInfo.PlaySessionId = playSessionId;
                 streamInfo.StartPositionTicks = startTimeTicks;
 
-                if (mediaSource.SupportsDirectPlay)
-                {
-                    mediaSource.SupportsDirectPlay = streamInfo.PlayMethod == PlayMethod.DirectPlay;
-                }
+                mediaSource.SupportsDirectPlay = streamInfo.PlayMethod == PlayMethod.DirectPlay;
 
                 // Players do not handle this being set according to PlayMethod
-                if (mediaSource.SupportsDirectStream)
-                {
-                    mediaSource.SupportsDirectStream =
-                        options.EnableDirectStream
-                            ? streamInfo.PlayMethod == PlayMethod.DirectPlay || streamInfo.PlayMethod == PlayMethod.DirectStream
-                            : streamInfo.PlayMethod == PlayMethod.DirectPlay;
-                }
+                mediaSource.SupportsDirectStream =
+                    options.EnableDirectStream
+                        ? streamInfo.PlayMethod == PlayMethod.DirectPlay || streamInfo.PlayMethod == PlayMethod.DirectStream
+                        : streamInfo.PlayMethod == PlayMethod.DirectPlay;
 
-                if (mediaSource.SupportsTranscoding)
-                {
-                    mediaSource.SupportsTranscoding =
-                        streamInfo.PlayMethod == PlayMethod.DirectStream
-                        || mediaSource.TranscodingContainer != null
-                        || profile.TranscodingProfiles.Any(i => i.Type == streamInfo.MediaType && i.Context == options.Context);
-                }
+                mediaSource.SupportsTranscoding =
+                    streamInfo.PlayMethod == PlayMethod.DirectStream
+                    || mediaSource.TranscodingContainer != null
+                    || profile.TranscodingProfiles.Any(i => i.Type == streamInfo.MediaType && i.Context == options.Context);
 
                 if (item is Audio)
                 {
