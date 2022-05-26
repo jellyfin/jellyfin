@@ -359,7 +359,10 @@ public class MediaInfoResolverTests
             var mediaStreams = new List<MediaStream>();
             for (int i = 0; i < streamCount; i++)
             {
-                mediaStreams.Add(new());
+                mediaStreams.Add(new()
+                {
+                    Type = MediaStreamType.Subtitle
+                });
             }
 
             return mediaStreams;
