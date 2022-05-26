@@ -109,7 +109,7 @@ namespace Jellyfin.Server
                     c.DefaultRequestHeaders.UserAgent.ParseAdd(
                         string.Format(
                             CultureInfo.InvariantCulture,
-                            "{0}/{1} UPnP/1.1 {2}/{3}",
+                            "{0}/{1} UPnP/1.0 {2}/{3}",
                             MediaBrowser.Common.System.OperatingSystem.Name,
                             Environment.OSVersion,
                             _serverApplicationHost.Name,
