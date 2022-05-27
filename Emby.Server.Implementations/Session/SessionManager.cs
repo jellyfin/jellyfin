@@ -338,7 +338,7 @@ namespace Emby.Server.Implementations.Session
                 _activeConnections.TryRemove(key, out _);
                 if (!string.IsNullOrEmpty(session.PlayState?.LiveStreamId))
                 {
-                    await _mediaSourceManager.CloseLiveStream(session.PlayState?.LiveStreamId).ConfigureAwait(false);
+                    await _mediaSourceManager.CloseLiveStream(session.PlayState.LiveStreamId).ConfigureAwait(false);
                 }
 
                 OnSessionEnded(session);
