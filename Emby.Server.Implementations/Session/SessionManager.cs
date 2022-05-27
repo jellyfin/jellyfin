@@ -413,6 +413,7 @@ namespace Emby.Server.Implementations.Session
             session.PlayState.IsPaused = info.IsPaused;
             session.PlayState.PositionTicks = info.PositionTicks;
             session.PlayState.MediaSourceId = info.MediaSourceId;
+            session.PlayState.LiveStreamId = info.LiveStreamId;
             session.PlayState.CanSeek = info.CanSeek;
             session.PlayState.IsMuted = info.IsMuted;
             session.PlayState.VolumeLevel = info.VolumeLevel;
