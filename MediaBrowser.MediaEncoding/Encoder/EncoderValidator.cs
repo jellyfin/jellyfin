@@ -56,6 +56,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "libvpx",
             "libvpx-vp9",
             "aac",
+            "aac_at",
             "libfdk_aac",
             "ac3",
             "libmp3lame",
