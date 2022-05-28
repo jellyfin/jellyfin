@@ -4484,14 +4484,14 @@ namespace MediaBrowser.Controller.MediaEncoding
             // videotoolbox will automatically convert the CVPixelBuffer to a pixel format the encoder supports, so we don't have to set a pixel format explicitly here
             // This will reduce CPU usage significantly on UHD videos with 10 bit colors because we bypassed the ffmpeg pixel format conversion
             newfilters.Add("hwupload");
-            var mainFilters = noOverlay ? newfilters : swFilterChain.MainFilters;
 
             if (doDeintH2645)
             {
                 var deintFilter = GetHwDeinterlaceFilter(state, options, "videotoolbox");
-                mainFilters.Add(deintFilter);
+                newfilters.Add(deintFilter);
             }
 
+            var mainFilters = noOverlay ? newfilters : swFilterChain.MainFilters;
             return (mainFilters, swFilterChain.SubFilters, swFilterChain.OverlayFilters);
         }
 
