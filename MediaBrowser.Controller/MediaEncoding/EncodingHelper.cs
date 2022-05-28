@@ -4476,16 +4476,15 @@ namespace MediaBrowser.Controller.MediaEncoding
             var newfilters = new List<string>();
             var noOverlay = swFilterChain.OverlayFilters.Count == 0;
 
+            // ffmpeg cannot use videotoolbox to scale
+            var swScaleFilter = GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH);
+            newfilters.Add(swScaleFilter);
+
             // hwupload on videotoolbox encoders can automatically convert AVFrame into its CVPixelBuffer equivalent
             // videotoolbox will automatically convert the CVPixelBuffer to a pixel format the encoder supports, so we don't have to set a pixel format explicitly here
             // This will reduce CPU usage significantly on UHD videos with 10 bit colors because we bypassed the ffmpeg pixel format conversion
             newfilters.Add("hwupload");
             var mainFilters = noOverlay ? newfilters : swFilterChain.MainFilters;
-            var overlayFilters = noOverlay ? swFilterChain.OverlayFilters : newfilters;
-
-            // ffmpeg cannot use videotoolbox to scale
-            var swScaleFilter = GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH);
-            mainFilters.Add(swScaleFilter);
 
             if (doDeintH2645)
             {
@@ -4493,7 +4492,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 mainFilters.Add(deintFilter);
             }
 
-            return (mainFilters, swFilterChain.SubFilters, overlayFilters);
+            return (mainFilters, swFilterChain.SubFilters, swFilterChain.OverlayFilters);
         }
 
         /// <summary>
