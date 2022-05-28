@@ -2782,6 +2782,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 return "deinterlace_qsv=mode=2";
             }
+            else if (hwDeintSuffix.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase))
+            {
+                return string.Format(
+                    CultureInfo.InvariantCulture,
+                    "yadif_videotoolbox={0}:-1:0",
+                    doubleRateDeint ? "1" : "0");
+            }
 
             return string.Empty;
         }
@@ -4433,6 +4440,63 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
+        /// Gets the parameter of Apple VideoToolBox filter chain.
+        /// </summary>
+        /// <param name="state">Encoding state.</param>
+        /// <param name="options">Encoding options.</param>
+        /// <param name="vidEncoder">Video encoder to use.</param>
+        /// <returns>The tuple contains three lists: main, sub and overlay filters.</returns>
+        public (List<string> MainFilters, List<string> SubFilters, List<string> OverlayFilters) GetAppleVidFilterChain(
+            EncodingJobInfo state,
+            EncodingOptions options,
+            string vidEncoder)
+        {
+            if (!string.Equals(options.HardwareAccelerationType, "videotoolbox", StringComparison.OrdinalIgnoreCase))
+            {
+                return (null, null, null);
+            }
+
+            var swFilterChain = GetSwVidFilterChain(state, options, vidEncoder);
+            if (_mediaEncoder.EncoderVersion.CompareTo(new Version("5.0.0")) < 0)
+            {
+                // All features used here requires ffmpeg 5.0 or later, fallback to software filters if using an old ffmpeg
+                return swFilterChain;
+            }
+
+            var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
+            var doDeintHevc = state.DeInterlace("h265", true) || state.DeInterlace("hevc", true);
+            var doDeintH2645 = doDeintH264 || doDeintHevc;
+            var inW = state.VideoStream?.Width;
+            var inH = state.VideoStream?.Height;
+            var reqW = state.BaseRequest.Width;
+            var reqH = state.BaseRequest.Height;
+            var reqMaxW = state.BaseRequest.MaxWidth;
+            var reqMaxH = state.BaseRequest.MaxHeight;
+            var threeDFormat = state.MediaSource.Video3DFormat;
+            var newfilters = new List<string>();
+            var noOverlay = swFilterChain.OverlayFilters.Count == 0;
+
+            // hwupload on videotoolbox encoders can automatically convert AVFrame into its CVPixelBuffer equivalent
+            // videotoolbox will automatically convert the CVPixelBuffer to a pixel format the encoder supports, so we don't have to set a pixel format explicitly here
+            // This will reduce CPU usage significantly on UHD videos with 10 bit colors because we bypassed the ffmpeg pixel format conversion
+            newfilters.Add("hwupload");
+            var mainFilters = noOverlay ? newfilters : swFilterChain.MainFilters;
+            var overlayFilters = noOverlay ? swFilterChain.OverlayFilters : newfilters;
+
+            // ffmpeg cannot use videotoolbox to scale
+            var swScaleFilter = GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH);
+            mainFilters.Add(swScaleFilter);
+
+            if (doDeintH2645)
+            {
+                var deintFilter = GetHwDeinterlaceFilter(state, options, "videotoolbox");
+                mainFilters.Add(deintFilter);
+            }
+
+            return (mainFilters, swFilterChain.SubFilters, overlayFilters);
+        }
+
+        /// <summary>
         /// Gets the parameter of video processing filters.
         /// </summary>
         /// <param name="state">Encoding state.</param>
@@ -4473,6 +4537,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             else if (string.Equals(options.HardwareAccelerationType, "amf", StringComparison.OrdinalIgnoreCase))
             {
                 (mainFilters, subFilters, overlayFilters) = GetAmdVidFilterChain(state, options, outputVideoCodec);
+            }
+            else if (string.Equals(options.HardwareAccelerationType, "videotoolbox", StringComparison.OrdinalIgnoreCase))
+            {
+                (mainFilters, subFilters, overlayFilters) = GetAppleVidFilterChain(state, options, outputVideoCodec);
             }
             else
             {
