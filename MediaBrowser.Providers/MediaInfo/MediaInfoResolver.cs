@@ -106,19 +106,28 @@ namespace MediaBrowser.Providers.MediaInfo
                     if (mediaInfo.MediaStreams.Count == 1)
                     {
                         MediaStream mediaStream = mediaInfo.MediaStreams[0];
-                        mediaStream.Index = startIndex++;
-                        mediaStream.IsDefault = pathInfo.IsDefault || mediaStream.IsDefault;
-                        mediaStream.IsForced = pathInfo.IsForced || mediaStream.IsForced;
 
-                        mediaStreams.Add(MergeMetadata(mediaStream, pathInfo));
+                        if ((mediaStream.Type == MediaStreamType.Audio && _type == DlnaProfileType.Audio)
+                            || (mediaStream.Type == MediaStreamType.Subtitle && _type == DlnaProfileType.Subtitle))
+                        {
+                            mediaStream.Index = startIndex++;
+                            mediaStream.IsDefault = pathInfo.IsDefault || mediaStream.IsDefault;
+                            mediaStream.IsForced = pathInfo.IsForced || mediaStream.IsForced;
+
+                            mediaStreams.Add(MergeMetadata(mediaStream, pathInfo));
+                        }
                     }
                     else
                     {
                         foreach (MediaStream mediaStream in mediaInfo.MediaStreams)
                         {
-                            mediaStream.Index = startIndex++;
+                            if ((mediaStream.Type == MediaStreamType.Audio && _type == DlnaProfileType.Audio)
+                                || (mediaStream.Type == MediaStreamType.Subtitle && _type == DlnaProfileType.Subtitle))
+                            {
+                                mediaStream.Index = startIndex++;
 
-                            mediaStreams.Add(MergeMetadata(mediaStream, pathInfo));
+                                mediaStreams.Add(MergeMetadata(mediaStream, pathInfo));
+                            }
                         }
                     }
                 }
@@ -221,13 +230,6 @@ namespace MediaBrowser.Providers.MediaInfo
             mediaStream.IsExternal = true;
             mediaStream.Title = string.IsNullOrEmpty(mediaStream.Title) ? (string.IsNullOrEmpty(pathInfo.Title) ? null : pathInfo.Title) : mediaStream.Title;
             mediaStream.Language = string.IsNullOrEmpty(mediaStream.Language) ? (string.IsNullOrEmpty(pathInfo.Language) ? null : pathInfo.Language) : mediaStream.Language;
-
-            mediaStream.Type = _type switch
-            {
-                DlnaProfileType.Audio => MediaStreamType.Audio,
-                DlnaProfileType.Subtitle => MediaStreamType.Subtitle,
-                _ => mediaStream.Type
-            };
 
             return mediaStream;
         }
