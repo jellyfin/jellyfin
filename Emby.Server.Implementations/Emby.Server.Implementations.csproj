@@ -31,7 +31,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.5" />
     <PackageReference Include="Mono.Nat" Version="3.0.3" />
-    <PackageReference Include="prometheus-net.DotNetRuntime" Version="4.2.3" />
+    <PackageReference Include="prometheus-net.DotNetRuntime" Version="4.2.4" />
     <PackageReference Include="sharpcompress" Version="0.31.0" />
     <PackageReference Include="SQLitePCL.pretty.netstandard" Version="3.1.0" />
     <PackageReference Include="DotNet.Glob" Version="3.1.3" />
