@@ -637,10 +637,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 filters.Add("thumbnail=n=" + (useLargerBatchSize ? "50" : "24"));
             }
 
-            // Use SW tonemap on HDR video stream only when the zscale filter is available.
-            var enableHdrExtraction = string.Equals(videoStream?.VideoRange, "HDR", StringComparison.OrdinalIgnoreCase) && SupportsFilter("zscale");
-            if (enableHdrExtraction)
+            // Use SW tonemap on HDR10/HLG video stream only when the zscale filter is available.
+            var enableHdrExtraction = false;
+
+            if ((string.Equals(videoStream?.ColorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(videoStream?.ColorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
+                && SupportsFilter("zscale"))
             {
+                enableHdrExtraction = true;
+
                 filters.Add("zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0:peak=100,zscale=t=bt709:m=bt709,format=yuv420p");
             }
 
