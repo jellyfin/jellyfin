@@ -1239,10 +1239,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // Example: we encoded half of desired length, then codec detected
                 // scene cut and inserted a keyframe; next forced keyframe would
                 // be created outside of segment, which breaks seeking.
-                // -sc_threshold 0 is used to prevent the hardware encoder from post processing to break the set keyframe.
                 gopArg = string.Format(
                     CultureInfo.InvariantCulture,
-                    " -g:v:0 {0} -keyint_min:v:0 {0} -sc_threshold:v:0 0",
+                    " -g:v:0 {0} -keyint_min:v:0 {0}",
                     Math.Ceiling(segmentLength * framerate.Value));
             }
 
@@ -1262,6 +1261,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                      || string.Equals(codec, "hevc_vaapi", StringComparison.OrdinalIgnoreCase))
             {
                 args += keyFrameArg;
+
+                // prevent the libx264 from post processing to break the set keyframe.
+                if (string.Equals(codec, "libx264", StringComparison.OrdinalIgnoreCase))
+                {
+                    args += " -sc_threshold:v:0 0";
+                }
             }
             else
             {
