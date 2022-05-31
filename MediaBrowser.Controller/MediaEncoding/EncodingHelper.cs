@@ -144,15 +144,28 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         private bool IsHwTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
         {
-            if (state.VideoStream == null)
+            if (state.VideoStream == null
+                || !options.EnableTonemapping
+                || GetVideoColorBitDepth(state) != 10)
             {
                 return false;
             }
 
-            return options.EnableTonemapping
-                   && (string.Equals(state.VideoStream.ColorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase)
-                       || string.Equals(state.VideoStream.ColorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
-                   && GetVideoColorBitDepth(state) == 10;
+            if (string.Equals(state.VideoStream.CodecTag, "dovi", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(state.VideoStream.CodecTag, "dvh1", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(state.VideoStream.CodecTag, "dvhe", StringComparison.OrdinalIgnoreCase))
+            {
+                // Only native SW decoder and HW accelerator can parse dovi rpu.
+                var vidDecoder = GetHardwareVideoDecoder(state, options) ?? string.Empty;
+                var isSwDecoder = string.IsNullOrEmpty(vidDecoder);
+                var isNvdecDecoder = vidDecoder.Contains("cuda", StringComparison.OrdinalIgnoreCase);
+                var isVaapiDecoder = vidDecoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase);
+                var isD3d11vaDecoder = vidDecoder.Contains("d3d11va", StringComparison.OrdinalIgnoreCase);
+                return isSwDecoder || isNvdecDecoder || isVaapiDecoder || isD3d11vaDecoder;
+            }
+
+            return string.Equals(state.VideoStream.ColorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(state.VideoStream.ColorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase);
         }
 
         private bool IsVaapiVppTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
