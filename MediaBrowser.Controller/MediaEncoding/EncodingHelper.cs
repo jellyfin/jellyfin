@@ -529,8 +529,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (string.Equals(codec, "flac", StringComparison.OrdinalIgnoreCase))
             {
-                // flac is experimental in mp4 muxer
-                return "flac -strict -2";
+                return "flac";
             }
 
             return codec.ToLowerInvariant();
