@@ -120,5 +120,7 @@
     "Forced": "Forsirani",
     "Default": "Zadano",
     "TaskOptimizeDatabase": "Optimiziraj bazu podataka",
-    "External": "Vanjski"
+    "External": "Vanjski",
+    "TaskKeyframeExtractorDescription": "Izvlačenje ključnih okvira iz videozapisa za stvaranje objektivnije HLS liste za reprodukciju. Pokretanje ovog zadatka može potrajati.",
+    "TaskKeyframeExtractor": "Izvoditelj ključnog okvira"
 }
