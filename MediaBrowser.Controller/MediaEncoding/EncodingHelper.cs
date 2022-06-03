@@ -1041,7 +1041,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (string.Equals(videoCodec, "h264_amf", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(videoCodec, "hevc_amf", StringComparison.OrdinalIgnoreCase))
             {
-                return FormattableString.Invariant($" -qmin 18 -qmax 32 -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
+                // Override the too high default qmin 18 in transcoding preset
+                return FormattableString.Invariant($" -rc cbr -qmin 0 -qmax 32 -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
             }
 
             if (string.Equals(videoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase)
