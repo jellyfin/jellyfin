@@ -80,6 +80,11 @@ namespace Jellyfin.Api.Controllers
                 ? _libraryManager.GetUserRootFolder()
                 : _libraryManager.GetItemById(itemId);
 
+            if (item == null)
+            {
+                return NotFound();
+            }
+
             await RefreshItemOnDemandIfNeeded(item).ConfigureAwait(false);
 
             var dtoOptions = new DtoOptions().AddClientFields(Request);

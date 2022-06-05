@@ -170,6 +170,11 @@ namespace Emby.Server.Implementations.Dto
 
         private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, User user = null, BaseItem owner = null)
         {
+            if (item == null)
+            {
+                return null;
+            }
+
             var dto = new BaseItemDto
             {
                 ServerId = _appHost.SystemId
