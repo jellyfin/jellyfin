@@ -39,7 +39,7 @@ namespace MediaBrowser.Model.Configuration
             EnableHardwareEncoding = true;
             AllowHevcEncoding = false;
             EnableSubtitleExtraction = true;
-            AllowOnDemandMetadataBasedKeyframeExtractionForExtensions = Array.Empty<string>();
+            AllowOnDemandMetadataBasedKeyframeExtractionForExtensions = new[] { "mkv" };
             HardwareDecodingCodecs = new string[] { "h264", "vc1" };
         }
 
