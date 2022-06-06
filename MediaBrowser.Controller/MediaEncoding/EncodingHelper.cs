@@ -13,11 +13,13 @@ using System.Threading;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
+using Microsoft.Extensions.Configuration;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
@@ -32,6 +34,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly IApplicationPaths _appPaths;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ISubtitleEncoder _subtitleEncoder;
+        private readonly IConfiguration _config;
 
         private static readonly string[] _videoProfilesH264 = new[]
         {
@@ -54,11 +57,13 @@ namespace MediaBrowser.Controller.MediaEncoding
         public EncodingHelper(
             IApplicationPaths appPaths,
             IMediaEncoder mediaEncoder,
-            ISubtitleEncoder subtitleEncoder)
+            ISubtitleEncoder subtitleEncoder,
+            IConfiguration config)
         {
             _appPaths = appPaths;
             _mediaEncoder = mediaEncoder;
             _subtitleEncoder = subtitleEncoder;
+            _config = config;
         }
 
         public string GetH264Encoder(EncodingJobInfo state, EncodingOptions encodingOptions)
@@ -4877,21 +4882,20 @@ namespace MediaBrowser.Controller.MediaEncoding
         public string GetInputModifier(EncodingJobInfo state, EncodingOptions encodingOptions, string segmentContainer)
         {
             var inputModifier = string.Empty;
-            var probeSizeArgument = string.Empty;
+            var analyzeDurationArgument = string.Empty;
 
-            string analyzeDurationArgument;
-            if (state.MediaSource.AnalyzeDurationMs.HasValue)
+            // Apply -analyzeduration as per the environment variable,
+            // otherwise ffmpeg will break on certain files due to default value is 0.
+            // The default value of -probesize is more than enough, so leave it as is.
+            var ffmpegAnalyzeDuration = _config.GetFFmpegAnalyzeDuration() ?? string.Empty;
+
+            if (!string.IsNullOrEmpty(ffmpegAnalyzeDuration))
+            {
+                analyzeDurationArgument = "-analyzeduration " + ffmpegAnalyzeDuration;
+            }
+            else if (state.MediaSource.AnalyzeDurationMs.HasValue)
             {
                 analyzeDurationArgument = "-analyzeduration " + (state.MediaSource.AnalyzeDurationMs.Value * 1000).ToString(CultureInfo.InvariantCulture);
-            }
-            else
-            {
-                analyzeDurationArgument = string.Empty;
-            }
-
-            if (!string.IsNullOrEmpty(probeSizeArgument))
-            {
-                inputModifier += " " + probeSizeArgument;
             }
 
             if (!string.IsNullOrEmpty(analyzeDurationArgument))

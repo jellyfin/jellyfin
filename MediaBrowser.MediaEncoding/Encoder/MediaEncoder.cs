@@ -16,6 +16,7 @@ using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.MediaEncoding.Probing;
 using MediaBrowser.Model.Dlna;
@@ -49,6 +50,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;
+        private readonly IConfiguration _config;
         private readonly string _startupOptionFFmpegPath;
 
         private readonly SemaphoreSlim _thumbnailResourcePool = new SemaphoreSlim(2, 2);
@@ -85,6 +87,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _configurationManager = configurationManager;
             _fileSystem = fileSystem;
             _localization = localization;
+            _config = config;
             _startupOptionFFmpegPath = config.GetValue<string>(Controller.Extensions.ConfigurationExtensions.FfmpegPathKey) ?? string.Empty;
             _jsonSerializerOptions = JsonDefaults.Options;
         }
@@ -371,8 +374,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var inputFile = request.MediaSource.Path;
 
             string analyzeDuration = string.Empty;
+            string ffmpegAnalyzeDuration = _config.GetFFmpegAnalyzeDuration() ?? string.Empty;
 
-            if (request.MediaSource.AnalyzeDurationMs > 0)
+            if (!string.IsNullOrEmpty(ffmpegAnalyzeDuration))
+            {
+                analyzeDuration = "-analyzeduration " + ffmpegAnalyzeDuration;
+            }
+            else if (request.MediaSource.AnalyzeDurationMs > 0)
             {
                 analyzeDuration = "-analyzeduration " +
                                   (request.MediaSource.AnalyzeDurationMs * 1000).ToString();
