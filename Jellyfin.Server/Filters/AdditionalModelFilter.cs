@@ -1,3 +1,6 @@
+using System;
+using Jellyfin.Extensions;
+using Jellyfin.Server.Migrations;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.LiveTv;
@@ -15,6 +18,8 @@ namespace Jellyfin.Server.Filters
     /// </summary>
     public class AdditionalModelFilter : IDocumentFilter
     {
+        // Array of options that should not be visible in the api spec.
+        private static readonly Type[] _ignoredConfigurations = { typeof(MigrationOptions) };
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>
@@ -44,6 +49,11 @@ namespace Jellyfin.Server.Filters
 
             foreach (var configuration in _serverConfigurationManager.GetConfigurationStores())
             {
+                if (_ignoredConfigurations.IndexOf(configuration.ConfigurationType) != -1)
+                {
+                    continue;
+                }
+
                 context.SchemaGenerator.GenerateSchema(configuration.ConfigurationType, context.SchemaRepository);
             }
         }
