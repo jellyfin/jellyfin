@@ -13,7 +13,7 @@ namespace Emby.Dlna.Configuration
         public DlnaOptions()
         {
             EnablePlayTo = true;
-            EnableServer = true;
+            EnableServer = false;
             BlastAliveMessages = true;
             SendOnlyMatchedHost = true;
             ClientDiscoveryIntervalSeconds = 60;
