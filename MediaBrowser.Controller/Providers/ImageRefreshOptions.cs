@@ -34,8 +34,8 @@ namespace MediaBrowser.Controller.Providers
 
         public bool IsReplacingImage(ImageType type)
         {
-            return ImageRefreshMode == MetadataRefreshMode.FullRefresh &&
-                   (ReplaceAllImages || ReplaceImages.Contains(type));
+            return ImageRefreshMode == MetadataRefreshMode.FullRefresh
+                   && (ReplaceAllImages || ReplaceImages.Contains(type));
         }
     }
 }
