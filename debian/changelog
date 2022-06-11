@@ -1,20 +1,8 @@
-jellyfin-server (10.8.0~beta3) unstable; urgency=medium
+jellyfin-server (10.8.0-1) unstable; urgency=medium
 
-  * New upstream version 10.8.0-beta3; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.8.0-beta3
+  * New upstream version 10.8.0; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.8.0
 
- -- Jellyfin Packaging Team <packaging@jellyfin.org>  Sun, 15 May 2022 20:15:43 -0400
-
-jellyfin-server (10.8.0~beta2) unstable; urgency=medium
-
-  * New upstream version 10.8.0-beta2; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.8.0-beta2
-
- -- Jellyfin Packaging Team <packaging@jellyfin.org>  Sun, 17 Apr 2022 15:51:43 -0400
-
-jellyfin-server (10.8.0~beta1) unstable; urgency=medium
-
-  * New upstream version 10.8.0-beta1; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.8.0-beta1
-
- -- Jellyfin Packaging Team <packaging@jellyfin.org>  Fri, 25 Mar 2022 22:22:51 -0400
+ -- Jellyfin Packaging Team <packaging@jellyfin.org>  Fri, 10 Jun 2022 22:15:12 -0400
 
 jellyfin-server (10.7.0-1) unstable; urgency=medium
 
