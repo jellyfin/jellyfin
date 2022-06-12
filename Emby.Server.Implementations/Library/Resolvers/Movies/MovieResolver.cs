@@ -225,7 +225,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
             if (string.Equals(collectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
             {
-                return ResolveVideos<Episode>(parent, files, true, collectionType, true);
+                return ResolveVideos<Episode>(parent, files, false, collectionType, true);
             }
 
             return null;
