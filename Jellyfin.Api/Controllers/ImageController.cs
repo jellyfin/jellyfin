@@ -1724,6 +1724,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, Range(0, 100)] int quality = 90)
         {
             var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
+            if (!brandingOptions.SplashscreenEnabled)
+            {
+                return NotFound();
+            }
+
             string splashscreenPath;
 
             if (!string.IsNullOrWhiteSpace(brandingOptions.SplashscreenLocation)
