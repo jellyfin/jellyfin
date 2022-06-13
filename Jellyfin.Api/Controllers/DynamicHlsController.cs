@@ -1414,7 +1414,8 @@ namespace Jellyfin.Api.Controllers
                 state.RunTimeTicks ?? 0,
                 state.Request.SegmentContainer ?? string.Empty,
                 "hls1/main/",
-                Request.QueryString.ToString());
+                Request.QueryString.ToString(),
+                EncodingHelper.IsCopyCodec(state.OutputVideoCodec));
             var playlist = _dynamicHlsPlaylistGenerator.CreateMainPlaylist(request);
 
             return new FileContentResult(Encoding.UTF8.GetBytes(playlist), MimeTypes.GetMimeType("playlist.m3u8"));
