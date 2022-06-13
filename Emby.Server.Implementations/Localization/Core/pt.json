@@ -119,5 +119,6 @@
     "Default": "Predefinição",
     "TaskCleanActivityLogDescription": "Apaga itens no registro com idade acima do que é configurado.",
     "TaskOptimizeDatabase": "Otimizar base de dados",
-    "TaskOptimizeDatabaseDescription": "Base de dados compacta e corta espaço livre. A execução desta tarefa depois de digitalizar a biblioteca ou de fazer outras alterações que impliquem modificações na base de dados pode melhorar o desempenho."
+    "TaskOptimizeDatabaseDescription": "Base de dados compacta e corta espaço livre. A execução desta tarefa depois de digitalizar a biblioteca ou de fazer outras alterações que impliquem modificações na base de dados pode melhorar o desempenho.",
+    "External": "Externo"
 }
