@@ -4684,11 +4684,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     return GetHwaccelType(state, options, "vc1", bitDepth, hwSurface);
                 }
-
-                if (string.Equals("mpeg4", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
-                {
-                    return GetHwaccelType(state, options, "mpeg4", bitDepth, hwSurface);
-                }
             }
 
             if (is8_10bitSwFormatsAmf)
