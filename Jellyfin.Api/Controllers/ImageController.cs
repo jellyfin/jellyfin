@@ -1724,6 +1724,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, Range(0, 100)] int quality = 90)
         {
             var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
+            if (!brandingOptions.SplashscreenEnabled)
+            {
+                return NotFound();
+            }
+
             string splashscreenPath;
 
             if (!string.IsNullOrWhiteSpace(brandingOptions.SplashscreenLocation)
@@ -1776,6 +1781,7 @@ namespace Jellyfin.Api.Controllers
 
         /// <summary>
         /// Uploads a custom splashscreen.
+        /// The body is expected to the image contents base64 encoded.
         /// </summary>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         /// <response code="204">Successfully uploaded new splashscreen.</response>
@@ -1799,7 +1805,13 @@ namespace Jellyfin.Api.Controllers
                 return BadRequest("Error reading mimetype from uploaded image");
             }
 
-            var filePath = Path.Combine(_appPaths.DataPath, "splashscreen-upload" + MimeTypes.ToExtension(mimeType.Value));
+            var extension = MimeTypes.ToExtension(mimeType.Value);
+            if (string.IsNullOrEmpty(extension))
+            {
+                return BadRequest("Error converting mimetype to an image extension");
+            }
+
+            var filePath = Path.Combine(_appPaths.DataPath, "splashscreen-upload" + extension);
             var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
             brandingOptions.SplashscreenLocation = filePath;
             _serverConfigurationManager.SaveConfiguration("branding", brandingOptions);
@@ -1807,6 +1819,29 @@ namespace Jellyfin.Api.Controllers
             await using (var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous))
             {
                 await memoryStream.CopyToAsync(fs, CancellationToken.None).ConfigureAwait(false);
+            }
+
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Delete a custom splashscreen.
+        /// </summary>
+        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+        /// <response code="204">Successfully deleted the custom splashscreen.</response>
+        /// <response code="403">User does not have permission to delete splashscreen..</response>
+        [HttpDelete("Branding/Splashscreen")]
+        [Authorize(Policy = Policies.RequiresElevation)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public ActionResult DeleteCustomSplashscreen()
+        {
+            var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
+            if (!string.IsNullOrEmpty(brandingOptions.SplashscreenLocation)
+                && System.IO.File.Exists(brandingOptions.SplashscreenLocation))
+            {
+                System.IO.File.Delete(brandingOptions.SplashscreenLocation);
+                brandingOptions.SplashscreenLocation = null;
+                _serverConfigurationManager.SaveConfiguration("branding", brandingOptions);
             }
 
             return NoContent();

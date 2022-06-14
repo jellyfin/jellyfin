@@ -21,6 +21,11 @@ public class BrandingOptions
     public string? CustomCss { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether to enable the splashscreen.
+    /// </summary>
+    public bool SplashscreenEnabled { get; set; } = true;
+
+    /// <summary>
     /// Gets or sets the splashscreen location on disk.
     /// </summary>
     /// <remarks>
