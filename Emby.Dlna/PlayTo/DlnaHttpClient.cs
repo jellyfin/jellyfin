@@ -59,7 +59,7 @@ namespace Emby.Dlna.PlayTo
                 _logger.LogError(ex, "Failed to parse response");
                 if (_logger.IsEnabled(LogLevel.Debug))
                 {
-                    _logger.LogDebug("Malformed response:\n", await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
+                    _logger.LogDebug("Malformed response: {Content}\n", await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
                 }
 
                 return null;
