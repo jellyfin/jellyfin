@@ -3123,7 +3123,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var memoryOutput = false;
             var isUploadForOclTonemap = isSwDecoder && doOclTonemap;
-            if ((isD3d11vaDecoder && isSwEncoder))
+            if (isD3d11vaDecoder && isSwEncoder)
             {
                 memoryOutput = true;
 
