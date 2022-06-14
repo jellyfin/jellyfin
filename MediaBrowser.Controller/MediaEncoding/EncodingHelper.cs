@@ -2902,7 +2902,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // sw => hw
                 if (doCuTonemap)
                 {
-                    mainFilters.Add("hwupload");
+                    mainFilters.Add("hwupload=derive_device=cuda");
                 }
             }
 
@@ -2982,7 +2982,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         subFilters.Add(subTextSubtitlesFilter);
                     }
 
-                    subFilters.Add("hwupload");
+                    subFilters.Add("hwupload=derive_device=cuda");
                     overlayFilters.Add("overlay_cuda=eof_action=endall:shortest=1:repeatlast=0");
                 }
             }
@@ -3094,7 +3094,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // sw => hw
                 if (doOclTonemap)
                 {
-                    mainFilters.Add("hwupload");
+                    mainFilters.Add("hwupload=derive_device=d3d11va:extra_hw_frames=16");
+                    mainFilters.Add("format=d3d11");
+                    mainFilters.Add("hwmap=derive_device=opencl");
                 }
             }
 
@@ -3121,7 +3123,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var memoryOutput = false;
             var isUploadForOclTonemap = isSwDecoder && doOclTonemap;
-            if ((isD3d11vaDecoder && isSwEncoder) || isUploadForOclTonemap)
+            if (isD3d11vaDecoder && isSwEncoder)
             {
                 memoryOutput = true;
 
@@ -3133,7 +3135,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // OUTPUT yuv420p surface
-            if (isSwDecoder && isAmfEncoder)
+            if (isSwDecoder && isAmfEncoder && !isUploadForOclTonemap)
             {
                 memoryOutput = true;
             }
@@ -3148,7 +3150,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
-            if (isDxInDxOut && !hasSubs)
+            if ((isDxInDxOut || isUploadForOclTonemap) && !hasSubs)
             {
                 // OUTPUT d3d11(nv12) surface(vram)
                 // reverse-mapping via d3d11-opencl interop.
@@ -3159,7 +3161,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             /* Make sub and overlay filters for subtitle stream */
             var subFilters = new List<string>();
             var overlayFilters = new List<string>();
-            if (isDxInDxOut)
+            if (isDxInDxOut || isUploadForOclTonemap)
             {
                 if (hasSubs)
                 {
@@ -3180,7 +3182,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         subFilters.Add(subTextSubtitlesFilter);
                     }
 
-                    subFilters.Add("hwupload");
+                    subFilters.Add("hwupload=derive_device=opencl");
                     overlayFilters.Add("overlay_opencl=eof_action=endall:shortest=1:repeatlast=0");
                     overlayFilters.Add("hwmap=derive_device=d3d11va:reverse=1");
                     overlayFilters.Add("format=d3d11");
@@ -3314,7 +3316,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // sw => hw
                 if (doOclTonemap)
                 {
-                    mainFilters.Add("hwupload");
+                    mainFilters.Add("hwupload=derive_device=opencl");
                 }
             }
             else if (isD3d11vaDecoder || isQsvDecoder)
@@ -3421,7 +3423,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     // qsv requires a fixed pool size.
                     // default to 64 otherwise it will fail on certain iGPU.
-                    subFilters.Add("hwupload=extra_hw_frames=64");
+                    subFilters.Add("hwupload=derive_device=qsv:extra_hw_frames=64");
 
                     var (overlayW, overlayH) = GetFixedOutputSize(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     var overlaySize = (overlayW.HasValue && overlayH.HasValue)
@@ -3511,7 +3513,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // sw => hw
                 if (doOclTonemap)
                 {
-                    mainFilters.Add("hwupload");
+                    mainFilters.Add("hwupload=derive_device=opencl");
                 }
             }
             else if (isVaapiDecoder || isQsvDecoder)
@@ -3632,7 +3634,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     // qsv requires a fixed pool size.
                     // default to 64 otherwise it will fail on certain iGPU.
-                    subFilters.Add("hwupload=extra_hw_frames=64");
+                    subFilters.Add("hwupload=derive_device=qsv:extra_hw_frames=64");
 
                     var (overlayW, overlayH) = GetFixedOutputSize(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     var overlaySize = (overlayW.HasValue && overlayH.HasValue)
@@ -3695,7 +3697,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     var newfilters = new List<string>();
                     var noOverlay = swFilterChain.OverlayFilters.Count == 0;
                     newfilters.AddRange(noOverlay ? swFilterChain.MainFilters : swFilterChain.OverlayFilters);
-                    newfilters.Add("hwupload");
+                    newfilters.Add("hwupload=derive_device=vaapi");
 
                     var mainFilters = noOverlay ? newfilters : swFilterChain.MainFilters;
                     var overlayFilters = noOverlay ? swFilterChain.OverlayFilters : newfilters;
@@ -3776,7 +3778,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // sw => hw
                 if (doOclTonemap)
                 {
-                    mainFilters.Add("hwupload");
+                    mainFilters.Add("hwupload=derive_device=opencl");
                 }
             }
             else if (isVaapiDecoder)
@@ -3881,7 +3883,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         subFilters.Add(subTextSubtitlesFilter);
                     }
 
-                    subFilters.Add("hwupload");
+                    subFilters.Add("hwupload=derive_device=vaapi");
 
                     var (overlayW, overlayH) = GetFixedOutputSize(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     var overlaySize = (overlayW.HasValue && overlayH.HasValue)
@@ -3972,7 +3974,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // sw => hw
                 if (doOclTonemap)
                 {
-                    mainFilters.Add("hwupload");
+                    mainFilters.Add("hwupload=derive_device=opencl");
                 }
             }
             else if (isVaapiDecoder)
@@ -4002,7 +4004,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     mainFilters.Add("hwdownload");
                     mainFilters.Add("format=p010le");
-                    mainFilters.Add("hwupload");
+                    mainFilters.Add("hwupload=derive_device=opencl");
                 }
             }
 
