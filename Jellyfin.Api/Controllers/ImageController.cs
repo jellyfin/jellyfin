@@ -1781,7 +1781,7 @@ namespace Jellyfin.Api.Controllers
 
         /// <summary>
         /// Uploads a custom splashscreen.
-....... /// The body is expected to the image contents base64 encoded.
+        /// The body is expected to the image contents base64 encoded.
         /// </summary>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         /// <response code="204">Successfully uploaded new splashscreen.</response>
