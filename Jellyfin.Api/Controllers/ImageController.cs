@@ -1812,6 +1812,29 @@ namespace Jellyfin.Api.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Delete a custom splashscreen.
+        /// </summary>
+        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+        /// <response code="204">Successfully uploaded new splashscreen.</response>
+        /// <response code="403">User does not have permission to delete splashscreen..</response>
+        [HttpDelete("Branding/Splashscreen")]
+        [Authorize(Policy = Policies.RequiresElevation)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public ActionResult DeleteCustomSplashscreen()
+        {
+            var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
+            if (!string.IsNullOrEmpty(brandingOptions.SplashscreenLocation)
+                && System.IO.File.Exists(brandingOptions.SplashscreenLocation))
+            {
+                System.IO.File.Delete(brandingOptions.SplashscreenLocation);
+                brandingOptions.SplashscreenLocation = null;
+                _serverConfigurationManager.SaveConfiguration("branding", brandingOptions);
+            }
+
+            return NoContent();
+        }
+
         private static async Task<MemoryStream> GetMemoryStream(Stream inputStream)
         {
             using var reader = new StreamReader(inputStream);
