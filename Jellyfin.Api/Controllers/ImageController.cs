@@ -1804,7 +1804,13 @@ namespace Jellyfin.Api.Controllers
                 return BadRequest("Error reading mimetype from uploaded image");
             }
 
-            var filePath = Path.Combine(_appPaths.DataPath, "splashscreen-upload" + MimeTypes.ToExtension(mimeType.Value));
+            var extension = MimeTypes.ToExtension(mimeType.Value);
+            if (string.IsNullOrEmpty(extension))
+            {
+                return BadRequest("Error converting mimetype to an image extension");
+            }
+
+            var filePath = Path.Combine(_appPaths.DataPath, "splashscreen-upload" + extension);
             var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
             brandingOptions.SplashscreenLocation = filePath;
             _serverConfigurationManager.SaveConfiguration("branding", brandingOptions);
