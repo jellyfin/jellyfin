@@ -1828,7 +1828,7 @@ namespace Jellyfin.Api.Controllers
         /// Delete a custom splashscreen.
         /// </summary>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
-        /// <response code="204">Successfully uploaded new splashscreen.</response>
+        /// <response code="204">Successfully deleted the custom splashscreen.</response>
         /// <response code="403">User does not have permission to delete splashscreen..</response>
         [HttpDelete("Branding/Splashscreen")]
         [Authorize(Policy = Policies.RequiresElevation)]
