@@ -216,7 +216,7 @@ namespace Jellyfin.Api.Helpers
                         var sdrVideoUrl = ReplaceProfile(playlistUrl, "hevc", string.Join(',', requestedVideoProfiles), "main");
                         sdrVideoUrl += "&AllowVideoStreamCopy=false";
 
-                        var sdrOutputVideoBitrate = _encodingHelper.GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec) ?? 0;
+                        var sdrOutputVideoBitrate = _encodingHelper.GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec);
                         var sdrOutputAudioBitrate = _encodingHelper.GetAudioBitrateParam(state.VideoRequest, state.AudioStream) ?? 0;
                         var sdrTotalBitrate = sdrOutputAudioBitrate + sdrOutputVideoBitrate;
 
