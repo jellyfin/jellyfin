@@ -1893,7 +1893,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             return request.EnableAutoStreamCopy;
         }
 
-        public int? GetVideoBitrateParamValue(BaseEncodingJobOptions request, MediaStream videoStream, string outputVideoCodec)
+        public int GetVideoBitrateParamValue(BaseEncodingJobOptions request, MediaStream videoStream, string outputVideoCodec)
         {
             var bitrate = request.VideoBitRate;
 
@@ -1925,7 +1925,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
-            return bitrate;
+            // Cap the max target bitrate to intMax/2 to satisify the bufsize=bitrate*2.
+            return Math.Min(bitrate ?? 0, int.MaxValue / 2);
         }
 
         private int GetMinBitrate(int sourceBitrate, int requestedBitrate)
@@ -2272,7 +2273,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 int audioStreamIndex = FindIndex(state.MediaSource.MediaStreams, state.AudioStream);
                 if (state.AudioStream.IsExternal)
                 {
-                    bool hasExternalGraphicsSubs = state.SubtitleStream != null && state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream;
+                    bool hasExternalGraphicsSubs = state.SubtitleStream != null
+                        && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode
+                        && state.SubtitleStream.IsExternal
+                        && !state.SubtitleStream.IsTextSubtitleStream;
                     int externalAudioMapIndex = hasExternalGraphicsSubs ? 2 : 1;
 
                     args += string.Format(
