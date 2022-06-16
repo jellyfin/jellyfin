@@ -2403,7 +2403,7 @@ namespace Emby.Server.Implementations.Data
                 }
 
                 // genres, tags, studios, person, year?
-                builder.Append("+ (Select count(1) * 10 from ItemValues where ItemId=Guid and CleanValue in (select CleanValue from itemvalues where ItemId=@SimilarItemId))");
+                builder.Append("+ (Select count(1) * 10 from ItemValues where ItemId=Guid and CleanValue in (select CleanValue from ItemValues where ItemId=@SimilarItemId))");
 
                 if (item is MusicArtist)
                 {
@@ -3058,12 +3058,12 @@ namespace Emby.Server.Implementations.Data
 
             if (string.Equals(name, ItemSortBy.Artist, StringComparison.OrdinalIgnoreCase))
             {
-                return "(select CleanValue from itemvalues where ItemId=Guid and Type=0 LIMIT 1)";
+                return "(select CleanValue from ItemValues where ItemId=Guid and Type=0 LIMIT 1)";
             }
 
             if (string.Equals(name, ItemSortBy.AlbumArtist, StringComparison.OrdinalIgnoreCase))
             {
-                return "(select CleanValue from itemvalues where ItemId=Guid and Type=1 LIMIT 1)";
+                return "(select CleanValue from ItemValues where ItemId=Guid and Type=1 LIMIT 1)";
             }
 
             if (string.Equals(name, ItemSortBy.OfficialRating, StringComparison.OrdinalIgnoreCase))
@@ -3073,7 +3073,7 @@ namespace Emby.Server.Implementations.Data
 
             if (string.Equals(name, ItemSortBy.Studio, StringComparison.OrdinalIgnoreCase))
             {
-                return "(select CleanValue from itemvalues where ItemId=Guid and Type=3 LIMIT 1)";
+                return "(select CleanValue from ItemValues where ItemId=Guid and Type=3 LIMIT 1)";
             }
 
             if (string.Equals(name, ItemSortBy.SeriesDatePlayed, StringComparison.OrdinalIgnoreCase))
@@ -3144,6 +3144,11 @@ namespace Emby.Server.Implementations.Data
             if (string.Equals(name, ItemSortBy.IndexNumber, StringComparison.OrdinalIgnoreCase))
             {
                 return ItemSortBy.IndexNumber;
+            }
+
+            if (string.Equals(name, ItemSortBy.SimilarityScore, StringComparison.OrdinalIgnoreCase))
+            {
+                return ItemSortBy.SimilarityScore;
             }
 
             // Unknown SortBy, just sort by the SortName.
@@ -3846,7 +3851,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     var paramName = "@ArtistIds" + index;
 
-                    clauses.Add("(guid in (select itemid from itemvalues where CleanValue = (select CleanName from TypedBaseItems where guid=" + paramName + ") and Type<=1))");
+                    clauses.Add("(guid in (select itemid from ItemValues where CleanValue = (select CleanName from TypedBaseItems where guid=" + paramName + ") and Type<=1))");
                     if (statement != null)
                     {
                         statement.TryBind(paramName, artistId);
@@ -3867,7 +3872,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     var paramName = "@ArtistIds" + index;
 
-                    clauses.Add("(guid in (select itemid from itemvalues where CleanValue = (select CleanName from TypedBaseItems where guid=" + paramName + ") and Type=1))");
+                    clauses.Add("(guid in (select itemid from ItemValues where CleanValue = (select CleanName from TypedBaseItems where guid=" + paramName + ") and Type=1))");
                     if (statement != null)
                     {
                         statement.TryBind(paramName, artistId);
@@ -3888,7 +3893,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     var paramName = "@ArtistIds" + index;
 
-                    clauses.Add("((select CleanName from TypedBaseItems where guid=" + paramName + ") in (select CleanValue from itemvalues where ItemId=Guid and Type=0) AND (select CleanName from TypedBaseItems where guid=" + paramName + ") not in (select CleanValue from itemvalues where ItemId=Guid and Type=1))");
+                    clauses.Add("((select CleanName from TypedBaseItems where guid=" + paramName + ") in (select CleanValue from ItemValues where ItemId=Guid and Type=0) AND (select CleanName from TypedBaseItems where guid=" + paramName + ") not in (select CleanValue from ItemValues where ItemId=Guid and Type=1))");
                     if (statement != null)
                     {
                         statement.TryBind(paramName, artistId);
@@ -3930,7 +3935,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     var paramName = "@ExcludeArtistId" + index;
 
-                    clauses.Add("(guid not in (select itemid from itemvalues where CleanValue = (select CleanName from TypedBaseItems where guid=" + paramName + ") and Type<=1))");
+                    clauses.Add("(guid not in (select itemid from ItemValues where CleanValue = (select CleanName from TypedBaseItems where guid=" + paramName + ") and Type<=1))");
                     if (statement != null)
                     {
                         statement.TryBind(paramName, artistId);
@@ -3951,7 +3956,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     var paramName = "@GenreId" + index;
 
-                    clauses.Add("(guid in (select itemid from itemvalues where CleanValue = (select CleanName from TypedBaseItems where guid=" + paramName + ") and Type=2))");
+                    clauses.Add("(guid in (select itemid from ItemValues where CleanValue = (select CleanName from TypedBaseItems where guid=" + paramName + ") and Type=2))");
                     if (statement != null)
                     {
                         statement.TryBind(paramName, genreId);
@@ -3970,7 +3975,7 @@ namespace Emby.Server.Implementations.Data
                 var index = 0;
                 foreach (var item in query.Genres)
                 {
-                    clauses.Add("@Genre" + index + " in (select CleanValue from itemvalues where ItemId=Guid and Type=2)");
+                    clauses.Add("@Genre" + index + " in (select CleanValue from ItemValues where ItemId=Guid and Type=2)");
                     if (statement != null)
                     {
                         statement.TryBind("@Genre" + index, GetCleanValue(item));
@@ -3989,7 +3994,7 @@ namespace Emby.Server.Implementations.Data
                 var index = 0;
                 foreach (var item in tags)
                 {
-                    clauses.Add("@Tag" + index + " in (select CleanValue from itemvalues where ItemId=Guid and Type=4)");
+                    clauses.Add("@Tag" + index + " in (select CleanValue from ItemValues where ItemId=Guid and Type=4)");
                     if (statement != null)
                     {
                         statement.TryBind("@Tag" + index, GetCleanValue(item));
@@ -4008,7 +4013,7 @@ namespace Emby.Server.Implementations.Data
                 var index = 0;
                 foreach (var item in excludeTags)
                 {
-                    clauses.Add("@ExcludeTag" + index + " not in (select CleanValue from itemvalues where ItemId=Guid and Type=4)");
+                    clauses.Add("@ExcludeTag" + index + " not in (select CleanValue from ItemValues where ItemId=Guid and Type=4)");
                     if (statement != null)
                     {
                         statement.TryBind("@ExcludeTag" + index, GetCleanValue(item));
@@ -4029,7 +4034,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     var paramName = "@StudioId" + index;
 
-                    clauses.Add("(guid in (select itemid from itemvalues where CleanValue = (select CleanName from TypedBaseItems where guid=" + paramName + ") and Type=3))");
+                    clauses.Add("(guid in (select itemid from ItemValues where CleanValue = (select CleanName from TypedBaseItems where guid=" + paramName + ") and Type=3))");
 
                     if (statement != null)
                     {
@@ -4508,7 +4513,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     int index = 0;
                     string excludedTags = string.Join(',', query.ExcludeInheritedTags.Select(_ => paramName + index++));
-                    whereClauses.Add("((select CleanValue from itemvalues where ItemId=Guid and Type=6 and cleanvalue in (" + excludedTags + ")) is null)");
+                    whereClauses.Add("((select CleanValue from ItemValues where ItemId=Guid and Type=6 and cleanvalue in (" + excludedTags + ")) is null)");
                 }
                 else
                 {
@@ -4743,11 +4748,11 @@ namespace Emby.Server.Implementations.Data
                 ';',
                 new string[]
                 {
-                    "delete from itemvalues where type = 6",
+                    "delete from ItemValues where type = 6",
 
-                    "insert into itemvalues (ItemId, Type, Value, CleanValue)  select ItemId, 6, Value, CleanValue from ItemValues where Type=4",
+                    "insert into ItemValues (ItemId, Type, Value, CleanValue)  select ItemId, 6, Value, CleanValue from ItemValues where Type=4",
 
-                    @"insert into itemvalues (ItemId, Type, Value, CleanValue) select AncestorIds.itemid, 6, ItemValues.Value, ItemValues.CleanValue
+                    @"insert into ItemValues (ItemId, Type, Value, CleanValue) select AncestorIds.itemid, 6, ItemValues.Value, ItemValues.CleanValue
 FROM AncestorIds
 LEFT JOIN ItemValues ON (AncestorIds.AncestorId = ItemValues.ItemId)
 where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type = 4 "
