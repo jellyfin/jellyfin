@@ -445,14 +445,14 @@ namespace Emby.Drawing
                 .ToString("N", CultureInfo.InvariantCulture);
         }
 
-        private async Task<(string Path, DateTime DateModified)> GetSupportedImage(string originalImagePath, DateTime dateModified)
+        private Task<(string Path, DateTime DateModified)> GetSupportedImage(string originalImagePath, DateTime dateModified)
         {
             var inputFormat = Path.GetExtension(originalImagePath.AsSpan()).TrimStart('.').ToString();
 
             // These are just jpg files renamed as tbn
             if (string.Equals(inputFormat, "tbn", StringComparison.OrdinalIgnoreCase))
             {
-                return (originalImagePath, dateModified);
+                return Task.FromResult((originalImagePath, dateModified));
             }
 
             // TODO _mediaEncoder.ConvertImage is not implemented
@@ -484,7 +484,7 @@ namespace Emby.Drawing
             //     }
             // }
 
-            return (originalImagePath, dateModified);
+            return Task.FromResult((originalImagePath, dateModified));
         }
 
         /// <summary>
