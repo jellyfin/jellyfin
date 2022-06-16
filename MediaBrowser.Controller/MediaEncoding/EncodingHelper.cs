@@ -1753,6 +1753,21 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
+            var requestedRangeTypes = state.GetRequestedRangeTypes(videoStream.Codec);
+            if (requestedProfiles.Length > 0)
+            {
+                if (string.IsNullOrEmpty(videoStream.VideoRangeType))
+                {
+                    return false;
+                }
+
+                if (!string.IsNullOrEmpty(videoStream.VideoRangeType)
+                    && !requestedRangeTypes.Contains(videoStream.VideoRangeType, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+            }
+
             // Video width must fall within requested value
             if (request.MaxWidth.HasValue
                 && (!videoStream.Width.HasValue || videoStream.Width.Value > request.MaxWidth.Value))
