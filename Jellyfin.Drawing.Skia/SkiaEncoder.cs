@@ -10,7 +10,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Drawing;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
-using static Jellyfin.Drawing.Skia.SkiaHelper;
+using SKSvg = SkiaSharp.Extended.Svg.SKSvg;
 
 namespace Jellyfin.Drawing.Skia
 {
@@ -19,8 +19,7 @@ namespace Jellyfin.Drawing.Skia
     /// </summary>
     public class SkiaEncoder : IImageEncoder
     {
-        private static readonly HashSet<string> _transparentImageTypes
-            = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".gif", ".webp" };
+        private static readonly HashSet<string> _transparentImageTypes = new(StringComparer.OrdinalIgnoreCase) { ".png", ".gif", ".webp" };
 
         private readonly ILogger<SkiaEncoder> _logger;
         private readonly IApplicationPaths _appPaths;
@@ -71,7 +70,7 @@ namespace Jellyfin.Drawing.Skia
 
         /// <inheritdoc/>
         public IReadOnlyCollection<ImageFormat> SupportedOutputFormats
-            => new HashSet<ImageFormat>() { ImageFormat.Webp, ImageFormat.Jpg, ImageFormat.Png };
+            => new HashSet<ImageFormat> { ImageFormat.Webp, ImageFormat.Jpg, ImageFormat.Png };
 
         /// <summary>
         /// Check if the native lib is available.
@@ -109,9 +108,7 @@ namespace Jellyfin.Drawing.Skia
         }
 
         /// <inheritdoc />
-        /// <exception cref="ArgumentNullException">The path is null.</exception>
         /// <exception cref="FileNotFoundException">The path is not valid.</exception>
-        /// <exception cref="SkiaCodecException">The file at the specified path could not be used to generate a codec.</exception>
         public ImageDimensions GetImageSize(string path)
         {
             if (!File.Exists(path))
@@ -119,12 +116,27 @@ namespace Jellyfin.Drawing.Skia
                 throw new FileNotFoundException("File not found", path);
             }
 
+            var extension = Path.GetExtension(path.AsSpan());
+            if (extension.Equals(".svg", StringComparison.OrdinalIgnoreCase))
+            {
+                var svg = new SKSvg();
+                svg.Load(path);
+                return new ImageDimensions(Convert.ToInt32(svg.Picture.CullRect.Width), Convert.ToInt32(svg.Picture.CullRect.Height));
+            }
+
             using var codec = SKCodec.Create(path, out SKCodecResult result);
-            EnsureSuccess(result);
-
-            var info = codec.Info;
-
-            return new ImageDimensions(info.Width, info.Height);
+            switch (result)
+            {
+                case SKCodecResult.Success:
+                    var info = codec.Info;
+                    return new ImageDimensions(info.Width, info.Height);
+                case SKCodecResult.Unimplemented:
+                    _logger.LogDebug("Image format not supported: {FilePath}", path);
+                    return new ImageDimensions(0, 0);
+                default:
+                    _logger.LogError("Unable to determine image dimensions for {FilePath}: {SkCodecResult}", path, result);
+                    return new ImageDimensions(0, 0);
+            }
         }
 
         /// <inheritdoc />
@@ -136,6 +148,13 @@ namespace Jellyfin.Drawing.Skia
             if (path == null)
             {
                 throw new ArgumentNullException(nameof(path));
+            }
+
+            var extension = Path.GetExtension(path.AsSpan()).TrimStart('.');
+            if (!SupportedInputFormats.Contains(extension, StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogDebug("Unable to compute blur hash due to unsupported format: {ImagePath}", path);
+                return string.Empty;
             }
 
             // Any larger than 128x128 is too slow and there's no visually discernible difference
@@ -376,6 +395,13 @@ namespace Jellyfin.Drawing.Skia
             if (outputPath.Length == 0)
             {
                 throw new ArgumentException("String can't be empty.", nameof(outputPath));
+            }
+
+            var inputFormat = Path.GetExtension(inputPath.AsSpan()).TrimStart('.');
+            if (!SupportedInputFormats.Contains(inputFormat, StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogDebug("Unable to encode image due to unsupported format: {ImagePath}", inputPath);
+                return inputPath;
             }
 
             var skiaOutputFormat = GetImageFormat(outputFormat);
