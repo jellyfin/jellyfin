@@ -125,6 +125,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                    && _mediaEncoder.SupportsFilter("scale_vaapi")
                    && _mediaEncoder.SupportsFilter("deinterlace_vaapi")
                    && _mediaEncoder.SupportsFilter("tonemap_vaapi")
+                   && _mediaEncoder.SupportsFilter("procamp_vaapi")
                    && _mediaEncoder.SupportsFilterWithOption(FilterOptionType.OverlayVaapiFrameSync)
                    && _mediaEncoder.SupportsFilter("hwupload_vaapi");
         }
@@ -2704,7 +2705,18 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var args = "tonemap_{0}=format={1}:p=bt709:t=bt709:m=bt709";
 
-            if (!hwTonemapSuffix.Contains("vaapi", StringComparison.OrdinalIgnoreCase))
+            if (hwTonemapSuffix.Contains("vaapi", StringComparison.OrdinalIgnoreCase))
+            {
+                args += ",procamp_vaapi=b={2}:c={3}:extra_hw_frames=16";
+                return string.Format(
+                        CultureInfo.InvariantCulture,
+                        args,
+                        hwTonemapSuffix,
+                        videoFormat ?? "nv12",
+                        options.VppTonemappingBrightness,
+                        options.VppTonemappingContrast);
+            }
+            else
             {
                 args += ":tonemap={2}:peak={3}:desat={4}";
 
