@@ -1867,7 +1867,7 @@ namespace MediaBrowser.Model.Dlna
                             // change from split by | to comma
                             // strip spaces to avoid having to encode
                             var values = value
-                                .Split('|', StringSplitOptions.RemoveEmptyEntries);
+                                .Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
                             if (condition.Condition == ProfileConditionType.Equals)
                             {
@@ -1876,7 +1876,7 @@ namespace MediaBrowser.Model.Dlna
                             else if (condition.Condition == ProfileConditionType.EqualsAny)
                             {
                                 var currentValue = item.GetOption(qualifier, "rangetype");
-                                if (!string.IsNullOrEmpty(currentValue) && values.Any(value => value == currentValue))
+                                if (!string.IsNullOrEmpty(currentValue) && values.Any(v => string.Equals(v, currentValue, StringComparison.OrdinalIgnoreCase)))
                                 {
                                     item.SetOption(qualifier, "rangetype", currentValue);
                                 }

@@ -293,7 +293,7 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 var targetVideoCodecs = TargetVideoCodec;
-                var videoCodec = targetVideoCodecs.Length == 0 ? null : targetVideoCodecs[0];
+                var videoCodec = targetVideoCodecs.FirstOrDefault();
                 if (!string.IsNullOrEmpty(videoCodec))
                 {
                     return GetOption(videoCodec, "rangetype");

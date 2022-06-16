@@ -1761,8 +1761,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return false;
                 }
 
-                if (!string.IsNullOrEmpty(videoStream.VideoRangeType)
-                    && !requestedRangeTypes.Contains(videoStream.VideoRangeType, StringComparison.OrdinalIgnoreCase))
+                if (!requestedRangeTypes.Contains(videoStream.VideoRangeType, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }

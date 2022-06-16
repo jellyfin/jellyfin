@@ -104,7 +104,7 @@ namespace MediaBrowser.Model.Entities
         {
             get
             {
-                var (videoRange, videoRangeType) = getVideoColorRange();
+                var (videoRange, _) = GetVideoColorRange();
 
                 return videoRange;
             }
@@ -118,7 +118,7 @@ namespace MediaBrowser.Model.Entities
         {
             get
             {
-                var (videoRange, videoRangeType) = getVideoColorRange();
+                var (_, videoRangeType) = GetVideoColorRange();
 
                 return videoRangeType;
             }
@@ -563,7 +563,7 @@ namespace MediaBrowser.Model.Entities
             return true;
         }
 
-        public (string VideoRange, string VideoRangeType) getVideoColorRange()
+        public (string VideoRange, string VideoRangeType) GetVideoColorRange()
         {
             if (Type != MediaStreamType.Video)
             {
