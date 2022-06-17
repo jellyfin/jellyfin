@@ -221,6 +221,9 @@ namespace MediaBrowser.Model.Dlna
                 case ProfileConditionValue.VideoProfile:
                     return TranscodeReason.VideoProfileNotSupported;
 
+                case ProfileConditionValue.VideoRangeType:
+                    return TranscodeReason.VideoRangeTypeNotSupported;
+
                 case ProfileConditionValue.VideoTimestamp:
                     // TODO
                     return 0;
@@ -748,9 +751,9 @@ namespace MediaBrowser.Model.Dlna
                         var appliedVideoConditions = options.Profile.CodecProfiles
                             .Where(i => i.Type == CodecType.Video &&
                                 i.ContainsAnyCodec(videoCodec, container) &&
-                                i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoConditionSatisfied(applyCondition, videoStream?.Width, videoStream?.Height, videoStream?.BitDepth, videoStream?.BitRate, videoStream?.Profile, videoStream?.Level, videoFramerate, videoStream?.PacketLength, timestamp, videoStream?.IsAnamorphic, videoStream?.IsInterlaced, videoStream?.RefFrames, numVideoStreams, numAudioStreams, videoStream?.CodecTag, videoStream?.IsAVC)))
+                                i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoConditionSatisfied(applyCondition, videoStream?.Width, videoStream?.Height, videoStream?.BitDepth, videoStream?.BitRate, videoStream?.Profile, videoStream?.VideoRangeType, videoStream?.Level, videoFramerate, videoStream?.PacketLength, timestamp, videoStream?.IsAnamorphic, videoStream?.IsInterlaced, videoStream?.RefFrames, numVideoStreams, numAudioStreams, videoStream?.CodecTag, videoStream?.IsAVC)))
                             .Select(i =>
-                                i.Conditions.All(condition => ConditionProcessor.IsVideoConditionSatisfied(condition, videoStream?.Width, videoStream?.Height, videoStream?.BitDepth, videoStream?.BitRate, videoStream?.Profile, videoStream?.Level, videoFramerate, videoStream?.PacketLength, timestamp, videoStream?.IsAnamorphic, videoStream?.IsInterlaced, videoStream?.RefFrames, numVideoStreams, numAudioStreams, videoStream?.CodecTag, videoStream?.IsAVC)));
+                                i.Conditions.All(condition => ConditionProcessor.IsVideoConditionSatisfied(condition, videoStream?.Width, videoStream?.Height, videoStream?.BitDepth, videoStream?.BitRate, videoStream?.Profile, videoStream?.VideoRangeType, videoStream?.Level, videoFramerate, videoStream?.PacketLength, timestamp, videoStream?.IsAnamorphic, videoStream?.IsInterlaced, videoStream?.RefFrames, numVideoStreams, numAudioStreams, videoStream?.CodecTag, videoStream?.IsAVC)));
 
                         // An empty appliedVideoConditions means that the codec has no conditions for the current video stream
                         var conditionsSatisfied = appliedVideoConditions.All(satisfied => satisfied);
@@ -834,6 +837,7 @@ namespace MediaBrowser.Model.Dlna
             int? videoBitrate = videoStream?.BitRate;
             double? videoLevel = videoStream?.Level;
             string videoProfile = videoStream?.Profile;
+            string videoRangeType = videoStream?.VideoRangeType;
             float videoFramerate = videoStream == null ? 0 : videoStream.AverageFrameRate ?? videoStream.AverageFrameRate ?? 0;
             bool? isAnamorphic = videoStream?.IsAnamorphic;
             bool? isInterlaced = videoStream?.IsInterlaced;
@@ -850,7 +854,7 @@ namespace MediaBrowser.Model.Dlna
             var appliedVideoConditions = options.Profile.CodecProfiles
                 .Where(i => i.Type == CodecType.Video &&
                     i.ContainsAnyCodec(videoCodec, container) &&
-                    i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc)));
+                    i.ApplyConditions.All(applyCondition => ConditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoRangeType, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc)));
             var isFirstAppliedCodecProfile = true;
             foreach (var i in appliedVideoConditions)
             {
@@ -1081,6 +1085,7 @@ namespace MediaBrowser.Model.Dlna
             int? videoBitrate = videoStream?.BitRate;
             double? videoLevel = videoStream?.Level;
             string videoProfile = videoStream?.Profile;
+            string videoRangeType = videoStream?.VideoRangeType;
             float videoFramerate = videoStream == null ? 0 : videoStream.AverageFrameRate ?? videoStream.AverageFrameRate ?? 0;
             bool? isAnamorphic = videoStream?.IsAnamorphic;
             bool? isInterlaced = videoStream?.IsInterlaced;
@@ -1098,7 +1103,7 @@ namespace MediaBrowser.Model.Dlna
             int? numVideoStreams = mediaSource.GetStreamCount(MediaStreamType.Video);
 
             var checkVideoConditions = (ProfileCondition[] conditions) =>
-                conditions.Where(applyCondition => !ConditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc));
+                conditions.Where(applyCondition => !ConditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoRangeType, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc));
 
             // Check container conditions
             var containerProfileReasons = AggregateFailureConditions(
@@ -1846,6 +1851,38 @@ namespace MediaBrowser.Model.Dlna
                                 else
                                 {
                                     item.SetOption(qualifier, "profile", string.Join(',', values));
+                                }
+                            }
+
+                            break;
+                        }
+
+                    case ProfileConditionValue.VideoRangeType:
+                        {
+                            if (string.IsNullOrEmpty(qualifier))
+                            {
+                                continue;
+                            }
+
+                            // change from split by | to comma
+                            // strip spaces to avoid having to encode
+                            var values = value
+                                .Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+                            if (condition.Condition == ProfileConditionType.Equals)
+                            {
+                                item.SetOption(qualifier, "rangetype", string.Join(',', values));
+                            }
+                            else if (condition.Condition == ProfileConditionType.EqualsAny)
+                            {
+                                var currentValue = item.GetOption(qualifier, "rangetype");
+                                if (!string.IsNullOrEmpty(currentValue) && values.Any(v => string.Equals(v, currentValue, StringComparison.OrdinalIgnoreCase)))
+                                {
+                                    item.SetOption(qualifier, "rangetype", currentValue);
+                                }
+                                else
+                                {
+                                    item.SetOption(qualifier, "rangetype", string.Join(',', values));
                                 }
                             }
 

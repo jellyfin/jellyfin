@@ -312,7 +312,7 @@ namespace Jellyfin.Api.Helpers
 
                 responseHeaders.Add(
                     "contentFeatures.dlna.org",
-                    ContentFeatureBuilder.BuildVideoHeader(profile, state.OutputContainer, videoCodec, audioCodec, state.OutputWidth, state.OutputHeight, state.TargetVideoBitDepth, state.OutputVideoBitrate, state.TargetTimestamp, isStaticallyStreamed, state.RunTimeTicks, state.TargetVideoProfile, state.TargetVideoLevel, state.TargetFramerate, state.TargetPacketLength, state.TranscodeSeekInfo, state.IsTargetAnamorphic, state.IsTargetInterlaced, state.TargetRefFrames, state.TargetVideoStreamCount, state.TargetAudioStreamCount, state.TargetVideoCodecTag, state.IsTargetAVC).FirstOrDefault() ?? string.Empty);
+                    ContentFeatureBuilder.BuildVideoHeader(profile, state.OutputContainer, videoCodec, audioCodec, state.OutputWidth, state.OutputHeight, state.TargetVideoBitDepth, state.OutputVideoBitrate, state.TargetTimestamp, isStaticallyStreamed, state.RunTimeTicks, state.TargetVideoProfile, state.TargetVideoRangeType, state.TargetVideoLevel, state.TargetFramerate, state.TargetPacketLength, state.TranscodeSeekInfo, state.IsTargetAnamorphic, state.IsTargetInterlaced, state.TargetRefFrames, state.TargetVideoStreamCount, state.TargetAudioStreamCount, state.TargetVideoCodecTag, state.IsTargetAVC).FirstOrDefault() ?? string.Empty);
             }
         }
 
@@ -533,6 +533,7 @@ namespace Jellyfin.Api.Helpers
                     state.TargetVideoBitDepth,
                     state.OutputVideoBitrate,
                     state.TargetVideoProfile,
+                    state.TargetVideoRangeType,
                     state.TargetVideoLevel,
                     state.TargetFramerate,
                     state.TargetPacketLength,
