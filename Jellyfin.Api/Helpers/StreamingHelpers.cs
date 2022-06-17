@@ -476,14 +476,10 @@ namespace Jellyfin.Api.Helpers
             }
 
             // Fallback to the container of mediaSource
-            if (mediaSource != null && !string.IsNullOrEmpty(mediaSource.Container))
+            if (!string.IsNullOrEmpty(mediaSource?.Container))
             {
-                var containers = mediaSource.Container.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-                if (containers.Length > 0)
-                {
-                    return '.' + containers[0];
-                }
+                var idx = mediaSource.Container.IndexOf(',', StringComparison.OrdinalIgnoreCase);
+                return '.' + (idx == -1 ? mediaSource.Container : mediaSource.Container[..idx]).Trim();
             }
 
             return null;
