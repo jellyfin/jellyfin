@@ -179,7 +179,7 @@ namespace Jellyfin.Api.Helpers
             {
                 containerInternal = streamingRequest.Static ?
                     StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(state.InputContainer, null, DlnaProfileType.Audio)
-                    : GetOutputFileExtension(state);
+                    : GetOutputFileExtension(state, mediaSource);
             }
 
             state.OutputContainer = (containerInternal ?? string.Empty).TrimStart('.');
@@ -235,7 +235,7 @@ namespace Jellyfin.Api.Helpers
             ApplyDeviceProfileSettings(state, dlnaManager, deviceManager, httpRequest, streamingRequest.DeviceProfileId, streamingRequest.Static);
 
             var ext = string.IsNullOrWhiteSpace(state.OutputContainer)
-                ? GetOutputFileExtension(state)
+                ? GetOutputFileExtension(state, mediaSource)
                 : ("." + state.OutputContainer);
 
             state.OutputFilePath = GetOutputFilePath(state, ext!, serverConfigurationManager, streamingRequest.DeviceId, streamingRequest.PlaySessionId);
@@ -409,8 +409,9 @@ namespace Jellyfin.Api.Helpers
         /// Gets the output file extension.
         /// </summary>
         /// <param name="state">The state.</param>
+        /// <param name="mediaSource">The mediaSource.</param>
         /// <returns>System.String.</returns>
-        private static string? GetOutputFileExtension(StreamState state)
+        private static string? GetOutputFileExtension(StreamState state, MediaSourceInfo? mediaSource)
         {
             var ext = Path.GetExtension(state.RequestedUrl);
 
@@ -425,7 +426,7 @@ namespace Jellyfin.Api.Helpers
                 var videoCodec = state.Request.VideoCodec;
 
                 if (string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(videoCodec, "h265", StringComparison.OrdinalIgnoreCase))
+                    string.Equals(videoCodec, "hevc", StringComparison.OrdinalIgnoreCase))
                 {
                     return ".ts";
                 }
@@ -471,6 +472,17 @@ namespace Jellyfin.Api.Helpers
                 if (string.Equals("wma", audioCodec, StringComparison.OrdinalIgnoreCase))
                 {
                     return ".wma";
+                }
+            }
+
+            // Fallback to the container of mediaSource
+            if (mediaSource != null && !string.IsNullOrEmpty(mediaSource.Container))
+            {
+                var containers = mediaSource.Container.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+                if (containers.Length > 0)
+                {
+                    return '.' + containers[0];
                 }
             }
 
