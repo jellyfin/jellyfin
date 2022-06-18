@@ -545,12 +545,14 @@ namespace Jellyfin.Server
             const string ResourcePath = "Jellyfin.Server.Resources.Configuration.logging.json";
             Stream resource = typeof(Program).Assembly.GetManifestResourceStream(ResourcePath)
                 ?? throw new InvalidOperationException($"Invalid resource path: '{ResourcePath}'");
-            Stream dst = new FileStream(configPath, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
             await using (resource.ConfigureAwait(false))
-            await using (dst.ConfigureAwait(false))
             {
-                // Copy the resource contents to the expected file path for the config file
-                await resource.CopyToAsync(dst).ConfigureAwait(false);
+                Stream dst = new FileStream(configPath, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+                await using (dst.ConfigureAwait(false))
+                {
+                    // Copy the resource contents to the expected file path for the config file
+                    await resource.CopyToAsync(dst).ConfigureAwait(false);
+                }
             }
         }
 

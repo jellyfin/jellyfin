@@ -465,7 +465,8 @@ namespace MediaBrowser.Providers.Music
                 ValidationType = ValidationType.None,
                 CheckCharacters = false,
                 IgnoreProcessingInstructions = true,
-                IgnoreComments = true
+                IgnoreComments = true,
+                Async = true
             };
 
             using var reader = XmlReader.Create(oReader, settings);

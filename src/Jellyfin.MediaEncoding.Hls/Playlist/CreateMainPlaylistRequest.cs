@@ -14,7 +14,8 @@ public class CreateMainPlaylistRequest
     /// <param name="segmentContainer">The desired segment container eg. "ts".</param>
     /// <param name="endpointPrefix">The URI prefix for the relative URL in the playlist.</param>
     /// <param name="queryString">The desired query string to append (must start with ?).</param>
-    public CreateMainPlaylistRequest(string filePath, int desiredSegmentLengthMs, long totalRuntimeTicks, string segmentContainer, string endpointPrefix, string queryString)
+    /// <param name="isRemuxingVideo">Whether the video is being remuxed.</param>
+    public CreateMainPlaylistRequest(string filePath, int desiredSegmentLengthMs, long totalRuntimeTicks, string segmentContainer, string endpointPrefix, string queryString, bool isRemuxingVideo)
     {
         FilePath = filePath;
         DesiredSegmentLengthMs = desiredSegmentLengthMs;
@@ -22,6 +23,7 @@ public class CreateMainPlaylistRequest
         SegmentContainer = segmentContainer;
         EndpointPrefix = endpointPrefix;
         QueryString = queryString;
+        IsRemuxingVideo = isRemuxingVideo;
     }
 
     /// <summary>
@@ -53,4 +55,9 @@ public class CreateMainPlaylistRequest
     /// Gets the query string.
     /// </summary>
     public string QueryString { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether the video is being remuxed.
+    /// </summary>
+    public bool IsRemuxingVideo { get; }
 }

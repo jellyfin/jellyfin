@@ -121,8 +121,7 @@ namespace MediaBrowser.Model.Entities
 
                 var codecTag = CodecTag;
 
-                if (string.Equals(codecTag, "dva1", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(codecTag, "dvav", StringComparison.OrdinalIgnoreCase)
+                if (string.Equals(codecTag, "dovi", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(codecTag, "dvh1", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(codecTag, "dvhe", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(codecTag, "dav1", StringComparison.OrdinalIgnoreCase))
