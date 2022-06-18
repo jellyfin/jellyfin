@@ -69,7 +69,7 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets items based on a query.
         /// </summary>
-        /// <param name="userId">The user id supplied as query parameter.</param>
+        /// <param name="userId">The user id supplied as query parameter; this is required when not using an API key.</param>
         /// <param name="maxOfficialRating">Optional filter by maximum official rating (PG, PG-13, TV-MA, etc).</param>
         /// <param name="hasThemeSong">Optional filter by items with theme songs.</param>
         /// <param name="hasThemeVideo">Optional filter by items with theme videos.</param>
