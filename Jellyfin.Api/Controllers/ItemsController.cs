@@ -288,10 +288,10 @@ namespace Jellyfin.Api.Controllers
 
             var enabledChannels = auth.IsApiKey
                 ? Array.Empty<Guid>()
-                : user.GetPreferenceValues<Guid>(PreferenceKind.EnabledChannels);
+                : user!.GetPreferenceValues<Guid>(PreferenceKind.EnabledChannels);
 
             bool isInEnabledFolder = auth.IsApiKey
-                                     || Array.IndexOf(user.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders), item.Id) != -1
+                                     || Array.IndexOf(user!.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders), item.Id) != -1
                                      // Assume all folders inside an EnabledChannel are enabled
                                      || Array.IndexOf(enabledChannels, item.Id) != -1
                                      // Assume all items inside an EnabledChannel are enabled
@@ -302,7 +302,7 @@ namespace Jellyfin.Api.Controllers
                 var collectionFolders = _libraryManager.GetCollectionFolders(item);
                 foreach (var collectionFolder in collectionFolders)
                 {
-                    if (user.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders).Contains(collectionFolder.Id))
+                    if (user!.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders).Contains(collectionFolder.Id))
                     {
                         isInEnabledFolder = true;
                     }
@@ -311,7 +311,7 @@ namespace Jellyfin.Api.Controllers
 
             if (item is not UserRootFolder
                 && !isInEnabledFolder
-                && !user.HasPermission(PermissionKind.EnableAllFolders)
+                && !user!.HasPermission(PermissionKind.EnableAllFolders)
                 && !user.HasPermission(PermissionKind.EnableAllChannels)
                 && !string.Equals(collectionType, CollectionType.Folders, StringComparison.OrdinalIgnoreCase))
             {
