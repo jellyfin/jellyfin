@@ -271,6 +271,30 @@ namespace Emby.Server.Implementations.TV
                         consideredEpisodes.Add(lastWatchedEpisode);
                     }
 
+                    if (rewatching)
+                    {
+                        lastQuery.ParentIndexNumberNotEquals = null;
+                        lastQuery.ParentIndexNumber = 0;
+                        Episode lastWatchedSpecialEpisode = _libraryManager.GetItemList(lastQuery).Cast<Episode>().FirstOrDefault();
+
+                        if (lastWatchedEpisode != null && lastWatchedSpecialEpisode != null)
+                        {
+                            // both regular and special episodes have been watched
+                            // compare viewing dates to find latest watched
+                            // if special was more recently watched, replace lastWatchedEpisode with special
+                            var userDataRegular = _userDataManager.GetUserData(user, lastWatchedEpisode);
+                            var userDataSpecial = _userDataManager.GetUserData(user, lastWatchedSpecialEpisode);
+                            if (userDataSpecial.LastPlayedDate > userDataRegular.LastPlayedDate)
+                            {
+                                lastWatchedEpisode = lastWatchedSpecialEpisode;
+                                // get next regular episode based on recently watched special
+                                nextQuery.MinSortName = null;
+                                nextQuery.MinPremiereDate = lastWatchedEpisode.PremiereDate;
+                                nextEpisode = _libraryManager.GetItemList(nextQuery).Cast<Episode>().FirstOrDefault();
+                            }
+                        }
+                    }
+
                     if (nextEpisode != null)
                     {
                         consideredEpisodes.Add(nextEpisode);
