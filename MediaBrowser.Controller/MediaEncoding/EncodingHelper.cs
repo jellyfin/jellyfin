@@ -13,11 +13,13 @@ using System.Threading;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
+using Microsoft.Extensions.Configuration;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
@@ -32,6 +34,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly IApplicationPaths _appPaths;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ISubtitleEncoder _subtitleEncoder;
+        private readonly IConfiguration _config;
 
         private static readonly string[] _videoProfilesH264 = new[]
         {
@@ -54,11 +57,13 @@ namespace MediaBrowser.Controller.MediaEncoding
         public EncodingHelper(
             IApplicationPaths appPaths,
             IMediaEncoder mediaEncoder,
-            ISubtitleEncoder subtitleEncoder)
+            ISubtitleEncoder subtitleEncoder,
+            IConfiguration config)
         {
             _appPaths = appPaths;
             _mediaEncoder = mediaEncoder;
             _subtitleEncoder = subtitleEncoder;
+            _config = config;
         }
 
         public string GetH264Encoder(EncodingJobInfo state, EncodingOptions encodingOptions)
@@ -144,15 +149,28 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         private bool IsHwTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
         {
-            if (state.VideoStream == null)
+            if (state.VideoStream == null
+                || !options.EnableTonemapping
+                || GetVideoColorBitDepth(state) != 10)
             {
                 return false;
             }
 
-            return options.EnableTonemapping
-                   && (string.Equals(state.VideoStream.ColorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase)
-                       || string.Equals(state.VideoStream.ColorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
-                   && GetVideoColorBitDepth(state) == 10;
+            if (string.Equals(state.VideoStream.CodecTag, "dovi", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(state.VideoStream.CodecTag, "dvh1", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(state.VideoStream.CodecTag, "dvhe", StringComparison.OrdinalIgnoreCase))
+            {
+                // Only native SW decoder and HW accelerator can parse dovi rpu.
+                var vidDecoder = GetHardwareVideoDecoder(state, options) ?? string.Empty;
+                var isSwDecoder = string.IsNullOrEmpty(vidDecoder);
+                var isNvdecDecoder = vidDecoder.Contains("cuda", StringComparison.OrdinalIgnoreCase);
+                var isVaapiDecoder = vidDecoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase);
+                var isD3d11vaDecoder = vidDecoder.Contains("d3d11va", StringComparison.OrdinalIgnoreCase);
+                return isSwDecoder || isNvdecDecoder || isVaapiDecoder || isD3d11vaDecoder;
+            }
+
+            return string.Equals(state.VideoStream.ColorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(state.VideoStream.ColorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase);
         }
 
         private bool IsVaapiVppTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
@@ -516,8 +534,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (string.Equals(codec, "flac", StringComparison.OrdinalIgnoreCase))
             {
-                // flac is experimental in mp4 muxer
-                return "flac -strict -2";
+                return "flac";
             }
 
             return codec.ToLowerInvariant();
@@ -1024,7 +1041,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (string.Equals(videoCodec, "h264_amf", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(videoCodec, "hevc_amf", StringComparison.OrdinalIgnoreCase))
             {
-                return FormattableString.Invariant($" -qmin 18 -qmax 32 -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
+                // Override the too high default qmin 18 in transcoding preset
+                return FormattableString.Invariant($" -rc cbr -qmin 0 -qmax 32 -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
             }
 
             if (string.Equals(videoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase)
@@ -1222,10 +1240,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // Example: we encoded half of desired length, then codec detected
                 // scene cut and inserted a keyframe; next forced keyframe would
                 // be created outside of segment, which breaks seeking.
-                // -sc_threshold 0 is used to prevent the hardware encoder from post processing to break the set keyframe.
                 gopArg = string.Format(
                     CultureInfo.InvariantCulture,
-                    " -g:v:0 {0} -keyint_min:v:0 {0} -sc_threshold:v:0 0",
+                    " -g:v:0 {0} -keyint_min:v:0 {0}",
                     Math.Ceiling(segmentLength * framerate.Value));
             }
 
@@ -1245,6 +1262,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                      || string.Equals(codec, "hevc_vaapi", StringComparison.OrdinalIgnoreCase))
             {
                 args += keyFrameArg;
+
+                // prevent the libx264 from post processing to break the set keyframe.
+                if (string.Equals(codec, "libx264", StringComparison.OrdinalIgnoreCase))
+                {
+                    args += " -sc_threshold:v:0 0";
+                }
             }
             else
             {
@@ -2879,7 +2902,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // sw => hw
                 if (doCuTonemap)
                 {
-                    mainFilters.Add("hwupload");
+                    mainFilters.Add("hwupload=derive_device=cuda");
                 }
             }
 
@@ -2959,7 +2982,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         subFilters.Add(subTextSubtitlesFilter);
                     }
 
-                    subFilters.Add("hwupload");
+                    subFilters.Add("hwupload=derive_device=cuda");
                     overlayFilters.Add("overlay_cuda=eof_action=endall:shortest=1:repeatlast=0");
                 }
             }
@@ -3071,7 +3094,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // sw => hw
                 if (doOclTonemap)
                 {
-                    mainFilters.Add("hwupload");
+                    mainFilters.Add("hwupload=derive_device=d3d11va:extra_hw_frames=16");
+                    mainFilters.Add("format=d3d11");
+                    mainFilters.Add("hwmap=derive_device=opencl");
                 }
             }
 
@@ -3098,7 +3123,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var memoryOutput = false;
             var isUploadForOclTonemap = isSwDecoder && doOclTonemap;
-            if ((isD3d11vaDecoder && isSwEncoder) || isUploadForOclTonemap)
+            if (isD3d11vaDecoder && isSwEncoder)
             {
                 memoryOutput = true;
 
@@ -3110,7 +3135,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // OUTPUT yuv420p surface
-            if (isSwDecoder && isAmfEncoder)
+            if (isSwDecoder && isAmfEncoder && !isUploadForOclTonemap)
             {
                 memoryOutput = true;
             }
@@ -3125,7 +3150,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
-            if (isDxInDxOut && !hasSubs)
+            if ((isDxInDxOut || isUploadForOclTonemap) && !hasSubs)
             {
                 // OUTPUT d3d11(nv12) surface(vram)
                 // reverse-mapping via d3d11-opencl interop.
@@ -3136,7 +3161,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             /* Make sub and overlay filters for subtitle stream */
             var subFilters = new List<string>();
             var overlayFilters = new List<string>();
-            if (isDxInDxOut)
+            if (isDxInDxOut || isUploadForOclTonemap)
             {
                 if (hasSubs)
                 {
@@ -3157,7 +3182,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         subFilters.Add(subTextSubtitlesFilter);
                     }
 
-                    subFilters.Add("hwupload");
+                    subFilters.Add("hwupload=derive_device=opencl");
                     overlayFilters.Add("overlay_opencl=eof_action=endall:shortest=1:repeatlast=0");
                     overlayFilters.Add("hwmap=derive_device=d3d11va:reverse=1");
                     overlayFilters.Add("format=d3d11");
@@ -3291,7 +3316,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // sw => hw
                 if (doOclTonemap)
                 {
-                    mainFilters.Add("hwupload");
+                    mainFilters.Add("hwupload=derive_device=opencl");
                 }
             }
             else if (isD3d11vaDecoder || isQsvDecoder)
@@ -3398,7 +3423,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     // qsv requires a fixed pool size.
                     // default to 64 otherwise it will fail on certain iGPU.
-                    subFilters.Add("hwupload=extra_hw_frames=64");
+                    subFilters.Add("hwupload=derive_device=qsv:extra_hw_frames=64");
 
                     var (overlayW, overlayH) = GetFixedOutputSize(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     var overlaySize = (overlayW.HasValue && overlayH.HasValue)
@@ -3488,7 +3513,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // sw => hw
                 if (doOclTonemap)
                 {
-                    mainFilters.Add("hwupload");
+                    mainFilters.Add("hwupload=derive_device=opencl");
                 }
             }
             else if (isVaapiDecoder || isQsvDecoder)
@@ -3609,7 +3634,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     // qsv requires a fixed pool size.
                     // default to 64 otherwise it will fail on certain iGPU.
-                    subFilters.Add("hwupload=extra_hw_frames=64");
+                    subFilters.Add("hwupload=derive_device=qsv:extra_hw_frames=64");
 
                     var (overlayW, overlayH) = GetFixedOutputSize(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     var overlaySize = (overlayW.HasValue && overlayH.HasValue)
@@ -3672,7 +3697,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     var newfilters = new List<string>();
                     var noOverlay = swFilterChain.OverlayFilters.Count == 0;
                     newfilters.AddRange(noOverlay ? swFilterChain.MainFilters : swFilterChain.OverlayFilters);
-                    newfilters.Add("hwupload");
+                    newfilters.Add("hwupload=derive_device=vaapi");
 
                     var mainFilters = noOverlay ? newfilters : swFilterChain.MainFilters;
                     var overlayFilters = noOverlay ? swFilterChain.OverlayFilters : newfilters;
@@ -3753,7 +3778,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // sw => hw
                 if (doOclTonemap)
                 {
-                    mainFilters.Add("hwupload");
+                    mainFilters.Add("hwupload=derive_device=opencl");
                 }
             }
             else if (isVaapiDecoder)
@@ -3858,7 +3883,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         subFilters.Add(subTextSubtitlesFilter);
                     }
 
-                    subFilters.Add("hwupload");
+                    subFilters.Add("hwupload=derive_device=vaapi");
 
                     var (overlayW, overlayH) = GetFixedOutputSize(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     var overlaySize = (overlayW.HasValue && overlayH.HasValue)
@@ -3949,7 +3974,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // sw => hw
                 if (doOclTonemap)
                 {
-                    mainFilters.Add("hwupload");
+                    mainFilters.Add("hwupload=derive_device=opencl");
                 }
             }
             else if (isVaapiDecoder)
@@ -3979,7 +4004,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     mainFilters.Add("hwdownload");
                     mainFilters.Add("format=p010le");
-                    mainFilters.Add("hwupload");
+                    mainFilters.Add("hwupload=derive_device=opencl");
                 }
             }
 
@@ -4661,11 +4686,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     return GetHwaccelType(state, options, "vc1", bitDepth, hwSurface);
                 }
-
-                if (string.Equals("mpeg4", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
-                {
-                    return GetHwaccelType(state, options, "mpeg4", bitDepth, hwSurface);
-                }
             }
 
             if (is8_10bitSwFormatsAmf)
@@ -4865,21 +4885,20 @@ namespace MediaBrowser.Controller.MediaEncoding
         public string GetInputModifier(EncodingJobInfo state, EncodingOptions encodingOptions, string segmentContainer)
         {
             var inputModifier = string.Empty;
-            var probeSizeArgument = string.Empty;
+            var analyzeDurationArgument = string.Empty;
 
-            string analyzeDurationArgument;
-            if (state.MediaSource.AnalyzeDurationMs.HasValue)
+            // Apply -analyzeduration as per the environment variable,
+            // otherwise ffmpeg will break on certain files due to default value is 0.
+            // The default value of -probesize is more than enough, so leave it as is.
+            var ffmpegAnalyzeDuration = _config.GetFFmpegAnalyzeDuration() ?? string.Empty;
+
+            if (!string.IsNullOrEmpty(ffmpegAnalyzeDuration))
+            {
+                analyzeDurationArgument = "-analyzeduration " + ffmpegAnalyzeDuration;
+            }
+            else if (state.MediaSource.AnalyzeDurationMs.HasValue)
             {
                 analyzeDurationArgument = "-analyzeduration " + (state.MediaSource.AnalyzeDurationMs.Value * 1000).ToString(CultureInfo.InvariantCulture);
-            }
-            else
-            {
-                analyzeDurationArgument = string.Empty;
-            }
-
-            if (!string.IsNullOrEmpty(probeSizeArgument))
-            {
-                inputModifier += " " + probeSizeArgument;
             }
 
             if (!string.IsNullOrEmpty(analyzeDurationArgument))

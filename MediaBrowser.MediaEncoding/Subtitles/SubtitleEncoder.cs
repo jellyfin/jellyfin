@@ -681,11 +681,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             if (!string.Equals(text, newText, StringComparison.Ordinal))
             {
                 var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
-                var writer = new StreamWriter(fileStream, encoding);
                 await using (fileStream.ConfigureAwait(false))
-                await using (writer.ConfigureAwait(false))
                 {
-                    await writer.WriteAsync(newText.AsMemory(), cancellationToken).ConfigureAwait(false);
+                    var writer = new StreamWriter(fileStream, encoding);
+                    await using (writer.ConfigureAwait(false))
+                    {
+                        await writer.WriteAsync(newText.AsMemory(), cancellationToken).ConfigureAwait(false);
+                    }
                 }
             }
         }

@@ -14,9 +14,9 @@ public class GeneralCommand
     }
 
     [JsonConstructor]
-    public GeneralCommand(Dictionary<string, string> arguments)
+    public GeneralCommand(Dictionary<string, string>? arguments)
     {
-        Arguments = arguments;
+        Arguments = arguments ?? new Dictionary<string, string>();
     }
 
     public GeneralCommandType Name { get; set; }

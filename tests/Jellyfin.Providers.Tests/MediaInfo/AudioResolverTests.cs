@@ -43,6 +43,9 @@ public class AudioResolverTests
                 MediaStreams = new List<MediaStream>
                 {
                     new()
+                    {
+                        Type = MediaStreamType.Audio
+                    }
                 }
             }));
 
