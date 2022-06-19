@@ -43,6 +43,9 @@ public class SubtitleResolverTests
                 MediaStreams = new List<MediaStream>
                 {
                     new()
+                    {
+                        Type = MediaStreamType.Subtitle
+                    }
                 }
             }));
 
