@@ -15,6 +15,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -33,6 +34,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// </summary>
         private readonly IMediaEncoder _mediaEncoder;
 
+        private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
@@ -48,18 +50,21 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <summary>
         /// Initializes a new instance of the <see cref="MediaInfoResolver"/> class.
         /// </summary>
+        /// <param name="logger">The logger.</param>
         /// <param name="localizationManager">The localization manager.</param>
         /// <param name="mediaEncoder">The media encoder.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="namingOptions">The <see cref="NamingOptions"/> object containing FileExtensions, MediaDefaultFlags, MediaForcedFlags and MediaFlagDelimiters.</param>
         /// <param name="type">The <see cref="DlnaProfileType"/> of the parsed file.</param>
         protected MediaInfoResolver(
+            ILogger logger,
             ILocalizationManager localizationManager,
             IMediaEncoder mediaEncoder,
             IFileSystem fileSystem,
             NamingOptions namingOptions,
             DlnaProfileType type)
         {
+            _logger = logger;
             _mediaEncoder = mediaEncoder;
             _fileSystem = fileSystem;
             _namingOptions = namingOptions;
@@ -133,8 +138,10 @@ namespace MediaBrowser.Providers.MediaInfo
                             }
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        _logger.LogError(ex, "Error getting external streams from {Path}", pathInfo.Path);
+
                         continue;
                     }
                 }
