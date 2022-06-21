@@ -101,34 +101,41 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 if (!pathInfo.Path.AsSpan().EndsWith(".strm", StringComparison.OrdinalIgnoreCase))
                 {
-                    var mediaInfo = await GetMediaInfo(pathInfo.Path, _type, cancellationToken).ConfigureAwait(false);
-
-                    if (mediaInfo.MediaStreams.Count == 1)
+                    try
                     {
-                        MediaStream mediaStream = mediaInfo.MediaStreams[0];
+                        var mediaInfo = await GetMediaInfo(pathInfo.Path, _type, cancellationToken).ConfigureAwait(false);
 
-                        if ((mediaStream.Type == MediaStreamType.Audio && _type == DlnaProfileType.Audio)
-                            || (mediaStream.Type == MediaStreamType.Subtitle && _type == DlnaProfileType.Subtitle))
+                        if (mediaInfo.MediaStreams.Count == 1)
                         {
-                            mediaStream.Index = startIndex++;
-                            mediaStream.IsDefault = pathInfo.IsDefault || mediaStream.IsDefault;
-                            mediaStream.IsForced = pathInfo.IsForced || mediaStream.IsForced;
+                            MediaStream mediaStream = mediaInfo.MediaStreams[0];
 
-                            mediaStreams.Add(MergeMetadata(mediaStream, pathInfo));
-                        }
-                    }
-                    else
-                    {
-                        foreach (MediaStream mediaStream in mediaInfo.MediaStreams)
-                        {
                             if ((mediaStream.Type == MediaStreamType.Audio && _type == DlnaProfileType.Audio)
                                 || (mediaStream.Type == MediaStreamType.Subtitle && _type == DlnaProfileType.Subtitle))
                             {
                                 mediaStream.Index = startIndex++;
+                                mediaStream.IsDefault = pathInfo.IsDefault || mediaStream.IsDefault;
+                                mediaStream.IsForced = pathInfo.IsForced || mediaStream.IsForced;
 
                                 mediaStreams.Add(MergeMetadata(mediaStream, pathInfo));
                             }
                         }
+                        else
+                        {
+                            foreach (MediaStream mediaStream in mediaInfo.MediaStreams)
+                            {
+                                if ((mediaStream.Type == MediaStreamType.Audio && _type == DlnaProfileType.Audio)
+                                    || (mediaStream.Type == MediaStreamType.Subtitle && _type == DlnaProfileType.Subtitle))
+                                {
+                                    mediaStream.Index = startIndex++;
+
+                                    mediaStreams.Add(MergeMetadata(mediaStream, pathInfo));
+                                }
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        continue;
                     }
                 }
             }
