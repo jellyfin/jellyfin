@@ -44,7 +44,7 @@ namespace MediaBrowser.Controller.Entities.TV
         public int? IndexNumberEnd { get; set; }
 
         [JsonIgnore]
-        protected override bool SupportsOwnedItems => IsStacked || MediaSourceCount > 1;
+        protected override bool SupportsOwnedItems => true;
 
         [JsonIgnore]
         public override bool SupportsInheritedParentImages => true;

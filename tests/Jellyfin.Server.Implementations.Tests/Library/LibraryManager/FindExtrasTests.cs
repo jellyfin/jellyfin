@@ -302,4 +302,146 @@ public class FindExtrasTests
         Assert.Equal("/series/Dexter/trailer.mkv", extras[0].Path);
         Assert.Equal("/series/Dexter/trailers/trailer2.mkv", extras[1].Path);
     }
+
+    [Fact]
+    public void FindExtras_SeriesWithExtras_FindsCorrectExtras()
+    {
+        var owner = new Series { Name = "Dexter", Path = "/series/Dexter" };
+        var paths = new List<string>
+        {
+            "/series/Dexter/Season 1/Dexter - S01E01.mkv",
+            "/series/Dexter/Season 1/Dexter - S01E01-deleted.mkv",
+            "/series/Dexter/Season 1/Dexter - S01E02 - Second Epi.mkv",
+            "/series/Dexter/Season 1/Dexter - S01E02 - Second Epi-interview.mkv",
+            "/series/Dexter/Season 1/Dexter - S01E02 - Second Epi-scene.mkv",
+            "/series/Dexter/Season 1/It's a begining-behindthescenes.mkv",
+            "/series/Dexter/Season 1/interviews/The Cast.mkv",
+            "/series/Dexter/Funny-behindthescenes.mkv",
+            "/series/Dexter/interviews/The Director.mkv",
+            "/series/Dexter/Dexter - S02E05.mkv",
+            "/series/Dexter/Dexter - S02E05-clip.mkv",
+            "/series/Dexter/Dexter - S03E05/Dexter - S03E05 - Fifth.mkv",
+            "/series/Dexter/Dexter - S03E05/Dexter - S03E05 - Fifth-featurette.mkv",
+        };
+
+        var files = paths.Select(p => new FileSystemMetadata
+        {
+            FullName = p,
+            Name = Path.GetFileName(p),
+            Extension = Path.GetExtension(p),
+            IsDirectory = string.IsNullOrEmpty(Path.GetExtension(p))
+        }).ToList();
+
+        var extras = _libraryManager.FindExtras(owner, files, new DirectoryService(_fileSystemMock.Object)).OrderBy(e => e.ExtraType).ToList();
+
+        Assert.Equal(2, extras.Count);
+        Assert.Equal(ExtraType.BehindTheScenes, extras[0].ExtraType);
+        Assert.Equal(typeof(Video), extras[0].GetType());
+        Assert.Equal("Funny-behindthescenes", extras[0].FileNameWithoutExtension);
+        Assert.Equal("/series/Dexter/Funny-behindthescenes.mkv", extras[0].Path);
+        Assert.Equal("/series/Dexter/interviews/The Director.mkv", extras[1].Path);
+    }
+
+    [Fact]
+    public void FindExtras_SeasonWithExtras_FindsCorrectExtras()
+    {
+        var owner = new Season { Name = "Season 1", SeriesName = "Dexter", Path = "/series/Dexter/Season 1" };
+        var paths = new List<string>
+        {
+            "/series/Dexter/Season 1/Dexter - S01E01.mkv",
+            "/series/Dexter/Season 1/Dexter - S01E01-deleted.mkv",
+            "/series/Dexter/Season 1/Dexter - S01E02 - Second Epi.mkv",
+            "/series/Dexter/Season 1/Dexter - S01E02 - Second Epi-interview.mkv",
+            "/series/Dexter/Season 1/Dexter - S01E02 - Second Epi-scene.mkv",
+            "/series/Dexter/Season 1/It's a begining-behindthescenes.mkv",
+            "/series/Dexter/Season 1/interviews/The Cast.mkv",
+            "/series/Dexter/Funny-behindthescenes.mkv",
+            "/series/Dexter/interviews/The Director.mkv",
+            "/series/Dexter/Dexter - S02E05.mkv",
+            "/series/Dexter/Dexter - S02E05-clip.mkv",
+            "/series/Dexter/Dexter - S03E05/Dexter - S03E05 - Fifth.mkv",
+            "/series/Dexter/Dexter - S03E05/Dexter - S03E05 - Fifth-featurette.mkv",
+        };
+
+        var files = paths.Select(p => new FileSystemMetadata
+        {
+            FullName = p,
+            Name = Path.GetFileName(p),
+            Extension = Path.GetExtension(p),
+            IsDirectory = string.IsNullOrEmpty(Path.GetExtension(p))
+        }).ToList();
+
+        var extras = _libraryManager.FindExtras(owner, files, new DirectoryService(_fileSystemMock.Object)).OrderBy(e => e.ExtraType).ToList();
+
+        Assert.Equal(2, extras.Count);
+        Assert.Equal(ExtraType.BehindTheScenes, extras[0].ExtraType);
+        Assert.Equal(typeof(Video), extras[0].GetType());
+        Assert.Equal("It's a begining-behindthescenes", extras[0].FileNameWithoutExtension);
+        Assert.Equal("/series/Dexter/Season 1/It's a begining-behindthescenes.mkv", extras[0].Path);
+        Assert.Equal("/series/Dexter/Season 1/interviews/The Cast.mkv", extras[1].Path);
+    }
+
+    [Fact]
+    public void FindExtras_EpisodeWithExtras_FindsCorrectExtras()
+    {
+        var paths = new List<string>
+        {
+            "/series/Dexter/Season 1/Dexter - S01E01.mkv",
+            "/series/Dexter/Season 1/Dexter - S01E01-deleted.mkv",
+            "/series/Dexter/Season 1/Dexter - S01E02 - Second Epi.mkv",
+            "/series/Dexter/Season 1/Dexter - S01E02 - Second Epi-interview.mkv",
+            "/series/Dexter/Season 1/Dexter - S01E02 - Second Epi-scene.mkv",
+            "/series/Dexter/Season 1/It's a begining-behindthescenes.mkv",
+            "/series/Dexter/Season 1/interviews/The Cast.mkv",
+            "/series/Dexter/Funny-behindthescenes.mkv",
+            "/series/Dexter/interviews/The Director.mkv",
+            "/series/Dexter/Dexter - S02E05.mkv",
+            "/series/Dexter/Dexter - S02E05-clip.mkv",
+            "/series/Dexter/Dexter - S03E05/Dexter - S03E05 - Fifth.mkv",
+            "/series/Dexter/Dexter - S03E05/Dexter - S03E05 - Fifth-featurette.mkv",
+        };
+
+        var files = paths.Select(p => new FileSystemMetadata
+        {
+            FullName = p,
+            Name = Path.GetFileName(p),
+            Extension = Path.GetExtension(p),
+            IsDirectory = string.IsNullOrEmpty(Path.GetExtension(p))
+        }).ToList();
+
+        var owner = new Episode { Name = "Dexter - S01E01", Path = "/series/Dexter/Season 1/Dexter - S01E01.mkv", IsInMixedFolder = true };
+        var extras = _libraryManager.FindExtras(owner, files, new DirectoryService(_fileSystemMock.Object)).OrderBy(e => e.ExtraType).ToList();
+
+        Assert.Single(extras);
+        Assert.Equal(ExtraType.DeletedScene, extras[0].ExtraType);
+        Assert.Equal(typeof(Video), extras[0].GetType());
+        Assert.Equal("/series/Dexter/Season 1/Dexter - S01E01-deleted.mkv", extras[0].Path);
+
+        owner = new Episode { Name = "Dexter - S01E02 - Second Epi", Path = "/series/Dexter/Season 1/Dexter - S01E02 - Second Epi.mkv", IsInMixedFolder = true };
+        extras = _libraryManager.FindExtras(owner, files, new DirectoryService(_fileSystemMock.Object)).OrderBy(e => e.ExtraType).ToList();
+
+        Assert.Equal(2, extras.Count);
+        Assert.Equal(ExtraType.Interview, extras[0].ExtraType);
+        Assert.Equal(ExtraType.Scene, extras[1].ExtraType);
+        Assert.Equal(typeof(Video), extras[0].GetType());
+        Assert.Equal("/series/Dexter/Season 1/Dexter - S01E02 - Second Epi-interview.mkv", extras[0].Path);
+        Assert.Equal("/series/Dexter/Season 1/Dexter - S01E02 - Second Epi-scene.mkv", extras[1].Path);
+
+        owner = new Episode { Name = "Dexter - S02E05", Path = "/series/Dexter/Dexter - S02E05.mkv", IsInMixedFolder = true };
+        extras = _libraryManager.FindExtras(owner, files, new DirectoryService(_fileSystemMock.Object)).OrderBy(e => e.ExtraType).ToList();
+
+        Assert.Single(extras);
+        Assert.Equal(ExtraType.Clip, extras[0].ExtraType);
+        Assert.Equal(typeof(Video), extras[0].GetType());
+        Assert.Equal("/series/Dexter/Dexter - S02E05-clip.mkv", extras[0].Path);
+
+        // episode folder with special feature subfolders are not supported yet, but it should be considered as not mixed, but current is marked as mixed
+        Folder folderOwner = new Folder { Name = "Dexter - S03E05", Path = "/series/Dexter/Dexter - S03E05", IsInMixedFolder = true };
+        extras = _libraryManager.FindExtras(folderOwner, files, new DirectoryService(_fileSystemMock.Object)).OrderBy(e => e.ExtraType).ToList();
+
+        Assert.Single(extras);
+        Assert.Equal(ExtraType.Clip, extras[0].ExtraType);
+        Assert.Equal(typeof(Video), extras[0].GetType());
+        Assert.Equal("/series/Dexter/Dexter - S03E05/Dexter - S03E05 - Fifth-featurette.mkv", extras[0].Path);
+    }
 }
