@@ -48,6 +48,8 @@ using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Season = MediaBrowser.Controller.Entities.TV.Season;
+using Series = MediaBrowser.Controller.Entities.TV.Series;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using EpisodeInfo = Emby.Naming.TV.EpisodeInfo;
 using Genre = MediaBrowser.Controller.Entities.Genre;
@@ -2645,11 +2647,12 @@ namespace Emby.Server.Implementations.Library
                 yield break;
             }
 
+            var resolver = new EpisodeResolver(_namingOptions);
             var count = fileSystemChildren.Count;
             for (var i = 0; i < count; i++)
             {
                 var current = fileSystemChildren[i];
-                if (current.IsDirectory && _namingOptions.AllExtrasTypesFolderNames.ContainsKey(current.Name))
+                if (!owner.IsInMixedFolder && current.IsDirectory && _namingOptions.AllExtrasTypesFolderNames.ContainsKey(current.Name))
                 {
                     var filesInSubFolder = _fileSystem.GetFiles(current.FullName, null, false, false);
                     foreach (var file in filesInSubFolder)
@@ -2668,11 +2671,46 @@ namespace Emby.Server.Implementations.Library
                 }
                 else if (!current.IsDirectory && _extraResolver.TryGetExtraTypeForOwner(current.FullName, ownerVideoInfo, out var extraType))
                 {
-                    var extra = GetExtra(current, extraType.Value);
-                    if (extra != null)
+                    // if owner is dir, don't own episode extras
+                    // test if extra filename is formatted like an episode
+                    int? dashIndex = current.Name?.LastIndexOf('-');
+                    String prefix = null;
+                    if (dashIndex is int dashIndexValue)
                     {
-                        yield return extra;
+                        if (dashIndexValue >= 0)
+                        {
+                            prefix = current.Name.Substring(0, dashIndexValue); // possible episode name
+                            String path = current.FullName;
+                            path = string.Concat(path.AsSpan(0, path.LastIndexOf('-')), current.Extension);
+                            var episodeInfo = resolver.Resolve(path, false);
+
+                            String SeriesName = null;
+                            if (owner is Series series)
+                            {
+                                SeriesName = series.Name;
+                            }
+                            if (owner is Season season)
+                            {
+                                SeriesName = season.SeriesName;
+                            }
+                            if (SeriesName is not null && SeriesName.Equals(episodeInfo?.SeriesName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                // don't attach episode extras to series or season
+                                continue;
+                            }
+                        }
                     }
+
+                    // if owner is Episode, only suffix type matches will be allowed, episode name must match exactly
+                    if (owner is not Episode || (prefix is not null && prefix.Equals(ownerVideoInfo.Name, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        var extra = GetExtra(current, extraType.Value);
+                        if (extra != null)
+                        {
+                            yield return extra;
+                        }
+                    }
+
                 }
             }
 
