@@ -663,18 +663,11 @@ namespace Jellyfin.Api.Helpers
         {
             var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
 
-            // enable throttling when NOT using hardware acceleration
-            if (string.IsNullOrEmpty(encodingOptions.HardwareAccelerationType))
-            {
-                return state.InputProtocol == MediaProtocol.File &&
-                       state.RunTimeTicks.HasValue &&
-                       state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks &&
-                       state.IsInputVideo &&
-                       state.VideoType == VideoType.VideoFile &&
-                       !EncodingHelper.IsCopyCodec(state.OutputVideoCodec);
-            }
-
-            return false;
+            return state.InputProtocol == MediaProtocol.File &&
+                   state.RunTimeTicks.HasValue &&
+                   state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks &&
+                   state.IsInputVideo &&
+                   state.VideoType == VideoType.VideoFile;
         }
 
         /// <summary>
