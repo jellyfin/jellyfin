@@ -246,7 +246,7 @@ namespace Jellyfin.Api.Controllers
         {
             var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
 
-            var user = !auth.IsApiKey && userId.HasValue && !userId.Equals(Guid.Empty)
+            var user = !auth.IsApiKey && userId.HasValue && !userId.Value.Equals(default)
                 ? _userManager.GetUserById(userId.Value)
                 : null;
 
