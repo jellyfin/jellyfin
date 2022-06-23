@@ -7,14 +7,13 @@ SRPM    := jellyfin-$(subst -,~,$(VERSION))-$(RELEASE)$(shell rpm --eval %dist).
 TARBALL :=$(NAME)-$(subst -,~,$(VERSION)).tar.gz
 
 epel-7-x86_64_repos := https://packages.microsoft.com/rhel/7/prod/
-epel-8-x86_64_repos := https://download.copr.fedorainfracloud.org/results/@dotnet-sig/dotnet-preview/$(TARGET)/
-fedora_repos        := https://download.copr.fedorainfracloud.org/results/@dotnet-sig/dotnet-preview/$(TARGET)/
-fedora-34-x86_64_repos := $(fedora_repos)
-fedora-35-x86_64_repos := $(fedora_repos)
-fedora-34-x86_64_repos := $(fedora_repos)
+
+fed_ver := $(shell rpm -E %fedora)
+# fallback when not running on Fedora
+fed_ver ?= 36
+TARGET  ?= fedora-$(fed_ver)-x86_64
 
 outdir  ?= $(PWD)/$(DIR)/
-TARGET  ?= fedora-35-x86_64
 
 srpm: $(DIR)/$(SRPM)
 tarball: $(DIR)/$(TARBALL)
