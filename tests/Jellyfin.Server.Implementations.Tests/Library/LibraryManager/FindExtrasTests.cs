@@ -399,6 +399,7 @@ public class FindExtrasTests
             "/series/Dexter/Dexter - S02E05-clip.mkv",
             "/series/Dexter/Dexter - S03E05/Dexter - S03E05 - Fifth.mkv",
             "/series/Dexter/Dexter - S03E05/Dexter - S03E05 - Fifth-featurette.mkv",
+            "/series/Dexter/Dexter - S03E05/Dexter - S03E05 - Fifth-featurette2.mkv",
         };
 
         var files = paths.Select(p => new FileSystemMetadata
@@ -439,9 +440,10 @@ public class FindExtrasTests
         Folder folderOwner = new Folder { Name = "Dexter - S03E05", Path = "/series/Dexter/Dexter - S03E05", IsInMixedFolder = true };
         extras = _libraryManager.FindExtras(folderOwner, files, new DirectoryService(_fileSystemMock.Object)).OrderBy(e => e.ExtraType).ToList();
 
-        Assert.Single(extras);
+        Assert.Equal(2, extras.Count);
         Assert.Equal(ExtraType.Clip, extras[0].ExtraType);
         Assert.Equal(typeof(Video), extras[0].GetType());
         Assert.Equal("/series/Dexter/Dexter - S03E05/Dexter - S03E05 - Fifth-featurette.mkv", extras[0].Path);
+        Assert.Equal("/series/Dexter/Dexter - S03E05/Dexter - S03E05 - Fifth-featurette2.mkv", extras[1].Path);
     }
 }
