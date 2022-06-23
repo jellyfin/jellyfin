@@ -13,6 +13,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.MediaInfo;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -55,7 +56,7 @@ public class AudioResolverTests
         fileSystem.Setup(fs => fs.DirectoryExists(It.IsRegex(MediaInfoResolverTests.MetadataDirectoryRegex)))
             .Returns(true);
 
-        _audioResolver = new AudioResolver(localizationManager, mediaEncoder.Object, fileSystem.Object, new NamingOptions());
+        _audioResolver = new AudioResolver(Mock.Of<ILogger<AudioResolver>>(), localizationManager, mediaEncoder.Object, fileSystem.Object, new NamingOptions());
     }
 
     [Theory]
