@@ -654,8 +654,8 @@ namespace Jellyfin.Api.Helpers
         {
             if (EnableThrottling(state))
             {
-                transcodingJob.TranscodingThrottler = state.TranscodingThrottler = new TranscodingThrottler(transcodingJob, new Logger<TranscodingThrottler>(new LoggerFactory()), _serverConfigurationManager, _fileSystem);
-                state.TranscodingThrottler.Start();
+                transcodingJob.TranscodingThrottler = new TranscodingThrottler(transcodingJob, new Logger<TranscodingThrottler>(new LoggerFactory()), _serverConfigurationManager, _fileSystem);
+                transcodingJob.TranscodingThrottler.Start();
             }
         }
 
