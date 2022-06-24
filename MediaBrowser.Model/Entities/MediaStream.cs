@@ -172,6 +172,47 @@ namespace MediaBrowser.Model.Entities
             }
         }
 
+        /// <summary>
+        /// Gets the video dovi title.
+        /// </summary>
+        /// <value>The video dovi title.</value>
+        public string VideoDoViTitle
+        {
+            get
+            {
+                var dvProfile = DvProfile;
+                var rpuPresentFlag = RpuPresentFlag == 1;
+                var blPresentFlag = BlPresentFlag == 1;
+                var dvBlCompatId = DvBlSignalCompatibilityId;
+
+                if (rpuPresentFlag
+                    && blPresentFlag
+                    && (dvProfile == 4
+                        || dvProfile == 5
+                        || dvProfile == 7
+                        || dvProfile == 8
+                        || dvProfile == 9))
+                {
+                    var title = "DV Profile " + dvProfile;
+
+                    if (dvBlCompatId > 0)
+                    {
+                        title += "." + dvBlCompatId;
+                    }
+
+                    return dvBlCompatId switch
+                    {
+                        1 => title + " (HDR10)",
+                        2 => title + " (SDR)",
+                        4 => title + " (HLG)",
+                        _ => title
+                    };
+                }
+
+                return null;
+            }
+        }
+
         public string LocalizedUndefined { get; set; }
 
         public string LocalizedDefault { get; set; }
@@ -630,11 +671,17 @@ namespace MediaBrowser.Model.Entities
                 return ("HDR", "HLG");
             }
 
-            // For some Dolby Vision files, no color transfer is provided, so check the codec
-
             var codecTag = CodecTag;
+            var dvProfile = DvProfile;
+            var rpuPresentFlag = RpuPresentFlag == 1;
+            var blPresentFlag = BlPresentFlag == 1;
+            var dvBlCompatId = DvBlSignalCompatibilityId;
 
-            if (string.Equals(codecTag, "dovi", StringComparison.OrdinalIgnoreCase)
+            var isDoViHDRProfile = dvProfile == 5 || dvProfile == 7 || dvProfile == 8;
+            var isDoViHDRFlag = rpuPresentFlag && blPresentFlag && (dvBlCompatId == 0 || dvBlCompatId == 1 || dvBlCompatId == 4);
+
+            if ((isDoViHDRProfile && isDoViHDRFlag)
+                || string.Equals(codecTag, "dovi", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codecTag, "dvh1", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codecTag, "dvhe", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codecTag, "dav1", StringComparison.OrdinalIgnoreCase))
