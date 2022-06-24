@@ -400,6 +400,7 @@ public class FindExtrasTests
             "/series/Dexter/Dexter - S03E05/Dexter - S03E05 - Fifth.mkv",
             "/series/Dexter/Dexter - S03E05/Dexter - S03E05 - Fifth-featurette.mkv",
             "/series/Dexter/Dexter - S03E05/Dexter - S03E05 - Fifth-featurette2.mkv",
+            "/series/Dexter/Dexter - S03E05/Deleted Scenes/Meet Friends.mkv",
         };
 
         var files = paths.Select(p => new FileSystemMetadata
@@ -437,13 +438,15 @@ public class FindExtrasTests
         Assert.Equal("/series/Dexter/Dexter - S02E05-clip.mkv", extras[0].Path);
 
         // episode folder with special feature subfolders are not supported yet, but it should be considered as not mixed, but current is marked as mixed
-        Folder folderOwner = new Folder { Name = "Dexter - S03E05", Path = "/series/Dexter/Dexter - S03E05", IsInMixedFolder = true };
+        Folder folderOwner = new Folder { Name = "Dexter - S03E05", Path = "/series/Dexter/Dexter - S03E05", IsInMixedFolder = false };
         extras = _libraryManager.FindExtras(folderOwner, files, new DirectoryService(_fileSystemMock.Object)).OrderBy(e => e.ExtraType).ToList();
 
-        Assert.Equal(2, extras.Count);
+        Assert.Equal(3, extras.Count);
         Assert.Equal(ExtraType.Clip, extras[0].ExtraType);
         Assert.Equal(typeof(Video), extras[0].GetType());
         Assert.Equal("/series/Dexter/Dexter - S03E05/Dexter - S03E05 - Fifth-featurette.mkv", extras[0].Path);
         Assert.Equal("/series/Dexter/Dexter - S03E05/Dexter - S03E05 - Fifth-featurette2.mkv", extras[1].Path);
+        Assert.Equal(ExtraType.DeletedScene, extras[2].ExtraType);
+        Assert.Equal("/series/Dexter/Dexter - S03E05/Deleted Scenes/Meet Friends.mkv", extras[2].Path);
     }
 }
