@@ -310,5 +310,12 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <value>The color primaries.</value>
         [JsonPropertyName("color_primaries")]
         public string ColorPrimaries { get; set; }
+
+        /// <summary>
+        /// Gets or sets the side_data_list.
+        /// </summary>
+        /// <value>The side_data_list.</value>
+        [JsonPropertyName("side_data_list")]
+        public IReadOnlyList<MediaStreamInfoSideData> SideDataList { get; set; }
     }
 }

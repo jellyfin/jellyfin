@@ -73,6 +73,54 @@ namespace MediaBrowser.Model.Entities
         public string ColorPrimaries { get; set; }
 
         /// <summary>
+        /// Gets or sets the Dolby Vision version major.
+        /// </summary>
+        /// <value>The Dolby Vision version major.</value>
+        public int? DvVersionMajor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Dolby Vision version minor.
+        /// </summary>
+        /// <value>The Dolby Vision version minor.</value>
+        public int? DvVersionMinor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Dolby Vision profile.
+        /// </summary>
+        /// <value>The Dolby Vision profile.</value>
+        public int? DvProfile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Dolby Vision level.
+        /// </summary>
+        /// <value>The Dolby Vision level.</value>
+        public int? DvLevel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Dolby Vision rpu present flag.
+        /// </summary>
+        /// <value>The Dolby Vision rpu present flag.</value>
+        public int? RpuPresentFlag { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Dolby Vision el present flag.
+        /// </summary>
+        /// <value>The Dolby Vision el present flag.</value>
+        public int? ElPresentFlag { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Dolby Vision bl present flag.
+        /// </summary>
+        /// <value>The Dolby Vision bl present flag.</value>
+        public int? BlPresentFlag { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Dolby Vision bl signal compatibility id.
+        /// </summary>
+        /// <value>The Dolby Vision bl signal compatibility id.</value>
+        public int? DvBlSignalCompatibilityId { get; set; }
+
+        /// <summary>
         /// Gets or sets the comment.
         /// </summary>
         /// <value>The comment.</value>
