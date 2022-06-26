@@ -5486,6 +5486,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             var index = 0;
             var length = mediaStreams.Count;
 
+            if (mediaStreams.All(i => !i.IsExternal))
+            {
+                return streamToFind.Index;
+            }
+
             for (var i = 0; i < length; i++)
             {
                 var currentMediaStream = mediaStreams[i];

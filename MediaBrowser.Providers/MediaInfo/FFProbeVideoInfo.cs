@@ -184,9 +184,15 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (mediaInfo != null)
             {
+                var keepOriginalIndex = startIndex == 0 && mediaInfo.MediaStreams.Count > 0;
+
                 foreach (var mediaStream in mediaInfo.MediaStreams)
                 {
-                    mediaStream.Index = startIndex++;
+                    if (!keepOriginalIndex)
+                    {
+                        mediaStream.Index = startIndex++;
+                    }
+
                     mediaStreams.Add(mediaStream);
                 }
 
@@ -228,11 +234,17 @@ namespace MediaBrowser.Providers.MediaInfo
             else
             {
                 var currentMediaStreams = video.GetMediaStreams();
+                var keepOriginalIndex = startIndex == 0 && currentMediaStreams.Count > 0;
+
                 foreach (var mediaStream in currentMediaStreams)
                 {
                     if (!mediaStream.IsExternal)
                     {
-                        mediaStream.Index = startIndex++;
+                        if (!keepOriginalIndex)
+                        {
+                            mediaStream.Index = startIndex++;
+                        }
+
                         mediaStreams.Add(mediaStream);
                     }
                 }
