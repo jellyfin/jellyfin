@@ -5524,20 +5524,33 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public static int FindIndex(IReadOnlyList<MediaStream> mediaStreams, MediaStream streamToFind)
         {
-            var index = 0;
-            var length = mediaStreams.Count;
+            var streams = mediaStreams.Count;
+            var externalStreams = mediaStreams.Count(s => s.IsExternal);
 
-            for (var i = 0; i < length; i++)
+            if (!streamToFind.IsExternal)
             {
-                var currentMediaStream = mediaStreams[i];
-                if (currentMediaStream == streamToFind)
+                for (var i = externalStreams; i < streams; i++)
                 {
-                    return index;
+                    var currentMediaStream = mediaStreams[i];
+                    if (currentMediaStream == streamToFind)
+                    {
+                        return currentMediaStream.Index - externalStreams;
+                    }
                 }
-
-                if (string.Equals(currentMediaStream.Path, streamToFind.Path, StringComparison.Ordinal))
+            } else {
+                var index = 0;
+                for (var i = 0; i < externalStreams; i++)
                 {
-                    index++;
+                    var currentMediaStream = mediaStreams[i];
+                    if (currentMediaStream == streamToFind)
+                    {
+                        return index;
+                    }
+
+                    if (string.Equals(currentMediaStream.Path, streamToFind.Path, StringComparison.Ordinal))
+                    {
+                        index++;
+                    }
                 }
             }
 

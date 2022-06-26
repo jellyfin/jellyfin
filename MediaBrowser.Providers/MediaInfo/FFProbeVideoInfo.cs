@@ -186,7 +186,7 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 foreach (var mediaStream in mediaInfo.MediaStreams)
                 {
-                    mediaStream.Index = startIndex++;
+                    mediaStream.Index = startIndex + mediaStream.Index;
                     mediaStreams.Add(mediaStream);
                 }
 
@@ -232,7 +232,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     if (!mediaStream.IsExternal)
                     {
-                        mediaStream.Index = startIndex++;
+                        mediaStream.Index = startIndex + mediaStream.Index;
                         mediaStreams.Add(mediaStream);
                     }
                 }
