@@ -1,3 +1,9 @@
+jellyfin-server (10.8.1-1) unstable; urgency=medium
+
+  * New upstream version 10.8.1; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.8.1
+
+ -- Jellyfin Packaging Team <packaging@jellyfin.org>  Sun, 26 Jun 2022 20:59:36 -0400
+
 jellyfin-server (10.8.0-1) unstable; urgency=medium
 
   * New upstream version 10.8.0; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.8.0
