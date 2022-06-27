@@ -48,11 +48,6 @@ namespace Jellyfin.Api.Models.StreamingDtos
         }
 
         /// <summary>
-        /// Gets or sets the transcoding throttler.
-        /// </summary>
-        public TranscodingThrottler? TranscodingThrottler { get; set; }
-
-        /// <summary>
         /// Gets the video request.
         /// </summary>
         public VideoRequestDto? VideoRequest => Request as VideoRequestDto;
@@ -191,11 +186,8 @@ namespace Jellyfin.Api.Models.StreamingDtos
                 {
                     _mediaSourceManager.CloseLiveStream(MediaSource.LiveStreamId).GetAwaiter().GetResult();
                 }
-
-                TranscodingThrottler?.Dispose();
             }
 
-            TranscodingThrottler = null;
             TranscodingJob = null;
 
             _disposed = true;
