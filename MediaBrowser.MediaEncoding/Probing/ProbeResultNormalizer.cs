@@ -841,6 +841,27 @@ namespace MediaBrowser.MediaEncoding.Probing
                 {
                     stream.ColorPrimaries = streamInfo.ColorPrimaries;
                 }
+
+                if (streamInfo.SideDataList != null)
+                {
+                    foreach (var data in streamInfo.SideDataList)
+                    {
+                        // Parse Dolby Vision metadata from side_data
+                        if (string.Equals(data.SideDataType, "DOVI configuration record", StringComparison.OrdinalIgnoreCase))
+                        {
+                            stream.DvVersionMajor = data.DvVersionMajor;
+                            stream.DvVersionMinor = data.DvVersionMinor;
+                            stream.DvProfile = data.DvProfile;
+                            stream.DvLevel = data.DvLevel;
+                            stream.RpuPresentFlag = data.RpuPresentFlag;
+                            stream.ElPresentFlag = data.ElPresentFlag;
+                            stream.BlPresentFlag = data.BlPresentFlag;
+                            stream.DvBlSignalCompatibilityId = data.DvBlSignalCompatibilityId;
+
+                            break;
+                        }
+                    }
+                }
             }
             else
             {
