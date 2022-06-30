@@ -8,6 +8,9 @@ using MediaBrowser.Model.Plugins;
 
 namespace MediaBrowser.Providers.Plugins.ModularHome.Configuration
 {
+    /// <summary>
+    /// PluginConfiguration for Modular Home.
+    /// </summary>
     public class PluginConfiguration : BasePluginConfiguration
     {
         /// <summary>

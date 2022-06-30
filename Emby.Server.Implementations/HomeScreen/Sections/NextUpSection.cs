@@ -16,17 +16,25 @@ using MediaBrowser.Model.Querying;
 
 namespace Emby.Server.Implementations.HomeScreen.Sections
 {
+    /// <summary>
+    /// Next Up Section
+    /// </summary>
     public class NextUpSection : IHomeScreenSection
     {
-        public string Section => "NextUp";
+        /// <inheritdoc/>
+        public string? Section => "NextUp";
 
-        public string DisplayText { get; set; } = "Next Up";
+        /// <inheritdoc/>
+        public string? DisplayText { get; set; } = "Next Up";
 
-        public int Limit => 1;
+        /// <inheritdoc/>
+        public int? Limit => 1;
 
-        public string Route => "nextup";
+        /// <inheritdoc/>
+        public string? Route => "nextup";
 
-        public string AdditionalData { get; set; } = null;
+        /// <inheritdoc/>
+        public string? AdditionalData { get; set; } = null;
 
         private readonly IUserViewManager _userViewManager;
         private readonly IUserManager _userManager;
@@ -35,6 +43,15 @@ namespace Emby.Server.Implementations.HomeScreen.Sections
         private readonly ISessionManager _sessionManager;
         private readonly ITVSeriesManager _tvSeriesManager;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="userViewManager">Instance of <see href="IUserViewManager" /> interface.</param>
+        /// <param name="userManager">Instance of <see href="IUserManager" /> interface.</param>
+        /// <param name="dtoService">Instance of <see href="IDtoService" /> interface.</param>
+        /// <param name="libraryManager">Instance of <see href="ILibraryManager" /> interface.</param>
+        /// <param name="sessionManager">Instance of <see href="ISessionManager" /> interface.</param>
+        /// <param name="tvSeriesManager">Instance of <see href="ITVSeriesManager" /> interface.</param>
         public NextUpSection(IUserViewManager userViewManager,
             IUserManager userManager,
             IDtoService dtoService,
@@ -50,6 +67,7 @@ namespace Emby.Server.Implementations.HomeScreen.Sections
             _tvSeriesManager = tvSeriesManager;
         }
 
+        /// <inheritdoc/>
         public QueryResult<BaseItemDto> GetResults(HomeScreenSectionPayload payload)
         {
             List<ItemFields> fields = new List<ItemFields>

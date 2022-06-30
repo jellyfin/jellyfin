@@ -14,22 +14,36 @@ using MediaBrowser.Model.Querying;
 
 namespace Emby.Server.Implementations.HomeScreen.Sections
 {
+    /// <summary>
+    /// Latest Movies Section
+    /// </summary>
     public class LatestMoviesSection : IHomeScreenSection
     {
-        public string Section => "LatestMovies";
+        /// <inheritdoc/>
+        public string? Section => "LatestMovies";
 
-        public string DisplayText { get; set; } = "Latest Movies";
+        /// <inheritdoc/>
+        public string? DisplayText { get; set; } = "Latest Movies";
 
-        public int Limit => 1;
+        /// <inheritdoc/>
+        public int? Limit => 1;
 
-        public string Route => "movies";
+        /// <inheritdoc/>
+        public string? Route => "movies";
 
-        public string AdditionalData { get; set; } = "movies";
+        /// <inheritdoc/>
+        public string? AdditionalData { get; set; } = "movies";
 
         private readonly IUserViewManager _userViewManager;
         private readonly IUserManager _userManager;
         private readonly IDtoService _dtoService;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="userViewManager">Instance of <see href="IUserViewManager" /> interface.</param>
+        /// <param name="userManager">Instance of <see href="IUserManager" /> interface.</param>
+        /// <param name="dtoService">Instance of <see href="IDtoService" /> interface.</param>
         public LatestMoviesSection(IUserViewManager userViewManager,
             IUserManager userManager,
             IDtoService dtoService)
@@ -39,6 +53,7 @@ namespace Emby.Server.Implementations.HomeScreen.Sections
             _dtoService = dtoService;
         }
 
+        /// <inheritdoc/>
         public QueryResult<BaseItemDto> GetResults(HomeScreenSectionPayload payload)
         {
             var user = _userManager.GetUserById(payload.UserId);

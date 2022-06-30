@@ -11,22 +11,36 @@ using MediaBrowser.Model.Querying;
 
 namespace Emby.Server.Implementations.HomeScreen.Sections
 {
+    /// <summary>
+    /// My Media Section
+    /// </summary>
     public class MyMediaSection : IHomeScreenSection
     {
-        public string Section => "MyMedia";
+        /// <inheritdoc/>
+        public string? Section => "MyMedia";
 
-        public string DisplayText { get; set; } = "My Media";
+        /// <inheritdoc/>
+        public string? DisplayText { get; set; } = "My Media";
 
-        public int Limit => 1;
+        /// <inheritdoc/>
+        public int? Limit => 1;
 
-        public string Route => null;
+        /// <inheritdoc/>
+        public string? Route => null;
 
-        public string AdditionalData { get; set; } = null;
+        /// <inheritdoc/>
+        public string? AdditionalData { get; set; } = null;
 
         private readonly IUserViewManager _userViewManager;
         private readonly IUserManager _userManager;
         private readonly IDtoService _dtoService;
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="userViewManager">Instance of <see href="IUserViewManager" /> interface.</param>
+        /// <param name="userManager">Instance of <see href="IUserManager" /> interface.</param>
+        /// <param name="dtoService">Instance of <see href="IDtoService" /> interface.</param>
         public MyMediaSection(IUserViewManager userViewManager,
             IUserManager userManager,
             IDtoService dtoService)
@@ -36,6 +50,7 @@ namespace Emby.Server.Implementations.HomeScreen.Sections
             _dtoService = dtoService;
         }
 
+        /// <inheritdoc/>
         public QueryResult<BaseItemDto> GetResults(HomeScreenSectionPayload payload)
         {
             var query = new UserViewQuery

@@ -15,6 +15,9 @@ using Newtonsoft.Json.Linq;
 
 namespace Emby.Server.Implementations.HomeScreen
 {
+    /// <summary>
+    /// Manager for the Modular Home Screen.
+    /// </summary>
     public class HomeScreenManager : IHomeScreenManager
     {
         private Dictionary<string, IHomeScreenSection> m_delegates = new Dictionary<string, IHomeScreenSection>();
@@ -25,6 +28,11 @@ namespace Emby.Server.Implementations.HomeScreen
 
         private const string SettingsFile = "ModularHomeSettings.json";
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="serviceProvider">Instance of the <see cref="IServiceProvider"/> interface.</param>
+        /// <param name="applicationPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
         public HomeScreenManager(IServiceProvider serviceProvider, IApplicationPaths applicationPaths)
         {
             _serviceProvider = serviceProvider;
@@ -33,7 +41,7 @@ namespace Emby.Server.Implementations.HomeScreen
             string userFeatureEnabledPath = Path.Combine(_applicationPaths.CachePath, "userFeatureEnabled.json");
             if (File.Exists(userFeatureEnabledPath))
             {
-                m_userFeatureEnabledStates = JsonConvert.DeserializeObject<Dictionary<Guid, bool>>(File.ReadAllText(userFeatureEnabledPath));
+                m_userFeatureEnabledStates = JsonConvert.DeserializeObject<Dictionary<Guid, bool>>(File.ReadAllText(userFeatureEnabledPath)) ?? new Dictionary<Guid, bool>();
             }
 
             RegisterResultsDelegate<MyMediaSection>();
@@ -43,11 +51,13 @@ namespace Emby.Server.Implementations.HomeScreen
             RegisterResultsDelegate<LatestShowsSection>();
         }
 
+        /// <inheritdoc/>
         public IEnumerable<IHomeScreenSection> GetSectionTypes()
         {
             return m_delegates.Values;
         }
 
+        /// <inheritdoc/>
         public QueryResult<BaseItemDto> InvokeResultsDelegate(string key, HomeScreenSectionPayload payload)
         {
             if (m_delegates.ContainsKey(key))
@@ -58,20 +68,25 @@ namespace Emby.Server.Implementations.HomeScreen
             return new QueryResult<BaseItemDto>(Array.Empty<BaseItemDto>());
         }
 
+        /// <inheritdoc/>
         public void RegisterResultsDelegate<T>() where T : IHomeScreenSection
         {
             T handler = ActivatorUtilities.CreateInstance<T>(_serviceProvider);
 
-            if (!m_delegates.ContainsKey(handler.Section))
+            if (handler.Section != null)
             {
-                m_delegates.Add(handler.Section, handler);
-            }
-            else
-            {
-                throw new Exception($"Section type '{handler.Section}' has already been registered to type '{m_delegates[handler.Section].GetType().FullName}'.");
+                if (!m_delegates.ContainsKey(handler.Section))
+                {
+                    m_delegates.Add(handler.Section, handler);
+                }
+                else
+                {
+                    throw new Exception($"Section type '{handler.Section}' has already been registered to type '{m_delegates[handler.Section].GetType().FullName}'.");
+                }
             }
         }
 
+        /// <inheritdoc/>
         public bool GetUserFeatureEnabled(Guid userId)
         {
             if (m_userFeatureEnabledStates.ContainsKey(userId))
@@ -84,6 +99,7 @@ namespace Emby.Server.Implementations.HomeScreen
             return false;
         }
 
+        /// <inheritdoc/>
         public void SetUserFeatureEnabled(Guid userId, bool enabled)
         {
             if (!m_userFeatureEnabledStates.ContainsKey(userId))
@@ -97,7 +113,8 @@ namespace Emby.Server.Implementations.HomeScreen
             File.WriteAllText(userFeatureEnabledPath, JObject.FromObject(m_userFeatureEnabledStates).ToString(Newtonsoft.Json.Formatting.Indented));
         }
 
-        public ModularHomeUserSettings GetUserSettings(Guid userId)
+        /// <inheritdoc/>
+        public ModularHomeUserSettings? GetUserSettings(Guid userId)
         {
             string pluginSettings = Path.Combine(_applicationPaths.PluginsPath, "ModularHome", SettingsFile);
 
@@ -105,9 +122,9 @@ namespace Emby.Server.Implementations.HomeScreen
             {
                 JArray settings = JArray.Parse(System.IO.File.ReadAllText(pluginSettings));
 
-                if (settings.Select(x => JsonConvert.DeserializeObject<ModularHomeUserSettings>(x.ToString())).Any(x => x.UserId.Equals(userId)))
+                if (settings.Select(x => JsonConvert.DeserializeObject<ModularHomeUserSettings>(x.ToString())).Any(x => x != null && x.UserId.Equals(userId)))
                 {
-                    return settings.Select(x => JsonConvert.DeserializeObject<ModularHomeUserSettings>(x.ToString())).First(x => x.UserId.Equals(userId));
+                    return settings.Select(x => JsonConvert.DeserializeObject<ModularHomeUserSettings>(x.ToString())).First(x => x != null && x.UserId.Equals(userId));
                 }
             }
 
@@ -117,6 +134,7 @@ namespace Emby.Server.Implementations.HomeScreen
             };
         }
 
+        /// <inheritdoc/>
         public bool UpdateUserSettings(Guid userId, ModularHomeUserSettings userSettings)
         {
             string pluginSettings = Path.Combine(_applicationPaths.PluginsPath, "ModularHome", SettingsFile);
@@ -124,22 +142,22 @@ namespace Emby.Server.Implementations.HomeScreen
             fInfo.Directory?.Create();
 
             JArray settings = new JArray();
-            List<ModularHomeUserSettings> newSettings = new List<ModularHomeUserSettings>();
+            List<ModularHomeUserSettings?> newSettings = new List<ModularHomeUserSettings?>();
 
             if (File.Exists(pluginSettings))
             {
                 settings = JArray.Parse(System.IO.File.ReadAllText(pluginSettings));
                 newSettings = settings.Select(x => JsonConvert.DeserializeObject<ModularHomeUserSettings>(x.ToString())).ToList();
-                newSettings.RemoveAll(x => x.UserId.Equals(userId));
+                newSettings.RemoveAll(x => x != null && x.UserId.Equals(userId));
 
                 newSettings.Add(userSettings);
 
                 settings.Clear();
             }
 
-            foreach (ModularHomeUserSettings userSetting in newSettings)
+            foreach (ModularHomeUserSettings? userSetting in newSettings)
             {
-                settings.Add(JObject.FromObject(userSetting));
+                settings.Add(JObject.FromObject(userSetting ?? new ModularHomeUserSettings()));
             }
 
             File.WriteAllText(pluginSettings, settings.ToString(Formatting.Indented));

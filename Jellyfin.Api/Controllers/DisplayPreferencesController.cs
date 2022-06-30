@@ -32,6 +32,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="displayPreferencesManager">Instance of <see cref="IDisplayPreferencesManager"/> interface.</param>
         /// <param name="logger">Instance of <see cref="ILogger{DisplayPreferencesController}"/> interface.</param>
+        /// <param name="homeScreenManager">Instance of <see cref="IHomeScreenManager" /> interface.</param>
         public DisplayPreferencesController(IDisplayPreferencesManager displayPreferencesManager, ILogger<DisplayPreferencesController> logger, IHomeScreenManager homeScreenManager)
         {
             _displayPreferencesManager = displayPreferencesManager;

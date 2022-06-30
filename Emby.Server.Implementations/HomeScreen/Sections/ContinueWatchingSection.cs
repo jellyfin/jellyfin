@@ -15,17 +15,25 @@ using MediaBrowser.Model.Querying;
 
 namespace Emby.Server.Implementations.HomeScreen.Sections
 {
+    /// <summary>
+    /// Continue Watching Section
+    /// </summary>
     public class ContinueWatchingSection : IHomeScreenSection
     {
-        public string Section => "ContinueWatching";
+        /// <inheritdoc/>
+        public string? Section => "ContinueWatching";
 
-        public string DisplayText { get; set; } = "Continue Watching";
+        /// <inheritdoc/>
+        public string? DisplayText { get; set; } = "Continue Watching";
 
-        public int Limit => 1;
+        /// <inheritdoc/>
+        public int? Limit => 1;
 
-        public string Route => null;
+        /// <inheritdoc/>
+        public string? Route => null;
 
-        public string AdditionalData { get; set; } = null;
+        /// <inheritdoc/>
+        public string? AdditionalData { get; set; } = null;
 
         private readonly IUserViewManager _userViewManager;
         private readonly IUserManager _userManager;
@@ -33,6 +41,14 @@ namespace Emby.Server.Implementations.HomeScreen.Sections
         private readonly ILibraryManager _libraryManager;
         private readonly ISessionManager _sessionManager;
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="userViewManager">Instance of <see href="IUserViewManager" /> interface.</param>
+        /// <param name="userManager">Instance of <see href="IUserManager" /> interface.</param>
+        /// <param name="dtoService">Instance of <see href="IDtoService" /> interface.</param>
+        /// <param name="libraryManager">Instance of <see href="ILibraryManager" /> interface.</param>
+        /// <param name="sessionManager">Instance of <see href="ISessionManager" /> interface.</param>
         public ContinueWatchingSection(IUserViewManager userViewManager,
             IUserManager userManager,
             IDtoService dtoService,
@@ -46,6 +62,7 @@ namespace Emby.Server.Implementations.HomeScreen.Sections
             _sessionManager = sessionManager;
         }
 
+        /// <inheritdoc/>
         public QueryResult<BaseItemDto> GetResults(HomeScreenSectionPayload payload)
         {
             var user = _userManager.GetUserById(payload.UserId);

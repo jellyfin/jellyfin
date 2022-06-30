@@ -12,19 +12,30 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Jellyfin.Api.Controllers
 {
+    /// <summary>
+    /// Plugin Pages API controller.
+    /// </summary>
     [Authorize(Policy = Policies.DefaultAuthorization)]
     public class PluginPagesController : BaseJellyfinApiController
     {
         private readonly IPluginPagesManager _pluginPagesManager;
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="pluginPagesManager">Instance of <see href="IPluginPagesManager" /> interface.</param>
         public PluginPagesController(IPluginPagesManager pluginPagesManager) : base()
         {
             _pluginPagesManager = pluginPagesManager;
         }
 
+        /// <summary>
+        /// Get pages this plugin serves for users
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("User")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<QueryResult<PluginPage>> GetHomeScreenSections()
+        public ActionResult<QueryResult<PluginPage>> GetPluginPages()
         {
             List<PluginPage> pages = _pluginPagesManager.GetPages().ToList();
 
