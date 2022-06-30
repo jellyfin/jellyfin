@@ -1111,13 +1111,13 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc/>
-        public string GetApiUrlForLocalAccess(bool allowHttps = true)
+        public string GetApiUrlForLocalAccess(IPObject hostname = null, bool allowHttps = true)
         {
             // With an empty source, the port will be null
-            string smart = NetManager.GetBindInterface(string.Empty, out _);
+            var smart = NetManager.GetBindInterface(hostname ?? IPHost.None, out _);
             var scheme = !allowHttps ? Uri.UriSchemeHttp : null;
             int? port = !allowHttps ? HttpPort : null;
-            return GetLocalApiUrl(smart.Trim('/'), scheme, port);
+            return GetLocalApiUrl(smart, scheme, port);
         }
 
         /// <inheritdoc/>
@@ -1131,11 +1131,13 @@ namespace Emby.Server.Implementations
 
             // NOTE: If no BaseUrl is set then UriBuilder appends a trailing slash, but if there is no BaseUrl it does
             // not. For consistency, always trim the trailing slash.
+            scheme ??= ListenWithHttps ? Uri.UriSchemeHttps : Uri.UriSchemeHttp;
+            var isHttps = string.Equals(scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase);
             return new UriBuilder
             {
-                Scheme = scheme ?? (ListenWithHttps ? Uri.UriSchemeHttps : Uri.UriSchemeHttp),
+                Scheme = scheme,
                 Host = hostname,
-                Port = port ?? (ListenWithHttps ? HttpsPort : HttpPort),
+                Port = port ?? (isHttps ? HttpsPort : HttpPort),
                 Path = ConfigurationManager.GetNetworkConfiguration().BaseUrl
             }.ToString().TrimEnd('/');
         }

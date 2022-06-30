@@ -285,7 +285,7 @@ namespace Jellyfin.Api.Controllers
             // Due to CTS.Token calling ThrowIfDisposed (https://github.com/dotnet/runtime/issues/29970) we have to "cache" the token
             // since it gets disposed when ffmpeg exits
             var cancellationToken = cancellationTokenSource.Token;
-            using var state = await StreamingHelpers.GetStreamingState(
+            var state = await StreamingHelpers.GetStreamingState(
                     streamingRequest,
                     Request,
                     _authContext,
@@ -1432,7 +1432,7 @@ namespace Jellyfin.Api.Controllers
             var cancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = cancellationTokenSource.Token;
 
-            using var state = await StreamingHelpers.GetStreamingState(
+            var state = await StreamingHelpers.GetStreamingState(
                     streamingRequest,
                     Request,
                     _authContext,

@@ -120,5 +120,7 @@
     "Forced": "Prisilno",
     "Default": "Privzeto",
     "TaskOptimizeDatabaseDescription": "Stisne bazo podatkov in uredi prazen prostor. Zagon tega opravila po iskanju predstavnosti ali drugih spremembah ki vplivajo na bazo podatkov lahko izboljša hitrost delovanja.",
-    "TaskOptimizeDatabase": "Optimiziraj bazo podatkov"
+    "TaskOptimizeDatabase": "Optimiziraj bazo podatkov",
+    "TaskKeyframeExtractor": "Ekstraktor ključnih sličic",
+    "External": "Zunanje"
 }

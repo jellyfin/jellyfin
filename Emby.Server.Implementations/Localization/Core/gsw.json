@@ -119,5 +119,6 @@
     "Undefined": "Undefiniert",
     "Forced": "Erzwungen",
     "Default": "Standard",
-    "TaskOptimizeDatabase": "Datenbank optimieren"
+    "TaskOptimizeDatabase": "Datenbank optimieren",
+    "External": "Extern"
 }

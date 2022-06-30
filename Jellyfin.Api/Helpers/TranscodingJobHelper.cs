@@ -654,8 +654,8 @@ namespace Jellyfin.Api.Helpers
         {
             if (EnableThrottling(state))
             {
-                transcodingJob.TranscodingThrottler = state.TranscodingThrottler = new TranscodingThrottler(transcodingJob, new Logger<TranscodingThrottler>(new LoggerFactory()), _serverConfigurationManager, _fileSystem);
-                state.TranscodingThrottler.Start();
+                transcodingJob.TranscodingThrottler = new TranscodingThrottler(transcodingJob, new Logger<TranscodingThrottler>(new LoggerFactory()), _serverConfigurationManager, _fileSystem);
+                transcodingJob.TranscodingThrottler.Start();
             }
         }
 
@@ -663,18 +663,11 @@ namespace Jellyfin.Api.Helpers
         {
             var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
 
-            // enable throttling when NOT using hardware acceleration
-            if (string.IsNullOrEmpty(encodingOptions.HardwareAccelerationType))
-            {
-                return state.InputProtocol == MediaProtocol.File &&
-                       state.RunTimeTicks.HasValue &&
-                       state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks &&
-                       state.IsInputVideo &&
-                       state.VideoType == VideoType.VideoFile &&
-                       !EncodingHelper.IsCopyCodec(state.OutputVideoCodec);
-            }
-
-            return false;
+            return state.InputProtocol == MediaProtocol.File &&
+                   state.RunTimeTicks.HasValue &&
+                   state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks &&
+                   state.IsInputVideo &&
+                   state.VideoType == VideoType.VideoFile;
         }
 
         /// <summary>

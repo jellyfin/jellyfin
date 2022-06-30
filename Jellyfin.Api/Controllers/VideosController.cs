@@ -427,7 +427,7 @@ namespace Jellyfin.Api.Controllers
                 StreamOptions = streamOptions
             };
 
-            using var state = await StreamingHelpers.GetStreamingState(
+            var state = await StreamingHelpers.GetStreamingState(
                     streamingRequest,
                     Request,
                     _authContext,

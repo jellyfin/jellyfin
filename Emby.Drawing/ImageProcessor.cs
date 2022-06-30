@@ -395,7 +395,13 @@ namespace Emby.Drawing
         public string GetImageBlurHash(string path)
         {
             var size = GetImageDimensions(path);
-            if (size.Width <= 0 || size.Height <= 0)
+            return GetImageBlurHash(path, size);
+        }
+
+        /// <inheritdoc />
+        public string GetImageBlurHash(string path, ImageDimensions imageDimensions)
+        {
+            if (imageDimensions.Width <= 0 || imageDimensions.Height <= 0)
             {
                 return string.Empty;
             }
@@ -403,8 +409,8 @@ namespace Emby.Drawing
             // We want tiles to be as close to square as possible, and to *mostly* keep under 16 tiles for performance.
             // One tile is (width / xComp) x (height / yComp) pixels, which means that ideally yComp = xComp * height / width.
             // See more at https://github.com/woltapp/blurhash/#how-do-i-pick-the-number-of-x-and-y-components
-            float xCompF = MathF.Sqrt(16.0f * size.Width / size.Height);
-            float yCompF = xCompF * size.Height / size.Width;
+            float xCompF = MathF.Sqrt(16.0f * imageDimensions.Width / imageDimensions.Height);
+            float yCompF = xCompF * imageDimensions.Height / imageDimensions.Width;
 
             int xComp = Math.Min((int)xCompF + 1, 9);
             int yComp = Math.Min((int)yCompF + 1, 9);
@@ -439,47 +445,46 @@ namespace Emby.Drawing
                 .ToString("N", CultureInfo.InvariantCulture);
         }
 
-        private async Task<(string Path, DateTime DateModified)> GetSupportedImage(string originalImagePath, DateTime dateModified)
+        private Task<(string Path, DateTime DateModified)> GetSupportedImage(string originalImagePath, DateTime dateModified)
         {
-            var inputFormat = Path.GetExtension(originalImagePath)
-                .TrimStart('.')
-                .Replace("jpeg", "jpg", StringComparison.OrdinalIgnoreCase);
+            var inputFormat = Path.GetExtension(originalImagePath.AsSpan()).TrimStart('.').ToString();
 
             // These are just jpg files renamed as tbn
             if (string.Equals(inputFormat, "tbn", StringComparison.OrdinalIgnoreCase))
             {
-                return (originalImagePath, dateModified);
+                return Task.FromResult((originalImagePath, dateModified));
             }
 
-            if (!_imageEncoder.SupportedInputFormats.Contains(inputFormat))
-            {
-                try
-                {
-                    string filename = (originalImagePath + dateModified.Ticks.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+            // TODO _mediaEncoder.ConvertImage is not implemented
+            // if (!_imageEncoder.SupportedInputFormats.Contains(inputFormat))
+            // {
+            //     try
+            //     {
+            //         string filename = (originalImagePath + dateModified.Ticks.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+            //
+            //         string cacheExtension = _mediaEncoder.SupportsEncoder("libwebp") ? ".webp" : ".png";
+            //         var outputPath = Path.Combine(_appPaths.ImageCachePath, "converted-images", filename + cacheExtension);
+            //
+            //         var file = _fileSystem.GetFileInfo(outputPath);
+            //         if (!file.Exists)
+            //         {
+            //             await _mediaEncoder.ConvertImage(originalImagePath, outputPath).ConfigureAwait(false);
+            //             dateModified = _fileSystem.GetLastWriteTimeUtc(outputPath);
+            //         }
+            //         else
+            //         {
+            //             dateModified = file.LastWriteTimeUtc;
+            //         }
+            //
+            //         originalImagePath = outputPath;
+            //     }
+            //     catch (Exception ex)
+            //     {
+            //         _logger.LogError(ex, "Image conversion failed for {Path}", originalImagePath);
+            //     }
+            // }
 
-                    string cacheExtension = _mediaEncoder.SupportsEncoder("libwebp") ? ".webp" : ".png";
-                    var outputPath = Path.Combine(_appPaths.ImageCachePath, "converted-images", filename + cacheExtension);
-
-                    var file = _fileSystem.GetFileInfo(outputPath);
-                    if (!file.Exists)
-                    {
-                        await _mediaEncoder.ConvertImage(originalImagePath, outputPath).ConfigureAwait(false);
-                        dateModified = _fileSystem.GetLastWriteTimeUtc(outputPath);
-                    }
-                    else
-                    {
-                        dateModified = file.LastWriteTimeUtc;
-                    }
-
-                    originalImagePath = outputPath;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Image conversion failed for {Path}", originalImagePath);
-                }
-            }
-
-            return (originalImagePath, dateModified);
+            return Task.FromResult((originalImagePath, dateModified));
         }
 
         /// <summary>
