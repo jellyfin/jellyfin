@@ -18,14 +18,6 @@ $ sudo dnf install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-re
 $ sudo yum localinstall --nogpgcheck https://download1.rpmfusion.org/free/el/rpmfusion-free-release-7.noarch.rpm
 ```
 
-## ISO mounting
-
-To allow Jellyfin to mount/umount ISO files uncomment these two lines in `/etc/sudoers.d/jellyfin-sudoers`
-```
-# %jellyfin ALL=(ALL) NOPASSWD: /bin/mount
-# %jellyfin ALL=(ALL) NOPASSWD: /bin/umount
-```
-
 ## Building with dotnet
 
 Jellyfin is build with `--self-contained` so no dotnet required for runtime.
