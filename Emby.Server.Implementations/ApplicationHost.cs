@@ -30,6 +30,7 @@ using Emby.Server.Implementations.Cryptography;
 using Emby.Server.Implementations.Data;
 using Emby.Server.Implementations.Devices;
 using Emby.Server.Implementations.Dto;
+using Emby.Server.Implementations.HomeScreen;
 using Emby.Server.Implementations.HttpServer.Security;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Library;
@@ -599,6 +600,10 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<ISubtitleManager, SubtitleManager>();
 
             serviceCollection.AddSingleton<IProviderManager, ProviderManager>();
+
+            serviceCollection.AddSingleton<IHomeScreenManager, HomeScreenManager>();
+
+            serviceCollection.AddSingleton<IPluginPagesManager, PluginPagesManager>();
 
             // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required
             serviceCollection.AddTransient(provider => new Lazy<ILiveTvManager>(provider.GetRequiredService<ILiveTvManager>));

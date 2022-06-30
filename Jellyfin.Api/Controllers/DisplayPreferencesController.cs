@@ -8,6 +8,7 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -23,6 +24,7 @@ namespace Jellyfin.Api.Controllers
     public class DisplayPreferencesController : BaseJellyfinApiController
     {
         private readonly IDisplayPreferencesManager _displayPreferencesManager;
+        private readonly IHomeScreenManager _homeScreenManager;
         private readonly ILogger<DisplayPreferencesController> _logger;
 
         /// <summary>
@@ -30,10 +32,11 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="displayPreferencesManager">Instance of <see cref="IDisplayPreferencesManager"/> interface.</param>
         /// <param name="logger">Instance of <see cref="ILogger{DisplayPreferencesController}"/> interface.</param>
-        public DisplayPreferencesController(IDisplayPreferencesManager displayPreferencesManager, ILogger<DisplayPreferencesController> logger)
+        public DisplayPreferencesController(IDisplayPreferencesManager displayPreferencesManager, ILogger<DisplayPreferencesController> logger, IHomeScreenManager homeScreenManager)
         {
             _displayPreferencesManager = displayPreferencesManager;
             _logger = logger;
+            _homeScreenManager = homeScreenManager;
         }
 
         /// <summary>
@@ -86,6 +89,7 @@ namespace Jellyfin.Api.Controllers
             dto.CustomPrefs["enableNextVideoInfoOverlay"] = displayPreferences.EnableNextVideoInfoOverlay.ToString(CultureInfo.InvariantCulture);
             dto.CustomPrefs["tvhome"] = displayPreferences.TvHome;
             dto.CustomPrefs["dashboardTheme"] = displayPreferences.DashboardTheme;
+            dto.CustomPrefs["useModularHome"] = _homeScreenManager.GetUserFeatureEnabled(userId) ? "true" : "false";
 
             // Load all custom display preferences
             var customDisplayPreferences = _displayPreferencesManager.ListCustomItemDisplayPreferences(displayPreferences.UserId, itemId, displayPreferences.Client);
@@ -176,6 +180,9 @@ namespace Jellyfin.Api.Controllers
                 ? home
                 : string.Empty;
             displayPreferences.CustomPrefs.Remove("tvhome");
+
+            _homeScreenManager.SetUserFeatureEnabled(userId, displayPreferences.CustomPrefs.TryGetValue("useModularHome", out var newEnabledStateStr) ? newEnabledStateStr == "true" : false);
+            displayPreferences.CustomPrefs.Remove("useModularHome");
 
             existingDisplayPreferences.HomeSections.Clear();
 
