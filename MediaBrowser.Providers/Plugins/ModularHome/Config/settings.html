@@ -1,0 +1,22 @@
+<script defer>
+    import("/ModularHomeViews/settings.js").then((renderer) => {
+        const view = document.querySelector("#config-page");
+
+        renderer.default(view);
+    });
+</script>
+<form id="config-page" class="configForm" style="margin: 0 auto;">
+    <div class="verticalSection verticalSection-extrabottompadding">
+        <h2 class="sectionTitle">Modular Home  - Settings:</h2>
+
+        <div class="verticalSection verticalSection-extrabottompadding">
+            <label class="checkboxContainer">
+                <input is="emby-checkbox" type="checkbox" id="modularHomeEnabled" />
+                <span>Enable "Modular Home". This will change your home screen into a more dynamic screen with options from other plugins to be able to contribute into what you see and are recommended.</span>
+            </label>
+        </div>
+    </div>
+    <button is="emby-button" type="submit" class="raised button-submit block btnSave">
+        <span>Save</span>
+    </button>
+</form>
