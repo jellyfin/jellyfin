@@ -16,7 +16,7 @@ using MediaBrowser.Model.Querying;
 namespace Emby.Server.Implementations.HomeScreen.Sections
 {
     /// <summary>
-    /// Continue Watching Section
+    /// Continue Watching Section.
     /// </summary>
     public class ContinueWatchingSection : IHomeScreenSection
     {

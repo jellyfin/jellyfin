@@ -30,9 +30,9 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Get pages this plugin serves for users
+        /// Get pages this plugin serves for users.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Array of <see cref="PluginPage"/>.</returns>
         [HttpGet("User")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<PluginPage>> GetPluginPages()

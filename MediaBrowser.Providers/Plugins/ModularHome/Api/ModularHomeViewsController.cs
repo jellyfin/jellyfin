@@ -49,7 +49,7 @@ namespace MediaBrowser.Providers.Plugins.ModularHome.Api
         /// <summary>
         /// Get the section types that are registered in Modular Home.
         /// </summary>
-        /// <returns>Array of <see cref="HomeScreenSectionInfo"/></returns>
+        /// <returns>Array of <see cref="HomeScreenSectionInfo"/>.</returns>
         [HttpGet("Sections")]
         public QueryResult<HomeScreenSectionInfo> GetSectionTypes()
         {
@@ -79,7 +79,7 @@ namespace MediaBrowser.Providers.Plugins.ModularHome.Api
         /// Get the user settings for Modular Home.
         /// </summary>
         /// <param name="userId">The user ID.</param>
-        /// <returns><see cref="ModularHomeUserSettings"/></returns>
+        /// <returns><see cref="ModularHomeUserSettings"/>.</returns>
         [HttpGet("UserSettings")]
         public ActionResult<ModularHomeUserSettings> GetUserSettings([FromQuery] Guid userId)
         {
@@ -92,8 +92,8 @@ namespace MediaBrowser.Providers.Plugins.ModularHome.Api
         /// <summary>
         /// Update the user settings for Modular Home.
         /// </summary>
-        /// <param name="obj">Instance of <see cref="ModularHomeUserSettings" /></param>
-        /// <returns>Status</returns>
+        /// <param name="obj">Instance of <see cref="ModularHomeUserSettings" />.</param>
+        /// <returns>Status.</returns>
         [HttpPost("UserSettings")]
         public ActionResult UpdateSettings([FromBody] ModularHomeUserSettings obj)
         {

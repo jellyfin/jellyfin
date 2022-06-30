@@ -15,7 +15,7 @@ using MediaBrowser.Model.Querying;
 namespace Emby.Server.Implementations.HomeScreen.Sections
 {
     /// <summary>
-    /// Latest Movies Section
+    /// Latest Movies Section.
     /// </summary>
     public class LatestMoviesSection : IHomeScreenSection
     {
@@ -39,7 +39,7 @@ namespace Emby.Server.Implementations.HomeScreen.Sections
         private readonly IDtoService _dtoService;
 
         /// <summary>
-        /// Constructor
+        /// Constructor.
         /// </summary>
         /// <param name="userViewManager">Instance of <see href="IUserViewManager" /> interface.</param>
         /// <param name="userManager">Instance of <see href="IUserManager" /> interface.</param>

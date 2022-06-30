@@ -15,7 +15,7 @@ using Newtonsoft.Json.Linq;
 namespace MediaBrowser.Providers.Plugins.ModularHome
 {
     /// <summary>
-    /// Modular Home Plugin
+    /// Modular Home Plugin.
     /// </summary>
     public class Plugin : BasePlugin<PluginConfiguration>, IPlugin, IHasWebPages
     {
@@ -69,7 +69,7 @@ namespace MediaBrowser.Providers.Plugins.ModularHome
         /// <summary>
         /// Get the views that the plugin serves.
         /// </summary>
-        /// <returns>Array of <see cref="PluginPageInfo"/></returns>
+        /// <returns>Array of <see cref="PluginPageInfo"/>.</returns>
         public IEnumerable<PluginPageInfo> GetViews()
         {
             return new[]

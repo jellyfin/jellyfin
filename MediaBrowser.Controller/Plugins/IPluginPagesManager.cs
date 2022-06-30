@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Controller.Plugins
 {
     /// <summary>
-    /// Interface for PluginPagesManager
+    /// Interface for PluginPagesManager.
     /// </summary>
     public interface IPluginPagesManager
     {

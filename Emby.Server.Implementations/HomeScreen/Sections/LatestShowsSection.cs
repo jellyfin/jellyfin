@@ -15,7 +15,7 @@ using MediaBrowser.Model.Querying;
 namespace Emby.Server.Implementations.HomeScreen.Sections
 {
     /// <summary>
-    /// Latest Shows Section
+    /// Latest Shows Section.
     /// </summary>
     public class LatestShowsSection : IHomeScreenSection
     {

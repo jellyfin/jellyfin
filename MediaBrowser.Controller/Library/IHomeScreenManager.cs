@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Get the registered <see cref="IHomeScreenSection"/> instances.
         /// </summary>
-        /// <returns>Array of <see cref="IHomeScreenSection"/></returns>
+        /// <returns>Array of <see cref="IHomeScreenSection"/>.</returns>
         IEnumerable<IHomeScreenSection> GetSectionTypes();
 
         /// <summary>
@@ -37,14 +37,14 @@ namespace MediaBrowser.Controller.Library
         /// Gets whether the user has the Modular Home feature enabled.
         /// </summary>
         /// <param name="userId">The user ID.</param>
-        /// <returns>Enabled state</returns>
+        /// <returns>Enabled state.</returns>
         bool GetUserFeatureEnabled(Guid userId);
 
         /// <summary>
         /// Sets the state for whether the user has the Modular Home feature enabled or not.
         /// </summary>
         /// <param name="userId">The user ID.</param>
-        /// <param name="enabled">Is the feature enabled or not?</param>
+        /// <param name="enabled">Is the feature enabled or not.</param>
         void SetUserFeatureEnabled(Guid userId, bool enabled);
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace MediaBrowser.Controller.Library
         public string? DisplayText { get; set; }
 
         /// <summary>
-        /// Limit of the number of these sections a single user can see at once. (Usually 1)
+        /// Limit of the number of these sections a single user can see at once. (Usually 1).
         /// </summary>
         public int? Limit { get; }
 
@@ -107,22 +107,22 @@ namespace MediaBrowser.Controller.Library
     public class HomeScreenSectionInfo
     {
         /// <summary>
-        /// Section ID
+        /// Section ID.
         /// </summary>
         public string? Section { get; set; }
 
         /// <summary>
-        /// DisplayText
+        /// DisplayText.
         /// </summary>
         public string? DisplayText { get; set; }
 
         /// <summary>
-        /// Display Limit
+        /// Display Limit.
         /// </summary>
         public int Limit { get; set; } = 1;
 
         /// <summary>
-        /// URL to navigation to
+        /// URL to navigation to.
         /// </summary>
         public string? Route { get; set; }
 

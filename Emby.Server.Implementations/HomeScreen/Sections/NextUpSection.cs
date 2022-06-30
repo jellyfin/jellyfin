@@ -17,7 +17,7 @@ using MediaBrowser.Model.Querying;
 namespace Emby.Server.Implementations.HomeScreen.Sections
 {
     /// <summary>
-    /// Next Up Section
+    /// Next Up Section.
     /// </summary>
     public class NextUpSection : IHomeScreenSection
     {
@@ -44,7 +44,7 @@ namespace Emby.Server.Implementations.HomeScreen.Sections
         private readonly ITVSeriesManager _tvSeriesManager;
 
         /// <summary>
-        /// Constructor
+        /// Constructor.
         /// </summary>
         /// <param name="userViewManager">Instance of <see href="IUserViewManager" /> interface.</param>
         /// <param name="userManager">Instance of <see href="IUserManager" /> interface.</param>

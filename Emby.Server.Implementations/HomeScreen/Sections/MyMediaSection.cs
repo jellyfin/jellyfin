@@ -12,7 +12,7 @@ using MediaBrowser.Model.Querying;
 namespace Emby.Server.Implementations.HomeScreen.Sections
 {
     /// <summary>
-    /// My Media Section
+    /// My Media Section.
     /// </summary>
     public class MyMediaSection : IHomeScreenSection
     {
