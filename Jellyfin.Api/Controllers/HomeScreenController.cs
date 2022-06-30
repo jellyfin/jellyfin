@@ -93,12 +93,12 @@ namespace Jellyfin.Api.Controllers
 
         [HttpGet("Sections")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<QueryResult<BaseItemDto>> GetHomeScreenSections(
+        public ActionResult<QueryResult<HomeScreenSectionInfo>> GetHomeScreenSections(
             [FromQuery] Guid? userId)
         {
-            List<BaseItemDto> sections = _homeScreenManager.GetSectionTypes().Select(x => x.AsBaseItem()).ToList();
+            List<HomeScreenSectionInfo> sections = _homeScreenManager.GetSectionTypes().Select(x => x.AsInfo()).ToList();
 
-            return new QueryResult<BaseItemDto>(
+            return new QueryResult<HomeScreenSectionInfo>(
                 0,
                 sections.Count,
                 sections);

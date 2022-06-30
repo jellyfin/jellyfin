@@ -55,18 +55,16 @@ namespace MediaBrowser.Controller.Library
     public static class HomeScreenSectionExtensions
     {
 
-        public static BaseItemDto AsBaseItem(this IHomeScreenSection section)
+        public static HomeScreenSectionInfo AsInfo(this IHomeScreenSection section)
         {
-#pragma warning disable CA1305 // Specify IFormatProvider
-            return new BaseItemDto
+            return new HomeScreenSectionInfo
             {
-                Name = section.Section,
-                OriginalTitle = section.DisplayText,
-                ChannelNumber = section.Limit.ToString(),
-                SortName = section.Route,
-                Overview = section.AdditionalData
+                Section = section.Section,
+                DisplayText = section.DisplayText,
+                AdditionalData = section.AdditionalData,
+                Route = section.Route,
+                Limit = section.Limit
             };
-#pragma warning restore CA1305 // Specify IFormatProvider
         }
     }
 }
