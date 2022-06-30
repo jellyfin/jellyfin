@@ -21,6 +21,10 @@ namespace MediaBrowser.Controller.Library
         bool GetUserFeatureEnabled(Guid userId);
 
         void SetUserFeatureEnabled(Guid userId, bool enabled);
+
+        ModularHomeUserSettings GetUserSettings(Guid userId);
+
+        bool UpdateUserSettings(Guid userId, ModularHomeUserSettings userSettings);
     }
 
     public interface IHomeScreenSection
@@ -50,6 +54,12 @@ namespace MediaBrowser.Controller.Library
 
         public string AdditionalData { get; set; }
 
+    }
+
+    public class ModularHomeUserSettings
+    {
+        public Guid UserId { get; set; }
+        public List<string> EnabledSections { get; set; } = new List<string>();
     }
 
     public static class HomeScreenSectionExtensions

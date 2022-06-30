@@ -49,8 +49,12 @@
 
   <ItemGroup>
     <None Remove="Plugins\AudioDb\Configuration\config.html" />
+    <None Remove="Plugins\ModularHome\Config\settings.html" />
+    <None Remove="Plugins\ModularHome\Config\settings.js" />
     <EmbeddedResource Include="Plugins\AudioDb\Configuration\config.html" />
     <None Remove="Plugins\Omdb\Configuration\config.html" />
+    <EmbeddedResource Include="Plugins\ModularHome\Config\settings.html" />
+    <EmbeddedResource Include="Plugins\ModularHome\Config\settings.js" />
     <EmbeddedResource Include="Plugins\Omdb\Configuration\config.html" />
     <None Remove="Plugins\MusicBrainz\Configuration\config.html" />
     <EmbeddedResource Include="Plugins\MusicBrainz\Configuration\config.html" />

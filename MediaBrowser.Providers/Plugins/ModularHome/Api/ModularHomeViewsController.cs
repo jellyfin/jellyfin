@@ -58,6 +58,19 @@ namespace MediaBrowser.Providers.Plugins.ModularHome.Api
             return new QueryResult<HomeScreenSectionInfo>(null, items.Count, items);
         }
 
+        [HttpGet("UserSettings")]
+        public ActionResult<ModularHomeUserSettings> GetUserSettings([FromQuery] Guid userId)
+        {
+            return _homeScreenManager.GetUserSettings(userId);
+        }
+
+        [HttpPost("UserSettings")]
+        public ActionResult UpdateSettings([FromBody] ModularHomeUserSettings obj)
+        {
+            _homeScreenManager.UpdateUserSettings(obj.UserId, obj);
+
+            return Ok();
+        }
         // TODO: Add support for saving the section types being enabled/disabled.
 
         private ActionResult ServeView(string viewName)

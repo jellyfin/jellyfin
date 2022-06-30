@@ -96,7 +96,9 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<QueryResult<HomeScreenSectionInfo>> GetHomeScreenSections(
             [FromQuery] Guid? userId)
         {
-            List<HomeScreenSectionInfo> sections = _homeScreenManager.GetSectionTypes().Select(x => x.AsInfo()).ToList();
+            ModularHomeUserSettings settings = _homeScreenManager.GetUserSettings(userId ?? Guid.Empty);
+
+            List<HomeScreenSectionInfo> sections = _homeScreenManager.GetSectionTypes().Select(x => x.AsInfo()).Where(x => settings.EnabledSections.Contains(x.Section)).ToList();
 
             return new QueryResult<HomeScreenSectionInfo>(
                 0,

@@ -23,6 +23,8 @@ namespace Emby.Server.Implementations.HomeScreen
         private readonly IServiceProvider _serviceProvider;
         private readonly IApplicationPaths _applicationPaths;
 
+        private const string SettingsFile = "ModularHomeSettings.json";
+
         public HomeScreenManager(IServiceProvider serviceProvider, IApplicationPaths applicationPaths)
         {
             _serviceProvider = serviceProvider;
@@ -93,6 +95,56 @@ namespace Emby.Server.Implementations.HomeScreen
 
             string userFeatureEnabledPath = Path.Combine(_applicationPaths.CachePath, "userFeatureEnabled.json");
             File.WriteAllText(userFeatureEnabledPath, JObject.FromObject(m_userFeatureEnabledStates).ToString(Newtonsoft.Json.Formatting.Indented));
+        }
+
+        public ModularHomeUserSettings GetUserSettings(Guid userId)
+        {
+            string pluginSettings = Path.Combine(_applicationPaths.PluginsPath, "ModularHome", SettingsFile);
+
+            if (System.IO.File.Exists(pluginSettings))
+            {
+                JArray settings = JArray.Parse(System.IO.File.ReadAllText(pluginSettings));
+
+                if (settings.Select(x => JsonConvert.DeserializeObject<ModularHomeUserSettings>(x.ToString())).Any(x => x.UserId.Equals(userId)))
+                {
+                    return settings.Select(x => JsonConvert.DeserializeObject<ModularHomeUserSettings>(x.ToString())).First(x => x.UserId.Equals(userId));
+                }
+            }
+
+            return new ModularHomeUserSettings
+            {
+                UserId = userId
+            };
+        }
+
+        public bool UpdateUserSettings(Guid userId, ModularHomeUserSettings userSettings)
+        {
+            string pluginSettings = Path.Combine(_applicationPaths.PluginsPath, "ModularHome", SettingsFile);
+            FileInfo fInfo = new FileInfo(pluginSettings);
+            fInfo.Directory?.Create();
+
+            JArray settings = new JArray();
+            List<ModularHomeUserSettings> newSettings = new List<ModularHomeUserSettings>();
+
+            if (File.Exists(pluginSettings))
+            {
+                settings = JArray.Parse(System.IO.File.ReadAllText(pluginSettings));
+                newSettings = settings.Select(x => JsonConvert.DeserializeObject<ModularHomeUserSettings>(x.ToString())).ToList();
+                newSettings.RemoveAll(x => x.UserId.Equals(userId));
+
+                newSettings.Add(userSettings);
+
+                settings.Clear();
+            }
+
+            foreach (ModularHomeUserSettings userSetting in newSettings)
+            {
+                settings.Add(JObject.FromObject(userSetting));
+            }
+
+            File.WriteAllText(pluginSettings, settings.ToString(Formatting.Indented));
+
+            return true;
         }
     }
 }
