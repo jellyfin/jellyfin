@@ -282,7 +282,7 @@ namespace Jellyfin.Api.Controllers
             }
             else
             {
-                if (await RequestHelpers.IsUserAdministrator(_authContext, HttpContext.Request).ConfigureAwait(false))
+                if (HttpContext.User.IsInRole(UserRoles.Administrator))
                 {
                     var success = await _userManager.AuthenticateUser(
                         user.Username,
