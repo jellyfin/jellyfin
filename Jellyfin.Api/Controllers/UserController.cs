@@ -256,7 +256,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="404">User not found.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="ForbidResult"/> or a <see cref="NotFoundResult"/> on failure.</returns>
         [HttpPost("{userId}/Password")]
-        [Authorize(Policy = Policies.IgnoreParentalControl)]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -282,15 +282,14 @@ namespace Jellyfin.Api.Controllers
             }
             else
             {
-                if (HttpContext.User.IsInRole(UserRoles.Administrator))
+                if (!HttpContext.User.IsInRole(UserRoles.Administrator))
                 {
                     var success = await _userManager.AuthenticateUser(
                         user.Username,
                         request.CurrentPw,
                         request.CurrentPw,
                         HttpContext.GetNormalizedRemoteIp().ToString(),
-                        false,
-                        ignoreParentalSchedule: true).ConfigureAwait(false);
+                        false).ConfigureAwait(false);
 
                     if (success == null)
                     {

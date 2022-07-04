@@ -382,8 +382,7 @@ namespace Jellyfin.Server.Implementations.Users
             string password,
             string passwordSha1,
             string remoteEndPoint,
-            bool isUserSession,
-            bool ignoreParentalSchedule = false)
+            bool isUserSession)
         {
             if (string.IsNullOrWhiteSpace(username))
             {
@@ -459,7 +458,7 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new SecurityException("Forbidden.");
             }
 
-            if (!ignoreParentalSchedule && !user.IsParentalScheduleAllowed())
+            if (!user.IsParentalScheduleAllowed())
             {
                 _logger.LogInformation(
                     "Authentication request for {UserName} is not allowed at this time due parental restrictions (IP: {IP}).",

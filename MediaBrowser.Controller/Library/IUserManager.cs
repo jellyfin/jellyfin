@@ -138,9 +138,8 @@ namespace MediaBrowser.Controller.Library
         /// <param name="passwordSha1">Hash of password.</param>
         /// <param name="remoteEndPoint">Remove endpoint to use.</param>
         /// <param name="isUserSession">Specifies if a user session.</param>
-        /// <param name="ignoreParentalSchedule">Ignore parental control schedule during authentication.</param>
         /// <returns>User wrapped in awaitable task.</returns>
-        Task<User> AuthenticateUser(string username, string password, string passwordSha1, string remoteEndPoint, bool isUserSession, bool ignoreParentalSchedule = false);
+        Task<User> AuthenticateUser(string username, string password, string passwordSha1, string remoteEndPoint, bool isUserSession);
 
         /// <summary>
         /// Starts the forgot password process.
