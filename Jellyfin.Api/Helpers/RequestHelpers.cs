@@ -76,6 +76,18 @@ namespace Jellyfin.Api.Helpers
             return true;
         }
 
+        /// <summary>
+        /// Checks if the user is administrator.
+        /// </summary>
+        /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
+        /// <param name="requestContext">The <see cref="HttpRequest"/>.</param>
+        /// <returns>A <see cref="bool"/> whether the user can update the entry.</returns>
+        internal static async Task<bool> IsUserAdministrator(IAuthorizationContext authContext, HttpRequest requestContext)
+        {
+            var auth = await authContext.GetAuthorizationInfo(requestContext).ConfigureAwait(false);
+            return auth.User.HasPermission(PermissionKind.IsAdministrator);
+        }
+
         internal static async Task<SessionInfo> GetSession(ISessionManager sessionManager, IAuthorizationContext authContext, HttpRequest request)
         {
             var authorization = await authContext.GetAuthorizationInfo(request).ConfigureAwait(false);

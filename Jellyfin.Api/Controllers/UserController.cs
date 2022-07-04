@@ -282,17 +282,20 @@ namespace Jellyfin.Api.Controllers
             }
             else
             {
-                var success = await _userManager.AuthenticateUser(
-                    user.Username,
-                    request.CurrentPw,
-                    request.CurrentPw,
-                    HttpContext.GetNormalizedRemoteIp().ToString(),
-                    false,
-                    ignoreParentalSchedule: true).ConfigureAwait(false);
-
-                if (success == null)
+                if (await RequestHelpers.IsUserAdministrator(_authContext, HttpContext.Request).ConfigureAwait(false))
                 {
-                    return StatusCode(StatusCodes.Status403Forbidden, "Invalid user or password entered.");
+                    var success = await _userManager.AuthenticateUser(
+                        user.Username,
+                        request.CurrentPw,
+                        request.CurrentPw,
+                        HttpContext.GetNormalizedRemoteIp().ToString(),
+                        false,
+                        ignoreParentalSchedule: true).ConfigureAwait(false);
+
+                    if (success == null)
+                    {
+                        return StatusCode(StatusCodes.Status403Forbidden, "Invalid user or password entered.");
+                    }
                 }
 
                 await _userManager.ChangePassword(user, request.NewPw).ConfigureAwait(false);
