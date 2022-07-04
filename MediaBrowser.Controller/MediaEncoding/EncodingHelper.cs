@@ -5527,6 +5527,12 @@ namespace MediaBrowser.Controller.MediaEncoding
             var streams = mediaStreams.Count;
             var externalStreams = mediaStreams.Count(s => s.IsExternal);
 
+            // Fallback to the old behavior of external subtitle stream indices in 10.7 and older.
+            if (externalStreams > 0 && !mediaStreams[0].IsExternal)
+            {
+                return streamToFind.Index;
+            }            
+
             if (!streamToFind.IsExternal)
             {
                 for (var i = externalStreams; i < streams; i++)
