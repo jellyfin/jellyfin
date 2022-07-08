@@ -30,17 +30,23 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <inheritdoc />
         public SubtitleTrackInfo Parse(Stream stream, string fileExtension)
         {
-            var subtitleFormat = SubtitleFormat.AllSubtitleFormats.FirstOrDefault(asf => asf.Extension.Equals(fileExtension, StringComparison.OrdinalIgnoreCase));
-            if (subtitleFormat == null)
-            {
-                throw new ArgumentException("Unsupported format: " + fileExtension);
-            }
-
-            var lines = stream.ReadAllLines().ToList();
             var subtitle = new Subtitle();
-            subtitleFormat.LoadSubtitle(subtitle, lines, fileExtension);
-            if (subtitleFormat.ErrorCount > 0)
+            var lines = stream.ReadAllLines().ToList();
+
+            var subtitleFormats = SubtitleFormat.AllSubtitleFormats.Where(asf => asf.Extension.Equals(fileExtension, StringComparison.OrdinalIgnoreCase));
+            foreach (var subtitleFormat in subtitleFormats)
             {
+                if (subtitleFormat == null)
+                {
+                    throw new ArgumentException("Unsupported format: " + fileExtension);
+                }
+
+                subtitleFormat.LoadSubtitle(subtitle, lines, fileExtension);
+                if (subtitleFormat.ErrorCount == 0)
+                {
+                    break;
+                }
+
                 _logger.LogError("{ErrorCount} errors encountered while parsing subtitle", subtitleFormat.ErrorCount);
             }
 
