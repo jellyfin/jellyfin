@@ -36,11 +36,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var subtitleFormats = SubtitleFormat.AllSubtitleFormats.Where(asf => asf.Extension.Equals(fileExtension, StringComparison.OrdinalIgnoreCase));
             foreach (var subtitleFormat in subtitleFormats)
             {
-                if (subtitleFormat == null)
-                {
-                    throw new ArgumentException("Unsupported format: " + fileExtension);
-                }
-
                 subtitleFormat.LoadSubtitle(subtitle, lines, fileExtension);
                 if (subtitleFormat.ErrorCount == 0)
                 {
@@ -48,6 +43,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
 
                 _logger.LogError("{ErrorCount} errors encountered while parsing subtitle", subtitleFormat.ErrorCount);
+            }
+
+            if (subtitle.Paragraphs.Count == 0)
+            {
+                throw new ArgumentException("Unsupported format: " + fileExtension);
             }
 
             var trackInfo = new SubtitleTrackInfo();
