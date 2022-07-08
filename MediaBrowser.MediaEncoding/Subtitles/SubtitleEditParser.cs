@@ -1,7 +1,7 @@
+using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using Jellyfin.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
@@ -14,31 +14,34 @@ namespace MediaBrowser.MediaEncoding.Subtitles
     /// <summary>
     /// SubStation Alpha subtitle parser.
     /// </summary>
-    /// <typeparam name="T">The <see cref="SubtitleFormat" />.</typeparam>
-    public abstract class SubtitleEditParser<T> : ISubtitleParser
-        where T : SubtitleFormat, new()
+    public class SubtitleEditParser : ISubtitleParser
     {
         private readonly ILogger _logger;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SubtitleEditParser{T}"/> class.
+        /// Initializes a new instance of the <see cref="SubtitleEditParser"/> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        protected SubtitleEditParser(ILogger logger)
+        public SubtitleEditParser(ILogger logger)
         {
             _logger = logger;
         }
 
         /// <inheritdoc />
-        public SubtitleTrackInfo Parse(Stream stream, CancellationToken cancellationToken)
+        public SubtitleTrackInfo Parse(Stream stream, string fileExtension)
         {
-            var subtitle = new Subtitle();
-            var subRip = new T();
-            var lines = stream.ReadAllLines().ToList();
-            subRip.LoadSubtitle(subtitle, lines, "untitled");
-            if (subRip.ErrorCount > 0)
+            var subtitleFormat = SubtitleFormat.AllSubtitleFormats.FirstOrDefault(asf => asf.Extension.Equals(fileExtension, StringComparison.OrdinalIgnoreCase));
+            if (subtitleFormat == null)
             {
-                _logger.LogError("{ErrorCount} errors encountered while parsing subtitle", subRip.ErrorCount);
+                throw new ArgumentException("Unsupported format: " + fileExtension);
+            }
+
+            var lines = stream.ReadAllLines().ToList();
+            var subtitle = new Subtitle();
+            subtitleFormat.LoadSubtitle(subtitle, lines, fileExtension);
+            if (subtitleFormat.ErrorCount > 0)
+            {
+                _logger.LogError("{ErrorCount} errors encountered while parsing subtitle", subtitleFormat.ErrorCount);
             }
 
             var trackInfo = new SubtitleTrackInfo();

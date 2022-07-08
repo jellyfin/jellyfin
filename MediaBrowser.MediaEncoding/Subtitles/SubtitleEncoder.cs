@@ -74,7 +74,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             try
             {
                 var reader = GetReader(inputFormat);
-                var trackInfo = reader.Parse(stream, cancellationToken);
+                var trackInfo = reader.Parse(stream, $".{inputFormat}");
 
                 FilterEvents(trackInfo, startTimeTicks, endTimeTicks, preserveOriginalTimestamps);
 
@@ -249,26 +249,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         private bool TryGetReader(string format, [NotNullWhen(true)] out ISubtitleParser? value)
         {
-            if (string.Equals(format, SubtitleFormat.SRT, StringComparison.OrdinalIgnoreCase))
-            {
-                value = new SrtParser(_logger);
-                return true;
-            }
-
-            if (string.Equals(format, SubtitleFormat.SSA, StringComparison.OrdinalIgnoreCase))
-            {
-                value = new SsaParser(_logger);
-                return true;
-            }
-
-            if (string.Equals(format, SubtitleFormat.ASS, StringComparison.OrdinalIgnoreCase))
-            {
-                value = new AssParser(_logger);
-                return true;
-            }
-
-            value = null;
-            return false;
+            value = new SubtitleEditParser(_logger);
+            return true;
         }
 
         private ISubtitleParser GetReader(string format)
