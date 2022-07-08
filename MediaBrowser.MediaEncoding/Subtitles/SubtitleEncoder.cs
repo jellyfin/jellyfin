@@ -267,6 +267,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 return true;
             }
 
+            if (string.Equals(format, SubtitleFormat.SAMI, StringComparison.OrdinalIgnoreCase))
+            {
+                value = new SamiParser(_logger);
+                return true;
+            }
+
             value = null;
             return false;
         }

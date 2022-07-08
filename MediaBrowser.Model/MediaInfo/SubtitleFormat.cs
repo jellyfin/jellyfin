@@ -10,5 +10,6 @@ namespace MediaBrowser.Model.MediaInfo
         public const string ASS = "ass";
         public const string VTT = "vtt";
         public const string TTML = "ttml";
+        public const string SAMI = "smi";
     }
 }
