@@ -184,11 +184,11 @@ namespace Jellyfin.Api.Helpers
 
             state.OutputContainer = (containerInternal ?? string.Empty).TrimStart('.');
 
-            state.OutputAudioBitrate = encodingHelper.GetAudioBitrateParam(streamingRequest.AudioBitRate, streamingRequest.AudioCodec, state.AudioStream);
-
             state.OutputAudioCodec = streamingRequest.AudioCodec;
 
             state.OutputAudioChannels = encodingHelper.GetNumAudioChannelsParam(state, state.AudioStream, state.OutputAudioCodec);
+
+            state.OutputAudioBitrate = encodingHelper.GetAudioBitrateParam(streamingRequest.AudioBitRate, streamingRequest.AudioCodec, state.AudioStream, state.OutputAudioChannels);
 
             if (state.VideoRequest != null)
             {
