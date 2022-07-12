@@ -2137,50 +2137,48 @@ namespace MediaBrowser.Controller.MediaEncoding
             return Convert.ToInt32(scaleFactor * bitrate);
         }
 
-        public int? GetAudioBitrateParam(BaseEncodingJobOptions request, MediaStream audioStream)
+        public int? GetAudioBitrateParam(BaseEncodingJobOptions request, MediaStream audioStream, int? outputAudioChannels)
         {
-            return GetAudioBitrateParam(request.AudioBitRate, request.AudioCodec, audioStream);
+            return GetAudioBitrateParam(request.AudioBitRate, request.AudioCodec, audioStream, outputAudioChannels);
         }
 
-        public int? GetAudioBitrateParam(int? audioBitRate, string audioCodec, MediaStream audioStream)
+        public int? GetAudioBitrateParam(int? audioBitRate, string audioCodec, MediaStream audioStream, int? outputAudioChannels)
         {
             if (audioStream is null)
             {
                 return null;
             }
 
-            if (audioBitRate.HasValue && string.IsNullOrEmpty(audioCodec))
+            var inputChannels = audioStream.Channels ?? 0;
+            var outputChannels = outputAudioChannels ?? 0;
+
+            if (audioBitRate.HasValue && (string.IsNullOrEmpty(audioCodec)
+                || string.Equals(audioCodec, "aac", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(audioCodec, "mp3", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(audioCodec, "opus", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(audioCodec, "vorbis", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(audioCodec, "ac3", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(audioCodec, "eac3", StringComparison.OrdinalIgnoreCase)))
             {
-                return Math.Min(384000, audioBitRate.Value);
+                return (inputChannels, outputChannels) switch
+                {
+                    ( >= 6, >= 6 or 0) => Math.Min(640000, audioBitRate.Value),
+                    ( > 0, > 0) => Math.Min(outputChannels * 128000, audioBitRate.Value),
+                    ( > 0, _) => Math.Min(inputChannels * 128000, audioBitRate.Value),
+                    (_, _) => Math.Min(384000, audioBitRate.Value)
+                };
             }
 
-            if (audioBitRate.HasValue && !string.IsNullOrEmpty(audioCodec))
+            if (audioBitRate.HasValue && (string.Equals(audioCodec, "flac", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(audioCodec, "alac", StringComparison.OrdinalIgnoreCase)))
             {
-                if (string.Equals(audioCodec, "aac", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(audioCodec, "mp3", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(audioCodec, "opus", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(audioCodec, "vorbis", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(audioCodec, "ac3", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(audioCodec, "eac3", StringComparison.OrdinalIgnoreCase))
+                if ((audioStream.Channels ?? 0) >= 6)
                 {
-                    if ((audioStream.Channels ?? 0) >= 6)
-                    {
-                        return Math.Min(640000, audioBitRate.Value);
-                    }
-
-                    return Math.Min(384000, audioBitRate.Value);
+                    return Math.Min(3584000, audioBitRate.Value);
                 }
 
-                if (string.Equals(audioCodec, "flac", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(audioCodec, "alac", StringComparison.OrdinalIgnoreCase))
-                {
-                    if ((audioStream.Channels ?? 0) >= 6)
-                    {
-                        return Math.Min(3584000, audioBitRate.Value);
-                    }
+                return Math.Min(1536000, audioBitRate.Value);
 
-                    return Math.Min(1536000, audioBitRate.Value);
-                }
             }
 
             // Empty bitrate area is not allow on iOS
