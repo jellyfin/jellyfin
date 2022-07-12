@@ -183,7 +183,7 @@ public static class StreamingHelpers
 
         state.OutputContainer = (containerInternal ?? string.Empty).TrimStart('.');
 
-        state.OutputAudioBitrate = encodingHelper.GetAudioBitrateParam(streamingRequest.AudioBitRate, streamingRequest.AudioCodec, state.AudioStream);
+        state.OutputAudioBitrate = encodingHelper.GetAudioBitrateParam(streamingRequest.AudioBitRate, streamingRequest.AudioCodec, state.AudioStream, state.OutputAudioChannels);
 
         state.OutputAudioCodec = streamingRequest.AudioCodec;
 
