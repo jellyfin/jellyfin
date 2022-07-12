@@ -1713,6 +1713,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // Can't stream copy if we're burning in subtitles
             if (request.SubtitleStreamIndex.HasValue
+                && request.SubtitleStreamIndex.Value >= 0
                 && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode)
             {
                 return false;
@@ -1760,7 +1761,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             var requestedRangeTypes = state.GetRequestedRangeTypes(videoStream.Codec);
-            if (requestedProfiles.Length > 0)
+            if (requestedRangeTypes.Length > 0)
             {
                 if (string.IsNullOrEmpty(videoStream.VideoRangeType))
                 {
