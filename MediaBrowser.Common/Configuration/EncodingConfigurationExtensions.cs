@@ -32,7 +32,7 @@ namespace MediaBrowser.Common.Configuration
             var transcodingTempPath = configurationManager.GetEncodingOptions().TranscodingTempPath;
             if (string.IsNullOrEmpty(transcodingTempPath))
             {
-                transcodingTempPath = Path.Combine(configurationManager.CommonApplicationPaths.ProgramDataPath, "transcodes");
+                transcodingTempPath = Path.Combine(configurationManager.CommonApplicationPaths.CachePath, "transcodes");
             }
 
             // Make sure the directory exists
