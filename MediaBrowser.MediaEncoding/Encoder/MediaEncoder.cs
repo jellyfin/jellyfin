@@ -51,6 +51,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;
         private readonly IConfiguration _config;
+        private readonly IServerConfigurationManager _serverConfig;
         private readonly string _startupOptionFFmpegPath;
 
         private readonly SemaphoreSlim _thumbnailResourcePool = new SemaphoreSlim(2, 2);
@@ -81,13 +82,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
             IServerConfigurationManager configurationManager,
             IFileSystem fileSystem,
             ILocalizationManager localization,
-            IConfiguration config)
+            IConfiguration config,
+            IServerConfigurationManager serverConfig)
         {
             _logger = logger;
             _configurationManager = configurationManager;
             _fileSystem = fileSystem;
             _localization = localization;
             _config = config;
+            _serverConfig = serverConfig;
             _startupOptionFFmpegPath = config.GetValue<string>(Controller.Extensions.ConfigurationExtensions.FfmpegPathKey) ?? string.Empty;
             _jsonSerializerOptions = JsonDefaults.Options;
         }
@@ -598,6 +601,29 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _ => ".jpg"
             };
 
+            bool enumConversionStatus = Enum.TryParse(_serverConfig.Configuration.ChapterImageResolution, out ImageResolution resolution);
+            var outputResolution = string.Empty;
+
+            if (enumConversionStatus)
+            {
+                outputResolution = resolution switch
+                {
+                    ImageResolution.P240 => "426x240",
+                    ImageResolution.P360 => "640x360",
+                    ImageResolution.P480 => "854x480",
+                    ImageResolution.P720 => "1280x720",
+                    ImageResolution.P1080 => "1920x1080",
+                    ImageResolution.P1440 => "2560x1440",
+                    ImageResolution.P2160 => "3840x2160",
+                    _ => string.Empty
+                };
+
+                if (!string.IsNullOrEmpty(outputResolution))
+                {
+                    outputResolution = " -s " + outputResolution;
+                }
+            }
+
             var tempExtractPath = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid() + outputExtension);
             Directory.CreateDirectory(Path.GetDirectoryName(tempExtractPath));
 
@@ -651,7 +677,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var vf = string.Join(',', filters);
             var mapArg = imageStreamIndex.HasValue ? (" -map 0:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
-            var args = string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads {4} -v quiet -vframes 1 -vf {2} -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, _threads);
+            var args = string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads {4} -v quiet -vframes 1 -vf {2}{5} -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, _threads, outputResolution);
 
             if (offset.HasValue)
             {

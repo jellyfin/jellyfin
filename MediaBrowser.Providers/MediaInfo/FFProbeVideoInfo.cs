@@ -48,8 +48,6 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly SubtitleResolver _subtitleResolver;
         private readonly IMediaSourceManager _mediaSourceManager;
 
-        private readonly long _dummyChapterDuration = TimeSpan.FromMinutes(5).Ticks;
-
         public FFProbeVideoInfo(
             ILogger logger,
             IMediaSourceManager mediaSourceManager,
@@ -651,6 +649,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private ChapterInfo[] CreateDummyChapters(Video video)
         {
             var runtime = video.RunTimeTicks ?? 0;
+            long dummyChapterDuration = TimeSpan.FromSeconds(_config.Configuration.DummyChapterDuration).Ticks;
 
             if (runtime < 0)
             {
@@ -662,13 +661,13 @@ namespace MediaBrowser.Providers.MediaInfo
                         runtime));
             }
 
-            if (runtime < _dummyChapterDuration)
+            if (runtime < dummyChapterDuration)
             {
                 return Array.Empty<ChapterInfo>();
             }
 
             // Limit to 100 chapters just in case there's some incorrect metadata here
-            int chapterCount = (int)Math.Min(runtime / _dummyChapterDuration, 100);
+            int chapterCount = (int)Math.Min(runtime / dummyChapterDuration, _config.Configuration.DummyChapterCount);
             var chapters = new ChapterInfo[chapterCount];
 
             long currentChapterTicks = 0;
@@ -679,7 +678,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     StartPositionTicks = currentChapterTicks
                 };
 
-                currentChapterTicks += _dummyChapterDuration;
+                currentChapterTicks += dummyChapterDuration;
             }
 
             return chapters;
