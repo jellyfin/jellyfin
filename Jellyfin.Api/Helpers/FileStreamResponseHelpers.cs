@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Mime;
 using System.Threading;
@@ -9,6 +11,7 @@ using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Controller.MediaEncoding;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Jellyfin.Api.Helpers
@@ -32,17 +35,31 @@ namespace Jellyfin.Api.Helpers
             HttpContext httpContext,
             CancellationToken cancellationToken = default)
         {
-            if (state.RemoteHttpHeaders.TryGetValue(HeaderNames.UserAgent, out var useragent))
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, new Uri(state.MediaPath));
+            foreach (KeyValuePair<string, string> entry in state.RemoteHttpHeaders)
             {
-                httpClient.DefaultRequestHeaders.Add(HeaderNames.UserAgent, useragent);
+                request.Headers.Add(entry.Key, entry.Value);
+            }
+
+            if (httpContext.Request.Headers.TryGetValue(HeaderNames.Range, out StringValues values))
+            {
+                request.Headers.Add(HeaderNames.Range, values.ToArray());
             }
 
             // Can't dispose the response as it's required up the call chain.
-            var response = await httpClient.GetAsync(new Uri(state.MediaPath), cancellationToken).ConfigureAwait(false);
+            var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
             var contentType = response.Content.Headers.ContentType?.ToString() ?? MediaTypeNames.Text.Plain;
 
-            httpContext.Response.Headers[HeaderNames.AcceptRanges] = "none";
+            var headersToCopy = new List<string>() { HeaderNames.ContentLength, HeaderNames.ContentRange, HeaderNames.ContentDisposition, HeaderNames.ContentEncoding };
+            foreach (var headerToCopy in headersToCopy)
+            {
+                if (response.Content.Headers.Contains(headerToCopy))
+                {
+                    httpContext.Response.Headers.Add(headerToCopy, new StringValues(response.Content.Headers.GetValues(headerToCopy).ToArray()));
+                }
+            }
 
+            httpContext.Response.StatusCode = (int)response.StatusCode;
             return new FileStreamResult(await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false), contentType);
         }
 
