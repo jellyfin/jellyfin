@@ -3,15 +3,16 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Emby.Dlna.PlayTo;
 using Emby.Dlna.Ssdp;
 using Jellyfin.Networking.Configuration;
-using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -285,9 +286,11 @@ namespace Emby.Dlna.Main
             var udn = CreateUuid(_appHost.SystemId);
             var descriptorUri = "/dlna/" + udn + "/description.xml";
 
-            var bindAddresses = NetworkManager.CreateCollection(
-                _networkManager.GetInternalBindAddresses()
-                .Where(i => i.AddressFamily == AddressFamily.InterNetwork || (i.AddressFamily == AddressFamily.InterNetworkV6 && i.Address.ScopeId != 0)));
+            var bindAddresses = _networkManager
+                .GetInternalBindAddresses()
+                .Where(i => i.Address.AddressFamily == AddressFamily.InterNetwork
+                    || (i.AddressFamily == AddressFamily.InterNetworkV6 && i.Address.ScopeId != 0))
+                .ToList();
 
             if (bindAddresses.Count == 0)
             {
@@ -295,7 +298,7 @@ namespace Emby.Dlna.Main
                 bindAddresses = _networkManager.GetLoopbacks();
             }
 
-            foreach (IPNetAddress address in bindAddresses)
+            foreach (var address in bindAddresses)
             {
                 if (address.AddressFamily == AddressFamily.InterNetworkV6)
                 {
@@ -304,7 +307,7 @@ namespace Emby.Dlna.Main
                 }
 
                 // Limit to LAN addresses only
-                if (!_networkManager.IsInLocalNetwork(address))
+                if (!_networkManager.IsInLocalNetwork(address.Address))
                 {
                     continue;
                 }
@@ -313,14 +316,14 @@ namespace Emby.Dlna.Main
 
                 _logger.LogInformation("Registering publisher for {ResourceName} on {DeviceAddress}", fullService, address);
 
-                var uri = new UriBuilder(_appHost.GetApiUrlForLocalAccess(address, false) + descriptorUri);
+                var uri = new UriBuilder(_appHost.GetApiUrlForLocalAccess(address.Address, false) + descriptorUri);
 
                 var device = new SsdpRootDevice
                 {
                     CacheLifetime = TimeSpan.FromSeconds(1800), // How long SSDP clients can cache this info.
                     Location = uri.Uri, // Must point to the URL that serves your devices UPnP description document.
                     Address = address.Address,
-                    PrefixLength = address.PrefixLength,
+                    PrefixLength = NetworkExtensions.MaskToCidr(address.Subnet.Prefix),
                     FriendlyName = "Jellyfin",
                     Manufacturer = "Jellyfin",
                     ModelName = "Jellyfin Server",

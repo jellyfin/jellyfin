@@ -113,12 +113,12 @@ namespace Jellyfin.Networking.Configuration
         public string UDPPortRange { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets a value indicating whether gets or sets IPV6 capability.
+        /// Gets or sets a value indicating whether IPv6 is enabled or not.
         /// </summary>
         public bool EnableIPV6 { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether gets or sets IPV4 capability.
+        /// Gets or sets a value indicating whether IPv6 is enabled or not.
         /// </summary>
         public bool EnableIPV4 { get; set; } = true;
 
@@ -164,12 +164,6 @@ namespace Jellyfin.Networking.Configuration
         /// Gets a value indicating whether multi-socket binding is available.
         /// </summary>
         public bool EnableMultiSocketBinding { get; } = true;
-
-        /// <summary>
-        /// Gets or sets a value indicating whether all IPv6 interfaces should be treated as on the internal network.
-        /// Depending on the address range implemented ULA ranges might not be used.
-        /// </summary>
-        public bool TrustAllIP6Interfaces { get; set; }
 
         /// <summary>
         /// Gets or sets the ports that HDHomerun uses.

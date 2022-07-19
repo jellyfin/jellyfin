@@ -344,13 +344,13 @@ namespace Jellyfin.Server.Extensions
         {
             for (var i = 0; i < allowedProxies.Length; i++)
             {
-                if (IPNetAddress.TryParse(allowedProxies[i], out var addr))
+                if (IPAddress.TryParse(allowedProxies[i], out var addr))
                 {
-                    AddIpAddress(config, options, addr.Address, addr.PrefixLength);
+                    AddIpAddress(config, options, addr, addr.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);
                 }
-                else if (IPHost.TryParse(allowedProxies[i], out var host))
+                else if (NetworkExtensions.TryParseHost(allowedProxies[i], out var host))
                 {
-                    foreach (var address in host.GetAddresses())
+                    foreach (var address in host)
                     {
                         AddIpAddress(config, options, address, address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);
                     }

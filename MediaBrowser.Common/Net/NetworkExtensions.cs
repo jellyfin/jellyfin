@@ -1,6 +1,9 @@
 using System;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
+using System.Net.Sockets;
+using System.Text.RegularExpressions;
 
 namespace MediaBrowser.Common.Net
 {
@@ -10,251 +13,209 @@ namespace MediaBrowser.Common.Net
     public static class NetworkExtensions
     {
         /// <summary>
-        /// Add an address to the collection.
+        /// Returns true if the IPAddress contains an IP6 Local link address.
         /// </summary>
-        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
-        /// <param name="ip">Item to add.</param>
-        public static void AddItem(this Collection<IPObject> source, IPAddress ip)
+        /// <param name="address">IPAddress object to check.</param>
+        /// <returns>True if it is a local link address.</returns>
+        /// <remarks>
+        /// See https://stackoverflow.com/questions/6459928/explain-the-instance-properties-of-system-net-ipaddress
+        /// it appears that the IPAddress.IsIPv6LinkLocal is out of date.
+        /// </remarks>
+        public static bool IsIPv6LinkLocal(IPAddress address)
         {
-            if (!source.ContainsAddress(ip))
+            if (address == null)
             {
-                source.Add(new IPNetAddress(ip, 32));
+                throw new ArgumentNullException(nameof(address));
             }
-        }
 
-        /// <summary>
-        /// Adds a network to the collection.
-        /// </summary>
-        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
-        /// <param name="item">Item to add.</param>
-        /// <param name="itemsAreNetworks">If <c>true</c> the values are treated as subnets.
-        /// If <b>false</b> items are addresses.</param>
-        public static void AddItem(this Collection<IPObject> source, IPObject item, bool itemsAreNetworks = true)
-        {
-            if (!source.ContainsAddress(item) || !itemsAreNetworks)
+            if (address.IsIPv4MappedToIPv6)
             {
-                source.Add(item);
+                address = address.MapToIPv4();
             }
-        }
 
-        /// <summary>
-        /// Converts this object to a string.
-        /// </summary>
-        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
-        /// <returns>Returns a string representation of this object.</returns>
-        public static string AsString(this Collection<IPObject> source)
-        {
-            return $"[{string.Join(',', source)}]";
-        }
-
-        /// <summary>
-        /// Returns true if the collection contains an item with the ip address,
-        /// or the ip address falls within any of the collection's network ranges.
-        /// </summary>
-        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
-        /// <param name="item">The item to look for.</param>
-        /// <returns>True if the collection contains the item.</returns>
-        public static bool ContainsAddress(this Collection<IPObject> source, IPAddress item)
-        {
-            if (source.Count == 0)
+            if (address.AddressFamily != AddressFamily.InterNetworkV6)
             {
                 return false;
             }
 
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
+            // GetAddressBytes
+            Span<byte> octet = stackalloc byte[16];
+            address.TryWriteBytes(octet, out _);
+            uint word = (uint)(octet[0] << 8) + octet[1];
 
-            if (item.IsIPv4MappedToIPv6)
-            {
-                item = item.MapToIPv4();
-            }
-
-            foreach (var i in source)
-            {
-                if (i.Contains(item))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return word >= 0xfe80 && word <= 0xfebf; // fe80::/10 :Local link.
         }
 
         /// <summary>
-        /// Returns true if the collection contains an item with the ip address,
-        /// or the ip address falls within any of the collection's network ranges.
+        /// Convert a subnet mask in CIDR notation to a dotted decimal string value. IPv4 only.
         /// </summary>
-        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
-        /// <param name="item">The item to look for.</param>
-        /// <returns>True if the collection contains the item.</returns>
-        public static bool ContainsAddress(this Collection<IPObject> source, IPObject item)
+        /// <param name="cidr">Subnet mask in CIDR notation.</param>
+        /// <param name="family">IPv4 or IPv6 family.</param>
+        /// <returns>String value of the subnet mask in dotted decimal notation.</returns>
+        public static IPAddress CidrToMask(byte cidr, AddressFamily family)
         {
-            if (source.Count == 0)
-            {
-                return false;
-            }
-
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
-
-            foreach (var i in source)
-            {
-                if (i.Contains(item))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            uint addr = 0xFFFFFFFF << (family == AddressFamily.InterNetwork ? 32 : 128 - cidr);
+            addr = ((addr & 0xff000000) >> 24)
+                   | ((addr & 0x00ff0000) >> 8)
+                   | ((addr & 0x0000ff00) << 8)
+                   | ((addr & 0x000000ff) << 24);
+            return new IPAddress(addr);
         }
 
         /// <summary>
-        /// Compares two Collection{IPObject} objects. The order is ignored.
+        /// Convert a subnet mask to a CIDR. IPv4 only.
+        /// https://stackoverflow.com/questions/36954345/get-cidr-from-netmask.
         /// </summary>
-        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
-        /// <param name="dest">Item to compare to.</param>
-        /// <returns>True if both are equal.</returns>
-        public static bool Compare(this Collection<IPObject> source, Collection<IPObject> dest)
+        /// <param name="mask">Subnet mask.</param>
+        /// <returns>Byte CIDR representing the mask.</returns>
+        public static byte MaskToCidr(IPAddress mask)
         {
-            if (dest == null || source.Count != dest.Count)
+            if (mask == null)
             {
-                return false;
+                throw new ArgumentNullException(nameof(mask));
             }
 
-            foreach (var sourceItem in source)
+            byte cidrnet = 0;
+            if (!mask.Equals(IPAddress.Any))
             {
-                bool found = false;
-                foreach (var destItem in dest)
+                // GetAddressBytes
+                Span<byte> bytes = stackalloc byte[mask.AddressFamily == AddressFamily.InterNetwork ? 4 : 16];
+                mask.TryWriteBytes(bytes, out _);
+
+                var zeroed = false;
+                for (var i = 0; i < bytes.Length; i++)
                 {
-                    if (sourceItem.Equals(destItem))
+                    for (int v = bytes[i]; (v & 0xFF) != 0; v <<= 1)
                     {
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (!found)
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Returns a collection containing the subnets of this collection given.
-        /// </summary>
-        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
-        /// <returns>Collection{IPObject} object containing the subnets.</returns>
-        public static Collection<IPObject> AsNetworks(this Collection<IPObject> source)
-        {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
-
-            Collection<IPObject> res = new Collection<IPObject>();
-
-            foreach (IPObject i in source)
-            {
-                if (i is IPNetAddress nw)
-                {
-                    // Add the subnet calculated from the interface address/mask.
-                    var na = nw.NetworkAddress;
-                    na.Tag = i.Tag;
-                    res.AddItem(na);
-                }
-                else if (i is IPHost ipHost)
-                {
-                    // Flatten out IPHost and add all its ip addresses.
-                    foreach (var addr in ipHost.GetAddresses())
-                    {
-                        IPNetAddress host = new IPNetAddress(addr)
+                        if (zeroed)
                         {
-                            Tag = i.Tag
-                        };
+                            // Invalid netmask.
+                            return (byte)~cidrnet;
+                        }
 
-                        res.AddItem(host);
+                        if ((v & 0x80) == 0)
+                        {
+                            zeroed = true;
+                        }
+                        else
+                        {
+                            cidrnet++;
+                        }
                     }
                 }
             }
 
-            return res;
+            return cidrnet;
         }
 
         /// <summary>
-        /// Excludes all the items from this list that are found in excludeList.
+        /// Converts an IPAddress into a string.
+        /// Ipv6 addresses are returned in [ ], with their scope removed.
         /// </summary>
-        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
-        /// <param name="excludeList">Items to exclude.</param>
-        /// <param name="isNetwork">Collection is a network collection.</param>
-        /// <returns>A new collection, with the items excluded.</returns>
-        public static Collection<IPObject> Exclude(this Collection<IPObject> source, Collection<IPObject> excludeList, bool isNetwork)
+        /// <param name="address">Address to convert.</param>
+        /// <returns>URI safe conversion of the address.</returns>
+        public static string FormatIpString(IPAddress? address)
         {
-            if (source.Count == 0 || excludeList == null)
+            if (address == null)
             {
-                return new Collection<IPObject>(source);
+                return string.Empty;
             }
 
-            Collection<IPObject> results = new Collection<IPObject>();
-
-            bool found;
-            foreach (var outer in source)
+            var str = address.ToString();
+            if (address.AddressFamily == AddressFamily.InterNetworkV6)
             {
-                found = false;
-
-                foreach (var inner in excludeList)
+                int i = str.IndexOf('%', StringComparison.Ordinal);
+                if (i != -1)
                 {
-                    if (outer.Equals(inner))
+                    str = str.Substring(0, i);
+                }
+
+                return $"[{str}]";
+            }
+
+            return str;
+        }
+
+        /// <summary>
+        /// Attempts to parse a host string.
+        /// </summary>
+        /// <param name="host">Host name to parse.</param>
+        /// <param name="addresses">Object representing the string, if it has successfully been parsed.</param>
+        /// <param name="isIpv4Enabled"><c>true</c> if IPv4 is enabled.</param>
+        /// <param name="isIpv6Enabled"><c>true</c> if IPv6 is enabled.</param>
+        /// <returns><c>true</c> if the parsing is successful, <c>false</c> if not.</returns>
+        public static bool TryParseHost(string host, [NotNullWhen(true)] out IPAddress[] addresses, bool isIpv4Enabled = true, bool isIpv6Enabled = false)
+        {
+            if (string.IsNullOrWhiteSpace(host))
+            {
+                addresses = Array.Empty<IPAddress>();
+                return false;
+            }
+
+            host = host.Trim();
+
+            // See if it's an IPv6 with port address e.g. [::1] or [::1]:120.
+            if (host[0] == '[')
+            {
+                int i = host.IndexOf(']', StringComparison.Ordinal);
+                if (i != -1)
+                {
+                    return TryParseHost(host.Remove(i)[1..], out addresses);
+                }
+
+                addresses = Array.Empty<IPAddress>();
+                return false;
+            }
+
+            var hosts = host.Split(':');
+
+            if (hosts.Length <= 2)
+            {
+                // Use regular expression as CheckHostName isn't RFC5892 compliant.
+                // Modified from gSkinner's expression at https://stackoverflow.com/questions/11809631/fully-qualified-domain-name-validation
+                string pattern = @"(?im)^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){0,127}(?![0-9]*$)[a-z0-9-]+\.?)(:(\d){1,5}){0,1}$";
+
+                // Is hostname or hostname:port
+                if (Regex.IsMatch(hosts[0], pattern))
+                {
+                    try
                     {
-                        found = true;
-                        break;
+                        addresses = Dns.GetHostAddresses(hosts[0]);
+                        return true;
+                    }
+                    catch (SocketException)
+                    {
+                        // Log and then ignore socket errors, as the result value will just be an empty array.
+                        Console.WriteLine("GetHostAddresses failed.");
                     }
                 }
 
-                if (!found)
+                // Is an IP4 or IP4:port
+                host = hosts[0].Split('/')[0];
+
+                if (IPAddress.TryParse(host, out var address))
                 {
-                    results.AddItem(outer, isNetwork);
+                    if (((address.AddressFamily == AddressFamily.InterNetwork) && (!isIpv4Enabled && isIpv6Enabled)) ||
+                        ((address.AddressFamily == AddressFamily.InterNetworkV6) && (isIpv4Enabled && !isIpv6Enabled)))
+                    {
+                        addresses = Array.Empty<IPAddress>();
+                        return false;
+                    }
+
+                    addresses = new[] { address };
+
+                    // Host name is an ip4 address, so fake resolve.
+                    return true;
                 }
             }
-
-            return results;
-        }
-
-        /// <summary>
-        /// Returns all items that co-exist in this object and target.
-        /// </summary>
-        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
-        /// <param name="target">Collection to compare with.</param>
-        /// <returns>A collection containing all the matches.</returns>
-        public static Collection<IPObject> ThatAreContainedInNetworks(this Collection<IPObject> source, Collection<IPObject> target)
-        {
-            if (source.Count == 0)
+            else if (hosts.Length <= 9 && IPAddress.TryParse(host.Split('/')[0], out var address)) // 8 octets + port
             {
-                return new Collection<IPObject>();
+                addresses = new[] { address };
+                return true;
             }
 
-            if (target == null)
-            {
-                throw new ArgumentNullException(nameof(target));
-            }
-
-            Collection<IPObject> nc = new Collection<IPObject>();
-
-            foreach (IPObject i in source)
-            {
-                if (target.ContainsAddress(i))
-                {
-                    nc.AddItem(i);
-                }
-            }
-
-            return nc;
+            addresses = Array.Empty<IPAddress>();
+            return false;
         }
     }
 }

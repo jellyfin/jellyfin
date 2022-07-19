@@ -1,10 +1,13 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Globalization;
+using System.Linq;
 using System.Net;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -46,6 +49,8 @@ namespace Jellyfin.Networking.Tests
             {
                 EnableIPV6 = true,
                 EnableIPV4 = true,
+                IgnoreVirtualInterfaces = true,
+                VirtualInterfaceNames = "veth",
                 LocalNetworkSubnets = lan?.Split(';') ?? throw new ArgumentNullException(nameof(lan))
             };
 
@@ -53,135 +58,7 @@ namespace Jellyfin.Networking.Tests
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
-            Assert.Equal(nm.GetInternalBindAddresses().AsString(), value);
-        }
-
-        /// <summary>
-        /// Test collection parsing.
-        /// </summary>
-        /// <param name="settings">Collection to parse.</param>
-        /// <param name="result1">Included addresses from the collection.</param>
-        /// <param name="result2">Included IP4 addresses from the collection.</param>
-        /// <param name="result3">Excluded addresses from the collection.</param>
-        /// <param name="result4">Excluded IP4 addresses from the collection.</param>
-        /// <param name="result5">Network addresses of the collection.</param>
-        [Theory]
-        [InlineData(
-            "127.0.0.1#",
-            "[]",
-            "[]",
-            "[]",
-            "[]",
-            "[]")]
-        [InlineData(
-            "!127.0.0.1",
-            "[]",
-            "[]",
-            "[127.0.0.1/32]",
-            "[127.0.0.1/32]",
-            "[]")]
-        [InlineData(
-            "",
-            "[]",
-            "[]",
-            "[]",
-            "[]",
-            "[]")]
-        [InlineData(
-            "192.158.1.2/16, localhost, fd23:184f:2029:0:3139:7386:67d7:d517,    !10.10.10.10",
-            "[192.158.1.2/16,[127.0.0.1/32,::1/128],fd23:184f:2029:0:3139:7386:67d7:d517/128]",
-            "[192.158.1.2/16,127.0.0.1/32]",
-            "[10.10.10.10/32]",
-            "[10.10.10.10/32]",
-            "[192.158.0.0/16,127.0.0.1/32,::1/128,fd23:184f:2029:0:3139:7386:67d7:d517/128]")]
-        [InlineData(
-            "192.158.1.2/255.255.0.0,192.169.1.2/8",
-            "[192.158.1.2/16,192.169.1.2/8]",
-            "[192.158.1.2/16,192.169.1.2/8]",
-            "[]",
-            "[]",
-            "[192.158.0.0/16,192.0.0.0/8]")]
-        public void TestCollections(string settings, string result1, string result2, string result3, string result4, string result5)
-        {
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
-
-            var conf = new NetworkConfiguration()
-            {
-                EnableIPV6 = true,
-                EnableIPV4 = true,
-            };
-
-            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
-
-            // Test included.
-            Collection<IPObject> nc = nm.CreateIPCollection(settings.Split(','), false);
-            Assert.Equal(nc.AsString(), result1);
-
-            // Test excluded.
-            nc = nm.CreateIPCollection(settings.Split(','), true);
-            Assert.Equal(nc.AsString(), result3);
-
-            conf.EnableIPV6 = false;
-            nm.UpdateSettings(conf);
-
-            // Test IP4 included.
-            nc = nm.CreateIPCollection(settings.Split(','), false);
-            Assert.Equal(nc.AsString(), result2);
-
-            // Test IP4 excluded.
-            nc = nm.CreateIPCollection(settings.Split(','), true);
-            Assert.Equal(nc.AsString(), result4);
-
-            conf.EnableIPV6 = true;
-            nm.UpdateSettings(conf);
-
-            // Test network addresses of collection.
-            nc = nm.CreateIPCollection(settings.Split(','), false);
-            nc = nc.AsNetworks();
-            Assert.Equal(nc.AsString(), result5);
-        }
-
-        /// <summary>
-        /// Union two collections.
-        /// </summary>
-        /// <param name="settings">Source.</param>
-        /// <param name="compare">Destination.</param>
-        /// <param name="result">Result.</param>
-        [Theory]
-        [InlineData("127.0.0.1", "fd23:184f:2029:0:3139:7386:67d7:d517/64,fd23:184f:2029:0:c0f0:8a8a:7605:fffa/128,fe80::3139:7386:67d7:d517%16/64,192.168.1.208/24,::1/128,127.0.0.1/8", "[127.0.0.1/32]")]
-        [InlineData("127.0.0.1", "127.0.0.1/8", "[127.0.0.1/32]")]
-        public void UnionCheck(string settings, string compare, string result)
-        {
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
-
-            if (compare == null)
-            {
-                throw new ArgumentNullException(nameof(compare));
-            }
-
-            if (result == null)
-            {
-                throw new ArgumentNullException(nameof(result));
-            }
-
-            var conf = new NetworkConfiguration()
-            {
-                EnableIPV6 = true,
-                EnableIPV4 = true,
-            };
-
-            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
-
-            Collection<IPObject> nc1 = nm.CreateIPCollection(settings.Split(','), false);
-            Collection<IPObject> nc2 = nm.CreateIPCollection(compare.Split(','), false);
-
-            Assert.Equal(nc1.ThatAreContainedInNetworks(nc2).AsString(), result);
+            Assert.Equal(value, "[" + String.Join(",", nm.GetInternalBindAddresses().Select(x => x.Address + "/" + x.Subnet.PrefixLength)) + "]");
         }
 
         [Theory]
@@ -194,8 +71,11 @@ namespace Jellyfin.Networking.Tests
         [InlineData("127.0.0.1/8", "127.0.0.1")]
         public void IpV4SubnetMaskMatchesValidIpAddress(string netMask, string ipAddress)
         {
-            var ipAddressObj = IPNetAddress.Parse(netMask);
-            Assert.True(ipAddressObj.Contains(IPAddress.Parse(ipAddress)));
+            var split = netMask.Split("/");
+            var mask = int.Parse(split[1], CultureInfo.InvariantCulture);
+            var ipa = IPAddress.Parse(split[0]);
+            var ipn = new IPNetwork(ipa, mask);
+            Assert.True(ipn.Contains(IPAddress.Parse(ipAddress)));
         }
 
         [Theory]
@@ -207,8 +87,11 @@ namespace Jellyfin.Networking.Tests
         [InlineData("10.128.240.50/30", "10.127.240.51")]
         public void IpV4SubnetMaskDoesNotMatchInvalidIpAddress(string netMask, string ipAddress)
         {
-            var ipAddressObj = IPNetAddress.Parse(netMask);
-            Assert.False(ipAddressObj.Contains(IPAddress.Parse(ipAddress)));
+            var split = netMask.Split("/");
+            var mask = int.Parse(split[1], CultureInfo.InvariantCulture);
+            var ipa = IPAddress.Parse(split[0]);
+            var ipn = new IPNetwork(ipa, mask);
+            Assert.False(ipn.Contains(IPAddress.Parse(ipAddress)));
         }
 
         [Theory]
@@ -219,8 +102,11 @@ namespace Jellyfin.Networking.Tests
         [InlineData("2001:db8:abcd:0012::0/128", "2001:0DB8:ABCD:0012:0000:0000:0000:0000")]
         public void IpV6SubnetMaskMatchesValidIpAddress(string netMask, string ipAddress)
         {
-            var ipAddressObj = IPNetAddress.Parse(netMask);
-            Assert.True(ipAddressObj.Contains(IPAddress.Parse(ipAddress)));
+            var split = netMask.Split("/");
+            var mask = int.Parse(split[1], CultureInfo.InvariantCulture);
+            var ipa = IPAddress.Parse(split[0]);
+            var ipn = new IPNetwork(ipa, mask);
+            Assert.True(ipn.Contains(IPAddress.Parse(ipAddress)));
         }
 
         [Theory]
@@ -231,86 +117,18 @@ namespace Jellyfin.Networking.Tests
         [InlineData("2001:db8:abcd:0012::0/128", "2001:0DB8:ABCD:0012:0000:0000:0000:0001")]
         public void IpV6SubnetMaskDoesNotMatchInvalidIpAddress(string netMask, string ipAddress)
         {
-            var ipAddressObj = IPNetAddress.Parse(netMask);
-            Assert.False(ipAddressObj.Contains(IPAddress.Parse(ipAddress)));
+            var split = netMask.Split("/");
+            var mask = int.Parse(split[1], CultureInfo.InvariantCulture);
+            var ipa = IPAddress.Parse(split[0]);
+            var ipn = new IPNetwork(ipa, mask);
+            Assert.False(ipn.Contains(IPAddress.Parse(ipAddress)));
         }
 
         [Theory]
-        [InlineData("10.0.0.0/255.0.0.0", "10.10.10.1/32")]
-        [InlineData("10.0.0.0/8", "10.10.10.1/32")]
-        [InlineData("10.0.0.0/255.0.0.0", "10.10.10.1")]
-
-        [InlineData("10.10.0.0/255.255.0.0", "10.10.10.1/32")]
-        [InlineData("10.10.0.0/16", "10.10.10.1/32")]
-        [InlineData("10.10.0.0/255.255.0.0", "10.10.10.1")]
-
-        [InlineData("10.10.10.0/255.255.255.0", "10.10.10.1/32")]
-        [InlineData("10.10.10.0/24", "10.10.10.1/32")]
-        [InlineData("10.10.10.0/255.255.255.0", "10.10.10.1")]
-
-        public void TestSubnetContains(string network, string ip)
-        {
-            Assert.True(IPNetAddress.TryParse(network, out var networkObj));
-            Assert.True(IPNetAddress.TryParse(ip, out var ipObj));
-            Assert.True(networkObj.Contains(ipObj));
-        }
-
-        [Theory]
-        [InlineData("192.168.1.2/24,10.10.10.1/24,172.168.1.2/24", "172.168.1.2/24", "172.168.1.2/24")]
-        [InlineData("192.168.1.2/24,10.10.10.1/24,172.168.1.2/24", "172.168.1.2/24, 10.10.10.1", "172.168.1.2/24,10.10.10.1/24")]
-        [InlineData("192.168.1.2/24,10.10.10.1/24,172.168.1.2/24", "192.168.1.2/255.255.255.0, 10.10.10.1", "192.168.1.2/24,10.10.10.1/24")]
-        [InlineData("192.168.1.2/24,10.10.10.1/24,172.168.1.2/24", "192.168.1.2/24, 100.10.10.1", "192.168.1.2/24")]
-        [InlineData("192.168.1.2/24,10.10.10.1/24,172.168.1.2/24", "194.168.1.2/24, 100.10.10.1", "")]
-
-        public void TestCollectionEquality(string source, string dest, string result)
-        {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
-
-            if (dest == null)
-            {
-                throw new ArgumentNullException(nameof(dest));
-            }
-
-            if (result == null)
-            {
-                throw new ArgumentNullException(nameof(result));
-            }
-
-            var conf = new NetworkConfiguration()
-            {
-                EnableIPV6 = true,
-                EnableIPV4 = true
-            };
-
-            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
-
-            // Test included, IP6.
-            Collection<IPObject> ncSource = nm.CreateIPCollection(source.Split(','));
-            Collection<IPObject> ncDest = nm.CreateIPCollection(dest.Split(','));
-            Collection<IPObject> ncResult = ncSource.ThatAreContainedInNetworks(ncDest);
-            Collection<IPObject> resultCollection = nm.CreateIPCollection(result.Split(','));
-            Assert.True(ncResult.Compare(resultCollection));
-        }
-
-        [Theory]
-        [InlineData("10.1.1.1/32", "10.1.1.1")]
-        [InlineData("192.168.1.254/32", "192.168.1.254/255.255.255.255")]
-
-        public void TestEquals(string source, string dest)
-        {
-            Assert.True(IPNetAddress.Parse(source).Equals(IPNetAddress.Parse(dest)));
-            Assert.True(IPNetAddress.Parse(dest).Equals(IPNetAddress.Parse(source)));
-        }
-
-        [Theory]
-
         // Testing bind interfaces.
         // On my system eth16 is internal, eth11 external (Windows defines the indexes).
         //
-        // This test is to replicate how DNLA requests work throughout the system.
+        // This test is to replicate how DLNA requests work throughout the system.
 
         // User on internal network, we're bound internal and external - so result is internal.
         [InlineData("192.168.1.1", "eth16,eth11", false, "eth16")]
@@ -357,14 +175,14 @@ namespace Jellyfin.Networking.Tests
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
-            _ = nm.TryParseInterface(result, out Collection<IPObject>? resultObj);
+            _ = nm.TryParseInterface(result, out Collection<IPData>? resultObj);
 
             // Check to see if dns resolution is working. If not, skip test.
-            _ = IPHost.TryParse(source, out var host);
+            _ = NetworkExtensions.TryParseHost(source, out var host);
 
-            if (resultObj != null && host?.HasAddress == true)
+            if (resultObj != null && host.Length > 0)
             {
-                result = ((IPNetAddress)resultObj[0]).ToString(true);
+                result = resultObj.First().Address.ToString();
                 var intf = nm.GetBindInterface(source, out _);
 
                 Assert.Equal(intf, result);
@@ -394,7 +212,7 @@ namespace Jellyfin.Networking.Tests
         [InlineData("jellyfin.org", "192.168.1.0/24", "eth16", false, "0.0.0.0=http://helloworld.com", "http://helloworld.com")]
 
         // User on external network, no binding - so result is the 1st external which is overriden.
-        [InlineData("jellyfin.org", "192.168.1.0/24", "", false, "0.0.0.0 = http://helloworld.com", "http://helloworld.com")]
+        [InlineData("jellyfin.org", "192.168.1.0/24", "", false, "0.0.0.0=http://helloworld.com", "http://helloworld.com")]
 
         // User assumed to be internal, no binding - so result is the 1st internal.
         [InlineData("", "192.168.1.0/24", "", false, "0.0.0.0=http://helloworld.com", "eth16")]
@@ -426,15 +244,15 @@ namespace Jellyfin.Networking.Tests
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
-            if (nm.TryParseInterface(result, out Collection<IPObject>? resultObj) && resultObj != null)
+            if (nm.TryParseInterface(result, out Collection<IPData>? resultObj) && resultObj != null)
             {
                 // Parse out IPAddresses so we can do a string comparison. (Ignore subnet masks).
-                result = ((IPNetAddress)resultObj[0]).ToString(true);
+                result = resultObj.First().Address.ToString();
             }
 
             var intf = nm.GetBindInterface(source, out int? _);
 
-            Assert.Equal(intf, result);
+            Assert.Equal(result, intf);
         }
 
         [Theory]
@@ -461,6 +279,7 @@ namespace Jellyfin.Networking.Tests
         [InlineData("185.10.10.10", "79.2.3.4", false)]
         [InlineData("185.10.10.10", "185.10.10.10", true)]
         [InlineData("", "100.100.100.100", false)]
+
         public void HasRemoteAccess_GivenBlacklist_BlacklistTheIps(string addresses, string remoteIp, bool denied)
         {
             // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.

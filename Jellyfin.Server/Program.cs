@@ -300,7 +300,7 @@ namespace Jellyfin.Server
                     var addresses = appHost.NetManager.GetAllBindInterfaces();
 
                     bool flagged = false;
-                    foreach (IPObject netAdd in addresses)
+                    foreach (IPData netAdd in addresses)
                     {
                         _logger.LogInformation("Kestrel listening on {Address}", netAdd.Address == IPAddress.IPv6Any ? "All Addresses" : netAdd);
                         options.Listen(netAdd.Address, appHost.HttpPort);
@@ -689,10 +689,10 @@ namespace Jellyfin.Server
 
             if (!string.IsNullOrEmpty(socketPerms))
             {
-                #pragma warning disable SA1300 // Entrypoint is case sensitive.
+#pragma warning disable SA1300 // Entrypoint is case sensitive.
                 [DllImport("libc")]
                 static extern int chmod(string pathname, int mode);
-                #pragma warning restore SA1300
+#pragma warning restore SA1300
 
                 var exitCode = chmod(socketPath, Convert.ToInt32(socketPerms, 8));
 
