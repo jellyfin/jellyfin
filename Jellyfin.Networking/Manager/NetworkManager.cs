@@ -241,7 +241,7 @@ namespace Jellyfin.Networking.Manager
                                 {
                                     var interfaceObject = new IPData(info.Address, new IPNetwork(info.Address, info.PrefixLength), adapter.Name);
                                     interfaceObject.Index = ipProperties.GetIPv4Properties().Index;
-                                    interfaceObject.Name = adapter.Name.ToLower(CultureInfo.InvariantCulture);
+                                    interfaceObject.Name = adapter.Name.ToLowerInvariant();
 
                                     _interfaces.Add(interfaceObject);
                                 }
@@ -249,7 +249,7 @@ namespace Jellyfin.Networking.Manager
                                 {
                                     var interfaceObject = new IPData(info.Address, new IPNetwork(info.Address, info.PrefixLength), adapter.Name);
                                     interfaceObject.Index = ipProperties.GetIPv6Properties().Index;
-                                    interfaceObject.Name = adapter.Name.ToLower(CultureInfo.InvariantCulture);
+                                    interfaceObject.Name = adapter.Name.ToLowerInvariant();
 
                                     _interfaces.Add(interfaceObject);
                                 }
@@ -381,7 +381,7 @@ namespace Jellyfin.Networking.Manager
                 if (config.IgnoreVirtualInterfaces)
                 {
                     // Remove potentially exisiting * and split config string into prefixes
-                    var virtualInterfacePrefixes = config.VirtualInterfaceNames.Replace("*", string.Empty, StringComparison.OrdinalIgnoreCase).ToLower().Split(',');
+                    var virtualInterfacePrefixes = config.VirtualInterfaceNames.Replace("*", string.Empty, StringComparison.OrdinalIgnoreCase).ToLowerInvariant().Split(',');
 
                     // Check all interfaces for matches against the prefixes and add the interface IPs to _bindExclusions
                     if (_bindAddresses.Count > 0 && virtualInterfacePrefixes.Length > 0)
@@ -419,10 +419,10 @@ namespace Jellyfin.Networking.Manager
                 if (remoteIPFilter.Any() && !string.IsNullOrWhiteSpace(remoteIPFilter.First()))
                 {
                     // Parse all IPs with netmask to a subnet
-                    _ = TryParseSubnets(remoteIPFilter.Where(x => x.Contains("/", StringComparison.OrdinalIgnoreCase)).ToArray(), out _remoteAddressFilter, false);
+                    _ = TryParseSubnets(remoteIPFilter.Where(x => x.Contains('/', StringComparison.OrdinalIgnoreCase)).ToArray(), out _remoteAddressFilter, false);
 
                     // Parse everything else as an IP and construct subnet with a single IP
-                    var ips = remoteIPFilter.Where(x => !x.Contains("/", StringComparison.OrdinalIgnoreCase));
+                    var ips = remoteIPFilter.Where(x => !x.Contains('/', StringComparison.OrdinalIgnoreCase));
                     foreach (var ip in ips)
                     {
                         if (IPAddress.TryParse(ip, out var ipp))
@@ -573,7 +573,7 @@ namespace Jellyfin.Networking.Manager
             if (_interfaces != null)
             {
                 // Match all interfaces starting with names starting with token
-                var matchedInterfaces = _interfaces.Where(s => s.Name.Equals(intf.ToLower(CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase));
+                var matchedInterfaces = _interfaces.Where(s => s.Name.Equals(intf.ToLowerInvariant(), StringComparison.OrdinalIgnoreCase));
                 if (matchedInterfaces.Any())
                 {
                     _logger.LogInformation("Interface {Token} used in settings. Using its interface addresses.", intf);
@@ -998,7 +998,7 @@ namespace Jellyfin.Networking.Manager
             var validPublishedServerUrls = _publishedServerUrls.Where(x => x.Key.Address.Equals(IPAddress.Any)).ToList();
             validPublishedServerUrls.AddRange(_publishedServerUrls.Where(x => x.Key.Address.Equals(IPAddress.IPv6Any)));
             validPublishedServerUrls.AddRange(_publishedServerUrls.Where(x => x.Key.Subnet.Contains(source)));
-            validPublishedServerUrls.Distinct();
+            validPublishedServerUrls = validPublishedServerUrls.GroupBy(x => x.Key).Select(y => y.First()).ToList();
 
             // Check for user override.
             foreach (var data in validPublishedServerUrls)

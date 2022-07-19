@@ -18,12 +18,12 @@ namespace MediaBrowser.Common.Net
         event EventHandler NetworkChanged;
 
         /// <summary>
-        /// Gets a value indicating whether iP6 is enabled.
+        /// Gets a value indicating whether IPv6 is enabled.
         /// </summary>
         bool IsIpv6Enabled { get; }
 
         /// <summary>
-        /// Gets a value indicating whether iP4 is enabled.
+        /// Gets a value indicating whether IPv4 is enabled.
         /// </summary>
         bool IsIpv4Enabled { get; }
 
