@@ -61,6 +61,39 @@ namespace Jellyfin.Networking.Tests
             Assert.Equal(value, "[" + string.Join(",", nm.GetInternalBindAddresses().Select(x => x.Address + "/" + x.Subnet.PrefixLength)) + "]");
         }
 
+        /// <summary>
+        /// Checks valid IP address formats.
+        /// </summary>
+        /// <param name="address">IP Address.</param>
+        [Theory]
+        [InlineData("127.0.0.1")]
+        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517")]
+        [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517]")]
+        [InlineData("fe80::7add:12ff:febb:c67b%16")]
+        [InlineData("[fe80::7add:12ff:febb:c67b%16]:123")]
+        [InlineData("fe80::7add:12ff:febb:c67b%16:123")]
+        [InlineData("[fe80::7add:12ff:febb:c67b%16]")]
+        [InlineData("192.168.1.2")]
+        public static void TryParseValidIPStringsTrue(string address)
+            => Assert.True(IPAddress.TryParse(address, out _));
+
+        /// <summary>
+        /// Checks invalid IP address formats.
+        /// </summary>
+        /// <param name="address">IP Address.</param>
+        [Theory]
+        [InlineData("192.168.1.2/255.255.255.0")]
+        [InlineData("192.168.1.2/24")]
+        [InlineData("127.0.0.1/8")]
+        [InlineData("127.0.0.1#")]
+        [InlineData("localhost!")]
+        [InlineData("256.128.0.0.0.1")]
+        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517/56")]
+        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517:1231")]
+        [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517:1231]")]
+        public static void TryParseInvalidIPStringsFalse(string address)
+            => Assert.False(IPAddress.TryParse(address, out _));
+
         [Theory]
         [InlineData("192.168.5.85/24", "192.168.5.1")]
         [InlineData("192.168.5.85/24", "192.168.5.254")]
