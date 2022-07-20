@@ -182,7 +182,7 @@ namespace Jellyfin.Server.Extensions
         }
 
         /// <summary>
-        /// Extension method for adding the jellyfin API to the service collection.
+        /// Extension method for adding the Jellyfin API to the service collection.
         /// </summary>
         /// <param name="serviceCollection">The service collection.</param>
         /// <param name="pluginAssemblies">An IEnumerable containing all plugin assemblies with API controllers.</param>
@@ -335,7 +335,7 @@ namespace Jellyfin.Server.Extensions
         }
 
         /// <summary>
-        /// Sets up the proxy configuration based on the addresses in <paramref name="allowedProxies"/>.
+        /// Sets up the proxy configuration based on the addresses/subnets in <paramref name="allowedProxies"/>.
         /// </summary>
         /// <param name="config">The <see cref="NetworkConfiguration"/> containing the config settings.</param>
         /// <param name="allowedProxies">The string array to parse.</param>
@@ -347,6 +347,13 @@ namespace Jellyfin.Server.Extensions
                 if (IPAddress.TryParse(allowedProxies[i], out var addr))
                 {
                     AddIpAddress(config, options, addr, addr.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);
+                }
+                else if (NetworkExtensions.TryParseSubnets(new[] { allowedProxies[i] }, out var subnets))
+                {
+                    for (var j = 0; j < subnets.Count; j++)
+                    {
+                        AddIpAddress(config, options, subnets[j].Prefix, subnets[j].PrefixLength);
+                    }
                 }
                 else if (NetworkExtensions.TryParseHost(allowedProxies[i], out var host))
                 {
