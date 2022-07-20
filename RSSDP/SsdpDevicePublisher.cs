@@ -298,9 +298,7 @@ namespace Rssdp.Infrastructure
                     foreach (var device in deviceList)
                     {
                         var root = device.ToRootDevice();
-                        var source = new IPData(root.Address, new IPNetwork(root.Address, root.PrefixLength), root.FriendlyName);
-                        var destination = new IPData(remoteEndPoint.Address, new IPNetwork(root.Address, root.PrefixLength));
-                        if (!_sendOnlyMatchedHost || source.Address.Equals(destination.Address))
+                        if (!_sendOnlyMatchedHost || root.Address.Equals(remoteEndPoint.Address))
                         {
                             SendDeviceSearchResponses(device, remoteEndPoint, receivedOnlocalIpAddress, cancellationToken);
                         }

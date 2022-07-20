@@ -348,8 +348,6 @@ namespace Rssdp.Infrastructure
         {
             var sockets = new List<ISocket>();
 
-            sockets.Add(_SocketFactory.CreateSsdpUdpSocket(IPAddress.Any, _LocalPort));
-
             if (_enableMultiSocketBinding)
             {
                 foreach (var address in _networkManager.GetInternalBindAddresses())
@@ -369,6 +367,10 @@ namespace Rssdp.Infrastructure
                         _logger.LogError(ex, "Error in CreateSsdpUdpSocket. IPAddress: {0}", address);
                     }
                 }
+            }
+            else
+            {
+                sockets.Add(_SocketFactory.CreateSsdpUdpSocket(IPAddress.Any, _LocalPort));
             }
 
             foreach (var socket in sockets)
