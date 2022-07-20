@@ -302,7 +302,7 @@ namespace Jellyfin.Server
                     bool flagged = false;
                     foreach (IPData netAdd in addresses)
                     {
-                        _logger.LogInformation("Kestrel listening on {Address}", netAdd.Address == IPAddress.IPv6Any ? "All Addresses" : netAdd);
+                        _logger.LogInformation("Kestrel listening on {Address}", netAdd.Address == IPAddress.IPv6Any ? "All Addresses" : netAdd.Address);
                         options.Listen(netAdd.Address, appHost.HttpPort);
                         if (appHost.ListenWithHttps)
                         {
