@@ -276,8 +276,9 @@ namespace Emby.Server.Implementations.HttpServer
             if (_socket.State == WebSocketState.Open)
             {
                 await _socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "System Shutdown", CancellationToken.None).ConfigureAwait(false);
-                _socket.Dispose();
             }
+
+            _socket.Dispose();
         }
     }
 }
