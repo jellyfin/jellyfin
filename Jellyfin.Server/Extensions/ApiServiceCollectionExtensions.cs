@@ -372,6 +372,11 @@ namespace Jellyfin.Server.Extensions
                 return;
             }
 
+            if (addr.IsIPv4MappedToIPv6)
+            {
+                addr = addr.MapToIPv4();
+            }
+
             if (prefixLength == 32)
             {
                 options.KnownProxies.Add(addr);

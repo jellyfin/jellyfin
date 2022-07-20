@@ -21,9 +21,9 @@ namespace Jellyfin.Server.Tests
             data.Add(
                 true,
                 true,
-                new string[] { "192.168.t", "127.0.0.1", "1234.1232.12.1234" },
-                new IPAddress[] { IPAddress.Loopback.MapToIPv6() },
-                Array.Empty<IPNetwork>());
+                new string[] { "192.168.t", "127.0.0.1", "::1", "1234.1232.12.1234" },
+                new IPAddress[] { IPAddress.Loopback, },
+                new IPNetwork[] { new IPNetwork(IPAddress.IPv6Loopback, 128) });
 
             data.Add(
                 true,
@@ -64,7 +64,7 @@ namespace Jellyfin.Server.Tests
                 true,
                 true,
                 new string[] { "localhost" },
-                new IPAddress[] { IPAddress.Loopback.MapToIPv6() },
+                new IPAddress[] { IPAddress.Loopback },
                 new IPNetwork[] { new IPNetwork(IPAddress.IPv6Loopback, 128) });
             return data;
         }

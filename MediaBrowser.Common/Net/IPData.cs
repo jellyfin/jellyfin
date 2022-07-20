@@ -14,13 +14,12 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="address">An <see cref="IPAddress"/>.</param>
         /// <param name="subnet">The <see cref="IPNetwork"/>.</param>
-        public IPData(
-            IPAddress address,
-            IPNetwork? subnet)
+        /// <param name="name">The object's name.</param>
+        public IPData(IPAddress address, IPNetwork? subnet, string name)
         {
             Address = address;
             Subnet = subnet ?? (address.AddressFamily == AddressFamily.InterNetwork ? new IPNetwork(address, 32) : new IPNetwork(address, 128));
-            Name = string.Empty;
+            Name = name;
         }
 
         /// <summary>
@@ -28,15 +27,9 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="address">An <see cref="IPAddress"/>.</param>
         /// <param name="subnet">The <see cref="IPNetwork"/>.</param>
-        /// <param name="name">The object's name.</param>
-        public IPData(
-            IPAddress address,
-            IPNetwork? subnet,
-            string name)
+        public IPData(IPAddress address, IPNetwork? subnet)
+            : this(address, subnet, string.Empty)
         {
-            Address = address;
-            Subnet = subnet ?? (address.AddressFamily == AddressFamily.InterNetwork ? new IPNetwork(address, 32) : new IPNetwork(address, 128));
-            Name = name;
         }
 
         /// <summary>

@@ -13,6 +13,10 @@ namespace MediaBrowser.Common.Net
     /// </summary>
     public static class NetworkExtensions
     {
+        // Use regular expression as CheckHostName isn't RFC5892 compliant.
+        // Modified from gSkinner's expression at https://stackoverflow.com/questions/11809631/fully-qualified-domain-name-validation
+        private static readonly Regex _fqdnRegex = new Regex(@"(?im)^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){0,127}(?![0-9]*$)[a-z0-9-]+\.?)(:(\d){1,5}){0,1}$");
+
         /// <summary>
         /// Returns true if the IPAddress contains an IP6 Local link address.
         /// </summary>
@@ -227,12 +231,8 @@ namespace MediaBrowser.Common.Net
 
             if (hosts.Length <= 2)
             {
-                // Use regular expression as CheckHostName isn't RFC5892 compliant.
-                // Modified from gSkinner's expression at https://stackoverflow.com/questions/11809631/fully-qualified-domain-name-validation
-                string pattern = @"(?im)^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){0,127}(?![0-9]*$)[a-z0-9-]+\.?)(:(\d){1,5}){0,1}$";
-
                 // Is hostname or hostname:port
-                if (Regex.IsMatch(hosts[0], pattern))
+                if (_fqdnRegex.IsMatch(hosts[0]))
                 {
                     try
                     {
