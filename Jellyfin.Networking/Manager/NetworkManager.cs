@@ -183,7 +183,7 @@ namespace Jellyfin.Networking.Manager
                 var networkConfig = _configurationManager.GetNetworkConfiguration();
                 InitialiseLan(networkConfig);
                 InitialiseInterfaces();
-                EnforceBindRestrictions(networkConfig);
+                EnforceBindSettings(networkConfig);
 
                 NetworkChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -261,16 +261,19 @@ namespace Jellyfin.Networking.Manager
                     _logger.LogError(ex, "Error obtaining interfaces.");
                 }
 
-                _logger.LogWarning("No interfaces information available. Using loopback.");
-
-                if (IsIpv4Enabled && !IsIpv6Enabled)
+                if (_interfaces.Count == 0)
                 {
-                    _interfaces.Add(new IPData(IPAddress.Loopback, new IPNetwork(IPAddress.Loopback, 8), "lo"));
-                }
+                    _logger.LogWarning("No interfaces information available. Using loopback.");
 
-                if (!IsIpv4Enabled && IsIpv6Enabled)
-                {
-                    _interfaces.Add(new IPData(IPAddress.IPv6Loopback, new IPNetwork(IPAddress.IPv6Loopback, 128), "lo"));
+                    if (IsIpv4Enabled && !IsIpv6Enabled)
+                    {
+                        _interfaces.Add(new IPData(IPAddress.Loopback, new IPNetwork(IPAddress.Loopback, 8), "lo"));
+                    }
+
+                    if (!IsIpv4Enabled && IsIpv6Enabled)
+                    {
+                        _interfaces.Add(new IPData(IPAddress.IPv6Loopback, new IPNetwork(IPAddress.IPv6Loopback, 128), "lo"));
+                    }
                 }
 
                 _logger.LogDebug("Discovered {0} interfaces.", _interfaces.Count);
@@ -321,7 +324,7 @@ namespace Jellyfin.Networking.Manager
         /// <summary>
         /// Enforce bind addresses and exclusions on available interfaces.
         /// </summary>
-        private void EnforceBindRestrictions(NetworkConfiguration config)
+        private void EnforceBindSettings(NetworkConfiguration config)
         {
             lock (_initLock)
             {
@@ -329,7 +332,7 @@ namespace Jellyfin.Networking.Manager
                 var localNetworkAddresses = config.LocalNetworkAddresses;
                 if (localNetworkAddresses.Length > 0 && !string.IsNullOrWhiteSpace(localNetworkAddresses.First()))
                 {
-                    var bindAddresses = config.LocalNetworkAddresses.Select(p => IPAddress.TryParse(p, out var addresses)
+                    var bindAddresses = localNetworkAddresses.Select(p => IPAddress.TryParse(p, out var addresses)
                         ? addresses
                         : (_interfaces.Where(x => x.Name.Equals(p, StringComparison.OrdinalIgnoreCase))
                             .Select(x => x.Address)
@@ -337,6 +340,16 @@ namespace Jellyfin.Networking.Manager
                         .ToList();
                     bindAddresses.RemoveAll(x => x == IPAddress.None);
                     _interfaces = _interfaces.Where(x => bindAddresses.Contains(x.Address)).ToList();
+
+                    if (bindAddresses.Contains(IPAddress.Loopback))
+                    {
+                        _interfaces.Add(new IPData(IPAddress.Loopback, new IPNetwork(IPAddress.Loopback, 8), "lo"));
+                    }
+
+                    if (bindAddresses.Contains(IPAddress.IPv6Loopback))
+                    {
+                        _interfaces.Add(new IPData(IPAddress.IPv6Loopback, new IPNetwork(IPAddress.IPv6Loopback, 128), "lo"));
+                    }
                 }
 
                 // Remove all interfaces matching any virtual machine interface prefix
@@ -356,6 +369,16 @@ namespace Jellyfin.Networking.Manager
                             _interfaces.RemoveAll(x => x.Name.StartsWith(virtualInterfacePrefix, StringComparison.OrdinalIgnoreCase));
                         }
                     }
+                }
+
+                if (!IsIpv4Enabled)
+                {
+                    _interfaces.RemoveAll(x => x.AddressFamily == AddressFamily.InterNetwork);
+                }
+
+                if (!IsIpv6Enabled)
+                {
+                    _interfaces.RemoveAll(x => x.AddressFamily == AddressFamily.InterNetworkV6);
                 }
 
                 _logger.LogInformation("Using bind addresses: {0}", _interfaces.Select(x => x.Address));
@@ -492,7 +515,7 @@ namespace Jellyfin.Networking.Manager
                 }
             }
 
-            EnforceBindRestrictions(config);
+            EnforceBindSettings(config);
             InitialiseOverrides(config);
         }
 
@@ -892,7 +915,7 @@ namespace Jellyfin.Networking.Manager
         {
             result = string.Empty;
 
-            int count = _interfaces.Count();
+            int count = _interfaces.Count;
             if (count == 1 && (_interfaces[0].Equals(IPAddress.Any) || _interfaces[0].Equals(IPAddress.IPv6Any)))
             {
                 // Ignore IPAny addresses.
