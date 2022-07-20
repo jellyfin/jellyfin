@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Net;
 using System.Net.NetworkInformation;
 using Microsoft.AspNetCore.Http;
@@ -34,13 +33,13 @@ namespace MediaBrowser.Common.Net
         /// If all the interfaces are specified, and none are excluded, it returns zero items
         /// to represent any address.</returns>
         /// <param name="individualInterfaces">When false, return <see cref="IPAddress.Any"/> or <see cref="IPAddress.IPv6Any"/> for all interfaces.</param>
-        List<IPData> GetAllBindInterfaces(bool individualInterfaces = false);
+        IReadOnlyList<IPData> GetAllBindInterfaces(bool individualInterfaces = false);
 
         /// <summary>
-        /// Returns a collection containing the loopback interfaces.
+        /// Returns a list containing the loopback interfaces.
         /// </summary>
         /// <returns>List{IPData}.</returns>
-        List<IPData> GetLoopbacks();
+        IReadOnlyList<IPData> GetLoopbacks();
 
         /// <summary>
         /// Retrieves the bind address to use in system url's. (Server Discovery, PlayTo, LiveTV, SystemInfo)
@@ -97,7 +96,7 @@ namespace MediaBrowser.Common.Net
         /// Get a list of all the MAC addresses associated with active interfaces.
         /// </summary>
         /// <returns>List of MAC addresses.</returns>
-        IReadOnlyCollection<PhysicalAddress> GetMacAddresses();
+        IReadOnlyList<PhysicalAddress> GetMacAddresses();
 
         /// <summary>
         /// Returns true if the address is part of the user defined LAN.
@@ -122,13 +121,13 @@ namespace MediaBrowser.Common.Net
         /// <param name="intf">Interface name.</param>
         /// <param name="result">Resultant object's ip addresses, if successful.</param>
         /// <returns>Success of the operation.</returns>
-        bool TryParseInterface(string intf, out Collection<IPData>? result);
+        bool TryParseInterface(string intf, out List<IPData>? result);
 
         /// <summary>
         /// Returns all the internal Bind interface addresses.
         /// </summary>
         /// <returns>An internal list of interfaces addresses.</returns>
-        List<IPData> GetInternalBindAddresses();
+        IReadOnlyList<IPData> GetInternalBindAddresses();
 
         /// <summary>
         /// Checks to see if <paramref name="remoteIp"/> has access.

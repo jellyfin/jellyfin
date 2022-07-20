@@ -293,7 +293,7 @@ namespace Emby.Dlna.Main
             if (bindAddresses.Count == 0)
             {
                 // No interfaces returned, so use loopback.
-                bindAddresses = _networkManager.GetLoopbacks();
+                bindAddresses = _networkManager.GetLoopbacks().ToList();
             }
 
             foreach (var address in bindAddresses)

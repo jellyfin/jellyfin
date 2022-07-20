@@ -1,5 +1,5 @@
 using System;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -49,8 +49,6 @@ namespace Jellyfin.Networking.Tests
             {
                 EnableIPV6 = true,
                 EnableIPV4 = true,
-                IgnoreVirtualInterfaces = true,
-                VirtualInterfaceNames = "veth",
                 LocalNetworkSubnets = lan?.Split(';') ?? throw new ArgumentNullException(nameof(lan))
             };
 
@@ -208,7 +206,7 @@ namespace Jellyfin.Networking.Tests
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
-            _ = nm.TryParseInterface(result, out Collection<IPData>? resultObj);
+            _ = nm.TryParseInterface(result, out List<IPData>? resultObj);
 
             // Check to see if dns resolution is working. If not, skip test.
             _ = NetworkExtensions.TryParseHost(source, out var host);
@@ -277,7 +275,7 @@ namespace Jellyfin.Networking.Tests
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
-            if (nm.TryParseInterface(result, out Collection<IPData>? resultObj) && resultObj != null)
+            if (nm.TryParseInterface(result, out List<IPData>? resultObj) && resultObj != null)
             {
                 // Parse out IPAddresses so we can do a string comparison. (Ignore subnet masks).
                 result = resultObj.First().Address.ToString();

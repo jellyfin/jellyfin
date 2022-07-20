@@ -151,9 +151,9 @@ namespace Jellyfin.Networking.Configuration
         public bool IgnoreVirtualInterfaces { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets a value indicating the interfaces that should be ignored. The list can be comma separated. <seealso cref="IgnoreVirtualInterfaces"/>.
+        /// Gets or sets a value indicating the interface name prefixes that should be ignored. The list can be comma separated and values are case-insensitive. <seealso cref="IgnoreVirtualInterfaces"/>.
         /// </summary>
-        public string VirtualInterfaceNames { get; set; } = "vEthernet*";
+        public string VirtualInterfaceNames { get; set; } = "veth";
 
         /// <summary>
         /// Gets or sets the time (in seconds) between the pings of SSDP gateway monitor.

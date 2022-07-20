@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -47,7 +46,7 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         private readonly Dictionary<IPData, string> _publishedServerUrls;
 
-        private Collection<IPNetwork> _remoteAddressFilter;
+        private List<IPNetwork> _remoteAddressFilter;
 
         /// <summary>
         /// Used to stop "event-racing conditions".
@@ -58,12 +57,12 @@ namespace Jellyfin.Networking.Manager
         /// Unfiltered user defined LAN subnets (<see cref="NetworkConfiguration.LocalNetworkSubnets"/>)
         /// or internal interface network subnets if undefined by user.
         /// </summary>
-        private Collection<IPNetwork> _lanSubnets;
+        private List<IPNetwork> _lanSubnets;
 
         /// <summary>
         /// User defined list of subnets to excluded from the LAN.
         /// </summary>
-        private Collection<IPNetwork> _excludedSubnets;
+        private List<IPNetwork> _excludedSubnets;
 
         /// <summary>
         /// List of interfaces to bind to.
@@ -95,7 +94,7 @@ namespace Jellyfin.Networking.Manager
             _macAddresses = new List<PhysicalAddress>();
             _publishedServerUrls = new Dictionary<IPData, string>();
             _eventFireLock = new object();
-            _remoteAddressFilter = new Collection<IPNetwork>();
+            _remoteAddressFilter = new List<IPNetwork>();
 
             UpdateSettings(_configurationManager.GetNetworkConfiguration());
 
@@ -225,8 +224,8 @@ namespace Jellyfin.Networking.Manager
                     {
                         try
                         {
-                            IPInterfaceProperties ipProperties = adapter.GetIPProperties();
-                            PhysicalAddress mac = adapter.GetPhysicalAddress();
+                            var ipProperties = adapter.GetIPProperties();
+                            var mac = adapter.GetPhysicalAddress();
 
                             // Populate MAC list
                             if (adapter.NetworkInterfaceType != NetworkInterfaceType.Loopback && PhysicalAddress.None.Equals(mac))
@@ -235,7 +234,7 @@ namespace Jellyfin.Networking.Manager
                             }
 
                             // Populate interface list
-                            foreach (UnicastIPAddressInformation info in ipProperties.UnicastAddresses)
+                            foreach (var info in ipProperties.UnicastAddresses)
                             {
                                 if (IsIpv4Enabled && info.Address.AddressFamily == AddressFamily.InterNetwork)
                                 {
@@ -364,8 +363,8 @@ namespace Jellyfin.Networking.Manager
                 // Use explicit bind addresses
                 if (config.LocalNetworkAddresses.Length > 0)
                 {
-                    _bindAddresses = config.LocalNetworkAddresses.Select(p => IPAddress.TryParse(p, out var address)
-                        ? address
+                    _bindAddresses = config.LocalNetworkAddresses.Select(p => IPAddress.TryParse(p, out var addresses)
+                        ? addresses
                         : (_interfaces.Where(x => x.Name.Equals(p, StringComparison.OrdinalIgnoreCase)).Select(x => x.Address).FirstOrDefault() ?? IPAddress.None)).ToList();
                     _bindAddresses.RemoveAll(x => x == IPAddress.None);
                 }
@@ -525,13 +524,11 @@ namespace Jellyfin.Networking.Manager
                     var address = IPAddress.Parse(split[0]);
                     var network = new IPNetwork(address, int.Parse(split[1], CultureInfo.InvariantCulture));
                     var index = int.Parse(parts[1], CultureInfo.InvariantCulture);
-                    if (address.AddressFamily == AddressFamily.InterNetwork)
+                    if (address.AddressFamily == AddressFamily.InterNetwork || address.AddressFamily == AddressFamily.InterNetworkV6)
                     {
-                        _interfaces.Add(new IPData(address, network, parts[2]));
-                    }
-                    else if (address.AddressFamily == AddressFamily.InterNetworkV6)
-                    {
-                        _interfaces.Add(new IPData(address, network, parts[2]));
+                        var data = new IPData(address, network, parts[2]);
+                        data.Index = index;
+                        _interfaces.Add(data);
                     }
                 }
             }
@@ -562,9 +559,9 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public bool TryParseInterface(string intf, out Collection<IPData> result)
+        public bool TryParseInterface(string intf, out List<IPData> result)
         {
-            result = new Collection<IPData>();
+            result = new List<IPData>();
             if (string.IsNullOrEmpty(intf))
             {
                 return false;
@@ -573,7 +570,7 @@ namespace Jellyfin.Networking.Manager
             if (_interfaces != null)
             {
                 // Match all interfaces starting with names starting with token
-                var matchedInterfaces = _interfaces.Where(s => s.Name.Equals(intf.ToLowerInvariant(), StringComparison.OrdinalIgnoreCase));
+                var matchedInterfaces = _interfaces.Where(s => s.Name.Equals(intf.ToLowerInvariant(), StringComparison.OrdinalIgnoreCase)).OrderBy(x => x.Index);
                 if (matchedInterfaces.Any())
                 {
                     _logger.LogInformation("Interface {Token} used in settings. Using its interface addresses.", intf);
@@ -626,14 +623,14 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public IReadOnlyCollection<PhysicalAddress> GetMacAddresses()
+        public IReadOnlyList<PhysicalAddress> GetMacAddresses()
         {
             // Populated in construction - so always has values.
             return _macAddresses;
         }
 
         /// <inheritdoc/>
-        public List<IPData> GetLoopbacks()
+        public IReadOnlyList<IPData> GetLoopbacks()
         {
             var loopbackNetworks = new List<IPData>();
             if (IsIpv4Enabled)
@@ -650,7 +647,7 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public List<IPData> GetAllBindInterfaces(bool individualInterfaces = false)
+        public IReadOnlyList<IPData> GetAllBindInterfaces(bool individualInterfaces = false)
         {
             if (_bindAddresses.Count == 0)
             {
@@ -816,7 +813,7 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public List<IPData> GetInternalBindAddresses()
+        public IReadOnlyList<IPData> GetInternalBindAddresses()
         {
             if (_bindAddresses.Count == 0)
             {
@@ -833,7 +830,8 @@ namespace Jellyfin.Networking.Manager
             // Select all local bind addresses
             return _interfaces.Where(x => _bindAddresses.Contains(x.Address))
                 .Where(x => IsInLocalNetwork(x.Address))
-                .OrderBy(x => x.Index).ToList();
+                .OrderBy(x => x.Index)
+                .ToList();
         }
 
         /// <inheritdoc/>
@@ -892,7 +890,7 @@ namespace Jellyfin.Networking.Manager
                 interfaces = interfaces.Where(x => IsInLocalNetwork(x.Address)).ToList();
             }
 
-            foreach (var intf in _interfaces)
+            foreach (var intf in interfaces)
             {
                 if (intf.Subnet.Contains(address))
                 {
@@ -942,7 +940,7 @@ namespace Jellyfin.Networking.Manager
             foreach (var data in validPublishedServerUrls)
             {
                 // Get address interface
-                var intf = _interfaces.FirstOrDefault(s => s.Subnet.Contains(data.Key.Address));
+                var intf = _interfaces.OrderBy(x => x.Index).FirstOrDefault(s => s.Subnet.Contains(data.Key.Address));
 
                 // Remaining. Match anything.
                 if (data.Key.Address.Equals(IPAddress.Broadcast))
@@ -1017,7 +1015,7 @@ namespace Jellyfin.Networking.Manager
                             defaultGateway = addr;
                         }
 
-                        var intf = _interfaces.Where(x => x.Subnet.Contains(addr)).FirstOrDefault();
+                        var intf = _interfaces.Where(x => x.Subnet.Contains(addr)).OrderBy(x => x.Index).FirstOrDefault();
 
                         if (bindAddress == null && intf != null && intf.Subnet.Contains(source))
                         {
@@ -1082,7 +1080,7 @@ namespace Jellyfin.Networking.Manager
         {
             result = string.Empty;
             // Get the first WAN interface address that isn't a loopback.
-            var extResult = _interfaces.Where(p => !IsInLocalNetwork(p.Address));
+            var extResult = _interfaces.Where(p => !IsInLocalNetwork(p.Address)).OrderBy(x => x.Index);
 
             IPAddress? hasResult = null;
             // Does the request originate in one of the interface subnets?

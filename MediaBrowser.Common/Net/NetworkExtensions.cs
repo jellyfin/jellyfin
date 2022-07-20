@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.HttpOverrides;
 using System;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Sockets;
@@ -148,9 +148,9 @@ namespace MediaBrowser.Common.Net
         /// <param name="result">Collection of <see cref="IPNetwork"/>.</param>
         /// <param name="negated">Boolean signaling if negated or not negated values should be parsed.</param>
         /// <returns><c>True</c> if parsing was successful.</returns>
-        public static bool TryParseSubnets(string[] values, out Collection<IPNetwork> result, bool negated = false)
+        public static bool TryParseSubnets(string[] values, out List<IPNetwork> result, bool negated = false)
         {
-            result = new Collection<IPNetwork>();
+            result = new List<IPNetwork>();
 
             if (values == null || values.Length == 0)
             {
