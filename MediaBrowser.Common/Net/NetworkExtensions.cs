@@ -1,5 +1,6 @@
+using Microsoft.AspNetCore.HttpOverrides;
 using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Sockets;
@@ -134,6 +135,61 @@ namespace MediaBrowser.Common.Net
             }
 
             return str;
+        }
+
+        /// <summary>
+        /// Try parsing an array of strings into subnets, respecting exclusions.
+        /// </summary>
+        /// <param name="values">Input string to be parsed.</param>
+        /// <param name="result">Collection of <see cref="IPNetwork"/>.</param>
+        /// <param name="negated">Boolean signaling if negated or not negated values should be parsed.</param>
+        /// <returns><c>True</c> if parsing was successful.</returns>
+        public static bool TryParseSubnets(string[] values, out Collection<IPNetwork> result, bool negated = false)
+        {
+            result = new Collection<IPNetwork>();
+
+            if (values == null || values.Length == 0)
+            {
+                return false;
+            }
+
+            for (int a = 0; a < values.Length; a++)
+            {
+                string[] v = values[a].Trim().Split("/");
+
+                var address = IPAddress.None;
+                if (negated && v[0].StartsWith('!'))
+                {
+                    _ = IPAddress.TryParse(v[0][1..], out address);
+                }
+                else if (!negated)
+                {
+                    _ = IPAddress.TryParse(v[0][0..], out address);
+                }
+
+                if (address != IPAddress.None && address != null)
+                {
+                    if (int.TryParse(v[1], out var netmask))
+                    {
+                        result.Add(new IPNetwork(address, netmask));
+                    }
+                    else if (address.AddressFamily == AddressFamily.InterNetwork)
+                    {
+                        result.Add(new IPNetwork(address, 32));
+                    }
+                    else if (address.AddressFamily == AddressFamily.InterNetworkV6)
+                    {
+                        result.Add(new IPNetwork(address, 128));
+                    }
+                }
+            }
+
+            if (result.Count > 0)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>

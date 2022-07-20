@@ -326,8 +326,8 @@ namespace Jellyfin.Networking.Manager
                 // Get configuration options
                 string[] subnets = config.LocalNetworkSubnets;
 
-                _ = TryParseSubnets(subnets, out _lanSubnets, false);
-                _ = TryParseSubnets(subnets, out _excludedSubnets, true);
+                _ = NetworkExtensions.TryParseSubnets(subnets, out _lanSubnets, false);
+                _ = NetworkExtensions.TryParseSubnets(subnets, out _excludedSubnets, true);
 
                 if (_lanSubnets.Count == 0)
                 {
@@ -419,7 +419,7 @@ namespace Jellyfin.Networking.Manager
                 if (remoteIPFilter.Any() && !string.IsNullOrWhiteSpace(remoteIPFilter.First()))
                 {
                     // Parse all IPs with netmask to a subnet
-                    _ = TryParseSubnets(remoteIPFilter.Where(x => x.Contains('/', StringComparison.OrdinalIgnoreCase)).ToArray(), out _remoteAddressFilter, false);
+                    _ = NetworkExtensions.TryParseSubnets(remoteIPFilter.Where(x => x.Contains('/', StringComparison.OrdinalIgnoreCase)).ToArray(), out _remoteAddressFilter, false);
 
                     // Parse everything else as an IP and construct subnet with a single IP
                     var ips = remoteIPFilter.Where(x => !x.Contains('/', StringComparison.OrdinalIgnoreCase));
@@ -595,68 +595,6 @@ namespace Jellyfin.Networking.Manager
             return false;
         }
 
-        /// <summary>
-        /// Try parsing an array of strings into subnets, respecting exclusions.
-        /// </summary>
-        /// <param name="values">Input string to be parsed.</param>
-        /// <param name="result">Collection of <see cref="IPNetwork"/>.</param>
-        /// <param name="negated">Boolean signaling if negated or not negated values should be parsed.</param>
-        /// <returns><c>True</c> if parsing was successful.</returns>
-        public bool TryParseSubnets(string[] values, out Collection<IPNetwork> result, bool negated = false)
-        {
-            result = new Collection<IPNetwork>();
-
-            if (values == null || values.Length == 0)
-            {
-                return false;
-            }
-
-            for (int a = 0; a < values.Length; a++)
-            {
-                string[] v = values[a].Trim().Split("/");
-
-                try
-                {
-                    var address = IPAddress.None;
-                    if (negated && v[0].StartsWith('!'))
-                    {
-                        _ = IPAddress.TryParse(v[0][1..], out address);
-                    }
-                    else if (!negated)
-                    {
-                        _ = IPAddress.TryParse(v[0][0..], out address);
-                    }
-
-                    if (address != IPAddress.None && address != null)
-                    {
-                        if (int.TryParse(v[1], out var netmask))
-                        {
-                            result.Add(new IPNetwork(address, netmask));
-                        }
-                        else if (address.AddressFamily == AddressFamily.InterNetwork)
-                        {
-                            result.Add(new IPNetwork(address, 32));
-                        }
-                        else if (address.AddressFamily == AddressFamily.InterNetworkV6)
-                        {
-                            result.Add(new IPNetwork(address, 128));
-                        }
-                    }
-                }
-                catch (ArgumentException e)
-                {
-                    _logger.LogWarning(e, "Ignoring LAN value {Value}.", v);
-                }
-            }
-
-            if (result.Count > 0)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
         /// <inheritdoc/>
         public bool HasRemoteAccess(IPAddress remoteIp)
         {
@@ -802,12 +740,12 @@ namespace Jellyfin.Networking.Manager
 
             if (source != null)
             {
-                if (IsIpv4Enabled && source.AddressFamily == AddressFamily.InterNetworkV6)
+                if (IsIpv4Enabled && !IsIpv6Enabled && source.AddressFamily == AddressFamily.InterNetworkV6)
                 {
                     _logger.LogWarning("IPv6 is disabled in Jellyfin, but enabled in the OS. This may affect how the interface is selected.");
                 }
 
-                if (IsIpv6Enabled && source.AddressFamily == AddressFamily.InterNetwork)
+                if (!IsIpv4Enabled && IsIpv6Enabled && source.AddressFamily == AddressFamily.InterNetwork)
                 {
                     _logger.LogWarning("IPv4 is disabled in Jellyfin, but enabled in the OS. This may affect how the interface is selected.");
                 }
