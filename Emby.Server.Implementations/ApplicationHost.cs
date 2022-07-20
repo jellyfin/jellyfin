@@ -1080,7 +1080,8 @@ namespace Emby.Server.Implementations
             if (ConfigurationManager.GetNetworkConfiguration().EnablePublishedServerUriByRequest)
             {
                 int? requestPort = request.Host.Port;
-                if ((requestPort == 80 && string.Equals(request.Scheme, "http", StringComparison.OrdinalIgnoreCase)) || (requestPort == 443 && string.Equals(request.Scheme, "https", StringComparison.OrdinalIgnoreCase)))
+                if (((requestPort == 80 || requestPort == null) && string.Equals(request.Scheme, "http", StringComparison.OrdinalIgnoreCase))
+                || ((requestPort == 443 || requestPort == null) && string.Equals(request.Scheme, "https", StringComparison.OrdinalIgnoreCase)))
                 {
                     requestPort = -1;
                 }
