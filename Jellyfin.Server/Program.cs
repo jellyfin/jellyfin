@@ -335,13 +335,6 @@ namespace Jellyfin.Server
                     if (startupConfig.UseUnixSocket() && Environment.OSVersion.Platform == PlatformID.Unix)
                     {
                         var socketPath = GetUnixSocketPath(startupConfig, appPaths);
-
-                        // Workaround for https://github.com/aspnet/AspNetCore/issues/14134
-                        if (File.Exists(socketPath))
-                        {
-                            File.Delete(socketPath);
-                        }
-
                         options.ListenUnixSocket(socketPath);
                         _logger.LogInformation("Kestrel listening to unix socket {SocketPath}", socketPath);
                     }
