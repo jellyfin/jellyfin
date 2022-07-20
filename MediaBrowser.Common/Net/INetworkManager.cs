@@ -124,7 +124,7 @@ namespace MediaBrowser.Common.Net
         bool TryParseInterface(string intf, out List<IPData>? result);
 
         /// <summary>
-        /// Returns all the internal Bind interface addresses.
+        /// Returns all the internal bind interface addresses.
         /// </summary>
         /// <returns>An internal list of interfaces addresses.</returns>
         IReadOnlyList<IPData> GetInternalBindAddresses();

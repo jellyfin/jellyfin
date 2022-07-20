@@ -26,11 +26,6 @@ namespace Jellyfin.Networking.Manager
         private readonly object _initLock;
 
         /// <summary>
-        /// Dictionary containing interface addresses and their subnets.
-        /// </summary>
-        private readonly List<IPData> _interfaces;
-
-        /// <summary>
         /// List of all interface MAC addresses.
         /// </summary>
         private readonly List<PhysicalAddress> _macAddresses;
@@ -54,6 +49,11 @@ namespace Jellyfin.Networking.Manager
         private bool _eventfire;
 
         /// <summary>
+        /// Dictionary containing interface addresses and their subnets.
+        /// </summary>
+        private List<IPData> _interfaces;
+
+        /// <summary>
         /// Unfiltered user defined LAN subnets (<see cref="NetworkConfiguration.LocalNetworkSubnets"/>)
         /// or internal interface network subnets if undefined by user.
         /// </summary>
@@ -63,16 +63,6 @@ namespace Jellyfin.Networking.Manager
         /// User defined list of subnets to excluded from the LAN.
         /// </summary>
         private List<IPNetwork> _excludedSubnets;
-
-        /// <summary>
-        /// List of interfaces to bind to.
-        /// </summary>
-        private List<IPAddress> _bindAddresses;
-
-        /// <summary>
-        /// List of interface addresses to exclude from bind.
-        /// </summary>
-        private List<IPAddress> _bindExclusions;
 
         /// <summary>
         /// True if this object is disposed.
@@ -190,9 +180,10 @@ namespace Jellyfin.Networking.Manager
             try
             {
                 await Task.Delay(2000).ConfigureAwait(false);
+                var networkConfig = _configurationManager.GetNetworkConfiguration();
+                InitialiseLan(networkConfig);
                 InitialiseInterfaces();
-                // Recalculate LAN caches.
-                InitialiseLan(_configurationManager.GetNetworkConfiguration());
+                EnforceBindRestrictions(networkConfig);
 
                 NetworkChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -217,7 +208,7 @@ namespace Jellyfin.Networking.Manager
 
                 try
                 {
-                    IEnumerable<NetworkInterface> nics = NetworkInterface.GetAllNetworkInterfaces()
+                    var nics = NetworkInterface.GetAllNetworkInterfaces()
                         .Where(i => i.SupportsMulticast && i.OperationalStatus == OperationalStatus.Up);
 
                     foreach (NetworkInterface adapter in nics)
@@ -270,33 +261,7 @@ namespace Jellyfin.Networking.Manager
                     _logger.LogError(ex, "Error obtaining interfaces.");
                 }
 
-                // If for some reason we don't have an interface info, resolve the DNS name.
-                if (_interfaces.Count == 0)
-                {
-                    _logger.LogError("No interfaces information available. Resolving DNS name.");
-                    var hostName = Dns.GetHostName();
-                    if (Uri.CheckHostName(hostName).Equals(UriHostNameType.Dns))
-                    {
-                        try
-                        {
-                            IPHostEntry hip = Dns.GetHostEntry(hostName);
-                            foreach (var address in hip.AddressList)
-                            {
-                                _interfaces.Add(new IPData(address, null));
-                            }
-                        }
-                        catch (SocketException ex)
-                        {
-                            // Log and then ignore socket errors, as the result value will just be an empty array.
-                            _logger.LogWarning("GetHostEntryAsync failed with {Message}.", ex.Message);
-                        }
-                    }
-
-                    if (_interfaces.Count == 0)
-                    {
-                        _logger.LogWarning("No interfaces information available. Using loopback.");
-                    }
-                }
+                _logger.LogWarning("No interfaces information available. Using loopback.");
 
                 if (IsIpv4Enabled && !IsIpv6Enabled)
                 {
@@ -354,55 +319,46 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <summary>
-        /// Initialises the network bind addresses.
+        /// Enforce bind addresses and exclusions on available interfaces.
         /// </summary>
-        private void InitialiseBind(NetworkConfiguration config)
+        private void EnforceBindRestrictions(NetworkConfiguration config)
         {
             lock (_initLock)
             {
-                // Use explicit bind addresses
-                if (config.LocalNetworkAddresses.Length > 0)
+                // Respect explicit bind addresses
+                var localNetworkAddresses = config.LocalNetworkAddresses;
+                if (localNetworkAddresses.Length > 0 && !string.IsNullOrWhiteSpace(localNetworkAddresses.First()))
                 {
-                    _bindAddresses = config.LocalNetworkAddresses.Select(p => IPAddress.TryParse(p, out var addresses)
+                    var bindAddresses = config.LocalNetworkAddresses.Select(p => IPAddress.TryParse(p, out var addresses)
                         ? addresses
-                        : (_interfaces.Where(x => x.Name.Equals(p, StringComparison.OrdinalIgnoreCase)).Select(x => x.Address).FirstOrDefault() ?? IPAddress.None)).ToList();
-                    _bindAddresses.RemoveAll(x => x == IPAddress.None);
-                }
-                else
-                {
-                    // Use all addresses from all interfaces
-                    _bindAddresses = _interfaces.Select(x => x.Address).ToList();
+                        : (_interfaces.Where(x => x.Name.Equals(p, StringComparison.OrdinalIgnoreCase))
+                            .Select(x => x.Address)
+                            .FirstOrDefault() ?? IPAddress.None))
+                        .ToList();
+                    bindAddresses.RemoveAll(x => x == IPAddress.None);
+                    _interfaces = _interfaces.Where(x => bindAddresses.Contains(x.Address)).ToList();
                 }
 
-                _bindExclusions = new List<IPAddress>();
-
-                // Add all interfaces matching any virtual machine interface prefix to _bindExclusions
+                // Remove all interfaces matching any virtual machine interface prefix
                 if (config.IgnoreVirtualInterfaces)
                 {
                     // Remove potentially exisiting * and split config string into prefixes
-                    var virtualInterfacePrefixes = config.VirtualInterfaceNames.Replace("*", string.Empty, StringComparison.OrdinalIgnoreCase).ToLowerInvariant().Split(',');
+                    var virtualInterfacePrefixes = config.VirtualInterfaceNames
+                        .Replace("*", string.Empty, StringComparison.OrdinalIgnoreCase)
+                        .ToLowerInvariant()
+                        .Split(',');
 
-                    // Check all interfaces for matches against the prefixes and add the interface IPs to _bindExclusions
-                    if (_bindAddresses.Count > 0 && virtualInterfacePrefixes.Length > 0)
+                    // Check all interfaces for matches against the prefixes and remove them
+                    if (_interfaces.Count > 0 && virtualInterfacePrefixes.Length > 0)
                     {
-                        var localInterfaces = _interfaces.ToList();
                         foreach (var virtualInterfacePrefix in virtualInterfacePrefixes)
                         {
-                            var excludedInterfaceIps = localInterfaces.Where(intf => intf.Name.StartsWith(virtualInterfacePrefix, StringComparison.OrdinalIgnoreCase))
-                                .Select(intf => intf.Address);
-                            foreach (var interfaceIp in excludedInterfaceIps)
-                            {
-                                _bindExclusions.Add(interfaceIp);
-                            }
+                            _interfaces.RemoveAll(x => x.Name.StartsWith(virtualInterfacePrefix, StringComparison.OrdinalIgnoreCase));
                         }
                     }
                 }
 
-                // Remove all excluded addresses from _bindAddresses
-                _bindAddresses.RemoveAll(x => _bindExclusions.Contains(x));
-
-                _logger.LogInformation("Using bind addresses: {0}", _bindAddresses);
-                _logger.LogInformation("Using bind exclusions: {0}", _bindExclusions);
+                _logger.LogInformation("Using bind addresses: {0}", _interfaces.Select(x => x.Address));
             }
         }
 
@@ -477,7 +433,7 @@ namespace Jellyfin.Networking.Manager
 
                             _publishedServerUrls[data] = replacement;
                         }
-                        else if (TryParseInterface(parts[0], out var ifaces))
+                        else if (TryParseInterface(ipParts[0], out var ifaces))
                         {
                             foreach (var iface in ifaces)
                             {
@@ -509,6 +465,9 @@ namespace Jellyfin.Networking.Manager
         {
             NetworkConfiguration config = (NetworkConfiguration)configuration ?? throw new ArgumentNullException(nameof(configuration));
 
+            InitialiseLan(config);
+            InitialiseRemote(config);
+
             if (string.IsNullOrEmpty(MockNetworkSettings))
             {
                 InitialiseInterfaces();
@@ -533,9 +492,7 @@ namespace Jellyfin.Networking.Manager
                 }
             }
 
-            InitialiseLan(config);
-            InitialiseBind(config);
-            InitialiseRemote(config);
+            EnforceBindRestrictions(config);
             InitialiseOverrides(config);
         }
 
@@ -649,19 +606,8 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public IReadOnlyList<IPData> GetAllBindInterfaces(bool individualInterfaces = false)
         {
-            if (_bindAddresses.Count == 0)
+            if (_interfaces.Count == 0)
             {
-                if (_bindExclusions.Count > 0)
-                {
-                    foreach (var exclusion in _bindExclusions)
-                    {
-                        // Return all the interfaces except the ones specifically excluded.
-                        _interfaces.RemoveAll(intf => intf.Address == exclusion);
-                    }
-
-                    return _interfaces;
-                }
-
                 // No bind address and no exclusions, so listen on all interfaces.
                 var result = new List<IPData>();
 
@@ -699,14 +645,7 @@ namespace Jellyfin.Networking.Manager
                 return result;
             }
 
-            // Remove any excluded bind interfaces.
-            foreach (var exclusion in _bindExclusions)
-            {
-                // Return all the interfaces except the ones specifically excluded.
-                _bindAddresses.Remove(exclusion);
-            }
-
-            return _bindAddresses.Select(s => new IPData(s, null)).ToList();
+            return _interfaces;
         }
 
         /// <inheritdoc/>
@@ -770,8 +709,7 @@ namespace Jellyfin.Networking.Manager
 
             // Get the first LAN interface address that's not excluded and not a loopback address.
             var availableInterfaces = _interfaces.Where(x => !IPAddress.IsLoopback(x.Address))
-                .OrderByDescending(x => _bindAddresses.Contains(x.Address))
-                .ThenByDescending(x => IsInLocalNetwork(x.Address))
+                .OrderByDescending(x => IsInLocalNetwork(x.Address))
                 .ThenBy(x => x.Index);
 
             if (availableInterfaces.Any())
@@ -815,21 +753,8 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public IReadOnlyList<IPData> GetInternalBindAddresses()
         {
-            if (_bindAddresses.Count == 0)
-            {
-                if (_bindExclusions.Count > 0)
-                {
-                    // Return all the internal interfaces except the ones excluded.
-                    return _interfaces.Where(p => !_bindExclusions.Contains(p.Address)).ToList();
-                }
-
-                // No bind address, so return all internal interfaces.
-                return _interfaces;
-            }
-
             // Select all local bind addresses
-            return _interfaces.Where(x => _bindAddresses.Contains(x.Address))
-                .Where(x => IsInLocalNetwork(x.Address))
+            return _interfaces.Where(x => IsInLocalNetwork(x.Address))
                 .OrderBy(x => x.Index)
                 .ToList();
         }
@@ -874,31 +799,6 @@ namespace Jellyfin.Networking.Manager
             var match = CheckIfLanAndNotExcluded(address);
 
             return address.Equals(IPAddress.Loopback) || address.Equals(IPAddress.IPv6Loopback) || match;
-        }
-
-        private IPData? FindInterfaceForIp(IPAddress address, bool localNetwork = false)
-        {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
-
-            var interfaces = _interfaces;
-
-            if (localNetwork)
-            {
-                interfaces = interfaces.Where(x => IsInLocalNetwork(x.Address)).ToList();
-            }
-
-            foreach (var intf in interfaces)
-            {
-                if (intf.Subnet.Contains(address))
-                {
-                    return intf;
-                }
-            }
-
-            return null;
         }
 
         private bool CheckIfLanAndNotExcluded(IPAddress address)
@@ -992,79 +892,54 @@ namespace Jellyfin.Networking.Manager
         {
             result = string.Empty;
 
-            int count = _bindAddresses.Count;
-            if (count == 1 && (_bindAddresses[0].Equals(IPAddress.Any) || _bindAddresses[0].Equals(IPAddress.IPv6Any)))
+            int count = _interfaces.Count();
+            if (count == 1 && (_interfaces[0].Equals(IPAddress.Any) || _interfaces[0].Equals(IPAddress.IPv6Any)))
             {
                 // Ignore IPAny addresses.
                 count = 0;
             }
 
-            if (count != 0)
+            if (count > 0)
             {
-                // Check to see if any of the bind interfaces are in the same subnet as the source.
-                IPAddress? defaultGateway = null;
                 IPAddress? bindAddress = null;
+                var externalInterfaces = _interfaces.Where(x => !IsInLocalNetwork(x.Address))
+                    .OrderBy(x => x.Index)
+                    .ToList();
 
-                if (isInExternalSubnet)
+                if (isInExternalSubnet && externalInterfaces.Any())
                 {
-                    // Find all external bind addresses. Store the default gateway, but check to see if there is a better match first.
-                    foreach (var addr in _bindAddresses)
+                    // Check to see if any of the external bind interfaces are in the same subnet as the source.
+                    // If none exists, this will select the first external interface if there is one.
+                    bindAddress = externalInterfaces
+                        .OrderByDescending(x => x.Subnet.Contains(source))
+                        .ThenBy(x => x.Index)
+                        .Select(x => x.Address)
+                        .FirstOrDefault();
+
+                    if (bindAddress != null)
                     {
-                        if (defaultGateway == null && !IsInLocalNetwork(addr))
-                        {
-                            defaultGateway = addr;
-                        }
-
-                        var intf = _interfaces.Where(x => x.Subnet.Contains(addr)).OrderBy(x => x.Index).FirstOrDefault();
-
-                        if (bindAddress == null && intf != null && intf.Subnet.Contains(source))
-                        {
-                            bindAddress = intf.Address;
-                        }
-
-                        if (defaultGateway != null && bindAddress != null)
-                        {
-                            break;
-                        }
+                        result = NetworkExtensions.FormatIpString(bindAddress);
+                        _logger.LogDebug("{Source}: GetBindInterface: Has source, found a matching external bind interface. {Result}", source, result);
+                        return true;
                     }
                 }
                 else
                 {
-                    // Look for the best internal address.
-                    foreach (var bA in _bindAddresses.Where(x => IsInLocalNetwork(x)))
+                    // Check to see if any of the internal bind interfaces are in the same subnet as the source.
+                    // If none exists, this will select the first internal interface if there is one.
+                    bindAddress = _interfaces.Where(x => IsInLocalNetwork(x.Address))
+                        .OrderByDescending(x => x.Subnet.Contains(source))
+                        .ThenBy(x => x.Index)
+                        .Select(x => x.Address)
+                        .FirstOrDefault();
+
+                    if (bindAddress != null)
                     {
-                        var intf = FindInterfaceForIp(source, true);
-                        if (intf != null)
-                        {
-                            bindAddress = intf.Address;
-                            break;
-                        }
+                        result = NetworkExtensions.FormatIpString(bindAddress);
+                        _logger.LogWarning("{Source}: External request received, only an internal interface bind found. {Result}", source, result);
+                        return true;
                     }
                 }
-
-                if (bindAddress != null)
-                {
-                    result = NetworkExtensions.FormatIpString(bindAddress);
-                    _logger.LogDebug("{Source}: GetBindInterface: Has source, found a matching bind interface subnet. {Result}", source, result);
-                    return true;
-                }
-
-                if (isInExternalSubnet && defaultGateway != null)
-                {
-                    result = NetworkExtensions.FormatIpString(defaultGateway);
-                    _logger.LogDebug("{Source}: GetBindInterface: Using first user defined external interface. {Result}", source, result);
-                    return true;
-                }
-
-                result = NetworkExtensions.FormatIpString(_bindAddresses[0]);
-                _logger.LogDebug("{Source}: GetBindInterface: Selected first user defined interface. {Result}", source, result);
-
-                if (isInExternalSubnet)
-                {
-                    _logger.LogWarning("{Source}: External request received, only an internal interface bind found.", source);
-                }
-
-                return true;
             }
 
             return false;
