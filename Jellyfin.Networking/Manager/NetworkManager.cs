@@ -298,20 +298,22 @@ namespace Jellyfin.Networking.Manager
 
                 if (_lanSubnets.Count == 0)
                 {
-                    // If no LAN addresses are specified, all private subnets are deemed to be the LAN
+                    // If no LAN addresses are specified, all private subnets and Loopback are deemed to be the LAN
                     _logger.LogDebug("Using LAN interface addresses as user provided no LAN details.");
 
                     if (IsIpv6Enabled)
                     {
-                        _lanSubnets.Add(new IPNetwork(IPAddress.Parse("fc00::"), 7)); // ULA
-                        _lanSubnets.Add(new IPNetwork(IPAddress.Parse("fe80::"), 10)); // Site local
+                        _lanSubnets.Add(new IPNetwork(IPAddress.IPv6Loopback, 128)); // RFC 4291 (Loopback)
+                        _lanSubnets.Add(new IPNetwork(IPAddress.Parse("fe80::"), 10)); // RFC 4291 (Site local)
+                        _lanSubnets.Add(new IPNetwork(IPAddress.Parse("fc00::"), 7)); // RFC 4193 (Unique local)
                     }
 
                     if (IsIpv4Enabled)
                     {
-                        _lanSubnets.Add(new IPNetwork(IPAddress.Parse("10.0.0.0"), 8));
-                        _lanSubnets.Add(new IPNetwork(IPAddress.Parse("172.16.0.0"), 12));
-                        _lanSubnets.Add(new IPNetwork(IPAddress.Parse("192.168.0.0"), 16));
+                        _lanSubnets.Add(new IPNetwork(IPAddress.Loopback, 8)); // RFC 5735 (Loopback)
+                        _lanSubnets.Add(new IPNetwork(IPAddress.Parse("10.0.0.0"), 8)); // RFC 1918 (private)
+                        _lanSubnets.Add(new IPNetwork(IPAddress.Parse("172.16.0.0"), 12)); // RFC 1918 (private)
+                        _lanSubnets.Add(new IPNetwork(IPAddress.Parse("192.168.0.0"), 16)); // RFC 1918 (private)
                     }
                 }
 
@@ -371,11 +373,13 @@ namespace Jellyfin.Networking.Manager
                     }
                 }
 
+                // Remove all IPv4 interfaces if IPv4 is disabled
                 if (!IsIpv4Enabled)
                 {
                     _interfaces.RemoveAll(x => x.AddressFamily == AddressFamily.InterNetwork);
                 }
 
+                // Remove all IPv6 interfaces if IPv6 is disabled
                 if (!IsIpv6Enabled)
                 {
                     _interfaces.RemoveAll(x => x.AddressFamily == AddressFamily.InterNetworkV6);

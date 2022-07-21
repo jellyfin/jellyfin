@@ -284,6 +284,7 @@ namespace Emby.Dlna.Main
             var udn = CreateUuid(_appHost.SystemId);
             var descriptorUri = "/dlna/" + udn + "/description.xml";
 
+            // Only get bind addresses in LAN
             var bindAddresses = _networkManager
                 .GetInternalBindAddresses()
                 .Where(i => i.Address.AddressFamily == AddressFamily.InterNetwork
@@ -301,12 +302,6 @@ namespace Emby.Dlna.Main
                 if (address.AddressFamily == AddressFamily.InterNetworkV6)
                 {
                     // Not supporting IPv6 right now
-                    continue;
-                }
-
-                // Limit to LAN addresses only
-                if (!_networkManager.IsInLocalNetwork(address.Address))
-                {
                     continue;
                 }
 

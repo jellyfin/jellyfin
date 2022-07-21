@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+using System.Collections.Generic;
 using System.Net;
 
 namespace MediaBrowser.Model.Net
@@ -23,9 +24,10 @@ namespace MediaBrowser.Model.Net
         /// Creates a new multicast socket using the specified multicast IP address, multicast time to live and local port.
         /// </summary>
         /// <param name="ipAddress">The multicast IP address to bind to.</param>
+        /// <param name="bindIpAddress">The bind IP address.</param>
         /// <param name="multicastTimeToLive">The multicast time to live value. Actually a maximum number of network hops for UDP packets.</param>
         /// <param name="localPort">The local port to bind to.</param>
         /// <returns>A <see cref="ISocket"/> implementation.</returns>
-        ISocket CreateUdpMulticastSocket(IPAddress ipAddress, int multicastTimeToLive, int localPort);
+        ISocket CreateUdpMulticastSocket(IPAddress ipAddress, IPAddress bindIpAddress, int multicastTimeToLive, int localPort);
     }
 }

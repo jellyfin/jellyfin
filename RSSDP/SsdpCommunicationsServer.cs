@@ -33,7 +33,7 @@ namespace Rssdp.Infrastructure
          */
 
         private object _BroadcastListenSocketSynchroniser = new object();
-        private ISocket _BroadcastListenSocket;
+        private List<ISocket> _BroadcastListenSockets;
 
         private object _SendSocketSynchroniser = new object();
         private List<ISocket> _sendSockets;
@@ -111,24 +111,21 @@ namespace Rssdp.Infrastructure
         {
             ThrowIfDisposed();
 
-            if (_BroadcastListenSocket == null)
+            lock (_BroadcastListenSocketSynchroniser)
             {
-                lock (_BroadcastListenSocketSynchroniser)
+                if (_BroadcastListenSockets == null)
                 {
-                    if (_BroadcastListenSocket == null)
+                    try
                     {
-                        try
-                        {
-                            _BroadcastListenSocket = ListenForBroadcastsAsync();
-                        }
-                        catch (SocketException ex)
-                        {
-                            _logger.LogError("Failed to bind to port 1900: {Message}. DLNA will be unavailable", ex.Message);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error in BeginListeningForBroadcasts");
-                        }
+                        _BroadcastListenSockets = ListenForBroadcastsAsync();
+                    }
+                    catch (SocketException ex)
+                    {
+                        _logger.LogError("Failed to bind to port 1900: {Message}. DLNA will be unavailable", ex.Message);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error in BeginListeningForBroadcasts");
                     }
                 }
             }
@@ -142,11 +139,15 @@ namespace Rssdp.Infrastructure
         {
             lock (_BroadcastListenSocketSynchroniser)
             {
-                if (_BroadcastListenSocket != null)
+                if (_BroadcastListenSockets != null)
                 {
                     _logger.LogInformation("{0} disposing _BroadcastListenSocket", GetType().Name);
-                    _BroadcastListenSocket.Dispose();
-                    _BroadcastListenSocket = null;
+                    foreach (var socket in _BroadcastListenSockets)
+                    {
+                        socket.Dispose();
+                    }
+
+                    _BroadcastListenSockets = null;
                 }
             }
         }
@@ -336,12 +337,40 @@ namespace Rssdp.Infrastructure
             return Task.CompletedTask;
         }
 
-        private ISocket ListenForBroadcastsAsync()
+        private List<ISocket> ListenForBroadcastsAsync()
         {
-            var socket = _SocketFactory.CreateUdpMulticastSocket(IPAddress.Parse(SsdpConstants.MulticastLocalAdminAddress), _MulticastTtl, SsdpConstants.MulticastPort);
-            _ = ListenToSocketInternal(socket);
+            var sockets = new List<ISocket>();
+            if (_enableMultiSocketBinding)
+            {
+                foreach (var address in _networkManager.GetInternalBindAddresses())
+                {
+                    if (address.AddressFamily == AddressFamily.InterNetworkV6)
+                    {
+                        // Not support IPv6 right now
+                        continue;
+                    }
 
-            return socket;
+                    try
+                    {
+                        sockets.Add(_SocketFactory.CreateUdpMulticastSocket(IPAddress.Parse(SsdpConstants.MulticastLocalAdminAddress), address.Address, _MulticastTtl, SsdpConstants.MulticastPort));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error in ListenForBroadcastsAsync. IPAddress: {0}", address);
+                    }
+                }
+            }
+            else
+            {
+                sockets.Add(_SocketFactory.CreateUdpMulticastSocket(IPAddress.Parse(SsdpConstants.MulticastLocalAdminAddress), IPAddress.Any, _MulticastTtl, SsdpConstants.MulticastPort));
+            }
+
+            foreach (var socket in sockets)
+            {
+                _ = ListenToSocketInternal(socket);
+            }
+
+            return sockets;
         }
 
         private List<ISocket> CreateSocketAndListenForResponsesAsync()

@@ -61,11 +61,16 @@ namespace Emby.Server.Implementations.Net
         }
 
         /// <inheritdoc />
-        public ISocket CreateUdpMulticastSocket(IPAddress ipAddress, int multicastTimeToLive, int localPort)
+        public ISocket CreateUdpMulticastSocket(IPAddress ipAddress, IPAddress bindIpAddress, int multicastTimeToLive, int localPort)
         {
             if (ipAddress == null)
             {
                 throw new ArgumentNullException(nameof(ipAddress));
+            }
+
+            if (bindIpAddress == null)
+            {
+                bindIpAddress = IPAddress.Any;
             }
 
             if (multicastTimeToLive <= 0)
@@ -98,12 +103,10 @@ namespace Emby.Server.Implementations.Net
                 // retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
                 retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, multicastTimeToLive);
 
-                var localIp = IPAddress.Any;
-
-                retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(ipAddress, localIp));
+                retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(ipAddress, bindIpAddress));
                 retVal.MulticastLoopback = true;
 
-                return new UdpSocket(retVal, localPort, localIp);
+                return new UdpSocket(retVal, localPort, bindIpAddress);
             }
             catch
             {
