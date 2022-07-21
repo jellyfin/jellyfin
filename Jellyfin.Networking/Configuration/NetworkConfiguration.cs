@@ -103,19 +103,9 @@ namespace Jellyfin.Networking.Configuration
         public int PublicPort { get; set; } = DefaultHttpPort;
 
         /// <summary>
-        /// Gets or sets a value indicating whether the http port should be mapped as part of UPnP automatic port forwarding.
-        /// </summary>
-        public bool UPnPCreateHttpPortMap { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether Autodiscovery is enabled.
         /// </summary>
         public bool AutoDiscovery { get; set; } = true;
-
-        /// <summary>
-        /// Gets or sets a value indicating whether Autodiscovery tracing is enabled.
-        /// </summary>
-        public bool AutoDiscoveryTracing { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether to enable automatic port forwarding.
@@ -153,21 +143,6 @@ namespace Jellyfin.Networking.Configuration
         public string[] KnownProxies { get; set; } = Array.Empty<string>();
 
         /// <summary>
-        /// Gets or sets the UDPPortRange.
-        /// </summary>
-        public string UDPPortRange { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the number of times SSDP UDP messages are sent.
-        /// </summary>
-        public int UDPSendCount { get; set; } = 2;
-
-        /// <summary>
-        /// Gets or sets the delay between each groups of SSDP messages (in ms).
-        /// </summary>
-        public int UDPSendDelay { get; set; } = 100;
-
-        /// <summary>
         /// Gets or sets a value indicating whether address names that match <see cref="VirtualInterfaceNames"/> should be Ignore for the purposes of binding.
         /// </summary>
         public bool IgnoreVirtualInterfaces { get; set; } = true;
@@ -189,16 +164,6 @@ namespace Jellyfin.Networking.Configuration
         public string[] PublishedServerUriBySubnet { get; set; } = Array.Empty<string>();
 
         /// <summary>
-        /// Gets a value indicating whether multi-socket binding is available.
-        /// </summary>
-        public bool EnableMultiSocketBinding { get; } = true;
-
-        /// <summary>
-        /// Gets or sets the ports that HDHomerun uses.
-        /// </summary>
-        public string HDHomerunPortRange { get; set; } = string.Empty;
-
-        /// <summary>
         /// Gets or sets the filter for remote IP connectivity. Used in conjuntion with <seealso cref="IsRemoteIPFilterBlacklist"/>.
         /// </summary>
         public string[] RemoteIPFilter { get; set; } = Array.Empty<string>();
@@ -207,18 +172,5 @@ namespace Jellyfin.Networking.Configuration
         /// Gets or sets a value indicating whether <seealso cref="RemoteIPFilter"/> contains a blacklist or a whitelist. Default is a whitelist.
         /// </summary>
         public bool IsRemoteIPFilterBlacklist { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether detailed SSDP logs are sent to the console/log.
-        /// "Emby.Dlna": "Debug" must be set in logging.default.json for this property to have any effect.
-        /// </summary>
-        public bool EnableSSDPTracing { get; set; }
-
-        /// <summary>
-        /// Gets or sets the SSDPTracingFilter
-        /// Gets or sets a value indicating whether an IP address is to be used to filter the detailed ssdp logs that are being sent to the console/log.
-        /// If the setting "Emby.Dlna": "Debug" msut be set in logging.default.json for this property to work.
-        /// </summary>
-        public string SSDPTracingFilter { get; set; } = string.Empty;
     }
 }
