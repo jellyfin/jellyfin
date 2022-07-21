@@ -31,6 +31,7 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly IConfiguration _config;
         private readonly IConfigurationManager _configurationManager;
         private readonly INetworkManager _networkManager;
+        private readonly bool _enableMultiSocketBinding;
 
         /// <summary>
         /// The UDP server.
@@ -59,6 +60,7 @@ namespace Emby.Server.Implementations.EntryPoints
             _config = configuration;
             _configurationManager = configurationManager;
             _networkManager = networkManager;
+            _enableMultiSocketBinding = OperatingSystem.IsWindows() || OperatingSystem.IsLinux();
         }
 
         /// <inheritdoc />
@@ -73,15 +75,23 @@ namespace Emby.Server.Implementations.EntryPoints
 
             try
             {
-                foreach (var bindAddress in _networkManager.GetInternalBindAddresses())
+                if (_enableMultiSocketBinding)
                 {
-                    if (bindAddress.AddressFamily == AddressFamily.InterNetworkV6)
+                    foreach (var bindAddress in _networkManager.GetInternalBindAddresses())
                     {
-                        // Not supporting IPv6 right now
-                        continue;
-                    }
+                        if (bindAddress.AddressFamily == AddressFamily.InterNetworkV6)
+                        {
+                            // Not supporting IPv6 right now
+                            continue;
+                        }
 
-                    _udpServer = new UdpServer(_logger, _appHost, _config, bindAddress.Address, PortNumber);
+                        _udpServer = new UdpServer(_logger, _appHost, _config, bindAddress.Address, PortNumber);
+                        _udpServer.Start(_cancellationTokenSource.Token);
+                    }
+                }
+                else
+                {
+                    _udpServer = new UdpServer(_logger, _appHost, _config, System.Net.IPAddress.Any, PortNumber);
                     _udpServer.Start(_cancellationTokenSource.Token);
                 }
             }
