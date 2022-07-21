@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,7 +37,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <summary>
         /// The UDP server.
         /// </summary>
-        private UdpServer? _udpServer;
+        private List<UdpServer> _udpServers;
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private bool _disposed = false;
 
@@ -60,6 +61,7 @@ namespace Emby.Server.Implementations.EntryPoints
             _config = configuration;
             _configurationManager = configurationManager;
             _networkManager = networkManager;
+            _udpServers = new List<UdpServer>();
             _enableMultiSocketBinding = OperatingSystem.IsWindows() || OperatingSystem.IsLinux();
         }
 
@@ -85,15 +87,15 @@ namespace Emby.Server.Implementations.EntryPoints
                             continue;
                         }
 
-                        _udpServer = new UdpServer(_logger, _appHost, _config, bindAddress.Address, PortNumber);
-                        _udpServer.Start(_cancellationTokenSource.Token);
+                        _udpServers.Add(new UdpServer(_logger, _appHost, _config, bindAddress.Address, PortNumber));
                     }
                 }
                 else
                 {
-                    _udpServer = new UdpServer(_logger, _appHost, _config, System.Net.IPAddress.Any, PortNumber);
-                    _udpServer.Start(_cancellationTokenSource.Token);
+                    _udpServers.Add(new UdpServer(_logger, _appHost, _config, System.Net.IPAddress.Any, PortNumber));
                 }
+
+                _udpServers.ForEach(u => u.Start(_cancellationTokenSource.Token));
             }
             catch (SocketException ex)
             {
@@ -121,8 +123,8 @@ namespace Emby.Server.Implementations.EntryPoints
 
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource.Dispose();
-            _udpServer?.Dispose();
-            _udpServer = null;
+            _udpServers.ForEach(s => s.Dispose());
+            _udpServers.Clear();
 
             _disposed = true;
         }
