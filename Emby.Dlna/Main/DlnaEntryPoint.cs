@@ -307,7 +307,7 @@ namespace Emby.Dlna.Main
 
                 var fullService = "urn:schemas-upnp-org:device:MediaServer:1";
 
-                _logger.LogInformation("Registering publisher for {ResourceName} on {DeviceAddress}", fullService, address);
+                _logger.LogInformation("Registering publisher for {ResourceName} on {DeviceAddress}", fullService, address.Address);
 
                 var uri = new UriBuilder(_appHost.GetApiUrlForLocalAccess(address.Address, false) + descriptorUri);
 

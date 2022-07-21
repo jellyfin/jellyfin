@@ -933,22 +933,27 @@ namespace Jellyfin.Networking.Manager
                     .OrderBy(x => x.Index)
                     .ToList();
 
-                if (isInExternalSubnet && externalInterfaces.Any())
+                if (isInExternalSubnet)
                 {
-                    // Check to see if any of the external bind interfaces are in the same subnet as the source.
-                    // If none exists, this will select the first external interface if there is one.
-                    bindAddress = externalInterfaces
-                        .OrderByDescending(x => x.Subnet.Contains(source))
-                        .ThenBy(x => x.Index)
-                        .Select(x => x.Address)
-                        .FirstOrDefault();
-
-                    if (bindAddress != null)
+                    if (externalInterfaces.Any())
                     {
-                        result = NetworkExtensions.FormatIpString(bindAddress);
-                        _logger.LogDebug("{Source}: GetBindInterface: Has source, found a matching external bind interface. {Result}", source, result);
-                        return true;
+                        // Check to see if any of the external bind interfaces are in the same subnet as the source.
+                        // If none exists, this will select the first external interface if there is one.
+                        bindAddress = externalInterfaces
+                            .OrderByDescending(x => x.Subnet.Contains(source))
+                            .ThenBy(x => x.Index)
+                            .Select(x => x.Address)
+                            .FirstOrDefault();
+
+                        if (bindAddress != null)
+                        {
+                            result = NetworkExtensions.FormatIpString(bindAddress);
+                            _logger.LogDebug("{Source}: GetBindInterface: Has source, found a matching external bind interface. {Result}", source, result);
+                            return true;
+                        }
                     }
+
+                    _logger.LogWarning("{Source}: External request received, no external interface bind found, trying internal interfaces.", source);
                 }
                 else
                 {
@@ -963,7 +968,7 @@ namespace Jellyfin.Networking.Manager
                     if (bindAddress != null)
                     {
                         result = NetworkExtensions.FormatIpString(bindAddress);
-                        _logger.LogWarning("{Source}: External request received, only an internal interface bind found. {Result}", source, result);
+                        _logger.LogWarning("{Source}: Request received, matching internal interface bind found. {Result}", source, result);
                         return true;
                     }
                 }
