@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Emby.Server.Implementations.Udp;
 using Jellyfin.Networking.Configuration;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
 using Microsoft.Extensions.Configuration;
@@ -29,6 +30,7 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly IServerApplicationHost _appHost;
         private readonly IConfiguration _config;
         private readonly IConfigurationManager _configurationManager;
+        private readonly INetworkManager _networkManager;
 
         /// <summary>
         /// The UDP server.
@@ -44,16 +46,19 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <param name="appHost">Instance of the <see cref="IServerApplicationHost"/> interface.</param>
         /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
         /// <param name="configurationManager">Instance of the <see cref="IConfigurationManager"/> interface.</param>
+        /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
         public UdpServerEntryPoint(
             ILogger<UdpServerEntryPoint> logger,
             IServerApplicationHost appHost,
             IConfiguration configuration,
-            IConfigurationManager configurationManager)
+            IConfigurationManager configurationManager,
+            INetworkManager networkManager)
         {
             _logger = logger;
             _appHost = appHost;
             _config = configuration;
             _configurationManager = configurationManager;
+            _networkManager = networkManager;
         }
 
         /// <inheritdoc />
@@ -68,8 +73,17 @@ namespace Emby.Server.Implementations.EntryPoints
 
             try
             {
-                _udpServer = new UdpServer(_logger, _appHost, _config, PortNumber);
-                _udpServer.Start(_cancellationTokenSource.Token);
+                foreach (var bindAddress in _networkManager.GetInternalBindAddresses())
+                {
+                    if (bindAddress.AddressFamily == AddressFamily.InterNetworkV6)
+                    {
+                        // Not supporting IPv6 right now
+                        continue;
+                    }
+
+                    _udpServer = new UdpServer(_logger, _appHost, _config, bindAddress.Address, PortNumber);
+                    _udpServer.Start(_cancellationTokenSource.Token);
+                }
             }
             catch (SocketException ex)
             {
