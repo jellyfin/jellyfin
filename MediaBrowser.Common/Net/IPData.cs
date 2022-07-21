@@ -12,9 +12,9 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Initializes a new instance of the <see cref="IPData"/> class.
         /// </summary>
-        /// <param name="address">An <see cref="IPAddress"/>.</param>
+        /// <param name="address">The <see cref="IPAddress"/>.</param>
         /// <param name="subnet">The <see cref="IPNetwork"/>.</param>
-        /// <param name="name">The object's name.</param>
+        /// <param name="name">The interface name.</param>
         public IPData(IPAddress address, IPNetwork? subnet, string name)
         {
             Address = address;
@@ -25,7 +25,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Initializes a new instance of the <see cref="IPData"/> class.
         /// </summary>
-        /// <param name="address">An <see cref="IPAddress"/>.</param>
+        /// <param name="address">The <see cref="IPAddress"/>.</param>
         /// <param name="subnet">The <see cref="IPNetwork"/>.</param>
         public IPData(IPAddress address, IPNetwork? subnet)
             : this(address, subnet, string.Empty)
@@ -53,7 +53,7 @@ namespace MediaBrowser.Common.Net
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets the AddressFamily of this object.
+        /// Gets the AddressFamily of the object.
         /// </summary>
         public AddressFamily AddressFamily
         {

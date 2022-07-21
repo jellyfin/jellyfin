@@ -17,14 +17,14 @@ namespace MediaBrowser.Common.Net
         event EventHandler NetworkChanged;
 
         /// <summary>
-        /// Gets a value indicating whether IPv6 is enabled.
-        /// </summary>
-        bool IsIpv6Enabled { get; }
-
-        /// <summary>
         /// Gets a value indicating whether IPv4 is enabled.
         /// </summary>
         bool IsIpv4Enabled { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether IPv6 is enabled.
+        /// </summary>
+        bool IsIpv6Enabled { get; }
 
         /// <summary>
         /// Calculates the list of interfaces to use for Kestrel.
@@ -42,7 +42,7 @@ namespace MediaBrowser.Common.Net
         IReadOnlyList<IPData> GetLoopbacks();
 
         /// <summary>
-        /// Retrieves the bind address to use in system url's. (Server Discovery, PlayTo, LiveTV, SystemInfo)
+        /// Retrieves the bind address to use in system URLs. (Server Discovery, PlayTo, LiveTV, SystemInfo)
         /// If no bind addresses are specified, an internal interface address is selected.
         /// The priority of selection is as follows:-
         ///
@@ -56,40 +56,40 @@ namespace MediaBrowser.Common.Net
         ///
         /// If the source is from a public subnet address range and the user hasn't specified any bind addresses:-
         ///  The first public interface that isn't a loopback and contains the source subnet.
-        ///  The first public interface that isn't a loopback. Priority is given to interfaces with gateways.
-        ///  An internal interface if there are no public ip addresses.
+        ///  The first public interface that isn't a loopback.
+        ///  The first internal interface that isn't a loopback.
         ///
         /// If the source is from a private subnet address range and the user hasn't specified any bind addresses:-
         ///  The first private interface that contains the source subnet.
-        ///  The first private interface that isn't a loopback. Priority is given to interfaces with gateways.
+        ///  The first private interface that isn't a loopback.
         ///
         /// If no interfaces meet any of these criteria, then a loopback address is returned.
         ///
-        /// Interface that have been specifically excluded from binding are not used in any of the calculations.
+        /// Interfaces that have been specifically excluded from binding are not used in any of the calculations.
         /// </summary>
         /// <param name="source">Source of the request.</param>
         /// <param name="port">Optional port returned, if it's part of an override.</param>
-        /// <returns>IP Address to use, or loopback address if all else fails.</returns>
+        /// <returns>IP address to use, or loopback address if all else fails.</returns>
         string GetBindInterface(HttpRequest source, out int? port);
 
         /// <summary>
-        /// Retrieves the bind address to use in system url's. (Server Discovery, PlayTo, LiveTV, SystemInfo)
+        /// Retrieves the bind address to use in system URLs. (Server Discovery, PlayTo, LiveTV, SystemInfo)
         /// If no bind addresses are specified, an internal interface address is selected.
         /// (See <see cref="GetBindInterface(IPAddress, out int?)"/>.
         /// </summary>
         /// <param name="source">IP address of the request.</param>
         /// <param name="port">Optional port returned, if it's part of an override.</param>
-        /// <returns>IP Address to use, or loopback address if all else fails.</returns>
+        /// <returns>IP address to use, or loopback address if all else fails.</returns>
         string GetBindInterface(IPAddress source, out int? port);
 
         /// <summary>
-        /// Retrieves the bind address to use in system url's. (Server Discovery, PlayTo, LiveTV, SystemInfo)
+        /// Retrieves the bind address to use in system URLs. (Server Discovery, PlayTo, LiveTV, SystemInfo)
         /// If no bind addresses are specified, an internal interface address is selected.
         /// (See <see cref="GetBindInterface(IPAddress, out int?)"/>.
         /// </summary>
         /// <param name="source">Source of the request.</param>
         /// <param name="port">Optional port returned, if it's part of an override.</param>
-        /// <returns>IP Address to use, or loopback address if all else fails.</returns>
+        /// <returns>IP address to use, or loopback address if all else fails.</returns>
         string GetBindInterface(string source, out int? port);
 
         /// <summary>
@@ -100,7 +100,6 @@ namespace MediaBrowser.Common.Net
 
         /// <summary>
         /// Returns true if the address is part of the user defined LAN.
-        /// The configuration option TrustIP6Interfaces overrides this functions behaviour.
         /// </summary>
         /// <param name="address">IP to check.</param>
         /// <returns>True if endpoint is within the LAN range.</returns>
@@ -108,7 +107,6 @@ namespace MediaBrowser.Common.Net
 
         /// <summary>
         /// Returns true if the address is part of the user defined LAN.
-        /// The configuration option TrustIP6Interfaces overrides this functions behaviour.
         /// </summary>
         /// <param name="address">IP to check.</param>
         /// <returns>True if endpoint is within the LAN range.</returns>
@@ -119,21 +117,21 @@ namespace MediaBrowser.Common.Net
         /// eg. "eth1", or "enp3s5".
         /// </summary>
         /// <param name="intf">Interface name.</param>
-        /// <param name="result">Resultant object's ip addresses, if successful.</param>
+        /// <param name="result">Resulting object's IP addresses, if successful.</param>
         /// <returns>Success of the operation.</returns>
         bool TryParseInterface(string intf, out List<IPData>? result);
 
         /// <summary>
-        /// Returns all the internal bind interface addresses.
+        /// Returns all internal (LAN) bind interface addresses.
         /// </summary>
-        /// <returns>An internal list of interfaces addresses.</returns>
+        /// <returns>An list of internal (LAN) interfaces addresses.</returns>
         IReadOnlyList<IPData> GetInternalBindAddresses();
 
         /// <summary>
-        /// Checks to see if <paramref name="remoteIp"/> has access.
+        /// Checks if <paramref name="remoteIp"/> has access to the server.
         /// </summary>
-        /// <param name="remoteIp">IP Address of client.</param>
-        /// <returns><b>True</b> if has access, otherwise <b>false</b>.</returns>
+        /// <param name="remoteIp">IP address of the client.</param>
+        /// <returns><b>True</b> if it has access, otherwise <b>false</b>.</returns>
         bool HasRemoteAccess(IPAddress remoteIp);
     }
 }

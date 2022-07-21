@@ -350,14 +350,14 @@ namespace Jellyfin.Server.Extensions
                 }
                 else if (NetworkExtensions.TryParseSubnets(new[] { allowedProxies[i] }, out var subnets))
                 {
-                    for (var j = 0; j < subnets.Count; j++)
+                    foreach (var subnet in subnets)
                     {
-                        AddIpAddress(config, options, subnets[j].Prefix, subnets[j].PrefixLength);
+                        AddIpAddress(config, options, subnet.Prefix, subnet.PrefixLength);
                     }
                 }
-                else if (NetworkExtensions.TryParseHost(allowedProxies[i], out var host))
+                else if (NetworkExtensions.TryParseHost(allowedProxies[i], out var addresses))
                 {
-                    foreach (var address in host)
+                    foreach (var address in addresses)
                     {
                         AddIpAddress(config, options, address, address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);
                     }

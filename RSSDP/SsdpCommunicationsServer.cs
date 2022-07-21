@@ -142,11 +142,7 @@ namespace Rssdp.Infrastructure
                 if (_BroadcastListenSockets != null)
                 {
                     _logger.LogInformation("{0} disposing _BroadcastListenSocket", GetType().Name);
-                    foreach (var socket in _BroadcastListenSockets)
-                    {
-                        socket.Dispose();
-                    }
-
+                    _BroadcastListenSockets.ForEach(s => s.Dispose());
                     _BroadcastListenSockets = null;
                 }
             }

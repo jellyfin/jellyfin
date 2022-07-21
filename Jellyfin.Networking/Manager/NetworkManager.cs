@@ -263,7 +263,7 @@ namespace Jellyfin.Networking.Manager
 
                 if (_interfaces.Count == 0)
                 {
-                    _logger.LogWarning("No interfaces information available. Using loopback.");
+                    _logger.LogWarning("No interface information available. Using loopback interface(s).");
 
                     if (IsIpv4Enabled && !IsIpv6Enabled)
                     {
@@ -450,6 +450,14 @@ namespace Jellyfin.Networking.Manager
                             _publishedServerUrls[new IPData(IPAddress.Any, new IPNetwork(IPAddress.Any, 0))] = replacement;
                             _publishedServerUrls[new IPData(IPAddress.IPv6Any, new IPNetwork(IPAddress.IPv6Any, 0))] = replacement;
                         }
+                        else if (string.Equals(parts[0], "internal", StringComparison.OrdinalIgnoreCase))
+                        {
+                            foreach (var lan in _lanSubnets)
+                            {
+                                var lanPrefix = lan.Prefix;
+                                _publishedServerUrls[new IPData(lanPrefix, new IPNetwork(lanPrefix, lan.PrefixLength))] = replacement;
+                            }
+                        }
                         else if (IPAddress.TryParse(ipParts[0], out IPAddress? result))
                         {
                             var data = new IPData(result, null);
@@ -469,7 +477,7 @@ namespace Jellyfin.Networking.Manager
                         }
                         else
                         {
-                            _logger.LogError("Unable to parse bind ip address. {Parts}", parts[1]);
+                            _logger.LogError("Unable to parse bind override: {Entry}", entry);
                         }
                     }
                 }
