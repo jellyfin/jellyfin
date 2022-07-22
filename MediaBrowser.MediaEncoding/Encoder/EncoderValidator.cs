@@ -100,6 +100,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "scale_vaapi",
             "deinterlace_vaapi",
             "tonemap_vaapi",
+            "procamp_vaapi",
             "overlay_vaapi",
             "hwupload_vaapi"
         };

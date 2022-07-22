@@ -1860,7 +1860,9 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(item));
             }
 
-            var outdated = forceUpdate ? item.ImageInfos.Where(i => i.Path != null).ToArray() : item.ImageInfos.Where(ImageNeedsRefresh).ToArray();
+            var outdated = forceUpdate
+                ? item.ImageInfos.Where(i => i.Path != null).ToArray()
+                : item.ImageInfos.Where(ImageNeedsRefresh).ToArray();
             // Skip image processing if current or live tv source
             if (outdated.Length == 0 || item.SourceType != SourceType.Library)
             {
@@ -1883,7 +1885,7 @@ namespace Emby.Server.Implementations.Library
                         _logger.LogWarning("Cannot get image index for {ImagePath}", img.Path);
                         continue;
                     }
-                    catch (Exception ex) when (ex is InvalidOperationException || ex is IOException)
+                    catch (Exception ex) when (ex is InvalidOperationException or IOException)
                     {
                         _logger.LogWarning(ex, "Cannot fetch image from {ImagePath}", img.Path);
                         continue;
@@ -1895,23 +1897,24 @@ namespace Emby.Server.Implementations.Library
                     }
                 }
 
+                ImageDimensions size;
                 try
                 {
-                    ImageDimensions size = _imageProcessor.GetImageDimensions(item, image);
+                    size = _imageProcessor.GetImageDimensions(item, image);
                     image.Width = size.Width;
                     image.Height = size.Height;
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Cannot get image dimensions for {ImagePath}", image.Path);
+                    size = new ImageDimensions(0, 0);
                     image.Width = 0;
                     image.Height = 0;
-                    continue;
                 }
 
                 try
                 {
-                    image.BlurHash = _imageProcessor.GetImageBlurHash(image.Path);
+                    image.BlurHash = _imageProcessor.GetImageBlurHash(image.Path, size);
                 }
                 catch (Exception ex)
                 {

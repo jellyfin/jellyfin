@@ -13,6 +13,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.MediaInfo;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -43,6 +44,9 @@ public class SubtitleResolverTests
                 MediaStreams = new List<MediaStream>
                 {
                     new()
+                    {
+                        Type = MediaStreamType.Subtitle
+                    }
                 }
             }));
 
@@ -52,7 +56,7 @@ public class SubtitleResolverTests
         fileSystem.Setup(fs => fs.DirectoryExists(It.IsRegex(MediaInfoResolverTests.MetadataDirectoryRegex)))
             .Returns(true);
 
-        _subtitleResolver = new SubtitleResolver(localizationManager, mediaEncoder.Object, fileSystem.Object, new NamingOptions());
+        _subtitleResolver = new SubtitleResolver(Mock.Of<ILogger<SubtitleResolver>>(), localizationManager, mediaEncoder.Object, fileSystem.Object, new NamingOptions());
     }
 
     [Theory]

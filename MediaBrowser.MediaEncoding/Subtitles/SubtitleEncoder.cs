@@ -283,6 +283,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         private bool TryGetWriter(string format, [NotNullWhen(true)] out ISubtitleWriter? value)
         {
+            if (string.Equals(format, SubtitleFormat.ASS, StringComparison.OrdinalIgnoreCase))
+            {
+                value = new AssWriter();
+                return true;
+            }
+
             if (string.IsNullOrEmpty(format))
             {
                 throw new ArgumentNullException(nameof(format));
@@ -294,9 +300,15 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 return true;
             }
 
-            if (string.Equals(format, SubtitleFormat.SRT, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(format, SubtitleFormat.SRT, StringComparison.OrdinalIgnoreCase) || string.Equals(format, SubtitleFormat.SUBRIP, StringComparison.OrdinalIgnoreCase))
             {
                 value = new SrtWriter();
+                return true;
+            }
+
+            if (string.Equals(format, SubtitleFormat.SSA, StringComparison.OrdinalIgnoreCase))
+            {
+                value = new SsaWriter();
                 return true;
             }
 
@@ -681,11 +693,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             if (!string.Equals(text, newText, StringComparison.Ordinal))
             {
                 var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
-                var writer = new StreamWriter(fileStream, encoding);
                 await using (fileStream.ConfigureAwait(false))
-                await using (writer.ConfigureAwait(false))
                 {
-                    await writer.WriteAsync(newText.AsMemory(), cancellationToken).ConfigureAwait(false);
+                    var writer = new StreamWriter(fileStream, encoding);
+                    await using (writer.ConfigureAwait(false))
+                    {
+                        await writer.WriteAsync(newText.AsMemory(), cancellationToken).ConfigureAwait(false);
+                    }
                 }
             }
         }

@@ -285,7 +285,7 @@ namespace Jellyfin.Api.Controllers
             // Due to CTS.Token calling ThrowIfDisposed (https://github.com/dotnet/runtime/issues/29970) we have to "cache" the token
             // since it gets disposed when ffmpeg exits
             var cancellationToken = cancellationTokenSource.Token;
-            using var state = await StreamingHelpers.GetStreamingState(
+            var state = await StreamingHelpers.GetStreamingState(
                     streamingRequest,
                     Request,
                     _authContext,
@@ -1414,7 +1414,8 @@ namespace Jellyfin.Api.Controllers
                 state.RunTimeTicks ?? 0,
                 state.Request.SegmentContainer ?? string.Empty,
                 "hls1/main/",
-                Request.QueryString.ToString());
+                Request.QueryString.ToString(),
+                EncodingHelper.IsCopyCodec(state.OutputVideoCodec));
             var playlist = _dynamicHlsPlaylistGenerator.CreateMainPlaylist(request);
 
             return new FileContentResult(Encoding.UTF8.GetBytes(playlist), MimeTypes.GetMimeType("playlist.m3u8"));
@@ -1431,7 +1432,7 @@ namespace Jellyfin.Api.Controllers
             var cancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = cancellationTokenSource.Token;
 
-            using var state = await StreamingHelpers.GetStreamingState(
+            var state = await StreamingHelpers.GetStreamingState(
                     streamingRequest,
                     Request,
                     _authContext,
@@ -1711,20 +1712,30 @@ namespace Jellyfin.Api.Controllers
                 return audioTranscodeParams;
             }
 
+            // flac and opus are experimental in mp4 muxer
+            var strictArgs = string.Empty;
+
+            if (string.Equals(state.ActualOutputAudioCodec, "flac", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(state.ActualOutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase))
+            {
+                strictArgs = " -strict -2";
+            }
+
             if (EncodingHelper.IsCopyCodec(audioCodec))
             {
                 var videoCodec = _encodingHelper.GetVideoEncoder(state, _encodingOptions);
                 var bitStreamArgs = EncodingHelper.GetAudioBitStreamArguments(state, state.Request.SegmentContainer, state.MediaSource.Container);
+                var copyArgs = "-codec:a:0 copy" + bitStreamArgs + strictArgs;
 
                 if (EncodingHelper.IsCopyCodec(videoCodec) && state.EnableBreakOnNonKeyFrames(videoCodec))
                 {
-                    return "-codec:a:0 copy -strict -2 -copypriorss:a:0 0" + bitStreamArgs;
+                    return copyArgs + " -copypriorss:a:0 0";
                 }
 
-                return "-codec:a:0 copy -strict -2" + bitStreamArgs;
+                return copyArgs;
             }
 
-            var args = "-codec:a:0 " + audioCodec;
+            var args = "-codec:a:0 " + audioCodec + strictArgs;
 
             var channels = state.OutputAudioChannels;
 
@@ -1779,11 +1790,12 @@ namespace Jellyfin.Api.Controllers
                 || string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase))
             {
                 if (EncodingHelper.IsCopyCodec(codec)
-                    && (string.Equals(state.VideoStream.CodecTag, "dvh1", StringComparison.OrdinalIgnoreCase)
+                    && (string.Equals(state.VideoStream.CodecTag, "dovi", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(state.VideoStream.CodecTag, "dvh1", StringComparison.OrdinalIgnoreCase)
                         || string.Equals(state.VideoStream.CodecTag, "dvhe", StringComparison.OrdinalIgnoreCase)))
                 {
                     // Prefer dvh1 to dvhe
-                    args += " -tag:v:0 dvh1";
+                    args += " -tag:v:0 dvh1 -strict -2";
                 }
                 else
                 {

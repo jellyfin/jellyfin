@@ -561,6 +561,7 @@ namespace Emby.Dlna.PlayTo
                         streamInfo.IsDirectStream,
                         streamInfo.RunTimeTicks ?? 0,
                         streamInfo.TargetVideoProfile,
+                        streamInfo.TargetVideoRangeType,
                         streamInfo.TargetVideoLevel,
                         streamInfo.TargetFramerate ?? 0,
                         streamInfo.TargetPacketLength,

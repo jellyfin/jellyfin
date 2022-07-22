@@ -329,13 +329,17 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public void CloseIfNeeded(SessionInfo session)
+        public async Task CloseIfNeededAsync(SessionInfo session)
         {
             if (!session.SessionControllers.Any(i => i.IsSessionActive))
             {
                 var key = GetSessionKey(session.Client, session.DeviceId);
 
                 _activeConnections.TryRemove(key, out _);
+                if (!string.IsNullOrEmpty(session.PlayState?.LiveStreamId))
+                {
+                    await _mediaSourceManager.CloseLiveStream(session.PlayState.LiveStreamId).ConfigureAwait(false);
+                }
 
                 OnSessionEnded(session);
             }
@@ -413,6 +417,7 @@ namespace Emby.Server.Implementations.Session
             session.PlayState.IsPaused = info.IsPaused;
             session.PlayState.PositionTicks = info.PositionTicks;
             session.PlayState.MediaSourceId = info.MediaSourceId;
+            session.PlayState.LiveStreamId = info.LiveStreamId;
             session.PlayState.CanSeek = info.CanSeek;
             session.PlayState.IsMuted = info.IsMuted;
             session.PlayState.VolumeLevel = info.VolumeLevel;
@@ -769,6 +774,11 @@ namespace Emby.Server.Implementations.Session
                 : GetNowPlayingItem(session, info.ItemId);
 
             await UpdateNowPlayingItem(session, info, libraryItem, !isAutomated).ConfigureAwait(false);
+
+            if (!string.IsNullOrEmpty(session.DeviceId) && info.PlayMethod != PlayMethod.Transcode)
+            {
+                ClearTranscodingInfo(session.DeviceId);
+            }
 
             var users = GetUsers(session);
 

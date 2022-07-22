@@ -75,6 +75,14 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Equal(1, res.VideoStream.RefFrames);
             Assert.Equal("1/1000", res.VideoStream.TimeBase);
             Assert.Equal(MediaStreamType.Video, res.VideoStream.Type);
+            Assert.Equal(1, res.VideoStream.DvVersionMajor);
+            Assert.Equal(0, res.VideoStream.DvVersionMinor);
+            Assert.Equal(5, res.VideoStream.DvProfile);
+            Assert.Equal(6, res.VideoStream.DvLevel);
+            Assert.Equal(1, res.VideoStream.RpuPresentFlag);
+            Assert.Equal(0, res.VideoStream.ElPresentFlag);
+            Assert.Equal(1, res.VideoStream.BlPresentFlag);
+            Assert.Equal(0, res.VideoStream.DvBlSignalCompatibilityId);
 
             Assert.Empty(res.Chapters);
             Assert.Equal("Just color bars", res.Overview);
