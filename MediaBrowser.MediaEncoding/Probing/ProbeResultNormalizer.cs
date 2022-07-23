@@ -76,6 +76,21 @@ namespace MediaBrowser.MediaEncoding.Probing
                 .Where(i => i.Type != MediaStreamType.Subtitle || !string.IsNullOrWhiteSpace(i.Codec))
                 .ToList();
 
+            // Make first stream default if none is set
+            var videoStreams = info.MediaStreams.Where(i => i.Type == MediaStreamType.Video).ToList();
+            if (videoStreams.Any() && !videoStreams.Where(i => i.IsDefault).Any())
+            {
+                videoStreams.First().IsDefault = true;
+                _logger.LogInformation("Set first video stream to default");
+            }
+
+            var audioStreams = info.MediaStreams.Where(i => i.Type == MediaStreamType.Audio).ToList();
+            if (audioStreams.Any() && !audioStreams.Where(i => i.IsDefault).Any())
+            {
+                audioStreams.First().IsDefault = true;
+                _logger.LogInformation("Set first audio stream to default");
+            }
+
             info.MediaAttachments = internalStreams.Select(GetMediaAttachment)
                 .Where(i => i != null)
                 .ToList();
