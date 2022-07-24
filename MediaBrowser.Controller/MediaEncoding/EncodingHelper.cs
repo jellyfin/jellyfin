@@ -1326,7 +1326,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     var vidDecoder = GetHardwareVideoDecoder(state, encodingOptions) ?? string.Empty;
                     var isIntelDecoder = vidDecoder.Contains("qsv", StringComparison.OrdinalIgnoreCase)
-                        || vidDecoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase);
+                                         || vidDecoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase);
                     var doOclTonemap = _mediaEncoder.SupportsHwaccel("qsv")
                         && IsVaapiSupported(state)
                         && IsOpenclFullSupported()
