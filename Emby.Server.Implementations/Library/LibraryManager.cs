@@ -2454,6 +2454,12 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
+        public void QueueLibraryScan()
+        {
+            _taskManager.QueueScheduledTask<RefreshMediaLibraryTask>();
+        }
+
+        /// <inheritdoc />
         public int? GetSeasonNumberFromPath(string path)
             => SeasonPathParser.Parse(path, true, true).SeasonNumber;
 
