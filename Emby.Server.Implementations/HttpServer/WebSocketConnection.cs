@@ -19,7 +19,7 @@ namespace Emby.Server.Implementations.HttpServer
     /// <summary>
     /// Class WebSocketConnection.
     /// </summary>
-    public class WebSocketConnection : IWebSocketConnection, IDisposable
+    public class WebSocketConnection : IWebSocketConnection
     {
         /// <summary>
         /// The logger.
@@ -35,6 +35,8 @@ namespace Emby.Server.Implementations.HttpServer
         /// The socket.
         /// </summary>
         private readonly WebSocket _socket;
+
+        private bool _disposed = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebSocketConnection" /> class.
@@ -244,10 +246,39 @@ namespace Emby.Server.Implementations.HttpServer
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool dispose)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             if (dispose)
             {
                 _socket.Dispose();
             }
+
+            _disposed = true;
+        }
+
+        /// <inheritdoc />
+        public async ValueTask DisposeAsync()
+        {
+            await DisposeAsyncCore().ConfigureAwait(false);
+            Dispose(false);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Used to perform asynchronous cleanup of managed resources or for cascading calls to <see cref="DisposeAsync"/>.
+        /// </summary>
+        /// <returns>A ValueTask.</returns>
+        protected virtual async ValueTask DisposeAsyncCore()
+        {
+            if (_socket.State == WebSocketState.Open)
+            {
+                await _socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "System Shutdown", CancellationToken.None).ConfigureAwait(false);
+            }
+
+            _socket.Dispose();
         }
     }
 }
