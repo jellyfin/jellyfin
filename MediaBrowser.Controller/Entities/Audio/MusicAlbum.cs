@@ -169,8 +169,8 @@ namespace MediaBrowser.Controller.Entities.Audio
 
             var childUpdateType = ItemUpdateType.None;
 
-            // Refresh songs
-            foreach (var item in items)
+            // Refresh songs only and not m3u files in album folder
+            foreach (var item in items.OfType<Audio>())
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
