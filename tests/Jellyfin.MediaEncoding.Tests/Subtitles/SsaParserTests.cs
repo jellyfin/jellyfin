@@ -21,7 +21,7 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
         {
             using (Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(ssa)))
             {
-                SubtitleTrackInfo subtitleTrackInfo = _parser.Parse(stream, ".ssa");
+                SubtitleTrackInfo subtitleTrackInfo = _parser.Parse(stream, "ssa");
 
                 Assert.Equal(expectedSubtitleTrackEvents.Count, subtitleTrackInfo.TrackEvents.Count);
 
@@ -76,7 +76,7 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
         {
             using (var stream = File.OpenRead("Test Data/example.ssa"))
             {
-                var parsed = _parser.Parse(stream, ".ssa");
+                var parsed = _parser.Parse(stream, "ssa");
                 Assert.Single(parsed.TrackEvents);
                 var trackEvent = parsed.TrackEvents[0];
 
