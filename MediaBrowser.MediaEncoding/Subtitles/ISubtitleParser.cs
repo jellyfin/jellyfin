@@ -14,5 +14,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <param name="fileExtension">The file extension.</param>
         /// <returns>SubtitleTrackInfo.</returns>
         SubtitleTrackInfo Parse(Stream stream, string fileExtension);
+
+        /// <summary>
+        /// Determines whether the file extension is supported by the parser.
+        /// </summary>
+        /// <param name="fileExtension">The file extension.</param>
+        /// <returns>A value indicating whether the file extension is supported.</returns>
+        bool SupportsFileExtension(string fileExtension);
     }
 }

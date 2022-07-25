@@ -1,12 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Jellyfin.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
 using Nikse.SubtitleEdit.Core.Common;
-using ILogger = Microsoft.Extensions.Logging.ILogger;
+using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using SubtitleFormat = Nikse.SubtitleEdit.Core.SubtitleFormats.SubtitleFormat;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
@@ -16,15 +18,20 @@ namespace MediaBrowser.MediaEncoding.Subtitles
     /// </summary>
     public class SubtitleEditParser : ISubtitleParser
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<SubtitleEditParser> _logger;
+        private readonly Dictionary<string, SubtitleFormat[]> _subtitleFormats;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SubtitleEditParser"/> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        public SubtitleEditParser(ILogger logger)
+        public SubtitleEditParser(ILogger<SubtitleEditParser> logger)
         {
             _logger = logger;
+            _subtitleFormats = GetSubtitleFormats()
+                .Where(subtitleFormat => !string.IsNullOrEmpty(subtitleFormat.Extension))
+                .GroupBy(subtitleFormat => subtitleFormat.Extension.TrimStart('.'), StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.ToArray(), StringComparer.OrdinalIgnoreCase);
         }
 
         /// <inheritdoc />
@@ -33,16 +40,28 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var subtitle = new Subtitle();
             var lines = stream.ReadAllLines().ToList();
 
-            var subtitleFormats = SubtitleFormat.AllSubtitleFormats.Where(asf => asf.Extension.Equals(fileExtension, StringComparison.OrdinalIgnoreCase));
+            if (!_subtitleFormats.TryGetValue(fileExtension, out var subtitleFormats))
+            {
+                throw new ArgumentException($"Unsupported file extension: {fileExtension}", nameof(fileExtension));
+            }
+
             foreach (var subtitleFormat in subtitleFormats)
             {
+                _logger.LogDebug(
+                    "Trying to parse '{FileExtension}' subtitle using the {SubtitleFormatParser} format parser",
+                    fileExtension,
+                    subtitleFormat.Name);
                 subtitleFormat.LoadSubtitle(subtitle, lines, fileExtension);
                 if (subtitleFormat.ErrorCount == 0)
                 {
                     break;
                 }
 
-                _logger.LogError("{ErrorCount} errors encountered while parsing subtitle", subtitleFormat.ErrorCount);
+                _logger.LogError(
+                    "{ErrorCount} errors encountered while parsing '{FileExtension}' subtitle using the {SubtitleFormatParser} format parser",
+                    subtitleFormat.ErrorCount,
+                    fileExtension,
+                    subtitleFormat.Name);
             }
 
             if (subtitle.Paragraphs.Count == 0)
@@ -66,5 +85,94 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             trackInfo.TrackEvents = trackEvents;
             return trackInfo;
         }
+
+        /// <inheritdoc />
+        public bool SupportsFileExtension(string fileExtension)
+            => _subtitleFormats.ContainsKey(fileExtension);
+
+        private IEnumerable<SubtitleFormat> GetSubtitleFormats()
+        {
+            var subtitleFormats = new List<SubtitleFormat>();
+            var assembly = Assembly.GetAssembly(typeof(SubtitleFormat));
+            if (assembly == null)
+            {
+                _logger.LogError("Missing assembly containing {SubtitleFormatName}", nameof(SubtitleFormat));
+                return GetFallbackSubtitleFormats();
+            }
+
+            foreach (var type in assembly.GetTypes())
+            {
+                if (!type.IsSubclassOf(typeof(SubtitleFormat)))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    // It shouldn't be null, but the exception is caught if it is
+                    var subtitleFormat = (SubtitleFormat)Activator.CreateInstance(type, true)!;
+                    subtitleFormats.Add(subtitleFormat);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to create instance of the subtitle format {SubtitleFormatType}", type.Name);
+                }
+            }
+
+            return subtitleFormats;
+        }
+
+        private static IEnumerable<SubtitleFormat> GetFallbackSubtitleFormats()
+            => new SubtitleFormat[]
+            {
+                // Preferred and likely more common formats
+                new SubRip(),
+                new WebVTT(),
+                new WebVTTFileWithLineNumber(),
+                new AdvancedSubStationAlpha(),
+                new SubStationAlpha(),
+                new Sami(),
+                new SamiAvDicPlayer(),
+                new SamiModern(),
+                new SamiYouTube(),
+                new DvdSubtitle(),
+                new DvdSubtitleSystem(),
+                new JsonAeneas(),
+                new JsonTed(),
+                new Json(),
+                new JsonType2(),
+                new JsonType3(),
+                new JsonType4(),
+                new JsonType5(),
+                new JsonType6(),
+                new JsonType7(),
+                new JsonType8(),
+                new JsonType8b(),
+                new JsonType9(),
+                new JsonType10(),
+                new JsonType11(),
+                new JsonType12(),
+                new JsonType13(),
+                new JsonType14(),
+                new JsonType15(),
+                new JsonType16(),
+                new JsonType17(),
+                new JsonType18(),
+                new JsonType19(),
+                new JsonType20(),
+                new ItunesTimedText(),
+                new FLVCoreCuePoints(),
+                new Csv(),
+                new Csv2(),
+                new Csv3(),
+                new Csv4(),
+                new Csv5(),
+                new Ebu(),
+                new NetflixImsc11Japanese(),
+                new NetflixTimedText(),
+                new QuickTimeText(),
+                new RealTime(),
+                new SmpteTt2052()
+            };
     }
 }
