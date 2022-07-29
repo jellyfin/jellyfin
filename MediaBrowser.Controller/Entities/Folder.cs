@@ -901,7 +901,7 @@ namespace MediaBrowser.Controller.Entities
             int index = 0;
             for (int i = 0; i < ids.Length; i++)
             {
-                if (positions.TryAdd(ids[i], index))
+                if (items.Any(item => item.Id == ids[i]) && positions.TryAdd(ids[i], index))
                 {
                     index++;
                 }
