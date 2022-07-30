@@ -246,10 +246,12 @@ namespace Jellyfin.Api.Controllers
         {
             var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
 
+            // if api key is used (auth.IsApiKey == true), then `user` will be null throughout this method
             var user = !auth.IsApiKey && userId.HasValue && !userId.Value.Equals(default)
                 ? _userManager.GetUserById(userId.Value)
                 : null;
 
+            // beyond this point, we're either using an api key or we have a valid user
             if (!auth.IsApiKey && user is null)
             {
                 return BadRequest("userId is required");
@@ -290,6 +292,7 @@ namespace Jellyfin.Api.Controllers
                 ? Array.Empty<Guid>()
                 : user!.GetPreferenceValues<Guid>(PreferenceKind.EnabledChannels);
 
+            // api keys are always enabled for all folders
             bool isInEnabledFolder = auth.IsApiKey
                                      || Array.IndexOf(user!.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders), item.Id) != -1
                                      // Assume all folders inside an EnabledChannel are enabled
@@ -302,6 +305,7 @@ namespace Jellyfin.Api.Controllers
                 var collectionFolders = _libraryManager.GetCollectionFolders(item);
                 foreach (var collectionFolder in collectionFolders)
                 {
+                    // api keys never enter this block, so user is never null
                     if (user!.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders).Contains(collectionFolder.Id))
                     {
                         isInEnabledFolder = true;
@@ -309,6 +313,7 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
+            // api keys are always enabled for all folders, so user is never null
             if (item is not UserRootFolder
                 && !isInEnabledFolder
                 && !user!.HasPermission(PermissionKind.EnableAllFolders)
