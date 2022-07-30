@@ -31,7 +31,7 @@
     "ItemRemovedWithName": "{0} - изъято из медиатеки",
     "LabelIpAddressValue": "IP-адрес: {0}",
     "LabelRunningTimeValue": "Длительность: {0}",
-    "Latest": "Крайнее",
+    "Latest": "Новое",
     "MessageApplicationUpdated": "Jellyfin Server был обновлён",
     "MessageApplicationUpdatedTo": "Jellyfin Server был обновлён до {0}",
     "MessageNamedServerConfigurationUpdatedWithValue": "Конфигурация сервера (раздел {0}) была обновлена",

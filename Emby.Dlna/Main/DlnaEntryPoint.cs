@@ -313,7 +313,7 @@ namespace Emby.Dlna.Main
 
                 _logger.LogInformation("Registering publisher for {ResourceName} on {DeviceAddress}", fullService, address);
 
-                var uri = new UriBuilder(_appHost.GetApiUrlForLocalAccess(false) + descriptorUri);
+                var uri = new UriBuilder(_appHost.GetApiUrlForLocalAccess(address, false) + descriptorUri);
 
                 var device = new SsdpRootDevice
                 {

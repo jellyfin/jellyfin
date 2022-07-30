@@ -76,6 +76,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         public string Profile { get; set; }
 
         /// <summary>
+        /// Gets or sets the video range type.
+        /// </summary>
+        /// <value>The video range type.</value>
+        public string VideoRangeType { get; set; }
+
+        /// <summary>
         /// Gets or sets the level.
         /// </summary>
         /// <value>The level.</value>

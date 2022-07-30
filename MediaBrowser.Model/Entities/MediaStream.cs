@@ -73,6 +73,54 @@ namespace MediaBrowser.Model.Entities
         public string ColorPrimaries { get; set; }
 
         /// <summary>
+        /// Gets or sets the Dolby Vision version major.
+        /// </summary>
+        /// <value>The Dolby Vision version major.</value>
+        public int? DvVersionMajor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Dolby Vision version minor.
+        /// </summary>
+        /// <value>The Dolby Vision version minor.</value>
+        public int? DvVersionMinor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Dolby Vision profile.
+        /// </summary>
+        /// <value>The Dolby Vision profile.</value>
+        public int? DvProfile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Dolby Vision level.
+        /// </summary>
+        /// <value>The Dolby Vision level.</value>
+        public int? DvLevel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Dolby Vision rpu present flag.
+        /// </summary>
+        /// <value>The Dolby Vision rpu present flag.</value>
+        public int? RpuPresentFlag { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Dolby Vision el present flag.
+        /// </summary>
+        /// <value>The Dolby Vision el present flag.</value>
+        public int? ElPresentFlag { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Dolby Vision bl present flag.
+        /// </summary>
+        /// <value>The Dolby Vision bl present flag.</value>
+        public int? BlPresentFlag { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Dolby Vision bl signal compatibility id.
+        /// </summary>
+        /// <value>The Dolby Vision bl signal compatibility id.</value>
+        public int? DvBlSignalCompatibilityId { get; set; }
+
+        /// <summary>
         /// Gets or sets the comment.
         /// </summary>
         /// <value>The comment.</value>
@@ -104,32 +152,64 @@ namespace MediaBrowser.Model.Entities
         {
             get
             {
-                if (Type != MediaStreamType.Video)
+                var (videoRange, _) = GetVideoColorRange();
+
+                return videoRange;
+            }
+        }
+
+        /// <summary>
+        /// Gets the video range type.
+        /// </summary>
+        /// <value>The video range type.</value>
+        public string VideoRangeType
+        {
+            get
+            {
+                var (_, videoRangeType) = GetVideoColorRange();
+
+                return videoRangeType;
+            }
+        }
+
+        /// <summary>
+        /// Gets the video dovi title.
+        /// </summary>
+        /// <value>The video dovi title.</value>
+        public string VideoDoViTitle
+        {
+            get
+            {
+                var dvProfile = DvProfile;
+                var rpuPresentFlag = RpuPresentFlag == 1;
+                var blPresentFlag = BlPresentFlag == 1;
+                var dvBlCompatId = DvBlSignalCompatibilityId;
+
+                if (rpuPresentFlag
+                    && blPresentFlag
+                    && (dvProfile == 4
+                        || dvProfile == 5
+                        || dvProfile == 7
+                        || dvProfile == 8
+                        || dvProfile == 9))
                 {
-                    return null;
+                    var title = "DV Profile " + dvProfile;
+
+                    if (dvBlCompatId > 0)
+                    {
+                        title += "." + dvBlCompatId;
+                    }
+
+                    return dvBlCompatId switch
+                    {
+                        1 => title + " (HDR10)",
+                        2 => title + " (SDR)",
+                        4 => title + " (HLG)",
+                        _ => title
+                    };
                 }
 
-                var colorTransfer = ColorTransfer;
-
-                if (string.Equals(colorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(colorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
-                {
-                    return "HDR";
-                }
-
-                // For some Dolby Vision files, no color transfer is provided, so check the codec
-
-                var codecTag = CodecTag;
-
-                if (string.Equals(codecTag, "dovi", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(codecTag, "dvh1", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(codecTag, "dvhe", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(codecTag, "dav1", StringComparison.OrdinalIgnoreCase))
-                {
-                    return "HDR";
-                }
-
-                return "SDR";
+                return null;
             }
         }
 
@@ -508,15 +588,22 @@ namespace MediaBrowser.Model.Entities
 
             return Width switch
             {
-                <= 720 when Height <= 480 => IsInterlaced ? "480i" : "480p",
-                // 720x576 (PAL) (768 when rescaled for square pixels)
-                <= 768 when Height <= 576 => IsInterlaced ? "576i" : "576p",
-                // 960x540 (sometimes 544 which is multiple of 16)
+                // 256x144 (16:9 square pixel format)
+                <= 256 when Height <= 144 => IsInterlaced ? "144i" : "144p",
+                // 426x240 (16:9 square pixel format)
+                <= 426 when Height <= 240 => IsInterlaced ? "240i" : "240p",
+                // 640x360 (16:9 square pixel format)
+                <= 640 when Height <= 360 => IsInterlaced ? "360i" : "360p",
+                // 854x480 (16:9 square pixel format)
+                <= 854 when Height <= 480 => IsInterlaced ? "480i" : "480p",
+                // 960x544 (16:9 square pixel format)
                 <= 960 when Height <= 544 => IsInterlaced ? "540i" : "540p",
+                // 1024x576 (16:9 square pixel format)
+                <= 1024 when Height <= 576 => IsInterlaced ? "576i" : "576p",
                 // 1280x720
                 <= 1280 when Height <= 962 => IsInterlaced ? "720i" : "720p",
-                // 1920x1080
-                <= 1920 when Height <= 1440 => IsInterlaced ? "1080i" : "1080p",
+                // 2560x1080 (FHD ultra wide 21:9) using 1440px width to accomodate WQHD
+                <= 2560 when Height <= 1440 => IsInterlaced ? "1080i" : "1080p",
                 // 4K
                 <= 4096 when Height <= 3072 => "4K",
                 // 8K
@@ -570,6 +657,46 @@ namespace MediaBrowser.Model.Entities
             }
 
             return true;
+        }
+
+        public (string VideoRange, string VideoRangeType) GetVideoColorRange()
+        {
+            if (Type != MediaStreamType.Video)
+            {
+                return (null, null);
+            }
+
+            var colorTransfer = ColorTransfer;
+
+            if (string.Equals(colorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase))
+            {
+                return ("HDR", "HDR10");
+            }
+
+            if (string.Equals(colorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
+            {
+                return ("HDR", "HLG");
+            }
+
+            var codecTag = CodecTag;
+            var dvProfile = DvProfile;
+            var rpuPresentFlag = RpuPresentFlag == 1;
+            var blPresentFlag = BlPresentFlag == 1;
+            var dvBlCompatId = DvBlSignalCompatibilityId;
+
+            var isDoViHDRProfile = dvProfile == 5 || dvProfile == 7 || dvProfile == 8;
+            var isDoViHDRFlag = rpuPresentFlag && blPresentFlag && (dvBlCompatId == 0 || dvBlCompatId == 1 || dvBlCompatId == 4);
+
+            if ((isDoViHDRProfile && isDoViHDRFlag)
+                || string.Equals(codecTag, "dovi", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(codecTag, "dvh1", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(codecTag, "dvhe", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(codecTag, "dav1", StringComparison.OrdinalIgnoreCase))
+            {
+                return ("HDR", "DOVI");
+            }
+
+            return ("SDR", "SDR");
         }
     }
 }

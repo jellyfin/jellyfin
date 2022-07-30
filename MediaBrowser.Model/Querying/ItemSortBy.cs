@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 namespace MediaBrowser.Model.Querying
 {
     /// <summary>
@@ -7,6 +5,9 @@ namespace MediaBrowser.Model.Querying
     /// </summary>
     public static class ItemSortBy
     {
+        /// <summary>
+        /// The aired episode order.
+        /// </summary>
         public const string AiredEpisodeOrder = "AiredEpisodeOrder";
 
         /// <summary>
@@ -44,6 +45,9 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         public const string PremiereDate = "PremiereDate";
 
+        /// <summary>
+        /// The start date.
+        /// </summary>
         public const string StartDate = "StartDate";
 
         /// <summary>
@@ -51,6 +55,9 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         public const string SortName = "SortName";
 
+        /// <summary>
+        /// The name.
+        /// </summary>
         public const string Name = "Name";
 
         /// <summary>
@@ -83,28 +90,69 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         public const string CriticRating = "CriticRating";
 
+        /// <summary>
+        /// The IsFolder boolean.
+        /// </summary>
         public const string IsFolder = "IsFolder";
 
+        /// <summary>
+        /// The IsUnplayed boolean.
+        /// </summary>
         public const string IsUnplayed = "IsUnplayed";
 
+        /// <summary>
+        /// The IsPlayed boolean.
+        /// </summary>
         public const string IsPlayed = "IsPlayed";
 
+        /// <summary>
+        /// The series sort.
+        /// </summary>
         public const string SeriesSortName = "SeriesSortName";
 
+        /// <summary>
+        /// The video bitrate.
+        /// </summary>
         public const string VideoBitRate = "VideoBitRate";
 
+        /// <summary>
+        /// The air time.
+        /// </summary>
         public const string AirTime = "AirTime";
 
+        /// <summary>
+        /// The studio.
+        /// </summary>
         public const string Studio = "Studio";
 
+        /// <summary>
+        /// The IsFavouriteOrLiked boolean.
+        /// </summary>
         public const string IsFavoriteOrLiked = "IsFavoriteOrLiked";
 
+        /// <summary>
+        /// The last content added date.
+        /// </summary>
         public const string DateLastContentAdded = "DateLastContentAdded";
 
+        /// <summary>
+        /// The series last played date.
+        /// </summary>
         public const string SeriesDatePlayed = "SeriesDatePlayed";
 
+        /// <summary>
+        /// The parent index number.
+        /// </summary>
         public const string ParentIndexNumber = "ParentIndexNumber";
 
+        /// <summary>
+        /// The index number.
+        /// </summary>
         public const string IndexNumber = "IndexNumber";
+
+        /// <summary>
+        /// The similarity score.
+        /// </summary>
+        public const string SimilarityScore = "SimilarityScore";
     }
 }
