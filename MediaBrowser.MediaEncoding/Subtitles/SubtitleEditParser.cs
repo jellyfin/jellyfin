@@ -94,11 +94,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             var subtitleFormats = new List<SubtitleFormat>();
             var assembly = typeof(SubtitleFormat).Assembly;
-            if (assembly == null)
-            {
-                _logger.LogError("Missing assembly containing {SubtitleFormatName}", nameof(SubtitleFormat));
-                return GetFallbackSubtitleFormats();
-            }
 
             foreach (var type in assembly.GetTypes())
             {
