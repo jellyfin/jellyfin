@@ -102,7 +102,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             foreach (var type in assembly.GetTypes())
             {
-                if (!type.IsSubclassOf(typeof(SubtitleFormat)))
+                if (!type.IsSubclassOf(typeof(SubtitleFormat)) || type.IsAbstract)
                 {
                     continue;
                 }
