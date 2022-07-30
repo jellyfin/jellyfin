@@ -1790,7 +1790,8 @@ namespace Jellyfin.Api.Controllers
                 || string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase))
             {
                 if (EncodingHelper.IsCopyCodec(codec)
-                    && (string.Equals(state.VideoStream.CodecTag, "dovi", StringComparison.OrdinalIgnoreCase)
+                    && (string.Equals(state.VideoStream.VideoRangeType, "DOVI", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(state.VideoStream.CodecTag, "dovi", StringComparison.OrdinalIgnoreCase)
                         || string.Equals(state.VideoStream.CodecTag, "dvh1", StringComparison.OrdinalIgnoreCase)
                         || string.Equals(state.VideoStream.CodecTag, "dvhe", StringComparison.OrdinalIgnoreCase)))
                 {
