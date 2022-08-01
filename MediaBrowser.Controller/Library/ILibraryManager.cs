@@ -570,5 +570,13 @@ namespace MediaBrowser.Controller.Library
         Task RunMetadataSavers(BaseItem item, ItemUpdateType updateReason);
 
         BaseItem GetParentItem(Guid? parentId, Guid? userId);
+
+        /// <summary>
+        /// Queue a library scan.
+        /// </summary>
+        /// <remarks>
+        /// This exists so plugins can trigger a library scan.
+        /// </remarks>
+        void QueueLibraryScan();
     }
 }
