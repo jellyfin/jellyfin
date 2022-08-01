@@ -116,58 +116,5 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             return subtitleFormats;
         }
-
-        private static IEnumerable<SubtitleFormat> GetFallbackSubtitleFormats()
-            => new SubtitleFormat[]
-            {
-                // Preferred and likely more common formats
-                new SubRip(),
-                new WebVTT(),
-                new WebVTTFileWithLineNumber(),
-                new AdvancedSubStationAlpha(),
-                new SubStationAlpha(),
-                new Sami(),
-                new SamiAvDicPlayer(),
-                new SamiModern(),
-                new SamiYouTube(),
-                new DvdSubtitle(),
-                new DvdSubtitleSystem(),
-                new JsonAeneas(),
-                new JsonTed(),
-                new Json(),
-                new JsonType2(),
-                new JsonType3(),
-                new JsonType4(),
-                new JsonType5(),
-                new JsonType6(),
-                new JsonType7(),
-                new JsonType8(),
-                new JsonType8b(),
-                new JsonType9(),
-                new JsonType10(),
-                new JsonType11(),
-                new JsonType12(),
-                new JsonType13(),
-                new JsonType14(),
-                new JsonType15(),
-                new JsonType16(),
-                new JsonType17(),
-                new JsonType18(),
-                new JsonType19(),
-                new JsonType20(),
-                new ItunesTimedText(),
-                new FLVCoreCuePoints(),
-                new Csv(),
-                new Csv2(),
-                new Csv3(),
-                new Csv4(),
-                new Csv5(),
-                new Ebu(),
-                new NetflixImsc11Japanese(),
-                new NetflixTimedText(),
-                new QuickTimeText(),
-                new RealTime(),
-                new SmpteTt2052()
-            };
     }
 }
