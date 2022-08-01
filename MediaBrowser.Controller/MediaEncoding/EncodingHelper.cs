@@ -931,6 +931,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                 arg.Append(" -i \"").Append(state.AudioStream.Path).Append('"');
             }
 
+            // Disable auto inserted SW scaler for HW decoders in case of changed resolution.
+            var isSwDecoder = string.IsNullOrEmpty(GetHardwareVideoDecoder(state, options));
+            if (!isSwDecoder)
+            {
+                arg.Append(" -autoscale 0");
+            }
+
             return arg.ToString();
         }
 
