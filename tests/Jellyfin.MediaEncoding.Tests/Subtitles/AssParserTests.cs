@@ -15,7 +15,7 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
         {
             using (var stream = File.OpenRead("Test Data/example.ass"))
             {
-                var parsed = new AssParser(new NullLogger<AssParser>()).Parse(stream, CancellationToken.None);
+                var parsed = new SubtitleEditParser(new NullLogger<SubtitleEditParser>()).Parse(stream, "ass");
                 Assert.Single(parsed.TrackEvents);
                 var trackEvent = parsed.TrackEvents[0];
 
