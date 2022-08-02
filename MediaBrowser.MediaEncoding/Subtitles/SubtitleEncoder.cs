@@ -35,7 +35,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IMediaSourceManager _mediaSourceManager;
-        private readonly ISubtitleParser _subtitleParser;
 
         /// <summary>
         /// The _semaphoreLocks.
@@ -49,8 +48,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             IFileSystem fileSystem,
             IMediaEncoder mediaEncoder,
             IHttpClientFactory httpClientFactory,
-            IMediaSourceManager mediaSourceManager,
-            ISubtitleParser subtitleParser)
+            IMediaSourceManager mediaSourceManager)
         {
             _logger = logger;
             _appPaths = appPaths;
@@ -58,7 +56,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             _mediaEncoder = mediaEncoder;
             _httpClientFactory = httpClientFactory;
             _mediaSourceManager = mediaSourceManager;
-            _subtitleParser = subtitleParser;
         }
 
         private string SubtitleCachePath => Path.Combine(_appPaths.DataPath, "subtitles");
@@ -76,7 +73,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             try
             {
-                var trackInfo = _subtitleParser.Parse(stream, inputFormat);
+                var reader = GetReader(inputFormat);
+                var trackInfo = reader.Parse(stream, cancellationToken);
 
                 FilterEvents(trackInfo, startTimeTicks, endTimeTicks, preserveOriginalTimestamps);
 
@@ -235,8 +233,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var currentFormat = (Path.GetExtension(subtitleStream.Path) ?? subtitleStream.Codec)
                 .TrimStart('.');
 
-            // Fallback to ffmpeg conversion
-            if (!_subtitleParser.SupportsFileExtension(currentFormat))
+            if (!TryGetReader(currentFormat, out _))
             {
                 // Convert
                 var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, ".srt");
@@ -246,8 +243,42 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 return new SubtitleInfo(outputPath, MediaProtocol.File, "srt", true);
             }
 
-            // It's possible that the subtitleStream and mediaSource don't share the same protocol (e.g. .STRM file with local subs)
+            // It's possbile that the subtitleStream and mediaSource don't share the same protocol (e.g. .STRM file with local subs)
             return new SubtitleInfo(subtitleStream.Path, _mediaSourceManager.GetPathProtocol(subtitleStream.Path), currentFormat, true);
+        }
+
+        private bool TryGetReader(string format, [NotNullWhen(true)] out ISubtitleParser? value)
+        {
+            if (string.Equals(format, SubtitleFormat.SRT, StringComparison.OrdinalIgnoreCase))
+            {
+                value = new SrtParser(_logger);
+                return true;
+            }
+
+            if (string.Equals(format, SubtitleFormat.SSA, StringComparison.OrdinalIgnoreCase))
+            {
+                value = new SsaParser(_logger);
+                return true;
+            }
+
+            if (string.Equals(format, SubtitleFormat.ASS, StringComparison.OrdinalIgnoreCase))
+            {
+                value = new AssParser(_logger);
+                return true;
+            }
+
+            value = null;
+            return false;
+        }
+
+        private ISubtitleParser GetReader(string format)
+        {
+            if (TryGetReader(format, out var reader))
+            {
+                return reader;
+            }
+
+            throw new ArgumentException("Unsupported format: " + format);
         }
 
         private bool TryGetWriter(string format, [NotNullWhen(true)] out ISubtitleWriter? value)

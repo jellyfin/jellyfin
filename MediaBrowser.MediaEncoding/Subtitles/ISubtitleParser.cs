@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System.IO;
+using System.Threading;
 using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
@@ -11,15 +12,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// Parses the specified stream.
         /// </summary>
         /// <param name="stream">The stream.</param>
-        /// <param name="fileExtension">The file extension.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>SubtitleTrackInfo.</returns>
-        SubtitleTrackInfo Parse(Stream stream, string fileExtension);
-
-        /// <summary>
-        /// Determines whether the file extension is supported by the parser.
-        /// </summary>
-        /// <param name="fileExtension">The file extension.</param>
-        /// <returns>A value indicating whether the file extension is supported.</returns>
-        bool SupportsFileExtension(string fileExtension);
+        SubtitleTrackInfo Parse(Stream stream, CancellationToken cancellationToken);
     }
 }
