@@ -35,6 +35,7 @@ RUN apt-get update && apt-get install --no-install-recommends --no-install-sugge
  libomxil-bellagio0 \
  libomxil-bellagio-bin \
  locales \
+ fonts-noto-cjk \
  curl \
  && apt-get clean autoclean -y \
  && apt-get autoremove -y \

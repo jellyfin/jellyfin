@@ -44,6 +44,7 @@ RUN apt-get update \
  vainfo \
  libva2 \
  locales \
+ fonts-noto-cjk \
  && apt-get remove gnupg -y \
  && apt-get clean autoclean -y \
  && apt-get autoremove -y \
