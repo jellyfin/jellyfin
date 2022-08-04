@@ -8,6 +8,12 @@ namespace MediaBrowser.Model.Entities
     public enum MetadataProvider
     {
         /// <summary>
+        /// This metadata provider is for users and/or plugins to override the
+        /// default merging behaviour.
+        /// </summary>
+        Custom = 0,
+
+        /// <summary>
         /// The imdb.
         /// </summary>
         Imdb = 2,

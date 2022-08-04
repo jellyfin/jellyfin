@@ -184,6 +184,11 @@ namespace MediaBrowser.Controller.Entities.TV
                 list.Insert(0, key);
             }
 
+            if (this.TryGetProviderId(MetadataProvider.Custom, out key))
+            {
+                list.Insert(0, key);
+            }
+
             return list;
         }
 
@@ -258,13 +263,9 @@ namespace MediaBrowser.Controller.Entities.TV
                 SeriesPresentationUniqueKey = seriesKey,
                 IncludeItemTypes = new[] { BaseItemKind.Episode, BaseItemKind.Season },
                 OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
-                DtoOptions = options
+                DtoOptions = options,
+                IsMissing = user?.DisplayMissingEpisodes
             };
-
-            if (!user.DisplayMissingEpisodes)
-            {
-                query.IsMissing = false;
-            }
 
             var allItems = LibraryManager.GetItemList(query);
 
