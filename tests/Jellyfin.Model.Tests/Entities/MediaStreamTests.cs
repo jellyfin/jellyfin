@@ -127,7 +127,7 @@ namespace Jellyfin.Model.Tests.Entities
         [InlineData(2560, 1080, true, "1080i")]
         [InlineData(4096, 3072, false, "4K")]
         [InlineData(8192, 6144, false, "8K")]
-        [InlineData(512, 384, false, "480p")]
+        [InlineData(512, 384, false, "384p")]
         [InlineData(576, 336, false, "360p")]
         [InlineData(576, 336, true, "360i")]
         [InlineData(624, 352, false, "360p")]
