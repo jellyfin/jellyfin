@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Mime;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +16,7 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LibraryDtos;
+using Jellyfin.Api.Results;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
@@ -30,6 +34,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
@@ -309,7 +314,7 @@ namespace Jellyfin.Api.Controllers
             }
             catch (Exception ex)
             {
-                 _logger.LogError(ex, "Error refreshing library");
+                _logger.LogError(ex, "Error refreshing library");
             }
 
             return NoContent();
@@ -598,6 +603,7 @@ namespace Jellyfin.Api.Controllers
         /// Downloads item media.
         /// </summary>
         /// <param name="itemId">The item id.</param>
+        /// <param name="includeExternalStreams">Optional. Whether to include external streams (such as subtitles) in the download.</param>
         /// <response code="200">Media downloaded.</response>
         /// <response code="404">Item not found.</response>
         /// <returns>A <see cref="FileResult"/> containing the media stream.</returns>
@@ -606,8 +612,8 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.Download)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesFile("video/*", "audio/*")]
-        public async Task<ActionResult> GetDownload([FromRoute, Required] Guid itemId)
+        [ProducesFile("video/*", "audio/*", "application/*")]
+        public async Task<ActionResult> GetDownload([FromRoute, Required] Guid itemId, [FromQuery] bool? includeExternalStreams)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item is null)
@@ -640,7 +646,54 @@ namespace Jellyfin.Api.Controllers
             // Quotes are valid in linux. They'll possibly cause issues here.
             var filename = Path.GetFileName(item.Path)?.Replace("\"", string.Empty, StringComparison.Ordinal);
 
-            return PhysicalFile(item.Path, MimeTypes.GetMimeType(item.Path), filename, true);
+            if (!(includeExternalStreams ?? false))
+            {
+                // Only return the primary item
+                return PhysicalFile(item.Path, MimeTypes.GetMimeType(item.Path), filename, true);
+            }
+
+            // Check all media streams of the item. If there are more than one, zip them.
+            var streams = item.GetMediaStreams();
+            var uniqueFiles = new HashSet<string>();
+            foreach (var stream in streams)
+            {
+                if (!(string.IsNullOrEmpty(stream.Path) || uniqueFiles.Contains(stream.Path)))
+                {
+                    uniqueFiles.Add(stream.Path);
+                }
+            }
+
+            uniqueFiles.Add(item.Path);
+
+            if (uniqueFiles.Count > 1)
+            {
+                var filenameZip = (item.FileNameWithoutExtension ?? "download").Replace("\"", string.Empty, StringComparison.Ordinal) + ".zip";
+                return new FileCallbackResult(new MediaTypeHeaderValue(MediaTypeNames.Application.Octet), async (outputStream, _) =>
+                {
+                    using var zipArchive = new ZipArchive(outputStream, ZipArchiveMode.Create);
+                    foreach (var file in uniqueFiles)
+                    {
+                        var zipEntry = zipArchive.CreateEntry(Path.GetFileName(file), CompressionLevel.NoCompression);
+
+                        var zipStream = zipEntry.Open();
+                        await using (zipStream.ConfigureAwait(false))
+                        {
+                            var data = AsyncFile.OpenRead(file);
+                            await using (data.ConfigureAwait(false))
+                            {
+                                await data.CopyToAsync(zipStream).ConfigureAwait(false);
+                            }
+                        }
+                    }
+                })
+                {
+                    FileDownloadName = filenameZip
+                };
+            }
+            else
+            {
+                return PhysicalFile(item.Path, MimeTypes.GetMimeType(item.Path), filename, true);
+            }
         }
 
         /// <summary>
