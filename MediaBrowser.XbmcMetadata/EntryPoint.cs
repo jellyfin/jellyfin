@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
@@ -12,16 +14,16 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata
 {
-    public class EntryPoint : IServerEntryPoint
+    public sealed class EntryPoint : IServerEntryPoint
     {
         private readonly IUserDataManager _userDataManager;
-        private readonly ILogger _logger;
+        private readonly ILogger<EntryPoint> _logger;
         private readonly IProviderManager _providerManager;
         private readonly IConfigurationManager _config;
 
         public EntryPoint(
             IUserDataManager userDataManager,
-            ILogger logger,
+            ILogger<EntryPoint> logger,
             IProviderManager providerManager,
             IConfigurationManager config)
         {
@@ -39,13 +41,13 @@ namespace MediaBrowser.XbmcMetadata
             return Task.CompletedTask;
         }
 
-        private void OnUserDataSaved(object sender, UserDataSaveEventArgs e)
+        private void OnUserDataSaved(object? sender, UserDataSaveEventArgs e)
         {
             if (e.SaveReason == UserDataSaveReason.PlaybackFinished || e.SaveReason == UserDataSaveReason.TogglePlayed || e.SaveReason == UserDataSaveReason.UpdateUserRating)
             {
                 if (!string.IsNullOrWhiteSpace(_config.GetNfoConfiguration().UserId))
                 {
-                    SaveMetadataForItem(e.Item, ItemUpdateType.MetadataDownload);
+                    _ = SaveMetadataForItemAsync(e.Item, ItemUpdateType.MetadataDownload);
                 }
             }
         }
@@ -56,30 +58,20 @@ namespace MediaBrowser.XbmcMetadata
             _userDataManager.UserDataSaved -= OnUserDataSaved;
         }
 
-        private void SaveMetadataForItem(BaseItem item, ItemUpdateType updateReason)
+        private async Task SaveMetadataForItemAsync(BaseItem item, ItemUpdateType updateReason)
         {
-            if (!item.IsFileProtocol)
-            {
-                return;
-            }
-
-            if (!item.SupportsLocalMetadata)
-            {
-                return;
-            }
-
-            if (!item.IsSaveLocalMetadataEnabled())
+            if (!item.IsFileProtocol || !item.SupportsLocalMetadata)
             {
                 return;
             }
 
             try
             {
-                _providerManager.SaveMetadata(item, updateReason, new[] { BaseNfoSaver.SaverName });
+                await _providerManager.SaveMetadataAsync(item, updateReason, new[] { BaseNfoSaver.SaverName }).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error saving metadata for {path}", item.Path ?? item.Name);
+                _logger.LogError(ex, "Error saving metadata for {Path}", item.Path ?? item.Name);
             }
         }
     }

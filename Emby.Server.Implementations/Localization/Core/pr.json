@@ -1,0 +1,17 @@
+{
+    "Books": "Scrolls",
+    "AuthenticationSucceededWithUserName": "{0} passed yer trial",
+    "Artists": "Artistas",
+    "Songs": "Shantees",
+    "Albums": "Tomes",
+    "Photos": "Paintings",
+    "NotificationOptionUserLockedOut": "Crewmate sent to the brig",
+    "HeaderContinueWatching": "Continue Yer Journey",
+    "Folders": "Chests",
+    "Application": "Captain",
+    "DeviceOnlineWithName": "{0} joined yer crew",
+    "DeviceOfflineWithName": "{0} abandoned ship",
+    "AppDeviceValues": "Captain: {0}, Ship: {1}",
+    "CameraImageUploadedFrom": "Yer looking glass has glimpsed another painting from {0}",
+    "Collections": "Barrels"
+}

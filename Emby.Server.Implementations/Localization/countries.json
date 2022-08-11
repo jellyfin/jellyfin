@@ -558,6 +558,12 @@
         "TwoLetterISORegionName": "OM"
     },
     {
+        "DisplayName": "Palestine",
+        "Name": "PS",
+        "ThreeLetterISORegionName": "PSE",
+        "TwoLetterISORegionName": "PS"
+    },
+    {
         "DisplayName": "Panama",
         "Name": "PA",
         "ThreeLetterISORegionName": "PAN",
@@ -624,7 +630,7 @@
         "TwoLetterISORegionName": "MD"
     },
     {
-        "DisplayName": "RÃ©union",
+        "DisplayName": "Réunion",
         "Name": "RE",
         "ThreeLetterISORegionName": "REU",
         "TwoLetterISORegionName": "RE"

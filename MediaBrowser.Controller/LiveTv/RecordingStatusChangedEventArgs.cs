@@ -1,3 +1,7 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using MediaBrowser.Model.LiveTv;
 

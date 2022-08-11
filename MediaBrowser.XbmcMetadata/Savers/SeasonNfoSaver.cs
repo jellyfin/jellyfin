@@ -11,15 +11,27 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Savers
 {
+    /// <summary>
+    /// Nfo saver for seasons.
+    /// </summary>
     public class SeasonNfoSaver : BaseNfoSaver
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SeasonNfoSaver"/> class.
+        /// </summary>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="configurationManager">the server configuration manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="userDataManager">The user data manager.</param>
+        /// <param name="logger">The logger.</param>
         public SeasonNfoSaver(
             IFileSystem fileSystem,
             IServerConfigurationManager configurationManager,
             ILibraryManager libraryManager,
             IUserManager userManager,
             IUserDataManager userDataManager,
-            ILogger logger)
+            ILogger<SeasonNfoSaver> logger)
             : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
         {
         }
@@ -40,7 +52,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 return false;
             }
 
-            if (!(item is Season))
+            if (item is not Season)
             {
                 return false;
             }
@@ -60,15 +72,14 @@ namespace MediaBrowser.XbmcMetadata.Savers
         }
 
         /// <inheritdoc />
-        protected override List<string> GetTagsUsed(BaseItem item)
+        protected override IEnumerable<string> GetTagsUsed(BaseItem item)
         {
-            var list = base.GetTagsUsed(item);
-            list.AddRange(new string[]
+            foreach (var tag in base.GetTagsUsed(item))
             {
-                "seasonnumber"
-            });
+                yield return tag;
+            }
 
-            return list;
+            yield return "seasonnumber";
         }
     }
 }

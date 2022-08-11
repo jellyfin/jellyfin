@@ -1,9 +1,11 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Controller.Providers
 {
     /// <summary>
-    /// Marker interface
+    /// Marker interface.
     /// </summary>
     public interface IMetadataProvider
     {

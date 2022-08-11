@@ -1,12 +1,20 @@
+#nullable disable
+#pragma warning disable CS1591
+
 using System;
 
 namespace MediaBrowser.Model.LiveTv
 {
     /// <summary>
-    /// Class ServiceInfo
+    /// Class ServiceInfo.
     /// </summary>
     public class LiveTvServiceInfo
     {
+        public LiveTvServiceInfo()
+        {
+            Tuners = Array.Empty<string>();
+        }
+
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -42,6 +50,7 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance has update available; otherwise, <c>false</c>.</value>
         public bool HasUpdateAvailable { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is visible.
         /// </summary>
@@ -49,10 +58,5 @@ namespace MediaBrowser.Model.LiveTv
         public bool IsVisible { get; set; }
 
         public string[] Tuners { get; set; }
-
-        public LiveTvServiceInfo()
-        {
-            Tuners = Array.Empty<string>();
-        }
     }
 }

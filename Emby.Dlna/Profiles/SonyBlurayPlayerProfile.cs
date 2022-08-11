@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Model.Dlna;
 
 namespace Emby.Dlna.Profiles
@@ -112,7 +114,7 @@ namespace Emby.Dlna.Profiles
                 {
                     Type = CodecType.Video,
                     Codec = "h264",
-                    Conditions = new []
+                    Conditions = new[]
                     {
                         new ProfileCondition
                         {
@@ -154,7 +156,7 @@ namespace Emby.Dlna.Profiles
                 {
                     Type = CodecType.VideoAudio,
                     Codec = "ac3",
-                    Conditions = new []
+                    Conditions = new[]
                     {
                         new ProfileCondition
                         {
@@ -170,7 +172,7 @@ namespace Emby.Dlna.Profiles
                 {
                     Type = CodecType.VideoAudio,
                     Codec = "aac",
-                    Conditions = new []
+                    Conditions = new[]
                     {
                         new ProfileCondition
                         {
@@ -189,7 +191,7 @@ namespace Emby.Dlna.Profiles
                 {
                     Type = DlnaProfileType.Photo,
 
-                    Conditions = new []
+                    Conditions = new[]
                     {
                         new ProfileCondition
                         {
@@ -215,7 +217,7 @@ namespace Emby.Dlna.Profiles
                     VideoCodec = "h264,mpeg4,vc1",
                     AudioCodec = "ac3,aac,mp3",
                     MimeType = "video/vnd.dlna.mpeg-tts",
-                    OrgPn="MPEG_TS_SD_EU,MPEG_TS_SD_NA,MPEG_TS_SD_KO",
+                    OrgPn = "MPEG_TS_SD_EU,MPEG_TS_SD_NA,MPEG_TS_SD_KO",
                     Type = DlnaProfileType.Video
                 },
 

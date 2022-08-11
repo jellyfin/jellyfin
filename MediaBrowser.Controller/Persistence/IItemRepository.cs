@@ -1,3 +1,7 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -9,23 +13,15 @@ using MediaBrowser.Model.Querying;
 namespace MediaBrowser.Controller.Persistence
 {
     /// <summary>
-    /// Provides an interface to implement an Item repository
+    /// Provides an interface to implement an Item repository.
     /// </summary>
-    public interface IItemRepository : IRepository
+    public interface IItemRepository : IDisposable
     {
-        /// <summary>
-        /// Saves an item
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        void SaveItem(BaseItem item, CancellationToken cancellationToken);
-
         /// <summary>
         /// Deletes the item.
         /// </summary>
         /// <param name="id">The identifier.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        void DeleteItem(Guid id, CancellationToken cancellationToken);
+        void DeleteItem(Guid id);
 
         /// <summary>
         /// Saves the items.
@@ -44,24 +40,26 @@ namespace MediaBrowser.Controller.Persistence
         BaseItem RetrieveItem(Guid id);
 
         /// <summary>
-        /// Gets chapters for an item
+        /// Gets chapters for an item.
         /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        List<ChapterInfo> GetChapters(BaseItem id);
+        /// <param name="item">The item.</param>
+        /// <returns>The list of chapter info.</returns>
+        List<ChapterInfo> GetChapters(BaseItem item);
 
         /// <summary>
-        /// Gets a single chapter for an item
+        /// Gets a single chapter for an item.
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        ChapterInfo GetChapter(BaseItem id, int index);
+        /// <param name="item">The item.</param>
+        /// <param name="index">The chapter index.</param>
+        /// <returns>The chapter info at the specified index.</returns>
+        ChapterInfo GetChapter(BaseItem item, int index);
 
         /// <summary>
         /// Saves the chapters.
         /// </summary>
-        void SaveChapters(Guid id, List<ChapterInfo> chapters);
+        /// <param name="id">The item id.</param>
+        /// <param name="chapters">The list of chapters to save.</param>
+        void SaveChapters(Guid id, IReadOnlyList<ChapterInfo> chapters);
 
         /// <summary>
         /// Gets the media streams.
@@ -76,14 +74,23 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="id">The identifier.</param>
         /// <param name="streams">The streams.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void SaveMediaStreams(Guid id, List<MediaStream> streams, CancellationToken cancellationToken);
+        void SaveMediaStreams(Guid id, IReadOnlyList<MediaStream> streams, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the item ids.
+        /// Gets the media attachments.
         /// </summary>
         /// <param name="query">The query.</param>
-        /// <returns>IEnumerable&lt;Guid&gt;.</returns>
-        QueryResult<Guid> GetItemIds(InternalItemsQuery query);
+        /// <returns>IEnumerable{MediaAttachment}.</returns>
+        List<MediaAttachment> GetMediaAttachments(MediaAttachmentQuery query);
+
+        /// <summary>
+        /// Saves the media attachments.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="attachments">The attachments.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        void SaveMediaAttachments(Guid id, IReadOnlyList<MediaAttachment> attachments, CancellationToken cancellationToken);
+
         /// <summary>
         /// Gets the items.
         /// </summary>
@@ -120,13 +127,6 @@ namespace MediaBrowser.Controller.Persistence
         List<string> GetPeopleNames(InternalPeopleQuery query);
 
         /// <summary>
-        /// Gets the item ids with path.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <returns>QueryResult&lt;Tuple&lt;Guid, System.String&gt;&gt;.</returns>
-        List<Tuple<Guid, string>> GetItemIdsWithPath(InternalItemsQuery query);
-
-        /// <summary>
         /// Gets the item list.
         /// </summary>
         /// <param name="query">The query.</param>
@@ -136,22 +136,28 @@ namespace MediaBrowser.Controller.Persistence
         /// <summary>
         /// Updates the inherited values.
         /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        void UpdateInheritedValues(CancellationToken cancellationToken);
+        void UpdateInheritedValues();
 
         int GetCount(InternalItemsQuery query);
 
-        QueryResult<(BaseItem, ItemCounts)> GetGenres(InternalItemsQuery query);
-        QueryResult<(BaseItem, ItemCounts)> GetMusicGenres(InternalItemsQuery query);
-        QueryResult<(BaseItem, ItemCounts)> GetStudios(InternalItemsQuery query);
-        QueryResult<(BaseItem, ItemCounts)> GetArtists(InternalItemsQuery query);
-        QueryResult<(BaseItem, ItemCounts)> GetAlbumArtists(InternalItemsQuery query);
-        QueryResult<(BaseItem, ItemCounts)> GetAllArtists(InternalItemsQuery query);
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery query);
+
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery query);
+
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery query);
+
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery query);
+
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery query);
+
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery query);
 
         List<string> GetMusicGenreNames();
+
         List<string> GetStudioNames();
+
         List<string> GetGenreNames();
+
         List<string> GetAllArtistNames();
     }
 }
-

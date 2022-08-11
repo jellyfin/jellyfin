@@ -3,10 +3,25 @@ using System;
 namespace Emby.Naming.AudioBook
 {
     /// <summary>
-    /// Represents a single video file
+    /// Represents a single video file.
     /// </summary>
     public class AudioBookFileInfo : IComparable<AudioBookFileInfo>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AudioBookFileInfo"/> class.
+        /// </summary>
+        /// <param name="path">Path to audiobook file.</param>
+        /// <param name="container">File type.</param>
+        /// <param name="partNumber">Number of part this file represents.</param>
+        /// <param name="chapterNumber">Number of chapter this file represents.</param>
+        public AudioBookFileInfo(string path, string container, int? partNumber = default, int? chapterNumber = default)
+        {
+            Path = path;
+            Container = container;
+            PartNumber = partNumber;
+            ChapterNumber = chapterNumber;
+        }
+
         /// <summary>
         /// Gets or sets the path.
         /// </summary>
@@ -31,14 +46,8 @@ namespace Emby.Naming.AudioBook
         /// <value>The chapter number.</value>
         public int? ChapterNumber { get; set; }
 
-        /// <summary>
-        /// Gets or sets the type.
-        /// </summary>
-        /// <value>The type.</value>
-        public bool IsDirectory { get; set; }
-
-        /// <inheritdoc/>
-        public int CompareTo(AudioBookFileInfo other)
+        /// <inheritdoc />
+        public int CompareTo(AudioBookFileInfo? other)
         {
             if (ReferenceEquals(this, other))
             {

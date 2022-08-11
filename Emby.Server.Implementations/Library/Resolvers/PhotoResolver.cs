@@ -1,11 +1,17 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Emby.Naming.Common;
+using Emby.Naming.Video;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 
 namespace Emby.Server.Implementations.Library.Resolvers
@@ -13,7 +19,8 @@ namespace Emby.Server.Implementations.Library.Resolvers
     public class PhotoResolver : ItemResolver<Photo>
     {
         private readonly IImageProcessor _imageProcessor;
-        private readonly ILibraryManager _libraryManager;
+        private readonly NamingOptions _namingOptions;
+
         private static readonly HashSet<string> _ignoreFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "folder",
@@ -27,10 +34,10 @@ namespace Emby.Server.Implementations.Library.Resolvers
             "default"
         };
 
-        public PhotoResolver(IImageProcessor imageProcessor, ILibraryManager libraryManager)
+        public PhotoResolver(IImageProcessor imageProcessor, NamingOptions namingOptions)
         {
             _imageProcessor = imageProcessor;
-            _libraryManager = libraryManager;
+            _namingOptions = namingOptions;
         }
 
         /// <summary>
@@ -46,7 +53,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                 var collectionType = args.CollectionType;
 
                 if (string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase)
-                    || (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) && args.GetLibraryOptions().EnablePhotos))
+                    || (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) && args.LibraryOptions.EnablePhotos))
                 {
                     if (IsImageFile(args.Path, _imageProcessor))
                     {
@@ -54,11 +61,10 @@ namespace Emby.Server.Implementations.Library.Resolvers
 
                         // Make sure the image doesn't belong to a video file
                         var files = args.DirectoryService.GetFiles(Path.GetDirectoryName(args.Path));
-                        var libraryOptions = args.GetLibraryOptions();
 
                         foreach (var file in files)
                         {
-                            if (IsOwnedByMedia(_libraryManager, libraryOptions, file.FullName, filename))
+                            if (IsOwnedByMedia(_namingOptions, file.FullName, filename))
                             {
                                 return null;
                             }
@@ -75,17 +81,12 @@ namespace Emby.Server.Implementations.Library.Resolvers
             return null;
         }
 
-        internal static bool IsOwnedByMedia(ILibraryManager libraryManager, LibraryOptions libraryOptions, string file, string imageFilename)
+        internal static bool IsOwnedByMedia(NamingOptions namingOptions, string file, string imageFilename)
         {
-            if (libraryManager.IsVideoFile(file, libraryOptions))
-            {
-                return IsOwnedByResolvedMedia(libraryManager, libraryOptions, file, imageFilename);
-            }
-
-            return false;
+            return VideoResolver.IsVideoFile(file, namingOptions) && IsOwnedByResolvedMedia(file, imageFilename);
         }
 
-        internal static bool IsOwnedByResolvedMedia(ILibraryManager libraryManager, LibraryOptions libraryOptions, string file, string imageFilename)
+        internal static bool IsOwnedByResolvedMedia(string file, string imageFilename)
             => imageFilename.StartsWith(Path.GetFileNameWithoutExtension(file), StringComparison.OrdinalIgnoreCase);
 
         internal static bool IsImageFile(string path, IImageProcessor imageProcessor)
@@ -108,7 +109,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
             }
 
             string extension = Path.GetExtension(path).TrimStart('.');
-            return imageProcessor.SupportedInputFormats.Contains(extension, StringComparer.OrdinalIgnoreCase);
+            return imageProcessor.SupportedInputFormats.Contains(extension, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

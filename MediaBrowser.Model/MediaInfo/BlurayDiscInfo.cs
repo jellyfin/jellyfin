@@ -1,9 +1,12 @@
+#nullable disable
+#pragma warning disable CS1591
+
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.MediaInfo
 {
     /// <summary>
-    /// Represents the result of BDInfo output
+    /// Represents the result of BDInfo output.
     /// </summary>
     public class BlurayDiscInfo
     {

@@ -1,0 +1,87 @@
+{
+    "streams": [
+        {
+            "index": 0,
+            "codec_name": "h264",
+            "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+            "profile": "High 4:4:4 Predictive",
+            "codec_type": "video",
+            "codec_time_base": "1/50",
+            "codec_tag_string": "[0][0][0][0]",
+            "codec_tag": "0x0000",
+            "width": 320,
+            "height": 240,
+            "coded_width": 320,
+            "coded_height": 240,
+            "closed_captions": 0,
+            "has_b_frames": 2,
+            "sample_aspect_ratio": "1:1",
+            "display_aspect_ratio": "4:3",
+            "pix_fmt": "yuv444p",
+            "level": 13,
+            "chroma_location": "left",
+            "field_order": "progressive",
+            "refs": 1,
+            "is_avc": "true",
+            "nal_length_size": "4",
+            "r_frame_rate": "25/1",
+            "avg_frame_rate": "25/1",
+            "time_base": "1/1000",
+            "start_pts": 0,
+            "start_time": "0.000000",
+            "bits_per_raw_sample": "8",
+            "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0
+            },
+            "tags": {
+                "ENCODER": "Lavc57.107.100 libx264",
+                "DURATION": "00:00:01.000000000"
+            },
+            "side_data_list": [
+                {
+                    "side_data_type": "DOVI configuration record",
+                    "dv_version_major": 1,
+                    "dv_version_minor": 0,
+                    "dv_profile": 5,
+                    "dv_level": 6,
+                    "rpu_present_flag": 1,
+                    "el_present_flag": 0,
+                    "bl_present_flag": 1,
+                    "dv_bl_signal_compatibility_id": 0
+                }
+            ]
+        }
+    ],
+    "chapters": [
+
+    ],
+    "format": {
+        "filename": "some_metadata.mkv",
+        "nb_streams": 1,
+        "nb_programs": 0,
+        "format_name": "matroska,webm",
+        "format_long_name": "Matroska / WebM",
+        "start_time": "0.000000",
+        "duration": "1.000000",
+        "size": "8679",
+        "bit_rate": "69432",
+        "probe_score": 100,
+        "tags": {
+            "DESCRIPTION": "Just color bars",
+            "ARCHIVAL": "yes",
+            "PRESERVE_THIS": "okay",
+            "ENCODER": "Lavf57.83.100"
+        }
+    }
+}

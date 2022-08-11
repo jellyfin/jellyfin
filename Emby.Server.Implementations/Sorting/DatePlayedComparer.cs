@@ -1,4 +1,7 @@
+#nullable disable
+
 using System;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Sorting;
@@ -7,7 +10,7 @@ using MediaBrowser.Model.Querying;
 namespace Emby.Server.Implementations.Sorting
 {
     /// <summary>
-    /// Class DatePlayedComparer
+    /// Class DatePlayedComparer.
     /// </summary>
     public class DatePlayedComparer : IUserBaseItemComparer
     {
@@ -28,6 +31,12 @@ namespace Emby.Server.Implementations.Sorting
         /// </summary>
         /// <value>The user data repository.</value>
         public IUserDataManager UserDataRepository { get; set; }
+
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.DatePlayed;
 
         /// <summary>
         /// Compares the specified x.
@@ -56,11 +65,5 @@ namespace Emby.Server.Implementations.Sorting
 
             return DateTime.MinValue;
         }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name => ItemSortBy.DatePlayed;
     }
 }

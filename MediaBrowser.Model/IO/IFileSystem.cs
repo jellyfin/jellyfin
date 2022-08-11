@@ -1,11 +1,12 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace MediaBrowser.Model.IO
 {
     /// <summary>
-    /// Interface IFileSystem
+    /// Interface IFileSystem.
     /// </summary>
     public interface IFileSystem
     {
@@ -23,7 +24,7 @@ namespace MediaBrowser.Model.IO
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <returns>System.String.</returns>
-        string ResolveShortcut(string filename);
+        string? ResolveShortcut(string filename);
 
         /// <summary>
         /// Creates the shortcut.
@@ -50,7 +51,7 @@ namespace MediaBrowser.Model.IO
         /// <returns>A <see cref="FileSystemMetadata" /> object.</returns>
         /// <remarks><para>If the specified path points to a directory, the returned <see cref="FileSystemMetadata" /> object's
         /// <see cref="FileSystemMetadata.IsDirectory" /> property and the <see cref="FileSystemMetadata.Exists" /> property will both be set to false.</para>
-        /// <para>For automatic handling of files <b>and</b> directories, use <see cref="M:IFileSystem.GetFileSystemInfo(System.String)" />.</para></remarks>
+        /// <para>For automatic handling of files <b>and</b> directories, use <see cref="GetFileSystemInfo(string)" />.</para></remarks>
         FileSystemMetadata GetFileInfo(string path);
 
         /// <summary>
@@ -60,7 +61,7 @@ namespace MediaBrowser.Model.IO
         /// <returns>A <see cref="FileSystemMetadata" /> object.</returns>
         /// <remarks><para>If the specified path points to a file, the returned <see cref="FileSystemMetadata" /> object's
         /// <see cref="FileSystemMetadata.IsDirectory" /> property will be set to true and the <see cref="FileSystemMetadata.Exists" /> property will be set to false.</para>
-        /// <para>For automatic handling of files <b>and</b> directories, use <see cref="M:IFileSystem.GetFileSystemInfo(System.String)" />.</para></remarks>
+        /// <para>For automatic handling of files <b>and</b> directories, use <see cref="GetFileSystemInfo(string)" />.</para></remarks>
         FileSystemMetadata GetDirectoryInfo(string path);
 
         /// <summary>
@@ -99,20 +100,6 @@ namespace MediaBrowser.Model.IO
         DateTime GetLastWriteTimeUtc(string path);
 
         /// <summary>
-        /// Gets the file stream.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="mode">The mode.</param>
-        /// <param name="access">The access.</param>
-        /// <param name="share">The share.</param>
-        /// <param name="isAsync">if set to <c>true</c> [is asynchronous].</param>
-        /// <returns>FileStream.</returns>
-        Stream GetFileStream(string path, FileOpenMode mode, FileAccessMode access, FileShareMode share, bool isAsync = false);
-
-        Stream GetFileStream(string path, FileOpenMode mode, FileAccessMode access, FileShareMode share,
-            FileOpenOptions fileOpenOptions);
-
-        /// <summary>
         /// Swaps the files.
         /// </summary>
         /// <param name="file1">The file1.</param>
@@ -128,13 +115,6 @@ namespace MediaBrowser.Model.IO
         /// <param name="path">The path.</param>
         /// <returns><c>true</c> if [contains sub path] [the specified parent path]; otherwise, <c>false</c>.</returns>
         bool ContainsSubPath(string parentPath, string path);
-
-        /// <summary>
-        /// Determines whether [is root path] [the specified path].
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns><c>true</c> if [is root path] [the specified path]; otherwise, <c>false</c>.</returns>
-        bool IsRootPath(string path);
 
         /// <summary>
         /// Normalizes the path.
@@ -167,16 +147,19 @@ namespace MediaBrowser.Model.IO
         /// Gets the directories.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <param name="recursive">if set to <c>true</c> [recursive].</param>
-        /// <returns>IEnumerable&lt;DirectoryInfo&gt;.</returns>
+        /// <param name="recursive">If set to <c>true</c> also searches in subdirectiories.</param>
+        /// <returns>All found directories.</returns>
         IEnumerable<FileSystemMetadata> GetDirectories(string path, bool recursive = false);
 
         /// <summary>
         /// Gets the files.
         /// </summary>
+        /// <param name="path">The path in which to search.</param>
+        /// <param name="recursive">If set to <c>true</c> also searches in subdirectiories.</param>
+        /// <returns>All found files.</returns>
         IEnumerable<FileSystemMetadata> GetFiles(string path, bool recursive = false);
 
-        IEnumerable<FileSystemMetadata> GetFiles(string path, IReadOnlyList<string> extensions, bool enableCaseSensitiveExtensions, bool recursive);
+        IEnumerable<FileSystemMetadata> GetFiles(string path, IReadOnlyList<string>? extensions, bool enableCaseSensitiveExtensions, bool recursive);
 
         /// <summary>
         /// Gets the file system entries.
@@ -202,7 +185,7 @@ namespace MediaBrowser.Model.IO
         /// <returns>IEnumerable&lt;System.String&gt;.</returns>
         IEnumerable<string> GetFilePaths(string path, bool recursive = false);
 
-        IEnumerable<string> GetFilePaths(string path, string[] extensions, bool enableCaseSensitiveExtensions, bool recursive);
+        IEnumerable<string> GetFilePaths(string path, string[]? extensions, bool enableCaseSensitiveExtensions, bool recursive);
 
         /// <summary>
         /// Gets the file system entry paths.
@@ -213,133 +196,23 @@ namespace MediaBrowser.Model.IO
         IEnumerable<string> GetFileSystemEntryPaths(string path, bool recursive = false);
 
         void SetHidden(string path, bool isHidden);
-        void SetReadOnly(string path, bool readOnly);
+
         void SetAttributes(string path, bool isHidden, bool readOnly);
-        List<FileSystemMetadata> GetDrives();
-        void SetExecutable(string path);
-    }
 
-    //TODO Investigate if can be replaced by the one from System.IO ?
-    public enum FileOpenMode
-    {
-        //
-        // Summary:
-        //     Specifies that the operating system should create a new file. This requires System.Security.Permissions.FileIOPermissionAccess.Write
-        //     permission. If the file already exists, an System.IO.IOException exception is
-        //     thrown.
-        CreateNew = 1,
-        //
-        // Summary:
-        //     Specifies that the operating system should create a new file. If the file already
-        //     exists, it will be overwritten. This requires System.Security.Permissions.FileIOPermissionAccess.Write
-        //     permission. FileMode.Create is equivalent to requesting that if the file does
-        //     not exist, use System.IO.FileMode.CreateNew; otherwise, use System.IO.FileMode.Truncate.
-        //     If the file already exists but is a hidden file, an System.UnauthorizedAccessException
-        //     exception is thrown.
-        Create = 2,
-        //
-        // Summary:
-        //     Specifies that the operating system should open an existing file. The ability
-        //     to open the file is dependent on the value specified by the System.IO.FileAccess
-        //     enumeration. A System.IO.FileNotFoundException exception is thrown if the file
-        //     does not exist.
-        Open = 3,
-        //
-        // Summary:
-        //     Specifies that the operating system should open a file if it exists; otherwise,
-        //     a new file should be created. If the file is opened with FileAccess.Read, System.Security.Permissions.FileIOPermissionAccess.Read
-        //     permission is required. If the file access is FileAccess.Write, System.Security.Permissions.FileIOPermissionAccess.Write
-        //     permission is required. If the file is opened with FileAccess.ReadWrite, both
-        //     System.Security.Permissions.FileIOPermissionAccess.Read and System.Security.Permissions.FileIOPermissionAccess.Write
-        //     permissions are required.
-        OpenOrCreate = 4
-    }
+        IEnumerable<FileSystemMetadata> GetDrives();
 
-    public enum FileAccessMode
-    {
-        //
-        // Summary:
-        //     Read access to the file. Data can be read from the file. Combine with Write for
-        //     read/write access.
-        Read = 1,
-        //
-        // Summary:
-        //     Write access to the file. Data can be written to the file. Combine with Read
-        //     for read/write access.
-        Write = 2
-    }
+        /// <summary>
+        /// Determines whether the directory exists.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>Whether the path exists.</returns>
+        bool DirectoryExists(string path);
 
-    public enum FileShareMode
-    {
-        //
-        // Summary:
-        //     Declines sharing of the current file. Any request to open the file (by this process
-        //     or another process) will fail until the file is closed.
-        None = 0,
-        //
-        // Summary:
-        //     Allows subsequent opening of the file for reading. If this flag is not specified,
-        //     any request to open the file for reading (by this process or another process)
-        //     will fail until the file is closed. However, even if this flag is specified,
-        //     additional permissions might still be needed to access the file.
-        Read = 1,
-        //
-        // Summary:
-        //     Allows subsequent opening of the file for writing. If this flag is not specified,
-        //     any request to open the file for writing (by this process or another process)
-        //     will fail until the file is closed. However, even if this flag is specified,
-        //     additional permissions might still be needed to access the file.
-        Write = 2,
-        //
-        // Summary:
-        //     Allows subsequent opening of the file for reading or writing. If this flag is
-        //     not specified, any request to open the file for reading or writing (by this process
-        //     or another process) will fail until the file is closed. However, even if this
-        //     flag is specified, additional permissions might still be needed to access the
-        //     file.
-        ReadWrite = 3
-    }
-
-    //
-    // Summary:
-    //     Represents advanced options for creating a System.IO.FileStream object.
-    [Flags]
-    public enum FileOpenOptions
-    {
-        //
-        // Summary:
-        //     Indicates that the system should write through any intermediate cache and go
-        //     directly to disk.
-        WriteThrough = int.MinValue,
-        //
-        // Summary:
-        //     Indicates that no additional options should be used when creating a System.IO.FileStream
-        //     object.
-        None = 0,
-        //
-        // Summary:
-        //     Indicates that a file is encrypted and can be decrypted only by using the same
-        //     user account used for encryption.
-        Encrypted = 16384,
-        //
-        // Summary:
-        //     Indicates that a file is automatically deleted when it is no longer in use.
-        DeleteOnClose = 67108864,
-        //
-        // Summary:
-        //     Indicates that the file is to be accessed sequentially from beginning to end.
-        //     The system can use this as a hint to optimize file caching. If an application
-        //     moves the file pointer for random access, optimum caching may not occur; however,
-        //     correct operation is still guaranteed.
-        SequentialScan = 134217728,
-        //
-        // Summary:
-        //     Indicates that the file is accessed randomly. The system can use this as a hint
-        //     to optimize file caching.
-        RandomAccess = 268435456,
-        //
-        // Summary:
-        //     Indicates that a file can be used for asynchronous reading and writing.
-        Asynchronous = 1073741824
+        /// <summary>
+        /// Determines whether the file exists.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>Whether the path exists.</returns>
+        bool FileExists(string path);
     }
 }

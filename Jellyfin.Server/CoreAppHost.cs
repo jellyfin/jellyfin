@@ -1,10 +1,30 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
+using Emby.Drawing;
 using Emby.Server.Implementations;
-using MediaBrowser.Common.Net;
+using Emby.Server.Implementations.Session;
+using Jellyfin.Api.WebSocketListeners;
+using Jellyfin.Drawing.Skia;
+using Jellyfin.Server.Implementations;
+using Jellyfin.Server.Implementations.Activity;
+using Jellyfin.Server.Implementations.Devices;
+using Jellyfin.Server.Implementations.Events;
+using Jellyfin.Server.Implementations.Security;
+using Jellyfin.Server.Implementations.Users;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.BaseItemManager;
+using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Model.IO;
+using MediaBrowser.Controller.Events;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Security;
+using MediaBrowser.Model.Activity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server
@@ -20,31 +40,63 @@ namespace Jellyfin.Server
         /// <param name="applicationPaths">The <see cref="ServerApplicationPaths" /> to be used by the <see cref="CoreAppHost" />.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory" /> to be used by the <see cref="CoreAppHost" />.</param>
         /// <param name="options">The <see cref="StartupOptions" /> to be used by the <see cref="CoreAppHost" />.</param>
-        /// <param name="fileSystem">The <see cref="IFileSystem" /> to be used by the <see cref="CoreAppHost" />.</param>
-        /// <param name="imageEncoder">The <see cref="IImageEncoder" /> to be used by the <see cref="CoreAppHost" />.</param>
-        /// <param name="networkManager">The <see cref="INetworkManager" /> to be used by the <see cref="CoreAppHost" />.</param>
-        /// <param name="configuration">The <see cref="IConfiguration" /> to be used by the <see cref="CoreAppHost" />.</param>
+        /// <param name="startupConfig">The <see cref="IConfiguration" /> to be used by the <see cref="CoreAppHost" />.</param>
         public CoreAppHost(
-            ServerApplicationPaths applicationPaths,
+            IServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
-            StartupOptions options,
-            IFileSystem fileSystem,
-            IImageEncoder imageEncoder,
-            INetworkManager networkManager,
-            IConfiguration configuration)
+            IStartupOptions options,
+            IConfiguration startupConfig)
             : base(
                 applicationPaths,
                 loggerFactory,
                 options,
-                fileSystem,
-                imageEncoder,
-                networkManager,
-                configuration)
+                startupConfig)
         {
         }
 
-        /// <inheritdoc />
-        public override bool CanSelfRestart => StartupOptions.RestartPath != null;
+        /// <inheritdoc/>
+        protected override void RegisterServices(IServiceCollection serviceCollection)
+        {
+            // Register an image encoder
+            bool useSkiaEncoder = SkiaEncoder.IsNativeLibAvailable();
+            Type imageEncoderType = useSkiaEncoder
+                ? typeof(SkiaEncoder)
+                : typeof(NullImageEncoder);
+            serviceCollection.AddSingleton(typeof(IImageEncoder), imageEncoderType);
+
+            // Log a warning if the Skia encoder could not be used
+            if (!useSkiaEncoder)
+            {
+                Logger.LogWarning("Skia not available. Will fallback to {ImageEncoder}.", nameof(NullImageEncoder));
+            }
+
+            serviceCollection.AddDbContextPool<JellyfinDb>(
+                 options => options
+                    .UseLoggerFactory(LoggerFactory)
+                    .UseSqlite($"Filename={Path.Combine(ApplicationPaths.DataPath, "jellyfin.db")}"));
+
+            serviceCollection.AddEventServices();
+            serviceCollection.AddSingleton<IBaseItemManager, BaseItemManager>();
+            serviceCollection.AddSingleton<IEventManager, EventManager>();
+            serviceCollection.AddSingleton<JellyfinDbProvider>();
+
+            serviceCollection.AddSingleton<IActivityManager, ActivityManager>();
+            serviceCollection.AddSingleton<IUserManager, UserManager>();
+            serviceCollection.AddSingleton<IDisplayPreferencesManager, DisplayPreferencesManager>();
+            serviceCollection.AddSingleton<IDeviceManager, DeviceManager>();
+
+            // TODO search the assemblies instead of adding them manually?
+            serviceCollection.AddSingleton<IWebSocketListener, SessionWebSocketListener>();
+            serviceCollection.AddSingleton<IWebSocketListener, ActivityLogWebSocketListener>();
+            serviceCollection.AddSingleton<IWebSocketListener, ScheduledTasksWebSocketListener>();
+            serviceCollection.AddSingleton<IWebSocketListener, SessionInfoWebSocketListener>();
+
+            serviceCollection.AddSingleton<IAuthorizationContext, AuthorizationContext>();
+
+            serviceCollection.AddScoped<IAuthenticationManager, AuthenticationManager>();
+
+            base.RegisterServices(serviceCollection);
+        }
 
         /// <inheritdoc />
         protected override void RestartInternal() => Program.Restart();
@@ -52,7 +104,11 @@ namespace Jellyfin.Server
         /// <inheritdoc />
         protected override IEnumerable<Assembly> GetAssembliesWithPartsInternal()
         {
+            // Jellyfin.Server
             yield return typeof(CoreAppHost).Assembly;
+
+            // Jellyfin.Server.Implementations
+            yield return typeof(JellyfinDb).Assembly;
         }
 
         /// <inheritdoc />

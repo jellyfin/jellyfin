@@ -1,9 +1,10 @@
+#nullable disable
 using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.Session
 {
     /// <summary>
-    /// Class UserDataChangeInfo
+    /// Class UserDataChangeInfo.
     /// </summary>
     public class UserDataChangeInfo
     {

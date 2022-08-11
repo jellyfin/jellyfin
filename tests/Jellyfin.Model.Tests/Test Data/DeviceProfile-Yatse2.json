@@ -1,0 +1,189 @@
+{
+    "EnableAlbumArtInDidl": false,
+    "EnableSingleAlbumArtLimit": false,
+    "EnableSingleSubtitleLimit": false,
+    "SupportedMediaTypes": "Audio,Photo,Video",
+    "MaxAlbumArtWidth": 0,
+    "MaxAlbumArtHeight": 0,
+    "MaxStreamingBitrate": 120000000,
+    "MaxStaticBitrate": 100000000,
+    "MusicStreamingTranscodingBitrate": 192000,
+    "TimelineOffsetSeconds": 0,
+    "RequiresPlainVideoItems": false,
+    "RequiresPlainFolders": false,
+    "EnableMSMediaReceiverRegistrar": false,
+    "IgnoreTranscodeByteRangeRequests": false,
+    "DirectPlayProfiles": [
+        {
+            "Container": "",
+            "AudioCodec": "aac",
+            "VideoCodec": "",
+            "Type": "Video",
+            "$type": "DirectPlayProfile"
+        },
+        {
+            "Container": "ts,mp4,mka,m4a,mp3,mp2,wav,flac,ogg",
+            "AudioCodec": "",
+            "VideoCodec": "",
+            "Type": "Audio",
+            "$type": "DirectPlayProfile"
+        },
+        {
+            "Container": "",
+            "AudioCodec": "",
+            "VideoCodec": "",
+            "Type": "Photo",
+            "$type": "DirectPlayProfile"
+        }
+    ],
+    "TranscodingProfiles": [
+        {
+            "Container": "ts",
+            "Type": "Video",
+            "VideoCodec": "h264",
+            "AudioCodec": "aac",
+            "Protocol": "hls",
+            "EstimateContentLength": false,
+            "EnableMpegtsM2TsMode": false,
+            "TranscodeSeekInfo": "Auto",
+            "CopyTimestamps": true,
+            "Context": "Streaming",
+            "EnableSubtitlesInManifest": false,
+            "MaxAudioChannels": "6",
+            "MinSegments": 0,
+            "SegmentLength": 0,
+            "BreakOnNonKeyFrames": false,
+            "$type": "TranscodingProfile"
+        },
+        {
+            "Container": "mp3",
+            "Type": "Audio",
+            "VideoCodec": "",
+            "AudioCodec": "mp3",
+            "Protocol": "http",
+            "EstimateContentLength": false,
+            "EnableMpegtsM2TsMode": false,
+            "TranscodeSeekInfo": "Auto",
+            "CopyTimestamps": false,
+            "Context": "Static",
+            "EnableSubtitlesInManifest": false,
+            "MaxAudioChannels": "6",
+            "MinSegments": 0,
+            "SegmentLength": 0,
+            "BreakOnNonKeyFrames": false,
+            "$type": "TranscodingProfile"
+        },
+        {
+            "Container": "mp3",
+            "Type": "Audio",
+            "VideoCodec": "",
+            "AudioCodec": "mp3",
+            "Protocol": "http",
+            "EstimateContentLength": false,
+            "EnableMpegtsM2TsMode": false,
+            "TranscodeSeekInfo": "Auto",
+            "CopyTimestamps": false,
+            "Context": "Streaming",
+            "EnableSubtitlesInManifest": false,
+            "MaxAudioChannels": "6",
+            "MinSegments": 0,
+            "SegmentLength": 0,
+            "BreakOnNonKeyFrames": false,
+            "$type": "TranscodingProfile"
+        }
+    ],
+    "CodecProfiles": [
+        {
+            "Type": "VideoAudio",
+            "Conditions": [
+                {
+                    "Condition": "Equals",
+                    "Property": "IsSecondaryAudio",
+                    "Value": "false",
+                    "IsRequired": false,
+                    "$type": "ProfileCondition"
+                }
+            ],
+            "Codec": "",
+            "Container": "",
+            "$type": "CodecProfile"
+        }
+    ],
+    "ResponseProfiles": [
+        {
+            "Container": "m4v",
+            "Type": "Video",
+            "MimeType": "video/mp4",
+            "$type": "ResponseProfile"
+        },
+        {
+            "Container": "mov",
+            "Type": "Video",
+            "MimeType": "video/webm",
+            "$type": "ResponseProfile"
+        }
+    ],
+    "SubtitleProfiles": [
+        {
+            "Format": "vtt",
+            "Method": "Embed",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "srt",
+            "Method": "Embed",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "ass",
+            "Method": "Embed",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "ssa",
+            "Method": "Embed",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "smi",
+            "Method": "Embed",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "subrip",
+            "Method": "Embed",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "sub",
+            "Method": "Embed",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "dvdsub",
+            "Method": "Embed",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "pgs",
+            "Method": "Embed",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "pgssub",
+            "Method": "Embed",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "srt",
+            "Method": "External",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "sub",
+            "Method": "External",
+            "$type": "SubtitleProfile"
+        }
+    ],
+    "$type": "DeviceProfile"
+}

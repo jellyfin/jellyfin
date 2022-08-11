@@ -1,3 +1,6 @@
+#nullable disable
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -7,14 +10,8 @@ namespace MediaBrowser.Model.Dlna
 {
     public class ContentFeatureBuilder
     {
-        private readonly DeviceProfile _profile;
-
-        public ContentFeatureBuilder(DeviceProfile profile)
-        {
-            _profile = profile;
-        }
-
-        public string BuildImageHeader(
+        public static string BuildImageHeader(
+            DeviceProfile profile,
             string container,
             int? width,
             int? height,
@@ -30,28 +27,36 @@ namespace MediaBrowser.Model.Dlna
                             DlnaFlags.InteractiveTransferMode |
                             DlnaFlags.DlnaV15;
 
-            string dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}", DlnaMaps.FlagsToString(flagValue));
-
-            ResponseProfile mediaProfile = _profile.GetImageMediaProfile(container,
-                width,
-                height);
+            string dlnaflags = string.Format(
+                CultureInfo.InvariantCulture,
+                ";DLNA.ORG_FLAGS={0}",
+                DlnaMaps.FlagsToString(flagValue));
 
             if (string.IsNullOrEmpty(orgPn))
             {
+                ResponseProfile mediaProfile = profile.GetImageMediaProfile(
+                    container,
+                    width,
+                    height);
+
                 orgPn = mediaProfile?.OrgPn;
+
+                if (string.IsNullOrEmpty(orgPn))
+                {
+                    orgPn = GetImageOrgPnValue(container, width, height);
+                }
             }
 
             if (string.IsNullOrEmpty(orgPn))
             {
-                orgPn = GetImageOrgPnValue(container, width, height);
+                return orgOp.TrimStart(';') + orgCi + dlnaflags;
             }
 
-            string contentFeatures = string.IsNullOrEmpty(orgPn) ? string.Empty : "DLNA.ORG_PN=" + orgPn;
-
-            return (contentFeatures + orgOp + orgCi + dlnaflags).Trim(';');
+            return "DLNA.ORG_PN=" + orgPn + orgOp + orgCi + dlnaflags;
         }
 
-        public string BuildAudioHeader(
+        public static string BuildAudioHeader(
+            DeviceProfile profile,
             string container,
             string audioCodec,
             int? audioBitrate,
@@ -73,21 +78,21 @@ namespace MediaBrowser.Model.Dlna
                             DlnaFlags.InteractiveTransferMode |
                             DlnaFlags.DlnaV15;
 
-            //if (isDirectStream)
-            //{
-            //    flagValue = flagValue | DlnaFlags.ByteBasedSeek;
-            //}
-            //else if (runtimeTicks.HasValue)
-            //{
-            //    flagValue = flagValue | DlnaFlags.TimeBasedSeek;
-            //}
+            // if (isDirectStream)
+            // {
+            //     flagValue = flagValue | DlnaFlags.ByteBasedSeek;
+            // }
+            //  else if (runtimeTicks.HasValue)
+            // {
+            //     flagValue = flagValue | DlnaFlags.TimeBasedSeek;
+            // }
 
             string dlnaflags = string.Format(
                 CultureInfo.InvariantCulture,
                 ";DLNA.ORG_FLAGS={0}",
                 DlnaMaps.FlagsToString(flagValue));
 
-            ResponseProfile mediaProfile = _profile.GetAudioMediaProfile(
+            ResponseProfile mediaProfile = profile.GetAudioMediaProfile(
                 container,
                 audioCodec,
                 audioChannels,
@@ -102,12 +107,16 @@ namespace MediaBrowser.Model.Dlna
                 orgPn = GetAudioOrgPnValue(container, audioBitrate, audioSampleRate, audioChannels);
             }
 
-            string contentFeatures = string.IsNullOrEmpty(orgPn) ? string.Empty : "DLNA.ORG_PN=" + orgPn;
+            if (string.IsNullOrEmpty(orgPn))
+            {
+                return orgOp.TrimStart(';') + orgCi + dlnaflags;
+            }
 
-            return (contentFeatures + orgOp + orgCi + dlnaflags).Trim(';');
+            return "DLNA.ORG_PN=" + orgPn + orgOp + orgCi + dlnaflags;
         }
 
-        public List<string> BuildVideoHeader(
+        public static IEnumerable<string> BuildVideoHeader(
+            DeviceProfile profile,
             string container,
             string videoCodec,
             string audioCodec,
@@ -119,6 +128,7 @@ namespace MediaBrowser.Model.Dlna
             bool isDirectStream,
             long? runtimeTicks,
             string videoProfile,
+            string videoRangeType,
             double? videoLevel,
             float? videoFramerate,
             int? packetLength,
@@ -142,19 +152,24 @@ namespace MediaBrowser.Model.Dlna
                             DlnaFlags.InteractiveTransferMode |
                             DlnaFlags.DlnaV15;
 
-            //if (isDirectStream)
-            //{
-            //    flagValue = flagValue | DlnaFlags.ByteBasedSeek;
-            //}
-            //else if (runtimeTicks.HasValue)
-            //{
-            //    flagValue = flagValue | DlnaFlags.TimeBasedSeek;
-            //}
+            if (isDirectStream)
+            {
+                flagValue |= DlnaFlags.ByteBasedSeek;
+            }
 
-            string dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}",
-             DlnaMaps.FlagsToString(flagValue));
+            // Time based seek is curently disabled when streaming. On LG CX3 adding DlnaFlags.TimeBasedSeek and orgPn causes the DLNA playback to fail (format not supported). Further investigations are needed before enabling the remaining code paths.
+            //  else if (runtimeTicks.HasValue)
+            // {
+            //     flagValue = flagValue | DlnaFlags.TimeBasedSeek;
+            // }
 
-            ResponseProfile mediaProfile = _profile.GetVideoMediaProfile(container,
+            string dlnaflags = string.Format(
+                CultureInfo.InvariantCulture,
+                ";DLNA.ORG_FLAGS={0}",
+                DlnaMaps.FlagsToString(flagValue));
+
+            ResponseProfile mediaProfile = profile.GetVideoMediaProfile(
+                container,
                 audioCodec,
                 videoCodec,
                 width,
@@ -162,6 +177,7 @@ namespace MediaBrowser.Model.Dlna
                 bitDepth,
                 videoBitrate,
                 videoProfile,
+                videoRangeType,
                 videoLevel,
                 videoFramerate,
                 packetLength,
@@ -178,13 +194,13 @@ namespace MediaBrowser.Model.Dlna
 
             if (mediaProfile != null && !string.IsNullOrEmpty(mediaProfile.OrgPn))
             {
-                orgPnValues.AddRange(mediaProfile.OrgPn.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries));
+                orgPnValues.AddRange(mediaProfile.OrgPn.Split(',', StringSplitOptions.RemoveEmptyEntries));
             }
             else
             {
-                foreach (string s in GetVideoOrgPnValue(container, videoCodec, audioCodec, width, height, timestamp))
+                foreach (var s in GetVideoOrgPnValue(container, videoCodec, audioCodec, width, height, timestamp))
                 {
-                    orgPnValues.Add(s);
+                    orgPnValues.Add(s.ToString());
                     break;
                 }
             }
@@ -193,20 +209,24 @@ namespace MediaBrowser.Model.Dlna
 
             foreach (string orgPn in orgPnValues)
             {
-                string contentFeatures = string.IsNullOrEmpty(orgPn) ? string.Empty : "DLNA.ORG_PN=" + orgPn;
-
-                var value = (contentFeatures + orgOp + orgCi + dlnaflags).Trim(';');
-
-                contentFeatureList.Add(value);
+                if (string.IsNullOrEmpty(orgPn))
+                {
+                    contentFeatureList.Add(orgOp.TrimStart(';') + orgCi + dlnaflags);
+                }
+                else if (isDirectStream)
+                {
+                    // orgOp should be added all the time once the time based seek is resolved for transcoded streams
+                    contentFeatureList.Add("DLNA.ORG_PN=" + orgPn + orgOp + orgCi + dlnaflags);
+                }
+                else
+                {
+                    contentFeatureList.Add("DLNA.ORG_PN=" + orgPn + orgCi + dlnaflags);
+                }
             }
 
             if (orgPnValues.Count == 0)
             {
-                string contentFeatures = string.Empty;
-
-                var value = (contentFeatures + orgOp + orgCi + dlnaflags).Trim(';');
-
-                contentFeatureList.Add(value);
+                contentFeatureList.Add(orgOp.TrimStart(';') + orgCi + dlnaflags);
             }
 
             return contentFeatureList;
@@ -214,18 +234,15 @@ namespace MediaBrowser.Model.Dlna
 
         private static string GetImageOrgPnValue(string container, int? width, int? height)
         {
-            MediaFormatProfile? format = new MediaFormatProfileResolver()
-                .ResolveImageFormat(container,
-                width,
-                height);
+            MediaFormatProfile? format = MediaFormatProfileResolver.ResolveImageFormat(container, width, height);
 
             return format.HasValue ? format.Value.ToString() : null;
         }
 
         private static string GetAudioOrgPnValue(string container, int? audioBitrate, int? audioSampleRate, int? audioChannels)
         {
-            MediaFormatProfile? format = new MediaFormatProfileResolver()
-                .ResolveAudioFormat(container,
+            MediaFormatProfile? format = MediaFormatProfileResolver.ResolveAudioFormat(
+                container,
                 audioBitrate,
                 audioSampleRate,
                 audioChannels);
@@ -233,9 +250,9 @@ namespace MediaBrowser.Model.Dlna
             return format.HasValue ? format.Value.ToString() : null;
         }
 
-        private static string[] GetVideoOrgPnValue(string container, string videoCodec, string audioCodec, int? width, int? height, TransportStreamTimestamp timestamp)
+        private static MediaFormatProfile[] GetVideoOrgPnValue(string container, string videoCodec, string audioCodec, int? width, int? height, TransportStreamTimestamp timestamp)
         {
-            return new MediaFormatProfileResolver().ResolveVideoFormat(container, videoCodec, audioCodec, width, height, timestamp);
+            return MediaFormatProfileResolver.ResolveVideoFormat(container, videoCodec, audioCodec, width, height, timestamp);
         }
     }
 }

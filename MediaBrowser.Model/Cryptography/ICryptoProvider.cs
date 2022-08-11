@@ -1,4 +1,6 @@
-using System.Collections.Generic;
+#pragma warning disable CS1591
+
+using System;
 
 namespace MediaBrowser.Model.Cryptography
 {
@@ -6,15 +8,14 @@ namespace MediaBrowser.Model.Cryptography
     {
         string DefaultHashMethod { get; }
 
-        IEnumerable<string> GetSupportedHashMethods();
+        /// <summary>
+        /// Creates a new <see cref="PasswordHash" /> instance.
+        /// </summary>
+        /// <param name="password">The password that will be hashed.</param>
+        /// <returns>A <see cref="PasswordHash" /> instance with the hash method, hash, salt and number of iterations.</returns>
+        PasswordHash CreatePasswordHash(ReadOnlySpan<char> password);
 
-        byte[] ComputeHash(string HashMethod, byte[] bytes);
-
-        byte[] ComputeHashWithDefaultMethod(byte[] bytes);
-
-        byte[] ComputeHash(string HashMethod, byte[] bytes, byte[] salt);
-
-        byte[] ComputeHashWithDefaultMethod(byte[] bytes, byte[] salt);
+        bool Verify(PasswordHash hash, ReadOnlySpan<char> password);
 
         byte[] GenerateSalt();
 

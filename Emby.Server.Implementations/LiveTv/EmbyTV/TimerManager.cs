@@ -1,12 +1,13 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
+using Jellyfin.Data.Events;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.LiveTv;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
@@ -15,12 +16,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
     {
         private readonly ConcurrentDictionary<string, Timer> _timers = new ConcurrentDictionary<string, Timer>(StringComparer.OrdinalIgnoreCase);
 
-        public TimerManager(IJsonSerializer jsonSerializer, ILogger logger, string dataPath)
-            : base(jsonSerializer, logger, dataPath, (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase))
+        public TimerManager(ILogger logger, string dataPath)
+            : base(logger, dataPath, (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase))
         {
         }
 
-        public event EventHandler<GenericEventArgs<TimerInfo>> TimerFired;
+        public event EventHandler<GenericEventArgs<TimerInfo>>? TimerFired;
 
         public void RestartTimers()
         {
@@ -107,7 +108,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (startDate < now)
             {
-                TimerFired?.Invoke(this, new GenericEventArgs<TimerInfo> { Argument = item });
+                TimerFired?.Invoke(this, new GenericEventArgs<TimerInfo>(item));
                 return;
             }
 
@@ -142,23 +143,23 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private void TimerCallback(object state)
+        private void TimerCallback(object? state)
         {
-            var timerId = (string)state;
+            var timerId = (string?)state ?? throw new ArgumentNullException(nameof(state));
 
             var timer = GetAll().FirstOrDefault(i => string.Equals(i.Id, timerId, StringComparison.OrdinalIgnoreCase));
             if (timer != null)
             {
-                TimerFired?.Invoke(this, new GenericEventArgs<TimerInfo> { Argument = timer });
+                TimerFired?.Invoke(this, new GenericEventArgs<TimerInfo>(timer));
             }
         }
 
-        public TimerInfo GetTimer(string id)
+        public TimerInfo? GetTimer(string id)
         {
             return GetAll().FirstOrDefault(r => string.Equals(r.Id, id, StringComparison.OrdinalIgnoreCase));
         }
 
-        public TimerInfo GetTimerByProgramId(string programId)
+        public TimerInfo? GetTimerByProgramId(string programId)
         {
             return GetAll().FirstOrDefault(r => string.Equals(r.ProgramId, programId, StringComparison.OrdinalIgnoreCase));
         }

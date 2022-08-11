@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Controller.Library
@@ -10,10 +12,5 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <returns>System.String.</returns>
         string GetSavePath(BaseItem item);
-    }
-
-    public interface IConfigurableProvider
-    {
-        bool IsEnabled { get; }
     }
 }

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +19,7 @@ namespace MediaBrowser.Providers.Music
     {
         public AlbumMetadataService(
             IServerConfigurationManager serverConfigurationManager,
-            ILogger logger,
+            ILogger<AlbumMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager)
@@ -45,7 +47,7 @@ namespace MediaBrowser.Providers.Music
 
             if (isFullRefresh || currentUpdateType > ItemUpdateType.None)
             {
-                if (!item.LockedFields.Contains(MetadataFields.Name))
+                if (!item.LockedFields.Contains(MetadataField.Name))
                 {
                     var name = children.Select(i => i.Album).FirstOrDefault(i => !string.IsNullOrEmpty(i));
 
@@ -79,7 +81,7 @@ namespace MediaBrowser.Providers.Music
             if (!item.AlbumArtists.SequenceEqual(artists, StringComparer.OrdinalIgnoreCase))
             {
                 item.AlbumArtists = artists;
-                updateType = updateType | ItemUpdateType.MetadataEdit;
+                updateType |= ItemUpdateType.MetadataEdit;
             }
 
             return updateType;
@@ -98,7 +100,7 @@ namespace MediaBrowser.Providers.Music
             if (!item.Artists.SequenceEqual(artists, StringComparer.OrdinalIgnoreCase))
             {
                 item.Artists = artists;
-                updateType = updateType | ItemUpdateType.MetadataEdit;
+                updateType |= ItemUpdateType.MetadataEdit;
             }
 
             return updateType;
@@ -108,11 +110,11 @@ namespace MediaBrowser.Providers.Music
         protected override void MergeData(
             MetadataResult<MusicAlbum> source,
             MetadataResult<MusicAlbum> target,
-            MetadataFields[] lockedFields,
+            MetadataField[] lockedFields,
             bool replaceData,
             bool mergeMetadataSettings)
         {
-            ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
+            base.MergeData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 
             var sourceItem = source.Item;
             var targetItem = target.Item;

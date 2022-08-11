@@ -1,15 +1,20 @@
-using MediaBrowser.Controller.Entities;
+#pragma warning disable CS1591
+
+using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Controller.Net
 {
     public interface ISessionContext
     {
-        SessionInfo GetSession(object requestContext);
-        User GetUser(object requestContext);
+        Task<SessionInfo> GetSession(object requestContext);
 
-        SessionInfo GetSession(IRequest requestContext);
-        User GetUser(IRequest requestContext);
+        Task<User?> GetUser(object requestContext);
+
+        Task<SessionInfo> GetSession(HttpContext requestContext);
+
+        Task<User?> GetUser(HttpContext requestContext);
     }
 }

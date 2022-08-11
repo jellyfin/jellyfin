@@ -7,9 +7,23 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.LocalMetadata.Parsers
 {
+    /// <summary>
+    /// The box set xml parser.
+    /// </summary>
     public class BoxSetXmlParser : BaseItemXmlParser<BoxSet>
     {
-        protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<BoxSet> item)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BoxSetXmlParser"/> class.
+        /// </summary>
+        /// <param name="logger">Instance of the <see cref="ILogger{BoxSetXmlParset}"/> interface.</param>
+        /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
+        public BoxSetXmlParser(ILogger<BoxSetXmlParser> logger, IProviderManager providerManager)
+            : base(logger, providerManager)
+        {
+        }
+
+        /// <inheritdoc />
+        protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<BoxSet> itemResult)
         {
             switch (reader.Name)
             {
@@ -19,17 +33,18 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     {
                         using (var subReader = reader.ReadSubtree())
                         {
-                            FetchFromCollectionItemsNode(subReader, item);
+                            FetchFromCollectionItemsNode(subReader, itemResult);
                         }
                     }
                     else
                     {
                         reader.Read();
                     }
+
                     break;
 
                 default:
-                    base.FetchDataFromXmlNode(reader, item);
+                    base.FetchDataFromXmlNode(reader, itemResult);
                     break;
             }
         }
@@ -49,31 +64,32 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     switch (reader.Name)
                     {
                         case "CollectionItem":
+                        {
+                            if (!reader.IsEmptyElement)
                             {
-                                if (!reader.IsEmptyElement)
+                                using (var subReader = reader.ReadSubtree())
                                 {
-                                    using (var subReader = reader.ReadSubtree())
-                                    {
-                                        var child = GetLinkedChild(subReader);
+                                    var child = GetLinkedChild(subReader);
 
-                                        if (child != null)
-                                        {
-                                            list.Add(child);
-                                        }
+                                    if (child != null)
+                                    {
+                                        list.Add(child);
                                     }
                                 }
-                                else
-                                {
-                                    reader.Read();
-                                }
-
-                                break;
                             }
-                        default:
+                            else
                             {
-                                reader.Skip();
-                                break;
+                                reader.Read();
                             }
+
+                            break;
+                        }
+
+                        default:
+                        {
+                            reader.Skip();
+                            break;
+                        }
                     }
                 }
                 else
@@ -83,11 +99,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
             }
 
             item.Item.LinkedChildren = list.ToArray();
-        }
-
-        public BoxSetXmlParser(ILogger logger, IProviderManager providerManager)
-            : base(logger, providerManager)
-        {
         }
     }
 }

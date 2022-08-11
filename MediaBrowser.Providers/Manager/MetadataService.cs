@@ -1,10 +1,17 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
@@ -19,20 +26,37 @@ namespace MediaBrowser.Providers.Manager
         where TItemType : BaseItem, IHasLookupInfo<TIdType>, new()
         where TIdType : ItemLookupInfo, new()
     {
-        protected readonly IServerConfigurationManager ServerConfigurationManager;
-        protected readonly ILogger Logger;
-        protected readonly IProviderManager ProviderManager;
-        protected readonly IFileSystem FileSystem;
-        protected readonly ILibraryManager LibraryManager;
-
-        protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, ILibraryManager libraryManager)
+        protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger<MetadataService<TItemType, TIdType>> logger, IProviderManager providerManager, IFileSystem fileSystem, ILibraryManager libraryManager)
         {
             ServerConfigurationManager = serverConfigurationManager;
             Logger = logger;
             ProviderManager = providerManager;
             FileSystem = fileSystem;
             LibraryManager = libraryManager;
+            ImageProvider = new ItemImageProvider(Logger, ProviderManager, FileSystem);
         }
+
+        protected ItemImageProvider ImageProvider { get; }
+
+        protected IServerConfigurationManager ServerConfigurationManager { get; }
+
+        protected ILogger<MetadataService<TItemType, TIdType>> Logger { get; }
+
+        protected IProviderManager ProviderManager { get; }
+
+        protected IFileSystem FileSystem { get; }
+
+        protected ILibraryManager LibraryManager { get; }
+
+        protected virtual bool EnableUpdatingPremiereDateFromChildren => false;
+
+        protected virtual bool EnableUpdatingGenresFromChildren => false;
+
+        protected virtual bool EnableUpdatingStudiosFromChildren => false;
+
+        protected virtual bool EnableUpdatingOfficialRatingFromChildren => false;
+
+        public virtual int Order => 0;
 
         private FileSystemMetadata TryGetFile(string path, IDirectoryService directoryService)
         {
@@ -50,17 +74,12 @@ namespace MediaBrowser.Providers.Manager
         public async Task<ItemUpdateType> RefreshMetadata(BaseItem item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
             var itemOfType = (TItemType)item;
-            var config = ProviderManager.GetMetadataOptions(item);
 
             var updateType = ItemUpdateType.None;
-            var requiresRefresh = false;
 
             var libraryOptions = LibraryManager.GetLibraryOptions(item);
 
-            if (!requiresRefresh && libraryOptions.AutomaticRefreshIntervalDays > 0 && (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= libraryOptions.AutomaticRefreshIntervalDays)
-            {
-                requiresRefresh = true;
-            }
+            var requiresRefresh = libraryOptions.AutomaticRefreshIntervalDays > 0 && (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= libraryOptions.AutomaticRefreshIntervalDays;
 
             if (!requiresRefresh && refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
             {
@@ -69,28 +88,35 @@ namespace MediaBrowser.Providers.Manager
 
                 if (requiresRefresh)
                 {
-                    Logger.LogDebug("Refreshing {0} {1} because item.RequiresRefresh() returned true", typeof(TItemType).Name, item.Path ?? item.Name);
+                    Logger.LogDebug("Refreshing {Type} {Item} because item.RequiresRefresh() returned true", typeof(TItemType).Name, item.Path ?? item.Name);
                 }
             }
 
-            var itemImageProvider = new ItemImageProvider(Logger, ProviderManager, ServerConfigurationManager, FileSystem);
             var localImagesFailed = false;
 
             var allImageProviders = ((ProviderManager)ProviderManager).GetImageProviders(item, refreshOptions).ToList();
+
+            if (refreshOptions.RemoveOldMetadata && refreshOptions.ReplaceAllImages)
+            {
+                if (ImageProvider.RemoveImages(item))
+                {
+                    updateType |= ItemUpdateType.ImageUpdate;
+                }
+            }
 
             // Start by validating images
             try
             {
                 // Always validate images and check for new locally stored ones.
-                if (itemImageProvider.ValidateImages(item, allImageProviders.OfType<ILocalImageProvider>(), refreshOptions.DirectoryService))
+                if (ImageProvider.ValidateImages(item, allImageProviders.OfType<ILocalImageProvider>(), refreshOptions.DirectoryService))
                 {
-                    updateType = updateType | ItemUpdateType.ImageUpdate;
+                    updateType |= ItemUpdateType.ImageUpdate;
                 }
             }
             catch (Exception ex)
             {
                 localImagesFailed = true;
-                Logger.LogError(ex, "Error validating images for {0}", item.Path ?? item.Name ?? "Unknown name");
+                Logger.LogError(ex, "Error validating images for {Item}", item.Path ?? item.Name ?? "Unknown name");
             }
 
             var metadataResult = new MetadataResult<TItemType>
@@ -100,7 +126,7 @@ namespace MediaBrowser.Providers.Manager
 
             bool hasRefreshedMetadata = true;
             bool hasRefreshedImages = true;
-            var isFirstRefresh = item.DateLastRefreshed == default(DateTime);
+            var isFirstRefresh = item.DateLastRefreshed == default;
 
             // Next run metadata providers
             if (refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
@@ -112,7 +138,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     if (item.BeforeMetadataRefresh(refreshOptions.ReplaceAllMetadata))
                     {
-                        updateType = updateType | ItemUpdateType.MetadataImport;
+                        updateType |= ItemUpdateType.MetadataImport;
                     }
                 }
 
@@ -125,12 +151,12 @@ namespace MediaBrowser.Providers.Manager
                         ApplySearchResult(id, refreshOptions.SearchResult);
                     }
 
-                    //await FindIdentities(id, cancellationToken).ConfigureAwait(false);
+                    // await FindIdentities(id, cancellationToken).ConfigureAwait(false);
                     id.IsAutomated = refreshOptions.IsAutomated;
 
-                    var result = await RefreshWithProviders(metadataResult, id, refreshOptions, providers, itemImageProvider, cancellationToken).ConfigureAwait(false);
+                    var result = await RefreshWithProviders(metadataResult, id, refreshOptions, providers, ImageProvider, cancellationToken).ConfigureAwait(false);
 
-                    updateType = updateType | result.UpdateType;
+                    updateType |= result.UpdateType;
                     if (result.Failures > 0)
                     {
                         hasRefreshedMetadata = false;
@@ -145,9 +171,9 @@ namespace MediaBrowser.Providers.Manager
 
                 if (providers.Count > 0)
                 {
-                    var result = await itemImageProvider.RefreshImages(itemOfType, libraryOptions, providers, refreshOptions, config, cancellationToken).ConfigureAwait(false);
+                    var result = await ImageProvider.RefreshImages(itemOfType, libraryOptions, providers, refreshOptions, cancellationToken).ConfigureAwait(false);
 
-                    updateType = updateType | result.UpdateType;
+                    updateType |= result.UpdateType;
                     if (result.Failures > 0)
                     {
                         hasRefreshedImages = false;
@@ -156,7 +182,7 @@ namespace MediaBrowser.Providers.Manager
             }
 
             var beforeSaveResult = BeforeSave(itemOfType, isFirstRefresh || refreshOptions.ReplaceAllMetadata || refreshOptions.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || requiresRefresh || refreshOptions.ForceSave, updateType);
-            updateType = updateType | beforeSaveResult;
+            updateType |= beforeSaveResult;
 
             // Save if changes were made, or it's never been saved before
             if (refreshOptions.ForceSave || updateType > ItemUpdateType.None || isFirstRefresh || refreshOptions.ReplaceAllMetadata || requiresRefresh)
@@ -173,7 +199,7 @@ namespace MediaBrowser.Providers.Manager
                 // If any of these properties are set then make sure the updateType is not None, just to force everything to save
                 if (refreshOptions.ForceSave || refreshOptions.ReplaceAllMetadata)
                 {
-                    updateType = updateType | ItemUpdateType.MetadataDownload;
+                    updateType |= ItemUpdateType.MetadataDownload;
                 }
 
                 if (hasRefreshedMetadata && hasRefreshedImages)
@@ -182,11 +208,11 @@ namespace MediaBrowser.Providers.Manager
                 }
                 else
                 {
-                    item.DateLastRefreshed = default(DateTime);
+                    item.DateLastRefreshed = default;
                 }
 
                 // Save to database
-                SaveItem(metadataResult, libraryOptions, updateType, cancellationToken);
+                await SaveItemAsync(metadataResult, updateType, cancellationToken).ConfigureAwait(false);
             }
 
             await AfterMetadataRefresh(itemOfType, refreshOptions, cancellationToken).ConfigureAwait(false);
@@ -196,80 +222,35 @@ namespace MediaBrowser.Providers.Manager
 
         private void ApplySearchResult(ItemLookupInfo lookupInfo, RemoteSearchResult result)
         {
-            lookupInfo.ProviderIds = result.ProviderIds;
-            lookupInfo.Name = result.Name;
-            lookupInfo.Year = result.ProductionYear;
+            // Episode and Season do not support Identify, so the search results are the Series'
+            switch (lookupInfo)
+            {
+                case EpisodeInfo episodeInfo:
+                    episodeInfo.SeriesProviderIds = result.ProviderIds;
+                    episodeInfo.ProviderIds.Clear();
+                    break;
+                case SeasonInfo seasonInfo:
+                    seasonInfo.SeriesProviderIds = result.ProviderIds;
+                    seasonInfo.ProviderIds.Clear();
+                    break;
+                default:
+                    lookupInfo.ProviderIds = result.ProviderIds;
+                    lookupInfo.Name = result.Name;
+                    lookupInfo.Year = result.ProductionYear;
+                    break;
+            }
         }
 
-        protected void SaveItem(MetadataResult<TItemType> result, LibraryOptions libraryOptions, ItemUpdateType reason, CancellationToken cancellationToken)
+        protected async Task SaveItemAsync(MetadataResult<TItemType> result, ItemUpdateType reason, CancellationToken cancellationToken)
         {
             if (result.Item.SupportsPeople && result.People != null)
             {
                 var baseItem = result.Item;
 
-                LibraryManager.UpdatePeople(baseItem, result.People);
-                SavePeopleMetadata(result.People, libraryOptions, cancellationToken);
+                await LibraryManager.UpdatePeopleAsync(baseItem, result.People, cancellationToken).ConfigureAwait(false);
             }
-            result.Item.UpdateToRepository(reason, cancellationToken);
-        }
 
-        private void SavePeopleMetadata(List<PersonInfo> people, LibraryOptions libraryOptions, CancellationToken cancellationToken)
-        {
-            foreach (var person in people)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                if (person.ProviderIds.Any() || !string.IsNullOrWhiteSpace(person.ImageUrl))
-                {
-                    var updateType = ItemUpdateType.MetadataDownload;
-
-                    var saveEntity = false;
-                    var personEntity = LibraryManager.GetPerson(person.Name);
-                    foreach (var id in person.ProviderIds)
-                    {
-                        if (!string.Equals(personEntity.GetProviderId(id.Key), id.Value, StringComparison.OrdinalIgnoreCase))
-                        {
-                            personEntity.SetProviderId(id.Key, id.Value);
-                            saveEntity = true;
-                        }
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(person.ImageUrl) && !personEntity.HasImage(ImageType.Primary))
-                    {
-                        AddPersonImage(personEntity, libraryOptions, person.ImageUrl, cancellationToken);
-
-                        saveEntity = true;
-                        updateType = updateType | ItemUpdateType.ImageUpdate;
-                    }
-
-                    if (saveEntity)
-                    {
-                        personEntity.UpdateToRepository(updateType, cancellationToken);
-                    }
-                }
-            }
-        }
-
-        private void AddPersonImage(Person personEntity, LibraryOptions libraryOptions, string imageUrl, CancellationToken cancellationToken)
-        {
-            //if (libraryOptions.DownloadImagesInAdvance)
-            //{
-            //    try
-            //    {
-            //        await ProviderManager.SaveImage(personEntity, imageUrl, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
-            //        return;
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        Logger.LogError(ex, "Error in AddPersonImage");
-            //    }
-            //}
-
-            personEntity.SetImage(new ItemImageInfo
-            {
-                Path = imageUrl,
-                Type = ImageType.Primary
-            }, 0);
+            await result.Item.UpdateToRepositoryAsync(reason, cancellationToken).ConfigureAwait(false);
         }
 
         protected virtual Task AfterMetadataRefresh(TItemType item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
@@ -279,7 +260,7 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <summary>
-        /// Befores the save.
+        /// Before the save.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="isFullRefresh">if set to <c>true</c> [is full refresh].</param>
@@ -324,8 +305,8 @@ namespace MediaBrowser.Providers.Manager
                 {
                     return true;
                 }
-                var folder = item as Folder;
-                if (folder != null)
+
+                if (item is Folder folder)
                 {
                     return folder.SupportsDateLastMediaAdded || folder.SupportsCumulativeRunTimeTicks;
                 }
@@ -336,13 +317,12 @@ namespace MediaBrowser.Providers.Manager
 
         protected virtual IList<BaseItem> GetChildrenForMetadataUpdates(TItemType item)
         {
-            var folder = item as Folder;
-            if (folder != null)
+            if (item is Folder folder)
             {
                 return folder.GetRecursiveChildren();
             }
 
-            return new List<BaseItem>();
+            return Array.Empty<BaseItem>();
         }
 
         protected virtual ItemUpdateType UpdateMetadataFromChildren(TItemType item, IList<BaseItem> children, bool isFullRefresh, ItemUpdateType currentUpdateType)
@@ -380,8 +360,7 @@ namespace MediaBrowser.Providers.Manager
 
         private ItemUpdateType UpdateCumulativeRunTimeTicks(TItemType item, IList<BaseItem> children)
         {
-            var folder = item as Folder;
-            if (folder != null && folder.SupportsCumulativeRunTimeTicks)
+            if (item is Folder folder && folder.SupportsCumulativeRunTimeTicks)
             {
                 long ticks = 0;
 
@@ -389,7 +368,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     if (!child.IsFolder)
                     {
-                        ticks += (child.RunTimeTicks ?? 0);
+                        ticks += child.RunTimeTicks ?? 0;
                     }
                 }
 
@@ -407,8 +386,7 @@ namespace MediaBrowser.Providers.Manager
         {
             var updateType = ItemUpdateType.None;
 
-            var folder = item as Folder;
-            if (folder != null && folder.SupportsDateLastMediaAdded)
+            if (item is Folder folder && folder.SupportsDateLastMediaAdded)
             {
                 var dateLastMediaAdded = DateTime.MinValue;
                 var any = false;
@@ -422,6 +400,7 @@ namespace MediaBrowser.Providers.Manager
                         {
                             dateLastMediaAdded = childDateCreated;
                         }
+
                         any = true;
                     }
                 }
@@ -435,14 +414,6 @@ namespace MediaBrowser.Providers.Manager
 
             return updateType;
         }
-
-        protected virtual bool EnableUpdatingPremiereDateFromChildren => false;
-
-        protected virtual bool EnableUpdatingGenresFromChildren => false;
-
-        protected virtual bool EnableUpdatingStudiosFromChildren => false;
-
-        protected virtual bool EnableUpdatingOfficialRatingFromChildren => false;
 
         private ItemUpdateType UpdatePremiereDate(TItemType item, IList<BaseItem> children)
         {
@@ -476,7 +447,7 @@ namespace MediaBrowser.Providers.Manager
             if ((originalPremiereDate ?? DateTime.MinValue) != (item.PremiereDate ?? DateTime.MinValue) ||
                 (originalProductionYear ?? -1) != (item.ProductionYear ?? -1))
             {
-                updateType = updateType | ItemUpdateType.MetadataEdit;
+                updateType |= ItemUpdateType.MetadataEdit;
             }
 
             return updateType;
@@ -486,7 +457,7 @@ namespace MediaBrowser.Providers.Manager
         {
             var updateType = ItemUpdateType.None;
 
-            if (!item.LockedFields.Contains(MetadataFields.Genres))
+            if (!item.LockedFields.Contains(MetadataField.Genres))
             {
                 var currentList = item.Genres;
 
@@ -496,7 +467,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (currentList.Length != item.Genres.Length || !currentList.OrderBy(i => i).SequenceEqual(item.Genres.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
                 {
-                    updateType = updateType | ItemUpdateType.MetadataEdit;
+                    updateType |= ItemUpdateType.MetadataEdit;
                 }
             }
 
@@ -507,7 +478,7 @@ namespace MediaBrowser.Providers.Manager
         {
             var updateType = ItemUpdateType.None;
 
-            if (!item.LockedFields.Contains(MetadataFields.Studios))
+            if (!item.LockedFields.Contains(MetadataField.Studios))
             {
                 var currentList = item.Studios;
 
@@ -517,7 +488,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (currentList.Length != item.Studios.Length || !currentList.OrderBy(i => i).SequenceEqual(item.Studios.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
                 {
-                    updateType = updateType | ItemUpdateType.MetadataEdit;
+                    updateType |= ItemUpdateType.MetadataEdit;
                 }
             }
 
@@ -528,11 +499,11 @@ namespace MediaBrowser.Providers.Manager
         {
             var updateType = ItemUpdateType.None;
 
-            if (!item.LockedFields.Contains(MetadataFields.OfficialRating))
+            if (!item.LockedFields.Contains(MetadataField.OfficialRating))
             {
                 if (item.UpdateRatingToItems(children))
                 {
-                    updateType = updateType | ItemUpdateType.MetadataEdit;
+                    updateType |= ItemUpdateType.MetadataEdit;
                 }
             }
 
@@ -542,6 +513,11 @@ namespace MediaBrowser.Providers.Manager
         /// <summary>
         /// Gets the providers.
         /// </summary>
+        /// <param name="item">A media item.</param>
+        /// <param name="libraryOptions">The LibraryOptions to use.</param>
+        /// <param name="options">The MetadataRefreshOptions to use.</param>
+        /// <param name="isFirstRefresh">Specifies first refresh mode.</param>
+        /// <param name="requiresRefresh">Specifies refresh mode.</param>
         /// <returns>IEnumerable{`0}.</returns>
         protected IEnumerable<IMetadataProvider> GetProviders(BaseItem item, LibraryOptions libraryOptions, MetadataRefreshOptions options, bool isFirstRefresh, bool requiresRefresh)
         {
@@ -606,7 +582,6 @@ namespace MediaBrowser.Providers.Manager
 
                         // Run custom refresh providers if they report a change or any remote providers change
                         return anyRemoteProvidersChanged || providersWithChanges.Contains(i);
-
                     }).ToList();
                 }
             }
@@ -617,7 +592,7 @@ namespace MediaBrowser.Providers.Manager
         protected virtual IEnumerable<IImageProvider> GetNonLocalImageProviders(BaseItem item, IEnumerable<IImageProvider> allImageProviders, ImageRefreshOptions options)
         {
             // Get providers to refresh
-            var providers = allImageProviders.Where(i => !(i is ILocalImageProvider)).ToList();
+            var providers = allImageProviders.Where(i => i is not ILocalImageProvider);
 
             var dateLastImageRefresh = item.DateLastRefreshed;
 
@@ -629,15 +604,13 @@ namespace MediaBrowser.Providers.Manager
                 providers = providers
                     .Where(i =>
                     {
-                        var hasFileChangeMonitor = i as IHasItemChangeMonitor;
-                        if (hasFileChangeMonitor != null)
+                        if (i is IHasItemChangeMonitor hasFileChangeMonitor)
                         {
                             return HasChanged(item, hasFileChangeMonitor, options.DirectoryService);
                         }
 
                         return false;
-                    })
-                    .ToList();
+                    });
             }
 
             return providers;
@@ -653,10 +626,11 @@ namespace MediaBrowser.Providers.Manager
             return type == typeof(TItemType);
         }
 
-        protected virtual async Task<RefreshResult> RefreshWithProviders(MetadataResult<TItemType> metadata,
+        protected virtual async Task<RefreshResult> RefreshWithProviders(
+            MetadataResult<TItemType> metadata,
             TIdType id,
             MetadataRefreshOptions options,
-            List<IMetadataProvider> providers,
+            ICollection<IMetadataProvider> providers,
             ItemImageProvider imageService,
             CancellationToken cancellationToken)
         {
@@ -681,25 +655,23 @@ namespace MediaBrowser.Providers.Manager
             };
             temp.Item.Path = item.Path;
 
-            var userDataList = new List<UserItemData>();
-
             // If replacing all metadata, run internet providers first
             if (options.ReplaceAllMetadata)
             {
                 var remoteResult = await ExecuteRemoteProviders(temp, logName, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
                     .ConfigureAwait(false);
 
-                refreshResult.UpdateType = refreshResult.UpdateType | remoteResult.UpdateType;
+                refreshResult.UpdateType |= remoteResult.UpdateType;
                 refreshResult.ErrorMessage = remoteResult.ErrorMessage;
                 refreshResult.Failures += remoteResult.Failures;
             }
 
             var hasLocalMetadata = false;
 
-            foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>().ToList())
+            foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>())
             {
                 var providerName = provider.GetType().Name;
-                Logger.LogDebug("Running {0} for {1}", providerName, logName);
+                Logger.LogDebug("Running {Provider} for {Item}", providerName, logName);
 
                 var itemInfo = new ItemInfo(item);
 
@@ -709,28 +681,42 @@ namespace MediaBrowser.Providers.Manager
 
                     if (localItem.HasMetadata)
                     {
+                        foreach (var remoteImage in localItem.RemoteImages)
+                        {
+                            try
+                            {
+                                if (!options.IsReplacingImage(remoteImage.Type))
+                                {
+                                    continue;
+                                }
+
+                                await ProviderManager.SaveImage(item, remoteImage.Url, remoteImage.Type, null, cancellationToken).ConfigureAwait(false);
+                                refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
+                            }
+                            catch (HttpRequestException ex)
+                            {
+                                Logger.LogError(ex, "Could not save {ImageType} image: {Url}", Enum.GetName(remoteImage.Type), remoteImage.Url);
+                            }
+                        }
+
                         if (imageService.MergeImages(item, localItem.Images))
                         {
-                            refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.ImageUpdate;
+                            refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
                         }
 
-                        if (localItem.UserDataList != null)
-                        {
-                            userDataList.AddRange(localItem.UserDataList);
-                        }
-
-                        MergeData(localItem, temp, new MetadataFields[] { }, !options.ReplaceAllMetadata, true);
-                        refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
+                        MergeData(localItem, temp, Array.Empty<MetadataField>(), !options.ReplaceAllMetadata, true);
+                        refreshResult.UpdateType |= ItemUpdateType.MetadataImport;
 
                         // Only one local provider allowed per item
                         if (item.IsLocked || localItem.Item.IsLocked || IsFullLocalMetadata(localItem.Item))
                         {
                             hasLocalMetadata = true;
                         }
+
                         break;
                     }
 
-                    Logger.LogDebug("{0} returned no metadata for {1}", providerName, logName);
+                    Logger.LogDebug("{Provider} returned no metadata for {Item}", providerName, logName);
                 }
                 catch (OperationCanceledException)
                 {
@@ -738,7 +724,7 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, "Error in {provider}", provider.Name);
+                    Logger.LogError(ex, "Error in {Provider}", provider.Name);
 
                     // If a local provider fails, consider that a failure
                     refreshResult.ErrorMessage = ex.Message;
@@ -751,12 +737,12 @@ namespace MediaBrowser.Providers.Manager
                 var remoteResult = await ExecuteRemoteProviders(temp, logName, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
                     .ConfigureAwait(false);
 
-                refreshResult.UpdateType = refreshResult.UpdateType | remoteResult.UpdateType;
+                refreshResult.UpdateType |= remoteResult.UpdateType;
                 refreshResult.ErrorMessage = remoteResult.ErrorMessage;
                 refreshResult.Failures += remoteResult.Failures;
             }
 
-            if (providers.Any(i => !(i is ICustomMetadataProvider)))
+            if (providers.Any(i => i is not ICustomMetadataProvider))
             {
                 if (refreshResult.UpdateType > ItemUpdateType.None)
                 {
@@ -766,21 +752,20 @@ namespace MediaBrowser.Providers.Manager
                     }
                     else
                     {
-                        // TODO: If the new metadata from above has some blank data, this can cause old data to get filled into those empty fields
-                        MergeData(metadata, temp, new MetadataFields[] { }, false, false);
+                        if (!options.RemoveOldMetadata)
+                        {
+                            MergeData(metadata, temp, Array.Empty<MetadataField>(), false, false);
+                        }
+
                         MergeData(temp, metadata, item.LockedFields, true, false);
                     }
                 }
             }
 
-            //var isUnidentified = failedProviderCount > 0 && successfulProviderCount == 0;
-
-            foreach (var provider in customProviders.Where(i => !(i is IPreRefreshProvider)))
+            foreach (var provider in customProviders.Where(i => i is not IPreRefreshProvider))
             {
                 await RunCustomProvider(provider, item, logName, options, refreshResult, cancellationToken).ConfigureAwait(false);
             }
-
-            //ImportUserData(item, userDataList, cancellationToken);
 
             return refreshResult;
         }
@@ -797,11 +782,11 @@ namespace MediaBrowser.Providers.Manager
 
         private async Task RunCustomProvider(ICustomMetadataProvider<TItemType> provider, TItemType item, string logName, MetadataRefreshOptions options, RefreshResult refreshResult, CancellationToken cancellationToken)
         {
-            Logger.LogDebug("Running {0} for {1}", provider.GetType().Name, logName);
+            Logger.LogDebug("Running {Provider} for {Item}", provider.GetType().Name, logName);
 
             try
             {
-                refreshResult.UpdateType = refreshResult.UpdateType | await provider.FetchAsync(item, options, cancellationToken).ConfigureAwait(false);
+                refreshResult.UpdateType |= await provider.FetchAsync(item, options, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -810,7 +795,7 @@ namespace MediaBrowser.Providers.Manager
             catch (Exception ex)
             {
                 refreshResult.ErrorMessage = ex.Message;
-                Logger.LogError(ex, "Error in {provider}", provider.Name);
+                Logger.LogError(ex, "Error in {Provider}", provider.Name);
             }
         }
 
@@ -828,7 +813,7 @@ namespace MediaBrowser.Providers.Manager
             foreach (var provider in providers)
             {
                 var providerName = provider.GetType().Name;
-                Logger.LogDebug("Running {0} for {1}", providerName, logName);
+                Logger.LogDebug("Running {Provider} for {Item}", providerName, logName);
 
                 if (id != null && !tmpDataMerged)
                 {
@@ -844,14 +829,14 @@ namespace MediaBrowser.Providers.Manager
                     {
                         result.Provider = provider.Name;
 
-                        MergeData(result, temp, new MetadataFields[] { }, false, false);
+                        MergeData(result, temp, Array.Empty<MetadataField>(), false, false);
                         MergeNewData(temp.Item, id);
 
-                        refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataDownload;
+                        refreshResult.UpdateType |= ItemUpdateType.MetadataDownload;
                     }
                     else
                     {
-                        Logger.LogDebug("{0} returned no metadata for {1}", providerName, logName);
+                        Logger.LogDebug("{Provider} returned no metadata for {Item}", providerName, logName);
                     }
                 }
                 catch (OperationCanceledException)
@@ -862,20 +847,11 @@ namespace MediaBrowser.Providers.Manager
                 {
                     refreshResult.Failures++;
                     refreshResult.ErrorMessage = ex.Message;
-                    Logger.LogError(ex, "Error in {provider}", provider.Name);
+                    Logger.LogError(ex, "Error in {Provider}", provider.Name);
                 }
             }
 
             return refreshResult;
-        }
-
-        private string NormalizeLanguage(string language)
-        {
-            if (string.IsNullOrWhiteSpace(language))
-            {
-                return "en";
-            }
-            return language;
         }
 
         private void MergeNewData(TItemType source, TIdType lookupInfo)
@@ -893,39 +869,320 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        protected abstract void MergeData(MetadataResult<TItemType> source,
-            MetadataResult<TItemType> target,
-            MetadataFields[] lockedFields,
-            bool replaceData,
-            bool mergeMetadataSettings);
-
-        public virtual int Order => 0;
-
         private bool HasChanged(BaseItem item, IHasItemChangeMonitor changeMonitor, IDirectoryService directoryService)
         {
             try
             {
                 var hasChanged = changeMonitor.HasChanged(item, directoryService);
 
-                //if (hasChanged)
-                //{
-                //    logger.LogDebug("{0} reports change to {1}", changeMonitor.GetType().Name, item.Path ?? item.Name);
-                //}
+                if (hasChanged)
+                {
+                    Logger.LogDebug("{Monitor} reports change to {Item}", changeMonitor.GetType().Name, item.Path ?? item.Name);
+                }
 
                 return hasChanged;
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error in {0}.HasChanged", changeMonitor.GetType().Name);
+                Logger.LogError(ex, "Error in {Monitor}.HasChanged", changeMonitor.GetType().Name);
                 return false;
             }
         }
-    }
 
-    public class RefreshResult
-    {
-        public ItemUpdateType UpdateType { get; set; }
-        public string ErrorMessage { get; set; }
-        public int Failures { get; set; }
+        /// <summary>
+        /// Merges metadata from source into target.
+        /// </summary>
+        /// <param name="source">The source for new metadata.</param>
+        /// <param name="target">The target to insert new metadata into.</param>
+        /// <param name="lockedFields">The fields that are locked and should not be updated.</param>
+        /// <param name="replaceData"><c>true</c> if existing data should be replaced.</param>
+        /// <param name="mergeMetadataSettings"><c>true</c> if the metadata settings in target should be updated to match source.</param>
+        /// <exception cref="ArgumentException">Thrown if source or target are null.</exception>
+        protected virtual void MergeData(
+            MetadataResult<TItemType> source,
+            MetadataResult<TItemType> target,
+            MetadataField[] lockedFields,
+            bool replaceData,
+            bool mergeMetadataSettings)
+        {
+            MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
+        }
+
+        internal static void MergeBaseItemData(
+            MetadataResult<TItemType> sourceResult,
+            MetadataResult<TItemType> targetResult,
+            MetadataField[] lockedFields,
+            bool replaceData,
+            bool mergeMetadataSettings)
+        {
+            var source = sourceResult.Item;
+            var target = targetResult.Item;
+
+            if (source == null)
+            {
+                throw new ArgumentException("Item cannot be null.", nameof(sourceResult));
+            }
+
+            if (target == null)
+            {
+                throw new ArgumentException("Item cannot be null.", nameof(targetResult));
+            }
+
+            if (!lockedFields.Contains(MetadataField.Name))
+            {
+                if (replaceData || string.IsNullOrEmpty(target.Name))
+                {
+                    // Safeguard against incoming data having an empty name
+                    if (!string.IsNullOrWhiteSpace(source.Name))
+                    {
+                        target.Name = source.Name;
+                    }
+                }
+            }
+
+            if (replaceData || string.IsNullOrEmpty(target.OriginalTitle))
+            {
+                // Safeguard against incoming data having an empty name
+                if (!string.IsNullOrWhiteSpace(source.OriginalTitle))
+                {
+                    target.OriginalTitle = source.OriginalTitle;
+                }
+            }
+
+            if (replaceData || !target.CommunityRating.HasValue)
+            {
+                target.CommunityRating = source.CommunityRating;
+            }
+
+            if (replaceData || !target.EndDate.HasValue)
+            {
+                target.EndDate = source.EndDate;
+            }
+
+            if (!lockedFields.Contains(MetadataField.Genres))
+            {
+                if (replaceData || target.Genres.Length == 0)
+                {
+                    target.Genres = source.Genres;
+                }
+            }
+
+            if (replaceData || !target.IndexNumber.HasValue)
+            {
+                target.IndexNumber = source.IndexNumber;
+            }
+
+            if (!lockedFields.Contains(MetadataField.OfficialRating))
+            {
+                if (replaceData || string.IsNullOrEmpty(target.OfficialRating))
+                {
+                    target.OfficialRating = source.OfficialRating;
+                }
+            }
+
+            if (replaceData || string.IsNullOrEmpty(target.CustomRating))
+            {
+                target.CustomRating = source.CustomRating;
+            }
+
+            if (replaceData || string.IsNullOrEmpty(target.Tagline))
+            {
+                target.Tagline = source.Tagline;
+            }
+
+            if (!lockedFields.Contains(MetadataField.Overview))
+            {
+                if (replaceData || string.IsNullOrEmpty(target.Overview))
+                {
+                    target.Overview = source.Overview;
+                }
+            }
+
+            if (replaceData || !target.ParentIndexNumber.HasValue)
+            {
+                target.ParentIndexNumber = source.ParentIndexNumber;
+            }
+
+            if (!lockedFields.Contains(MetadataField.Cast))
+            {
+                if (replaceData || targetResult.People == null || targetResult.People.Count == 0)
+                {
+                    targetResult.People = sourceResult.People;
+                }
+                else if (targetResult.People != null && sourceResult.People != null)
+                {
+                    MergePeople(sourceResult.People, targetResult.People);
+                }
+            }
+
+            if (replaceData || !target.PremiereDate.HasValue)
+            {
+                target.PremiereDate = source.PremiereDate;
+            }
+
+            if (replaceData || !target.ProductionYear.HasValue)
+            {
+                target.ProductionYear = source.ProductionYear;
+            }
+
+            if (!lockedFields.Contains(MetadataField.Runtime))
+            {
+                if (replaceData || !target.RunTimeTicks.HasValue)
+                {
+                    if (target is not Audio && target is not Video)
+                    {
+                        target.RunTimeTicks = source.RunTimeTicks;
+                    }
+                }
+            }
+
+            if (!lockedFields.Contains(MetadataField.Studios))
+            {
+                if (replaceData || target.Studios.Length == 0)
+                {
+                    target.Studios = source.Studios;
+                }
+            }
+
+            if (!lockedFields.Contains(MetadataField.Tags))
+            {
+                if (replaceData || target.Tags.Length == 0)
+                {
+                    target.Tags = source.Tags;
+                }
+            }
+
+            if (!lockedFields.Contains(MetadataField.ProductionLocations))
+            {
+                if (replaceData || target.ProductionLocations.Length == 0)
+                {
+                    target.ProductionLocations = source.ProductionLocations;
+                }
+            }
+
+            foreach (var id in source.ProviderIds)
+            {
+                var key = id.Key;
+
+                // Don't replace existing Id's.
+                if (replaceData)
+                {
+                    target.ProviderIds[key] = id.Value;
+                }
+                else
+                {
+                    target.ProviderIds.TryAdd(key, id.Value);
+                }
+            }
+
+            MergeAlbumArtist(source, target, replaceData);
+            MergeCriticRating(source, target, replaceData);
+            MergeTrailers(source, target, replaceData);
+            MergeVideoInfo(source, target, replaceData);
+            MergeDisplayOrder(source, target, replaceData);
+
+            if (replaceData || string.IsNullOrEmpty(target.ForcedSortName))
+            {
+                var forcedSortName = source.ForcedSortName;
+
+                if (!string.IsNullOrWhiteSpace(forcedSortName))
+                {
+                    target.ForcedSortName = forcedSortName;
+                }
+            }
+
+            if (mergeMetadataSettings)
+            {
+                target.LockedFields = source.LockedFields;
+                target.IsLocked = source.IsLocked;
+
+                // Grab the value if it's there, but if not then don't overwrite with the default
+                if (source.DateCreated != default)
+                {
+                    target.DateCreated = source.DateCreated;
+                }
+
+                target.PreferredMetadataCountryCode = source.PreferredMetadataCountryCode;
+                target.PreferredMetadataLanguage = source.PreferredMetadataLanguage;
+            }
+        }
+
+        private static void MergePeople(List<PersonInfo> source, List<PersonInfo> target)
+        {
+            foreach (var person in target)
+            {
+                var normalizedName = person.Name.RemoveDiacritics();
+                var personInSource = source.FirstOrDefault(i => string.Equals(i.Name.RemoveDiacritics(), normalizedName, StringComparison.OrdinalIgnoreCase));
+
+                if (personInSource != null)
+                {
+                    foreach (var providerId in personInSource.ProviderIds)
+                    {
+                        person.ProviderIds.TryAdd(providerId.Key, providerId.Value);
+                    }
+
+                    if (string.IsNullOrWhiteSpace(person.ImageUrl))
+                    {
+                        person.ImageUrl = personInSource.ImageUrl;
+                    }
+                }
+            }
+        }
+
+        private static void MergeDisplayOrder(BaseItem source, BaseItem target, bool replaceData)
+        {
+            if (source is IHasDisplayOrder sourceHasDisplayOrder
+                && target is IHasDisplayOrder targetHasDisplayOrder)
+            {
+                if (replaceData || string.IsNullOrEmpty(targetHasDisplayOrder.DisplayOrder))
+                {
+                    var displayOrder = sourceHasDisplayOrder.DisplayOrder;
+
+                    if (!string.IsNullOrWhiteSpace(displayOrder))
+                    {
+                        targetHasDisplayOrder.DisplayOrder = displayOrder;
+                    }
+                }
+            }
+        }
+
+        private static void MergeAlbumArtist(BaseItem source, BaseItem target, bool replaceData)
+        {
+            if (source is IHasAlbumArtist sourceHasAlbumArtist
+                && target is IHasAlbumArtist targetHasAlbumArtist)
+            {
+                if (replaceData || targetHasAlbumArtist.AlbumArtists.Count == 0)
+                {
+                    targetHasAlbumArtist.AlbumArtists = sourceHasAlbumArtist.AlbumArtists;
+                }
+            }
+        }
+
+        private static void MergeCriticRating(BaseItem source, BaseItem target, bool replaceData)
+        {
+            if (replaceData || !target.CriticRating.HasValue)
+            {
+                target.CriticRating = source.CriticRating;
+            }
+        }
+
+        private static void MergeTrailers(BaseItem source, BaseItem target, bool replaceData)
+        {
+            if (replaceData || target.RemoteTrailers.Count == 0)
+            {
+                target.RemoteTrailers = source.RemoteTrailers;
+            }
+        }
+
+        private static void MergeVideoInfo(BaseItem source, BaseItem target, bool replaceData)
+        {
+            if (source is Video sourceCast && target is Video targetCast)
+            {
+                if (replaceData || targetCast.Video3DFormat == null)
+                {
+                    targetCast.Video3DFormat = sourceCast.Video3DFormat;
+                }
+            }
+        }
     }
 }

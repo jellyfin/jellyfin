@@ -1,7 +1,13 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Session;
@@ -10,12 +16,21 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Controller.Session
 {
     /// <summary>
-    /// Class SessionInfo
+    /// Class SessionInfo.
     /// </summary>
-    public class SessionInfo : IDisposable
+    public sealed class SessionInfo : IAsyncDisposable, IDisposable
     {
-        private ISessionManager _sessionManager;
+        // 1 second
+        private const long ProgressIncrement = 10000000;
+
+        private readonly ISessionManager _sessionManager;
         private readonly ILogger _logger;
+
+        private readonly object _progressLock = new object();
+        private Timer _progressTimer;
+        private PlaybackProgressInfo _lastProgressInfo;
+
+        private bool _disposed = false;
 
         public SessionInfo(ISessionManager sessionManager, ILogger logger)
         {
@@ -25,6 +40,8 @@ namespace MediaBrowser.Controller.Session
             AdditionalUsers = Array.Empty<SessionUserInfo>();
             PlayState = new PlayerStateInfo();
             SessionControllers = Array.Empty<ISessionController>();
+            NowPlayingQueue = Array.Empty<QueueItem>();
+            NowPlayingQueueFullItems = Array.Empty<BaseItemDto>();
         }
 
         public PlayerStateInfo PlayState { get; set; }
@@ -40,10 +57,10 @@ namespace MediaBrowser.Controller.Session
         public string RemoteEndPoint { get; set; }
 
         /// <summary>
-        /// Gets or sets the playable media types.
+        /// Gets the playable media types.
         /// </summary>
         /// <value>The playable media types.</value>
-        public string[] PlayableMediaTypes
+        public IReadOnlyList<string> PlayableMediaTypes
         {
             get
             {
@@ -51,6 +68,7 @@ namespace MediaBrowser.Controller.Session
                 {
                     return Array.Empty<string>();
                 }
+
                 return Capabilities.PlayableMediaTypes;
             }
         }
@@ -97,6 +115,10 @@ namespace MediaBrowser.Controller.Session
         /// <value>The name of the device.</value>
         public string DeviceName { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type of the device.
+        /// </summary>
+        /// <value>The type of the device.</value>
         public string DeviceType { get; set; }
 
         /// <summary>
@@ -106,6 +128,8 @@ namespace MediaBrowser.Controller.Session
         public BaseItemDto NowPlayingItem { get; set; }
 
         public BaseItem FullNowPlayingItem { get; set; }
+
+        public BaseItemDto NowViewingItem { get; set; }
 
         /// <summary>
         /// Gets or sets the device id.
@@ -126,28 +150,6 @@ namespace MediaBrowser.Controller.Session
         [JsonIgnore]
         public ISessionController[] SessionControllers { get; set; }
 
-        /// <summary>
-        /// Gets or sets the application icon URL.
-        /// </summary>
-        /// <value>The application icon URL.</value>
-        public string AppIconUrl { get; set; }
-
-        /// <summary>
-        /// Gets or sets the supported commands.
-        /// </summary>
-        /// <value>The supported commands.</value>
-        public string[] SupportedCommands
-        {
-            get
-            {
-                if (Capabilities == null)
-                {
-                    return new string[] { };
-                }
-                return Capabilities.SupportedCommands;
-            }
-        }
-
         public TranscodingInfo TranscodingInfo { get; set; }
 
         /// <summary>
@@ -166,6 +168,7 @@ namespace MediaBrowser.Controller.Session
                         return true;
                     }
                 }
+
                 if (controllers.Length > 0)
                 {
                     return false;
@@ -219,6 +222,25 @@ namespace MediaBrowser.Controller.Session
             }
         }
 
+        public IReadOnlyList<QueueItem> NowPlayingQueue { get; set; }
+
+        public IReadOnlyList<BaseItemDto> NowPlayingQueueFullItems { get; set; }
+
+        public bool HasCustomDeviceName { get; set; }
+
+        public string PlaylistItemId { get; set; }
+
+        public string ServerId { get; set; }
+
+        public string UserPrimaryImageTag { get; set; }
+
+        /// <summary>
+        /// Gets the supported commands.
+        /// </summary>
+        /// <value>The supported commands.</value>
+        public IReadOnlyList<GeneralCommandType> SupportedCommands
+            => Capabilities == null ? Array.Empty<GeneralCommandType>() : Capabilities.SupportedCommands;
+
         public Tuple<ISessionController, bool> EnsureController<T>(Func<SessionInfo, ISessionController> factory)
         {
             var controllers = SessionControllers.ToList();
@@ -245,11 +267,6 @@ namespace MediaBrowser.Controller.Session
             SessionControllers = controllers.ToArray();
         }
 
-        public bool ContainsUser(string userId)
-        {
-            return ContainsUser(new Guid(userId));
-        }
-
         public bool ContainsUser(Guid userId)
         {
             if (UserId.Equals(userId))
@@ -259,17 +276,14 @@ namespace MediaBrowser.Controller.Session
 
             foreach (var additionalUser in AdditionalUsers)
             {
-                if (userId.Equals(userId))
+                if (additionalUser.UserId.Equals(userId))
                 {
                     return true;
                 }
             }
+
             return false;
         }
-
-        private readonly object _progressLock = new object();
-        private Timer _progressTimer;
-        private PlaybackProgressInfo _lastProgressInfo;
 
         public void StartAutomaticProgress(PlaybackProgressInfo progressInfo)
         {
@@ -293,9 +307,6 @@ namespace MediaBrowser.Controller.Session
             }
         }
 
-        // 1 second
-        private const long ProgressIncrement = 10000000;
-
         private async void OnProgressTimerCallback(object state)
         {
             if (_disposed)
@@ -308,6 +319,7 @@ namespace MediaBrowser.Controller.Session
             {
                 return;
             }
+
             if (progressInfo.IsPaused)
             {
                 return;
@@ -321,7 +333,7 @@ namespace MediaBrowser.Controller.Session
 
             var newPositionTicks = positionTicks + ProgressIncrement;
             var item = progressInfo.Item;
-            long? runtimeTicks = item == null ? null : item.RunTimeTicks;
+            long? runtimeTicks = item?.RunTimeTicks;
 
             // Don't report beyond the runtime
             if (runtimeTicks.HasValue && newPositionTicks >= runtimeTicks.Value)
@@ -350,12 +362,12 @@ namespace MediaBrowser.Controller.Session
                     _progressTimer.Dispose();
                     _progressTimer = null;
                 }
+
                 _lastProgressInfo = null;
             }
         }
 
-        private bool _disposed = false;
-
+        /// <inheritdoc />
         public void Dispose()
         {
             _disposed = true;
@@ -367,30 +379,30 @@ namespace MediaBrowser.Controller.Session
 
             foreach (var controller in controllers)
             {
-                var disposable = controller as IDisposable;
-
-                if (disposable != null)
+                if (controller is IDisposable disposable)
                 {
-                    _logger.LogDebug("Disposing session controller {0}", disposable.GetType().Name);
-
-                    try
-                    {
-                        disposable.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error disposing session controller");
-                    }
+                    _logger.LogDebug("Disposing session controller synchronously {TypeName}", disposable.GetType().Name);
+                    disposable.Dispose();
                 }
             }
-
-            _sessionManager = null;
         }
 
-        public QueueItem[] NowPlayingQueue { get; set; }
-        public bool HasCustomDeviceName { get; set; }
-        public string PlaylistItemId { get; set; }
-        public string ServerId { get; set; }
-        public string UserPrimaryImageTag { get; set; }
+        public async ValueTask DisposeAsync()
+        {
+            _disposed = true;
+
+            StopAutomaticProgress();
+
+            var controllers = SessionControllers.ToList();
+
+            foreach (var controller in controllers)
+            {
+                if (controller is IAsyncDisposable disposableAsync)
+                {
+                    _logger.LogDebug("Disposing session controller asynchronously {TypeName}", disposableAsync.GetType().Name);
+                    await disposableAsync.DisposeAsync().ConfigureAwait(false);
+                }
+            }
+        }
     }
 }

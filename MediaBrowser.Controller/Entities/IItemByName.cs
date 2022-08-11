@@ -1,9 +1,11 @@
+#pragma warning disable CS1591
+
 using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
-    /// Marker interface
+    /// Marker interface.
     /// </summary>
     public interface IItemByName
     {

@@ -4,9 +4,9 @@ using MediaBrowser.Controller.Entities;
 namespace MediaBrowser.Controller.Sorting
 {
     /// <summary>
-    /// Interface IBaseItemComparer
+    /// Interface IBaseItemComparer.
     /// </summary>
-    public interface IBaseItemComparer : IComparer<BaseItem>
+    public interface IBaseItemComparer : IComparer<BaseItem?>
     {
         /// <summary>
         /// Gets the name.

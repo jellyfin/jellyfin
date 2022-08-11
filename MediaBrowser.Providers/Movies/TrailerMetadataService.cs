@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -13,7 +15,7 @@ namespace MediaBrowser.Providers.Movies
     {
         public TrailerMetadataService(
             IServerConfigurationManager serverConfigurationManager,
-            ILogger logger,
+            ILogger<TrailerMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager)
@@ -28,17 +30,19 @@ namespace MediaBrowser.Providers.Movies
             {
                 return false;
             }
+
             if (!item.ProductionYear.HasValue)
             {
                 return false;
             }
+
             return base.IsFullLocalMetadata(item);
         }
 
         /// <inheritdoc />
-        protected override void MergeData(MetadataResult<Trailer> source, MetadataResult<Trailer> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Trailer> source, MetadataResult<Trailer> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
-            ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
+            base.MergeData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 
             if (replaceData || target.Item.TrailerTypes.Length == 0)
             {

@@ -1,10 +1,13 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Channels;
+using Emby.Naming.Common;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -20,7 +23,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.MediaInfo
@@ -37,24 +39,52 @@ namespace MediaBrowser.Providers.MediaInfo
         IPreRefreshProvider,
         IHasItemChangeMonitor
     {
-        private readonly ILogger _logger;
-        private readonly IIsoManager _isoManager;
-        private readonly IMediaEncoder _mediaEncoder;
-        private readonly IItemRepository _itemRepo;
-        private readonly IBlurayExaminer _blurayExaminer;
-        private readonly ILocalizationManager _localization;
-        private readonly IApplicationPaths _appPaths;
-        private readonly IJsonSerializer _json;
-        private readonly IEncodingManager _encodingManager;
-        private readonly IFileSystem _fileSystem;
-        private readonly IServerConfigurationManager _config;
-        private readonly ISubtitleManager _subtitleManager;
-        private readonly IChapterManager _chapterManager;
-        private readonly ILibraryManager _libraryManager;
-        private readonly IChannelManager _channelManager;
-        private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly ILogger<FFProbeProvider> _logger;
+        private readonly AudioResolver _audioResolver;
+        private readonly SubtitleResolver _subtitleResolver;
+        private readonly FFProbeVideoInfo _videoProber;
+        private readonly FFProbeAudioInfo _audioProber;
+        private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
+
+        public FFProbeProvider(
+            IMediaSourceManager mediaSourceManager,
+            IMediaEncoder mediaEncoder,
+            IItemRepository itemRepo,
+            IBlurayExaminer blurayExaminer,
+            ILocalizationManager localization,
+            IEncodingManager encodingManager,
+            IServerConfigurationManager config,
+            ISubtitleManager subtitleManager,
+            IChapterManager chapterManager,
+            ILibraryManager libraryManager,
+            IFileSystem fileSystem,
+            ILoggerFactory loggerFactory,
+            NamingOptions namingOptions)
+        {
+            _logger = loggerFactory.CreateLogger<FFProbeProvider>();
+            _audioResolver = new AudioResolver(loggerFactory.CreateLogger<AudioResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
+            _subtitleResolver = new SubtitleResolver(loggerFactory.CreateLogger<SubtitleResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
+            _videoProber = new FFProbeVideoInfo(
+                _logger,
+                mediaSourceManager,
+                mediaEncoder,
+                itemRepo,
+                blurayExaminer,
+                localization,
+                encodingManager,
+                config,
+                subtitleManager,
+                chapterManager,
+                libraryManager,
+                _audioResolver,
+                _subtitleResolver);
+            _audioProber = new FFProbeAudioInfo(mediaSourceManager, mediaEncoder, itemRepo, libraryManager);
+        }
 
         public string Name => "ffprobe";
+
+        // Run last
+        public int Order => 100;
 
         public bool HasChanged(BaseItem item, IDirectoryService directoryService)
         {
@@ -68,7 +98,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     var file = directoryService.GetFile(path);
                     if (file != null && file.LastWriteTimeUtc != item.DateModified)
                     {
-                        _logger.LogDebug("Refreshing {0} due to date modified timestamp change.", path);
+                        _logger.LogDebug("Refreshing {ItemPath} due to date modified timestamp change.", path);
                         return true;
                     }
                 }
@@ -76,9 +106,21 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (item.SupportsLocalMetadata && video != null && !video.IsPlaceHolder
                 && !video.SubtitleFiles.SequenceEqual(
-                        _subtitleResolver.GetExternalSubtitleFiles(video, directoryService, false), StringComparer.Ordinal))
+                    _subtitleResolver.GetExternalFiles(video, directoryService, false)
+                    .Select(info => info.Path).ToList(),
+                    StringComparer.Ordinal))
             {
-                _logger.LogDebug("Refreshing {0} due to external subtitles change.", item.Path);
+                _logger.LogDebug("Refreshing {ItemPath} due to external subtitles change.", item.Path);
+                return true;
+            }
+
+            if (item.SupportsLocalMetadata && video != null && !video.IsPlaceHolder
+                && !video.AudioFiles.SequenceEqual(
+                    _audioResolver.GetExternalFiles(video, directoryService, false)
+                    .Select(info => info.Path).ToList(),
+                    StringComparer.Ordinal))
+            {
+                _logger.LogDebug("Refreshing {ItemPath} due to external audio change.", item.Path);
                 return true;
             }
 
@@ -120,38 +162,9 @@ namespace MediaBrowser.Providers.MediaInfo
             return FetchAudioInfo(item, options, cancellationToken);
         }
 
-        private SubtitleResolver _subtitleResolver;
-        public FFProbeProvider(ILogger logger, IMediaSourceManager mediaSourceManager, IChannelManager channelManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization, IApplicationPaths appPaths, IJsonSerializer json, IEncodingManager encodingManager, IFileSystem fileSystem, IServerConfigurationManager config, ISubtitleManager subtitleManager, IChapterManager chapterManager, ILibraryManager libraryManager)
-        {
-            _logger = logger;
-            _isoManager = isoManager;
-            _mediaEncoder = mediaEncoder;
-            _itemRepo = itemRepo;
-            _blurayExaminer = blurayExaminer;
-            _localization = localization;
-            _appPaths = appPaths;
-            _json = json;
-            _encodingManager = encodingManager;
-            _fileSystem = fileSystem;
-            _config = config;
-            _subtitleManager = subtitleManager;
-            _chapterManager = chapterManager;
-            _libraryManager = libraryManager;
-            _channelManager = channelManager;
-            _mediaSourceManager = mediaSourceManager;
-
-            _subtitleResolver = new SubtitleResolver(BaseItem.LocalizationManager, fileSystem);
-        }
-
-        private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
         public Task<ItemUpdateType> FetchVideoInfo<T>(T item, MetadataRefreshOptions options, CancellationToken cancellationToken)
             where T : Video
         {
-            if (item.VideoType == VideoType.Iso)
-            {
-                return _cachedTask;
-            }
-
             if (item.IsPlaceHolder)
             {
                 return _cachedTask;
@@ -177,16 +190,14 @@ namespace MediaBrowser.Providers.MediaInfo
                 FetchShortcutInfo(item);
             }
 
-            var prober = new FFProbeVideoInfo(_logger, _mediaSourceManager, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json, _encodingManager, _fileSystem, _config, _subtitleManager, _chapterManager, _libraryManager);
-
-            return prober.ProbeVideo(item, options, cancellationToken);
+            return _videoProber.ProbeVideo(item, options, cancellationToken);
         }
 
         private string NormalizeStrmLine(string line)
         {
-            return line.Replace("\t", string.Empty)
-                .Replace("\r", string.Empty)
-                .Replace("\n", string.Empty)
+            return line.Replace("\t", string.Empty, StringComparison.Ordinal)
+                .Replace("\r", string.Empty, StringComparison.Ordinal)
+                .Replace("\n", string.Empty, StringComparison.Ordinal)
                 .Trim();
         }
 
@@ -194,7 +205,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             item.ShortcutPath = File.ReadAllLines(item.Path)
                 .Select(NormalizeStrmLine)
-                .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i) && !i.StartsWith("#", StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i) && !i.StartsWith('#'));
         }
 
         public Task<ItemUpdateType> FetchAudioInfo<T>(T item, MetadataRefreshOptions options, CancellationToken cancellationToken)
@@ -215,11 +226,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 FetchShortcutInfo(item);
             }
 
-            var prober = new FFProbeAudioInfo(_mediaSourceManager, _mediaEncoder, _itemRepo, _appPaths, _json, _libraryManager);
-
-            return prober.Probe(item, options, cancellationToken);
+            return _audioProber.Probe(item, options, cancellationToken);
         }
-        // Run last
-        public int Order => 100;
     }
 }

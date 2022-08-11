@@ -1,14 +1,18 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
@@ -20,9 +24,12 @@ namespace Emby.Server.Implementations.LiveTv
 {
     public class LiveTvDtoService
     {
-        private readonly ILogger _logger;
-        private readonly IImageProcessor _imageProcessor;
+        private const string InternalVersionNumber = "4";
 
+        private const string ServiceName = "Emby";
+
+        private readonly ILogger<LiveTvDtoService> _logger;
+        private readonly IImageProcessor _imageProcessor;
         private readonly IDtoService _dtoService;
         private readonly IApplicationHost _appHost;
         private readonly ILibraryManager _libraryManager;
@@ -30,13 +37,13 @@ namespace Emby.Server.Implementations.LiveTv
         public LiveTvDtoService(
             IDtoService dtoService,
             IImageProcessor imageProcessor,
-            ILoggerFactory loggerFactory,
+            ILogger<LiveTvDtoService> logger,
             IApplicationHost appHost,
             ILibraryManager libraryManager)
         {
             _dtoService = dtoService;
             _imageProcessor = imageProcessor;
-            _logger = loggerFactory.CreateLogger(nameof(LiveTvDtoService));
+            _logger = logger;
             _appHost = appHost;
             _libraryManager = libraryManager;
         }
@@ -154,12 +161,11 @@ namespace Emby.Server.Implementations.LiveTv
         {
             var librarySeries = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new string[] { typeof(Series).Name },
+                IncludeItemTypes = new[] { BaseItemKind.Series },
                 Name = seriesName,
                 Limit = 1,
                 ImageTypes = new ImageType[] { ImageType.Thumb },
                 DtoOptions = new DtoOptions(false)
-
             }).FirstOrDefault();
 
             if (librarySeries != null)
@@ -170,13 +176,14 @@ namespace Emby.Server.Implementations.LiveTv
                     try
                     {
                         dto.ParentThumbImageTag = _imageProcessor.GetImageCacheTag(librarySeries, image);
-                        dto.ParentThumbItemId = librarySeries.Id.ToString("N", CultureInfo.InvariantCulture);
+                        dto.ParentThumbItemId = librarySeries.Id;
                     }
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Error");
                     }
                 }
+
                 image = librarySeries.GetImageInfo(ImageType.Backdrop, 0);
                 if (image != null)
                 {
@@ -186,7 +193,7 @@ namespace Emby.Server.Implementations.LiveTv
                             {
                                 _imageProcessor.GetImageCacheTag(librarySeries, image)
                             };
-                        dto.ParentBackdropItemId = librarySeries.Id.ToString("N", CultureInfo.InvariantCulture);
+                        dto.ParentBackdropItemId = librarySeries.Id;
                     }
                     catch (Exception ex)
                     {
@@ -197,13 +204,12 @@ namespace Emby.Server.Implementations.LiveTv
 
             var program = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new string[] { typeof(LiveTvProgram).Name },
+                IncludeItemTypes = new[] { BaseItemKind.LiveTvProgram },
                 ExternalSeriesId = programSeriesId,
                 Limit = 1,
                 ImageTypes = new ImageType[] { ImageType.Primary },
                 DtoOptions = new DtoOptions(false),
                 Name = string.IsNullOrEmpty(programSeriesId) ? seriesName : null
-
             }).FirstOrDefault();
 
             if (program != null)
@@ -230,10 +236,11 @@ namespace Emby.Server.Implementations.LiveTv
                         try
                         {
                             dto.ParentBackdropImageTags = new string[]
-                        {
+                            {
                                 _imageProcessor.GetImageCacheTag(program, image)
-                        };
-                            dto.ParentBackdropItemId = program.Id.ToString("N", CultureInfo.InvariantCulture);
+                            };
+
+                            dto.ParentBackdropItemId = program.Id;
                         }
                         catch (Exception ex)
                         {
@@ -248,12 +255,11 @@ namespace Emby.Server.Implementations.LiveTv
         {
             var librarySeries = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new string[] { typeof(Series).Name },
+                IncludeItemTypes = new[] { BaseItemKind.Series },
                 Name = seriesName,
                 Limit = 1,
                 ImageTypes = new ImageType[] { ImageType.Thumb },
                 DtoOptions = new DtoOptions(false)
-
             }).FirstOrDefault();
 
             if (librarySeries != null)
@@ -271,6 +277,7 @@ namespace Emby.Server.Implementations.LiveTv
                         _logger.LogError(ex, "Error");
                     }
                 }
+
                 image = librarySeries.GetImageInfo(ImageType.Backdrop, 0);
                 if (image != null)
                 {
@@ -291,25 +298,23 @@ namespace Emby.Server.Implementations.LiveTv
 
             var program = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new string[] { typeof(Series).Name },
+                IncludeItemTypes = new[] { BaseItemKind.Series },
                 Name = seriesName,
                 Limit = 1,
                 ImageTypes = new ImageType[] { ImageType.Primary },
                 DtoOptions = new DtoOptions(false)
-
             }).FirstOrDefault();
 
             if (program == null)
             {
                 program = _libraryManager.GetItemList(new InternalItemsQuery
                 {
-                    IncludeItemTypes = new string[] { typeof(LiveTvProgram).Name },
+                    IncludeItemTypes = new[] { BaseItemKind.LiveTvProgram },
                     ExternalSeriesId = programSeriesId,
                     Limit = 1,
                     ImageTypes = new ImageType[] { ImageType.Primary },
                     DtoOptions = new DtoOptions(false),
                     Name = string.IsNullOrEmpty(programSeriesId) ? seriesName : null
-
                 }).FirstOrDefault();
             }
 
@@ -388,13 +393,11 @@ namespace Emby.Server.Implementations.LiveTv
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting image info for {name}", info.Name);
+                _logger.LogError(ex, "Error getting image info for {Name}", info.Name);
             }
 
             return null;
         }
-
-        private const string InternalVersionNumber = "4";
 
         public Guid GetInternalChannelId(string serviceName, string externalId)
         {
@@ -403,7 +406,6 @@ namespace Emby.Server.Implementations.LiveTv
             return _libraryManager.GetNewItemId(name.ToLowerInvariant(), typeof(LiveTvChannel));
         }
 
-        private const string ServiceName = "Emby";
         public string GetInternalTimerId(string externalId)
         {
             var name = ServiceName + externalId + InternalVersionNumber;
@@ -454,7 +456,7 @@ namespace Emby.Server.Implementations.LiveTv
                 info.Id = timer.ExternalId;
             }
 
-            if (!dto.ChannelId.Equals(Guid.Empty) && string.IsNullOrEmpty(info.ChannelId))
+            if (!dto.ChannelId.Equals(default) && string.IsNullOrEmpty(info.ChannelId))
             {
                 var channel = _libraryManager.GetItemById(dto.ChannelId);
 
@@ -520,7 +522,7 @@ namespace Emby.Server.Implementations.LiveTv
                 info.Id = timer.ExternalId;
             }
 
-            if (!dto.ChannelId.Equals(Guid.Empty) && string.IsNullOrEmpty(info.ChannelId))
+            if (!dto.ChannelId.Equals(default) && string.IsNullOrEmpty(info.ChannelId))
             {
                 var channel = _libraryManager.GetItemById(dto.ChannelId);
 

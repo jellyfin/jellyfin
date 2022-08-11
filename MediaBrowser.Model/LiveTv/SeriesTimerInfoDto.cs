@@ -1,9 +1,20 @@
+#nullable disable
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.LiveTv
 {
+    public enum KeepUntil
+    {
+        UntilDeleted,
+        UntilSpaceNeeded,
+        UntilWatched,
+        UntilDate
+    }
+
     /// <summary>
     /// Class SeriesTimerInfoDto.
     /// </summary>
@@ -12,7 +23,7 @@ namespace MediaBrowser.Model.LiveTv
         public SeriesTimerInfoDto()
         {
             ImageTags = new Dictionary<ImageType, string>();
-            Days = new DayOfWeek[] { };
+            Days = Array.Empty<DayOfWeek>();
             Type = "SeriesTimer";
         }
 
@@ -79,13 +90,5 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The parent primary image tag.</value>
         public string ParentPrimaryImageTag { get; set; }
-    }
-
-    public enum KeepUntil
-    {
-        UntilDeleted,
-        UntilSpaceNeeded,
-        UntilWatched,
-        UntilDate
     }
 }

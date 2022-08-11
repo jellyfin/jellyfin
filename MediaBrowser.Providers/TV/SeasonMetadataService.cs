@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +19,7 @@ namespace MediaBrowser.Providers.TV
     {
         public SeasonMetadataService(
             IServerConfigurationManager serverConfigurationManager,
-            ILogger logger,
+            ILogger<SeasonMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager)
@@ -26,18 +28,21 @@ namespace MediaBrowser.Providers.TV
         }
 
         /// <inheritdoc />
-        protected override ItemUpdateType BeforeSaveInternal(Season item, bool isFullRefresh, ItemUpdateType currentUpdateType)
-        {
-            var updateType = base.BeforeSaveInternal(item, isFullRefresh, currentUpdateType);
+        protected override bool EnableUpdatingPremiereDateFromChildren => true;
 
-            if (item.IndexNumber.HasValue && item.IndexNumber.Value == 0)
+        /// <inheritdoc />
+        protected override ItemUpdateType BeforeSaveInternal(Season item, bool isFullRefresh, ItemUpdateType updateType)
+        {
+            var updatedType = base.BeforeSaveInternal(item, isFullRefresh, updateType);
+
+            if (item.IndexNumber == 0 && !item.IsLocked && !item.LockedFields.Contains(MetadataField.Name))
             {
                 var seasonZeroDisplayName = LibraryManager.GetLibraryOptions(item).SeasonZeroDisplayName;
 
                 if (!string.Equals(item.Name, seasonZeroDisplayName, StringComparison.OrdinalIgnoreCase))
                 {
                     item.Name = seasonZeroDisplayName;
-                    updateType = updateType | ItemUpdateType.MetadataEdit;
+                    updatedType |= ItemUpdateType.MetadataEdit;
                 }
             }
 
@@ -45,28 +50,25 @@ namespace MediaBrowser.Providers.TV
             if (!string.Equals(item.SeriesName, seriesName, StringComparison.Ordinal))
             {
                 item.SeriesName = seriesName;
-                updateType |= ItemUpdateType.MetadataImport;
+                updatedType |= ItemUpdateType.MetadataImport;
             }
 
             var seriesPresentationUniqueKey = item.FindSeriesPresentationUniqueKey();
             if (!string.Equals(item.SeriesPresentationUniqueKey, seriesPresentationUniqueKey, StringComparison.Ordinal))
             {
                 item.SeriesPresentationUniqueKey = seriesPresentationUniqueKey;
-                updateType |= ItemUpdateType.MetadataImport;
+                updatedType |= ItemUpdateType.MetadataImport;
             }
 
             var seriesId = item.FindSeriesId();
             if (!item.SeriesId.Equals(seriesId))
             {
                 item.SeriesId = seriesId;
-                updateType |= ItemUpdateType.MetadataImport;
+                updatedType |= ItemUpdateType.MetadataImport;
             }
 
-            return updateType;
+            return updatedType;
         }
-
-        /// <inheritdoc />
-        protected override bool EnableUpdatingPremiereDateFromChildren => true;
 
         /// <inheritdoc />
         protected override IList<BaseItem> GetChildrenForMetadataUpdates(Season item)
@@ -83,12 +85,6 @@ namespace MediaBrowser.Providers.TV
             }
 
             return updateType;
-        }
-
-        /// <inheritdoc />
-        protected override void MergeData(MetadataResult<Season> source, MetadataResult<Season> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
-        {
-            ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }
 
         private ItemUpdateType SaveIsVirtualItem(Season item, IList<BaseItem> episodes)

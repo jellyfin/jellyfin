@@ -1,9 +1,11 @@
+#nullable disable
+
 using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Controller.Net
 {
     /// <summary>
-    /// Class WebSocketMessageInfo
+    /// Class WebSocketMessageInfo.
     /// </summary>
     public class WebSocketMessageInfo : WebSocketMessage<string>
     {

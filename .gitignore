@@ -244,14 +244,14 @@ pip-log.txt
 #########################
 
 # Artifacts for debian-x64
-deployment/debian-package-x64/pkg-src/.debhelper/
-deployment/debian-package-x64/pkg-src/*.debhelper
-deployment/debian-package-x64/pkg-src/debhelper-build-stamp
-deployment/debian-package-x64/pkg-src/files
-deployment/debian-package-x64/pkg-src/jellyfin.substvars
-deployment/debian-package-x64/pkg-src/jellyfin/
+debian/.debhelper/
+debian/*.debhelper
+debian/debhelper-build-stamp
+debian/files
+debian/jellyfin.substvars
+debian/jellyfin/
 # Don't ignore the debian/bin folder
-!deployment/debian-package-x64/pkg-src/bin/
+!debian/bin/
 
 deployment/**/dist/
 deployment/**/pkg-dist/
@@ -268,6 +268,16 @@ doc/
 # Deployment artifacts
 dist
 *.exe
+*.dll
 
 # BenchmarkDotNet artifacts
 BenchmarkDotNet.Artifacts
+
+# Ignore web artifacts from native builds
+web/
+web-src.*
+MediaBrowser.WebDashboard/jellyfin-web
+apiclient/generated
+
+# Omnisharp crash logs
+mono_crash.*.json

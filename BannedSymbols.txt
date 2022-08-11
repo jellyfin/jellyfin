@@ -1,0 +1,4 @@
+P:System.Threading.Tasks.Task`1.Result
+M:System.Guid.op_Equality(System.Guid,System.Guid)
+M:System.Guid.op_Inequality(System.Guid,System.Guid)
+M:System.Guid.Equals(System.Object)

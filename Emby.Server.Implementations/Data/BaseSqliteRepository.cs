@@ -1,7 +1,11 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
+using Jellyfin.Extensions;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
 
@@ -11,7 +15,11 @@ namespace Emby.Server.Implementations.Data
     {
         private bool _disposed = false;
 
-        protected BaseSqliteRepository(ILogger logger)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BaseSqliteRepository"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        protected BaseSqliteRepository(ILogger<BaseSqliteRepository> logger)
         {
             Logger = logger;
         }
@@ -26,7 +34,7 @@ namespace Emby.Server.Implementations.Data
         /// Gets the logger.
         /// </summary>
         /// <value>The logger.</value>
-        protected ILogger Logger { get; }
+        protected ILogger<BaseSqliteRepository> Logger { get; }
 
         /// <summary>
         /// Gets the default connection flags.
@@ -53,7 +61,7 @@ namespace Emby.Server.Implementations.Data
         protected virtual int? CacheSize => null;
 
         /// <summary>
-        /// Gets the journal mode. <see href="https://www.sqlite.org/pragma.html#pragma_journal_mode" />
+        /// Gets the journal mode. <see href="https://www.sqlite.org/pragma.html#pragma_journal_mode" />.
         /// </summary>
         /// <value>The journal mode.</value>
         protected virtual string JournalMode => "TRUNCATE";
@@ -90,7 +98,7 @@ namespace Emby.Server.Implementations.Data
         /// <value>The write connection.</value>
         protected SQLiteDatabaseConnection WriteConnection { get; set; }
 
-        protected ManagedConnection GetConnection(bool _ = false)
+        protected ManagedConnection GetConnection(bool readOnly = false)
         {
             WriteLock.Wait();
             if (WriteConnection != null)
@@ -137,27 +145,37 @@ namespace Emby.Server.Implementations.Data
         public IStatement PrepareStatement(IDatabaseConnection connection, string sql)
             => connection.PrepareStatement(sql);
 
-        public IEnumerable<IStatement> PrepareAll(IDatabaseConnection connection, IEnumerable<string> sql)
-            => sql.Select(connection.PrepareStatement);
+        public IStatement[] PrepareAll(IDatabaseConnection connection, IReadOnlyList<string> sql)
+        {
+            int len = sql.Count;
+            IStatement[] statements = new IStatement[len];
+            for (int i = 0; i < len; i++)
+            {
+                statements[i] = connection.PrepareStatement(sql[i]);
+            }
+
+            return statements;
+        }
 
         protected bool TableExists(ManagedConnection connection, string name)
         {
-            return connection.RunInTransaction(db =>
-            {
-                using (var statement = PrepareStatement(db, "select DISTINCT tbl_name from sqlite_master"))
+            return connection.RunInTransaction(
+                db =>
                 {
-                    foreach (var row in statement.ExecuteQuery())
+                    using (var statement = PrepareStatement(db, "select DISTINCT tbl_name from sqlite_master"))
                     {
-                        if (string.Equals(name, row.GetString(0), StringComparison.OrdinalIgnoreCase))
+                        foreach (var row in statement.ExecuteQuery())
                         {
-                            return true;
+                            if (string.Equals(name, row.GetString(0), StringComparison.OrdinalIgnoreCase))
+                            {
+                                return true;
+                            }
                         }
                     }
-                }
 
-                return false;
-
-            }, ReadTransactionMode);
+                    return false;
+                },
+                ReadTransactionMode);
         }
 
         protected List<string> GetColumnNames(IDatabaseConnection connection, string table)
@@ -166,11 +184,9 @@ namespace Emby.Server.Implementations.Data
 
             foreach (var row in connection.Query("PRAGMA table_info(" + table + ")"))
             {
-                if (row[1].SQLiteType != SQLiteType.Null)
+                if (row.TryGetString(1, out var columnName))
                 {
-                    var name = row[1].ToString();
-
-                    columnNames.Add(name);
+                    columnNames.Add(columnName);
                 }
             }
 
@@ -179,7 +195,7 @@ namespace Emby.Server.Implementations.Data
 
         protected void AddColumn(IDatabaseConnection connection, string table, string columnName, string type, List<string> existingColumnNames)
         {
-            if (existingColumnNames.Contains(columnName, StringComparer.OrdinalIgnoreCase))
+            if (existingColumnNames.Contains(columnName, StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
@@ -233,56 +249,5 @@ namespace Emby.Server.Implementations.Data
 
             _disposed = true;
         }
-    }
-
-    /// <summary>
-    /// The disk synchronization mode, controls how aggressively SQLite will write data
-    /// all the way out to physical storage.
-    /// </summary>
-    public enum SynchronousMode
-    {
-        /// <summary>
-        /// SQLite continues without syncing as soon as it has handed data off to the operating system
-        /// </summary>
-        Off = 0,
-
-        /// <summary>
-        /// SQLite database engine will still sync at the most critical moments
-        /// </summary>
-        Normal = 1,
-
-        /// <summary>
-        /// SQLite database engine will use the xSync method of the VFS
-        /// to ensure that all content is safely written to the disk surface prior to continuing.
-        /// </summary>
-        Full = 2,
-
-        /// <summary>
-        /// EXTRA synchronous is like FULL with the addition that the directory containing a rollback journal
-        /// is synced after that journal is unlinked to commit a transaction in DELETE mode.
-        /// </summary>
-        Extra = 3
-    }
-
-    /// <summary>
-    /// Storage mode used by temporary database files.
-    /// </summary>
-    public enum TempStoreMode
-    {
-        /// <summary>
-        /// The compile-time C preprocessor macro SQLITE_TEMP_STORE
-        /// is used to determine where temporary tables and indices are stored.
-        /// </summary>
-        Default = 0,
-
-        /// <summary>
-        /// Temporary tables and indices are stored in a file.
-        /// </summary>
-        File = 1,
-
-        /// <summary>
-        /// Temporary tables and indices are kept in as if they were pure in-memory databases memory.
-        /// </summary>
-        Memory = 2
     }
 }

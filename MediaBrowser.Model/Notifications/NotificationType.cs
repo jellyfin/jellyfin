@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 namespace MediaBrowser.Model.Notifications
 {
     public enum NotificationType
@@ -16,7 +18,6 @@ namespace MediaBrowser.Model.Notifications
         NewLibraryContent,
         ServerRestartRequired,
         TaskFailed,
-        CameraImageUploaded,
         UserLockedOut
     }
 }

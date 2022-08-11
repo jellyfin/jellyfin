@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Sorting;
@@ -6,10 +8,16 @@ using MediaBrowser.Model.Querying;
 namespace Emby.Server.Implementations.Sorting
 {
     /// <summary>
-    /// Class SortNameComparer
+    /// Class SortNameComparer.
     /// </summary>
     public class SortNameComparer : IBaseItemComparer
     {
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.SortName;
+
         /// <summary>
         /// Compares the specified x.
         /// </summary>
@@ -19,18 +27,16 @@ namespace Emby.Server.Implementations.Sorting
         public int Compare(BaseItem x, BaseItem y)
         {
             if (x == null)
+            {
                 throw new ArgumentNullException(nameof(x));
+            }
 
             if (y == null)
+            {
                 throw new ArgumentNullException(nameof(y));
+            }
 
-            return string.Compare(x.SortName, y.SortName, StringComparison.CurrentCultureIgnoreCase);
+            return string.Compare(x.SortName, y.SortName, StringComparison.OrdinalIgnoreCase);
         }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name => ItemSortBy.SortName;
     }
 }

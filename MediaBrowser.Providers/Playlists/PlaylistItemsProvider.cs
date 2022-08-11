@@ -1,14 +1,18 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 using PlaylistsNET.Content;
 
@@ -20,16 +24,17 @@ namespace MediaBrowser.Providers.Playlists
         IPreRefreshProvider,
         IHasItemChangeMonitor
     {
-        private ILogger _logger;
-        private IFileSystem _fileSystem;
+        private readonly ILogger<PlaylistItemsProvider> _logger;
 
-        public PlaylistItemsProvider(IFileSystem fileSystem, ILogger logger)
+        public PlaylistItemsProvider(ILogger<PlaylistItemsProvider> logger)
         {
-            _fileSystem = fileSystem;
             _logger = logger;
         }
 
         public string Name => "Playlist Reader";
+
+        // Run last
+        public int Order => 100;
 
         public Task<ItemUpdateType> FetchAsync(Playlist item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
@@ -40,7 +45,7 @@ namespace MediaBrowser.Providers.Playlists
             }
 
             var extension = Path.GetExtension(path);
-            if (!Playlist.SupportedExtensions.Contains(extension ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+            if (!Playlist.SupportedExtensions.Contains(extension ?? string.Empty, StringComparison.OrdinalIgnoreCase))
             {
                 return Task.FromResult(ItemUpdateType.None);
             }
@@ -61,18 +66,22 @@ namespace MediaBrowser.Providers.Playlists
             {
                 return GetWplItems(stream);
             }
+
             if (string.Equals(".zpl", extension, StringComparison.OrdinalIgnoreCase))
             {
                 return GetZplItems(stream);
             }
+
             if (string.Equals(".m3u", extension, StringComparison.OrdinalIgnoreCase))
             {
                 return GetM3uItems(stream);
             }
+
             if (string.Equals(".m3u8", extension, StringComparison.OrdinalIgnoreCase))
             {
                 return GetM3u8Items(stream);
             }
+
             if (string.Equals(".pls", extension, StringComparison.OrdinalIgnoreCase))
             {
                 return GetPlsItems(stream);
@@ -95,7 +104,7 @@ namespace MediaBrowser.Providers.Playlists
 
         private IEnumerable<LinkedChild> GetM3u8Items(Stream stream)
         {
-            var content = new M3u8Content();
+            var content = new M3uContent();
             var playlist = content.GetFromStream(stream);
 
             return playlist.PlaylistEntries.Select(i => new LinkedChild
@@ -157,7 +166,5 @@ namespace MediaBrowser.Providers.Playlists
 
             return false;
         }
-        // Run last
-        public int Order => 100;
     }
 }

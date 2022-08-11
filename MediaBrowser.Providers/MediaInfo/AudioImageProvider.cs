@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,7 +11,9 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -17,34 +21,49 @@ using MediaBrowser.Model.IO;
 namespace MediaBrowser.Providers.MediaInfo
 {
     /// <summary>
-    /// Uses ffmpeg to create video images
+    /// Uses <see cref="IMediaEncoder"/> to extract embedded images.
     /// </summary>
     public class AudioImageProvider : IDynamicImageProvider
     {
+        private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
 
-        public AudioImageProvider(IMediaEncoder mediaEncoder, IServerConfigurationManager config, IFileSystem fileSystem)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AudioImageProvider"/> class.
+        /// </summary>
+        /// <param name="mediaSourceManager">The media source manager for fetching item streams.</param>
+        /// <param name="mediaEncoder">The media encoder for extracting embedded images.</param>
+        /// <param name="config">The server configuration manager for getting image paths.</param>
+        /// <param name="fileSystem">The filesystem.</param>
+        public AudioImageProvider(IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder, IServerConfigurationManager config, IFileSystem fileSystem)
         {
+            _mediaSourceManager = mediaSourceManager;
             _mediaEncoder = mediaEncoder;
             _config = config;
             _fileSystem = fileSystem;
         }
 
+        private string AudioImagesPath => Path.Combine(_config.ApplicationPaths.CachePath, "extracted-audio-images");
+
+        /// <inheritdoc />
+        public string Name => "Image Extractor";
+
+        /// <inheritdoc />
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
-            return new List<ImageType> { ImageType.Primary };
+            return new[] { ImageType.Primary };
         }
 
+        /// <inheritdoc />
         public Task<DynamicImageResponse> GetImage(BaseItem item, ImageType type, CancellationToken cancellationToken)
         {
-            var audio = (Audio)item;
-
-            var imageStreams =
-                audio.GetMediaStreams(MediaStreamType.EmbeddedImage)
-                    .Where(i => i.Type == MediaStreamType.EmbeddedImage)
-                    .ToList();
+            var imageStreams = _mediaSourceManager.GetMediaStreams(new MediaStreamQuery
+            {
+                ItemId = item.Id,
+                Type = MediaStreamType.EmbeddedImage
+            });
 
             // Can't extract if we didn't find a video stream in the file
             if (imageStreams.Count == 0)
@@ -55,7 +74,7 @@ namespace MediaBrowser.Providers.MediaInfo
             return GetImage((Audio)item, imageStreams, cancellationToken);
         }
 
-        public async Task<DynamicImageResponse> GetImage(Audio item, List<MediaStream> imageStreams, CancellationToken cancellationToken)
+        private async Task<DynamicImageResponse> GetImage(Audio item, List<MediaStream> imageStreams, CancellationToken cancellationToken)
         {
             var path = GetAudioImagePath(item);
 
@@ -67,7 +86,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).IndexOf("cover", StringComparison.OrdinalIgnoreCase) != -1) ??
                     imageStreams.FirstOrDefault();
 
-                var imageStreamIndex = imageStream == null ? (int?)null : imageStream.Index;
+                var imageStreamIndex = imageStream?.Index;
 
                 var tempFile = await _mediaEncoder.ExtractAudioImage(item.Path, imageStreamIndex, cancellationToken).ConfigureAwait(false);
 
@@ -79,7 +98,6 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
                 catch
                 {
-
                 }
             }
 
@@ -92,15 +110,15 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private string GetAudioImagePath(Audio item)
         {
-            string filename = null;
+            string filename;
 
             if (item.GetType() == typeof(Audio))
             {
-                var albumArtist = item.AlbumArtists.FirstOrDefault();
-
-                if (!string.IsNullOrWhiteSpace(item.Album) && !string.IsNullOrWhiteSpace(albumArtist))
+                if (item.AlbumArtists.Count > 0
+                    && !string.IsNullOrWhiteSpace(item.Album)
+                    && !string.IsNullOrWhiteSpace(item.AlbumArtists[0]))
                 {
-                    filename = (item.Album + "-" + albumArtist).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+                    filename = (item.Album + "-" + item.AlbumArtists[0]).GetMD5().ToString("N", CultureInfo.InvariantCulture);
                 }
                 else
                 {
@@ -115,29 +133,25 @@ namespace MediaBrowser.Providers.MediaInfo
                 filename = item.Id.ToString("N", CultureInfo.InvariantCulture) + ".jpg";
             }
 
-            var prefix = filename.Substring(0, 1);
+            var prefix = filename.AsSpan().Slice(0, 1);
 
-            return Path.Combine(AudioImagesPath, prefix, filename);
+            return Path.Join(AudioImagesPath, prefix, filename);
         }
 
-        public string AudioImagesPath => Path.Combine(_config.ApplicationPaths.CachePath, "extracted-audio-images");
-
-        public string Name => "Image Extractor";
-
+        /// <inheritdoc />
         public bool Supports(BaseItem item)
         {
             if (item.IsShortcut)
             {
                 return false;
             }
+
             if (!item.IsFileProtocol)
             {
                 return false;
             }
 
-            var audio = item as Audio;
-
-            return audio != null;
+            return item is Audio;
         }
     }
 }

@@ -1,34 +1,44 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.IO;
 using System.Linq;
+using DiscUtils.Udf;
+using Emby.Naming.Common;
 using Emby.Naming.Video;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Resolvers
 {
     /// <summary>
-    /// Resolves a Path into a Video or Video subclass
+    /// Resolves a Path into a Video or Video subclass.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of item to resolve.</typeparam>
     public abstract class BaseVideoResolver<T> : MediaBrowser.Controller.Resolvers.ItemResolver<T>
         where T : Video, new()
     {
-        protected readonly ILibraryManager LibraryManager;
+        private readonly ILogger _logger;
 
-        protected BaseVideoResolver(ILibraryManager libraryManager)
+        protected BaseVideoResolver(ILogger logger, NamingOptions namingOptions)
         {
-            LibraryManager = libraryManager;
+            _logger = logger;
+            NamingOptions = namingOptions;
         }
+
+        protected NamingOptions NamingOptions { get; }
 
         /// <summary>
         /// Resolves the specified args.
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns>`0.</returns>
-        protected override T Resolve(ItemResolveArgs args)
+        public override T Resolve(ItemResolveArgs args)
         {
             return ResolveVideo<T>(args, false);
         }
@@ -40,135 +50,85 @@ namespace Emby.Server.Implementations.Library.Resolvers
         /// <param name="args">The args.</param>
         /// <param name="parseName">if set to <c>true</c> [parse name].</param>
         /// <returns>``0.</returns>
-        protected TVideoType ResolveVideo<TVideoType>(ItemResolveArgs args, bool parseName)
+        protected virtual TVideoType ResolveVideo<TVideoType>(ItemResolveArgs args, bool parseName)
               where TVideoType : Video, new()
         {
-            var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
+            VideoFileInfo videoInfo = null;
+            VideoType? videoType = null;
 
             // If the path is a file check for a matching extensions
-            var parser = new VideoResolver(namingOptions);
-
             if (args.IsDirectory)
             {
-                TVideoType video = null;
-                VideoFileInfo videoInfo = null;
-
                 // Loop through each child file/folder and see if we find a video
                 foreach (var child in args.FileSystemChildren)
                 {
                     var filename = child.Name;
-
                     if (child.IsDirectory)
                     {
                         if (IsDvdDirectory(child.FullName, filename, args.DirectoryService))
                         {
-                            videoInfo = parser.ResolveDirectory(args.Path);
-
-                            if (videoInfo == null)
-                            {
-                                return null;
-                            }
-
-                            video = new TVideoType
-                            {
-                                Path = args.Path,
-                                VideoType = VideoType.Dvd,
-                                ProductionYear = videoInfo.Year
-                            };
-                            break;
+                            videoType = VideoType.Dvd;
                         }
-                        if (IsBluRayDirectory(child.FullName, filename, args.DirectoryService))
+                        else if (IsBluRayDirectory(filename))
                         {
-                            videoInfo = parser.ResolveDirectory(args.Path);
-
-                            if (videoInfo == null)
-                            {
-                                return null;
-                            }
-
-                            video = new TVideoType
-                            {
-                                Path = args.Path,
-                                VideoType = VideoType.BluRay,
-                                ProductionYear = videoInfo.Year
-                            };
-                            break;
+                            videoType = VideoType.BluRay;
                         }
                     }
                     else if (IsDvdFile(filename))
                     {
-                        videoInfo = parser.ResolveDirectory(args.Path);
-
-                        if (videoInfo == null)
-                        {
-                            return null;
-                        }
-
-                        video = new TVideoType
-                        {
-                            Path = args.Path,
-                            VideoType = VideoType.Dvd,
-                            ProductionYear = videoInfo.Year
-                        };
-                        break;
+                        videoType = VideoType.Dvd;
                     }
+
+                    if (videoType == null)
+                    {
+                        continue;
+                    }
+
+                    videoInfo = VideoResolver.ResolveDirectory(args.Path, NamingOptions, parseName);
+                    break;
                 }
-
-                if (video != null)
-                {
-                    video.Name = parseName ?
-                        videoInfo.Name :
-                        Path.GetFileName(args.Path);
-
-                    Set3DFormat(video, videoInfo);
-                }
-
-                return video;
             }
             else
             {
-                var videoInfo = parser.Resolve(args.Path, false, false);
-
-                if (videoInfo == null)
-                {
-                    return null;
-                }
-
-                if (LibraryManager.IsVideoFile(args.Path, args.GetLibraryOptions()) || videoInfo.IsStub)
-                {
-                    var path = args.Path;
-
-                    var video = new TVideoType
-                    {
-                        Path = path,
-                        IsInMixedFolder = true,
-                        ProductionYear = videoInfo.Year
-                    };
-
-                    SetVideoType(video, videoInfo);
-
-                    video.Name = parseName ?
-                        videoInfo.Name :
-                        Path.GetFileNameWithoutExtension(args.Path);
-
-                    Set3DFormat(video, videoInfo);
-
-                    return video;
-                }
+                videoInfo = VideoResolver.Resolve(args.Path, false, NamingOptions, parseName);
             }
 
-            return null;
+            if (videoInfo == null || (!videoInfo.IsStub && !VideoResolver.IsVideoFile(args.Path, NamingOptions)))
+            {
+                return null;
+            }
+
+            var video = new TVideoType
+            {
+                Name = videoInfo.Name,
+                Path = args.Path,
+                ProductionYear = videoInfo.Year,
+                ExtraType = videoInfo.ExtraType
+            };
+
+            if (videoType.HasValue)
+            {
+                video.VideoType = videoType.Value;
+            }
+            else
+            {
+                SetVideoType(video, videoInfo);
+            }
+
+            Set3DFormat(video, videoInfo);
+
+            return video;
         }
 
         protected void SetVideoType(Video video, VideoFileInfo videoInfo)
         {
-            var extension = Path.GetExtension(video.Path);
-            video.VideoType = string.Equals(extension, ".iso", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(extension, ".img", StringComparison.OrdinalIgnoreCase) ?
-              VideoType.Iso :
-              VideoType.VideoFile;
+            var extension = Path.GetExtension(video.Path.AsSpan());
+            video.VideoType = extension.Equals(".iso", StringComparison.OrdinalIgnoreCase)
+                              || extension.Equals(".img", StringComparison.OrdinalIgnoreCase)
+                ? VideoType.Iso
+                : VideoType.VideoFile;
 
-            video.IsShortcut = string.Equals(extension, ".strm", StringComparison.OrdinalIgnoreCase);
+            video.IsShortcut = extension.Equals(".strm", StringComparison.OrdinalIgnoreCase);
             video.IsPlaceHolder = videoInfo.IsStub;
 
             if (videoInfo.IsStub)
@@ -190,13 +150,36 @@ namespace Emby.Server.Implementations.Library.Resolvers
         {
             if (video.VideoType == VideoType.Iso)
             {
-                if (video.Path.IndexOf("dvd", StringComparison.OrdinalIgnoreCase) != -1)
+                if (video.Path.Contains("dvd", StringComparison.OrdinalIgnoreCase))
                 {
                     video.IsoType = IsoType.Dvd;
                 }
-                else if (video.Path.IndexOf("bluray", StringComparison.OrdinalIgnoreCase) != -1)
+                else if (video.Path.Contains("bluray", StringComparison.OrdinalIgnoreCase))
                 {
                     video.IsoType = IsoType.BluRay;
+                }
+                else
+                {
+                    try
+                    {
+                        // use disc-utils, both DVDs and BDs use UDF filesystem
+                        using (var videoFileStream = File.Open(video.Path, FileMode.Open, FileAccess.Read))
+                        using (UdfReader udfReader = new UdfReader(videoFileStream))
+                        {
+                            if (udfReader.DirectoryExists("VIDEO_TS"))
+                            {
+                                video.IsoType = IsoType.Dvd;
+                            }
+                            else if (udfReader.DirectoryExists("BDMV"))
+                            {
+                                video.IsoType = IsoType.BluRay;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error opening UDF/ISO image: {Value}", video.Path ?? video.Name);
+                    }
                 }
             }
         }
@@ -247,10 +230,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
 
         protected void Set3DFormat(Video video)
         {
-            var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
-
-            var resolver = new Format3DParser(namingOptions);
-            var result = resolver.Parse(video.Path);
+            var result = Format3DParser.Parse(video.Path, NamingOptions);
 
             Set3DFormat(video, result.Is3D, result.Format3D);
         }
@@ -258,6 +238,10 @@ namespace Emby.Server.Implementations.Library.Resolvers
         /// <summary>
         /// Determines whether [is DVD directory] [the specified directory name].
         /// </summary>
+        /// <param name="fullPath">The full path of the directory.</param>
+        /// <param name="directoryName">The name of the directory.</param>
+        /// <param name="directoryService">The directory service.</param>
+        /// <returns><c>true</c> if the provided directory is a DVD directory, <c>false</c> otherwise.</returns>
         protected bool IsDvdDirectory(string fullPath, string directoryName, IDirectoryService directoryService)
         {
             if (!string.Equals(directoryName, "video_ts", StringComparison.OrdinalIgnoreCase))
@@ -279,25 +263,13 @@ namespace Emby.Server.Implementations.Library.Resolvers
         }
 
         /// <summary>
-        /// Determines whether [is blu ray directory] [the specified directory name].
+        /// Determines whether [is bluray directory] [the specified directory name].
         /// </summary>
-        protected bool IsBluRayDirectory(string fullPath, string directoryName, IDirectoryService directoryService)
+        /// <param name="directoryName">The directory name.</param>
+        /// <returns>Whether the directory is a bluray directory.</returns>
+        protected bool IsBluRayDirectory(string directoryName)
         {
-            if (!string.Equals(directoryName, "bdmv", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            return true;
-            //var blurayExtensions = new[]
-            //{
-            //    ".mts",
-            //    ".m2ts",
-            //    ".bdmv",
-            //    ".mpls"
-            //};
-
-            //return directoryService.GetFiles(fullPath).Any(i => blurayExtensions.Contains(i.Extension ?? string.Empty, StringComparer.OrdinalIgnoreCase));
+            return string.Equals(directoryName, "bdmv", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

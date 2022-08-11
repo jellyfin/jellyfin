@@ -1,20 +1,35 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Controller.Entities
 {
     public class Book : BaseItem, IHasLookupInfo<BookInfo>, IHasSeries
     {
+        public Book()
+        {
+            this.RunTimeTicks = TimeSpan.TicksPerSecond;
+        }
+
         [JsonIgnore]
         public override string MediaType => Model.Entities.MediaType.Book;
 
+        public override bool SupportsPlayedStatus => true;
+
+        public override bool SupportsPositionTicksResume => true;
+
         [JsonIgnore]
         public string SeriesPresentationUniqueKey { get; set; }
+
         [JsonIgnore]
         public string SeriesName { get; set; }
+
         [JsonIgnore]
         public Guid SeriesId { get; set; }
 
@@ -22,10 +37,12 @@ namespace MediaBrowser.Controller.Entities
         {
             return SeriesName;
         }
+
         public string FindSeriesName()
         {
             return SeriesName;
         }
+
         public string FindSeriesPresentationUniqueKey()
         {
             return SeriesPresentationUniqueKey;
@@ -36,11 +53,13 @@ namespace MediaBrowser.Controller.Entities
             return SeriesId;
         }
 
+        /// <inheritdoc />
         public override bool CanDownload()
         {
             return IsFileProtocol;
         }
 
+        /// <inheritdoc />
         public override UnratedItem GetBlockUnratedType()
         {
             return UnratedItem.Book;

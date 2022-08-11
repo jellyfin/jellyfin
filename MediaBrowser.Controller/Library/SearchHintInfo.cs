@@ -1,9 +1,11 @@
+#nullable disable
+
 using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Controller.Library
 {
     /// <summary>
-    /// Class SearchHintInfo
+    /// Class SearchHintInfo.
     /// </summary>
     public class SearchHintInfo
     {

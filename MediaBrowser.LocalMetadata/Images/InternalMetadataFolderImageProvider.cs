@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
-using MediaBrowser.Controller.Configuration;
+using System.Linq;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
@@ -9,24 +9,35 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.LocalMetadata.Images
 {
-    public class InternalMetadataFolderImageProvider : ILocalImageFileProvider, IHasOrder
+    /// <summary>
+    /// Internal metadata folder image provider.
+    /// </summary>
+    public class InternalMetadataFolderImageProvider : ILocalImageProvider, IHasOrder
     {
-        private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
-        private readonly ILogger _logger;
+        private readonly ILogger<InternalMetadataFolderImageProvider> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InternalMetadataFolderImageProvider"/> class.
+        /// </summary>
+        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+        /// <param name="logger">Instance of the <see cref="ILogger{InternalMetadataFolderImageProvider}"/> interface.</param>
         public InternalMetadataFolderImageProvider(
-            IServerConfigurationManager config,
             IFileSystem fileSystem,
             ILogger<InternalMetadataFolderImageProvider> logger)
         {
-            _config = config;
             _fileSystem = fileSystem;
             _logger = logger;
         }
 
+        /// Make sure this is last so that all other locations are scanned first
+        /// <inheritdoc />
+        public int Order => 1000;
+
+        /// <inheritdoc />
         public string Name => "Internal Images";
 
+        /// <inheritdoc />
         public bool Supports(BaseItem item)
         {
             if (item is Photo)
@@ -52,26 +63,25 @@ namespace MediaBrowser.LocalMetadata.Images
 
             return true;
         }
-        // Make sure this is last so that all other locations are scanned first
-        public int Order => 1000;
 
-        public List<LocalImageInfo> GetImages(BaseItem item, IDirectoryService directoryService)
+        /// <inheritdoc />
+        public IEnumerable<LocalImageInfo> GetImages(BaseItem item, IDirectoryService directoryService)
         {
             var path = item.GetInternalMetadataPath();
 
             if (!Directory.Exists(path))
             {
-                return new List<LocalImageInfo>();
+                return Enumerable.Empty<LocalImageInfo>();
             }
 
             try
             {
-                return new LocalImageProvider(_fileSystem).GetImages(item, path, false, directoryService);
+                return new LocalImageProvider(_fileSystem).GetImages(item, path, directoryService);
             }
             catch (IOException ex)
             {
                 _logger.LogError(ex, "Error while getting images for {Library}", item.Name);
-                return new List<LocalImageInfo>();
+                return Enumerable.Empty<LocalImageInfo>();
             }
         }
     }

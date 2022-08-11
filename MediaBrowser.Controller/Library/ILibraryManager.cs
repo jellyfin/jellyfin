@@ -1,11 +1,16 @@
+#nullable disable
+
+#pragma warning disable CA1002, CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
@@ -14,31 +19,31 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using Genre = MediaBrowser.Controller.Entities.Genre;
+using Person = MediaBrowser.Controller.Entities.Person;
 
 namespace MediaBrowser.Controller.Library
 {
     /// <summary>
-    /// Interface ILibraryManager
+    /// Interface ILibraryManager.
     /// </summary>
     public interface ILibraryManager
     {
         /// <summary>
-        /// Resolves the path.
+        /// Occurs when [item added].
         /// </summary>
-        /// <param name="fileInfo">The file information.</param>
-        /// <param name="parent">The parent.</param>
-        /// <returns>BaseItem.</returns>
-        BaseItem ResolvePath(FileSystemMetadata fileInfo,
-            Folder parent = null);
+        event EventHandler<ItemChangeEventArgs> ItemAdded;
 
         /// <summary>
-        /// Resolves a set of files into a list of BaseItem
+        /// Occurs when [item updated].
         /// </summary>
-        IEnumerable<BaseItem> ResolvePaths(IEnumerable<FileSystemMetadata> files,
-            IDirectoryService directoryService,
-            Folder parent,
-            LibraryOptions libraryOptions,
-            string collectionType = null);
+        event EventHandler<ItemChangeEventArgs> ItemUpdated;
+
+        /// <summary>
+        /// Occurs when [item removed].
+        /// </summary>
+        event EventHandler<ItemChangeEventArgs> ItemRemoved;
 
         /// <summary>
         /// Gets the root folder.
@@ -46,10 +51,40 @@ namespace MediaBrowser.Controller.Library
         /// <value>The root folder.</value>
         AggregateFolder RootFolder { get; }
 
+        bool IsScanRunning { get; }
+
         /// <summary>
-        /// Gets a Person
+        /// Resolves the path.
         /// </summary>
-        /// <param name="name">The name.</param>
+        /// <param name="fileInfo">The file information.</param>
+        /// <param name="parent">The parent.</param>
+        /// <param name="directoryService">An instance of <see cref="IDirectoryService"/>.</param>
+        /// <returns>BaseItem.</returns>
+        BaseItem ResolvePath(
+            FileSystemMetadata fileInfo,
+            Folder parent = null,
+            IDirectoryService directoryService = null);
+
+        /// <summary>
+        /// Resolves a set of files into a list of BaseItem.
+        /// </summary>
+        /// <param name="files">The list of tiles.</param>
+        /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
+        /// <param name="parent">The parent folder.</param>
+        /// <param name="libraryOptions">The library options.</param>
+        /// <param name="collectionType">The collection type.</param>
+        /// <returns>The items resolved from the paths.</returns>
+        IEnumerable<BaseItem> ResolvePaths(
+            IEnumerable<FileSystemMetadata> files,
+            IDirectoryService directoryService,
+            Folder parent,
+            LibraryOptions libraryOptions,
+            string collectionType = null);
+
+        /// <summary>
+        /// Gets a Person.
+        /// </summary>
+        /// <param name="name">The name of the person.</param>
         /// <returns>Task{Person}.</returns>
         Person GetPerson(string name);
 
@@ -57,68 +92,66 @@ namespace MediaBrowser.Controller.Library
         /// Finds the by path.
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="isFolder"><c>true</c> is the path is a directory; otherwise <c>false</c>.</param>
         /// <returns>BaseItem.</returns>
         BaseItem FindByPath(string path, bool? isFolder);
 
         /// <summary>
         /// Gets the artist.
         /// </summary>
-        /// <param name="name">The name.</param>
+        /// <param name="name">The name of the artist.</param>
         /// <returns>Task{Artist}.</returns>
         MusicArtist GetArtist(string name);
+
         MusicArtist GetArtist(string name, DtoOptions options);
+
         /// <summary>
-        /// Gets a Studio
+        /// Gets a Studio.
         /// </summary>
-        /// <param name="name">The name.</param>
+        /// <param name="name">The name of the studio.</param>
         /// <returns>Task{Studio}.</returns>
         Studio GetStudio(string name);
 
         /// <summary>
-        /// Gets a Genre
+        /// Gets a Genre.
         /// </summary>
-        /// <param name="name">The name.</param>
+        /// <param name="name">The name of the genre.</param>
         /// <returns>Task{Genre}.</returns>
         Genre GetGenre(string name);
 
         /// <summary>
         /// Gets the genre.
         /// </summary>
-        /// <param name="name">The name.</param>
+        /// <param name="name">The name of the music genre.</param>
         /// <returns>Task{MusicGenre}.</returns>
         MusicGenre GetMusicGenre(string name);
 
         /// <summary>
-        /// Gets a Year
+        /// Gets a Year.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>Task{Year}.</returns>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException">Throws if year is invalid.</exception>
         Year GetYear(int value);
 
         /// <summary>
         /// Validate and refresh the People sub-set of the IBN.
         /// The items are stored in the db but not loaded into memory until actually requested by an operation.
         /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress);
+        Task ValidatePeopleAsync(IProgress<double> progress, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Reloads the root media folder
+        /// Reloads the root media folder.
         /// </summary>
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task ValidateMediaLibrary(IProgress<double> progress, CancellationToken cancellationToken);
 
-        /// <summary>
-        /// Queues the library scan.
-        /// </summary>
-        void QueueLibraryScan();
-
-        void UpdateImages(BaseItem item);
+        Task UpdateImagesAsync(BaseItem item, bool forceUpdate = false);
 
         /// <summary>
         /// Gets the default view.
@@ -144,12 +177,6 @@ namespace MediaBrowser.Controller.Library
         Task<IEnumerable<Video>> GetIntros(BaseItem item, User user);
 
         /// <summary>
-        /// Gets all intro files.
-        /// </summary>
-        /// <returns>IEnumerable{System.String}.</returns>
-        IEnumerable<string> GetAllIntroFiles();
-
-        /// <summary>
         /// Adds the parts.
         /// </summary>
         /// <param name="rules">The rules.</param>
@@ -157,7 +184,8 @@ namespace MediaBrowser.Controller.Library
         /// <param name="introProviders">The intro providers.</param>
         /// <param name="itemComparers">The item comparers.</param>
         /// <param name="postscanTasks">The postscan tasks.</param>
-        void AddParts(IEnumerable<IResolverIgnoreRule> rules,
+        void AddParts(
+            IEnumerable<IResolverIgnoreRule> rules,
             IEnumerable<IItemResolver> resolvers,
             IEnumerable<IIntroProvider> introProviders,
             IEnumerable<IBaseItemComparer> itemComparers,
@@ -172,7 +200,8 @@ namespace MediaBrowser.Controller.Library
         /// <param name="sortOrder">The sort order.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
         IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<string> sortBy, SortOrder sortOrder);
-        IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<ValueTuple<string, SortOrder>> orderBy);
+
+        IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<(string OrderBy, SortOrder SortOrder)> orderBy);
 
         /// <summary>
         /// Gets the user root folder.
@@ -183,18 +212,37 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Creates the item.
         /// </summary>
+        /// <param name="item">Item to create.</param>
+        /// <param name="parent">Parent of new item.</param>
         void CreateItem(BaseItem item, BaseItem parent);
 
         /// <summary>
         /// Creates the items.
         /// </summary>
-        void CreateItems(IEnumerable<BaseItem> items, BaseItem parent, CancellationToken cancellationToken);
+        /// <param name="items">Items to create.</param>
+        /// <param name="parent">Parent of new items.</param>
+        /// <param name="cancellationToken">CancellationToken to use for operation.</param>
+        void CreateItems(IReadOnlyList<BaseItem> items, BaseItem parent, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates the item.
         /// </summary>
-        void UpdateItems(IEnumerable<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken);
-        void UpdateItem(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken);
+        /// <param name="items">Items to update.</param>
+        /// <param name="parent">Parent of updated items.</param>
+        /// <param name="updateReason">Reason for update.</param>
+        /// <param name="cancellationToken">CancellationToken to use for operation.</param>
+        /// <returns>Returns a Task that can be awaited.</returns>
+        Task UpdateItemsAsync(IReadOnlyList<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates the item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="parent">The parent item.</param>
+        /// <param name="updateReason">The update reason.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Returns a Task that can be awaited.</returns>
+        Task UpdateItemAsync(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the item.
@@ -202,22 +250,6 @@ namespace MediaBrowser.Controller.Library
         /// <param name="id">The id.</param>
         /// <returns>BaseItem.</returns>
         BaseItem RetrieveItem(Guid id);
-
-        bool IsScanRunning { get; }
-
-        /// <summary>
-        /// Occurs when [item added].
-        /// </summary>
-        event EventHandler<ItemChangeEventArgs> ItemAdded;
-
-        /// <summary>
-        /// Occurs when [item updated].
-        /// </summary>
-        event EventHandler<ItemChangeEventArgs> ItemUpdated;
-        /// <summary>
-        /// Occurs when [item removed].
-        /// </summary>
-        event EventHandler<ItemChangeEventArgs> ItemRemoved;
 
         /// <summary>
         /// Finds the type of the collection.
@@ -263,16 +295,25 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Deletes the item.
         /// </summary>
+        /// <param name="item">Item to delete.</param>
+        /// <param name="options">Options to use for deletion.</param>
         void DeleteItem(BaseItem item, DeleteOptions options);
 
         /// <summary>
         /// Deletes the item.
         /// </summary>
+        /// <param name="item">Item to delete.</param>
+        /// <param name="options">Options to use for deletion.</param>
+        /// <param name="notifyParentItem">Notify parent of deletion.</param>
         void DeleteItem(BaseItem item, DeleteOptions options, bool notifyParentItem);
 
         /// <summary>
         /// Deletes the item.
         /// </summary>
+        /// <param name="item">Item to delete.</param>
+        /// <param name="options">Options to use for deletion.</param>
+        /// <param name="parent">Parent of item.</param>
+        /// <param name="notifyParentItem">Notify parent of deletion.</param>
         void DeleteItem(BaseItem item, DeleteOptions options, BaseItem parent, bool notifyParentItem);
 
         /// <summary>
@@ -283,7 +324,9 @@ namespace MediaBrowser.Controller.Library
         /// <param name="parentId">The parent identifier.</param>
         /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
-        UserView GetNamedView(User user,
+        /// <returns>The named view.</returns>
+        UserView GetNamedView(
+            User user,
             string name,
             Guid parentId,
             string viewType,
@@ -296,7 +339,9 @@ namespace MediaBrowser.Controller.Library
         /// <param name="name">The name.</param>
         /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
-        UserView GetNamedView(User user,
+        /// <returns>The named view.</returns>
+        UserView GetNamedView(
+            User user,
             string name,
             string viewType,
             string sortName);
@@ -307,7 +352,9 @@ namespace MediaBrowser.Controller.Library
         /// <param name="name">The name.</param>
         /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
-        UserView GetNamedView(string name,
+        /// <returns>The named view.</returns>
+        UserView GetNamedView(
+            string name,
             string viewType,
             string sortName);
 
@@ -319,7 +366,9 @@ namespace MediaBrowser.Controller.Library
         /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
         /// <param name="uniqueId">The unique identifier.</param>
-        UserView GetNamedView(string name,
+        /// <returns>The named view.</returns>
+        UserView GetNamedView(
+            string name,
             Guid parentId,
             string viewType,
             string sortName,
@@ -331,26 +380,11 @@ namespace MediaBrowser.Controller.Library
         /// <param name="parent">The parent.</param>
         /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
-        UserView GetShadowView(BaseItem parent,
-          string viewType,
-          string sortName);
-
-        /// <summary>
-        /// Determines whether [is video file] [the specified path].
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns><c>true</c> if [is video file] [the specified path]; otherwise, <c>false</c>.</returns>
-        bool IsVideoFile(string path);
-
-        /// <summary>
-        /// Determines whether [is audio file] [the specified path].
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns><c>true</c> if [is audio file] [the specified path]; otherwise, <c>false</c>.</returns>
-        bool IsAudioFile(string path);
-
-        bool IsAudioFile(string path, LibraryOptions libraryOptions);
-        bool IsVideoFile(string path, LibraryOptions libraryOptions);
+        /// <returns>The shadow view.</returns>
+        UserView GetShadowView(
+            BaseItem parent,
+            string viewType,
+            string sortName);
 
         /// <summary>
         /// Gets the season number from path.
@@ -362,6 +396,9 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Fills the missing episode numbers from path.
         /// </summary>
+        /// <param name="episode">Episode to use.</param>
+        /// <param name="forceRefresh">Option to force refresh of episode numbers.</param>
+        /// <returns>True if successful.</returns>
         bool FillMissingEpisodeNumbersFromPath(Episode episode, bool forceRefresh);
 
         /// <summary>
@@ -380,24 +417,13 @@ namespace MediaBrowser.Controller.Library
         Guid GetNewItemId(string key, Type type);
 
         /// <summary>
-        /// Finds the trailers.
-        /// </summary>
-        /// <param name="owner">The owner.</param>
-        /// <param name="fileSystemChildren">The file system children.</param>
-        /// <param name="directoryService">The directory service.</param>
-        /// <returns>IEnumerable&lt;Trailer&gt;.</returns>
-        IEnumerable<Video> FindTrailers(BaseItem owner, List<FileSystemMetadata> fileSystemChildren,
-            IDirectoryService directoryService);
-
-        /// <summary>
         /// Finds the extras.
         /// </summary>
         /// <param name="owner">The owner.</param>
         /// <param name="fileSystemChildren">The file system children.</param>
-        /// <param name="directoryService">The directory service.</param>
-        /// <returns>IEnumerable&lt;Video&gt;.</returns>
-        IEnumerable<Video> FindExtras(BaseItem owner, List<FileSystemMetadata> fileSystemChildren,
-            IDirectoryService directoryService);
+        /// <param name="directoryService">An instance of <see cref="IDirectoryService"/>.</param>
+        /// <returns>IEnumerable&lt;BaseItem&gt;.</returns>
+        IEnumerable<BaseItem> FindExtras(BaseItem owner, IReadOnlyList<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService);
 
         /// <summary>
         /// Gets the collection folders.
@@ -439,6 +465,15 @@ namespace MediaBrowser.Controller.Library
         void UpdatePeople(BaseItem item, List<PersonInfo> people);
 
         /// <summary>
+        /// Asynchronously updates the people.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="people">The people.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The async task.</returns>
+        Task UpdatePeopleAsync(BaseItem item, List<PersonInfo> people, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Gets the item ids.
         /// </summary>
         /// <param name="query">The query.</param>
@@ -462,15 +497,6 @@ namespace MediaBrowser.Controller.Library
         string GetPathAfterNetworkSubstitution(string path, BaseItem ownerItem = null);
 
         /// <summary>
-        /// Substitutes the path.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="from">From.</param>
-        /// <param name="to">To.</param>
-        /// <returns>System.String.</returns>
-        string SubstitutePath(string path, string from, string to);
-
-        /// <summary>
         /// Converts the image to local.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -491,6 +517,9 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the items.
         /// </summary>
+        /// <param name="query">The query to use.</param>
+        /// <param name="parents">Items to use for query.</param>
+        /// <returns>List of items.</returns>
         List<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents);
 
         /// <summary>
@@ -514,23 +543,40 @@ namespace MediaBrowser.Controller.Library
 
         Guid GetMusicGenreId(string name);
 
-        Task AddVirtualFolder(string name, string collectionType, LibraryOptions options, bool refreshLibrary);
-        Task RemoveVirtualFolder(string name, bool refreshLibrary);
-        void AddMediaPath(string virtualFolderName, MediaPathInfo path);
-        void UpdateMediaPath(string virtualFolderName, MediaPathInfo path);
-        void RemoveMediaPath(string virtualFolderName, string path);
+        Task AddVirtualFolder(string name, CollectionTypeOptions? collectionType, LibraryOptions options, bool refreshLibrary);
 
-        QueryResult<(BaseItem, ItemCounts)> GetGenres(InternalItemsQuery query);
-        QueryResult<(BaseItem, ItemCounts)> GetMusicGenres(InternalItemsQuery query);
-        QueryResult<(BaseItem, ItemCounts)> GetStudios(InternalItemsQuery query);
-        QueryResult<(BaseItem, ItemCounts)> GetArtists(InternalItemsQuery query);
-        QueryResult<(BaseItem, ItemCounts)> GetAlbumArtists(InternalItemsQuery query);
-        QueryResult<(BaseItem, ItemCounts)> GetAllArtists(InternalItemsQuery query);
+        Task RemoveVirtualFolder(string name, bool refreshLibrary);
+
+        void AddMediaPath(string virtualFolderName, MediaPathInfo mediaPath);
+
+        void UpdateMediaPath(string virtualFolderName, MediaPathInfo mediaPath);
+
+        void RemoveMediaPath(string virtualFolderName, string mediaPath);
+
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery query);
+
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery query);
+
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery query);
+
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery query);
+
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery query);
+
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery query);
 
         int GetCount(InternalItemsQuery query);
 
-        void AddExternalSubtitleStreams(List<MediaStream> streams,
-            string videoPath,
-            string[] files);
+        Task RunMetadataSavers(BaseItem item, ItemUpdateType updateReason);
+
+        BaseItem GetParentItem(Guid? parentId, Guid? userId);
+
+        /// <summary>
+        /// Queue a library scan.
+        /// </summary>
+        /// <remarks>
+        /// This exists so plugins can trigger a library scan.
+        /// </remarks>
+        void QueueLibraryScan();
     }
 }

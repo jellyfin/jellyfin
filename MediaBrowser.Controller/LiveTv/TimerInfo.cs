@@ -1,7 +1,11 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json.Serialization;
+using Jellyfin.Extensions;
 using MediaBrowser.Model.LiveTv;
 
 namespace MediaBrowser.Controller.LiveTv
@@ -18,22 +22,23 @@ namespace MediaBrowser.Controller.LiveTv
         }
 
         public Dictionary<string, string> ProviderIds { get; set; }
+
         public Dictionary<string, string> SeriesProviderIds { get; set; }
+
         public string[] Tags { get; set; }
 
         /// <summary>
-        /// Id of the recording.
+        /// Gets or sets the id of the recording.
         /// </summary>
         public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets the series timer identifier.
         /// </summary>
-        /// <value>The series timer identifier.</value>
         public string SeriesTimerId { get; set; }
 
         /// <summary>
-        /// ChannelId of the recording.
+        /// Gets or sets the channelId of the recording.
         /// </summary>
         public string ChannelId { get; set; }
 
@@ -46,24 +51,24 @@ namespace MediaBrowser.Controller.LiveTv
         public string ShowId { get; set; }
 
         /// <summary>
-        /// Name of the recording.
+        /// Gets or sets the name of the recording.
         /// </summary>
         public string Name { get; set; }
 
         /// <summary>
-        /// Description of the recording.
+        /// Gets or sets the description of the recording.
         /// </summary>
         public string Overview { get; set; }
 
         public string SeriesId { get; set; }
 
         /// <summary>
-        /// The start date of the recording, in UTC.
+        /// Gets or sets the start date of the recording, in UTC.
         /// </summary>
         public DateTime StartDate { get; set; }
 
         /// <summary>
-        /// The end date of the recording, in UTC.
+        /// Gets or sets the end date of the recording, in UTC.
         /// </summary>
         public DateTime EndDate { get; set; }
 
@@ -109,6 +114,7 @@ namespace MediaBrowser.Controller.LiveTv
 
         // Program properties
         public int? SeasonNumber { get; set; }
+
         /// <summary>
         /// Gets or sets the episode number.
         /// </summary>
@@ -117,23 +123,23 @@ namespace MediaBrowser.Controller.LiveTv
 
         public bool IsMovie { get; set; }
 
-        public bool IsKids => Tags.Contains("Kids", StringComparer.OrdinalIgnoreCase);
+        public bool IsKids => Tags.Contains("Kids", StringComparison.OrdinalIgnoreCase);
 
-        public bool IsSports => Tags.Contains("Sports", StringComparer.OrdinalIgnoreCase);
+        public bool IsSports => Tags.Contains("Sports", StringComparison.OrdinalIgnoreCase);
 
-        public bool IsNews => Tags.Contains("News", StringComparer.OrdinalIgnoreCase);
+        public bool IsNews => Tags.Contains("News", StringComparison.OrdinalIgnoreCase);
 
         public bool IsSeries { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is live.
+        /// Gets a value indicating whether this instance is live.
         /// </summary>
         /// <value><c>true</c> if this instance is live; otherwise, <c>false</c>.</value>
         [JsonIgnore]
-        public bool IsLive => Tags.Contains("Live", StringComparer.OrdinalIgnoreCase);
+        public bool IsLive => Tags.Contains("Live", StringComparison.OrdinalIgnoreCase);
 
         [JsonIgnore]
-        public bool IsPremiere => Tags.Contains("Premiere", StringComparer.OrdinalIgnoreCase);
+        public bool IsPremiere => Tags.Contains("Premiere", StringComparison.OrdinalIgnoreCase);
 
         public int? ProductionYear { get; set; }
 
@@ -146,10 +152,15 @@ namespace MediaBrowser.Controller.LiveTv
         public bool IsRepeat { get; set; }
 
         public string HomePageUrl { get; set; }
+
         public float? CommunityRating { get; set; }
+
         public string OfficialRating { get; set; }
+
         public string[] Genres { get; set; }
+
         public string RecordingPath { get; set; }
+
         public KeepUntil KeepUntil { get; set; }
     }
 }

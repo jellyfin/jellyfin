@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,9 +12,9 @@ namespace Emby.Server.Implementations.Data
     public class CleanDatabaseScheduledTask : ILibraryPostScanTask
     {
         private readonly ILibraryManager _libraryManager;
-        private readonly ILogger _logger;
+        private readonly ILogger<CleanDatabaseScheduledTask> _logger;
 
-        public CleanDatabaseScheduledTask(ILibraryManager libraryManager, ILogger logger)
+        public CleanDatabaseScheduledTask(ILibraryManager libraryManager, ILogger<CleanDatabaseScheduledTask> logger)
         {
             _libraryManager = libraryManager;
             _logger = logger;
@@ -49,7 +51,6 @@ namespace Emby.Server.Implementations.Data
                     _libraryManager.DeleteItem(item, new DeleteOptions
                     {
                         DeleteFileLocation = false
-
                     });
                 }
 

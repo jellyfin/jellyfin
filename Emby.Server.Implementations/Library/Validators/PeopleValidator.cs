@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -32,6 +33,7 @@ namespace Emby.Server.Implementations.Library.Validators
         /// </summary>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="fileSystem">The file system.</param>
         public PeopleValidator(ILibraryManager libraryManager, ILogger logger, IFileSystem fileSystem)
         {
             _libraryManager = libraryManager;
@@ -77,7 +79,7 @@ namespace Emby.Server.Implementations.Library.Validators
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error validating IBN entry {person}", person);
+                    _logger.LogError(ex, "Error validating IBN entry {Person}", person);
                 }
 
                 // Update progress
@@ -90,7 +92,7 @@ namespace Emby.Server.Implementations.Library.Validators
 
             var deadEntities = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new[] { typeof(Person).Name },
+                IncludeItemTypes = new[] { BaseItemKind.Person },
                 IsDeadPerson = true,
                 IsLocked = false
             });

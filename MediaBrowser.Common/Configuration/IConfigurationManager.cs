@@ -24,7 +24,7 @@ namespace MediaBrowser.Common.Configuration
         event EventHandler<ConfigurationUpdateEventArgs> NamedConfigurationUpdated;
 
         /// <summary>
-        /// Gets or sets the application paths.
+        /// Gets the application paths.
         /// </summary>
         /// <value>The application paths.</value>
         IApplicationPaths CommonApplicationPaths { get; }
@@ -47,11 +47,24 @@ namespace MediaBrowser.Common.Configuration
         void ReplaceConfiguration(BaseApplicationConfiguration newConfiguration);
 
         /// <summary>
+        /// Manually pre-loads a factory so that it is available pre system initialisation.
+        /// </summary>
+        /// <typeparam name="T">Class to register.</typeparam>
+        void RegisterConfiguration<T>()
+            where T : IConfigurationFactory;
+
+        /// <summary>
         /// Gets the configuration.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns>System.Object.</returns>
         object GetConfiguration(string key);
+
+        /// <summary>
+        /// Gets the array of coniguration stores.
+        /// </summary>
+        /// <returns>Array of ConfigurationStore.</returns>
+        ConfigurationStore[] GetConfigurationStores();
 
         /// <summary>
         /// Gets the type of the configuration.

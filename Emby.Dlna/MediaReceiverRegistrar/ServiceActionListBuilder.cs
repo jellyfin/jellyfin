@@ -3,9 +3,16 @@ using Emby.Dlna.Common;
 
 namespace Emby.Dlna.MediaReceiverRegistrar
 {
-    public class ServiceActionListBuilder
+    /// <summary>
+    /// Defines the <see cref="ServiceActionListBuilder" />.
+    /// </summary>
+    public static class ServiceActionListBuilder
     {
-        public IEnumerable<ServiceAction> GetActions()
+        /// <summary>
+        /// Returns a list of services that this instance provides.
+        /// </summary>
+        /// <returns>An <see cref="IEnumerable{ServiceAction}"/>.</returns>
+        public static IEnumerable<ServiceAction> GetActions()
         {
             return new[]
             {
@@ -19,6 +26,10 @@ namespace Emby.Dlna.MediaReceiverRegistrar
             };
         }
 
+        /// <summary>
+        /// Returns the action details for "IsValidated".
+        /// </summary>
+        /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetIsValidated()
         {
             var action = new ServiceAction
@@ -41,6 +52,10 @@ namespace Emby.Dlna.MediaReceiverRegistrar
             return action;
         }
 
+        /// <summary>
+        /// Returns the action details for "IsAuthorized".
+        /// </summary>
+        /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetIsAuthorized()
         {
             var action = new ServiceAction
@@ -63,6 +78,10 @@ namespace Emby.Dlna.MediaReceiverRegistrar
             return action;
         }
 
+        /// <summary>
+        /// Returns the action details for "RegisterDevice".
+        /// </summary>
+        /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetRegisterDevice()
         {
             var action = new ServiceAction
@@ -85,6 +104,10 @@ namespace Emby.Dlna.MediaReceiverRegistrar
             return action;
         }
 
+        /// <summary>
+        /// Returns the action details for "GetValidationSucceededUpdateID".
+        /// </summary>
+        /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetGetValidationSucceededUpdateID()
         {
             var action = new ServiceAction
@@ -101,7 +124,11 @@ namespace Emby.Dlna.MediaReceiverRegistrar
             return action;
         }
 
-        private ServiceAction GetGetAuthorizationDeniedUpdateID()
+        /// <summary>
+        /// Returns the action details for "GetGetAuthorizationDeniedUpdateID".
+        /// </summary>
+        /// <returns>The <see cref="ServiceAction"/>.</returns>
+        private static ServiceAction GetGetAuthorizationDeniedUpdateID()
         {
             var action = new ServiceAction
             {
@@ -117,7 +144,11 @@ namespace Emby.Dlna.MediaReceiverRegistrar
             return action;
         }
 
-        private ServiceAction GetGetValidationRevokedUpdateID()
+        /// <summary>
+        /// Returns the action details for "GetValidationRevokedUpdateID".
+        /// </summary>
+        /// <returns>The <see cref="ServiceAction"/>.</returns>
+        private static ServiceAction GetGetValidationRevokedUpdateID()
         {
             var action = new ServiceAction
             {
@@ -133,7 +164,11 @@ namespace Emby.Dlna.MediaReceiverRegistrar
             return action;
         }
 
-        private ServiceAction GetGetAuthorizationGrantedUpdateID()
+        /// <summary>
+        /// Returns the action details for "GetAuthorizationGrantedUpdateID".
+        /// </summary>
+        /// <returns>The <see cref="ServiceAction"/>.</returns>
+        private static ServiceAction GetGetAuthorizationGrantedUpdateID()
         {
             var action = new ServiceAction
             {

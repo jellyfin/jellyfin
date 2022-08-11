@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,7 +22,9 @@ namespace DvdLib.Ifo
         public readonly List<Cell> Cells;
 
         public DvdTime PlaybackTime { get; private set; }
+
         public UserOperation ProhibitedUserOperations { get; private set; }
+
         public byte[] AudioStreamControl { get; private set; } // 8*2 entries
         public byte[] SubpictureStreamControl { get; private set; } // 32*4 entries
 
@@ -31,9 +35,11 @@ namespace DvdLib.Ifo
         private ushort _goupProgramNumber;
 
         public ProgramPlaybackMode PlaybackMode { get; private set; }
+
         public uint ProgramCount { get; private set; }
 
         public byte StillTime { get; private set; }
+
         public byte[] Palette { get; private set; } // 16*4 entries
 
         private ushort _commandTableOffset;
@@ -69,8 +75,15 @@ namespace DvdLib.Ifo
 
             StillTime = br.ReadByte();
             byte pbMode = br.ReadByte();
-            if (pbMode == 0) PlaybackMode = ProgramPlaybackMode.Sequential;
-            else PlaybackMode = ((pbMode & 0x80) == 0) ? ProgramPlaybackMode.Random : ProgramPlaybackMode.Shuffle;
+            if (pbMode == 0)
+            {
+                PlaybackMode = ProgramPlaybackMode.Sequential;
+            }
+            else
+            {
+                PlaybackMode = ((pbMode & 0x80) == 0) ? ProgramPlaybackMode.Random : ProgramPlaybackMode.Shuffle;
+            }
+
             ProgramCount = (uint)(pbMode & 0x7F);
 
             Palette = br.ReadBytes(64);

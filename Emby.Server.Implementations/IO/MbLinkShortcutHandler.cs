@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.IO;
 using MediaBrowser.Model.IO;
@@ -15,7 +17,7 @@ namespace Emby.Server.Implementations.IO
 
         public string Extension => ".mblink";
 
-        public string Resolve(string shortcutPath)
+        public string? Resolve(string shortcutPath)
         {
             if (string.IsNullOrEmpty(shortcutPath))
             {

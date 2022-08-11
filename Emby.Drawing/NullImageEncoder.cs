@@ -32,13 +32,25 @@ namespace Emby.Drawing
             => throw new NotImplementedException();
 
         /// <inheritdoc />
-        public string EncodeImage(string inputPath, DateTime dateModified, string outputPath, bool autoOrient, ImageOrientation? orientation, int quality, ImageProcessingOptions options, ImageFormat selectedOutputFormat)
+        public string EncodeImage(string inputPath, DateTime dateModified, string outputPath, bool autoOrient, ImageOrientation? orientation, int quality, ImageProcessingOptions options, ImageFormat outputFormat)
         {
             throw new NotImplementedException();
         }
 
         /// <inheritdoc />
-        public void CreateImageCollage(ImageCollageOptions options)
+        public void CreateImageCollage(ImageCollageOptions options, string? libraryName)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
+        public void CreateSplashscreen(IReadOnlyList<string> posters, IReadOnlyList<string> backdrops)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
+        public string GetImageBlurHash(int xComp, int yComp, string path)
         {
             throw new NotImplementedException();
         }

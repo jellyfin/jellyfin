@@ -1,3 +1,6 @@
+#nullable disable
+#pragma warning disable CS1591
+
 using System;
 using MediaBrowser.Model.Dto;
 
@@ -17,31 +20,38 @@ namespace MediaBrowser.Model.Dlna
         }
 
         public bool EnableDirectPlay { get; set; }
+
         public bool EnableDirectStream { get; set; }
+
         public bool ForceDirectPlay { get; set; }
+
         public bool ForceDirectStream { get; set; }
 
+        public bool AllowAudioStreamCopy { get; set; }
+
         public Guid ItemId { get; set; }
+
         public MediaSourceInfo[] MediaSources { get; set; }
+
         public DeviceProfile Profile { get; set; }
 
         /// <summary>
-        /// Optional. Only needed if a specific AudioStreamIndex or SubtitleStreamIndex are requested.
+        /// Gets or sets a media source id. Optional. Only needed if a specific AudioStreamIndex or SubtitleStreamIndex are requested.
         /// </summary>
         public string MediaSourceId { get; set; }
 
         public string DeviceId { get; set; }
 
         /// <summary>
-        /// Allows an override of supported number of audio channels
-        /// Example: DeviceProfile supports five channel, but user only has stereo speakers
+        /// Gets or sets an override of supported number of audio channels
+        /// Example: DeviceProfile supports five channel, but user only has stereo speakers.
         /// </summary>
         public int? MaxAudioChannels { get; set; }
 
         /// <summary>
-        /// The application's configured quality setting
+        /// Gets or sets the application's configured quality setting.
         /// </summary>
-        public long? MaxBitrate { get; set; }
+        public int? MaxBitrate { get; set; }
 
         /// <summary>
         /// Gets or sets the context.
@@ -58,8 +68,9 @@ namespace MediaBrowser.Model.Dlna
         /// <summary>
         /// Gets the maximum bitrate.
         /// </summary>
+        /// <param name="isAudio">Whether or not this is audio.</param>
         /// <returns>System.Nullable&lt;System.Int32&gt;.</returns>
-        public long? GetMaxBitrate(bool isAudio)
+        public int? GetMaxBitrate(bool isAudio)
         {
             if (MaxBitrate.HasValue)
             {
@@ -77,6 +88,7 @@ namespace MediaBrowser.Model.Dlna
                 {
                     return Profile.MaxStaticMusicBitrate;
                 }
+
                 return Profile.MaxStaticBitrate;
             }
 

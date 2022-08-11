@@ -1,24 +1,27 @@
 namespace MediaBrowser.Model.IO
 {
     /// <summary>
-    /// Enum FileSystemEntryType
+    /// Enum FileSystemEntryType.
     /// </summary>
     public enum FileSystemEntryType
     {
         /// <summary>
-        /// The file
+        /// The file.
         /// </summary>
         File,
+
         /// <summary>
-        /// The directory
+        /// The directory.
         /// </summary>
         Directory,
+
         /// <summary>
-        /// The network computer
+        /// The network computer.
         /// </summary>
         NetworkComputer,
+
         /// <summary>
-        /// The network share
+        /// The network share.
         /// </summary>
         NetworkShare
     }

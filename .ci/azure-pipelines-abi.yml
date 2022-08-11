@@ -1,0 +1,93 @@
+parameters:
+- name: Packages
+  type: object
+  default: {}
+- name: LinuxImage
+  type: string
+  default: "ubuntu-latest"
+- name: DotNetSdkVersion
+  type: string
+  default: 6.0.x
+
+jobs:
+  - job: CompatibilityCheck
+    displayName: Compatibility Check
+    dependsOn: Build
+    condition: and(succeeded(), variables['System.PullRequest.PullRequestNumber'])
+
+    pool:
+      vmImage: "${{ parameters.LinuxImage }}"
+
+    strategy:
+      matrix:
+        ${{ each Package in parameters.Packages }}:
+          ${{ Package.key }}:
+            NugetPackageName: ${{ Package.value.NugetPackageName }}
+            AssemblyFileName: ${{ Package.value.AssemblyFileName }}
+      maxParallel: 2
+
+    steps:
+      - checkout: none
+
+      - task: UseDotNet@2
+        displayName: "Update DotNet"
+        inputs:
+          packageType: sdk
+          version: ${{ parameters.DotNetSdkVersion }}
+
+      - task: DotNetCoreCLI@2
+        displayName: 'Install ABI CompatibilityChecker Tool'
+        inputs:
+          command: custom
+          custom: tool
+          arguments: 'update compatibilitychecker -g'
+
+      - task: DownloadPipelineArtifact@2
+        displayName: 'Download New Assembly Build Artifact'
+        inputs:
+          source: 'current'
+          artifact: "$(NugetPackageName)"
+          path: "$(System.ArtifactsDirectory)/new-artifacts"
+          runVersion: "latest"
+
+      - task: CopyFiles@2
+        displayName: 'Copy New Assembly Build Artifact'
+        inputs:
+          sourceFolder: $(System.ArtifactsDirectory)/new-artifacts
+          contents: '**/*.dll'
+          targetFolder: $(System.ArtifactsDirectory)/new-release
+          cleanTargetFolder: true
+          overWrite: true
+          flattenFolders: true
+
+      - task: DownloadPipelineArtifact@2
+        displayName: 'Download Reference Assembly Build Artifact'
+        enabled: false
+        inputs:
+          source: "specific"
+          artifact: "$(NugetPackageName)"
+          path: "$(System.ArtifactsDirectory)/current-artifacts"
+          project: "$(System.TeamProjectId)"
+          pipeline: "$(System.DefinitionId)"
+          runVersion: "latestFromBranch"
+          runBranch: "refs/heads/$(System.PullRequest.TargetBranch)"
+
+      - task: CopyFiles@2
+        displayName: 'Copy Reference Assembly Build Artifact'
+        enabled: false
+        inputs:
+          sourceFolder: $(System.ArtifactsDirectory)/current-artifacts
+          contents: '**/*.dll'
+          targetFolder: $(System.ArtifactsDirectory)/current-release
+          cleanTargetFolder: true
+          overWrite: true
+          flattenFolders: true
+
+      - task: DotNetCoreCLI@2
+        displayName: 'Execute ABI Compatibility Check Tool'
+        enabled: false
+        inputs:
+          command: custom
+          custom: compat
+          arguments: 'current-release/$(AssemblyFileName) new-release/$(AssemblyFileName) --azure-pipelines --warnings-only'
+          workingDirectory: $(System.ArtifactsDirectory)

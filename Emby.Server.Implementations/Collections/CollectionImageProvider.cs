@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Emby.Server.Implementations.Images;
@@ -14,8 +13,18 @@ using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.Collections
 {
+    /// <summary>
+    /// A collection image provider.
+    /// </summary>
     public class CollectionImageProvider : BaseDynamicImageProvider<BoxSet>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CollectionImageProvider"/> class.
+        /// </summary>
+        /// <param name="fileSystem">The filesystem.</param>
+        /// <param name="providerManager">The provider manager.</param>
+        /// <param name="applicationPaths">The application paths.</param>
+        /// <param name="imageProcessor">The image processor.</param>
         public CollectionImageProvider(
             IFileSystem fileSystem,
             IProviderManager providerManager,
@@ -25,6 +34,7 @@ namespace Emby.Server.Implementations.Collections
         {
         }
 
+        /// <inheritdoc />
         protected override bool Supports(BaseItem item)
         {
             // Right now this is the only way to prevent this image from getting created ahead of internet image providers
@@ -36,6 +46,7 @@ namespace Emby.Server.Implementations.Collections
             return base.Supports(item);
         }
 
+        /// <inheritdoc />
         protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
         {
             var playlist = (BoxSet)item;
@@ -47,13 +58,10 @@ namespace Emby.Server.Implementations.Collections
 
                     var episode = subItem as Episode;
 
-                    if (episode != null)
+                    var series = episode?.Series;
+                    if (series != null && series.HasImage(ImageType.Primary))
                     {
-                        var series = episode.Series;
-                        if (series != null && series.HasImage(ImageType.Primary))
-                        {
-                            return series;
-                        }
+                        return series;
                     }
 
                     if (subItem.HasImage(ImageType.Primary))
@@ -74,12 +82,12 @@ namespace Emby.Server.Implementations.Collections
                     return null;
                 })
                 .Where(i => i != null)
-                .GroupBy(x => x.Id)
+                .GroupBy(x => x!.Id) // We removed the null values
                 .Select(x => x.First())
-                .OrderBy(i => Guid.NewGuid())
-                .ToList();
+                .ToList()!; // Again... the list doesn't contain any null values
         }
 
+        /// <inheritdoc />
         protected override string CreateImage(BaseItem item, IReadOnlyCollection<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
         {
             return CreateSingleImage(itemsWithImages, outputPathWithoutExtension, ImageType.Primary);

@@ -77,6 +77,8 @@ chb|||Chibcha|chibcha
 che||ce|Chechen|tchétchène
 chg|||Chagatai|djaghataï
 chi|zho|zh|Chinese|chinois
+chi|zho|zh-tw|Chinese; Traditional|chinois
+chi|zho|zh-hk|Chinese; Hong Kong|chinois
 chk|||Chuukese|chuuk
 chm|||Mari|mari
 chn|||Chinook jargon|chinook, jargon
@@ -347,7 +349,8 @@ pli||pi|Pali|pali
 pol||pl|Polish|polonais
 pon|||Pohnpeian|pohnpei
 por||pt|Portuguese|portugais
-pob||pt-br|Portuguese (Brazil)|portugais
+pop||pt-pt|Portuguese (Portugal)|portugais (pt-pt)
+pob||pt-br|Portuguese (Brazil)|portugais (pt-br)
 pra|||Prakrit languages|prâkrit, langues
 pro|||Provençal, Old (to 1500)|provençal ancien (jusqu'à 1500)
 pus||ps|Pushto; Pashto|pachto

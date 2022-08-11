@@ -1,8 +1,10 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Model.IO;
 
 namespace DvdLib.Ifo
 {
@@ -13,13 +15,10 @@ namespace DvdLib.Ifo
 
         private ushort _titleCount;
         public readonly Dictionary<ushort, string> VTSPaths = new Dictionary<ushort, string>();
-        private readonly IFileSystem _fileSystem;
-
-        public Dvd(string path, IFileSystem fileSystem)
+        public Dvd(string path)
         {
-            _fileSystem = fileSystem;
             Titles = new List<Title>();
-            var allFiles = _fileSystem.GetFiles(path, true).ToList();
+            var allFiles = new DirectoryInfo(path).GetFiles(path, SearchOption.AllDirectories);
 
             var vmgPath = allFiles.FirstOrDefault(i => string.Equals(i.Name, "VIDEO_TS.IFO", StringComparison.OrdinalIgnoreCase)) ??
                 allFiles.FirstOrDefault(i => string.Equals(i.Name, "VIDEO_TS.BUP", StringComparison.OrdinalIgnoreCase));
@@ -33,7 +32,7 @@ namespace DvdLib.Ifo
                         continue;
                     }
 
-                    var nums = ifo.Name.Split(new [] { '_' }, StringSplitOptions.RemoveEmptyEntries);
+                    var nums = ifo.Name.Split('_', StringSplitOptions.RemoveEmptyEntries);
                     if (nums.Length >= 2 && ushort.TryParse(nums[1], out var ifoNumber))
                     {
                         ReadVTS(ifoNumber, ifo.FullName);
@@ -42,7 +41,7 @@ namespace DvdLib.Ifo
             }
             else
             {
-                using (var vmgFs = _fileSystem.GetFileStream(vmgPath.FullName, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
+                using (var vmgFs = new FileStream(vmgPath.FullName, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     using (var vmgRead = new BigEndianBinaryReader(vmgFs))
                     {
@@ -76,9 +75,9 @@ namespace DvdLib.Ifo
             }
         }
 
-        private void ReadVTS(ushort vtsNum, IEnumerable<FileSystemMetadata> allFiles)
+        private void ReadVTS(ushort vtsNum, IReadOnlyList<FileInfo> allFiles)
         {
-            var filename = string.Format("VTS_{0:00}_0.IFO", vtsNum);
+            var filename = string.Format(CultureInfo.InvariantCulture, "VTS_{0:00}_0.IFO", vtsNum);
 
             var vtsPath = allFiles.FirstOrDefault(i => string.Equals(i.Name, filename, StringComparison.OrdinalIgnoreCase)) ??
                 allFiles.FirstOrDefault(i => string.Equals(i.Name, Path.ChangeExtension(filename, ".bup"), StringComparison.OrdinalIgnoreCase));
@@ -95,7 +94,7 @@ namespace DvdLib.Ifo
         {
             VTSPaths[vtsNum] = vtsPath;
 
-            using (var vtsFs = _fileSystem.GetFileStream(vtsPath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
+            using (var vtsFs = new FileStream(vtsPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 using (var vtsRead = new BigEndianBinaryReader(vtsFs))
                 {
@@ -119,12 +118,19 @@ namespace DvdLib.Ifo
                         uint chapNum = 1;
                         vtsFs.Seek(baseAddr + offsets[titleNum], SeekOrigin.Begin);
                         var t = Titles.FirstOrDefault(vtst => vtst.IsVTSTitle(vtsNum, titleNum + 1));
-                        if (t == null) continue;
+                        if (t == null)
+                        {
+                            continue;
+                        }
 
                         do
                         {
                             t.Chapters.Add(new Chapter(vtsRead.ReadUInt16(), vtsRead.ReadUInt16(), chapNum));
-                            if (titleNum + 1 < numTitles && vtsFs.Position == (baseAddr + offsets[titleNum + 1])) break;
+                            if (titleNum + 1 < numTitles && vtsFs.Position == (baseAddr + offsets[titleNum + 1]))
+                            {
+                                break;
+                            }
+
                             chapNum++;
                         }
                         while (vtsFs.Position < (baseAddr + endaddr));
@@ -149,7 +155,10 @@ namespace DvdLib.Ifo
                         uint vtsPgcOffset = vtsRead.ReadUInt32();
 
                         var t = Titles.FirstOrDefault(vtst => vtst.IsVTSTitle(vtsNum, titleNum));
-                        if (t != null) t.AddPgc(vtsRead, startByte + vtsPgcOffset, entryPgc, pgcNum);
+                        if (t != null)
+                        {
+                            t.AddPgc(vtsRead, startByte + vtsPgcOffset, entryPgc, pgcNum);
+                        }
                     }
                 }
             }

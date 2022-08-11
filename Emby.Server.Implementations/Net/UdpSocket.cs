@@ -1,3 +1,7 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.Net;
 using System.Net.Sockets;
@@ -12,13 +16,7 @@ namespace Emby.Server.Implementations.Net
 
     public sealed class UdpSocket : ISocket, IDisposable
     {
-        private Socket _socket;
-        private int _localPort;
-        private bool _disposed = false;
-
-        public Socket Socket => _socket;
-
-        public IPAddress LocalIPAddress { get; }
+        private readonly int _localPort;
 
         private readonly SocketAsyncEventArgs _receiveSocketAsyncEventArgs = new SocketAsyncEventArgs()
         {
@@ -30,12 +28,17 @@ namespace Emby.Server.Implementations.Net
             SocketFlags = SocketFlags.None
         };
 
+        private Socket _socket;
+        private bool _disposed = false;
         private TaskCompletionSource<SocketReceiveResult> _currentReceiveTaskCompletionSource;
         private TaskCompletionSource<int> _currentSendTaskCompletionSource;
 
         public UdpSocket(Socket socket, int localPort, IPAddress ip)
         {
-            if (socket == null) throw new ArgumentNullException(nameof(socket));
+            if (socket == null)
+            {
+                throw new ArgumentNullException(nameof(socket));
+            }
 
             _socket = socket;
             _localPort = localPort;
@@ -46,18 +49,35 @@ namespace Emby.Server.Implementations.Net
             InitReceiveSocketAsyncEventArgs();
         }
 
+        public UdpSocket(Socket socket, IPEndPoint endPoint)
+        {
+            if (socket == null)
+            {
+                throw new ArgumentNullException(nameof(socket));
+            }
+
+            _socket = socket;
+            _socket.Connect(endPoint);
+
+            InitReceiveSocketAsyncEventArgs();
+        }
+
+        public Socket Socket => _socket;
+
+        public IPAddress LocalIPAddress { get; }
+
         private void InitReceiveSocketAsyncEventArgs()
         {
             var receiveBuffer = new byte[8192];
             _receiveSocketAsyncEventArgs.SetBuffer(receiveBuffer, 0, receiveBuffer.Length);
-            _receiveSocketAsyncEventArgs.Completed += _receiveSocketAsyncEventArgs_Completed;
+            _receiveSocketAsyncEventArgs.Completed += OnReceiveSocketAsyncEventArgsCompleted;
 
             var sendBuffer = new byte[8192];
             _sendSocketAsyncEventArgs.SetBuffer(sendBuffer, 0, sendBuffer.Length);
-            _sendSocketAsyncEventArgs.Completed += _sendSocketAsyncEventArgs_Completed;
+            _sendSocketAsyncEventArgs.Completed += OnSendSocketAsyncEventArgsCompleted;
         }
 
-        private void _receiveSocketAsyncEventArgs_Completed(object sender, SocketAsyncEventArgs e)
+        private void OnReceiveSocketAsyncEventArgsCompleted(object sender, SocketAsyncEventArgs e)
         {
             var tcs = _currentReceiveTaskCompletionSource;
             if (tcs != null)
@@ -81,7 +101,7 @@ namespace Emby.Server.Implementations.Net
             }
         }
 
-        private void _sendSocketAsyncEventArgs_Completed(object sender, SocketAsyncEventArgs e)
+        private void OnSendSocketAsyncEventArgsCompleted(object sender, SocketAsyncEventArgs e)
         {
             var tcs = _currentSendTaskCompletionSource;
             if (tcs != null)
@@ -97,16 +117,6 @@ namespace Emby.Server.Implementations.Net
                     tcs.TrySetException(new Exception("SocketError: " + e.SocketError));
                 }
             }
-        }
-
-        public UdpSocket(Socket socket, IPEndPoint endPoint)
-        {
-            if (socket == null) throw new ArgumentNullException(nameof(socket));
-
-            _socket = socket;
-            _socket.Connect(endPoint);
-
-            InitReceiveSocketAsyncEventArgs();
         }
 
         public IAsyncResult BeginReceive(byte[] buffer, int offset, int count, AsyncCallback callback)
@@ -149,7 +159,7 @@ namespace Emby.Server.Implementations.Net
         {
             ThrowIfDisposed();
 
-            var taskCompletion = new TaskCompletionSource<SocketReceiveResult>();
+            var taskCompletion = new TaskCompletionSource<SocketReceiveResult>(TaskCreationOptions.RunContinuationsAsynchronously);
             bool isResultSet = false;
 
             Action<IAsyncResult> callback = callbackResult =>
@@ -181,20 +191,11 @@ namespace Emby.Server.Implementations.Net
             return taskCompletion.Task;
         }
 
-        public Task<SocketReceiveResult> ReceiveAsync(CancellationToken cancellationToken)
+        public Task SendToAsync(byte[] buffer, int offset, int bytes, IPEndPoint endPoint, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
-            var buffer = new byte[8192];
-
-            return ReceiveAsync(buffer, 0, buffer.Length, cancellationToken);
-        }
-
-        public Task SendToAsync(byte[] buffer, int offset, int size, IPEndPoint endPoint, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-
-            var taskCompletion = new TaskCompletionSource<int>();
+            var taskCompletion = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             bool isResultSet = false;
 
             Action<IAsyncResult> callback = callbackResult =>
@@ -213,7 +214,7 @@ namespace Emby.Server.Implementations.Net
                 }
             };
 
-            var result = BeginSendTo(buffer, offset, size, endPoint, new AsyncCallback(callback), null);
+            var result = BeginSendTo(buffer, offset, bytes, endPoint, new AsyncCallback(callback), null);
 
             if (result.CompletedSynchronously)
             {
@@ -248,6 +249,7 @@ namespace Emby.Server.Implementations.Net
             }
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             if (_disposed)
@@ -256,6 +258,8 @@ namespace Emby.Server.Implementations.Net
             }
 
             _socket?.Dispose();
+            _receiveSocketAsyncEventArgs.Dispose();
+            _sendSocketAsyncEventArgs.Dispose();
             _currentReceiveTaskCompletionSource?.TrySetCanceled();
             _currentSendTaskCompletionSource?.TrySetCanceled();
 

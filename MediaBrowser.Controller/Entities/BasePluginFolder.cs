@@ -1,3 +1,7 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System.Text.Json.Serialization;
 
 namespace MediaBrowser.Controller.Entities
@@ -11,6 +15,12 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public virtual string CollectionType => null;
 
+        [JsonIgnore]
+        public override bool SupportsInheritedParentImages => false;
+
+        [JsonIgnore]
+        public override bool SupportsPeople => false;
+
         public override bool CanDelete()
         {
             return false;
@@ -20,19 +30,5 @@ namespace MediaBrowser.Controller.Entities
         {
             return true;
         }
-
-        [JsonIgnore]
-        public override bool SupportsInheritedParentImages => false;
-
-        [JsonIgnore]
-        public override bool SupportsPeople => false;
-
-        //public override double? GetDefaultPrimaryImageAspectRatio()
-        //{
-        //    double value = 16;
-        //    value /= 9;
-
-        //    return value;
-        //}
     }
 }

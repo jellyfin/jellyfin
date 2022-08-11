@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 namespace MediaBrowser.Model.Dlna
 {
     public enum ProfileConditionValue
@@ -24,6 +26,7 @@ namespace MediaBrowser.Model.Dlna
         IsAvc = 20,
         IsInterlaced = 21,
         AudioSampleRate = 22,
-        AudioBitDepth = 23
+        AudioBitDepth = 23,
+        VideoRangeType = 24
     }
 }

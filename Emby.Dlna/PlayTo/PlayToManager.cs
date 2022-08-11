@@ -1,27 +1,29 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.Globalization;
 using System.Linq;
-using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Events;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.PlayTo
 {
-    class PlayToManager : IDisposable
+    public sealed class PlayToManager : IDisposable
     {
         private readonly ILogger _logger;
         private readonly ISessionManager _sessionManager;
@@ -31,8 +33,7 @@ namespace Emby.Dlna.PlayTo
         private readonly IDlnaManager _dlnaManager;
         private readonly IServerApplicationHost _appHost;
         private readonly IImageProcessor _imageProcessor;
-        private readonly IHttpClient _httpClient;
-        private readonly IServerConfigurationManager _config;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IUserDataManager _userDataManager;
         private readonly ILocalizationManager _localization;
 
@@ -44,7 +45,7 @@ namespace Emby.Dlna.PlayTo
         private SemaphoreSlim _sessionLock = new SemaphoreSlim(1, 1);
         private CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
 
-        public PlayToManager(ILogger logger, ISessionManager sessionManager, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, IDeviceDiscovery deviceDiscovery, IHttpClient httpClient, IServerConfigurationManager config, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder)
+        public PlayToManager(ILogger logger, ISessionManager sessionManager, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, IDeviceDiscovery deviceDiscovery, IHttpClientFactory httpClientFactory, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder)
         {
             _logger = logger;
             _sessionManager = sessionManager;
@@ -54,8 +55,7 @@ namespace Emby.Dlna.PlayTo
             _appHost = appHost;
             _imageProcessor = imageProcessor;
             _deviceDiscovery = deviceDiscovery;
-            _httpClient = httpClient;
-            _config = config;
+            _httpClientFactory = httpClientFactory;
             _userDataManager = userDataManager;
             _localization = localization;
             _mediaSourceManager = mediaSourceManager;
@@ -64,10 +64,10 @@ namespace Emby.Dlna.PlayTo
 
         public void Start()
         {
-            _deviceDiscovery.DeviceDiscovered += _deviceDiscovery_DeviceDiscovered;
+            _deviceDiscovery.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
         }
 
-        async void _deviceDiscovery_DeviceDiscovered(object sender, GenericEventArgs<UpnpDeviceInfo> e)
+        private async void OnDeviceDiscoveryDeviceDiscovered(object sender, GenericEventArgs<UpnpDeviceInfo> e)
         {
             if (_disposed)
             {
@@ -76,17 +76,20 @@ namespace Emby.Dlna.PlayTo
 
             var info = e.Argument;
 
-            if (!info.Headers.TryGetValue("USN", out string usn)) usn = string.Empty;
+            if (!info.Headers.TryGetValue("USN", out string usn))
+            {
+                usn = string.Empty;
+            }
 
-            if (!info.Headers.TryGetValue("NT", out string nt)) nt = string.Empty;
-
-            string location = info.Location.ToString();
+            if (!info.Headers.TryGetValue("NT", out string nt))
+            {
+                nt = string.Empty;
+            }
 
             // It has to report that it's a media renderer
-            if (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1 &&
-                     nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1)
+            if (!usn.Contains("MediaRenderer:", StringComparison.OrdinalIgnoreCase)
+                && !nt.Contains("MediaRenderer:", StringComparison.OrdinalIgnoreCase))
             {
-                //_logger.LogDebug("Upnp device {0} does not contain a MediaRenderer device (0).", location);
                 return;
             }
 
@@ -106,11 +109,10 @@ namespace Emby.Dlna.PlayTo
                     return;
                 }
 
-                await AddDevice(info, location, cancellationToken).ConfigureAwait(false);
+                await AddDevice(info, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
-
             }
             catch (Exception ex)
             {
@@ -122,81 +124,88 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private string GetUuid(string usn)
+        internal static string GetUuid(string usn)
         {
-            var found = false;
-            var index = usn.IndexOf("uuid:", StringComparison.OrdinalIgnoreCase);
-            if (index != -1)
+            const string UuidStr = "uuid:";
+            const string UuidColonStr = "::";
+
+            var index = usn.IndexOf(UuidStr, StringComparison.OrdinalIgnoreCase);
+            if (index == -1)
             {
-                usn = usn.Substring(index);
-                found = true;
-            }
-            index = usn.IndexOf("::", StringComparison.OrdinalIgnoreCase);
-            if (index != -1)
-            {
-                usn = usn.Substring(0, index);
+                return usn.GetMD5().ToString("N", CultureInfo.InvariantCulture);
             }
 
-            if (found)
+            ReadOnlySpan<char> tmp = usn.AsSpan()[(index + UuidStr.Length)..];
+
+            index = tmp.IndexOf(UuidColonStr, StringComparison.OrdinalIgnoreCase);
+            if (index != -1)
             {
-                return usn;
+                tmp = tmp[..index];
             }
 
-            return usn.GetMD5().ToString("N", CultureInfo.InvariantCulture);
+            index = tmp.IndexOf('{');
+            if (index != -1)
+            {
+                int endIndex = tmp.IndexOf('}');
+                if (endIndex != -1)
+                {
+                    tmp = tmp[(index + 1)..endIndex];
+                }
+            }
+
+            return tmp.ToString();
         }
 
-        private async Task AddDevice(UpnpDeviceInfo info, string location, CancellationToken cancellationToken)
+        private async Task AddDevice(UpnpDeviceInfo info, CancellationToken cancellationToken)
         {
             var uri = info.Location;
-            _logger.LogDebug("Attempting to create PlayToController from location {0}", location);
+            _logger.LogDebug("Attempting to create PlayToController from location {0}", uri);
 
-            _logger.LogDebug("Logging session activity from location {0}", location);
             if (info.Headers.TryGetValue("USN", out string uuid))
             {
                 uuid = GetUuid(uuid);
             }
             else
             {
-                uuid = location.GetMD5().ToString("N", CultureInfo.InvariantCulture);
+                uuid = uri.ToString().GetMD5().ToString("N", CultureInfo.InvariantCulture);
             }
 
-            var sessionInfo = _sessionManager.LogSessionActivity("DLNA", _appHost.ApplicationVersionString, uuid, null, uri.OriginalString, null);
+            var sessionInfo = await _sessionManager
+                .LogSessionActivity("DLNA", _appHost.ApplicationVersionString, uuid, null, uri.OriginalString, null)
+                .ConfigureAwait(false);
 
             var controller = sessionInfo.SessionControllers.OfType<PlayToController>().FirstOrDefault();
 
             if (controller == null)
             {
-                var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _config, _logger, cancellationToken).ConfigureAwait(false);
+                var device = await Device.CreateuPnpDeviceAsync(uri, _httpClientFactory, _logger, cancellationToken).ConfigureAwait(false);
+                if (device == null)
+                {
+                    _logger.LogError("Ignoring device as xml response is invalid.");
+                    return;
+                }
 
                 string deviceName = device.Properties.Name;
 
                 _sessionManager.UpdateDeviceName(sessionInfo.Id, deviceName);
 
-                string serverAddress;
-                if (info.LocalIpAddress == null || info.LocalIpAddress.Equals(IPAddress.Any) || info.LocalIpAddress.Equals(IPAddress.IPv6Any))
-                {
-                    serverAddress = await _appHost.GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    serverAddress = _appHost.GetLocalApiUrl(info.LocalIpAddress);
-                }
+                string serverAddress = _appHost.GetSmartApiUrl(info.RemoteIpAddress);
 
-                controller = new PlayToController(sessionInfo,
-                   _sessionManager,
-                   _libraryManager,
-                   _logger,
-                   _dlnaManager,
-                   _userManager,
-                   _imageProcessor,
-                   serverAddress,
-                   null,
-                   _deviceDiscovery,
-                   _userDataManager,
-                   _localization,
-                   _mediaSourceManager,
-                   _config,
-                   _mediaEncoder);
+                controller = new PlayToController(
+                    sessionInfo,
+                    _sessionManager,
+                    _libraryManager,
+                    _logger,
+                    _dlnaManager,
+                    _userManager,
+                    _imageProcessor,
+                    serverAddress,
+                    null,
+                    _deviceDiscovery,
+                    _userDataManager,
+                    _localization,
+                    _mediaSourceManager,
+                    _mediaEncoder);
 
                 sessionInfo.AddController(controller);
 
@@ -209,17 +218,17 @@ namespace Emby.Dlna.PlayTo
                 {
                     PlayableMediaTypes = profile.GetSupportedMediaTypes(),
 
-                    SupportedCommands = new string[]
+                    SupportedCommands = new[]
                     {
-                            GeneralCommandType.VolumeDown.ToString(),
-                            GeneralCommandType.VolumeUp.ToString(),
-                            GeneralCommandType.Mute.ToString(),
-                            GeneralCommandType.Unmute.ToString(),
-                            GeneralCommandType.ToggleMute.ToString(),
-                            GeneralCommandType.SetVolume.ToString(),
-                            GeneralCommandType.SetAudioStreamIndex.ToString(),
-                            GeneralCommandType.SetSubtitleStreamIndex.ToString(),
-                            GeneralCommandType.PlayMediaSource.ToString()
+                        GeneralCommandType.VolumeDown,
+                        GeneralCommandType.VolumeUp,
+                        GeneralCommandType.Mute,
+                        GeneralCommandType.Unmute,
+                        GeneralCommandType.ToggleMute,
+                        GeneralCommandType.SetVolume,
+                        GeneralCommandType.SetAudioStreamIndex,
+                        GeneralCommandType.SetSubtitleStreamIndex,
+                        GeneralCommandType.PlayMediaSource
                     },
 
                     SupportsMediaControl = true
@@ -229,18 +238,22 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
-            _deviceDiscovery.DeviceDiscovered -= _deviceDiscovery_DeviceDiscovered;
+            _deviceDiscovery.DeviceDiscovered -= OnDeviceDiscoveryDeviceDiscovered;
 
             try
             {
                 _disposeCancellationTokenSource.Cancel();
             }
-            catch
+            catch (Exception ex)
             {
-
+                _logger.LogDebug(ex, "Error while disposing PlayToManager");
             }
+
+            _sessionLock.Dispose();
+            _disposeCancellationTokenSource.Dispose();
 
             _disposed = true;
         }

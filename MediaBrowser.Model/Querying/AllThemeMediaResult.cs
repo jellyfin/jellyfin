@@ -1,13 +1,10 @@
+#nullable disable
+#pragma warning disable CS1591
+
 namespace MediaBrowser.Model.Querying
 {
     public class AllThemeMediaResult
     {
-        public ThemeMediaResult ThemeVideosResult { get; set; }
-
-        public ThemeMediaResult ThemeSongsResult { get; set; }
-
-        public ThemeMediaResult SoundtrackSongsResult { get; set; }
-
         public AllThemeMediaResult()
         {
             ThemeVideosResult = new ThemeMediaResult();
@@ -16,5 +13,11 @@ namespace MediaBrowser.Model.Querying
 
             SoundtrackSongsResult = new ThemeMediaResult();
         }
+
+        public ThemeMediaResult ThemeVideosResult { get; set; }
+
+        public ThemeMediaResult ThemeSongsResult { get; set; }
+
+        public ThemeMediaResult SoundtrackSongsResult { get; set; }
     }
 }

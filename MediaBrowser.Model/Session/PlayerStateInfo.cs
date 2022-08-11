@@ -1,3 +1,6 @@
+#nullable disable
+#pragma warning disable CS1591
+
 namespace MediaBrowser.Model.Session
 {
     public class PlayerStateInfo
@@ -61,5 +64,11 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value>The repeat mode.</value>
         public RepeatMode RepeatMode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the now playing live stream identifier.
+        /// </summary>
+        /// <value>The live stream identifier.</value>
+        public string LiveStreamId { get; set; }
     }
 }

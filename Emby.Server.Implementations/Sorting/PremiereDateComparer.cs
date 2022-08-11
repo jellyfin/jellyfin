@@ -6,17 +6,23 @@ using MediaBrowser.Model.Querying;
 namespace Emby.Server.Implementations.Sorting
 {
     /// <summary>
-    /// Class PremiereDateComparer
+    /// Class PremiereDateComparer.
     /// </summary>
     public class PremiereDateComparer : IBaseItemComparer
     {
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.PremiereDate;
+
         /// <summary>
         /// Compares the specified x.
         /// </summary>
         /// <param name="x">The x.</param>
         /// <param name="y">The y.</param>
         /// <returns>System.Int32.</returns>
-        public int Compare(BaseItem x, BaseItem y)
+        public int Compare(BaseItem? x, BaseItem? y)
         {
             return GetDate(x).CompareTo(GetDate(y));
         }
@@ -26,8 +32,13 @@ namespace Emby.Server.Implementations.Sorting
         /// </summary>
         /// <param name="x">The x.</param>
         /// <returns>DateTime.</returns>
-        private static DateTime GetDate(BaseItem x)
+        private static DateTime GetDate(BaseItem? x)
         {
+            if (x == null)
+            {
+                return DateTime.MinValue;
+            }
+
             if (x.PremiereDate.HasValue)
             {
                 return x.PremiereDate.Value;
@@ -44,13 +55,8 @@ namespace Emby.Server.Implementations.Sorting
                     // Don't blow up if the item has a bad ProductionYear, just return MinValue
                 }
             }
+
             return DateTime.MinValue;
         }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name => ItemSortBy.PremiereDate;
     }
 }

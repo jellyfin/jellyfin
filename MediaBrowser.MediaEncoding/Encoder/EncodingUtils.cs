@@ -1,59 +1,54 @@
-using System.Collections.Generic;
-using System.Linq;
+#pragma warning disable CS1591
+
+using System;
+using System.Globalization;
 using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
     public static class EncodingUtils
     {
-        public static string GetInputArgument(IReadOnlyList<string> inputFiles, MediaProtocol protocol)
+        public static string GetInputArgument(string inputPrefix, string inputFile, MediaProtocol protocol)
         {
             if (protocol != MediaProtocol.File)
             {
-                var url = inputFiles[0];
-
-                return string.Format("\"{0}\"", url);
+                return string.Format(CultureInfo.InvariantCulture, "\"{0}\"", inputFile);
             }
 
-            return GetConcatInputArgument(inputFiles);
+            return GetConcatInputArgument(inputFile, inputPrefix);
         }
 
         /// <summary>
         /// Gets the concat input argument.
         /// </summary>
-        /// <param name="inputFiles">The input files.</param>
+        /// <param name="inputFile">The input file.</param>
+        /// <param name="inputPrefix">The input prefix.</param>
         /// <returns>System.String.</returns>
-        private static string GetConcatInputArgument(IReadOnlyList<string> inputFiles)
+        private static string GetConcatInputArgument(string inputFile, string inputPrefix)
         {
             // Get all streams
             // If there's more than one we'll need to use the concat command
-            if (inputFiles.Count > 1)
-            {
-                var files = string.Join("|", inputFiles.Select(NormalizePath));
-
-                return string.Format("concat:\"{0}\"", files);
-            }
-
             // Determine the input path for video files
-            return GetFileInputArgument(inputFiles[0]);
+            return GetFileInputArgument(inputFile, inputPrefix);
         }
 
         /// <summary>
         /// Gets the file input argument.
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="inputPrefix">The path prefix.</param>
         /// <returns>System.String.</returns>
-        private static string GetFileInputArgument(string path)
+        private static string GetFileInputArgument(string path, string inputPrefix)
         {
-            if (path.IndexOf("://") != -1)
+            if (path.IndexOf("://", StringComparison.Ordinal) != -1)
             {
-                return string.Format("\"{0}\"", path);
+                return string.Format(CultureInfo.InvariantCulture, "\"{0}\"", path);
             }
 
             // Quotes are valid path characters in linux and they need to be escaped here with a leading \
             path = NormalizePath(path);
 
-            return string.Format("file:\"{0}\"", path);
+            return string.Format(CultureInfo.InvariantCulture, "{1}:\"{0}\"", path, inputPrefix);
         }
 
         /// <summary>
@@ -64,7 +59,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private static string NormalizePath(string path)
         {
             // Quotes are valid path characters in linux and they need to be escaped here with a leading \
-            return path.Replace("\"", "\\\"");
+            return path.Replace("\"", "\\\"", StringComparison.Ordinal);
         }
     }
 }

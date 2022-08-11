@@ -1,3 +1,6 @@
+#nullable disable
+#pragma warning disable CS1591
+
 using System;
 
 namespace MediaBrowser.Model.Users
@@ -9,11 +12,13 @@ namespace MediaBrowser.Model.Users
         /// </summary>
         /// <value>The action.</value>
         public ForgotPasswordAction Action { get; set; }
+
         /// <summary>
         /// Gets or sets the pin file.
         /// </summary>
         /// <value>The pin file.</value>
         public string PinFile { get; set; }
+
         /// <summary>
         /// Gets or sets the pin expiration date.
         /// </summary>

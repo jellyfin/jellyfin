@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
-    /// Since BaseItem and DTOBaseItem both have ProviderIds, this interface helps avoid code repition by using extension methods
+    /// Since BaseItem and DTOBaseItem both have ProviderIds, this interface helps avoid code repetition by using extension methods.
     /// </summary>
     public interface IHasProviderIds
     {

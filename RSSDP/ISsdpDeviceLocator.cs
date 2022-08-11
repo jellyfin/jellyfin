@@ -13,9 +13,6 @@ namespace Rssdp.Infrastructure
     /// <seealso cref="ISsdpDevicePublisher"/>
     public interface ISsdpDeviceLocator
     {
-
-        #region Events
-
         /// <summary>
         /// Event raised when a device becomes available or is found by a search request.
         /// </summary>
@@ -33,10 +30,6 @@ namespace Rssdp.Infrastructure
         /// <seealso cref="StartListeningForNotifications"/>
         /// <seealso cref="StopListeningForNotifications"/>
         event EventHandler<DeviceUnavailableEventArgs> DeviceUnavailable;
-
-        #endregion
-
-        #region Properties
 
         /// <summary>
         /// Sets or returns a string containing the filter for notifications. Notifications not matching the filter will not raise the <see cref="DeviceAvailable"/> or <see cref="DeviceUnavailable"/> events.
@@ -58,14 +51,8 @@ namespace Rssdp.Infrastructure
             set;
         }
 
-        #endregion
-
-        #region Methods
-
-        #region SearchAsync Overloads
-
         /// <summary>
-        /// Aynchronously performs a search for all devices using the default search timeout, and returns an awaitable task that can be used to retrieve the results.
+        /// Asynchronously performs a search for all devices using the default search timeout, and returns an awaitable task that can be used to retrieve the results.
         /// </summary>
         /// <returns>A task whose result is an <see cref="System.Collections.Generic.IEnumerable{T}"/> of <see cref="DiscoveredSsdpDevice" /> instances, representing all found devices.</returns>
         System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<DiscoveredSsdpDevice>> SearchAsync();
@@ -96,7 +83,7 @@ namespace Rssdp.Infrastructure
         /// </param>
         /// <param name="searchWaitTime">The amount of time to wait for network responses to the search request. Longer values will likely return more devices, but increase search time. A value between 1 and 5 is recommended by the UPnP 1.1 specification. Specify TimeSpan.Zero to return only devices already in the cache.</param>
         /// <remarks>
-        /// <para>By design RSSDP does not support 'publishing services' as it is intended for use with non-standard UPnP devices that don't publish UPnP style services. However, it is still possible to use RSSDP to search for devices implemetning these services if you know the service type.</para>
+        /// <para>By design RSSDP does not support 'publishing services' as it is intended for use with non-standard UPnP devices that don't publish UPnP style services. However, it is still possible to use RSSDP to search for devices implementing these services if you know the service type.</para>
         /// </remarks>
         /// <returns>A task whose result is an <see cref="System.Collections.Generic.IEnumerable{T}"/> of <see cref="DiscoveredSsdpDevice" /> instances, representing all found devices.</returns>
         System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<DiscoveredSsdpDevice>> SearchAsync(string searchTarget, TimeSpan searchWaitTime);
@@ -107,8 +94,6 @@ namespace Rssdp.Infrastructure
         /// <param name="searchWaitTime">The amount of time to wait for network responses to the search request. Longer values will likely return more devices, but increase search time. A value between 1 and 5 is recommended by the UPnP 1.1 specification. Specify TimeSpan.Zero to return only devices already in the cache.</param>
         /// <returns>A task whose result is an <see cref="System.Collections.Generic.IEnumerable{T}"/> of <see cref="DiscoveredSsdpDevice" /> instances, representing all found devices.</returns>
         System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<DiscoveredSsdpDevice>> SearchAsync(TimeSpan searchWaitTime);
-
-        #endregion
 
         /// <summary>
         /// Starts listening for broadcast notifications of service availability.
@@ -134,8 +119,5 @@ namespace Rssdp.Infrastructure
         /// <seealso cref="DeviceUnavailable"/>
         /// <seealso cref="NotificationFilter"/>
         void StopListeningForNotifications();
-
-        #endregion
-
     }
 }

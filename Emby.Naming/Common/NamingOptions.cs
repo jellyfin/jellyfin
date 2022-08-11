@@ -1,97 +1,82 @@
+#pragma warning disable CA1819
+
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Emby.Naming.Video;
+using MediaBrowser.Model.Entities;
+
+// ReSharper disable StringLiteralTypo
 
 namespace Emby.Naming.Common
 {
+    /// <summary>
+    /// Big ugly class containing lot of different naming options that should be split and injected instead of passes everywhere.
+    /// </summary>
     public class NamingOptions
     {
-        public string[] AudioFileExtensions { get; set; }
-
-        public string[] AlbumStackingPrefixes { get; set; }
-
-        public string[] SubtitleFileExtensions { get; set; }
-
-        public char[] SubtitleFlagDelimiters { get; set; }
-
-        public string[] SubtitleForcedFlags { get; set; }
-
-        public string[] SubtitleDefaultFlags { get; set; }
-
-        public EpisodeExpression[] EpisodeExpressions { get; set; }
-
-        public string[] EpisodeWithoutSeasonExpressions { get; set; }
-
-        public string[] EpisodeMultiPartExpressions { get; set; }
-
-        public string[] VideoFileExtensions { get; set; }
-
-        public string[] StubFileExtensions { get; set; }
-
-        public string[] AudioBookPartsExpressions { get; set; }
-
-        public StubTypeRule[] StubTypes { get; set; }
-
-        public char[] VideoFlagDelimiters { get; set; }
-
-        public Format3DRule[] Format3DRules { get; set; }
-
-        public string[] VideoFileStackingExpressions { get; set; }
-
-        public string[] CleanDateTimes { get; set; }
-
-        public string[] CleanStrings { get; set; }
-
-        public EpisodeExpression[] MultipleEpisodeExpressions { get; set; }
-
-        public ExtraRule[] VideoExtraRules { get; set; }
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NamingOptions"/> class.
+        /// </summary>
         public NamingOptions()
         {
             VideoFileExtensions = new[]
             {
-                ".m4v",
+                ".001",
+                ".3g2",
                 ".3gp",
-                ".nsv",
-                ".ts",
-                ".ty",
-                ".strm",
-                ".rm",
-                ".rmvb",
-                ".ifo",
-                ".mov",
-                ".qt",
-                ".divx",
-                ".xvid",
-                ".bivx",
-                ".vob",
-                ".nrg",
-                ".img",
-                ".iso",
-                ".pva",
-                ".wmv",
+                ".amv",
                 ".asf",
                 ".asx",
-                ".ogm",
-                ".m2v",
                 ".avi",
                 ".bin",
-                ".dvr-ms",
-                ".mpg",
-                ".mpeg",
-                ".mp4",
-                ".mkv",
-                ".avc",
-                ".vp3",
-                ".svq3",
-                ".nuv",
-                ".viv",
+                ".bivx",
+                ".divx",
                 ".dv",
+                ".dvr-ms",
+                ".f4v",
                 ".fli",
                 ".flv",
-                ".001",
-                ".tp"
+                ".ifo",
+                ".img",
+                ".iso",
+                ".m2t",
+                ".m2ts",
+                ".m2v",
+                ".m4v",
+                ".mkv",
+                ".mk3d",
+                ".mov",
+                ".mp4",
+                ".mpe",
+                ".mpeg",
+                ".mpg",
+                ".mts",
+                ".mxf",
+                ".nrg",
+                ".nsv",
+                ".nuv",
+                ".ogg",
+                ".ogm",
+                ".ogv",
+                ".pva",
+                ".qt",
+                ".rec",
+                ".rm",
+                ".rmvb",
+                ".strm",
+                ".svq3",
+                ".tp",
+                ".ts",
+                ".ty",
+                ".viv",
+                ".vob",
+                ".vp3",
+                ".webm",
+                ".wmv",
+                ".wtv",
+                ".xvid"
             };
 
             VideoFlagDelimiters = new[]
@@ -112,105 +97,85 @@ namespace Emby.Naming.Common
 
             StubTypes = new[]
             {
-                new StubTypeRule
-                {
-                    StubType = "dvd",
-                    Token = "dvd"
-                },
-                new StubTypeRule
-                {
-                    StubType = "hddvd",
-                    Token = "hddvd"
-                },
-                new StubTypeRule
-                {
-                    StubType = "bluray",
-                    Token = "bluray"
-                },
-                new StubTypeRule
-                {
-                    StubType = "bluray",
-                    Token = "brrip"
-                },
-                new StubTypeRule
-                {
-                    StubType = "bluray",
-                    Token = "bd25"
-                },
-                new StubTypeRule
-                {
-                    StubType = "bluray",
-                    Token = "bd50"
-                },
-                new StubTypeRule
-                {
-                    StubType = "vhs",
-                    Token = "vhs"
-                },
-                new StubTypeRule
-                {
-                    StubType = "tv",
-                    Token = "HDTV"
-                },
-                new StubTypeRule
-                {
-                    StubType = "tv",
-                    Token = "PDTV"
-                },
-                new StubTypeRule
-                {
-                    StubType = "tv",
-                    Token = "DSR"
-                }
+                new StubTypeRule(
+                    stubType: "dvd",
+                    token: "dvd"),
+
+                new StubTypeRule(
+                    stubType: "hddvd",
+                    token: "hddvd"),
+
+                new StubTypeRule(
+                    stubType: "bluray",
+                    token: "bluray"),
+
+                new StubTypeRule(
+                    stubType: "bluray",
+                    token: "brrip"),
+
+                new StubTypeRule(
+                    stubType: "bluray",
+                    token: "bd25"),
+
+                new StubTypeRule(
+                    stubType: "bluray",
+                    token: "bd50"),
+
+                new StubTypeRule(
+                    stubType: "vhs",
+                    token: "vhs"),
+
+                new StubTypeRule(
+                    stubType: "tv",
+                    token: "HDTV"),
+
+                new StubTypeRule(
+                    stubType: "tv",
+                    token: "PDTV"),
+
+                new StubTypeRule(
+                    stubType: "tv",
+                    token: "DSR")
             };
 
-            VideoFileStackingExpressions = new[]
+            VideoFileStackingRules = new[]
             {
-                "(.*?)([ _.-]*(?:cd|dvd|p(?:ar)?t|dis[ck])[ _.-]*[0-9]+)(.*?)(\\.[^.]+)$",
-                "(.*?)([ _.-]*(?:cd|dvd|p(?:ar)?t|dis[ck])[ _.-]*[a-d])(.*?)(\\.[^.]+)$",
-                "(.*?)([ ._-]*[a-d])(.*?)(\\.[^.]+)$"
+                new FileStackRule(@"^(?<filename>.*?)(?:(?<=[\]\)\}])|[ _.-]+)[\(\[]?(?<parttype>cd|dvd|part|pt|dis[ck])[ _.-]*(?<number>[0-9]+)[\)\]]?(?:\.[^.]+)?$", true),
+                new FileStackRule(@"^(?<filename>.*?)(?:(?<=[\]\)\}])|[ _.-]+)[\(\[]?(?<parttype>cd|dvd|part|pt|dis[ck])[ _.-]*(?<number>[a-d])[\)\]]?(?:\.[^.]+)?$", false),
+                new FileStackRule(@"^(?<filename>.*?)(?:(?<=[\]\)\}])|[ _.-]?)(?<number>[a-d])(?:\.[^.]+)?$", false)
             };
 
             CleanDateTimes = new[]
             {
-                @"(.+[^ _\,\.\(\)\[\]\-])[ _\.\(\)\[\]\-]+(19[0-9][0-9]|20[0-1][0-9])([ _\,\.\(\)\[\]\-][^0-9]|$)"
+                @"(.+[^_\,\.\(\)\[\]\-])[_\.\(\)\[\]\-](19[0-9]{2}|20[0-9]{2})(?![0-9]+|\W[0-9]{2}\W[0-9]{2})([ _\,\.\(\)\[\]\-][^0-9]|).*(19[0-9]{2}|20[0-9]{2})*",
+                @"(.+[^_\,\.\(\)\[\]\-])[ _\.\(\)\[\]\-]+(19[0-9]{2}|20[0-9]{2})(?![0-9]+|\W[0-9]{2}\W[0-9]{2})([ _\,\.\(\)\[\]\-][^0-9]|).*(19[0-9]{2}|20[0-9]{2})*"
             };
 
             CleanStrings = new[]
             {
-                @"[ _\,\.\(\)\[\]\-](ac3|dts|custom|dc|divx|divx5|dsr|dsrip|dutch|dvd|dvdrip|dvdscr|dvdscreener|screener|dvdivx|cam|fragment|fs|hdtv|hdrip|hdtvrip|internal|limited|multisubs|ntsc|ogg|ogm|pal|pdtv|proper|repack|rerip|retail|cd[1-9]|r3|r5|bd5|se|svcd|swedish|german|read.nfo|nfofix|unrated|ws|telesync|ts|telecine|tc|brrip|bdrip|480p|480i|576p|576i|720p|720i|1080p|1080i|2160p|hrhd|hrhdtv|hddvd|bluray|x264|h264|xvid|xvidvd|xxx|www.www|\[.*\])([ _\,\.\(\)\[\]\-]|$)",
-                @"[ _\,\.\(\)\[\]\-](3d|sbs|tab|hsbs|htab|mvc|\[.*\])([ _\,\.\(\)\[\]\-]|$)",
-                @"(\[.*\])"
+                @"^\s*(?<cleaned>.+?)[ _\,\.\(\)\[\]\-](3d|sbs|tab|hsbs|htab|mvc|HDR|HDC|UHD|UltraHD|4k|ac3|dts|custom|dc|divx|divx5|dsr|dsrip|dutch|dvd|dvdrip|dvdscr|dvdscreener|screener|dvdivx|cam|fragment|fs|hdtv|hdrip|hdtvrip|internal|limited|multisubs|ntsc|ogg|ogm|pal|pdtv|proper|repack|rerip|retail|cd[1-9]|r3|r5|bd5|bd|se|svcd|swedish|german|read.nfo|nfofix|unrated|ws|telesync|ts|telecine|tc|brrip|bdrip|480p|480i|576p|576i|720p|720i|1080p|1080i|2160p|hrhd|hrhdtv|hddvd|bluray|blu-ray|x264|x265|h264|h265|xvid|xvidvd|xxx|www.www|AAC|DTS|\[.*\])([ _\,\.\(\)\[\]\-]|$)",
+                @"^(?<cleaned>.+?)(\[.*\])",
+                @"^\s*(?<cleaned>.+?)\WE[0-9]+(-|~)E?[0-9]+(\W|$)",
+                @"^\s*\[[^\]]+\](?!\.\w+$)\s*(?<cleaned>.+)",
+                @"^\s*(?<cleaned>.+?)\s+-\s+[0-9]+\s*$"
             };
 
             SubtitleFileExtensions = new[]
             {
+                ".ass",
+                ".mks",
+                ".sami",
+                ".smi",
                 ".srt",
                 ".ssa",
-                ".ass",
-                ".sub"
-            };
-
-            SubtitleFlagDelimiters = new[]
-            {
-                '.'
-            };
-
-            SubtitleForcedFlags = new[]
-            {
-                "foreign",
-                "forced"
-            };
-
-            SubtitleDefaultFlags = new[]
-            {
-                "default"
+                ".sub",
+                ".vtt",
             };
 
             AlbumStackingPrefixes = new[]
             {
-                "disc",
                 "cd",
+                "disc",
                 "disk",
                 "vol",
                 "volume"
@@ -218,68 +183,101 @@ namespace Emby.Naming.Common
 
             AudioFileExtensions = new[]
             {
-                ".nsv",
-                ".m4a",
-                ".flac",
-                ".aac",
-                ".strm",
-                ".pls",
-                ".rm",
-                ".mpa",
-                ".wav",
-                ".wma",
-                ".ogg",
-                ".opus",
-                ".mp3",
-                ".mp2",
-                ".mod",
-                ".amf",
                 ".669",
+                ".3gp",
+                ".aa",
+                ".aac",
+                ".aax",
+                ".ac3",
+                ".act",
+                ".adp",
+                ".adplug",
+                ".adx",
+                ".afc",
+                ".amf",
+                ".aif",
+                ".aiff",
+                ".alac",
+                ".amr",
+                ".ape",
+                ".ast",
+                ".au",
+                ".awb",
+                ".cda",
+                ".cue",
                 ".dmf",
+                ".dsf",
                 ".dsm",
+                ".dsp",
+                ".dts",
+                ".dvf",
                 ".far",
+                ".flac",
                 ".gdm",
+                ".gsm",
+                ".gym",
+                ".hps",
                 ".imf",
                 ".it",
                 ".m15",
+                ".m4a",
+                ".m4b",
+                ".mac",
                 ".med",
+                ".mka",
+                ".mmf",
+                ".mod",
+                ".mogg",
+                ".mp2",
+                ".mp3",
+                ".mpa",
+                ".mpc",
+                ".mpp",
+                ".mp+",
+                ".msv",
+                ".nmf",
+                ".nsf",
+                ".nsv",
+                ".oga",
+                ".ogg",
                 ".okt",
+                ".opus",
+                ".pls",
+                ".ra",
+                ".rf64",
+                ".rm",
                 ".s3m",
-                ".stm",
                 ".sfx",
+                ".shn",
+                ".sid",
+                ".spc",
+                ".stm",
+                ".strm",
                 ".ult",
                 ".uni",
-                ".xm",
-                ".sid",
-                ".ac3",
-                ".dts",
-                ".cue",
-                ".aif",
-                ".aiff",
-                ".ape",
-                ".mac",
-                ".mpc",
-                ".mp+",
-                ".mpp",
-                ".shn",
+                ".vox",
+                ".wav",
+                ".wma",
                 ".wv",
-                ".nsf",
-                ".spc",
-                ".gym",
-                ".adplug",
-                ".adx",
-                ".dsp",
-                ".adp",
-                ".ymf",
-                ".ast",
-                ".afc",
-                ".hps",
+                ".xm",
                 ".xsp",
-                ".acc",
-                ".m4b",
-                ".oga",
-                ".dsf",
-                ".mka"
+                ".ymf"
+            };
+
+            MediaFlagDelimiters = new[]
+            {
+                '.'
+            };
+
+            MediaForcedFlags = new[]
+            {
+                "foreign",
+                "forced"
+            };
+
+            MediaDefaultFlags = new[]
+            {
+                "default"
             };
 
             EpisodeExpressions = new[]
@@ -292,7 +290,9 @@ namespace Emby.Naming.Common
                 },
                 // <!-- foo.ep01, foo.EP_01 -->
                 new EpisodeExpression(@"[\._ -]()[Ee][Pp]_?([0-9]+)([^\\/]*)$"),
-                new EpisodeExpression("([0-9]{4})[\\.-]([0-9]{2})[\\.-]([0-9]{2})", true)
+                // <!-- foo.E01., foo.e01. -->
+                new EpisodeExpression(@"[^\\/]*?()\.?[Ee]([0-9]+)\.([^\\/]*)$"),
+                new EpisodeExpression("(?<year>[0-9]{4})[\\.-](?<month>[0-9]{2})[\\.-](?<day>[0-9]{2})", true)
                 {
                     DateTimeFormats = new[]
                     {
@@ -301,7 +301,7 @@ namespace Emby.Naming.Common
                         "yyyy_MM_dd"
                     }
                 },
-                new EpisodeExpression("([0-9]{2})[\\.-]([0-9]{2})[\\.-]([0-9]{4})", true)
+                new EpisodeExpression(@"(?<day>[0-9]{2})[.-](?<month>[0-9]{2})[.-](?<year>[0-9]{4})", true)
                 {
                     DateTimeFormats = new[]
                     {
@@ -311,11 +311,30 @@ namespace Emby.Naming.Common
                     }
                 },
 
-                new EpisodeExpression("[\\\\/\\._ \\[\\(-]([0-9]+)x([0-9]+(?:(?:[a-i]|\\.[1-9])(?![0-9]))?)([^\\\\/]*)$")
+                // This isn't a Kodi naming rule, but the expression below causes false positives,
+                // so we make sure this one gets tested first.
+                // "Foo Bar 889"
+                new EpisodeExpression(@".*[\\\/](?![Ee]pisode)(?<seriesname>[\w\s]+?)\s(?<epnumber>[0-9]{1,4})(-(?<endingepnumber>[0-9]{2,4}))*[^\\\/x]*$")
+                {
+                    IsNamed = true
+                },
+
+                new EpisodeExpression(@"[\\\/\._ \[\(-]([0-9]+)x([0-9]+(?:(?:[a-i]|\.[1-9])(?![0-9]))?)([^\\\/]*)$")
                 {
                     SupportsAbsoluteEpisodeNumbers = true
                 },
-                new EpisodeExpression(@"[\\\\/\\._ -](?<seriesname>(?![0-9]+[0-9][0-9])([^\\\/])*)[\\\\/\\._ -](?<seasonnumber>[0-9]+)(?<epnumber>[0-9][0-9](?:(?:[a-i]|\\.[1-9])(?![0-9]))?)([\\._ -][^\\\\/]*)$")
+
+                // Not a Kodi rule as well, but below rule also causes false positives for triple-digit episode names
+                // [bar] Foo - 1 [baz] special case of below expression to prevent false positives with digits in the series name
+                new EpisodeExpression(@".*[\\\/]?.*?(\[.*?\])+.*?(?<seriesname>[-\w\s]+?)[\s_]*-[\s_]*(?<epnumber>[0-9]+).*$")
+                {
+                    IsNamed = true
+                },
+
+                // /server/anything_102.mp4
+                // /server/james.corden.2017.04.20.anne.hathaway.720p.hdtv.x264-crooks.mkv
+                // /server/anything_1996.11.14.mp4
+                new EpisodeExpression(@"[\\/._ -](?<seriesname>(?![0-9]+[0-9][0-9])([^\\\/_])*)[\\\/._ -](?<seasonnumber>[0-9]+)(?<epnumber>[0-9][0-9](?:(?:[a-i]|\.[1-9])(?![0-9]))?)([._ -][^\\\/]*)$")
                 {
                     IsOptimistic = true,
                     IsNamed = true,
@@ -328,32 +347,34 @@ namespace Emby.Naming.Common
 
                 // *** End Kodi Standard Naming
 
-                // [bar] Foo - 1 [baz]
-                new EpisodeExpression(@".*?(\[.*?\])+.*?(?<seriesname>(\w+\s)+?)[-\s_]+(?<epnumber>\d+).*$"){
-                    IsNamed=false,
-                },
-                new EpisodeExpression(@".*(\\|\/)[sS]?(?<seasonnumber>\d+)[xX](?<epnumber>\d+)[^\\\/]*$")
+                // "Episode 16", "Episode 16 - Title"
+                new EpisodeExpression(@"[Ee]pisode (?<epnumber>[0-9]+)(-(?<endingepnumber>[0-9]+))?[^\\\/]*$")
                 {
                     IsNamed = true
                 },
 
-                new EpisodeExpression(@".*(\\|\/)[sS](?<seasonnumber>\d+)[x,X]?[eE](?<epnumber>\d+)[^\\\/]*$")
+                new EpisodeExpression(@".*(\\|\/)[sS]?(?<seasonnumber>[0-9]+)[xX](?<epnumber>[0-9]+)[^\\\/]*$")
                 {
                     IsNamed = true
                 },
 
-                new EpisodeExpression(@".*(\\|\/)(?<seriesname>((?![sS]?\d{1,4}[xX]\d{1,3})[^\\\/])*)?([sS]?(?<seasonnumber>\d{1,4})[xX](?<epnumber>\d+))[^\\\/]*$")
+                new EpisodeExpression(@".*(\\|\/)[sS](?<seasonnumber>[0-9]+)[x,X]?[eE](?<epnumber>[0-9]+)[^\\\/]*$")
                 {
                     IsNamed = true
                 },
 
-                new EpisodeExpression(@".*(\\|\/)(?<seriesname>[^\\\/]*)[sS](?<seasonnumber>\d{1,4})[xX\.]?[eE](?<epnumber>\d+)[^\\\/]*$")
+                new EpisodeExpression(@".*(\\|\/)(?<seriesname>((?![sS]?[0-9]{1,4}[xX][0-9]{1,3})[^\\\/])*)?([sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]+))[^\\\/]*$")
+                {
+                    IsNamed = true
+                },
+
+                new EpisodeExpression(@".*(\\|\/)(?<seriesname>[^\\\/]*)[sS](?<seasonnumber>[0-9]{1,4})[xX\.]?[eE](?<epnumber>[0-9]+)[^\\\/]*$")
                 {
                     IsNamed = true
                 },
 
                 // "01.avi"
-                new EpisodeExpression(@".*[\\\/](?<epnumber>\d+)(-(?<endingepnumber>\d+))*\.\w+$")
+                new EpisodeExpression(@".*[\\\/](?<epnumber>[0-9]+)(-(?<endingepnumber>[0-9]+))*\.\w+$")
                 {
                     IsOptimistic = true,
                     IsNamed = true
@@ -363,38 +384,46 @@ namespace Emby.Naming.Common
                 new EpisodeExpression(@"([0-9]+)-([0-9]+)"),
 
                 // "01 - blah.avi", "01-blah.avi"
-                new EpisodeExpression(@".*(\\|\/)(?<epnumber>\d{1,3})(-(?<endingepnumber>\d{2,3}))*\s?-\s?[^\\\/]*$")
+                new EpisodeExpression(@".*(\\|\/)(?<epnumber>[0-9]{1,3})(-(?<endingepnumber>[0-9]{2,3}))*\s?-\s?[^\\\/]*$")
                 {
                     IsOptimistic = true,
                     IsNamed = true
                 },
 
                 // "01.blah.avi"
-                new EpisodeExpression(@".*(\\|\/)(?<epnumber>\d{1,3})(-(?<endingepnumber>\d{2,3}))*\.[^\\\/]+$")
+                new EpisodeExpression(@".*(\\|\/)(?<epnumber>[0-9]{1,3})(-(?<endingepnumber>[0-9]{2,3}))*\.[^\\\/]+$")
                 {
                     IsOptimistic = true,
                     IsNamed = true
                 },
 
                 // "blah - 01.avi", "blah 2 - 01.avi", "blah - 01 blah.avi", "blah 2 - 01 blah", "blah - 01 - blah.avi", "blah 2 - 01 - blah"
-                new EpisodeExpression(@".*[\\\/][^\\\/]* - (?<epnumber>\d{1,3})(-(?<endingepnumber>\d{2,3}))*[^\\\/]*$")
+                new EpisodeExpression(@".*[\\\/][^\\\/]* - (?<epnumber>[0-9]{1,3})(-(?<endingepnumber>[0-9]{2,3}))*[^\\\/]*$")
                 {
                     IsOptimistic = true,
                     IsNamed = true
                 },
 
                 // "01 episode title.avi"
-                new EpisodeExpression(@"[Ss]eason[\._ ](?<seasonnumber>[0-9]+)[\\\/](?<epnumber>\d{1,3})([^\\\/]*)$")
+                new EpisodeExpression(@"[Ss]eason[\._ ](?<seasonnumber>[0-9]+)[\\\/](?<epnumber>[0-9]{1,3})([^\\\/]*)$")
                 {
                     IsOptimistic = true,
                     IsNamed = true
                 },
-                // "Episode 16", "Episode 16 - Title"
-                new EpisodeExpression(@".*[\\\/][^\\\/]* (?<epnumber>\d{1,3})(-(?<endingepnumber>\d{2,3}))*[^\\\/]*$")
+
+                // Series and season only expression
+                // "the show/season 1", "the show/s01"
+                new EpisodeExpression(@"(.*(\\|\/))*(?<seriesname>.+)\/[Ss](eason)?[\. _\-]*(?<seasonnumber>[0-9]+)")
                 {
-                    IsOptimistic = true,
                     IsNamed = true
-                }
+                },
+
+                // Series and season only expression
+                // "the show S01", "the show season 1"
+                new EpisodeExpression(@"(.*(\\|\/))*(?<seriesname>.+)[\. _\-]+[sS](eason)?[\. _\-]*(?<seasonnumber>[0-9]+)")
+                {
+                    IsNamed = true
+                },
             };
 
             EpisodeWithoutSeasonExpressions = new[]
@@ -409,276 +438,405 @@ namespace Emby.Naming.Common
 
             VideoExtraRules = new[]
             {
-                new ExtraRule
-                {
-                    ExtraType = "trailer",
-                    RuleType = ExtraRuleType.Filename,
-                    Token = "trailer",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = "trailer",
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = "-trailer",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = "trailer",
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = ".trailer",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = "trailer",
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = "_trailer",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = "trailer",
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = " trailer",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = "sample",
-                    RuleType = ExtraRuleType.Filename,
-                    Token = "sample",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = "sample",
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = "-sample",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = "sample",
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = ".sample",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = "sample",
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = "_sample",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = "sample",
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = " sample",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = "themesong",
-                    RuleType = ExtraRuleType.Filename,
-                    Token = "theme",
-                    MediaType = MediaType.Audio
-                },
-                new ExtraRule
-                {
-                    ExtraType = "scene",
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = "-scene",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = "clip",
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = "-clip",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = "interview",
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = "-interview",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = "behindthescenes",
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = "-behindthescenes",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = "deletedscene",
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = "-deleted",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = "featurette",
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = "-featurette",
-                    MediaType = MediaType.Video
-                },
-                new ExtraRule
-                {
-                    ExtraType = "short",
-                    RuleType = ExtraRuleType.Suffix,
-                    Token = "-short",
-                    MediaType = MediaType.Video
-                }
+                new ExtraRule(
+                    ExtraType.Trailer,
+                    ExtraRuleType.DirectoryName,
+                    "trailers",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.ThemeVideo,
+                    ExtraRuleType.DirectoryName,
+                    "backdrops",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.ThemeSong,
+                    ExtraRuleType.DirectoryName,
+                    "theme-music",
+                    MediaType.Audio),
+
+                new ExtraRule(
+                    ExtraType.BehindTheScenes,
+                    ExtraRuleType.DirectoryName,
+                    "behind the scenes",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.DeletedScene,
+                    ExtraRuleType.DirectoryName,
+                    "deleted scenes",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Interview,
+                    ExtraRuleType.DirectoryName,
+                    "interviews",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Scene,
+                    ExtraRuleType.DirectoryName,
+                    "scenes",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Sample,
+                    ExtraRuleType.DirectoryName,
+                    "samples",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Clip,
+                    ExtraRuleType.DirectoryName,
+                    "shorts",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Clip,
+                    ExtraRuleType.DirectoryName,
+                    "featurettes",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Unknown,
+                    ExtraRuleType.DirectoryName,
+                    "extras",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Trailer,
+                    ExtraRuleType.Filename,
+                    "trailer",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Trailer,
+                    ExtraRuleType.Suffix,
+                    "-trailer",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Trailer,
+                    ExtraRuleType.Suffix,
+                    ".trailer",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Trailer,
+                    ExtraRuleType.Suffix,
+                    "_trailer",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Trailer,
+                    ExtraRuleType.Suffix,
+                    " trailer",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Sample,
+                    ExtraRuleType.Filename,
+                    "sample",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Sample,
+                    ExtraRuleType.Suffix,
+                    "-sample",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Sample,
+                    ExtraRuleType.Suffix,
+                    ".sample",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Sample,
+                    ExtraRuleType.Suffix,
+                    "_sample",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Sample,
+                    ExtraRuleType.Suffix,
+                    " sample",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.ThemeSong,
+                    ExtraRuleType.Filename,
+                    "theme",
+                    MediaType.Audio),
+
+                new ExtraRule(
+                    ExtraType.Scene,
+                    ExtraRuleType.Suffix,
+                    "-scene",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Clip,
+                    ExtraRuleType.Suffix,
+                    "-clip",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Interview,
+                    ExtraRuleType.Suffix,
+                    "-interview",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.BehindTheScenes,
+                    ExtraRuleType.Suffix,
+                    "-behindthescenes",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.DeletedScene,
+                    ExtraRuleType.Suffix,
+                    "-deleted",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.DeletedScene,
+                    ExtraRuleType.Suffix,
+                    "-deletedscene",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Clip,
+                    ExtraRuleType.Suffix,
+                    "-featurette",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Clip,
+                    ExtraRuleType.Suffix,
+                    "-short",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Unknown,
+                    ExtraRuleType.Suffix,
+                    "-extra",
+                    MediaType.Video)
             };
+
+            AllExtrasTypesFolderNames = VideoExtraRules
+                .Where(i => i.RuleType == ExtraRuleType.DirectoryName)
+                .ToDictionary(i => i.Token, i => i.ExtraType, StringComparer.OrdinalIgnoreCase);
 
             Format3DRules = new[]
             {
                 // Kodi rules:
-                new Format3DRule
-                {
-                    PreceedingToken = "3d",
-                    Token = "hsbs"
-                },
-                new Format3DRule
-                {
-                    PreceedingToken = "3d",
-                    Token = "sbs"
-                },
-                new Format3DRule
-                {
-                    PreceedingToken = "3d",
-                    Token = "htab"
-                },
-                new Format3DRule
-                {
-                    PreceedingToken = "3d",
-                    Token = "tab"
-                },
-                                 // Media Browser rules:
-                new Format3DRule
-                {
-                    Token = "fsbs"
-                },
-                new Format3DRule
-                {
-                    Token = "hsbs"
-                },
-                new Format3DRule
-                {
-                    Token = "sbs"
-                },
-                new Format3DRule
-                {
-                    Token = "ftab"
-                },
-                new Format3DRule
-                {
-                    Token = "htab"
-                },
-                new Format3DRule
-                {
-                    Token = "tab"
-                },
-                new Format3DRule
-                {
-                    Token = "sbs3d"
-                },
-                new Format3DRule
-                {
-                    Token = "mvc"
-                }
+                new Format3DRule(
+                    precedingToken: "3d",
+                    token: "hsbs"),
+
+                new Format3DRule(
+                    precedingToken: "3d",
+                    token: "sbs"),
+
+                new Format3DRule(
+                    precedingToken: "3d",
+                    token: "htab"),
+
+                new Format3DRule(
+                    precedingToken: "3d",
+                    token: "tab"),
+
+                 // Media Browser rules:
+                new Format3DRule("fsbs"),
+                new Format3DRule("hsbs"),
+                new Format3DRule("sbs"),
+                new Format3DRule("ftab"),
+                new Format3DRule("htab"),
+                new Format3DRule("tab"),
+                new Format3DRule("sbs3d"),
+                new Format3DRule("mvc")
             };
+
             AudioBookPartsExpressions = new[]
             {
                 // Detect specified chapters, like CH 01
-                @"ch(?:apter)?[\s_-]?(?<chapter>\d+)",
+                @"ch(?:apter)?[\s_-]?(?<chapter>[0-9]+)",
                 // Detect specified parts, like Part 02
-                @"p(?:ar)?t[\s_-]?(?<part>\d+)",
+                @"p(?:ar)?t[\s_-]?(?<part>[0-9]+)",
                 // Chapter is often beginning of filename
-                @"^(?<chapter>\d+)",
+                "^(?<chapter>[0-9]+)",
                 // Part if often ending of filename
-                @"(?<part>\d+)$",
+                @"(?<!ch(?:apter) )(?<part>[0-9]+)$",
                 // Sometimes named as 0001_005 (chapter_part)
-                @"(?<chapter>\d+)_(?<part>\d+)",
+                "(?<chapter>[0-9]+)_(?<part>[0-9]+)",
                 // Some audiobooks are ripped from cd's, and will be named by disk number.
-                @"dis(?:c|k)[\s_-]?(?<chapter>\d+)"
+                @"dis(?:c|k)[\s_-]?(?<chapter>[0-9]+)"
             };
 
-            var extensions = VideoFileExtensions.ToList();
-
-            extensions.AddRange(new[]
+            AudioBookNamesExpressions = new[]
             {
-                ".mkv",
-                ".m2t",
-                ".m2ts",
-                ".img",
-                ".iso",
-                ".mk3d",
-                ".ts",
-                ".rmvb",
-                ".mov",
-                ".avi",
-                ".mpg",
-                ".mpeg",
-                ".wmv",
-                ".mp4",
-                ".divx",
-                ".dvr-ms",
-                ".wtv",
-                ".ogm",
-                ".ogv",
-                ".asf",
-                ".m4v",
-                ".flv",
-                ".f4v",
-                ".3gp",
-                ".webm",
-                ".mts",
-                ".m2v",
-                ".rec",
-                ".mxf"
-            });
+                // Detect year usually in brackets after name Batman (2020)
+                @"^(?<name>.+?)\s*\(\s*(?<year>[0-9]{4})\s*\)\s*$",
+                @"^\s*(?<name>[^ ].*?)\s*$"
+            };
 
-            MultipleEpisodeExpressions = new string[]
+            MultipleEpisodeExpressions = new[]
             {
-                @".*(\\|\/)[sS]?(?<seasonnumber>\d{1,4})[xX](?<epnumber>\d{1,3})((-| - )\d{1,4}[eExX](?<endingepnumber>\d{1,3}))+[^\\\/]*$",
-                @".*(\\|\/)[sS]?(?<seasonnumber>\d{1,4})[xX](?<epnumber>\d{1,3})((-| - )\d{1,4}[xX][eE](?<endingepnumber>\d{1,3}))+[^\\\/]*$",
-                @".*(\\|\/)[sS]?(?<seasonnumber>\d{1,4})[xX](?<epnumber>\d{1,3})((-| - )?[xXeE](?<endingepnumber>\d{1,3}))+[^\\\/]*$",
-                @".*(\\|\/)[sS]?(?<seasonnumber>\d{1,4})[xX](?<epnumber>\d{1,3})(-[xE]?[eE]?(?<endingepnumber>\d{1,3}))+[^\\\/]*$",
-                @".*(\\|\/)(?<seriesname>((?![sS]?\d{1,4}[xX]\d{1,3})[^\\\/])*)?([sS]?(?<seasonnumber>\d{1,4})[xX](?<epnumber>\d{1,3}))((-| - )\d{1,4}[xXeE](?<endingepnumber>\d{1,3}))+[^\\\/]*$",
-                @".*(\\|\/)(?<seriesname>((?![sS]?\d{1,4}[xX]\d{1,3})[^\\\/])*)?([sS]?(?<seasonnumber>\d{1,4})[xX](?<epnumber>\d{1,3}))((-| - )\d{1,4}[xX][eE](?<endingepnumber>\d{1,3}))+[^\\\/]*$",
-                @".*(\\|\/)(?<seriesname>((?![sS]?\d{1,4}[xX]\d{1,3})[^\\\/])*)?([sS]?(?<seasonnumber>\d{1,4})[xX](?<epnumber>\d{1,3}))((-| - )?[xXeE](?<endingepnumber>\d{1,3}))+[^\\\/]*$",
-                @".*(\\|\/)(?<seriesname>((?![sS]?\d{1,4}[xX]\d{1,3})[^\\\/])*)?([sS]?(?<seasonnumber>\d{1,4})[xX](?<epnumber>\d{1,3}))(-[xX]?[eE]?(?<endingepnumber>\d{1,3}))+[^\\\/]*$",
-                @".*(\\|\/)(?<seriesname>[^\\\/]*)[sS](?<seasonnumber>\d{1,4})[xX\.]?[eE](?<epnumber>\d{1,3})((-| - )?[xXeE](?<endingepnumber>\d{1,3}))+[^\\\/]*$",
-                @".*(\\|\/)(?<seriesname>[^\\\/]*)[sS](?<seasonnumber>\d{1,4})[xX\.]?[eE](?<epnumber>\d{1,3})(-[xX]?[eE]?(?<endingepnumber>\d{1,3}))+[^\\\/]*$"
+                @".*(\\|\/)[sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3})((-| - )[0-9]{1,4}[eExX](?<endingepnumber>[0-9]{1,3}))+[^\\\/]*$",
+                @".*(\\|\/)[sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3})((-| - )[0-9]{1,4}[xX][eE](?<endingepnumber>[0-9]{1,3}))+[^\\\/]*$",
+                @".*(\\|\/)[sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3})((-| - )?[xXeE](?<endingepnumber>[0-9]{1,3}))+[^\\\/]*$",
+                @".*(\\|\/)[sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3})(-[xE]?[eE]?(?<endingepnumber>[0-9]{1,3}))+[^\\\/]*$",
+                @".*(\\|\/)(?<seriesname>((?![sS]?[0-9]{1,4}[xX][0-9]{1,3})[^\\\/])*)?([sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3}))((-| - )[0-9]{1,4}[xXeE](?<endingepnumber>[0-9]{1,3}))+[^\\\/]*$",
+                @".*(\\|\/)(?<seriesname>((?![sS]?[0-9]{1,4}[xX][0-9]{1,3})[^\\\/])*)?([sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3}))((-| - )[0-9]{1,4}[xX][eE](?<endingepnumber>[0-9]{1,3}))+[^\\\/]*$",
+                @".*(\\|\/)(?<seriesname>((?![sS]?[0-9]{1,4}[xX][0-9]{1,3})[^\\\/])*)?([sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3}))((-| - )?[xXeE](?<endingepnumber>[0-9]{1,3}))+[^\\\/]*$",
+                @".*(\\|\/)(?<seriesname>((?![sS]?[0-9]{1,4}[xX][0-9]{1,3})[^\\\/])*)?([sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3}))(-[xX]?[eE]?(?<endingepnumber>[0-9]{1,3}))+[^\\\/]*$",
+                @".*(\\|\/)(?<seriesname>[^\\\/]*)[sS](?<seasonnumber>[0-9]{1,4})[xX\.]?[eE](?<epnumber>[0-9]{1,3})((-| - )?[xXeE](?<endingepnumber>[0-9]{1,3}))+[^\\\/]*$",
+                @".*(\\|\/)(?<seriesname>[^\\\/]*)[sS](?<seasonnumber>[0-9]{1,4})[xX\.]?[eE](?<epnumber>[0-9]{1,3})(-[xX]?[eE]?(?<endingepnumber>[0-9]{1,3}))+[^\\\/]*$"
             }.Select(i => new EpisodeExpression(i)
             {
                 IsNamed = true
             }).ToArray();
 
-            VideoFileExtensions = extensions
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToArray();
-
             Compile();
         }
 
-        public Regex[] VideoFileStackingRegexes { get; private set; }
-        public Regex[] CleanDateTimeRegexes { get; private set; }
-        public Regex[] CleanStringRegexes { get; private set; }
+        /// <summary>
+        /// Gets or sets the folder name to extra types mapping.
+        /// </summary>
+        public Dictionary<string, ExtraType> AllExtrasTypesFolderNames { get; set; }
 
-        public Regex[] EpisodeWithoutSeasonRegexes { get; private set; }
-        public Regex[] EpisodeMultiPartRegexes { get; private set; }
+        /// <summary>
+        /// Gets or sets list of audio file extensions.
+        /// </summary>
+        public string[] AudioFileExtensions { get; set; }
 
+        /// <summary>
+        /// Gets or sets list of external media flag delimiters.
+        /// </summary>
+        public char[] MediaFlagDelimiters { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of external media forced flags.
+        /// </summary>
+        public string[] MediaForcedFlags { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of external media default flags.
+        /// </summary>
+        public string[] MediaDefaultFlags { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of album stacking prefixes.
+        /// </summary>
+        public string[] AlbumStackingPrefixes { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of subtitle file extensions.
+        /// </summary>
+        public string[] SubtitleFileExtensions { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of episode regular expressions.
+        /// </summary>
+        public EpisodeExpression[] EpisodeExpressions { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of raw episode without season regular expressions strings.
+        /// </summary>
+        public string[] EpisodeWithoutSeasonExpressions { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of raw multi-part episodes regular expressions strings.
+        /// </summary>
+        public string[] EpisodeMultiPartExpressions { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of video file extensions.
+        /// </summary>
+        public string[] VideoFileExtensions { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of video stub file extensions.
+        /// </summary>
+        public string[] StubFileExtensions { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of raw audiobook parts regular expressions strings.
+        /// </summary>
+        public string[] AudioBookPartsExpressions { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of raw audiobook names regular expressions strings.
+        /// </summary>
+        public string[] AudioBookNamesExpressions { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of stub type rules.
+        /// </summary>
+        public StubTypeRule[] StubTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of video flag delimiters.
+        /// </summary>
+        public char[] VideoFlagDelimiters { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of 3D Format rules.
+        /// </summary>
+        public Format3DRule[] Format3DRules { get; set; }
+
+        /// <summary>
+        /// Gets the file stacking rules.
+        /// </summary>
+        public FileStackRule[] VideoFileStackingRules { get; }
+
+        /// <summary>
+        /// Gets or sets list of raw clean DateTimes regular expressions strings.
+        /// </summary>
+        public string[] CleanDateTimes { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of raw clean strings regular expressions strings.
+        /// </summary>
+        public string[] CleanStrings { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of multi-episode regular expressions.
+        /// </summary>
+        public EpisodeExpression[] MultipleEpisodeExpressions { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of extra rules for videos.
+        /// </summary>
+        public ExtraRule[] VideoExtraRules { get; set; }
+
+        /// <summary>
+        /// Gets list of clean datetime regular expressions.
+        /// </summary>
+        public Regex[] CleanDateTimeRegexes { get; private set; } = Array.Empty<Regex>();
+
+        /// <summary>
+        /// Gets list of clean string regular expressions.
+        /// </summary>
+        public Regex[] CleanStringRegexes { get; private set; } = Array.Empty<Regex>();
+
+        /// <summary>
+        /// Gets list of episode without season regular expressions.
+        /// </summary>
+        public Regex[] EpisodeWithoutSeasonRegexes { get; private set; } = Array.Empty<Regex>();
+
+        /// <summary>
+        /// Gets list of multi-part episode regular expressions.
+        /// </summary>
+        public Regex[] EpisodeMultiPartRegexes { get; private set; } = Array.Empty<Regex>();
+
+        /// <summary>
+        /// Compiles raw regex strings into regexes.
+        /// </summary>
         public void Compile()
         {
-            VideoFileStackingRegexes = VideoFileStackingExpressions.Select(Compile).ToArray();
             CleanDateTimeRegexes = CleanDateTimes.Select(Compile).ToArray();
             CleanStringRegexes = CleanStrings.Select(Compile).ToArray();
             EpisodeWithoutSeasonRegexes = EpisodeWithoutSeasonExpressions.Select(Compile).ToArray();

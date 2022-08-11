@@ -1,3 +1,5 @@
+#pragma warning disable CS1591, CA1707
+
 namespace MediaBrowser.Model.Dlna
 {
     public enum MediaFormatProfile

@@ -1,17 +1,25 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using Emby.Server.Implementations.Library;
+using Jellyfin.Data.Enums;
+using Jellyfin.Data.Events;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -23,28 +31,27 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
     public class EmbyTV : ILiveTvService, ISupportsDirectStreamProvider, ISupportsNewTimerIds, IDisposable
     {
+        public const string DateAddedFormat = "yyyy-MM-dd HH:mm:ss";
+
+        private const int TunerDiscoveryDurationMs = 3000;
+
         private readonly IServerApplicationHost _appHost;
-        private readonly ILogger _logger;
-        private readonly IHttpClient _httpClient;
+        private readonly ILogger<EmbyTV> _logger;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IServerConfigurationManager _config;
-        private readonly IJsonSerializer _jsonSerializer;
 
         private readonly ItemDataProvider<SeriesTimerInfo> _seriesTimerProvider;
         private readonly TimerManager _timerProvider;
@@ -56,86 +63,104 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private readonly ILibraryManager _libraryManager;
         private readonly IProviderManager _providerManager;
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly IProcessFactory _processFactory;
-        private IMediaSourceManager _mediaSourceManager;
-
-        public static EmbyTV Current;
-
-        public event EventHandler<GenericEventArgs<TimerInfo>> TimerCreated;
-        public event EventHandler<GenericEventArgs<string>> TimerCancelled;
+        private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly IStreamHelper _streamHelper;
 
         private readonly ConcurrentDictionary<string, ActiveRecordingInfo> _activeRecordings =
             new ConcurrentDictionary<string, ActiveRecordingInfo>(StringComparer.OrdinalIgnoreCase);
 
-        private readonly IStreamHelper _streamHelper;
+        private readonly ConcurrentDictionary<string, EpgChannelData> _epgChannels =
+            new ConcurrentDictionary<string, EpgChannelData>(StringComparer.OrdinalIgnoreCase);
 
-        public EmbyTV(IServerApplicationHost appHost,
+        private readonly SemaphoreSlim _recordingDeleteSemaphore = new SemaphoreSlim(1, 1);
+
+        private bool _disposed = false;
+
+        public EmbyTV(
+            IServerApplicationHost appHost,
             IStreamHelper streamHelper,
             IMediaSourceManager mediaSourceManager,
-            ILogger logger,
-            IJsonSerializer jsonSerializer,
-            IHttpClient httpClient,
+            ILogger<EmbyTV> logger,
+            IHttpClientFactory httpClientFactory,
             IServerConfigurationManager config,
             ILiveTvManager liveTvManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager,
             ILibraryMonitor libraryMonitor,
             IProviderManager providerManager,
-            IMediaEncoder mediaEncoder,
-            IProcessFactory processFactory)
+            IMediaEncoder mediaEncoder)
         {
             Current = this;
 
             _appHost = appHost;
             _logger = logger;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _config = config;
             _fileSystem = fileSystem;
             _libraryManager = libraryManager;
             _libraryMonitor = libraryMonitor;
             _providerManager = providerManager;
             _mediaEncoder = mediaEncoder;
-            _processFactory = processFactory;
             _liveTvManager = (LiveTvManager)liveTvManager;
-            _jsonSerializer = jsonSerializer;
             _mediaSourceManager = mediaSourceManager;
             _streamHelper = streamHelper;
 
-            _seriesTimerProvider = new SeriesTimerManager(jsonSerializer, _logger, Path.Combine(DataPath, "seriestimers.json"));
-            _timerProvider = new TimerManager(jsonSerializer, _logger, Path.Combine(DataPath, "timers.json"));
-            _timerProvider.TimerFired += _timerProvider_TimerFired;
+            _seriesTimerProvider = new SeriesTimerManager(_logger, Path.Combine(DataPath, "seriestimers.json"));
+            _timerProvider = new TimerManager(_logger, Path.Combine(DataPath, "timers.json"));
+            _timerProvider.TimerFired += OnTimerProviderTimerFired;
 
-            _config.NamedConfigurationUpdated += _config_NamedConfigurationUpdated;
+            _config.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
         }
 
-        private void _config_NamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
+        public event EventHandler<GenericEventArgs<TimerInfo>> TimerCreated;
+
+        public event EventHandler<GenericEventArgs<string>> TimerCancelled;
+
+        public static EmbyTV Current { get; private set; }
+
+        /// <inheritdoc />
+        public string Name => "Emby";
+
+        public string DataPath => Path.Combine(_config.CommonApplicationPaths.DataPath, "livetv");
+
+        /// <inheritdoc />
+        public string HomePageUrl => "https://github.com/jellyfin/jellyfin";
+
+        private string DefaultRecordingPath => Path.Combine(DataPath, "recordings");
+
+        private string RecordingPath
         {
-            if (string.Equals(e.Key, "livetv", StringComparison.OrdinalIgnoreCase))
+            get
             {
-                OnRecordingFoldersChanged();
+                var path = GetConfiguration().RecordingPath;
+
+                return string.IsNullOrWhiteSpace(path)
+                    ? DefaultRecordingPath
+                    : path;
             }
         }
 
-        public async Task Start()
+        private async void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
+        {
+            if (string.Equals(e.Key, "livetv", StringComparison.OrdinalIgnoreCase))
+            {
+                await CreateRecordingFolders().ConfigureAwait(false);
+            }
+        }
+
+        public Task Start()
         {
             _timerProvider.RestartTimers();
 
-            await CreateRecordingFolders().ConfigureAwait(false);
-        }
-
-        private async void OnRecordingFoldersChanged()
-        {
-            await CreateRecordingFolders().ConfigureAwait(false);
+            return CreateRecordingFolders();
         }
 
         internal async Task CreateRecordingFolders()
         {
             try
             {
-                var recordingFolders = GetRecordingFolders();
-
-                var virtualFolders = _libraryManager.GetVirtualFolders()
-                    .ToList();
+                var recordingFolders = GetRecordingFolders().ToArray();
+                var virtualFolders = _libraryManager.GetVirtualFolders();
 
                 var allExistingPaths = virtualFolders.SelectMany(i => i.Locations).ToList();
 
@@ -152,7 +177,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                         continue;
                     }
 
-                    var mediaPathInfos = pathsToCreate.Select(i => new MediaPathInfo { Path = i }).ToArray();
+                    var mediaPathInfos = pathsToCreate.Select(i => new MediaPathInfo(i)).ToArray();
 
                     var libraryOptions = new LibraryOptions
                     {
@@ -185,7 +210,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 foreach (var path in pathsToRemove)
                 {
-                    await RemovePathFromLibrary(path).ConfigureAwait(false);
+                    await RemovePathFromLibraryAsync(path).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -194,17 +219,16 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private async Task RemovePathFromLibrary(string path)
+        private async Task RemovePathFromLibraryAsync(string path)
         {
             _logger.LogDebug("Removing path from library: {0}", path);
 
             var requiresRefresh = false;
-            var virtualFolders = _libraryManager.GetVirtualFolders()
-               .ToList();
+            var virtualFolders = _libraryManager.GetVirtualFolders();
 
             foreach (var virtualFolder in virtualFolders)
             {
-                if (!virtualFolder.Locations.Contains(path, StringComparer.OrdinalIgnoreCase))
+                if (!virtualFolder.Locations.Contains(path, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -237,29 +261,9 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (requiresRefresh)
             {
-                await _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None);
+                await _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None).ConfigureAwait(false);
             }
         }
-
-        public string Name => "Emby";
-
-        public string DataPath => Path.Combine(_config.CommonApplicationPaths.DataPath, "livetv");
-
-        private string DefaultRecordingPath => Path.Combine(DataPath, "recordings");
-
-        private string RecordingPath
-        {
-            get
-            {
-                var path = GetConfiguration().RecordingPath;
-
-                return string.IsNullOrWhiteSpace(path)
-                    ? DefaultRecordingPath
-                    : path;
-            }
-        }
-
-        public string HomePageUrl => "https://github.com/jellyfin/jellyfin";
 
         public async Task RefreshSeriesTimers(CancellationToken cancellationToken)
         {
@@ -339,7 +343,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     }
                     catch (NotSupportedException)
                     {
-
                     }
                     catch (Exception ex)
                     {
@@ -351,7 +354,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             return list;
         }
 
-        private async Task AddMetadata(IListingsProvider provider, ListingsProviderInfo info, List<ChannelInfo> tunerChannels, bool enableCache, CancellationToken cancellationToken)
+        private async Task AddMetadata(
+            IListingsProvider provider,
+            ListingsProviderInfo info,
+            IEnumerable<ChannelInfo> tunerChannels,
+            bool enableCache,
+            CancellationToken cancellationToken)
         {
             var epgChannels = await GetEpgChannels(provider, info, enableCache, cancellationToken).ConfigureAwait(false);
 
@@ -363,8 +371,9 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     if (!string.IsNullOrWhiteSpace(epgChannel.Name))
                     {
-                        //tunerChannel.Name = epgChannel.Name;
+                        // tunerChannel.Name = epgChannel.Name;
                     }
+
                     if (!string.IsNullOrWhiteSpace(epgChannel.ImageUrl))
                     {
                         tunerChannel.ImageUrl = epgChannel.ImageUrl;
@@ -373,10 +382,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private readonly ConcurrentDictionary<string, EpgChannelData> _epgChannels =
-            new ConcurrentDictionary<string, EpgChannelData>(StringComparer.OrdinalIgnoreCase);
-
-        private async Task<EpgChannelData> GetEpgChannels(IListingsProvider provider, ListingsProviderInfo info, bool enableCache, CancellationToken cancellationToken)
+        private async Task<EpgChannelData> GetEpgChannels(
+            IListingsProvider provider,
+            ListingsProviderInfo info,
+            bool enableCache,
+            CancellationToken cancellationToken)
         {
             if (!enableCache || !_epgChannels.TryGetValue(info.Id, out var result))
             {
@@ -388,63 +398,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
 
                 result = new EpgChannelData(channels);
-                _epgChannels.AddOrUpdate(info.Id, result, (k, v) => result);
+                _epgChannels.AddOrUpdate(info.Id, result, (_, _) => result);
             }
 
             return result;
-        }
-
-        private class EpgChannelData
-        {
-            public EpgChannelData(List<ChannelInfo> channels)
-            {
-                ChannelsById = new Dictionary<string, ChannelInfo>(StringComparer.OrdinalIgnoreCase);
-                ChannelsByNumber = new Dictionary<string, ChannelInfo>(StringComparer.OrdinalIgnoreCase);
-                ChannelsByName = new Dictionary<string, ChannelInfo>(StringComparer.OrdinalIgnoreCase);
-
-                foreach (var channel in channels)
-                {
-                    ChannelsById[channel.Id] = channel;
-
-                    if (!string.IsNullOrEmpty(channel.Number))
-                    {
-                        ChannelsByNumber[channel.Number] = channel;
-                    }
-
-                    var normalizedName = NormalizeName(channel.Name ?? string.Empty);
-                    if (!string.IsNullOrWhiteSpace(normalizedName))
-                    {
-                        ChannelsByName[normalizedName] = channel;
-                    }
-                }
-            }
-
-            private Dictionary<string, ChannelInfo> ChannelsById { get; set; }
-            private Dictionary<string, ChannelInfo> ChannelsByNumber { get; set; }
-            private Dictionary<string, ChannelInfo> ChannelsByName { get; set; }
-
-            public ChannelInfo GetChannelById(string id)
-            {
-                ChannelInfo result = null;
-
-                ChannelsById.TryGetValue(id, out result);
-
-                return result;
-            }
-
-            public ChannelInfo GetChannelByNumber(string number)
-            {
-                ChannelsByNumber.TryGetValue(number, out var result);
-
-                return result;
-            }
-
-            public ChannelInfo GetChannelByName(string name)
-            {
-                ChannelsByName.TryGetValue(name, out var result);
-
-                return result;
-            }
         }
 
         private async Task<ChannelInfo> GetEpgChannelFromTunerChannel(IListingsProvider provider, ListingsProviderInfo info, ChannelInfo tunerChannel, CancellationToken cancellationToken)
@@ -458,11 +415,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             foreach (NameValuePair mapping in mappings)
             {
-                if (StringHelper.EqualsIgnoreCase(mapping.Name, channelId))
+                if (string.Equals(mapping.Name, channelId, StringComparison.OrdinalIgnoreCase))
                 {
                     return mapping.Value;
                 }
             }
+
             return channelId;
         }
 
@@ -476,7 +434,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             return GetEpgChannelFromTunerChannel(info.ChannelMappings, tunerChannel, epgChannels);
         }
 
-        private ChannelInfo GetEpgChannelFromTunerChannel(NameValuePair[] mappings, ChannelInfo tunerChannel, EpgChannelData epgChannelData)
+        private ChannelInfo GetEpgChannelFromTunerChannel(
+            NameValuePair[] mappings,
+            ChannelInfo tunerChannel,
+            EpgChannelData epgChannelData)
         {
             if (!string.IsNullOrWhiteSpace(tunerChannel.Id))
             {
@@ -498,7 +459,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             if (!string.IsNullOrWhiteSpace(tunerChannel.TunerChannelId))
             {
                 var tunerChannelId = tunerChannel.TunerChannelId;
-                if (tunerChannelId.IndexOf(".json.schedulesdirect.org", StringComparison.OrdinalIgnoreCase) != -1)
+                if (tunerChannelId.Contains(".json.schedulesdirect.org", StringComparison.OrdinalIgnoreCase))
                 {
                     tunerChannelId = tunerChannelId.Replace(".json.schedulesdirect.org", string.Empty, StringComparison.OrdinalIgnoreCase).TrimStart('I');
                 }
@@ -537,7 +498,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (!string.IsNullOrWhiteSpace(tunerChannel.Name))
             {
-                var normalizedName = NormalizeName(tunerChannel.Name);
+                var normalizedName = EpgChannelData.NormalizeName(tunerChannel.Name);
 
                 var channel = epgChannelData.GetChannelByName(normalizedName);
 
@@ -548,11 +509,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
 
             return null;
-        }
-
-        private static string NormalizeName(string value)
-        {
-            return value.Replace(" ", string.Empty).Replace("-", string.Empty);
         }
 
         public async Task<List<ChannelInfo>> GetChannelsForListingsProvider(ListingsProviderInfo listingsProvider, CancellationToken cancellationToken)
@@ -600,6 +556,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 _seriesTimerProvider.Delete(remove);
             }
+
             return Task.CompletedTask;
         }
 
@@ -644,11 +601,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             return Task.CompletedTask;
         }
 
-        public Task DeleteRecordingAsync(string recordingId, CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
-        }
-
         public Task CreateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
@@ -659,16 +611,16 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             throw new NotImplementedException();
         }
 
-        public Task<string> CreateTimer(TimerInfo timer, CancellationToken cancellationToken)
+        public Task<string> CreateTimer(TimerInfo info, CancellationToken cancellationToken)
         {
-            var existingTimer = string.IsNullOrWhiteSpace(timer.ProgramId) ?
+            var existingTimer = string.IsNullOrWhiteSpace(info.ProgramId) ?
                 null :
-                _timerProvider.GetTimerByProgramId(timer.ProgramId);
+                _timerProvider.GetTimerByProgramId(info.ProgramId);
 
             if (existingTimer != null)
             {
-                if (existingTimer.Status == RecordingStatus.Cancelled ||
-                    existingTimer.Status == RecordingStatus.Completed)
+                if (existingTimer.Status == RecordingStatus.Cancelled
+                    || existingTimer.Status == RecordingStatus.Completed)
                 {
                     existingTimer.Status = RecordingStatus.New;
                     existingTimer.IsManual = true;
@@ -681,34 +633,32 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
             }
 
-            timer.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+            info.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
 
             LiveTvProgram programInfo = null;
 
-            if (!string.IsNullOrWhiteSpace(timer.ProgramId))
+            if (!string.IsNullOrWhiteSpace(info.ProgramId))
             {
-                programInfo = GetProgramInfoFromCache(timer);
+                programInfo = GetProgramInfoFromCache(info);
             }
+
             if (programInfo == null)
             {
-                _logger.LogInformation("Unable to find program with Id {0}. Will search using start date", timer.ProgramId);
-                programInfo = GetProgramInfoFromCache(timer.ChannelId, timer.StartDate);
+                _logger.LogInformation("Unable to find program with Id {0}. Will search using start date", info.ProgramId);
+                programInfo = GetProgramInfoFromCache(info.ChannelId, info.StartDate);
             }
 
             if (programInfo != null)
             {
-                CopyProgramInfoToTimerInfo(programInfo, timer);
+                CopyProgramInfoToTimerInfo(programInfo, info);
             }
 
-            timer.IsManual = true;
-            _timerProvider.Add(timer);
+            info.IsManual = true;
+            _timerProvider.Add(info);
 
-            if (TimerCreated != null)
-            {
-                TimerCreated(this, new GenericEventArgs<TimerInfo>(timer));
-            }
+            TimerCreated?.Invoke(this, new GenericEventArgs<TimerInfo>(info));
 
-            return Task.FromResult(timer.Id);
+            return Task.FromResult(info.Id);
         }
 
         public async Task<string> CreateSeriesTimer(SeriesTimerInfo info, CancellationToken cancellationToken)
@@ -800,7 +750,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
 
             // Only update if not currently active
-            if (!_activeRecordings.TryGetValue(updatedTimer.Id, out var activeRecordingInfo))
+            if (!_activeRecordings.TryGetValue(updatedTimer.Id, out _))
             {
                 existingTimer.PrePaddingSeconds = updatedTimer.PrePaddingSeconds;
                 existingTimer.PostPaddingSeconds = updatedTimer.PostPaddingSeconds;
@@ -846,33 +796,31 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 return info.Path;
             }
-            return null;
-        }
 
-        public IEnumerable<ActiveRecordingInfo> GetAllActiveRecordings()
-        {
-            return _activeRecordings.Values.Where(i => i.Timer.Status == RecordingStatus.InProgress && !i.CancellationTokenSource.IsCancellationRequested);
+            return null;
         }
 
         public ActiveRecordingInfo GetActiveRecordingInfo(string path)
         {
-            if (string.IsNullOrWhiteSpace(path))
+            if (string.IsNullOrWhiteSpace(path) || _activeRecordings.IsEmpty)
             {
                 return null;
             }
 
-            foreach (var recording in _activeRecordings.Values)
+            foreach (var (_, recordingInfo) in _activeRecordings)
             {
-                if (string.Equals(recording.Path, path, StringComparison.Ordinal) && !recording.CancellationTokenSource.IsCancellationRequested)
+                if (string.Equals(recordingInfo.Path, path, StringComparison.Ordinal) && !recordingInfo.CancellationTokenSource.IsCancellationRequested)
                 {
-                    var timer = recording.Timer;
+                    var timer = recordingInfo.Timer;
                     if (timer.Status != RecordingStatus.InProgress)
                     {
                         return null;
                     }
-                    return recording;
+
+                    return recordingInfo;
                 }
             }
+
             return null;
         }
 
@@ -944,7 +892,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 throw new ArgumentNullException(nameof(tunerHostId));
             }
 
-            return info.EnabledTuners.Contains(tunerHostId, StringComparer.OrdinalIgnoreCase);
+            return info.EnabledTuners.Contains(tunerHostId, StringComparison.OrdinalIgnoreCase);
         }
 
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
@@ -964,18 +912,14 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 var epgChannel = await GetEpgChannelFromTunerChannel(provider.Item1, provider.Item2, channel, cancellationToken).ConfigureAwait(false);
 
-                List<ProgramInfo> programs;
-
                 if (epgChannel == null)
                 {
                     _logger.LogDebug("EPG channel not found for tuner channel {0}-{1} from {2}-{3}", channel.Number, channel.Name, provider.Item1.Name, provider.Item2.ListingsId ?? string.Empty);
-                    programs = new List<ProgramInfo>();
+                    continue;
                 }
-                else
-                {
-                    programs = (await provider.Item1.GetProgramsAsync(provider.Item2, epgChannel.Id, startDateUtc, endDateUtc, cancellationToken)
+
+                List<ProgramInfo> programs = (await provider.Item1.GetProgramsAsync(provider.Item2, epgChannel.Id, startDateUtc, endDateUtc, cancellationToken)
                            .ConfigureAwait(false)).ToList();
-                }
 
                 // Replace the value that came from the provider with a normalized value
                 foreach (var program in programs)
@@ -991,7 +935,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
             }
 
-            return new List<ProgramInfo>();
+            return Enumerable.Empty<ProgramInfo>();
         }
 
         private List<Tuple<IListingsProvider, ListingsProviderInfo>> GetListingProviders()
@@ -1014,7 +958,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public async Task<ILiveStream> GetChannelStreamWithDirectStreamProvider(string channelId, string streamId, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Streaming Channel " + channelId);
+            _logger.LogInformation("Streaming Channel {Id}", channelId);
 
             var result = string.IsNullOrEmpty(streamId) ?
                 null :
@@ -1054,23 +998,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             throw new Exception("Tuner not found.");
         }
 
-        private MediaSourceInfo CloneMediaSource(MediaSourceInfo mediaSource, bool enableStreamSharing)
-        {
-            var json = _jsonSerializer.SerializeToString(mediaSource);
-            mediaSource = _jsonSerializer.DeserializeFromString<MediaSourceInfo>(json);
-
-            mediaSource.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture) + "_" + mediaSource.Id;
-
-            //if (mediaSource.DateLiveStreamOpened.HasValue && enableStreamSharing)
-            //{
-            //    var ticks = (DateTime.UtcNow - mediaSource.DateLiveStreamOpened.Value).Ticks - TimeSpan.FromSeconds(10).Ticks;
-            //    ticks = Math.Max(0, ticks);
-            //    mediaSource.Path += "?t=" + ticks.ToString(CultureInfo.InvariantCulture) + "&s=" + mediaSource.DateLiveStreamOpened.Value.Ticks.ToString(CultureInfo.InvariantCulture);
-            //}
-
-            return mediaSource;
-        }
-
         public async Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(string channelId, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(channelId))
@@ -1091,7 +1018,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
                 catch (NotImplementedException)
                 {
-
                 }
             }
 
@@ -1102,7 +1028,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             var stream = new MediaSourceInfo
             {
-                EncoderPath = _appHost.GetLocalApiUrl("127.0.0.1") + "/LiveTv/LiveRecordings/" + info.Id + "/stream",
+                EncoderPath = _appHost.GetApiUrlForLocalAccess() + "/LiveTv/LiveRecordings/" + info.Id + "/stream",
                 EncoderProtocol = MediaProtocol.Http,
                 Path = info.Path,
                 Protocol = MediaProtocol.File,
@@ -1118,7 +1044,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 IgnoreIndex = true
             };
 
-            await new LiveStreamHelper(_mediaEncoder, _logger, _jsonSerializer, _config.CommonApplicationPaths)
+            await new LiveStreamHelper(_mediaEncoder, _logger, _config.CommonApplicationPaths)
                 .AddMediaInfoWithProbe(stream, false, false, cancellationToken).ConfigureAwait(false);
 
             return new List<MediaSourceInfo>
@@ -1142,7 +1068,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             return Task.CompletedTask;
         }
 
-        async void _timerProvider_TimerFired(object sender, GenericEventArgs<TimerInfo> e)
+        private async void OnTimerProviderTimerFired(object sender, GenericEventArgs<TimerInfo> e)
         {
             var timer = e.Argument;
 
@@ -1177,7 +1103,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
             catch (OperationCanceledException)
             {
-
             }
             catch (Exception ex)
             {
@@ -1221,7 +1146,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 if (timer.SeasonNumber.HasValue)
                 {
-                    folderName = string.Format("Season {0}", timer.SeasonNumber.Value.ToString(CultureInfo.InvariantCulture));
+                    folderName = string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Season {0}",
+                        timer.SeasonNumber.Value);
                     recordPath = Path.Combine(recordPath, folderName);
                 }
             }
@@ -1275,6 +1203,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     recordPath = Path.Combine(recordPath, "Sports");
                 }
+
                 recordPath = Path.Combine(recordPath, _fileSystem.GetValidFilename(timer.Name).Trim());
             }
             else
@@ -1283,6 +1212,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     recordPath = Path.Combine(recordPath, "Other");
                 }
+
                 recordPath = Path.Combine(recordPath, _fileSystem.GetValidFilename(timer.Name).Trim());
             }
 
@@ -1304,6 +1234,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 programInfo = GetProgramInfoFromCache(timer);
             }
+
             if (programInfo == null)
             {
                 _logger.LogInformation("Unable to find program with Id {0}. Will search using start date", timer.ProgramId);
@@ -1315,30 +1246,29 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 CopyProgramInfoToTimerInfo(programInfo, timer);
             }
 
-            string seriesPath = null;
             var remoteMetadata = await FetchInternetMetadata(timer, CancellationToken.None).ConfigureAwait(false);
-            var recordPath = GetRecordingPath(timer, remoteMetadata, out seriesPath);
-            var recordingStatus = RecordingStatus.New;
-
-            string liveStreamId = null;
+            var recordPath = GetRecordingPath(timer, remoteMetadata, out string seriesPath);
 
             var channelItem = _liveTvManager.GetLiveTvChannel(timer, this);
 
+            string liveStreamId = null;
+            RecordingStatus recordingStatus;
             try
             {
-                var allMediaSources = await _mediaSourceManager.GetPlayackMediaSources(channelItem, null, true, false, CancellationToken.None).ConfigureAwait(false);
+                var allMediaSources = await _mediaSourceManager.GetPlaybackMediaSources(channelItem, null, true, false, CancellationToken.None).ConfigureAwait(false);
 
                 var mediaStreamInfo = allMediaSources[0];
                 IDirectStreamProvider directStreamProvider = null;
 
                 if (mediaStreamInfo.RequiresOpening)
                 {
-                    var liveStreamResponse = await _mediaSourceManager.OpenLiveStreamInternal(new LiveStreamRequest
-                    {
-                        ItemId = channelItem.Id,
-                        OpenToken = mediaStreamInfo.OpenToken
-
-                    }, CancellationToken.None).ConfigureAwait(false);
+                    var liveStreamResponse = await _mediaSourceManager.OpenLiveStreamInternal(
+                        new LiveStreamRequest
+                        {
+                            ItemId = channelItem.Id,
+                            OpenToken = mediaStreamInfo.OpenToken
+                        },
+                        CancellationToken.None).ConfigureAwait(false);
 
                     mediaStreamInfo = liveStreamResponse.Item1.MediaSource;
                     liveStreamId = mediaStreamInfo.LiveStreamId;
@@ -1356,7 +1286,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 _logger.LogInformation("Beginning recording. Will record for {0} minutes.", duration.TotalMinutes.ToString(CultureInfo.InvariantCulture));
 
-                _logger.LogInformation("Writing file to path: " + recordPath);
+                _logger.LogInformation("Writing file to: {Path}", recordPath);
 
                 Action onStarted = async () =>
                 {
@@ -1372,22 +1302,22 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     await CreateRecordingFolders().ConfigureAwait(false);
 
                     TriggerRefresh(recordPath);
-                    EnforceKeepUpTo(timer, seriesPath);
+                    await EnforceKeepUpTo(timer, seriesPath).ConfigureAwait(false);
                 };
 
                 await recorder.Record(directStreamProvider, mediaStreamInfo, recordPath, duration, onStarted, activeRecordingInfo.CancellationTokenSource.Token).ConfigureAwait(false);
 
                 recordingStatus = RecordingStatus.Completed;
-                _logger.LogInformation("Recording completed: {recordPath}", recordPath);
+                _logger.LogInformation("Recording completed: {RecordPath}", recordPath);
             }
             catch (OperationCanceledException)
             {
-                _logger.LogInformation("Recording stopped: {recordPath}", recordPath);
+                _logger.LogInformation("Recording stopped: {RecordPath}", recordPath);
                 recordingStatus = RecordingStatus.Completed;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error recording to {recordPath}", recordPath);
+                _logger.LogError(ex, "Error recording to {RecordPath}", recordPath);
                 recordingStatus = RecordingStatus.Error;
             }
 
@@ -1408,16 +1338,16 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             TriggerRefresh(recordPath);
             _libraryMonitor.ReportFileSystemChangeComplete(recordPath, false);
 
-            _activeRecordings.TryRemove(timer.Id, out var removed);
+            _activeRecordings.TryRemove(timer.Id, out _);
 
             if (recordingStatus != RecordingStatus.Completed && DateTime.UtcNow < timer.EndDate && timer.RetryCount < 10)
             {
-                const int retryIntervalSeconds = 60;
-                _logger.LogInformation("Retrying recording in {0} seconds.", retryIntervalSeconds);
+                const int RetryIntervalSeconds = 60;
+                _logger.LogInformation("Retrying recording in {0} seconds.", RetryIntervalSeconds);
 
                 timer.Status = RecordingStatus.New;
                 timer.PrePaddingSeconds = 0;
-                timer.StartDate = DateTime.UtcNow.AddSeconds(retryIntervalSeconds);
+                timer.StartDate = DateTime.UtcNow.AddSeconds(RetryIntervalSeconds);
                 timer.RetryCount++;
                 _timerProvider.AddOrUpdate(timer);
             }
@@ -1474,20 +1404,20 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error deleting 0-byte failed recording file {path}", path);
+                    _logger.LogError(ex, "Error deleting 0-byte failed recording file {Path}", path);
                 }
             }
         }
 
         private void TriggerRefresh(string path)
         {
-            _logger.LogInformation("Triggering refresh on {path}", path);
+            _logger.LogInformation("Triggering refresh on {Path}", path);
 
             var item = GetAffectedBaseItem(Path.GetDirectoryName(path));
 
             if (item != null)
             {
-                _logger.LogInformation("Refreshing recording parent {path}", item.Path);
+                _logger.LogInformation("Refreshing recording parent {Path}", item.Path);
 
                 _providerManager.QueueRefresh(
                     item.Id,
@@ -1522,7 +1452,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 if (item.GetType() == typeof(Folder) && string.Equals(item.Path, parentPath, StringComparison.OrdinalIgnoreCase))
                 {
                     var parentItem = item.GetParent();
-                    if (parentItem != null && !(parentItem is AggregateFolder))
+                    if (parentItem != null && parentItem is not AggregateFolder)
                     {
                         item = parentItem;
                     }
@@ -1532,12 +1462,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             return item;
         }
 
-        private async void EnforceKeepUpTo(TimerInfo timer, string seriesPath)
+        private async Task EnforceKeepUpTo(TimerInfo timer, string seriesPath)
         {
             if (string.IsNullOrWhiteSpace(timer.SeriesTimerId))
             {
                 return;
             }
+
             if (string.IsNullOrWhiteSpace(seriesPath))
             {
                 return;
@@ -1575,22 +1506,20 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 DeleteLibraryItemsForTimers(timersToDelete);
 
-                var librarySeries = _libraryManager.FindByPath(seriesPath, true) as Folder;
-
-                if (librarySeries == null)
+                if (_libraryManager.FindByPath(seriesPath, true) is not Folder librarySeries)
                 {
                     return;
                 }
 
-                var episodesToDelete = (librarySeries.GetItemList(new InternalItemsQuery
-                {
-                    OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.DateCreated, SortOrder.Descending) },
-                    IsVirtualItem = false,
-                    IsFolder = false,
-                    Recursive = true,
-                    DtoOptions = new DtoOptions(true)
-
-                }))
+                var episodesToDelete = librarySeries.GetItemList(
+                    new InternalItemsQuery
+                    {
+                        OrderBy = new[] { (ItemSortBy.DateCreated, SortOrder.Descending) },
+                        IsVirtualItem = false,
+                        IsFolder = false,
+                        Recursive = true,
+                        DtoOptions = new DtoOptions(true)
+                    })
                     .Where(i => i.IsFileProtocol && File.Exists(i.Path))
                     .Skip(seriesTimer.KeepUpTo - 1)
                     .ToList();
@@ -1599,11 +1528,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     try
                     {
-                        _libraryManager.DeleteItem(item, new DeleteOptions
-                        {
-                            DeleteFileLocation = true
-
-                        }, true);
+                        _libraryManager.DeleteItem(
+                            item,
+                            new DeleteOptions
+                            {
+                                DeleteFileLocation = true
+                            },
+                            true);
                     }
                     catch (Exception ex)
                     {
@@ -1617,7 +1548,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private readonly SemaphoreSlim _recordingDeleteSemaphore = new SemaphoreSlim(1, 1);
         private void DeleteLibraryItemsForTimers(List<TimerInfo> timers)
         {
             foreach (var timer in timers)
@@ -1644,22 +1574,17 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (libraryItem != null)
             {
-                _libraryManager.DeleteItem(libraryItem, new DeleteOptions
-                {
-                    DeleteFileLocation = true
-
-                }, true);
+                _libraryManager.DeleteItem(
+                    libraryItem,
+                    new DeleteOptions
+                    {
+                        DeleteFileLocation = true
+                    },
+                    true);
             }
-            else
+            else if (File.Exists(timer.RecordingPath))
             {
-                try
-                {
-                    _fileSystem.DeleteFile(timer.RecordingPath);
-                }
-                catch (IOException)
-                {
-
-                }
+                _fileSystem.DeleteFile(timer.RecordingPath);
             }
 
             _timerProvider.Delete(timer);
@@ -1690,26 +1615,18 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 return true;
             }
 
-            var hasRecordingAtPath = _activeRecordings
-                .Values
-                .ToList()
-                .Any(i => string.Equals(i.Path, path, StringComparison.OrdinalIgnoreCase) && !string.Equals(i.Timer.Id, timerId, StringComparison.OrdinalIgnoreCase));
-
-            if (hasRecordingAtPath)
-            {
-                return true;
-            }
-            return false;
+            return _activeRecordings
+                .Any(i => string.Equals(i.Value.Path, path, StringComparison.OrdinalIgnoreCase) && !string.Equals(i.Value.Timer.Id, timerId, StringComparison.OrdinalIgnoreCase));
         }
 
         private IRecorder GetRecorder(MediaSourceInfo mediaSource)
         {
             if (mediaSource.RequiresLooping || !(mediaSource.Container ?? string.Empty).EndsWith("ts", StringComparison.OrdinalIgnoreCase) || (mediaSource.Protocol != MediaProtocol.File && mediaSource.Protocol != MediaProtocol.Http))
             {
-                return new EncodedRecorder(_logger, _fileSystem, _mediaEncoder, _config.ApplicationPaths, _jsonSerializer, _processFactory, _config);
+                return new EncodedRecorder(_logger, _mediaEncoder, _config.ApplicationPaths, _config);
             }
 
-            return new DirectRecorder(_logger, _httpClient, _fileSystem, _streamHelper);
+            return new DirectRecorder(_logger, _httpClientFactory, _streamHelper);
         }
 
         private void OnSuccessfulRecording(TimerInfo timer, string path)
@@ -1727,20 +1644,23 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             try
             {
-                var process = _processFactory.Create(new ProcessOptions
+                var process = new Process
                 {
-                    Arguments = GetPostProcessArguments(path, options.RecordingPostProcessorArguments),
-                    CreateNoWindow = true,
-                    EnableRaisingEvents = true,
-                    ErrorDialog = false,
-                    FileName = options.RecordingPostProcessor,
-                    IsHidden = true,
-                    UseShellExecute = false
-                });
+                    StartInfo = new ProcessStartInfo
+                    {
+                        Arguments = GetPostProcessArguments(path, options.RecordingPostProcessorArguments),
+                        CreateNoWindow = true,
+                        ErrorDialog = false,
+                        FileName = options.RecordingPostProcessor,
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        UseShellExecute = false
+                    },
+                    EnableRaisingEvents = true
+                };
 
                 _logger.LogInformation("Running recording post processor {0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
-                process.Exited += Process_Exited;
+                process.Exited += OnProcessExited;
                 process.Start();
             }
             catch (Exception ex)
@@ -1754,19 +1674,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             return arguments.Replace("{path}", path, StringComparison.OrdinalIgnoreCase);
         }
 
-        private void Process_Exited(object sender, EventArgs e)
+        private void OnProcessExited(object sender, EventArgs e)
         {
-            var process = (IProcess)sender;
-            try
+            using (var process = (Process)sender)
             {
                 _logger.LogInformation("Recording post-processing script completed with exit code {ExitCode}", process.ExitCode);
             }
-            catch
-            {
-
-            }
-
-            process.Dispose();
         }
 
         private async Task SaveRecordingImage(string recordingPath, LiveTvProgram program, ItemImageInfo image)
@@ -1776,44 +1689,16 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 image = await _libraryManager.ConvertImageToLocal(program, image, 0).ConfigureAwait(false);
             }
 
-            string imageSaveFilenameWithoutExtension = null;
-
-            switch (image.Type)
+            string imageSaveFilenameWithoutExtension = image.Type switch
             {
-                case ImageType.Primary:
+                ImageType.Primary => program.IsSeries ? Path.GetFileNameWithoutExtension(recordingPath) + "-thumb" : "poster",
+                ImageType.Logo => "logo",
+                ImageType.Thumb => program.IsSeries ? Path.GetFileNameWithoutExtension(recordingPath) + "-thumb" : "landscape",
+                ImageType.Backdrop => "fanart",
+                _ => null
+            };
 
-                    if (program.IsSeries)
-                    {
-                        imageSaveFilenameWithoutExtension = Path.GetFileNameWithoutExtension(recordingPath) + "-thumb";
-                    }
-                    else
-                    {
-                        imageSaveFilenameWithoutExtension = "poster";
-                    }
-
-                    break;
-                case ImageType.Logo:
-                    imageSaveFilenameWithoutExtension = "logo";
-                    break;
-                case ImageType.Thumb:
-                    if (program.IsSeries)
-                    {
-                        imageSaveFilenameWithoutExtension = Path.GetFileNameWithoutExtension(recordingPath) + "-thumb";
-                    }
-                    else
-                    {
-                        imageSaveFilenameWithoutExtension = "landscape";
-                    }
-
-                    break;
-                case ImageType.Backdrop:
-                    imageSaveFilenameWithoutExtension = "fanart";
-                    break;
-                default:
-                    break;
-            }
-
-            if (string.IsNullOrWhiteSpace(imageSaveFilenameWithoutExtension))
+            if (imageSaveFilenameWithoutExtension == null)
             {
                 return;
             }
@@ -1893,11 +1778,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 var program = string.IsNullOrWhiteSpace(timer.ProgramId) ? null : _libraryManager.GetItemList(new InternalItemsQuery
                 {
-                    IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
+                    IncludeItemTypes = new[] { BaseItemKind.LiveTvProgram },
                     Limit = 1,
                     ExternalId = timer.ProgramId,
                     DtoOptions = new DtoOptions(true)
-
                 }).FirstOrDefault() as LiveTvProgram;
 
                 // dummy this up
@@ -1921,11 +1805,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     program.AddGenre("Sports");
                 }
+
                 if (timer.IsKids)
                 {
                     program.AddGenre("Kids");
                     program.AddGenre("Children");
                 }
+
                 if (timer.IsNews)
                 {
                     program.AddGenre("News");
@@ -1933,16 +1819,16 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 if (timer.IsProgramSeries)
                 {
-                    SaveSeriesNfo(timer, seriesPath);
-                    SaveVideoNfo(timer, recordingPath, program, false);
+                    await SaveSeriesNfoAsync(timer, seriesPath).ConfigureAwait(false);
+                    await SaveVideoNfoAsync(timer, recordingPath, program, false).ConfigureAwait(false);
                 }
                 else if (!timer.IsMovie || timer.IsSports || timer.IsNews)
                 {
-                    SaveVideoNfo(timer, recordingPath, program, true);
+                    await SaveVideoNfoAsync(timer, recordingPath, program, true).ConfigureAwait(false);
                 }
                 else
                 {
-                    SaveVideoNfo(timer, recordingPath, program, false);
+                    await SaveVideoNfoAsync(timer, recordingPath, program, false).ConfigureAwait(false);
                 }
 
                 await SaveRecordingImages(recordingPath, program).ConfigureAwait(false);
@@ -1953,7 +1839,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private void SaveSeriesNfo(TimerInfo timer, string seriesPath)
+        private async Task SaveSeriesNfoAsync(TimerInfo timer, string seriesPath)
         {
             var nfoPath = Path.Combine(seriesPath, "tvshow.nfo");
 
@@ -1962,60 +1848,62 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 return;
             }
 
-            using (var stream = _fileSystem.GetFileStream(nfoPath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
+            await using (var stream = new FileStream(nfoPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             {
                 var settings = new XmlWriterSettings
                 {
                     Indent = true,
                     Encoding = Encoding.UTF8,
-                    CloseOutput = false
+                    Async = true
                 };
 
-                using (var writer = XmlWriter.Create(stream, settings))
+                await using (var writer = XmlWriter.Create(stream, settings))
                 {
-                    writer.WriteStartDocument(true);
-                    writer.WriteStartElement("tvshow");
+                    await writer.WriteStartDocumentAsync(true).ConfigureAwait(false);
+                    await writer.WriteStartElementAsync(null, "tvshow", null).ConfigureAwait(false);
                     string id;
-                    if (timer.SeriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out id))
+                    if (timer.SeriesProviderIds.TryGetValue(MetadataProvider.Tvdb.ToString(), out id))
                     {
-                        writer.WriteElementString("id", id);
+                        await writer.WriteElementStringAsync(null, "id", null, id).ConfigureAwait(false);
                     }
-                    if (timer.SeriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out id))
+
+                    if (timer.SeriesProviderIds.TryGetValue(MetadataProvider.Imdb.ToString(), out id))
                     {
-                        writer.WriteElementString("imdb_id", id);
+                        await writer.WriteElementStringAsync(null, "imdb_id", null, id).ConfigureAwait(false);
                     }
-                    if (timer.SeriesProviderIds.TryGetValue(MetadataProviders.Tmdb.ToString(), out id))
+
+                    if (timer.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out id))
                     {
-                        writer.WriteElementString("tmdbid", id);
+                        await writer.WriteElementStringAsync(null, "tmdbid", null, id).ConfigureAwait(false);
                     }
-                    if (timer.SeriesProviderIds.TryGetValue(MetadataProviders.Zap2It.ToString(), out id))
+
+                    if (timer.SeriesProviderIds.TryGetValue(MetadataProvider.Zap2It.ToString(), out id))
                     {
-                        writer.WriteElementString("zap2itid", id);
+                        await writer.WriteElementStringAsync(null, "zap2itid", null, id).ConfigureAwait(false);
                     }
 
                     if (!string.IsNullOrWhiteSpace(timer.Name))
                     {
-                        writer.WriteElementString("title", timer.Name);
+                        await writer.WriteElementStringAsync(null, "title", null, timer.Name).ConfigureAwait(false);
                     }
 
                     if (!string.IsNullOrWhiteSpace(timer.OfficialRating))
                     {
-                        writer.WriteElementString("mpaa", timer.OfficialRating);
+                        await writer.WriteElementStringAsync(null, "mpaa", null, timer.OfficialRating).ConfigureAwait(false);
                     }
 
                     foreach (var genre in timer.Genres)
                     {
-                        writer.WriteElementString("genre", genre);
+                        await writer.WriteElementStringAsync(null, "genre", null, genre).ConfigureAwait(false);
                     }
 
-                    writer.WriteEndElement();
-                    writer.WriteEndDocument();
+                    await writer.WriteEndElementAsync().ConfigureAwait(false);
+                    await writer.WriteEndDocumentAsync().ConfigureAwait(false);
                 }
             }
         }
 
-        public const string DateAddedFormat = "yyyy-MM-dd HH:mm:ss";
-        private void SaveVideoNfo(TimerInfo timer, string recordingPath, BaseItem item, bool lockData)
+        private async Task SaveVideoNfoAsync(TimerInfo timer, string recordingPath, BaseItem item, bool lockData)
         {
             var nfoPath = Path.ChangeExtension(recordingPath, ".nfo");
 
@@ -2024,103 +1912,119 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 return;
             }
 
-            using (var stream = _fileSystem.GetFileStream(nfoPath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
+            await using (var stream = new FileStream(nfoPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             {
                 var settings = new XmlWriterSettings
                 {
                     Indent = true,
                     Encoding = Encoding.UTF8,
-                    CloseOutput = false
+                    Async = true
                 };
 
                 var options = _config.GetNfoConfiguration();
 
                 var isSeriesEpisode = timer.IsProgramSeries;
 
-                using (var writer = XmlWriter.Create(stream, settings))
+                await using (var writer = XmlWriter.Create(stream, settings))
                 {
-                    writer.WriteStartDocument(true);
+                    await writer.WriteStartDocumentAsync(true).ConfigureAwait(false);
 
                     if (isSeriesEpisode)
                     {
-                        writer.WriteStartElement("episodedetails");
+                        await writer.WriteStartElementAsync(null, "episodedetails", null).ConfigureAwait(false);
 
                         if (!string.IsNullOrWhiteSpace(timer.EpisodeTitle))
                         {
-                            writer.WriteElementString("title", timer.EpisodeTitle);
+                            await writer.WriteElementStringAsync(null, "title", null, timer.EpisodeTitle).ConfigureAwait(false);
                         }
 
-                        var premiereDate = item.PremiereDate ?? (!timer.IsRepeat ? DateTime.UtcNow : (DateTime?)null);
+                        var premiereDate = item.PremiereDate ?? (!timer.IsRepeat ? DateTime.UtcNow : null);
 
                         if (premiereDate.HasValue)
                         {
                             var formatString = options.ReleaseDateFormat;
 
-                            writer.WriteElementString("aired", premiereDate.Value.ToLocalTime().ToString(formatString));
+                            await writer.WriteElementStringAsync(
+                                null,
+                                "aired",
+                                null,
+                                premiereDate.Value.ToLocalTime().ToString(formatString, CultureInfo.InvariantCulture)).ConfigureAwait(false);
                         }
 
                         if (item.IndexNumber.HasValue)
                         {
-                            writer.WriteElementString("episode", item.IndexNumber.Value.ToString(CultureInfo.InvariantCulture));
+                            await writer.WriteElementStringAsync(null, "episode", null, item.IndexNumber.Value.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
                         }
 
                         if (item.ParentIndexNumber.HasValue)
                         {
-                            writer.WriteElementString("season", item.ParentIndexNumber.Value.ToString(CultureInfo.InvariantCulture));
+                            await writer.WriteElementStringAsync(null, "season", null, item.ParentIndexNumber.Value.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
                         }
                     }
                     else
                     {
-                        writer.WriteStartElement("movie");
+                        await writer.WriteStartElementAsync(null, "movie", null);
 
                         if (!string.IsNullOrWhiteSpace(item.Name))
                         {
-                            writer.WriteElementString("title", item.Name);
+                            await writer.WriteElementStringAsync(null, "title", null, item.Name).ConfigureAwait(false);
                         }
 
                         if (!string.IsNullOrWhiteSpace(item.OriginalTitle))
                         {
-                            writer.WriteElementString("originaltitle", item.OriginalTitle);
+                            await writer.WriteElementStringAsync(null, "originaltitle", null, item.OriginalTitle).ConfigureAwait(false);
                         }
 
                         if (item.PremiereDate.HasValue)
                         {
                             var formatString = options.ReleaseDateFormat;
 
-                            writer.WriteElementString("premiered", item.PremiereDate.Value.ToLocalTime().ToString(formatString));
-                            writer.WriteElementString("releasedate", item.PremiereDate.Value.ToLocalTime().ToString(formatString));
+                            await writer.WriteElementStringAsync(
+                                null,
+                                "premiered",
+                                null,
+                                item.PremiereDate.Value.ToLocalTime().ToString(formatString, CultureInfo.InvariantCulture)).ConfigureAwait(false);
+                            await writer.WriteElementStringAsync(
+                                null,
+                                "releasedate",
+                                null,
+                                item.PremiereDate.Value.ToLocalTime().ToString(formatString, CultureInfo.InvariantCulture)).ConfigureAwait(false);
                         }
                     }
 
-                    writer.WriteElementString("dateadded", DateTime.UtcNow.ToLocalTime().ToString(DateAddedFormat));
+                    await writer.WriteElementStringAsync(
+                        null,
+                        "dateadded",
+                        null,
+                        DateTime.Now.ToString(DateAddedFormat, CultureInfo.InvariantCulture)).ConfigureAwait(false);
 
                     if (item.ProductionYear.HasValue)
                     {
-                        writer.WriteElementString("year", item.ProductionYear.Value.ToString(CultureInfo.InvariantCulture));
+                        await writer.WriteElementStringAsync(null, "year", null, item.ProductionYear.Value.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
                     }
 
                     if (!string.IsNullOrEmpty(item.OfficialRating))
                     {
-                        writer.WriteElementString("mpaa", item.OfficialRating);
+                        await writer.WriteElementStringAsync(null, "mpaa", null, item.OfficialRating).ConfigureAwait(false);
                     }
 
                     var overview = (item.Overview ?? string.Empty)
                         .StripHtml()
-                        .Replace("&quot;", "'");
+                        .Replace("&quot;", "'", StringComparison.Ordinal);
 
-                    writer.WriteElementString("plot", overview);
+                    await writer.WriteElementStringAsync(null, "plot", null, overview).ConfigureAwait(false);
 
                     if (item.CommunityRating.HasValue)
                     {
-                        writer.WriteElementString("rating", item.CommunityRating.Value.ToString(CultureInfo.InvariantCulture));
+                        await writer.WriteElementStringAsync(null, "rating", null, item.CommunityRating.Value.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
                     }
 
                     foreach (var genre in item.Genres)
                     {
-                        writer.WriteElementString("genre", genre);
+                        await writer.WriteElementStringAsync(null, "genre", null, genre).ConfigureAwait(false);
                     }
 
-                    var people = item.Id.Equals(Guid.Empty) ? new List<PersonInfo>() : _libraryManager.GetPeople(item);
+                    var people = item.Id.Equals(default) ? new List<PersonInfo>() : _libraryManager.GetPeople(item);
 
                     var directors = people
                         .Where(i => IsPersonType(i, PersonType.Director))
@@ -2129,7 +2033,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                     foreach (var person in directors)
                     {
-                        writer.WriteElementString("director", person);
+                        await writer.WriteElementStringAsync(null, "director", null, person).ConfigureAwait(false);
                     }
 
                     var writers = people
@@ -2140,48 +2044,48 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                     foreach (var person in writers)
                     {
-                        writer.WriteElementString("writer", person);
+                        await writer.WriteElementStringAsync(null, "writer", null, person).ConfigureAwait(false);
                     }
 
                     foreach (var person in writers)
                     {
-                        writer.WriteElementString("credits", person);
+                        await writer.WriteElementStringAsync(null, "credits", null, person).ConfigureAwait(false);
                     }
 
-                    var tmdbCollection = item.GetProviderId(MetadataProviders.TmdbCollection);
+                    var tmdbCollection = item.GetProviderId(MetadataProvider.TmdbCollection);
 
                     if (!string.IsNullOrEmpty(tmdbCollection))
                     {
-                        writer.WriteElementString("collectionnumber", tmdbCollection);
+                        await writer.WriteElementStringAsync(null, "collectionnumber", null, tmdbCollection).ConfigureAwait(false);
                     }
 
-                    var imdb = item.GetProviderId(MetadataProviders.Imdb);
+                    var imdb = item.GetProviderId(MetadataProvider.Imdb);
                     if (!string.IsNullOrEmpty(imdb))
                     {
                         if (!isSeriesEpisode)
                         {
-                            writer.WriteElementString("id", imdb);
+                            await writer.WriteElementStringAsync(null, "id", null, imdb).ConfigureAwait(false);
                         }
 
-                        writer.WriteElementString("imdbid", imdb);
+                        await writer.WriteElementStringAsync(null, "imdbid", null, imdb).ConfigureAwait(false);
 
                         // No need to lock if we have identified the content already
                         lockData = false;
                     }
 
-                    var tvdb = item.GetProviderId(MetadataProviders.Tvdb);
+                    var tvdb = item.GetProviderId(MetadataProvider.Tvdb);
                     if (!string.IsNullOrEmpty(tvdb))
                     {
-                        writer.WriteElementString("tvdbid", tvdb);
+                        await writer.WriteElementStringAsync(null, "tvdbid", null, tvdb).ConfigureAwait(false);
 
                         // No need to lock if we have identified the content already
                         lockData = false;
                     }
 
-                    var tmdb = item.GetProviderId(MetadataProviders.Tmdb);
+                    var tmdb = item.GetProviderId(MetadataProvider.Tmdb);
                     if (!string.IsNullOrEmpty(tmdb))
                     {
-                        writer.WriteElementString("tmdbid", tmdb);
+                        await writer.WriteElementStringAsync(null, "tmdbid", null, tmdb).ConfigureAwait(false);
 
                         // No need to lock if we have identified the content already
                         lockData = false;
@@ -2189,42 +2093,33 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                     if (lockData)
                     {
-                        writer.WriteElementString("lockdata", true.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
+                        await writer.WriteElementStringAsync(null, "lockdata", null, "true").ConfigureAwait(false);
                     }
 
                     if (item.CriticRating.HasValue)
                     {
-                        writer.WriteElementString("criticrating", item.CriticRating.Value.ToString(CultureInfo.InvariantCulture));
+                        await writer.WriteElementStringAsync(null, "criticrating", null, item.CriticRating.Value.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
                     }
 
                     if (!string.IsNullOrWhiteSpace(item.Tagline))
                     {
-                        writer.WriteElementString("tagline", item.Tagline);
+                        await writer.WriteElementStringAsync(null, "tagline", null, item.Tagline).ConfigureAwait(false);
                     }
 
                     foreach (var studio in item.Studios)
                     {
-                        writer.WriteElementString("studio", studio);
+                        await writer.WriteElementStringAsync(null, "studio", null, studio).ConfigureAwait(false);
                     }
 
-                    writer.WriteEndElement();
-                    writer.WriteEndDocument();
+                    await writer.WriteEndElementAsync().ConfigureAwait(false);
+                    await writer.WriteEndDocumentAsync().ConfigureAwait(false);
                 }
             }
         }
 
         private static bool IsPersonType(PersonInfo person, string type)
-        {
-            return string.Equals(person.Type, type, StringComparison.OrdinalIgnoreCase) || string.Equals(person.Role, type, StringComparison.OrdinalIgnoreCase);
-        }
-
-        private void AddGenre(List<string> genres, string genre)
-        {
-            if (!genres.Contains(genre, StringComparer.OrdinalIgnoreCase))
-            {
-                genres.Add(genre);
-            }
-        }
+            => string.Equals(person.Type, type, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(person.Role, type, StringComparison.OrdinalIgnoreCase);
 
         private LiveTvProgram GetProgramInfoFromCache(string programId)
         {
@@ -2240,19 +2135,14 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private LiveTvProgram GetProgramInfoFromCache(TimerInfo timer)
         {
-            return GetProgramInfoFromCache(timer.ProgramId, timer.ChannelId);
-        }
-
-        private LiveTvProgram GetProgramInfoFromCache(string programId, string channelId)
-        {
-            return GetProgramInfoFromCache(programId);
+            return GetProgramInfoFromCache(timer.ProgramId);
         }
 
         private LiveTvProgram GetProgramInfoFromCache(string channelId, DateTime startDateUtc)
         {
             var query = new InternalItemsQuery
             {
-                IncludeItemTypes = new string[] { typeof(LiveTvProgram).Name },
+                IncludeItemTypes = new[] { BaseItemKind.LiveTvProgram },
                 Limit = 1,
                 DtoOptions = new DtoOptions(true)
                 {
@@ -2260,7 +2150,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 },
                 MinStartDate = startDateUtc.AddMinutes(-3),
                 MaxStartDate = startDateUtc.AddMinutes(3),
-                OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.StartDate, SortOrder.Ascending) }
+                OrderBy = new[] { (ItemSortBy.StartDate, SortOrder.Ascending) }
             };
 
             if (!string.IsNullOrWhiteSpace(channelId))
@@ -2283,25 +2173,19 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 return false;
             }
 
-            if (!seriesTimer.RecordAnyTime)
+            if (!seriesTimer.RecordAnyTime
+                && Math.Abs(seriesTimer.StartDate.TimeOfDay.Ticks - timer.StartDate.TimeOfDay.Ticks) >= TimeSpan.FromMinutes(10).Ticks)
             {
-                if (Math.Abs(seriesTimer.StartDate.TimeOfDay.Ticks - timer.StartDate.TimeOfDay.Ticks) >= TimeSpan.FromMinutes(10).Ticks)
-                {
-                    return true;
-                }
+                return true;
             }
-
-            //if (!seriesTimer.Days.Contains(timer.StartDate.ToLocalTime().DayOfWeek))
-            //{
-            //    return true;
-            //}
 
             if (seriesTimer.RecordNewOnly && timer.IsRepeat)
             {
                 return true;
             }
 
-            if (!seriesTimer.RecordAnyChannel && !string.Equals(timer.ChannelId, seriesTimer.ChannelId, StringComparison.OrdinalIgnoreCase))
+            if (!seriesTimer.RecordAnyChannel
+                && !string.Equals(timer.ChannelId, seriesTimer.ChannelId, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
@@ -2346,18 +2230,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             var allTimers = GetTimersForSeries(seriesTimer).ToList();
 
-
             var enabledTimersForSeries = new List<TimerInfo>();
             foreach (var timer in allTimers)
             {
-                var existingTimer = _timerProvider.GetTimer(timer.Id);
-
-                if (existingTimer == null)
-                {
-                    existingTimer = string.IsNullOrWhiteSpace(timer.ProgramId)
+                var existingTimer = _timerProvider.GetTimer(timer.Id)
+                    ?? (string.IsNullOrWhiteSpace(timer.ProgramId)
                         ? null
-                        : _timerProvider.GetTimerByProgramId(timer.ProgramId);
-                }
+                        : _timerProvider.GetTimerByProgramId(timer.ProgramId));
 
                 if (existingTimer == null)
                 {
@@ -2369,10 +2248,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     {
                         enabledTimersForSeries.Add(timer);
                     }
+
                     _timerProvider.Add(timer);
 
                     TimerCreated?.Invoke(this, new GenericEventArgs<TimerInfo>(timer));
                 }
+
                 // Only update if not currently active - test both new timer and existing in case Id's are different
                 // Id's could be different if the timer was created manually prior to series timer creation
                 else if (!_activeRecordings.TryGetValue(timer.Id, out _) && !_activeRecordings.TryGetValue(existingTimer.Id, out _))
@@ -2400,7 +2281,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     {
                         // Only update if not currently active - test both new timer and existing in case Id's are different
                         // Id's could be different if the timer was created manually prior to series timer creation
-                        if (!_activeRecordings.TryGetValue(timer.Id, out var activeRecordingInfo) && !_activeRecordings.TryGetValue(existingTimer.Id, out activeRecordingInfo))
+                        if (!_activeRecordings.TryGetValue(timer.Id, out _) && !_activeRecordings.TryGetValue(existingTimer.Id, out _))
                         {
                             UpdateExistingTimerWithNewMetadata(existingTimer, timer);
 
@@ -2421,17 +2302,14 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                                 enabledTimersForSeries.Add(existingTimer);
                             }
 
-                            if (updateTimerSettings)
-                            {
-                                existingTimer.KeepUntil = seriesTimer.KeepUntil;
-                                existingTimer.IsPostPaddingRequired = seriesTimer.IsPostPaddingRequired;
-                                existingTimer.IsPrePaddingRequired = seriesTimer.IsPrePaddingRequired;
-                                existingTimer.PostPaddingSeconds = seriesTimer.PostPaddingSeconds;
-                                existingTimer.PrePaddingSeconds = seriesTimer.PrePaddingSeconds;
-                                existingTimer.Priority = seriesTimer.Priority;
-                            }
-
+                            existingTimer.KeepUntil = seriesTimer.KeepUntil;
+                            existingTimer.IsPostPaddingRequired = seriesTimer.IsPostPaddingRequired;
+                            existingTimer.IsPrePaddingRequired = seriesTimer.IsPrePaddingRequired;
+                            existingTimer.PostPaddingSeconds = seriesTimer.PostPaddingSeconds;
+                            existingTimer.PrePaddingSeconds = seriesTimer.PrePaddingSeconds;
+                            existingTimer.Priority = seriesTimer.Priority;
                             existingTimer.SeriesTimerId = seriesTimer.Id;
+
                             _timerProvider.Update(existingTimer);
                         }
                     }
@@ -2456,7 +2334,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 var deletes = _timerProvider.GetAll()
                     .Where(i => string.Equals(i.SeriesTimerId, seriesTimer.Id, StringComparison.OrdinalIgnoreCase))
-                    .Where(i => !allTimerIds.Contains(i.Id, StringComparer.OrdinalIgnoreCase) && i.StartDate > DateTime.UtcNow)
+                    .Where(i => !allTimerIds.Contains(i.Id, StringComparison.OrdinalIgnoreCase) && i.StartDate > DateTime.UtcNow)
                     .Where(i => deleteStatuses.Contains(i.Status))
                     .ToList();
 
@@ -2476,7 +2354,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             var query = new InternalItemsQuery
             {
-                IncludeItemTypes = new string[] { typeof(LiveTvProgram).Name },
+                IncludeItemTypes = new[] { BaseItemKind.LiveTvProgram },
                 ExternalSeriesId = seriesTimer.SeriesId,
                 DtoOptions = new DtoOptions(true)
                 {
@@ -2504,17 +2382,17 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             string channelId = seriesTimer.RecordAnyChannel ? null : seriesTimer.ChannelId;
 
-            if (string.IsNullOrWhiteSpace(channelId) && !parent.ChannelId.Equals(Guid.Empty))
+            if (string.IsNullOrWhiteSpace(channelId) && !parent.ChannelId.Equals(default))
             {
                 if (!tempChannelCache.TryGetValue(parent.ChannelId, out LiveTvChannel channel))
                 {
-                    channel = _libraryManager.GetItemList(new InternalItemsQuery
-                    {
-                        IncludeItemTypes = new string[] { typeof(LiveTvChannel).Name },
-                        ItemIds = new[] { parent.ChannelId },
-                        DtoOptions = new DtoOptions()
-
-                    }).Cast<LiveTvChannel>().FirstOrDefault();
+                    channel = _libraryManager.GetItemList(
+                        new InternalItemsQuery
+                        {
+                            IncludeItemTypes = new[] { BaseItemKind.LiveTvChannel },
+                            ItemIds = new[] { parent.ChannelId },
+                            DtoOptions = new DtoOptions()
+                        }).FirstOrDefault() as LiveTvChannel;
 
                     if (channel != null && !string.IsNullOrWhiteSpace(channel.ExternalId))
                     {
@@ -2563,17 +2441,17 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             string channelId = null;
 
-            if (!programInfo.ChannelId.Equals(Guid.Empty))
+            if (!programInfo.ChannelId.Equals(default))
             {
                 if (!tempChannelCache.TryGetValue(programInfo.ChannelId, out LiveTvChannel channel))
                 {
-                    channel = _libraryManager.GetItemList(new InternalItemsQuery
-                    {
-                        IncludeItemTypes = new string[] { typeof(LiveTvChannel).Name },
-                        ItemIds = new[] { programInfo.ChannelId },
-                        DtoOptions = new DtoOptions()
-
-                    }).Cast<LiveTvChannel>().FirstOrDefault();
+                    channel = _libraryManager.GetItemList(
+                        new InternalItemsQuery
+                        {
+                            IncludeItemTypes = new[] { BaseItemKind.LiveTvChannel },
+                            ItemIds = new[] { programInfo.ChannelId },
+                            DtoOptions = new DtoOptions()
+                        }).FirstOrDefault() as LiveTvChannel;
 
                     if (channel != null && !string.IsNullOrWhiteSpace(channel.ExternalId))
                     {
@@ -2618,10 +2496,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             foreach (var providerId in timerInfo.ProviderIds)
             {
-                var srch = "Series";
-                if (providerId.Key.StartsWith(srch, StringComparison.OrdinalIgnoreCase))
+                const string Search = "Series";
+                if (providerId.Key.StartsWith(Search, StringComparison.OrdinalIgnoreCase))
                 {
-                    seriesProviderIds[providerId.Key.Substring(srch.Length)] = providerId.Value;
+                    seriesProviderIds[providerId.Key.Substring(Search.Length)] = providerId.Value;
                 }
             }
 
@@ -2632,12 +2510,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             if ((program.EpisodeNumber.HasValue && program.SeasonNumber.HasValue) || !string.IsNullOrWhiteSpace(program.EpisodeTitle))
             {
-                var seriesIds = _libraryManager.GetItemIds(new InternalItemsQuery
-                {
-                    IncludeItemTypes = new[] { typeof(Series).Name },
-                    Name = program.Name
-
-                }).ToArray();
+                var seriesIds = _libraryManager.GetItemIds(
+                    new InternalItemsQuery
+                    {
+                        IncludeItemTypes = new[] { BaseItemKind.Series },
+                        Name = program.Name
+                    }).ToArray();
 
                 if (seriesIds.Length == 0)
                 {
@@ -2648,7 +2526,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     var result = _libraryManager.GetItemIds(new InternalItemsQuery
                     {
-                        IncludeItemTypes = new[] { typeof(Episode).Name },
+                        IncludeItemTypes = new[] { BaseItemKind.Episode },
                         ParentIndexNumber = program.SeasonNumber.Value,
                         IndexNumber = program.EpisodeNumber.Value,
                         AncestorIds = seriesIds,
@@ -2666,58 +2544,69 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             return false;
         }
 
-        private bool _disposed;
+        /// <inheritdoc />
         public void Dispose()
         {
-            _disposed = true;
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _recordingDeleteSemaphore.Dispose();
+            }
+
             foreach (var pair in _activeRecordings.ToList())
             {
                 pair.Value.CancellationTokenSource.Cancel();
             }
+
+            _disposed = true;
         }
 
-        public List<VirtualFolderInfo> GetRecordingFolders()
+        public IEnumerable<VirtualFolderInfo> GetRecordingFolders()
         {
-            var list = new List<VirtualFolderInfo>();
-
             var defaultFolder = RecordingPath;
             var defaultName = "Recordings";
 
             if (Directory.Exists(defaultFolder))
             {
-                list.Add(new VirtualFolderInfo
+                yield return new VirtualFolderInfo
                 {
                     Locations = new string[] { defaultFolder },
                     Name = defaultName
-                });
+                };
             }
 
             var customPath = GetConfiguration().MovieRecordingPath;
-            if ((!string.IsNullOrWhiteSpace(customPath) && !string.Equals(customPath, defaultFolder, StringComparison.OrdinalIgnoreCase)) && Directory.Exists(customPath))
+            if (!string.IsNullOrWhiteSpace(customPath) && !string.Equals(customPath, defaultFolder, StringComparison.OrdinalIgnoreCase) && Directory.Exists(customPath))
             {
-                list.Add(new VirtualFolderInfo
+                yield return new VirtualFolderInfo
                 {
                     Locations = new string[] { customPath },
                     Name = "Recorded Movies",
-                    CollectionType = CollectionType.Movies
-                });
+                    CollectionType = CollectionTypeOptions.Movies
+                };
             }
 
             customPath = GetConfiguration().SeriesRecordingPath;
-            if ((!string.IsNullOrWhiteSpace(customPath) && !string.Equals(customPath, defaultFolder, StringComparison.OrdinalIgnoreCase)) && Directory.Exists(customPath))
+            if (!string.IsNullOrWhiteSpace(customPath) && !string.Equals(customPath, defaultFolder, StringComparison.OrdinalIgnoreCase) && Directory.Exists(customPath))
             {
-                list.Add(new VirtualFolderInfo
+                yield return new VirtualFolderInfo
                 {
                     Locations = new string[] { customPath },
                     Name = "Recorded Shows",
-                    CollectionType = CollectionType.TvShows
-                });
+                    CollectionType = CollectionTypeOptions.TvShows
+                };
             }
-
-            return list;
         }
-
-        private const int TunerDiscoveryDurationMs = 3000;
 
         public async Task<List<TunerHostInfo>> DiscoverTuners(bool newDevicesOnly, CancellationToken cancellationToken)
         {
@@ -2734,9 +2623,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 if (newDevicesOnly)
                 {
-                    discoveredDevices = discoveredDevices.Where(d => !configuredDeviceIds.Contains(d.DeviceId, StringComparer.OrdinalIgnoreCase))
+                    discoveredDevices = discoveredDevices.Where(d => !configuredDeviceIds.Contains(d.DeviceId, StringComparison.OrdinalIgnoreCase))
                             .ToList();
                 }
+
                 list.AddRange(discoveredDevices);
             }
 
@@ -2773,11 +2663,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private async Task<List<TunerHostInfo>> DiscoverDevices(ITunerHost host, int discoveryDuationMs, CancellationToken cancellationToken)
+        private async Task<List<TunerHostInfo>> DiscoverDevices(ITunerHost host, int discoveryDurationMs, CancellationToken cancellationToken)
         {
             try
             {
-                var discoveredDevices = await host.DiscoverDevices(discoveryDuationMs, cancellationToken).ConfigureAwait(false);
+                var discoveredDevices = await host.DiscoverDevices(discoveryDurationMs, cancellationToken).ConfigureAwait(false);
 
                 foreach (var device in discoveredDevices)
                 {
@@ -2792,13 +2682,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 return new List<TunerHostInfo>();
             }
-        }
-    }
-    public static class ConfigurationExtension
-    {
-        public static XbmcMetadataOptions GetNfoConfiguration(this IConfigurationManager manager)
-        {
-            return manager.GetConfiguration<XbmcMetadataOptions>("xbmcmetadata");
         }
     }
 }

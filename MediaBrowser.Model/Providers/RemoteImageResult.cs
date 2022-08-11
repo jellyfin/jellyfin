@@ -1,3 +1,4 @@
+#nullable disable
 namespace MediaBrowser.Model.Providers
 {
     /// <summary>

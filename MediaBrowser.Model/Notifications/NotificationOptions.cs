@@ -1,86 +1,84 @@
+#nullable disable
+#pragma warning disable CS1591
+
 using System;
-using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.Users;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 
 namespace MediaBrowser.Model.Notifications
 {
     public class NotificationOptions
     {
-        public NotificationOption[] Options { get; set; }
-
         public NotificationOptions()
         {
             Options = new[]
             {
-                new NotificationOption
+                new NotificationOption(NotificationType.TaskFailed.ToString())
                 {
-                    Type = NotificationType.TaskFailed.ToString(),
                     Enabled = true,
                     SendToUserMode = SendToUserType.Admins
                 },
-                new NotificationOption
+                new NotificationOption(NotificationType.ServerRestartRequired.ToString())
                 {
-                    Type = NotificationType.ServerRestartRequired.ToString(),
                     Enabled = true,
                     SendToUserMode = SendToUserType.Admins
                 },
-                new NotificationOption
+                new NotificationOption(NotificationType.ApplicationUpdateAvailable.ToString())
                 {
-                    Type = NotificationType.ApplicationUpdateAvailable.ToString(),
                     Enabled = true,
                     SendToUserMode = SendToUserType.Admins
                 },
-                new NotificationOption
+                new NotificationOption(NotificationType.ApplicationUpdateInstalled.ToString())
                 {
-                    Type = NotificationType.ApplicationUpdateInstalled.ToString(),
                     Enabled = true,
                     SendToUserMode = SendToUserType.Admins
                 },
-                new NotificationOption
+                new NotificationOption(NotificationType.PluginUpdateInstalled.ToString())
                 {
-                    Type = NotificationType.PluginUpdateInstalled.ToString(),
                     Enabled = true,
                     SendToUserMode = SendToUserType.Admins
                 },
-                new NotificationOption
+                new NotificationOption(NotificationType.PluginUninstalled.ToString())
                 {
-                    Type = NotificationType.PluginUninstalled.ToString(),
                     Enabled = true,
                     SendToUserMode = SendToUserType.Admins
                 },
-                new NotificationOption
+                new NotificationOption(NotificationType.InstallationFailed.ToString())
                 {
-                    Type = NotificationType.InstallationFailed.ToString(),
                     Enabled = true,
                     SendToUserMode = SendToUserType.Admins
                 },
-                new NotificationOption
+                new NotificationOption(NotificationType.PluginInstalled.ToString())
                 {
-                    Type = NotificationType.PluginInstalled.ToString(),
                     Enabled = true,
                     SendToUserMode = SendToUserType.Admins
                 },
-                new NotificationOption
+                new NotificationOption(NotificationType.PluginError.ToString())
                 {
-                    Type = NotificationType.PluginError.ToString(),
                     Enabled = true,
                     SendToUserMode = SendToUserType.Admins
                 },
-                new NotificationOption
+                new NotificationOption(NotificationType.UserLockedOut.ToString())
                 {
-                    Type = NotificationType.UserLockedOut.ToString(),
                     Enabled = true,
                     SendToUserMode = SendToUserType.Admins
                 }
             };
         }
 
+        public NotificationOption[] Options { get; set; }
+
         public NotificationOption GetOptions(string type)
         {
             foreach (NotificationOption i in Options)
             {
-                if (StringHelper.EqualsIgnoreCase(type, i.Type)) return i;
+                if (string.Equals(type, i.Type, StringComparison.OrdinalIgnoreCase))
+                {
+                    return i;
+                }
             }
+
             return null;
         }
 
@@ -95,19 +93,20 @@ namespace MediaBrowser.Model.Notifications
         {
             NotificationOption opt = GetOptions(notificationType);
 
-            return opt == null ||
-                   !ListHelper.ContainsIgnoreCase(opt.DisabledServices, service);
+            return opt == null
+                   || !opt.DisabledServices.Contains(service, StringComparison.OrdinalIgnoreCase);
         }
 
         public bool IsEnabledToMonitorUser(string type, Guid userId)
         {
             NotificationOption opt = GetOptions(type);
 
-            return opt != null && opt.Enabled &&
-                   !ListHelper.ContainsIgnoreCase(opt.DisabledMonitorUsers, userId.ToString(""));
+            return opt != null
+                   && opt.Enabled
+                   && !opt.DisabledMonitorUsers.Contains(userId.ToString("N"), StringComparison.OrdinalIgnoreCase);
         }
 
-        public bool IsEnabledToSendToUser(string type, string userId, UserPolicy userPolicy)
+        public bool IsEnabledToSendToUser(string type, string userId, User user)
         {
             NotificationOption opt = GetOptions(type);
 
@@ -118,12 +117,12 @@ namespace MediaBrowser.Model.Notifications
                     return true;
                 }
 
-                if (opt.SendToUserMode == SendToUserType.Admins && userPolicy.IsAdministrator)
+                if (opt.SendToUserMode == SendToUserType.Admins && user.HasPermission(PermissionKind.IsAdministrator))
                 {
                     return true;
                 }
 
-                return ListHelper.ContainsIgnoreCase(opt.SendToUsers, userId);
+                return opt.SendToUsers.Contains(userId, StringComparison.OrdinalIgnoreCase);
             }
 
             return false;

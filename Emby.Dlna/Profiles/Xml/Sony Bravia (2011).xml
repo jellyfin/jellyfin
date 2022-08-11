@@ -3,10 +3,10 @@
   xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Name>Sony Bravia (2011)</Name>
   <Identification>
-    <FriendlyName>KDL-\d{2}([A-Z]X\d2\d|CX400).*</FriendlyName>
+    <FriendlyName>KDL-[0-9]{2}([A-Z]X[0-9]2[0-9]|CX400).*</FriendlyName>
     <Manufacturer>Sony</Manufacturer>
     <Headers>
-      <HttpHeaderInfo name="X-AV-Client-Info" value=".*KDL-\d{2}([A-Z]X\d2\d|CX400).*" match="Regex" />
+      <HttpHeaderInfo name="X-AV-Client-Info" value=".*KDL-[0-9]{2}([A-Z]X[0-9]2[0-9]|CX400).*" match="Regex" />
     </Headers>
   </Identification>
   <Manufacturer>Microsoft Corporation</Manufacturer>
@@ -29,7 +29,7 @@
   <MusicStreamingTranscodingBitrate>192000</MusicStreamingTranscodingBitrate>
   <MaxStaticMusicBitrate xsi:nil="true" />
   <SonyAggregationFlags>10</SonyAggregationFlags>
-  <ProtocolInfo>http-get:*:video/mpeg:*,http-get:*:video/mp4:*,http-get:*:video/vnd.dlna.mpeg-tts:*,http-get:*:video/avi:*,http-get:*:video/x-matroska:*,http-get:*:video/x-ms-wmv:*,http-get:*:video/wtv:*,http-get:*:audio/mpeg:*,http-get:*:audio/mp3:*,http-get:*:audio/mp4:*,http-get:*:audio/x-ms-wma*,http-get:*:audio/wav:*,http-get:*:audio/L16:*,http-get:*image/jpeg:*,http-get:*image/png:*,http-get:*image/gif:*,http-get:*image/tiff:*</ProtocolInfo>
+  <ProtocolInfo>http-get:*:video/mpeg:*,http-get:*:video/mp4:*,http-get:*:video/vnd.dlna.mpeg-tts:*,http-get:*:video/avi:*,http-get:*:video/x-matroska:*,http-get:*:video/x-ms-wmv:*,http-get:*:video/wtv:*,http-get:*:audio/mpeg:*,http-get:*:audio/mp3:*,http-get:*:audio/mp4:*,http-get:*:audio/x-ms-wma:*,http-get:*:audio/wav:*,http-get:*:audio/L16:*,http-get:*:image/jpeg:*,http-get:*:image/png:*,http-get:*:image/gif:*,http-get:*:image/tiff:*</ProtocolInfo>
   <TimelineOffsetSeconds>0</TimelineOffsetSeconds>
   <RequiresPlainVideoItems>false</RequiresPlainVideoItems>
   <RequiresPlainFolders>false</RequiresPlainFolders>

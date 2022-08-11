@@ -1,10 +1,13 @@
+#nullable disable
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Search
 {
     /// <summary>
-    /// Class SearchHintResult
+    /// Class SearchHintResult.
     /// </summary>
     public class SearchHint
     {
@@ -97,6 +100,7 @@ namespace MediaBrowser.Model.Search
         public string MediaType { get; set; }
 
         public DateTime? StartDate { get; set; }
+
         public DateTime? EndDate { get; set; }
 
         /// <summary>

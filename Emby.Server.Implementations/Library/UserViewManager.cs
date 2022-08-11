@@ -1,13 +1,18 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Channels;
@@ -42,6 +47,11 @@ namespace Emby.Server.Implementations.Library
         {
             var user = _userManager.GetUserById(query.UserId);
 
+            if (user == null)
+            {
+                throw new ArgumentException("User Id specified in the query does not exist.", nameof(query));
+            }
+
             var folders = _libraryManager.GetUserRootFolder()
                 .GetChildren(user, true)
                 .OfType<Folder>()
@@ -54,7 +64,7 @@ namespace Emby.Server.Implementations.Library
             foreach (var folder in folders)
             {
                 var collectionFolder = folder as ICollectionFolder;
-                var folderViewType = collectionFolder == null ? null : collectionFolder.CollectionType;
+                var folderViewType = collectionFolder?.CollectionType;
 
                 if (UserView.IsUserSpecific(folder))
                 {
@@ -68,7 +78,7 @@ namespace Emby.Server.Implementations.Library
                     continue;
                 }
 
-                if (query.PresetViews.Contains(folderViewType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                if (query.PresetViews.Contains(folderViewType ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                 {
                     list.Add(GetUserView(folder, folderViewType, string.Empty));
                 }
@@ -118,28 +128,23 @@ namespace Emby.Server.Implementations.Library
 
             if (!query.IncludeHidden)
             {
-                list = list.Where(i => !user.Configuration.MyMediaExcludes.Contains(i.Id.ToString("N", CultureInfo.InvariantCulture))).ToList();
+                list = list.Where(i => !user.GetPreferenceValues<Guid>(PreferenceKind.MyMediaExcludes).Contains(i.Id)).ToList();
             }
 
             var sorted = _libraryManager.Sort(list, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending).ToList();
 
-            var orders = user.Configuration.OrderedViews.ToList();
+            var orders = user.GetPreferenceValues<Guid>(PreferenceKind.OrderedViews);
 
             return list
                 .OrderBy(i =>
                 {
-                    var index = orders.IndexOf(i.Id.ToString("N", CultureInfo.InvariantCulture));
+                    var index = Array.IndexOf(orders, i.Id);
 
-                    if (index == -1)
+                    if (index == -1
+                        && i is UserView view
+                        && !view.DisplayParentId.Equals(default))
                     {
-                        var view = i as UserView;
-                        if (view != null)
-                        {
-                            if (!view.DisplayParentId.Equals(Guid.Empty))
-                            {
-                                index = orders.IndexOf(view.DisplayParentId.ToString("N", CultureInfo.InvariantCulture));
-                            }
-                        }
+                        index = Array.IndexOf(orders, view.DisplayParentId);
                     }
 
                     return index == -1 ? int.MaxValue : index;
@@ -163,11 +168,17 @@ namespace Emby.Server.Implementations.Library
             return GetUserSubViewWithName(name, parentId, type, sortName);
         }
 
-        private Folder GetUserView(List<ICollectionFolder> parents, string viewType, string localizationKey, string sortName, User user, string[] presetViews)
+        private Folder GetUserView(
+            List<ICollectionFolder> parents,
+            string viewType,
+            string localizationKey,
+            string sortName,
+            User user,
+            string[] presetViews)
         {
             if (parents.Count == 1 && parents.All(i => string.Equals(i.CollectionType, viewType, StringComparison.OrdinalIgnoreCase)))
             {
-                if (!presetViews.Contains(viewType, StringComparer.OrdinalIgnoreCase))
+                if (!presetViews.Contains(viewType, StringComparison.OrdinalIgnoreCase))
                 {
                     return (Folder)parents[0];
                 }
@@ -203,7 +214,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 else
                 {
-                    var current = list.FirstOrDefault(i => i.Item1 != null && i.Item1.Id == container.Id);
+                    var current = list.FirstOrDefault(i => i.Item1 != null && i.Item1.Id.Equals(container.Id));
 
                     if (current != null)
                     {
@@ -233,7 +244,7 @@ namespace Emby.Server.Implementations.Library
 
             var parents = new List<BaseItem>();
 
-            if (!parentId.Equals(Guid.Empty))
+            if (!parentId.Equals(default))
             {
                 var parentItem = _libraryManager.GetItemById(parentId);
                 if (parentItem is Channel)
@@ -268,7 +279,8 @@ namespace Emby.Server.Implementations.Library
             {
                 parents = _libraryManager.GetUserRootFolder().GetChildren(user, true)
                     .Where(i => i is Folder)
-                    .Where(i => !user.Configuration.LatestItemsExcludes.Contains(i.Id.ToString("N", CultureInfo.InvariantCulture)))
+                    .Where(i => !user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes)
+                        .Contains(i.Id))
                     .ToList();
             }
 
@@ -286,11 +298,11 @@ namespace Emby.Server.Implementations.Library
                 {
                     if (hasCollectionType.All(i => string.Equals(i.CollectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase)))
                     {
-                        includeItemTypes = new string[] { "Movie" };
+                        includeItemTypes = new[] { BaseItemKind.Movie };
                     }
                     else if (hasCollectionType.All(i => string.Equals(i.CollectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase)))
                     {
-                        includeItemTypes = new string[] { "Episode" };
+                        includeItemTypes = new[] { BaseItemKind.Episode };
                     }
                 }
             }
@@ -327,21 +339,27 @@ namespace Emby.Server.Implementations.Library
                 mediaTypes = mediaTypes.Distinct().ToList();
             }
 
-            var excludeItemTypes = includeItemTypes.Length == 0 && mediaTypes.Count == 0 ? new[]
-            {
-                typeof(Person).Name,
-                typeof(Studio).Name,
-                typeof(Year).Name,
-                typeof(MusicGenre).Name,
-                typeof(Genre).Name
-
-            } : Array.Empty<string>();
+            var excludeItemTypes = includeItemTypes.Length == 0 && mediaTypes.Count == 0
+                ? new[]
+                {
+                    BaseItemKind.Person,
+                    BaseItemKind.Studio,
+                    BaseItemKind.Year,
+                    BaseItemKind.MusicGenre,
+                    BaseItemKind.Genre
+                }
+                : Array.Empty<BaseItemKind>();
 
             var query = new InternalItemsQuery(user)
             {
                 IncludeItemTypes = includeItemTypes,
-                OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.DateCreated, SortOrder.Descending) },
-                IsFolder = includeItemTypes.Length == 0 ? false : (bool?)null,
+                OrderBy = new[]
+                {
+                    (ItemSortBy.DateCreated, SortOrder.Descending),
+                    (ItemSortBy.SortName, SortOrder.Descending),
+                    (ItemSortBy.ProductionYear, SortOrder.Descending)
+                },
+                IsFolder = includeItemTypes.Length == 0 ? false : null,
                 ExcludeItemTypes = excludeItemTypes,
                 IsVirtualItem = false,
                 Limit = limit * 5,

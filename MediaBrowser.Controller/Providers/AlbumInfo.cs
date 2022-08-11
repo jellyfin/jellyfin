@@ -1,3 +1,5 @@
+#pragma warning disable CA1002, CA2227, CS1591
+
 using System;
 using System.Collections.Generic;
 
@@ -5,6 +7,13 @@ namespace MediaBrowser.Controller.Providers
 {
     public class AlbumInfo : ItemLookupInfo
     {
+        public AlbumInfo()
+        {
+            ArtistProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            SongInfos = new List<SongInfo>();
+            AlbumArtists = Array.Empty<string>();
+        }
+
         /// <summary>
         /// Gets or sets the album artist.
         /// </summary>
@@ -16,13 +25,7 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <value>The artist provider ids.</value>
         public Dictionary<string, string> ArtistProviderIds { get; set; }
-        public List<SongInfo> SongInfos { get; set; }
 
-        public AlbumInfo()
-        {
-            ArtistProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            SongInfos = new List<SongInfo>();
-            AlbumArtists = Array.Empty<string>();
-        }
+        public List<SongInfo> SongInfos { get; set; }
     }
 }

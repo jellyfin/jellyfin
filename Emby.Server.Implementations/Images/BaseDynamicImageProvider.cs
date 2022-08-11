@@ -1,3 +1,7 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -47,7 +51,7 @@ namespace Emby.Server.Implementations.Images
 
         public int Order => 0;
 
-        protected virtual bool Supports(BaseItem _) => true;
+        protected virtual bool Supports(BaseItem item) => true;
 
         public async Task<ItemUpdateType> FetchAsync(T item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
@@ -61,13 +65,13 @@ namespace Emby.Server.Implementations.Images
             if (SupportedImages.Contains(ImageType.Primary))
             {
                 var primaryResult = await FetchAsync(item, ImageType.Primary, options, cancellationToken).ConfigureAwait(false);
-                updateType = updateType | primaryResult;
+                updateType |= primaryResult;
             }
 
             if (SupportedImages.Contains(ImageType.Thumb))
             {
                 var thumbResult = await FetchAsync(item, ImageType.Thumb, options, cancellationToken).ConfigureAwait(false);
-                updateType = updateType | thumbResult;
+                updateType |= thumbResult;
             }
 
             return updateType;
@@ -131,9 +135,20 @@ namespace Emby.Server.Implementations.Images
 
         protected virtual IEnumerable<string> GetStripCollageImagePaths(BaseItem primaryItem, IEnumerable<BaseItem> items)
         {
+            var useBackdrop = primaryItem is CollectionFolder || primaryItem is UserView;
             return items
                 .Select(i =>
                 {
+                    // Use Backdrop instead of Primary image for Library images.
+                    if (useBackdrop)
+                    {
+                        var backdrop = i.GetImageInfo(ImageType.Backdrop, 0);
+                        if (backdrop != null && backdrop.IsLocalFile)
+                        {
+                            return backdrop.Path;
+                        }
+                    }
+
                     var image = i.GetImageInfo(ImageType.Primary, 0);
                     if (image != null && image.IsLocalFile)
                     {
@@ -178,7 +193,7 @@ namespace Emby.Server.Implementations.Images
                 InputPaths = GetStripCollageImagePaths(primaryItem, items).ToArray()
             };
 
-            if (options.InputPaths.Length == 0)
+            if (options.InputPaths.Count == 0)
             {
                 return null;
             }
@@ -188,11 +203,12 @@ namespace Emby.Server.Implementations.Images
                 return null;
             }
 
-            ImageProcessor.CreateImageCollage(options);
+            ImageProcessor.CreateImageCollage(options, primaryItem.Name);
             return outputPath;
         }
 
-        protected virtual string CreateImage(BaseItem item,
+        protected virtual string CreateImage(
+            BaseItem item,
             IReadOnlyCollection<BaseItem> itemsWithImages,
             string outputPathWithoutExtension,
             ImageType imageType,
@@ -212,7 +228,12 @@ namespace Emby.Server.Implementations.Images
 
             if (imageType == ImageType.Primary)
             {
-                if (item is UserView || item is Playlist || item is MusicGenre || item is Genre || item is PhotoAlbum)
+                if (item is UserView
+                    || item is Playlist
+                    || item is MusicGenre
+                    || item is Genre
+                    || item is PhotoAlbum
+                    || item is MusicArtist)
                 {
                     return CreateSquareCollage(item, itemsWithImages, outputPath);
                 }
@@ -223,7 +244,7 @@ namespace Emby.Server.Implementations.Images
             throw new ArgumentException("Unexpected image type", nameof(imageType));
         }
 
-        public bool HasChanged(BaseItem item, IDirectoryService directoryServicee)
+        public bool HasChanged(BaseItem item, IDirectoryService directoryService)
         {
             if (!Supports(item))
             {
@@ -234,6 +255,7 @@ namespace Emby.Server.Implementations.Images
             {
                 return true;
             }
+
             if (SupportedImages.Contains(ImageType.Thumb) && HasChanged(item, ImageType.Thumb))
             {
                 return true;

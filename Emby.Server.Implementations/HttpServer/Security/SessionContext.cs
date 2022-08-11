@@ -1,10 +1,13 @@
+#pragma warning disable CS1591
+
 using System;
-using MediaBrowser.Controller.Entities;
+using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace Emby.Server.Implementations.HttpServer.Security
 {
@@ -21,35 +24,37 @@ namespace Emby.Server.Implementations.HttpServer.Security
             _sessionManager = sessionManager;
         }
 
-        public SessionInfo GetSession(IRequest requestContext)
+        public async Task<SessionInfo> GetSession(HttpContext requestContext)
         {
-            var authorization = _authContext.GetAuthorizationInfo(requestContext);
+            var authorization = await _authContext.GetAuthorizationInfo(requestContext).ConfigureAwait(false);
 
             var user = authorization.User;
-            return _sessionManager.LogSessionActivity(authorization.Client, authorization.Version, authorization.DeviceId, authorization.Device, requestContext.RemoteIp, user);
+            return await _sessionManager.LogSessionActivity(
+                authorization.Client,
+                authorization.Version,
+                authorization.DeviceId,
+                authorization.Device,
+                requestContext.GetNormalizedRemoteIp().ToString(),
+                user).ConfigureAwait(false);
         }
 
-        private AuthenticationInfo GetTokenInfo(IRequest request)
+        public Task<SessionInfo> GetSession(object requestContext)
         {
-            request.Items.TryGetValue("OriginalAuthenticationInfo", out var info);
-            return info as AuthenticationInfo;
+            return GetSession((HttpContext)requestContext);
         }
 
-        public SessionInfo GetSession(object requestContext)
+        public async Task<User?> GetUser(HttpContext requestContext)
         {
-            return GetSession((IRequest)requestContext);
+            var session = await GetSession(requestContext).ConfigureAwait(false);
+
+            return session.UserId.Equals(default)
+                ? null
+                : _userManager.GetUserById(session.UserId);
         }
 
-        public User GetUser(IRequest requestContext)
+        public Task<User?> GetUser(object requestContext)
         {
-            var session = GetSession(requestContext);
-
-            return session == null || session.UserId.Equals(Guid.Empty) ? null : _userManager.GetUserById(session.UserId);
-        }
-
-        public User GetUser(object requestContext)
-        {
-            return GetUser((IRequest)requestContext);
+            return GetUser(((HttpRequest)requestContext).HttpContext);
         }
     }
 }

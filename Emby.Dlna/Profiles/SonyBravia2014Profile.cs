@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Model.Dlna;
 
 namespace Emby.Dlna.Profiles
@@ -11,7 +13,7 @@ namespace Emby.Dlna.Profiles
 
             Identification = new DeviceIdentification
             {
-                FriendlyName = @"(KDL-\d{2}W[5-9]\d{2}B|KDL-\d{2}R480|XBR-\d{2}X[89]\d{2}B|KD-\d{2}[SX][89]\d{3}B).*",
+                FriendlyName = @"(KDL-[0-9]{2}W[5-9][0-9]{2}B|KDL-[0-9]{2}R480|XBR-[0-9]{2}X[89][0-9]{2}B|KD-[0-9]{2}[SX][89][0-9]{3}B).*",
                 Manufacturer = "Sony",
 
                 Headers = new[]
@@ -19,7 +21,7 @@ namespace Emby.Dlna.Profiles
                     new HttpHeaderInfo
                     {
                         Name = "X-AV-Client-Info",
-                        Value = @".*(KDL-\d{2}W[5-9]\d{2}B|KDL-\d{2}R480|XBR-\d{2}X[89]\d{2}B|KD-\d{2}[SX][89]\d{3}B).*",
+                        Value = @".*(KDL-[0-9]{2}W[5-9][0-9]{2}B|KDL-[0-9]{2}R480|XBR-[0-9]{2}X[89][0-9]{2}B|KD-[0-9]{2}[SX][89][0-9]{3}B).*",
                         Match = HeaderMatchType.Regex
                     }
                 }
@@ -162,7 +164,7 @@ namespace Emby.Dlna.Profiles
                 {
                     Type = DlnaProfileType.Photo,
 
-                    Conditions = new []
+                    Conditions = new[]
                     {
                         new ProfileCondition
                         {
@@ -185,13 +187,13 @@ namespace Emby.Dlna.Profiles
                 new ResponseProfile
                 {
                     Container = "ts,mpegts",
-                    VideoCodec="h264",
-                    AudioCodec="ac3,aac,mp3",
+                    VideoCodec = "h264",
+                    AudioCodec = "ac3,aac,mp3",
                     MimeType = "video/vnd.dlna.mpeg-tts",
-                    OrgPn="AVC_TS_HD_24_AC3_T,AVC_TS_HD_50_AC3_T,AVC_TS_HD_60_AC3_T,AVC_TS_HD_EU_T",
+                    OrgPn = "AVC_TS_HD_24_AC3_T,AVC_TS_HD_50_AC3_T,AVC_TS_HD_60_AC3_T,AVC_TS_HD_EU_T",
                     Type = DlnaProfileType.Video,
 
-                    Conditions = new []
+                    Conditions = new[]
                     {
                         new ProfileCondition
                         {
@@ -211,13 +213,13 @@ namespace Emby.Dlna.Profiles
                 new ResponseProfile
                 {
                     Container = "ts,mpegts",
-                    VideoCodec="h264",
-                    AudioCodec="ac3,aac,mp3",
+                    VideoCodec = "h264",
+                    AudioCodec = "ac3,aac,mp3",
                     MimeType = "video/mpeg",
-                    OrgPn="AVC_TS_HD_24_AC3_ISO,AVC_TS_HD_50_AC3_ISO,AVC_TS_HD_60_AC3_ISO,AVC_TS_HD_EU_ISO",
+                    OrgPn = "AVC_TS_HD_24_AC3_ISO,AVC_TS_HD_50_AC3_ISO,AVC_TS_HD_60_AC3_ISO,AVC_TS_HD_EU_ISO",
                     Type = DlnaProfileType.Video,
 
-                    Conditions = new []
+                    Conditions = new[]
                     {
                         new ProfileCondition
                         {
@@ -231,28 +233,28 @@ namespace Emby.Dlna.Profiles
                 new ResponseProfile
                 {
                     Container = "ts,mpegts",
-                    VideoCodec="h264",
-                    AudioCodec="ac3,aac,mp3",
+                    VideoCodec = "h264",
+                    AudioCodec = "ac3,aac,mp3",
                     MimeType = "video/vnd.dlna.mpeg-tts",
-                    OrgPn="AVC_TS_HD_24_AC3,AVC_TS_HD_50_AC3,AVC_TS_HD_60_AC3,AVC_TS_HD_EU",
+                    OrgPn = "AVC_TS_HD_24_AC3,AVC_TS_HD_50_AC3,AVC_TS_HD_60_AC3,AVC_TS_HD_EU",
                     Type = DlnaProfileType.Video
                 },
 
                 new ResponseProfile
                 {
                     Container = "ts,mpegts",
-                    VideoCodec="mpeg2video",
+                    VideoCodec = "mpeg2video",
                     MimeType = "video/vnd.dlna.mpeg-tts",
-                    OrgPn="MPEG_TS_SD_EU,MPEG_TS_SD_NA,MPEG_TS_SD_KO",
+                    OrgPn = "MPEG_TS_SD_EU,MPEG_TS_SD_NA,MPEG_TS_SD_KO",
                     Type = DlnaProfileType.Video
                 },
 
                 new ResponseProfile
                 {
                     Container = "mpeg",
-                    VideoCodec="mpeg1video,mpeg2video",
+                    VideoCodec = "mpeg1video,mpeg2video",
                     MimeType = "video/mpeg",
-                    OrgPn="MPEG_PS_NTSC,MPEG_PS_PAL",
+                    OrgPn = "MPEG_PS_NTSC,MPEG_PS_PAL",
                     Type = DlnaProfileType.Video
                 },
                 new ResponseProfile
@@ -263,14 +265,13 @@ namespace Emby.Dlna.Profiles
                 }
             };
 
-
             CodecProfiles = new[]
             {
                 new CodecProfile
                 {
                     Type = CodecType.Video,
 
-                    Conditions = new []
+                    Conditions = new[]
                     {
                         new ProfileCondition
                         {
@@ -298,7 +299,7 @@ namespace Emby.Dlna.Profiles
                     Type = CodecType.VideoAudio,
                     Codec = "mp3,mp2",
 
-                    Conditions = new []
+                    Conditions = new[]
                     {
                         new ProfileCondition
                         {

@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -22,7 +23,7 @@ namespace Emby.Photos
     /// </summary>
     public class PhotoProvider : ICustomMetadataProvider<Photo>, IForcedProvider, IHasItemChangeMonitor
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<PhotoProvider> _logger;
         private readonly IImageProcessor _imageProcessor;
 
         // These are causing taglib to hang
@@ -60,7 +61,7 @@ namespace Emby.Photos
             item.SetImagePath(ImageType.Primary, item.Path);
 
             // Examples: https://github.com/mono/taglib-sharp/blob/a5f6949a53d09ce63ee7495580d6802921a21f14/tests/fixtures/TagLib.Tests.Images/NullOrientationTest.cs
-            if (_includeExtensions.Contains(Path.GetExtension(item.Path), StringComparer.OrdinalIgnoreCase))
+            if (_includeExtensions.Contains(Path.GetExtension(item.Path), StringComparison.OrdinalIgnoreCase))
             {
                 try
                 {
@@ -104,7 +105,7 @@ namespace Emby.Photos
                             item.Overview = image.ImageTag.Comment;
 
                             if (!string.IsNullOrWhiteSpace(image.ImageTag.Title)
-                                && !item.LockedFields.Contains(MetadataFields.Name))
+                                && !item.LockedFields.Contains(MetadataField.Name))
                             {
                                 item.Name = image.ImageTag.Title;
                             }
@@ -160,7 +161,7 @@ namespace Emby.Photos
 
                 try
                 {
-                    var size = _imageProcessor.GetImageDimensions(item, img, false);
+                    var size = _imageProcessor.GetImageDimensions(item, img);
 
                     if (size.Width > 0 && size.Height > 0)
                     {

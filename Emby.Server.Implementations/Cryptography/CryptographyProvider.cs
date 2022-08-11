@@ -1,13 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Security.Cryptography;
+using System.Text;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.Cryptography;
-using static MediaBrowser.Common.Cryptography.Constants;
+using static MediaBrowser.Model.Cryptography.Constants;
 
 namespace Emby.Server.Implementations.Cryptography
 {
-    public class CryptographyProvider : ICryptoProvider, IDisposable
+    /// <summary>
+    /// Class providing abstractions over cryptographic functions.
+    /// </summary>
+    public class CryptographyProvider : ICryptoProvider
     {
+        // TODO: remove when not needed for backwards compat
         private static readonly HashSet<string> _supportedHashMethods = new HashSet<string>()
             {
                 "MD5",
@@ -26,108 +33,82 @@ namespace Emby.Server.Implementations.Cryptography
                 "System.Security.Cryptography.SHA512"
             };
 
-        private RandomNumberGenerator _randomNumberGenerator;
+        /// <inheritdoc />
+        public string DefaultHashMethod => "PBKDF2-SHA512";
 
-        private bool _disposed = false;
-
-        public CryptographyProvider()
+        /// <inheritdoc />
+        public PasswordHash CreatePasswordHash(ReadOnlySpan<char> password)
         {
-            // FIXME: When we get DotNet Standard 2.1 we need to revisit how we do the crypto
-            // Currently supported hash methods from https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.cryptoconfig?view=netcore-2.1
-            // there might be a better way to autogenerate this list as dotnet updates, but I couldn't find one
-            // Please note the default method of PBKDF2 is not included, it cannot be used to generate hashes cleanly as it is actually a pbkdf with sha1
-            _randomNumberGenerator = RandomNumberGenerator.Create();
-        }
-
-        public string DefaultHashMethod => "PBKDF2";
-
-        public IEnumerable<string> GetSupportedHashMethods()
-            => _supportedHashMethods;
-
-        private byte[] PBKDF2(string method, byte[] bytes, byte[] salt, int iterations)
-        {
-            // downgrading for now as we need this library to be dotnetstandard compliant
-            // with this downgrade we'll add a check to make sure we're on the downgrade method at the moment
-            if (method == DefaultHashMethod)
-            {
-                using (var r = new Rfc2898DeriveBytes(bytes, salt, iterations))
+            byte[] salt = GenerateSalt();
+            return new PasswordHash(
+                DefaultHashMethod,
+                Rfc2898DeriveBytes.Pbkdf2(
+                    password,
+                    salt,
+                    DefaultIterations,
+                    HashAlgorithmName.SHA512,
+                    DefaultOutputLength),
+                salt,
+                new Dictionary<string, string>
                 {
-                    return r.GetBytes(32);
-                }
-            }
-
-            throw new CryptographicException($"Cannot currently use PBKDF2 with requested hash method: {method}");
-        }
-
-        public byte[] ComputeHash(string hashMethod, byte[] bytes)
-            => ComputeHash(hashMethod, bytes, Array.Empty<byte>());
-
-        public byte[] ComputeHashWithDefaultMethod(byte[] bytes)
-            => ComputeHash(DefaultHashMethod, bytes);
-
-        public byte[] ComputeHash(string hashMethod, byte[] bytes, byte[] salt)
-        {
-            if (hashMethod == DefaultHashMethod)
-            {
-                return PBKDF2(hashMethod, bytes, salt, DefaultIterations);
-            }
-            else if (_supportedHashMethods.Contains(hashMethod))
-            {
-                using (var h = HashAlgorithm.Create(hashMethod))
-                {
-                    if (salt.Length == 0)
-                    {
-                        return h.ComputeHash(bytes);
-                    }
-                    else
-                    {
-                        byte[] salted = new byte[bytes.Length + salt.Length];
-                        Array.Copy(bytes, salted, bytes.Length);
-                        Array.Copy(salt, 0, salted, bytes.Length, salt.Length);
-                        return h.ComputeHash(salted);
-                    }
-                }
-            }
-
-            throw new CryptographicException($"Requested hash method is not supported: {hashMethod}");
-
-        }
-
-        public byte[] ComputeHashWithDefaultMethod(byte[] bytes, byte[] salt)
-            => PBKDF2(DefaultHashMethod, bytes, salt, DefaultIterations);
-
-        public byte[] GenerateSalt()
-            => GenerateSalt(DefaultSaltLength);
-
-        public byte[] GenerateSalt(int length)
-        {
-            byte[] salt = new byte[length];
-            _randomNumberGenerator.GetBytes(salt);
-            return salt;
+                    { "iterations", DefaultIterations.ToString(CultureInfo.InvariantCulture) }
+                });
         }
 
         /// <inheritdoc />
-        public void Dispose()
+        public bool Verify(PasswordHash hash, ReadOnlySpan<char> password)
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            if (string.Equals(hash.Id, "PBKDF2", StringComparison.Ordinal))
+            {
+                return hash.Hash.SequenceEqual(
+                    Rfc2898DeriveBytes.Pbkdf2(
+                        password,
+                        hash.Salt,
+                        int.Parse(hash.Parameters["iterations"], CultureInfo.InvariantCulture),
+                        HashAlgorithmName.SHA1,
+                        32));
+            }
+
+            if (string.Equals(hash.Id, "PBKDF2-SHA512", StringComparison.Ordinal))
+            {
+                return hash.Hash.SequenceEqual(
+                    Rfc2898DeriveBytes.Pbkdf2(
+                        password,
+                        hash.Salt,
+                        int.Parse(hash.Parameters["iterations"], CultureInfo.InvariantCulture),
+                        HashAlgorithmName.SHA512,
+                        DefaultOutputLength));
+            }
+
+            if (!_supportedHashMethods.Contains(hash.Id))
+            {
+                throw new CryptographicException($"Requested hash method is not supported: {hash.Id}");
+            }
+
+            using var h = HashAlgorithm.Create(hash.Id) ?? throw new ResourceNotFoundException($"Unknown hash method: {hash.Id}.");
+            var bytes = Encoding.UTF8.GetBytes(password.ToArray());
+            if (hash.Salt.Length == 0)
+            {
+                return hash.Hash.SequenceEqual(h.ComputeHash(bytes));
+            }
+
+            byte[] salted = new byte[bytes.Length + hash.Salt.Length];
+            Array.Copy(bytes, salted, bytes.Length);
+            hash.Salt.CopyTo(salted.AsSpan(bytes.Length));
+            return hash.Hash.SequenceEqual(h.ComputeHash(salted));
         }
 
-        protected virtual void Dispose(bool disposing)
+        /// <inheritdoc />
+        public byte[] GenerateSalt()
+            => GenerateSalt(DefaultSaltLength);
+
+        /// <inheritdoc />
+        public byte[] GenerateSalt(int length)
         {
-            if (_disposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                _randomNumberGenerator.Dispose();
-            }
-
-            _randomNumberGenerator = null;
-
-            _disposed = true;
+            var salt = new byte[length];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetNonZeroBytes(salt);
+            return salt;
         }
     }
 }

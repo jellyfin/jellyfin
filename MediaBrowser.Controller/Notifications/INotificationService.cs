@@ -1,6 +1,10 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Entities;
+using Jellyfin.Data.Entities;
 
 namespace MediaBrowser.Controller.Notifications
 {

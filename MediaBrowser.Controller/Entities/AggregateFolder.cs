@@ -1,3 +1,7 @@
+#nullable disable
+
+#pragma warning disable CA1819, CS1591
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -14,30 +18,23 @@ namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
     /// Specialized folder that can have items added to it's children by external entities.
-    /// Used for our RootFolder so plug-ins can add items.
+    /// Used for our RootFolder so plugins can add items.
     /// </summary>
     public class AggregateFolder : Folder
     {
+        private readonly object _childIdsLock = new object();
+
+        /// <summary>
+        /// The _virtual children.
+        /// </summary>
+        private readonly ConcurrentBag<BaseItem> _virtualChildren = new ConcurrentBag<BaseItem>();
+        private bool _requiresRefresh;
+        private Guid[] _childrenIds = null;
+
         public AggregateFolder()
         {
             PhysicalLocationsList = Array.Empty<string>();
         }
-
-        [JsonIgnore]
-        public override bool IsPhysicalRoot => true;
-
-        public override bool CanDelete()
-        {
-            return false;
-        }
-
-        [JsonIgnore]
-        public override bool SupportsPlayedStatus => false;
-
-        /// <summary>
-        /// The _virtual children
-        /// </summary>
-        private readonly ConcurrentBag<BaseItem> _virtualChildren = new ConcurrentBag<BaseItem>();
 
         /// <summary>
         /// Gets the virtual children.
@@ -46,17 +43,26 @@ namespace MediaBrowser.Controller.Entities
         public ConcurrentBag<BaseItem> VirtualChildren => _virtualChildren;
 
         [JsonIgnore]
+        public override bool IsPhysicalRoot => true;
+
+        [JsonIgnore]
+        public override bool SupportsPlayedStatus => false;
+
+        [JsonIgnore]
         public override string[] PhysicalLocations => PhysicalLocationsList;
 
         public string[] PhysicalLocationsList { get; set; }
+
+        public override bool CanDelete()
+        {
+            return false;
+        }
 
         protected override FileSystemMetadata[] GetFileSystemChildren(IDirectoryService directoryService)
         {
             return CreateResolveArgs(directoryService, true).FileSystemChildren;
         }
 
-        private Guid[] _childrenIds = null;
-        private readonly object _childIdsLock = new object();
         protected override List<BaseItem> LoadChildren()
         {
             lock (_childIdsLock)
@@ -80,7 +86,6 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        private bool _requiresRefresh;
         public override bool RequiresRefresh()
         {
             var changed = base.RequiresRefresh() || _requiresRefresh;
@@ -100,11 +105,11 @@ namespace MediaBrowser.Controller.Entities
             return changed;
         }
 
-        public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
+        public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {
             ClearCache();
 
-            var changed = base.BeforeMetadataRefresh(replaceAllMetdata) || _requiresRefresh;
+            var changed = base.BeforeMetadataRefresh(replaceAllMetadata) || _requiresRefresh;
             _requiresRefresh = false;
             return changed;
         }
@@ -117,8 +122,7 @@ namespace MediaBrowser.Controller.Entities
 
             var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, directoryService)
             {
-                FileInfo = FileSystem.GetDirectoryInfo(path),
-                Path = path
+                FileInfo = FileSystem.GetDirectoryInfo(path)
             };
 
             // Gather child folder and files
@@ -150,11 +154,11 @@ namespace MediaBrowser.Controller.Entities
             return base.GetNonCachedChildren(directoryService).Concat(_virtualChildren);
         }
 
-        protected override async Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
+        protected override async Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             ClearCache();
 
-            await base.ValidateChildrenInternal(progress, cancellationToken, recursive, refreshChildMetadata, refreshOptions, directoryService)
+            await base.ValidateChildrenInternal(progress, recursive, refreshChildMetadata, refreshOptions, directoryService, cancellationToken)
                 .ConfigureAwait(false);
 
             ClearCache();
@@ -164,7 +168,7 @@ namespace MediaBrowser.Controller.Entities
         /// Adds the virtual child.
         /// </summary>
         /// <param name="child">The child.</param>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException">Throws if child is null.</exception>
         public void AddVirtualChild(BaseItem child)
         {
             if (child == null)
@@ -180,21 +184,22 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>BaseItem.</returns>
-        /// <exception cref="ArgumentNullException">id</exception>
+        /// <exception cref="ArgumentNullException">The id is empty.</exception>
         public BaseItem FindVirtualChild(Guid id)
         {
-            if (id.Equals(Guid.Empty))
+            if (id.Equals(default))
             {
                 throw new ArgumentNullException(nameof(id));
             }
 
             foreach (var child in _virtualChildren)
             {
-                if (child.Id == id)
+                if (child.Id.Equals(id))
                 {
                     return child;
                 }
             }
+
             return null;
         }
     }

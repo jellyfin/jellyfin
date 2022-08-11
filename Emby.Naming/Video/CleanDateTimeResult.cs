@@ -1,21 +1,31 @@
 namespace Emby.Naming.Video
 {
-    public class CleanDateTimeResult
+    /// <summary>
+    /// Holder structure for name and year.
+    /// </summary>
+    public readonly struct CleanDateTimeResult
     {
         /// <summary>
-        /// Gets or sets the name.
+        /// Initializes a new instance of the <see cref="CleanDateTimeResult"/> struct.
+        /// </summary>
+        /// <param name="name">Name of video.</param>
+        /// <param name="year">Year of release.</param>
+        public CleanDateTimeResult(string name, int? year = null)
+        {
+            Name = name;
+            Year = year;
+        }
+
+        /// <summary>
+        /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name { get; set; }
+        public string Name { get; }
+
         /// <summary>
-        /// Gets or sets the year.
+        /// Gets the year.
         /// </summary>
         /// <value>The year.</value>
-        public int? Year { get; set; }
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance has changed.
-        /// </summary>
-        /// <value><c>true</c> if this instance has changed; otherwise, <c>false</c>.</value>
-        public bool HasChanged { get; set; }
+        public int? Year { get; }
     }
 }

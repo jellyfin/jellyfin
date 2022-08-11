@@ -3,80 +3,66 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading;
+using System.Net.Mime;
+using System.Text;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
+using Photo = MediaBrowser.Controller.Entities.Photo;
 
 namespace Emby.Drawing
 {
     /// <summary>
     /// Class ImageProcessor.
     /// </summary>
-    public class ImageProcessor : IImageProcessor, IDisposable
+    public sealed class ImageProcessor : IImageProcessor, IDisposable
     {
         // Increment this when there's a change requiring caches to be invalidated
-        private const string Version = "3";
+        private const char Version = '3';
 
         private static readonly HashSet<string> _transparentImageTypes
             = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".webp", ".gif" };
 
-        /// <summary>
-        /// The _logger
-        /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<ImageProcessor> _logger;
         private readonly IFileSystem _fileSystem;
         private readonly IServerApplicationPaths _appPaths;
-        private IImageEncoder _imageEncoder;
-        private readonly Func<ILibraryManager> _libraryManager;
-        private readonly Func<IMediaEncoder> _mediaEncoder;
+        private readonly IImageEncoder _imageEncoder;
+        private readonly IMediaEncoder _mediaEncoder;
 
-        private readonly Dictionary<string, LockInfo> _locks = new Dictionary<string, LockInfo>();
-        private bool _disposed = false;
+        private bool _disposed;
 
         /// <summary>
-        ///
+        /// Initializes a new instance of the <see cref="ImageProcessor"/> class.
         /// </summary>
-        /// <param name="logger"></param>
-        /// <param name="appPaths"></param>
-        /// <param name="fileSystem"></param>
-        /// <param name="imageEncoder"></param>
-        /// <param name="libraryManager"></param>
-        /// <param name="mediaEncoder"></param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="appPaths">The server application paths.</param>
+        /// <param name="fileSystem">The filesystem.</param>
+        /// <param name="imageEncoder">The image encoder.</param>
+        /// <param name="mediaEncoder">The media encoder.</param>
         public ImageProcessor(
             ILogger<ImageProcessor> logger,
             IServerApplicationPaths appPaths,
             IFileSystem fileSystem,
             IImageEncoder imageEncoder,
-            Func<ILibraryManager> libraryManager,
-            Func<IMediaEncoder> mediaEncoder)
+            IMediaEncoder mediaEncoder)
         {
             _logger = logger;
             _fileSystem = fileSystem;
             _imageEncoder = imageEncoder;
-            _libraryManager = libraryManager;
             _mediaEncoder = mediaEncoder;
             _appPaths = appPaths;
-
-            ImageEnhancers = Array.Empty<IImageEnhancer>();
-
-            ImageHelper.ImageProcessor = this;
         }
 
         private string ResizedImageCachePath => Path.Combine(_appPaths.ImageCachePath, "resized-images");
-
-        private string EnhancedImageCachePath => Path.Combine(_appPaths.ImageCachePath, "enhanced-images");
 
         /// <inheritdoc />
         public IReadOnlyCollection<string> SupportedInputFormats =>
@@ -90,9 +76,7 @@ namespace Emby.Drawing
                 "aiff",
                 "cr2",
                 "crw",
-
-                // Remove until supported
-                //"nef",
+                "nef",
                 "orf",
                 "pef",
                 "arw",
@@ -112,24 +96,13 @@ namespace Emby.Drawing
             };
 
         /// <inheritdoc />
-        public IReadOnlyCollection<IImageEnhancer> ImageEnhancers { get; set; }
-
-        /// <inheritdoc />
         public bool SupportsImageCollageCreation => _imageEncoder.SupportsImageCollageCreation;
-
-        /// <inheritdoc />
-        public IImageEncoder ImageEncoder
-        {
-            get => _imageEncoder;
-            set => _imageEncoder = value ?? throw new ArgumentNullException(nameof(value));
-        }
 
         /// <inheritdoc />
         public async Task ProcessImage(ImageProcessingOptions options, Stream toStream)
         {
             var file = await ProcessImage(options).ConfigureAwait(false);
-
-            using (var fileStream = _fileSystem.GetFileStream(file.Item1, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read, true))
+            using (var fileStream = AsyncFile.OpenRead(file.Path))
             {
                 await fileStream.CopyToAsync(toStream).ConfigureAwait(false);
             }
@@ -144,24 +117,10 @@ namespace Emby.Drawing
             => _transparentImageTypes.Contains(Path.GetExtension(path));
 
         /// <inheritdoc />
-        public async Task<(string path, string mimeType, DateTime dateModified)> ProcessImage(ImageProcessingOptions options)
+        public async Task<(string Path, string? MimeType, DateTime DateModified)> ProcessImage(ImageProcessingOptions options)
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
             ItemImageInfo originalImage = options.Image;
             BaseItem item = options.Item;
-
-            if (!originalImage.IsLocalFile)
-            {
-                if (item == null)
-                {
-                    item = _libraryManager().GetItemById(options.ItemId);
-                }
-                originalImage = await _libraryManager().ConvertImageToLocal(item, originalImage, options.ImageIndex).ConfigureAwait(false);
-            }
 
             string originalImagePath = originalImage.Path;
             DateTime dateModified = originalImage.DateModified;
@@ -171,42 +130,23 @@ namespace Emby.Drawing
                 originalImageSize = new ImageDimensions(originalImage.Width, originalImage.Height);
             }
 
+            var mimeType = MimeTypes.GetMimeType(originalImagePath);
             if (!_imageEncoder.SupportsImageEncoding)
             {
-                return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
+                return (originalImagePath, mimeType, dateModified);
             }
 
             var supportedImageInfo = await GetSupportedImage(originalImagePath, dateModified).ConfigureAwait(false);
-            originalImagePath = supportedImageInfo.path;
+            originalImagePath = supportedImageInfo.Path;
 
-            if (!File.Exists(originalImagePath))
+            // Original file doesn't exist, or original file is gif.
+            if (!File.Exists(originalImagePath) || string.Equals(mimeType, MediaTypeNames.Image.Gif, StringComparison.OrdinalIgnoreCase))
             {
-                return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
+                return (originalImagePath, mimeType, dateModified);
             }
 
-            dateModified = supportedImageInfo.dateModified;
+            dateModified = supportedImageInfo.DateModified;
             bool requiresTransparency = _transparentImageTypes.Contains(Path.GetExtension(originalImagePath));
-
-            if (options.Enhancers.Count > 0)
-            {
-                if (item == null)
-                {
-                    item = _libraryManager().GetItemById(options.ItemId);
-                }
-
-                var tuple = await GetEnhancedImage(new ItemImageInfo
-                {
-                    DateModified = dateModified,
-                    Type = originalImage.Type,
-                    Path = originalImagePath
-                }, requiresTransparency, item, options.ImageIndex, options.Enhancers, CancellationToken.None).ConfigureAwait(false);
-
-                originalImagePath = tuple.path;
-                dateModified = tuple.dateModified;
-                requiresTransparency = tuple.transparent;
-                // TODO: Get this info
-                originalImageSize = null;
-            }
 
             bool autoOrient = false;
             ImageOrientation? orientation = null;
@@ -234,27 +174,31 @@ namespace Emby.Drawing
                 return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
             }
 
-            ImageDimensions newSize = ImageHelper.GetNewImageSize(options, null);
             int quality = options.Quality;
 
             ImageFormat outputFormat = GetOutputFormat(options.SupportedOutputFormats, requiresTransparency);
-            string cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality, dateModified, outputFormat, options.AddPlayedIndicator, options.PercentPlayed, options.UnplayedCount, options.Blur, options.BackgroundColor, options.ForegroundLayer);
-
-            CheckDisposed();
-
-            LockInfo lockInfo = GetLock(cacheFilePath);
-
-            await lockInfo.Lock.WaitAsync().ConfigureAwait(false);
+            string cacheFilePath = GetCacheFilePath(
+                originalImagePath,
+                options.Width,
+                options.Height,
+                options.MaxWidth,
+                options.MaxHeight,
+                options.FillWidth,
+                options.FillHeight,
+                quality,
+                dateModified,
+                outputFormat,
+                options.AddPlayedIndicator,
+                options.PercentPlayed,
+                options.UnplayedCount,
+                options.Blur,
+                options.BackgroundColor,
+                options.ForegroundLayer);
 
             try
             {
                 if (!File.Exists(cacheFilePath))
                 {
-                    if (options.CropWhiteSpace && !SupportsTransparency(originalImagePath))
-                    {
-                        options.CropWhiteSpace = false;
-                    }
-
                     string resultPath = _imageEncoder.EncodeImage(originalImagePath, dateModified, cacheFilePath, autoOrient, orientation, quality, options, outputFormat);
 
                     if (string.Equals(resultPath, originalImagePath, StringComparison.OrdinalIgnoreCase))
@@ -270,10 +214,6 @@ namespace Emby.Drawing
                 // If it fails for whatever reason, return the original image
                 _logger.LogError(ex, "Error encoding image");
                 return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
-            }
-            finally
-            {
-                ReleaseLock(cacheFilePath, lockInfo);
             }
         }
 
@@ -306,71 +246,128 @@ namespace Emby.Drawing
         }
 
         private string GetMimeType(ImageFormat format, string path)
-        {
-            switch(format)
+            => format switch
             {
-                case ImageFormat.Bmp:  return MimeTypes.GetMimeType("i.bmp");
-                case ImageFormat.Gif:  return MimeTypes.GetMimeType("i.gif");
-                case ImageFormat.Jpg:  return MimeTypes.GetMimeType("i.jpg");
-                case ImageFormat.Png:  return MimeTypes.GetMimeType("i.png");
-                case ImageFormat.Webp: return MimeTypes.GetMimeType("i.webp");
-                default:               return MimeTypes.GetMimeType(path);
-            }
-        }
+                ImageFormat.Bmp => MimeTypes.GetMimeType("i.bmp"),
+                ImageFormat.Gif => MimeTypes.GetMimeType("i.gif"),
+                ImageFormat.Jpg => MimeTypes.GetMimeType("i.jpg"),
+                ImageFormat.Png => MimeTypes.GetMimeType("i.png"),
+                ImageFormat.Webp => MimeTypes.GetMimeType("i.webp"),
+                _ => MimeTypes.GetMimeType(path)
+            };
 
         /// <summary>
-        /// Gets the cache file path based on a set of parameters
+        /// Gets the cache file path based on a set of parameters.
         /// </summary>
-        private string GetCacheFilePath(string originalPath, ImageDimensions outputSize, int quality, DateTime dateModified, ImageFormat format, bool addPlayedIndicator, double percentPlayed, int? unwatchedCount, int? blur, string backgroundColor, string foregroundLayer)
+        private string GetCacheFilePath(
+            string originalPath,
+            int? width,
+            int? height,
+            int? maxWidth,
+            int? maxHeight,
+            int? fillWidth,
+            int? fillHeight,
+            int quality,
+            DateTime dateModified,
+            ImageFormat format,
+            bool addPlayedIndicator,
+            double percentPlayed,
+            int? unwatchedCount,
+            int? blur,
+            string backgroundColor,
+            string foregroundLayer)
         {
-            var filename = originalPath
-                + "width=" + outputSize.Width
-                + "height=" + outputSize.Height
-                + "quality=" + quality
-                + "datemodified=" + dateModified.Ticks
-                + "f=" + format;
+            var filename = new StringBuilder(256);
+            filename.Append(originalPath);
+
+            filename.Append(",quality=");
+            filename.Append(quality);
+
+            filename.Append(",datemodified=");
+            filename.Append(dateModified.Ticks);
+
+            filename.Append(",f=");
+            filename.Append(format);
+
+            if (width.HasValue)
+            {
+                filename.Append(",width=");
+                filename.Append(width.Value);
+            }
+
+            if (height.HasValue)
+            {
+                filename.Append(",height=");
+                filename.Append(height.Value);
+            }
+
+            if (maxWidth.HasValue)
+            {
+                filename.Append(",maxwidth=");
+                filename.Append(maxWidth.Value);
+            }
+
+            if (maxHeight.HasValue)
+            {
+                filename.Append(",maxheight=");
+                filename.Append(maxHeight.Value);
+            }
+
+            if (fillWidth.HasValue)
+            {
+                filename.Append(",fillwidth=");
+                filename.Append(fillWidth.Value);
+            }
+
+            if (fillHeight.HasValue)
+            {
+                filename.Append(",fillheight=");
+                filename.Append(fillHeight.Value);
+            }
 
             if (addPlayedIndicator)
             {
-                filename += "pl=true";
+                filename.Append(",pl=true");
             }
 
             if (percentPlayed > 0)
             {
-                filename += "p=" + percentPlayed;
+                filename.Append(",p=");
+                filename.Append(percentPlayed);
             }
 
             if (unwatchedCount.HasValue)
             {
-                filename += "p=" + unwatchedCount.Value;
+                filename.Append(",p=");
+                filename.Append(unwatchedCount.Value);
             }
 
             if (blur.HasValue)
             {
-                filename += "blur=" + blur.Value;
+                filename.Append(",blur=");
+                filename.Append(blur.Value);
             }
 
             if (!string.IsNullOrEmpty(backgroundColor))
             {
-                filename += "b=" + backgroundColor;
+                filename.Append(",b=");
+                filename.Append(backgroundColor);
             }
 
             if (!string.IsNullOrEmpty(foregroundLayer))
             {
-                filename += "fl=" + foregroundLayer;
+                filename.Append(",fl=");
+                filename.Append(foregroundLayer);
             }
 
-            filename += "v=" + Version;
+            filename.Append(",v=");
+            filename.Append(Version);
 
-            return GetCachePath(ResizedImageCachePath, filename, "." + format.ToString().ToLowerInvariant());
+            return GetCachePath(ResizedImageCachePath, filename.ToString(), "." + format.ToString().ToLowerInvariant());
         }
 
         /// <inheritdoc />
         public ImageDimensions GetImageDimensions(BaseItem item, ItemImageInfo info)
-            => GetImageDimensions(item, info, true);
-
-        /// <inheritdoc />
-        public ImageDimensions GetImageDimensions(BaseItem item, ItemImageInfo info, bool updateItem)
         {
             int width = info.Width;
             int height = info.Height;
@@ -381,16 +378,11 @@ namespace Emby.Drawing
             }
 
             string path = info.Path;
-            _logger.LogInformation("Getting image size for item {ItemType} {Path}", item.GetType().Name, path);
+            _logger.LogDebug("Getting image size for item {ItemType} {Path}", item.GetType().Name, path);
 
             ImageDimensions size = GetImageDimensions(path);
             info.Width = size.Width;
             info.Height = size.Height;
-
-            if (updateItem)
-            {
-                _libraryManager().UpdateImages(item);
-            }
 
             return size;
         }
@@ -400,240 +392,99 @@ namespace Emby.Drawing
             => _imageEncoder.GetImageSize(path);
 
         /// <inheritdoc />
-        public string GetImageCacheTag(BaseItem item, ItemImageInfo image)
+        public string GetImageBlurHash(string path)
         {
-            var supportedEnhancers = GetSupportedEnhancers(item, image.Type).ToArray();
-
-            return GetImageCacheTag(item, image, supportedEnhancers);
+            var size = GetImageDimensions(path);
+            return GetImageBlurHash(path, size);
         }
+
+        /// <inheritdoc />
+        public string GetImageBlurHash(string path, ImageDimensions imageDimensions)
+        {
+            if (imageDimensions.Width <= 0 || imageDimensions.Height <= 0)
+            {
+                return string.Empty;
+            }
+
+            // We want tiles to be as close to square as possible, and to *mostly* keep under 16 tiles for performance.
+            // One tile is (width / xComp) x (height / yComp) pixels, which means that ideally yComp = xComp * height / width.
+            // See more at https://github.com/woltapp/blurhash/#how-do-i-pick-the-number-of-x-and-y-components
+            float xCompF = MathF.Sqrt(16.0f * imageDimensions.Width / imageDimensions.Height);
+            float yCompF = xCompF * imageDimensions.Height / imageDimensions.Width;
+
+            int xComp = Math.Min((int)xCompF + 1, 9);
+            int yComp = Math.Min((int)yCompF + 1, 9);
+
+            return _imageEncoder.GetImageBlurHash(xComp, yComp, path);
+        }
+
+        /// <inheritdoc />
+        public string GetImageCacheTag(BaseItem item, ItemImageInfo image)
+            => (item.Path + image.DateModified.Ticks).GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
         /// <inheritdoc />
         public string GetImageCacheTag(BaseItem item, ChapterInfo chapter)
         {
-            try
+            return GetImageCacheTag(item, new ItemImageInfo
             {
-                return GetImageCacheTag(item, new ItemImageInfo
-                {
-                    Path = chapter.ImagePath,
-                    Type = ImageType.Chapter,
-                    DateModified = chapter.ImageDateModified
-                });
-            }
-            catch
-            {
-                return null;
-            }
+                Path = chapter.ImagePath,
+                Type = ImageType.Chapter,
+                DateModified = chapter.ImageDateModified
+            });
         }
 
         /// <inheritdoc />
-        public string GetImageCacheTag(BaseItem item, ItemImageInfo image, IReadOnlyCollection<IImageEnhancer> imageEnhancers)
+        public string? GetImageCacheTag(User user)
         {
-            string originalImagePath = image.Path;
-            DateTime dateModified = image.DateModified;
-            ImageType imageType = image.Type;
-
-            // Optimization
-            if (imageEnhancers.Count == 0)
+            if (user.ProfileImage == null)
             {
-                return (originalImagePath + dateModified.Ticks).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+                return null;
             }
 
-            // Cache name is created with supported enhancers combined with the last config change so we pick up new config changes
-            var cacheKeys = imageEnhancers.Select(i => i.GetConfigurationCacheKey(item, imageType)).ToList();
-            cacheKeys.Add(originalImagePath + dateModified.Ticks);
-
-            return string.Join("|", cacheKeys).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+            return (user.ProfileImage.Path + user.ProfileImage.LastModified.Ticks).GetMD5()
+                .ToString("N", CultureInfo.InvariantCulture);
         }
 
-        private async Task<(string path, DateTime dateModified)> GetSupportedImage(string originalImagePath, DateTime dateModified)
+        private Task<(string Path, DateTime DateModified)> GetSupportedImage(string originalImagePath, DateTime dateModified)
         {
-            var inputFormat = Path.GetExtension(originalImagePath)
-                .TrimStart('.')
-                .Replace("jpeg", "jpg", StringComparison.OrdinalIgnoreCase);
+            var inputFormat = Path.GetExtension(originalImagePath.AsSpan()).TrimStart('.').ToString();
 
             // These are just jpg files renamed as tbn
             if (string.Equals(inputFormat, "tbn", StringComparison.OrdinalIgnoreCase))
             {
-                return (originalImagePath, dateModified);
+                return Task.FromResult((originalImagePath, dateModified));
             }
 
-            if (!_imageEncoder.SupportedInputFormats.Contains(inputFormat))
-            {
-                try
-                {
-                    string filename = (originalImagePath + dateModified.Ticks.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+            // TODO _mediaEncoder.ConvertImage is not implemented
+            // if (!_imageEncoder.SupportedInputFormats.Contains(inputFormat))
+            // {
+            //     try
+            //     {
+            //         string filename = (originalImagePath + dateModified.Ticks.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+            //
+            //         string cacheExtension = _mediaEncoder.SupportsEncoder("libwebp") ? ".webp" : ".png";
+            //         var outputPath = Path.Combine(_appPaths.ImageCachePath, "converted-images", filename + cacheExtension);
+            //
+            //         var file = _fileSystem.GetFileInfo(outputPath);
+            //         if (!file.Exists)
+            //         {
+            //             await _mediaEncoder.ConvertImage(originalImagePath, outputPath).ConfigureAwait(false);
+            //             dateModified = _fileSystem.GetLastWriteTimeUtc(outputPath);
+            //         }
+            //         else
+            //         {
+            //             dateModified = file.LastWriteTimeUtc;
+            //         }
+            //
+            //         originalImagePath = outputPath;
+            //     }
+            //     catch (Exception ex)
+            //     {
+            //         _logger.LogError(ex, "Image conversion failed for {Path}", originalImagePath);
+            //     }
+            // }
 
-                    string cacheExtension = _mediaEncoder().SupportsEncoder("libwebp") ? ".webp" : ".png";
-                    var outputPath = Path.Combine(_appPaths.ImageCachePath, "converted-images", filename + cacheExtension);
-
-                    var file = _fileSystem.GetFileInfo(outputPath);
-                    if (!file.Exists)
-                    {
-                        await _mediaEncoder().ConvertImage(originalImagePath, outputPath).ConfigureAwait(false);
-                        dateModified = _fileSystem.GetLastWriteTimeUtc(outputPath);
-                    }
-                    else
-                    {
-                        dateModified = file.LastWriteTimeUtc;
-                    }
-
-                    originalImagePath = outputPath;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Image conversion failed for {Path}", originalImagePath);
-                }
-            }
-
-            return (originalImagePath, dateModified);
-        }
-
-        /// <inheritdoc />
-        public async Task<string> GetEnhancedImage(BaseItem item, ImageType imageType, int imageIndex)
-        {
-            var enhancers = GetSupportedEnhancers(item, imageType).ToArray();
-
-            ItemImageInfo imageInfo = item.GetImageInfo(imageType, imageIndex);
-
-            bool inputImageSupportsTransparency = SupportsTransparency(imageInfo.Path);
-
-            var result = await GetEnhancedImage(imageInfo, inputImageSupportsTransparency, item, imageIndex, enhancers, CancellationToken.None);
-
-            return result.path;
-        }
-
-        private async Task<(string path, DateTime dateModified, bool transparent)> GetEnhancedImage(
-            ItemImageInfo image,
-            bool inputImageSupportsTransparency,
-            BaseItem item,
-            int imageIndex,
-            IReadOnlyCollection<IImageEnhancer> enhancers,
-            CancellationToken cancellationToken)
-        {
-            var originalImagePath = image.Path;
-            var dateModified = image.DateModified;
-            var imageType = image.Type;
-
-            try
-            {
-                var cacheGuid = GetImageCacheTag(item, image, enhancers);
-
-                // Enhance if we have enhancers
-                var enhancedImageInfo = await GetEnhancedImageInternal(originalImagePath, item, imageType, imageIndex, enhancers, cacheGuid, cancellationToken).ConfigureAwait(false);
-
-                string enhancedImagePath = enhancedImageInfo.path;
-
-                // If the path changed update dateModified
-                if (!string.Equals(enhancedImagePath, originalImagePath, StringComparison.OrdinalIgnoreCase))
-                {
-                    var treatmentRequiresTransparency = enhancedImageInfo.transparent;
-
-                    return (enhancedImagePath, _fileSystem.GetLastWriteTimeUtc(enhancedImagePath), treatmentRequiresTransparency);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error enhancing image");
-            }
-
-            return (originalImagePath, dateModified, inputImageSupportsTransparency);
-        }
-
-        /// <summary>
-        /// Gets the enhanced image internal.
-        /// </summary>
-        /// <param name="originalImagePath">The original image path.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="imageType">Type of the image.</param>
-        /// <param name="imageIndex">Index of the image.</param>
-        /// <param name="supportedEnhancers">The supported enhancers.</param>
-        /// <param name="cacheGuid">The cache unique identifier.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task&lt;System.String&gt;.</returns>
-        /// <exception cref="ArgumentNullException">
-        /// originalImagePath
-        /// or
-        /// item
-        /// </exception>
-        private async Task<(string path, bool transparent)> GetEnhancedImageInternal(
-            string originalImagePath,
-            BaseItem item,
-            ImageType imageType,
-            int imageIndex,
-            IReadOnlyCollection<IImageEnhancer> supportedEnhancers,
-            string cacheGuid,
-            CancellationToken cancellationToken = default)
-        {
-            if (string.IsNullOrEmpty(originalImagePath))
-            {
-                throw new ArgumentNullException(nameof(originalImagePath));
-            }
-
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
-
-            var treatmentRequiresTransparency = false;
-            foreach (var enhancer in supportedEnhancers)
-            {
-                if (!treatmentRequiresTransparency)
-                {
-                    treatmentRequiresTransparency = enhancer.GetEnhancedImageInfo(item, originalImagePath, imageType, imageIndex).RequiresTransparency;
-                }
-            }
-
-            // All enhanced images are saved as png to allow transparency
-            string cacheExtension = _imageEncoder.SupportedOutputFormats.Contains(ImageFormat.Webp) ?
-                ".webp" :
-                (treatmentRequiresTransparency ? ".png" : ".jpg");
-
-            string enhancedImagePath = GetCachePath(EnhancedImageCachePath, cacheGuid + cacheExtension);
-
-            LockInfo lockInfo = GetLock(enhancedImagePath);
-
-            await lockInfo.Lock.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                // Check again in case of contention
-                if (File.Exists(enhancedImagePath))
-                {
-                    return (enhancedImagePath, treatmentRequiresTransparency);
-                }
-
-                Directory.CreateDirectory(Path.GetDirectoryName(enhancedImagePath));
-
-                await ExecuteImageEnhancers(supportedEnhancers, originalImagePath, enhancedImagePath, item, imageType, imageIndex).ConfigureAwait(false);
-
-                return (enhancedImagePath, treatmentRequiresTransparency);
-            }
-            finally
-            {
-                ReleaseLock(enhancedImagePath, lockInfo);
-            }
-        }
-
-        /// <summary>
-        /// Executes the image enhancers.
-        /// </summary>
-        /// <param name="imageEnhancers">The image enhancers.</param>
-        /// <param name="inputPath">The input path.</param>
-        /// <param name="outputPath">The output path.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="imageType">Type of the image.</param>
-        /// <param name="imageIndex">Index of the image.</param>
-        /// <returns>Task{EnhancedImage}.</returns>
-        private static async Task ExecuteImageEnhancers(IEnumerable<IImageEnhancer> imageEnhancers, string inputPath, string outputPath, BaseItem item, ImageType imageType, int imageIndex)
-        {
-            // Run the enhancers sequentially in order of priority
-            foreach (var enhancer in imageEnhancers)
-            {
-                await enhancer.EnhanceImageAsync(item, inputPath, outputPath, imageType, imageIndex).ConfigureAwait(false);
-
-                // Feed the output into the next enhancer as input
-                inputPath = outputPath;
-            }
+            return Task.FromResult((originalImagePath, dateModified));
         }
 
         /// <summary>
@@ -648,7 +499,7 @@ namespace Emby.Drawing
         /// or
         /// uniqueName
         /// or
-        /// fileExtension
+        /// fileExtension.
         /// </exception>
         public string GetCachePath(string path, string uniqueName, string fileExtension)
         {
@@ -681,103 +532,49 @@ namespace Emby.Drawing
         /// <exception cref="ArgumentNullException">
         /// path
         /// or
-        /// filename
+        /// filename.
         /// </exception>
-        public string GetCachePath(string path, string filename)
+        public string GetCachePath(ReadOnlySpan<char> path, ReadOnlySpan<char> filename)
         {
-            if (string.IsNullOrEmpty(path))
+            if (path.IsEmpty)
             {
-                throw new ArgumentNullException(nameof(path));
-            }
-            if (string.IsNullOrEmpty(filename))
-            {
-                throw new ArgumentNullException(nameof(filename));
+                throw new ArgumentException("Path can't be empty.", nameof(path));
             }
 
-            var prefix = filename.Substring(0, 1);
+            if (filename.IsEmpty)
+            {
+                throw new ArgumentException("Filename can't be empty.", nameof(filename));
+            }
 
-            return Path.Combine(path, prefix, filename);
+            var prefix = filename.Slice(0, 1);
+
+            return Path.Join(path, prefix, filename);
         }
 
         /// <inheritdoc />
-        public void CreateImageCollage(ImageCollageOptions options)
+        public void CreateImageCollage(ImageCollageOptions options, string? libraryName)
         {
             _logger.LogInformation("Creating image collage and saving to {Path}", options.OutputPath);
 
-            _imageEncoder.CreateImageCollage(options);
+            _imageEncoder.CreateImageCollage(options, libraryName);
 
             _logger.LogInformation("Completed creation of image collage and saved to {Path}", options.OutputPath);
         }
 
         /// <inheritdoc />
-        public IEnumerable<IImageEnhancer> GetSupportedEnhancers(BaseItem item, ImageType imageType)
-        {
-            foreach (var i in ImageEnhancers)
-            {
-                if (i.Supports(item, imageType))
-                {
-                    yield return i;
-                }
-            }
-        }
-
-
-        private class LockInfo
-        {
-            public SemaphoreSlim Lock = new SemaphoreSlim(1, 1);
-            public int Count = 1;
-        }
-
-        private LockInfo GetLock(string key)
-        {
-            lock (_locks)
-            {
-                if (_locks.TryGetValue(key, out LockInfo info))
-                {
-                    info.Count++;
-                }
-                else
-                {
-                    info = new LockInfo();
-                    _locks[key] = info;
-                }
-                return info;
-            }
-        }
-
-        private void ReleaseLock(string key, LockInfo info)
-        {
-            info.Lock.Release();
-
-            lock (_locks)
-            {
-                info.Count--;
-                if (info.Count <= 0)
-                {
-                    _locks.Remove(key);
-                    info.Lock.Dispose();
-                }
-            }
-        }
-
-        /// <inheritdoc />
         public void Dispose()
-        {
-            _disposed = true;
-
-            var disposable = _imageEncoder as IDisposable;
-            if (disposable != null)
-            {
-                disposable.Dispose();
-            }
-        }
-
-        private void CheckDisposed()
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(GetType().Name);
+                return;
             }
+
+            if (_imageEncoder is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+
+            _disposed = true;
         }
     }
 }

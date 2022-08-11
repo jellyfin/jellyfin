@@ -1,3 +1,7 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -5,35 +9,41 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.MediaEncoder
 {
     public class EncodingManager : IEncodingManager
     {
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IFileSystem _fileSystem;
-        private readonly ILogger _logger;
+        private readonly ILogger<EncodingManager> _logger;
         private readonly IMediaEncoder _encoder;
         private readonly IChapterManager _chapterManager;
         private readonly ILibraryManager _libraryManager;
 
+        /// <summary>
+        /// The first chapter ticks.
+        /// </summary>
+        private static readonly long _firstChapterTicks = TimeSpan.FromSeconds(15).Ticks;
+
         public EncodingManager(
+            ILogger<EncodingManager> logger,
             IFileSystem fileSystem,
-            ILoggerFactory loggerFactory,
             IMediaEncoder encoder,
-            IChapterManager chapterManager, ILibraryManager libraryManager)
+            IChapterManager chapterManager,
+            ILibraryManager libraryManager)
         {
+            _logger = logger;
             _fileSystem = fileSystem;
-            _logger = loggerFactory.CreateLogger(nameof(EncodingManager));
             _encoder = encoder;
             _chapterManager = chapterManager;
             _libraryManager = libraryManager;
@@ -73,16 +83,6 @@ namespace Emby.Server.Implementations.MediaEncoder
                 return false;
             }
 
-            if (video.VideoType == VideoType.Iso)
-            {
-                return false;
-            }
-
-            if (video.VideoType == VideoType.BluRay || video.VideoType == VideoType.Dvd)
-            {
-                return false;
-            }
-
             if (video.IsShortcut)
             {
                 return false;
@@ -97,12 +97,7 @@ namespace Emby.Server.Implementations.MediaEncoder
             return video.DefaultVideoStreamIndex.HasValue;
         }
 
-        /// <summary>
-        /// The first chapter ticks
-        /// </summary>
-        private static readonly long FirstChapterTicks = TimeSpan.FromSeconds(15).Ticks;
-
-        public async Task<bool> RefreshChapterImages(Video video, IDirectoryService directoryService, List<ChapterInfo> chapters, bool extractImages, bool saveChapters, CancellationToken cancellationToken)
+        public async Task<bool> RefreshChapterImages(Video video, IDirectoryService directoryService, IReadOnlyList<ChapterInfo> chapters, bool extractImages, bool saveChapters, CancellationToken cancellationToken)
         {
             if (!IsEligibleForChapterImageExtraction(video))
             {
@@ -126,7 +121,7 @@ namespace Emby.Server.Implementations.MediaEncoder
 
                 var path = GetChapterImagePath(video, chapter.StartPositionTicks);
 
-                if (!currentImages.Contains(path, StringComparer.OrdinalIgnoreCase))
+                if (!currentImages.Contains(path, StringComparison.OrdinalIgnoreCase))
                 {
                     if (extractImages)
                     {
@@ -135,26 +130,30 @@ namespace Emby.Server.Implementations.MediaEncoder
                         try
                         {
                             // Add some time for the first chapter to make sure we don't end up with a black image
-                            var time = chapter.StartPositionTicks == 0 ? TimeSpan.FromTicks(Math.Min(FirstChapterTicks, video.RunTimeTicks ?? 0)) : TimeSpan.FromTicks(chapter.StartPositionTicks);
+                            var time = chapter.StartPositionTicks == 0 ? TimeSpan.FromTicks(Math.Min(_firstChapterTicks, video.RunTimeTicks ?? 0)) : TimeSpan.FromTicks(chapter.StartPositionTicks);
 
-                            var protocol = MediaProtocol.File;
-
-                            var inputPath = MediaEncoderHelpers.GetInputArgument(_fileSystem, video.Path, null, Array.Empty<string>());
+                            var inputPath = video.Path;
 
                             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
                             var container = video.Container;
+                            var mediaSource = new MediaSourceInfo
+                            {
+                                VideoType = video.VideoType,
+                                IsoType = video.IsoType,
+                                Protocol = video.PathProtocol.Value,
+                            };
 
-                            var tempFile = await _encoder.ExtractVideoImage(inputPath, container, protocol, video.GetDefaultVideoStream(), video.Video3DFormat, time, cancellationToken).ConfigureAwait(false);
+                            var tempFile = await _encoder.ExtractVideoImage(inputPath, container, mediaSource, video.GetDefaultVideoStream(), video.Video3DFormat, time, cancellationToken).ConfigureAwait(false);
                             File.Copy(tempFile, path, true);
 
                             try
                             {
                                 _fileSystem.DeleteFile(tempFile);
                             }
-                            catch
+                            catch (IOException ex)
                             {
-
+                                _logger.LogError(ex, "Error deleting temporary chapter image encoding file {Path}", tempFile);
                             }
 
                             chapter.ImagePath = path;
@@ -163,7 +162,7 @@ namespace Emby.Server.Implementations.MediaEncoder
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError(ex, "Error extracting chapter images for {0}", string.Join(",", video.Path));
+                            _logger.LogError(ex, "Error extracting chapter images for {0}", string.Join(',', video.Path));
                             success = false;
                             break;
                         }
@@ -184,7 +183,7 @@ namespace Emby.Server.Implementations.MediaEncoder
 
             if (saveChapters && changesMade)
             {
-                _chapterManager.SaveChapters(video.Id.ToString(), chapters);
+                _chapterManager.SaveChapters(video.Id, chapters);
             }
 
             DeleteDeadImages(currentImages, chapters);
@@ -194,27 +193,26 @@ namespace Emby.Server.Implementations.MediaEncoder
 
         private string GetChapterImagePath(Video video, long chapterPositionTicks)
         {
-            var filename = video.DateModified.Ticks.ToString(_usCulture) + "_" + chapterPositionTicks.ToString(_usCulture) + ".jpg";
+            var filename = video.DateModified.Ticks.ToString(CultureInfo.InvariantCulture) + "_" + chapterPositionTicks.ToString(CultureInfo.InvariantCulture) + ".jpg";
 
             return Path.Combine(GetChapterImagesPath(video), filename);
         }
 
-        private static List<string> GetSavedChapterImages(Video video, IDirectoryService directoryService)
+        private static IReadOnlyList<string> GetSavedChapterImages(Video video, IDirectoryService directoryService)
         {
             var path = GetChapterImagesPath(video);
             if (!Directory.Exists(path))
             {
-                return new List<string>();
+                return Array.Empty<string>();
             }
 
             try
             {
-                return directoryService.GetFilePaths(path)
-                    .ToList();
+                return directoryService.GetFilePaths(path);
             }
             catch (IOException)
             {
-                return new List<string>();
+                return Array.Empty<string>();
             }
         }
 
@@ -222,12 +220,12 @@ namespace Emby.Server.Implementations.MediaEncoder
         {
             var deadImages = images
                 .Except(chapters.Select(i => i.ImagePath).Where(i => !string.IsNullOrEmpty(i)), StringComparer.OrdinalIgnoreCase)
-                .Where(i => BaseItem.SupportedImageExtensions.Contains(Path.GetExtension(i), StringComparer.OrdinalIgnoreCase))
+                .Where(i => BaseItem.SupportedImageExtensions.Contains(Path.GetExtension(i), StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             foreach (var image in deadImages)
             {
-                _logger.LogDebug("Deleting dead chapter image {path}", image);
+                _logger.LogDebug("Deleting dead chapter image {Path}", image);
 
                 try
                 {
@@ -235,7 +233,7 @@ namespace Emby.Server.Implementations.MediaEncoder
                 }
                 catch (IOException ex)
                 {
-                    _logger.LogError(ex, "Error deleting {path}.", image);
+                    _logger.LogError(ex, "Error deleting {Path}.", image);
                 }
             }
         }

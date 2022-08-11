@@ -1,3 +1,7 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 
 namespace MediaBrowser.Controller.Providers
@@ -10,14 +14,14 @@ namespace MediaBrowser.Controller.Providers
         public Guid ItemId { get; set; }
 
         /// <summary>
-        /// If set will only search within the given provider
+        /// Gets or sets the provider name to search within if set.
         /// </summary>
         public string SearchProviderName { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [include disabled providers].
+        /// Gets or sets a value indicating whether disabled providers should be included.
         /// </summary>
-        /// <value><c>true</c> if [include disabled providers]; otherwise, <c>false</c>.</value>
+        /// <value><c>true</c> if disabled providers should be included.</value>
         public bool IncludeDisabledProviders { get; set; }
     }
 }

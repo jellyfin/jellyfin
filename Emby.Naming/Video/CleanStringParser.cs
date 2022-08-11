@@ -1,49 +1,55 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
 namespace Emby.Naming.Video
 {
     /// <summary>
-    /// http://kodi.wiki/view/Advancedsettings.xml#video
+    /// <see href="http://kodi.wiki/view/Advancedsettings.xml#video" />.
     /// </summary>
-    public class CleanStringParser
+    public static class CleanStringParser
     {
-        public CleanStringResult Clean(string name, IEnumerable<Regex> expressions)
+        /// <summary>
+        /// Attempts to extract clean name with regular expressions.
+        /// </summary>
+        /// <param name="name">Name of file.</param>
+        /// <param name="expressions">List of regex to parse name and year from.</param>
+        /// <param name="newName">Parsing result string.</param>
+        /// <returns>True if parsing was successful.</returns>
+        public static bool TryClean([NotNullWhen(true)] string? name, IReadOnlyList<Regex> expressions, out string newName)
         {
-            var hasChanged = false;
-
-            foreach (var exp in expressions)
+            if (string.IsNullOrEmpty(name))
             {
-                var result = Clean(name, exp);
+                newName = string.Empty;
+                return false;
+            }
 
-                if (!string.IsNullOrEmpty(result.Name))
+            // Iteratively apply the regexps to clean the string.
+            bool cleaned = false;
+            for (int i = 0; i < expressions.Count; i++)
+            {
+                if (TryClean(name, expressions[i], out newName))
                 {
-                    name = result.Name;
-                    hasChanged = hasChanged || result.HasChanged;
+                    cleaned = true;
+                    name = newName;
                 }
             }
 
-            return new CleanStringResult
-            {
-                Name = name,
-                HasChanged = hasChanged
-            };
+            newName = cleaned ? name : string.Empty;
+            return cleaned;
         }
 
-        private static CleanStringResult Clean(string name, Regex expression)
+        private static bool TryClean(string name, Regex expression, out string newName)
         {
-            var result = new CleanStringResult();
-
             var match = expression.Match(name);
-
-            if (match.Success)
+            if (match.Success && match.Groups.TryGetValue("cleaned", out var cleaned))
             {
-                result.HasChanged = true;
-                name = name.Substring(0, match.Index);
+                newName = cleaned.Value;
+                return true;
             }
 
-            result.Name = name;
-            return result;
+            newName = string.Empty;
+            return false;
         }
     }
 }

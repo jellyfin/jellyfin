@@ -1,20 +1,22 @@
 #pragma warning disable CS1591
+#pragma warning disable CA1003
 
 using System;
 
 namespace MediaBrowser.Common.Progress
 {
     /// <summary>
-    /// Class ActionableProgress
+    /// Class ActionableProgress.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type for the action parameter.</typeparam>
     public class ActionableProgress<T> : IProgress<T>
     {
         /// <summary>
-        /// The _actions
+        /// The _actions.
         /// </summary>
-        private Action<T> _action;
-        public event EventHandler<T> ProgressChanged;
+        private Action<T>? _action;
+
+        public event EventHandler<T>? ProgressChanged;
 
         /// <summary>
         /// Registers the action.
@@ -30,16 +32,6 @@ namespace MediaBrowser.Common.Progress
             ProgressChanged?.Invoke(this, value);
 
             _action?.Invoke(value);
-        }
-    }
-
-    public class SimpleProgress<T> : IProgress<T>
-    {
-        public event EventHandler<T> ProgressChanged;
-
-        public void Report(T value)
-        {
-            ProgressChanged?.Invoke(this, value);
         }
     }
 }

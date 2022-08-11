@@ -1,11 +1,13 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
@@ -16,20 +18,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {
     public class LiveStream : ILiveStream
     {
-        protected readonly IFileSystem FileSystem;
-        protected readonly IServerApplicationPaths AppPaths;
-        protected readonly IStreamHelper StreamHelper;
-
-        protected string TempFilePath;
-        protected readonly ILogger Logger;
-        protected readonly CancellationTokenSource LiveStreamCancellationTokenSource = new CancellationTokenSource();
+        private readonly IConfigurationManager _configurationManager;
 
         public LiveStream(
             MediaSourceInfo mediaSource,
             TunerHostInfo tuner,
             IFileSystem fileSystem,
             ILogger logger,
-            IServerApplicationPaths appPaths,
+            IConfigurationManager configurationManager,
             IStreamHelper streamHelper)
         {
             OriginalMediaSource = mediaSource;
@@ -44,22 +40,33 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 TunerHostId = tuner.Id;
             }
 
-            AppPaths = appPaths;
+            _configurationManager = configurationManager;
             StreamHelper = streamHelper;
 
             ConsumerCount = 1;
             SetTempFilePath("ts");
         }
 
-        protected virtual int EmptyReadLimit => 1000;
+        protected IFileSystem FileSystem { get; }
+
+        protected IStreamHelper StreamHelper { get; }
+
+        protected ILogger Logger { get; }
+
+        protected CancellationTokenSource LiveStreamCancellationTokenSource { get; } = new CancellationTokenSource();
+
+        protected string TempFilePath { get; set; }
 
         public MediaSourceInfo OriginalMediaSource { get; set; }
+
         public MediaSourceInfo MediaSource { get; set; }
 
         public int ConsumerCount { get; set; }
 
         public string OriginalStreamId { get; set; }
+
         public bool EnableStreamSharing { get; set; }
+
         public string UniqueId { get; }
 
         public string TunerHostId { get; }
@@ -68,7 +75,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         protected void SetTempFilePath(string extension)
         {
-            TempFilePath = Path.Combine(AppPaths.GetTranscodingTempPath(), UniqueId + "." + extension);
+            TempFilePath = Path.Combine(_configurationManager.GetTranscodePath(), UniqueId + "." + extension);
         }
 
         public virtual Task Open(CancellationToken openCancellationToken)
@@ -88,122 +95,48 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             return Task.CompletedTask;
         }
 
-        protected FileStream GetInputStream(string path, bool allowAsyncFileRead)
-            => new FileStream(
-                path,
+        public Stream GetStream()
+        {
+            var stream = new FileStream(
+                TempFilePath,
                 FileMode.Open,
                 FileAccess.Read,
                 FileShare.ReadWrite,
-                StreamDefaults.DefaultFileStreamBufferSize,
-                allowAsyncFileRead ? FileOptions.SequentialScan | FileOptions.Asynchronous : FileOptions.SequentialScan);
+                IODefaults.FileStreamBufferSize,
+                FileOptions.SequentialScan | FileOptions.Asynchronous);
 
-        public Task DeleteTempFiles()
-        {
-            return DeleteTempFiles(GetStreamFilePaths());
+            bool seekFile = (DateTime.UtcNow - DateOpened).TotalSeconds > 10;
+            if (seekFile)
+            {
+                TrySeek(stream, -20000);
+            }
+
+            return stream;
         }
 
-        protected async Task DeleteTempFiles(IEnumerable<string> paths, int retryCount = 0)
+        protected async Task DeleteTempFiles(string path, int retryCount = 0)
         {
             if (retryCount == 0)
             {
-                Logger.LogInformation("Deleting temp files {0}", paths);
+                Logger.LogInformation("Deleting temp file {FilePath}", path);
             }
 
-            var failedFiles = new List<string>();
-
-            foreach (var path in paths)
+            try
             {
-                if (!File.Exists(path))
+                FileSystem.DeleteFile(path);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error deleting file {FilePath}", path);
+                if (retryCount <= 40)
                 {
-                    continue;
-                }
-
-                try
-                {
-                    FileSystem.DeleteFile(path);
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Error deleting file {path}", path);
-                    failedFiles.Add(path);
+                    await Task.Delay(500).ConfigureAwait(false);
+                    await DeleteTempFiles(path, retryCount + 1).ConfigureAwait(false);
                 }
             }
-
-            if (failedFiles.Count > 0 && retryCount <= 40)
-            {
-                await Task.Delay(500).ConfigureAwait(false);
-                await DeleteTempFiles(failedFiles, retryCount + 1).ConfigureAwait(false);
-            }
         }
 
-        protected virtual List<string> GetStreamFilePaths()
-        {
-            return new List<string> { TempFilePath };
-        }
-
-        public async Task CopyToAsync(Stream stream, CancellationToken cancellationToken)
-        {
-            cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, LiveStreamCancellationTokenSource.Token).Token;
-
-            // use non-async filestream on windows along with read due to https://github.com/dotnet/corefx/issues/6039
-            var allowAsync = Environment.OSVersion.Platform != PlatformID.Win32NT;
-
-            bool seekFile = (DateTime.UtcNow - DateOpened).TotalSeconds > 10;
-
-            var nextFileInfo = GetNextFile(null);
-            var nextFile = nextFileInfo.file;
-            var isLastFile = nextFileInfo.isLastFile;
-
-            while (!string.IsNullOrEmpty(nextFile))
-            {
-                var emptyReadLimit = isLastFile ? EmptyReadLimit : 1;
-
-                await CopyFile(nextFile, seekFile, emptyReadLimit, allowAsync, stream, cancellationToken).ConfigureAwait(false);
-
-                seekFile = false;
-                nextFileInfo = GetNextFile(nextFile);
-                nextFile = nextFileInfo.file;
-                isLastFile = nextFileInfo.isLastFile;
-            }
-
-            Logger.LogInformation("Live Stream ended.");
-        }
-
-        private (string file, bool isLastFile) GetNextFile(string currentFile)
-        {
-            var files = GetStreamFilePaths();
-
-            if (string.IsNullOrEmpty(currentFile))
-            {
-                return (files.Last(), true);
-            }
-
-            var nextIndex = files.FindIndex(i => string.Equals(i, currentFile, StringComparison.OrdinalIgnoreCase)) + 1;
-
-            var isLastFile = nextIndex == files.Count - 1;
-
-            return (files.ElementAtOrDefault(nextIndex), isLastFile);
-        }
-
-        private async Task CopyFile(string path, bool seekFile, int emptyReadLimit, bool allowAsync, Stream stream, CancellationToken cancellationToken)
-        {
-            using (var inputStream = GetInputStream(path, allowAsync))
-            {
-                if (seekFile)
-                {
-                    TrySeek(inputStream, -20000);
-                }
-
-                await StreamHelper.CopyToAsync(
-                    inputStream,
-                    stream,
-                    StreamDefaults.DefaultCopyToBufferSize,
-                    emptyReadLimit,
-                    cancellationToken).ConfigureAwait(false);
-            }
-        }
-
-        private void TrySeek(FileStream stream, long offset)
+        private void TrySeek(Stream stream, long offset)
         {
             if (!stream.CanSeek)
             {
@@ -216,11 +149,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
             catch (IOException)
             {
-
             }
             catch (ArgumentException)
             {
-
             }
             catch (Exception ex)
             {

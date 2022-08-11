@@ -1,13 +1,23 @@
-#pragma warning disable CS1591
+#nullable disable
 
+using System;
 using MediaBrowser.Model.Updates;
 
 namespace MediaBrowser.Common.Updates
 {
-    public class InstallationEventArgs
+    /// <summary>
+    /// Defines the <see cref="InstallationEventArgs" />.
+    /// </summary>
+    public class InstallationEventArgs : EventArgs
     {
+        /// <summary>
+        /// Gets or sets the <see cref="InstallationInfo"/>.
+        /// </summary>
         public InstallationInfo InstallationInfo { get; set; }
 
-        public PackageVersionInfo PackageVersionInfo { get; set; }
+        /// <summary>
+        /// Gets or sets the <see cref="VersionInfo"/>.
+        /// </summary>
+        public VersionInfo VersionInfo { get; set; }
     }
 }

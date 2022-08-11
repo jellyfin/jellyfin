@@ -1,9 +1,13 @@
+#nullable disable
+
+#pragma warning disable CA1711, CS1591
+
 using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Controller.Library
 {
     /// <summary>
-    /// Class ItemChangeEventArgs
+    /// Class ItemChangeEventArgs.
     /// </summary>
     public class ItemChangeEventArgs
     {

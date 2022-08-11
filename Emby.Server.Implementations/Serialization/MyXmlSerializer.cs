@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 
 namespace Emby.Server.Implementations.Serialization
@@ -18,7 +19,10 @@ namespace Emby.Server.Implementations.Serialization
             new ConcurrentDictionary<string, XmlSerializer>();
 
         private static XmlSerializer GetSerializer(Type type)
-            => _serializers.GetOrAdd(type.FullName, _ => new XmlSerializer(type));
+            => _serializers.GetOrAdd(
+                type.FullName ?? throw new ArgumentException($"Invalid type {type}."),
+                static (_, t) => new XmlSerializer(t),
+                type);
 
         /// <summary>
         /// Serializes to writer.
@@ -37,7 +41,7 @@ namespace Emby.Server.Implementations.Serialization
         /// <param name="type">The type.</param>
         /// <param name="stream">The stream.</param>
         /// <returns>System.Object.</returns>
-        public object DeserializeFromStream(Type type, Stream stream)
+        public object? DeserializeFromStream(Type type, Stream stream)
         {
             using (var reader = XmlReader.Create(stream))
             {
@@ -53,10 +57,11 @@ namespace Emby.Server.Implementations.Serialization
         /// <param name="stream">The stream.</param>
         public void SerializeToStream(object obj, Stream stream)
         {
-            using (var writer = new XmlTextWriter(stream, null))
+            using (var writer = new StreamWriter(stream, null, IODefaults.StreamWriterBufferSize, true))
+            using (var textWriter = new XmlTextWriter(writer))
             {
-                writer.Formatting = Formatting.Indented;
-                SerializeToWriter(obj, writer);
+                textWriter.Formatting = Formatting.Indented;
+                SerializeToWriter(obj, textWriter);
             }
         }
 
@@ -67,7 +72,7 @@ namespace Emby.Server.Implementations.Serialization
         /// <param name="file">The file.</param>
         public void SerializeToFile(object obj, string file)
         {
-            using (var stream = new FileStream(file, FileMode.Create))
+            using (var stream = new FileStream(file, FileMode.Create, FileAccess.Write))
             {
                 SerializeToStream(obj, stream);
             }
@@ -79,7 +84,7 @@ namespace Emby.Server.Implementations.Serialization
         /// <param name="type">The type.</param>
         /// <param name="file">The file.</param>
         /// <returns>System.Object.</returns>
-        public object DeserializeFromFile(Type type, string file)
+        public object? DeserializeFromFile(Type type, string file)
         {
             using (var stream = File.OpenRead(file))
             {
@@ -93,9 +98,9 @@ namespace Emby.Server.Implementations.Serialization
         /// <param name="type">The type.</param>
         /// <param name="buffer">The buffer.</param>
         /// <returns>System.Object.</returns>
-        public object DeserializeFromBytes(Type type, byte[] buffer)
+        public object? DeserializeFromBytes(Type type, byte[] buffer)
         {
-            using (var stream = new MemoryStream(buffer))
+            using (var stream = new MemoryStream(buffer, 0, buffer.Length, false, true))
             {
                 return DeserializeFromStream(type, stream);
             }

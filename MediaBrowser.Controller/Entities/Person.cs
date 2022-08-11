@@ -1,9 +1,12 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using MediaBrowser.Controller.Extensions;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
@@ -13,6 +16,26 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Person : BaseItem, IItemByName, IHasLookupInfo<PersonLookupInfo>
     {
+        /// <summary>
+        /// Gets the folder containing the item.
+        /// If the item is a folder, it returns the folder itself.
+        /// </summary>
+        /// <value>The containing folder path.</value>
+        [JsonIgnore]
+        public override string ContainingFolderPath => Path;
+
+        /// <summary>
+        /// Gets a value indicating whether to enable alpha numeric sorting.
+        /// </summary>
+        [JsonIgnore]
+        public override bool EnableAlphaNumericSorting => false;
+
+        [JsonIgnore]
+        public override bool SupportsPeople => false;
+
+        [JsonIgnore]
+        public override bool SupportsAncestors => false;
+
         public override List<string> GetUserDataKeys()
         {
             var list = base.GetUserDataKeys();
@@ -20,6 +43,7 @@ namespace MediaBrowser.Controller.Entities
             list.Insert(0, GetType().Name + "-" + (Name ?? string.Empty).RemoveDiacritics());
             return list;
         }
+
         public override string CreatePresentationUniqueKey()
         {
             return GetUserDataKeys()[0];
@@ -45,14 +69,6 @@ namespace MediaBrowser.Controller.Entities
             return LibraryManager.GetItemList(query);
         }
 
-        /// <summary>
-        /// Returns the folder containing the item.
-        /// If the item is a folder, it returns the folder itself
-        /// </summary>
-        /// <value>The containing folder path.</value>
-        [JsonIgnore]
-        public override string ContainingFolderPath => Path;
-
         public override bool CanDelete()
         {
             return false;
@@ -62,15 +78,6 @@ namespace MediaBrowser.Controller.Entities
         {
             return true;
         }
-
-        [JsonIgnore]
-        public override bool EnableAlphaNumericSorting => false;
-
-        [JsonIgnore]
-        public override bool SupportsPeople => false;
-
-        [JsonIgnore]
-        public override bool SupportsAncestors => false;
 
         public static string GetPath(string name)
         {
@@ -115,15 +122,18 @@ namespace MediaBrowser.Controller.Entities
                 Logger.LogDebug("{0} path has changed from {1} to {2}", GetType().Name, Path, newPath);
                 return true;
             }
+
             return base.RequiresRefresh();
         }
 
         /// <summary>
-        /// This is called before any metadata refresh and returns true or false indicating if changes were made
+        /// This is called before any metadata refresh and returns true or false indicating if changes were made.
         /// </summary>
-        public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
+        /// <param name="replaceAllMetadata"><c>true</c> to replace all metadata, <c>false</c> to not.</param>
+        /// <returns><c>true</c> if changes were made, <c>false</c> if not.</returns>
+        public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {
-            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetdata);
+            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetadata);
 
             var newPath = GetRebasedPath();
             if (!string.Equals(Path, newPath, StringComparison.Ordinal))
@@ -133,59 +143,6 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return hasChanges;
-        }
-    }
-
-    /// <summary>
-    /// This is the small Person stub that is attached to BaseItems
-    /// </summary>
-    public class PersonInfo : IHasProviderIds
-    {
-        public PersonInfo()
-        {
-            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
-
-        public Guid ItemId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name { get; set; }
-        /// <summary>
-        /// Gets or sets the role.
-        /// </summary>
-        /// <value>The role.</value>
-        public string Role { get; set; }
-        /// <summary>
-        /// Gets or sets the type.
-        /// </summary>
-        /// <value>The type.</value>
-        public string Type { get; set; }
-
-        /// <summary>
-        /// Gets or sets the sort order - ascending
-        /// </summary>
-        /// <value>The sort order.</value>
-        public int? SortOrder { get; set; }
-
-        public string ImageUrl { get; set; }
-
-        public Dictionary<string, string> ProviderIds { get; set; }
-
-        /// <summary>
-        /// Returns a <see cref="string" /> that represents this instance.
-        /// </summary>
-        /// <returns>A <see cref="string" /> that represents this instance.</returns>
-        public override string ToString()
-        {
-            return Name;
-        }
-
-        public bool IsType(string type)
-        {
-            return string.Equals(Type, type, StringComparison.OrdinalIgnoreCase) || string.Equals(Role, type, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

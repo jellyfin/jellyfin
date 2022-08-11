@@ -1,3 +1,7 @@
+#nullable disable
+
+#pragma warning disable CA1002, CA2227, CS1591
+
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Controller.Entities;
@@ -6,7 +10,7 @@ using MediaBrowser.Model.Entities;
 namespace MediaBrowser.Controller.Library
 {
     /// <summary>
-    /// Class UserDataSaveEventArgs
+    /// Class UserDataSaveEventArgs.
     /// </summary>
     public class UserDataSaveEventArgs : EventArgs
     {

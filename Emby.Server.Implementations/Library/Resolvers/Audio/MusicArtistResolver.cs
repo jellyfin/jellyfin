@@ -1,31 +1,36 @@
+#nullable disable
+
 using System;
 using System.Linq;
-using MediaBrowser.Controller.Configuration;
+using System.Threading.Tasks;
+using Emby.Naming.Common;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Resolvers.Audio
 {
     /// <summary>
-    /// Class MusicArtistResolver
+    /// Class MusicArtistResolver.
     /// </summary>
     public class MusicArtistResolver : ItemResolver<MusicArtist>
     {
-        private readonly ILogger _logger;
-        private readonly IFileSystem _fileSystem;
-        private readonly ILibraryManager _libraryManager;
-        private readonly IServerConfigurationManager _config;
+        private readonly ILogger<MusicAlbumResolver> _logger;
+        private NamingOptions _namingOptions;
 
-        public MusicArtistResolver(ILogger logger, IFileSystem fileSystem, ILibraryManager libraryManager, IServerConfigurationManager config)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MusicArtistResolver"/> class.
+        /// </summary>
+        /// <param name="logger">The logger for the created <see cref="MusicAlbumResolver"/> instances.</param>
+        /// <param name="namingOptions">The naming options.</param>
+        public MusicArtistResolver(
+            ILogger<MusicAlbumResolver> logger,
+            NamingOptions namingOptions)
         {
             _logger = logger;
-            _fileSystem = fileSystem;
-            _libraryManager = libraryManager;
-            _config = config;
+            _namingOptions = namingOptions;
         }
 
         /// <summary>
@@ -41,7 +46,10 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// <returns>MusicArtist.</returns>
         protected override MusicArtist Resolve(ItemResolveArgs args)
         {
-            if (!args.IsDirectory) return null;
+            if (!args.IsDirectory)
+            {
+                return null;
+            }
 
             // Don't allow nested artists
             if (args.HasParent<MusicArtist>() || args.HasParent<MusicAlbum>())
@@ -64,21 +72,29 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 return new MusicArtist();
             }
 
-            if (_config.Configuration.EnableSimpleArtistDetection)
+            // Avoid mis-identifying top folders
+            if (args.Parent.IsRoot)
             {
                 return null;
             }
 
-            // Avoid mis-identifying top folders
-            if (args.Parent.IsRoot) return null;
-
             var directoryService = args.DirectoryService;
 
-            var albumResolver = new MusicAlbumResolver(_logger, _fileSystem, _libraryManager);
+            var albumResolver = new MusicAlbumResolver(_logger, _namingOptions);
 
             // If we contain an album assume we are an artist folder
-            return args.FileSystemChildren.Where(i => i.IsDirectory).Any(i => albumResolver.IsMusicAlbum(i.FullName, directoryService, args.GetLibraryOptions())) ? new MusicArtist() : null;
-        }
+            var directories = args.FileSystemChildren.Where(i => i.IsDirectory);
 
+            var result = Parallel.ForEach(directories, (fileSystemInfo, state) =>
+            {
+                if (albumResolver.IsMusicAlbum(fileSystemInfo.FullName, directoryService))
+                {
+                    // stop once we see a music album
+                    state.Stop();
+                }
+            });
+
+            return !result.IsCompleted ? new MusicArtist() : null;
+        }
     }
 }

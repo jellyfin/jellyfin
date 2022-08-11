@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 namespace MediaBrowser.Model.Session
 {
     /// <summary>
@@ -37,10 +39,15 @@ namespace MediaBrowser.Model.Session
         SetRepeatMode = 29,
         ChannelUp = 30,
         ChannelDown = 31,
-        SetMaxStreamingBitrate = 31,
         Guide = 32,
         ToggleStats = 33,
         PlayMediaSource = 34,
-        PlayTrailers = 35
+        PlayTrailers = 35,
+        SetShuffleQueue = 36,
+        PlayState = 37,
+        PlayNext = 38,
+        ToggleOsdMenu = 39,
+        Play = 40,
+        SetMaxStreamingBitrate = 41
     }
 }

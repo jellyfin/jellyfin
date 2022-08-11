@@ -1,3 +1,5 @@
+#nullable disable
+
 using System.Net;
 
 namespace MediaBrowser.Model.Net
@@ -8,19 +10,23 @@ namespace MediaBrowser.Model.Net
     public sealed class SocketReceiveResult
     {
         /// <summary>
-        /// The buffer to place received data into.
+        /// Gets or sets the buffer to place received data into.
         /// </summary>
         public byte[] Buffer { get; set; }
 
         /// <summary>
-        /// The number of bytes received.
+        /// Gets or sets the number of bytes received.
         /// </summary>
         public int ReceivedBytes { get; set; }
 
         /// <summary>
-        /// The <see cref="IPEndPoint"/> the data was received from.
+        /// Gets or sets the <see cref="IPEndPoint"/> the data was received from.
         /// </summary>
         public IPEndPoint RemoteEndPoint { get; set; }
+
+        /// <summary>
+        /// Gets or sets the local <see cref="IPAddress"/>.
+        /// </summary>
         public IPAddress LocalIPAddress { get; set; }
     }
 }
