@@ -145,9 +145,11 @@ namespace Jellyfin.Drawing.Skia
         /// <exception cref="SkiaCodecException">The file at the specified path could not be used to generate a codec.</exception>
         public string GetImageBlurHash(int xComp, int yComp, string path)
         {
-            if (path == null)
+            ArgumentNullException.ThrowIfNull(path, nameof(path));
+
+            if (path.Length == 0)
             {
-                throw new ArgumentNullException(nameof(path));
+                throw new ArgumentException("String can't be empty", nameof(path));
             }
 
             var extension = Path.GetExtension(path.AsSpan()).TrimStart('.');

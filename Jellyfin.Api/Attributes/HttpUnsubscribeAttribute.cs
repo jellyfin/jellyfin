@@ -25,11 +25,6 @@ namespace Jellyfin.Api.Attributes
         /// <param name="template">The route template. May not be null.</param>
         public HttpUnsubscribeAttribute(string template)
             : base(_supportedMethods, template)
-        {
-            if (template == null)
-            {
-                throw new ArgumentNullException(nameof(template));
-            }
-        }
+            => ArgumentNullException.ThrowIfNull(template, nameof(template));
     }
 }
