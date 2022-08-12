@@ -1152,16 +1152,15 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (state.SubtitleStream.IsExternal)
             {
-                var subtitlePath = state.SubtitleStream.Path;
                 var charsetParam = string.Empty;
 
                 if (!string.IsNullOrEmpty(state.SubtitleStream.Language))
                 {
                     var charenc = _subtitleEncoder.GetSubtitleFileCharacterSet(
-                        subtitlePath,
-                        state.SubtitleStream.Language,
-                        state.MediaSource.Protocol,
-                        CancellationToken.None).GetAwaiter().GetResult();
+                            state.SubtitleStream,
+                            state.SubtitleStream.Language,
+                            state.MediaSource,
+                            CancellationToken.None).GetAwaiter().GetResult();
 
                     if (!string.IsNullOrEmpty(charenc))
                     {
@@ -1173,7 +1172,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return string.Format(
                     CultureInfo.InvariantCulture,
                     "subtitles=f='{0}'{1}{2}{3}{4}{5}",
-                    _mediaEncoder.EscapeSubtitleFilterPath(subtitlePath),
+                    _mediaEncoder.EscapeSubtitleFilterPath(state.SubtitleStream.Path),
                     charsetParam,
                     alphaParam,
                     sub2videoParam,
@@ -5536,7 +5535,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return index;
                 }
 
-                 if (string.Equals(currentMediaStream.Path, streamToFind.Path, StringComparison.Ordinal))
+                if (string.Equals(currentMediaStream.Path, streamToFind.Path, StringComparison.Ordinal))
                 {
                     index++;
                 }
