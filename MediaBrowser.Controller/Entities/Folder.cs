@@ -860,7 +860,7 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            if (query.AdjacentTo.HasValue)
+            if (query.AdjacentTo.HasValue && !query.AdjacentTo.Value.Equals(default))
             {
                 Logger.LogDebug("Query requires post-filtering due to AdjacentTo");
                 return true;
@@ -1029,7 +1029,7 @@ namespace MediaBrowser.Controller.Entities
             #pragma warning restore CA1309
 
             // This must be the last filter
-            if (query.AdjacentTo.HasValue)
+            if (query.AdjacentTo.HasValue && !query.AdjacentTo.Value.Equals(default))
             {
                 items = UserViewBuilder.FilterForAdjacency(items.ToList(), query.AdjacentTo.Value);
             }

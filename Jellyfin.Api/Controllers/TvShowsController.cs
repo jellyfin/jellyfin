@@ -278,7 +278,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             // This must be the last filter
-            if (adjacentTo.HasValue)
+            if (adjacentTo.HasValue && !adjacentTo.Value.Equals(default))
             {
                 episodes = UserViewBuilder.FilterForAdjacency(episodes, adjacentTo.Value).ToList();
             }
