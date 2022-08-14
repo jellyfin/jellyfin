@@ -77,7 +77,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-            [FromQuery] string? seriesId,
+            [FromQuery] Guid? seriesId,
             [FromQuery] Guid? parentId,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,

@@ -43,9 +43,9 @@ namespace Emby.Server.Implementations.TV
             }
 
             string presentationUniqueKey = null;
-            if (!string.IsNullOrEmpty(query.SeriesId))
+            if (query.SeriesId.HasValue && !query.SeriesId.Value.Equals(default))
             {
-                if (_libraryManager.GetItemById(query.SeriesId) is Series series)
+                if (_libraryManager.GetItemById(query.SeriesId.Value) is Series series)
                 {
                     presentationUniqueKey = GetUniqueSeriesKey(series);
                 }
@@ -93,9 +93,9 @@ namespace Emby.Server.Implementations.TV
 
             string presentationUniqueKey = null;
             int? limit = null;
-            if (!string.IsNullOrEmpty(request.SeriesId))
+            if (request.SeriesId.HasValue && !request.SeriesId.Value.Equals(default))
             {
-                if (_libraryManager.GetItemById(request.SeriesId) is Series series)
+                if (_libraryManager.GetItemById(request.SeriesId.Value) is Series series)
                 {
                     presentationUniqueKey = GetUniqueSeriesKey(series);
                     limit = 1;
@@ -153,7 +153,7 @@ namespace Emby.Server.Implementations.TV
 
             // If viewing all next up for all series, remove first episodes
             // But if that returns empty, keep those first episodes (avoid completely empty view)
-            var alwaysEnableFirstEpisode = !string.IsNullOrEmpty(request.SeriesId);
+            var alwaysEnableFirstEpisode = request.SeriesId.HasValue && !request.SeriesId.Value.Equals(default);
             var anyFound = false;
 
             return allNextUp
