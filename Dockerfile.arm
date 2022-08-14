@@ -64,7 +64,7 @@ ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 # Discard objs - may cause failures if exists
 RUN find . -type d -name obj | xargs -r rm -r
 # Build
-RUN dotnet publish Jellyfin.Server --configuration Release --output="/jellyfin" --self-contained --runtime linux-arm "-p:DebugSymbols=false;DebugType=none"
+RUN dotnet publish Jellyfin.Server --configuration Release --output="/jellyfin" --self-contained --runtime linux-arm -p:DebugSymbols=false -p:DebugType=none
 
 FROM app
 
