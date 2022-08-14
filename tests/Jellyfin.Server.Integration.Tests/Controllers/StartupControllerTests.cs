@@ -62,7 +62,9 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
 
             using var contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             var user = await JsonSerializer.DeserializeAsync<StartupUserDto>(contentStream, _jsonOptions).ConfigureAwait(false);
-            Assert.NotEmpty(user!.Name);
+            Assert.NotNull(user);
+            Assert.NotNull(user.Name);
+            Assert.NotEmpty(user.Name);
             Assert.Null(user.Password);
         }
 
@@ -87,7 +89,9 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
 
             var contentStream = await getResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
             var newUser = await JsonSerializer.DeserializeAsync<StartupUserDto>(contentStream, _jsonOptions).ConfigureAwait(false);
-            Assert.Equal(user.Name, newUser!.Name);
+            Assert.NotNull(newUser);
+            Assert.Equal(user.Name, newUser.Name);
+            Assert.NotNull(newUser.Password);
             Assert.NotEmpty(newUser.Password);
             Assert.NotEqual(user.Password, newUser.Password);
         }

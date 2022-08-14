@@ -19,7 +19,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
 {
     public class VideoImageProviderTests
     {
-        private static TheoryData<Video> GetImage_UnsupportedInput_ReturnsNoImage_TestData()
+        public static TheoryData<Video> GetImage_UnsupportedInput_ReturnsNoImage_TestData()
         {
             return new()
             {

@@ -44,7 +44,7 @@ namespace Jellyfin.Providers.Tests.Manager
             ValidateImages_Test(ImageType.Primary, 0, true, 0, false, 0);
         }
 
-        private static TheoryData<ImageType, int> GetImageTypesWithCount()
+        public static TheoryData<ImageType, int> GetImageTypesWithCount()
         {
             var theoryTypes = new TheoryData<ImageType, int>
             {
