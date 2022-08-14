@@ -594,6 +594,10 @@ namespace MediaBrowser.Model.Entities
                 <= 426 when Height <= 240 => IsInterlaced ? "240i" : "240p",
                 // 640x360 (16:9 square pixel format)
                 <= 640 when Height <= 360 => IsInterlaced ? "360i" : "360p",
+                // 682x384 (16:9 square pixel format)
+                <= 682 when Height <= 384 => IsInterlaced ? "384i" : "384p",
+                // 720x404 (16:9 square pixel format)
+                <= 720 when Height <= 404 => IsInterlaced ? "404i" : "404p",
                 // 854x480 (16:9 square pixel format)
                 <= 854 when Height <= 480 => IsInterlaced ? "480i" : "480p",
                 // 960x544 (16:9 square pixel format)
