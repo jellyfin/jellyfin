@@ -433,9 +433,9 @@ namespace MediaBrowser.Controller.Entities
             var user = query.User;
 
             // This must be the last filter
-            if (!string.IsNullOrEmpty(query.AdjacentTo))
+            if (query.AdjacentTo.HasValue && !query.AdjacentTo.Value.Equals(default))
             {
-                items = FilterForAdjacency(items.ToList(), query.AdjacentTo);
+                items = FilterForAdjacency(items.ToList(), query.AdjacentTo.Value);
             }
 
             return SortAndPage(items, totalRecordLimit, query, libraryManager, true);
@@ -985,10 +985,9 @@ namespace MediaBrowser.Controller.Entities
             return _userViewManager.GetUserSubView(parent.Id, type, localizationKey, sortName);
         }
 
-        public static IEnumerable<BaseItem> FilterForAdjacency(List<BaseItem> list, string adjacentToId)
+        public static IEnumerable<BaseItem> FilterForAdjacency(List<BaseItem> list, Guid adjacentTo)
         {
-            var adjacentToIdGuid = new Guid(adjacentToId);
-            var adjacentToItem = list.FirstOrDefault(i => i.Id.Equals(adjacentToIdGuid));
+            var adjacentToItem = list.FirstOrDefault(i => i.Id.Equals(adjacentTo));
 
             var index = list.IndexOf(adjacentToItem);
 
@@ -1005,7 +1004,7 @@ namespace MediaBrowser.Controller.Entities
                 nextId = list[index + 1].Id;
             }
 
-            return list.Where(i => i.Id.Equals(previousId) || i.Id.Equals(nextId) || i.Id.Equals(adjacentToIdGuid));
+            return list.Where(i => i.Id.Equals(previousId) || i.Id.Equals(nextId) || i.Id.Equals(adjacentTo));
         }
     }
 }
