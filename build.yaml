@@ -1,7 +1,7 @@
 ---
 # We just wrap `build` so this is really it
 name: "jellyfin"
-version: "10.8.3"
+version: "10.8.4"
 packages:
   - debian.amd64
   - debian.arm64
