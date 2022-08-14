@@ -126,7 +126,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? hasSubtitles,
             [FromQuery] bool? hasSpecialFeature,
             [FromQuery] bool? hasTrailer,
-            [FromQuery] string? adjacentTo,
+            [FromQuery] Guid? adjacentTo,
             [FromQuery] int? parentIndexNumber,
             [FromQuery] bool? hasParentalRating,
             [FromQuery] bool? isHd,
