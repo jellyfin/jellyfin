@@ -68,7 +68,7 @@ export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export PATH=$PATH:/usr/local/bin
 # cannot use --output due to https://github.com/dotnet/sdk/issues/22220
 dotnet publish --configuration Release --self-contained --runtime %{dotnet_runtime} \
-    "-p:DebugSymbols=false;DebugType=none" Jellyfin.Server
+    -p:DebugSymbols=false -p:DebugType=none Jellyfin.Server
 
 
 %install
