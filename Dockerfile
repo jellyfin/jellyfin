@@ -72,7 +72,7 @@ COPY . .
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 # because of changes in docker and systemd we need to not build in parallel at the moment
 # see https://success.docker.com/article/how-to-reserve-resource-temporarily-unavailable-errors-due-to-tasksmax-setting
-RUN dotnet publish Jellyfin.Server --disable-parallel --configuration Release --output="/jellyfin" --self-contained --runtime linux-x64 "-p:DebugSymbols=false;DebugType=none"
+RUN dotnet publish Jellyfin.Server --disable-parallel --configuration Release --output="/jellyfin" --self-contained --runtime linux-x64 -p:DebugSymbols=false -p:DebugType=none
 
 FROM app
 

@@ -23,7 +23,7 @@ fi
 output_dir="dist/jellyfin-server_${version}"
 
 # Build binary
-dotnet publish Jellyfin.Server --configuration Release --self-contained --runtime win-x64 --output ${output_dir}/ "-p:DebugSymbols=false;DebugType=none;UseAppHost=true"
+dotnet publish Jellyfin.Server --configuration Release --self-contained --runtime win-x64 --output ${output_dir}/ -p:DebugSymbols=false -p:DebugType=none -p:UseAppHost=true
 
 # Prepare addins
 addin_build_dir="$( mktemp -d )"
