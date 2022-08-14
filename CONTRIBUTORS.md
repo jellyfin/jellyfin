@@ -157,6 +157,7 @@
  - [jonas-resch](https://github.com/jonas-resch)
  - [vgambier](https://github.com/vgambier)
  - [MinecraftPlaye](https://github.com/MinecraftPlaye)
+ - [scottpk](https://github.com/scottpk)
 
 # Emby Contributors
 
