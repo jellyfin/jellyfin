@@ -606,7 +606,7 @@ namespace MediaBrowser.Model.Entities
                 <= 1024 when Height <= 576 => IsInterlaced ? "576i" : "576p",
                 // 1280x720
                 <= 1280 when Height <= 962 => IsInterlaced ? "720i" : "720p",
-                // 2560x1080 (FHD ultra wide 21:9) using 1440px width to accomodate WQHD
+                // 2560x1080 (FHD ultra wide 21:9) using 1440px width to accommodate WQHD
                 <= 2560 when Height <= 1440 => IsInterlaced ? "1080i" : "1080p",
                 // 4K
                 <= 4096 when Height <= 3072 => "4K",

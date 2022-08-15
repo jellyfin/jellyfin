@@ -194,7 +194,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Gets the name of the output video codec.
         /// </summary>
-        /// <param name="state">Encording state.</param>
+        /// <param name="state">Encoding state.</param>
         /// <param name="encodingOptions">Encoding options.</param>
         /// <returns>Encoder string.</returns>
         public string GetVideoEncoder(EncodingJobInfo state, EncodingOptions encodingOptions)
@@ -1980,7 +1980,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
-            // Cap the max target bitrate to intMax/2 to satisify the bufsize=bitrate*2.
+            // Cap the max target bitrate to intMax/2 to satisfy the bufsize=bitrate*2.
             return Math.Min(bitrate ?? 0, int.MaxValue / 2);
         }
 

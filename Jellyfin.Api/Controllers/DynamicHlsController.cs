@@ -121,7 +121,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="deviceProfileId">Optional. The dlna device profile id to utilize.</param>
         /// <param name="playSessionId">The play session id.</param>
         /// <param name="segmentContainer">The segment container.</param>
-        /// <param name="segmentLength">The segment lenght.</param>
+        /// <param name="segmentLength">The segment length.</param>
         /// <param name="minSegments">The minimum number of segments.</param>
         /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
         /// <param name="deviceId">The device id of the client requesting. Used to stop encoding processes when needed.</param>
@@ -1832,7 +1832,7 @@ namespace Jellyfin.Api.Controllers
                 // Set the key frame params for video encoding to match the hls segment time.
                 args += _encodingHelper.GetHlsVideoKeyFrameArguments(state, codec, state.SegmentLength, isEventPlaylist, startNumber);
 
-                // Currenly b-frames in libx265 breaks the FMP4-HLS playback on iOS, disable it for now.
+                // Currently b-frames in libx265 breaks the FMP4-HLS playback on iOS, disable it for now.
                 if (string.Equals(codec, "libx265", StringComparison.OrdinalIgnoreCase))
                 {
                     args += " -bf 0";

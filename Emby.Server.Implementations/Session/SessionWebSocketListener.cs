@@ -37,7 +37,7 @@ namespace Emby.Server.Implementations.Session
         private const float ForceKeepAliveFactor = 0.75f;
 
         /// <summary>
-        /// Lock used for accesing the KeepAlive cancellation token.
+        /// Lock used for accessing the KeepAlive cancellation token.
         /// </summary>
         private readonly object _keepAliveLock = new object();
 
