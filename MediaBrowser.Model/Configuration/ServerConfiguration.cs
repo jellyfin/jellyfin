@@ -128,6 +128,18 @@ namespace MediaBrowser.Model.Configuration
         public string[] SortRemoveWords { get; set; } = new[] { "the", "a", "an" };
 
         /// <summary>
+        /// Gets or sets a value indicating whether to mark a resumable item being played as unplayed when the play starts.
+        /// </summary>
+        /// <value><c>true</c> if this resumable item should be marked unplayed; otherwise, <c>false</c> item play state will not change when play starts.</value>
+        public bool MarkResumableItemUnplayedOnPlay { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to set LastPlayed time and increment playcount only when played to completion, or on every play start.
+        /// </summary>
+        /// <value><c>true</c> if playcount and lastplayed update on play completion; otherwise, <c>false</c> playcount and lastplayed update on play start.</value>
+        public bool UpdateLastPlayedAndPlayCountOnPlayCompletion { get; set; } = false;
+
+        /// <summary>
         /// Gets or sets the minimum percentage of an item that must be played in order for playstate to be updated.
         /// </summary>
         /// <value>The min resume PCT.</value>

@@ -19,6 +19,7 @@ using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
@@ -56,6 +57,7 @@ namespace Emby.Server.Implementations.Session
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IServerApplicationHost _appHost;
         private readonly IDeviceManager _deviceManager;
+        private readonly IServerConfigurationManager _config;
 
         /// <summary>
         /// The active connections.
@@ -78,7 +80,8 @@ namespace Emby.Server.Implementations.Session
             IImageProcessor imageProcessor,
             IServerApplicationHost appHost,
             IDeviceManager deviceManager,
-            IMediaSourceManager mediaSourceManager)
+            IMediaSourceManager mediaSourceManager,
+            IServerConfigurationManager config)
         {
             _logger = logger;
             _eventManager = eventManager;
@@ -91,6 +94,7 @@ namespace Emby.Server.Implementations.Session
             _appHost = appHost;
             _deviceManager = deviceManager;
             _mediaSourceManager = mediaSourceManager;
+            _config = config;
 
             _deviceManager.DeviceOptionsUpdated += OnDeviceManagerDeviceOptionsUpdated;
         }
@@ -731,12 +735,22 @@ namespace Emby.Server.Implementations.Session
         {
             var data = _userDataManager.GetUserData(user, item);
 
-            data.PlayCount++;
-            data.LastPlayedDate = DateTime.UtcNow;
-
-            if (item.SupportsPlayedStatus && !item.SupportsPositionTicksResume)
+            if (!_config.Configuration.UpdateLastPlayedAndPlayCountOnPlayCompletion)
             {
-                data.Played = true;
+                data.PlayCount++;
+                data.LastPlayedDate = DateTime.UtcNow;
+            }
+
+            if (item.SupportsPlayedStatus)
+            {
+                if (!item.SupportsPositionTicksResume)
+                {
+                    data.Played = true;
+                }
+                else if (_config.Configuration.MarkResumableItemUnplayedOnPlay)
+                {
+                    data.Played = false;
+                }
             }
             else
             {
@@ -1017,6 +1031,11 @@ namespace Emby.Server.Implementations.Session
                 if (positionTicks.HasValue)
                 {
                     playedToCompletion = _userDataManager.UpdatePlayState(item, data, positionTicks.Value);
+                    if (playedToCompletion && _config.Configuration.UpdateLastPlayedAndPlayCountOnPlayCompletion)
+                    {
+                        data.PlayCount++;
+                        data.LastPlayedDate = DateTime.UtcNow;
+                    }
                 }
                 else
                 {
