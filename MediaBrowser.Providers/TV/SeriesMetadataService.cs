@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -40,6 +41,7 @@ namespace MediaBrowser.Providers.TV
         {
             await base.AfterMetadataRefresh(item, refreshOptions, cancellationToken).ConfigureAwait(false);
 
+            RemoveObsoleteEpisodes(item);
             RemoveObsoleteSeasons(item);
             await FillInMissingSeasonsAsync(item, cancellationToken).ConfigureAwait(false);
         }
@@ -119,6 +121,61 @@ namespace MediaBrowser.Providers.TV
                         false);
                 }
             }
+        }
+
+        private void RemoveObsoleteEpisodes(Series series)
+        {
+            var episodes = series.GetEpisodes(null, new DtoOptions()).OfType<Episode>().ToList();
+            var numberOfEpisodes = episodes.Count;
+            // TODO: O(n^2), but can it be done faster without overcomplicating it?
+            for (var i = 0; i < numberOfEpisodes; i++)
+            {
+                var currentEpisode = episodes[i];
+                // The outer loop only examines virtual episodes
+                if (!currentEpisode.IsVirtualItem)
+                {
+                    continue;
+                }
+
+                // Virtual episodes without an episode number are practically orphaned and should be deleted
+                if (!currentEpisode.IndexNumber.HasValue)
+                {
+                    DeleteEpisode(currentEpisode);
+                    continue;
+                }
+
+                for (var j = i + 1; j < numberOfEpisodes; j++)
+                {
+                    var comparisonEpisode = episodes[j];
+                    // The inner loop is only for "physical" episodes
+                    if (comparisonEpisode.IsVirtualItem
+                        || currentEpisode.ParentIndexNumber != comparisonEpisode.ParentIndexNumber
+                        || !comparisonEpisode.ContainsEpisodeNumber(currentEpisode.IndexNumber.Value))
+                    {
+                        continue;
+                    }
+
+                    DeleteEpisode(currentEpisode);
+                    break;
+                }
+            }
+        }
+
+        private void DeleteEpisode(Episode episode)
+        {
+            Logger.LogInformation(
+                "Removing virtual episode S{SeasonNumber}E{EpisodeNumber} in series {SeriesName}",
+                episode.ParentIndexNumber,
+                episode.IndexNumber,
+                episode.SeriesName);
+
+            LibraryManager.DeleteItem(
+                episode,
+                new DeleteOptions
+                {
+                    DeleteFileLocation = true
+                },
+                false);
         }
 
         /// <summary>

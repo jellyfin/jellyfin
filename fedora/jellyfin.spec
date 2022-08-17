@@ -7,7 +7,7 @@
 %endif
 
 Name:           jellyfin
-Version:        10.8.1
+Version:        10.8.4
 Release:        1%{?dist}
 Summary:        The Free Software Media System
 License:        GPLv2
@@ -68,7 +68,7 @@ export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export PATH=$PATH:/usr/local/bin
 # cannot use --output due to https://github.com/dotnet/sdk/issues/22220
 dotnet publish --configuration Release --self-contained --runtime %{dotnet_runtime} \
-    "-p:DebugSymbols=false;DebugType=none" Jellyfin.Server
+    -p:DebugSymbols=false -p:DebugType=none Jellyfin.Server
 
 
 %install
@@ -176,6 +176,12 @@ fi
 %systemd_postun_with_restart jellyfin.service
 
 %changelog
+* Sat Aug 13 2022 Jellyfin Packaging Team <packaging@jellyfin.org>
+- New upstream version 10.8.4; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.8.4
+* Mon Aug 01 2022 Jellyfin Packaging Team <packaging@jellyfin.org>
+- New upstream version 10.8.3; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.8.3
+* Mon Aug 01 2022 Jellyfin Packaging Team <packaging@jellyfin.org>
+- New upstream version 10.8.2; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.8.2
 * Sun Jun 26 2022 Jellyfin Packaging Team <packaging@jellyfin.org>
 - New upstream version 10.8.1; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.8.1
 * Fri Jun 10 2022 Jellyfin Packaging Team <packaging@jellyfin.org>

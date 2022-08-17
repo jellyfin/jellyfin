@@ -261,7 +261,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 DtoOptions = options
             };
 
-            if (!user.DisplayMissingEpisodes)
+            if (user == null || !user.DisplayMissingEpisodes)
             {
                 query.IsMissing = false;
             }
