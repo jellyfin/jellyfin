@@ -4976,13 +4976,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             // The default value of -probesize is more than enough, so leave it as is.
             var ffmpegAnalyzeDuration = _config.GetFFmpegAnalyzeDuration() ?? string.Empty;
 
-            if (!string.IsNullOrEmpty(ffmpegAnalyzeDuration))
-            {
-                analyzeDurationArgument = "-analyzeduration " + ffmpegAnalyzeDuration;
-            }
-            else if (state.MediaSource.AnalyzeDurationMs.HasValue)
+            if (state.MediaSource.AnalyzeDurationMs > 0)
             {
                 analyzeDurationArgument = "-analyzeduration " + (state.MediaSource.AnalyzeDurationMs.Value * 1000).ToString(CultureInfo.InvariantCulture);
+            }
+            else if (!string.IsNullOrEmpty(ffmpegAnalyzeDuration))
+            {
+                analyzeDurationArgument = "-analyzeduration " + ffmpegAnalyzeDuration;
             }
 
             if (!string.IsNullOrEmpty(analyzeDurationArgument))
