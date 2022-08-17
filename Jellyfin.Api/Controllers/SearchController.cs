@@ -79,7 +79,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet]
         [Description("Gets search hints based on a search term")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<SearchHintResult> Get(
+        public ActionResult<SearchHintResult> GetSearchHints(
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] Guid? userId,
@@ -140,7 +140,7 @@ namespace Jellyfin.Api.Controllers
                 IndexNumber = item.IndexNumber,
                 ParentIndexNumber = item.ParentIndexNumber,
                 Id = item.Id,
-                Type = item.GetClientTypeName(),
+                Type = item.GetBaseItemKind(),
                 MediaType = item.MediaType,
                 MatchedTerm = hintInfo.MatchedTerm,
                 RunTimeTicks = item.RunTimeTicks,
@@ -149,8 +149,10 @@ namespace Jellyfin.Api.Controllers
                 EndDate = item.EndDate
             };
 
-            // legacy
+#pragma warning disable CS0618
+            // Kept for compatibility with older clients
             result.ItemId = result.Id;
+#pragma warning restore CS0618
 
             if (item.IsFolder)
             {
