@@ -892,29 +892,7 @@ namespace MediaBrowser.Controller.Entities
 
         private static BaseItem[] SortItemsByRequest(InternalItemsQuery query, IReadOnlyList<BaseItem> items)
         {
-            var ids = query.ItemIds;
-            int size = items.Count;
-
-            // ids can potentially contain non-unique guids, but query result cannot,
-            // so we include only first occurrence of each guid
-            var positions = new Dictionary<Guid, int>(size);
-            int index = 0;
-            for (int i = 0; i < ids.Length; i++)
-            {
-                if (positions.TryAdd(ids[i], index))
-                {
-                    index++;
-                }
-            }
-
-            var newItems = new BaseItem[size];
-            for (int i = 0; i < size; i++)
-            {
-                var item = items[i];
-                newItems[positions[item.Id]] = item;
-            }
-
-            return newItems;
+            return items.OrderBy(i => Array.IndexOf(query.ItemIds, i.Id)).ToArray();
         }
 
         public QueryResult<BaseItem> GetItems(InternalItemsQuery query)
