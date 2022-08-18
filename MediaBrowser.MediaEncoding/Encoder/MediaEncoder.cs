@@ -376,14 +376,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
             string analyzeDuration = string.Empty;
             string ffmpegAnalyzeDuration = _config.GetFFmpegAnalyzeDuration() ?? string.Empty;
 
-            if (!string.IsNullOrEmpty(ffmpegAnalyzeDuration))
-            {
-                analyzeDuration = "-analyzeduration " + ffmpegAnalyzeDuration;
-            }
-            else if (request.MediaSource.AnalyzeDurationMs > 0)
+            if (request.MediaSource.AnalyzeDurationMs > 0)
             {
                 analyzeDuration = "-analyzeduration " +
                                   (request.MediaSource.AnalyzeDurationMs * 1000).ToString();
+            }
+            else if (!string.IsNullOrEmpty(ffmpegAnalyzeDuration))
+            {
+                analyzeDuration = "-analyzeduration " + ffmpegAnalyzeDuration;
             }
 
             var forceEnableLogging = request.MediaSource.Protocol != MediaProtocol.File;
