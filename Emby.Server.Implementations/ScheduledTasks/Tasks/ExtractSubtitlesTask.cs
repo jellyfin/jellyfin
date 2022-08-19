@@ -11,6 +11,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Tasks;
 
 namespace Emby.Server.Implementations.ScheduledTasks.Tasks;
@@ -24,6 +25,7 @@ public class ExtractSubtitlesTask : IScheduledTask
     private readonly ISubtitleEncoder _subtitleEncoder;
     private readonly ILocalizationManager _localization;
     private static readonly BaseItemKind[] _itemTypes = { BaseItemKind.Episode, BaseItemKind.Movie };
+    private static readonly List<string> _supportedFormats = new() { SubtitleFormat.SRT, SubtitleFormat.ASS, SubtitleFormat.SSA };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ExtractSubtitlesTask" /> class.
@@ -88,9 +90,7 @@ public class ExtractSubtitlesTask : IScheduledTask
                 var mediaSourceId = video.Id.ToString("N", CultureInfo.InvariantCulture);
 
                 // SubtitleEncoder has readers only for this formats, everything else converted to SRT.
-                if (!string.Equals(format, "ass", StringComparison.OrdinalIgnoreCase)
-                    && !string.Equals(format, "ssa", StringComparison.OrdinalIgnoreCase)
-                    && !string.Equals(format, "srt", StringComparison.OrdinalIgnoreCase))
+                if (!_supportedFormats.Contains(format, StringComparer.OrdinalIgnoreCase))
                 {
                     format = "srt";
                 }
