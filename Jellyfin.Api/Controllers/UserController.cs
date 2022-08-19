@@ -152,53 +152,14 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Authenticates a user.
-        /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="pw">The password as plain text.</param>
-        /// <param name="password">The password sha1-hash.</param>
-        /// <response code="200">User authenticated.</response>
-        /// <response code="403">Sha1-hashed password only is not allowed.</response>
-        /// <response code="404">User not found.</response>
-        /// <returns>A <see cref="Task"/> containing an <see cref="AuthenticationResult"/>.</returns>
-        [HttpPost("{userId}/Authenticate")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<AuthenticationResult>> AuthenticateUser(
-            [FromRoute, Required] Guid userId,
-            [FromQuery, Required] string pw,
-            [FromQuery] string? password)
-        {
-            var user = _userManager.GetUserById(userId);
-
-            if (user == null)
-            {
-                return NotFound("User not found");
-            }
-
-            if (!string.IsNullOrEmpty(password) && string.IsNullOrEmpty(pw))
-            {
-                return StatusCode(StatusCodes.Status403Forbidden, "Only sha1 password is not allowed.");
-            }
-
-            AuthenticateUserByName request = new AuthenticateUserByName
-            {
-                Username = user.Username,
-                Pw = pw
-            };
-            return await AuthenticateUserByName(request).ConfigureAwait(false);
-        }
-
-        /// <summary>
         /// Authenticates a user by name.
         /// </summary>
-        /// <param name="request">The <see cref="AuthenticateUserByName"/> request.</param>
+        /// <param name="request">The <see cref="AuthenticateUserRequest"/> request.</param>
         /// <response code="200">User authenticated.</response>
         /// <returns>A <see cref="Task"/> containing an <see cref="AuthenticationRequest"/> with information about the new session.</returns>
-        [HttpPost("AuthenticateByName")]
+        [HttpPost("Authenticate")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<AuthenticationResult>> AuthenticateUserByName([FromBody, Required] AuthenticateUserByName request)
+        public async Task<ActionResult<AuthenticationResult>> AuthenticateUserByName([FromBody, Required] AuthenticateUserRequest request)
         {
             var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
 
@@ -210,7 +171,7 @@ namespace Jellyfin.Api.Controllers
                     AppVersion = auth.Version,
                     DeviceId = auth.DeviceId,
                     DeviceName = auth.Device,
-                    Password = request.Pw,
+                    Password = request.Password,
                     RemoteEndPoint = HttpContext.GetNormalizedRemoteIp().ToString(),
                     Username = request.Username
                 }).ConfigureAwait(false);
@@ -227,13 +188,13 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Authenticates a user with quick connect.
         /// </summary>
-        /// <param name="request">The <see cref="QuickConnectDto"/> request.</param>
+        /// <param name="request">The <see cref="QuickConnectRequest"/> request.</param>
         /// <response code="200">User authenticated.</response>
         /// <response code="400">Missing token.</response>
         /// <returns>A <see cref="Task"/> containing an <see cref="AuthenticationRequest"/> with information about the new session.</returns>
-        [HttpPost("AuthenticateWithQuickConnect")]
+        [HttpPost("Authenticate/QuickConnnect")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<AuthenticationResult> AuthenticateWithQuickConnect([FromBody, Required] QuickConnectDto request)
+        public ActionResult<AuthenticationResult> AuthenticateWithQuickConnect([FromBody, Required] QuickConnectRequest request)
         {
             try
             {

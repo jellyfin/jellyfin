@@ -27,15 +27,15 @@ namespace Jellyfin.Server.Integration.Tests
             Assert.Equal(HttpStatusCode.NoContent, completeResponse.StatusCode);
 
             using var content = JsonContent.Create(
-                new AuthenticateUserByName()
+                new AuthenticateUserRequest()
                 {
                     Username = user!.Name,
-                    Pw = user.Password,
+                    Password = user.Password,
                 },
                 options: jsonOptions);
             content.Headers.Add("X-Emby-Authorization", DummyAuthHeader);
 
-            using var authResponse = await client.PostAsync("/Users/AuthenticateByName", content).ConfigureAwait(false);
+            using var authResponse = await client.PostAsync("/Users/Authenticate", content).ConfigureAwait(false);
             var auth = await JsonSerializer.DeserializeAsync<AuthenticationResultDto>(
                 await authResponse.Content.ReadAsStreamAsync().ConfigureAwait(false),
                 jsonOptions).ConfigureAwait(false);
