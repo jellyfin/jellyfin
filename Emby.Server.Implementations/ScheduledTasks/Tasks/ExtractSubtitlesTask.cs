@@ -21,6 +21,8 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks;
 /// </summary>
 public class ExtractSubtitlesTask : IScheduledTask
 {
+    private const int QueryPageLimit = 100;
+
     private readonly ILibraryManager _libraryManager;
     private readonly ISubtitleEncoder _subtitleEncoder;
     private readonly ILocalizationManager _localization;
@@ -70,37 +72,48 @@ public class ExtractSubtitlesTask : IScheduledTask
             DtoOptions = new DtoOptions(false),
             MediaTypes = new[] { MediaType.Video },
             SourceTypes = new[] { SourceType.Library },
+            Limit = QueryPageLimit,
         };
 
+        var numberOfVideos = _libraryManager.GetCount(query);
+
+        var startIndex = 0;
         var completedVideos = 0;
-        var videos = _libraryManager.GetItemList(query);
 
-        foreach (var video in videos)
+        while (startIndex < numberOfVideos)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            query.StartIndex = startIndex;
+            var videos = _libraryManager.GetItemList(query);
 
-            var streams = video.GetMediaStreams()
-                .Where(stream => stream.IsTextSubtitleStream
-                                 && stream.SupportsExternalStream
-                                 && !stream.IsExternal);
-            foreach (var stream in streams)
+            foreach (var video in videos)
             {
-                var index = stream.Index;
-                var format = stream.Codec;
-                var mediaSourceId = video.Id.ToString("N", CultureInfo.InvariantCulture);
+                cancellationToken.ThrowIfCancellationRequested();
 
-                // SubtitleEncoder has readers only for this formats, everything else converted to SRT.
-                if (!_supportedFormats.Contains(format, StringComparer.OrdinalIgnoreCase))
+                var streams = video.GetMediaStreams()
+                    .Where(stream => stream.IsTextSubtitleStream
+                                     && stream.SupportsExternalStream
+                                     && !stream.IsExternal);
+                foreach (var stream in streams)
                 {
-                    format = "srt";
+                    var index = stream.Index;
+                    var format = stream.Codec;
+                    var mediaSourceId = video.Id.ToString("N", CultureInfo.InvariantCulture);
+
+                    // SubtitleEncoder has readers only for these formats, everything else converted to SRT.
+                    if (!_supportedFormats.Contains(format, StringComparer.OrdinalIgnoreCase))
+                    {
+                        format = "srt";
+                    }
+
+                    await _subtitleEncoder.GetSubtitles(video, mediaSourceId, index, format, 0, 0, false, cancellationToken).ConfigureAwait(false);
                 }
 
-                await _subtitleEncoder.GetSubtitles(video, mediaSourceId, index, format, 0, 0, false, cancellationToken).ConfigureAwait(false);
+                completedVideos++;
+                double percent = (double)completedVideos / numberOfVideos;
+                progress.Report(100 * percent);
             }
 
-            completedVideos++;
-            double percent = (double)completedVideos / videos.Count;
-            progress.Report(100 * percent);
+            startIndex += QueryPageLimit;
         }
 
         progress.Report(100);
