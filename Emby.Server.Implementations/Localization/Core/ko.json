@@ -120,5 +120,8 @@
     "Forced": "강제하기",
     "Default": "기본 설정",
     "TaskOptimizeDatabaseDescription": "데이터베이스를 압축하고 사용 가능한 공간을 늘립니다. 라이브러리를 검색한 후 이 작업을 실행하거나 데이터베이스 수정같은 비슷한 작업을 수행하면 성능이 향상될 수 있습니다.",
-    "TaskOptimizeDatabase": "데이터베이스 최적화"
+    "TaskOptimizeDatabase": "데이터베이스 최적화",
+    "TaskKeyframeExtractorDescription": "비디오 파일에서 키프레임을 추출하여 더 정확한 HLS 재생 목록을 만듭니다. 이 작업은 오랫동안 진행될 수 있습니다.",
+    "TaskKeyframeExtractor": "키프레임 추출",
+    "External": "외부"
 }
