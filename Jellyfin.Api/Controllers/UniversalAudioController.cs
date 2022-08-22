@@ -120,7 +120,7 @@ namespace Jellyfin.Api.Controllers
             var authorizationInfo = await _authorizationContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
             authorizationInfo.DeviceId = deviceId;
 
-            if (!userId.HasValue || userId.Equals(Guid.Empty))
+            if (!userId.HasValue || userId.Value.Equals(Guid.Empty))
             {
                 userId = authorizationInfo.UserId;
             }
