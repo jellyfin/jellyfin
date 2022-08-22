@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -27,7 +28,7 @@ public class ExtractSubtitlesTask : IScheduledTask
     private readonly ISubtitleEncoder _subtitleEncoder;
     private readonly ILocalizationManager _localization;
     private static readonly BaseItemKind[] _itemTypes = { BaseItemKind.Episode, BaseItemKind.Movie };
-    private static readonly List<string> _supportedFormats = new() { SubtitleFormat.SRT, SubtitleFormat.ASS, SubtitleFormat.SSA };
+    private static readonly string[] _supportedFormats = { SubtitleFormat.SRT, SubtitleFormat.ASS, SubtitleFormat.SSA };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ExtractSubtitlesTask" /> class.
@@ -89,6 +90,7 @@ public class ExtractSubtitlesTask : IScheduledTask
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
+                var mediaSourceId = video.Id.ToString("N", CultureInfo.InvariantCulture);
                 var streams = video.GetMediaStreams()
                     .Where(stream => stream.IsTextSubtitleStream
                                      && stream.SupportsExternalStream
@@ -97,20 +99,18 @@ public class ExtractSubtitlesTask : IScheduledTask
                 {
                     var index = stream.Index;
                     var format = stream.Codec;
-                    var mediaSourceId = video.Id.ToString("N", CultureInfo.InvariantCulture);
 
                     // SubtitleEncoder has readers only for these formats, everything else converted to SRT.
                     if (!_supportedFormats.Contains(format, StringComparer.OrdinalIgnoreCase))
                     {
-                        format = "srt";
+                        format = SubtitleFormat.SRT;
                     }
 
                     await _subtitleEncoder.GetSubtitles(video, mediaSourceId, index, format, 0, 0, false, cancellationToken).ConfigureAwait(false);
                 }
 
                 completedVideos++;
-                double percent = (double)completedVideos / numberOfVideos;
-                progress.Report(100 * percent);
+                progress.Report(100d * completedVideos / numberOfVideos);
             }
 
             startIndex += QueryPageLimit;
