@@ -157,6 +157,7 @@
  - [jonas-resch](https://github.com/jonas-resch)
  - [vgambier](https://github.com/vgambier)
  - [MinecraftPlaye](https://github.com/MinecraftPlaye)
+ - [RealGreenDragon](https://github.com/RealGreenDragon)
 
 # Emby Contributors
 
@@ -225,3 +226,4 @@
  - [gnuyent](https://github.com/gnuyent)
  - [Matthew Jones](https://github.com/matthew-jones-uk)
  - [Jakob Kukla](https://github.com/jakobkukla)
+ - [Utku Özdemir](https://github.com/utkuozdemir)

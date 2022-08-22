@@ -464,7 +464,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             var result = ResolveVideos<T>(parent, fileSystemEntries, SupportsMultiVersion, collectionType, parseName) ??
                 new MultiItemResolverResult();
 
-            if (result.Items.Count == 1)
+            var isPhotosCollection = string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase)
+                                         || string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase);
+            if (!isPhotosCollection && result.Items.Count == 1)
             {
                 var videoPath = result.Items[0].Path;
                 var hasPhotos = photos.Any(i => !PhotoResolver.IsOwnedByResolvedMedia(videoPath, i.Name));

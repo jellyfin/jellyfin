@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
@@ -9,6 +10,7 @@ using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -32,6 +34,7 @@ namespace Jellyfin.Api.Controllers
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localization;
         private readonly IDtoService _dtoService;
+        private readonly IAuthorizationContext _authContext;
         private readonly ILogger<ItemsController> _logger;
         private readonly ISessionManager _sessionManager;
 
@@ -42,6 +45,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
         /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
+        /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
         /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
         public ItemsController(
@@ -49,6 +53,7 @@ namespace Jellyfin.Api.Controllers
             ILibraryManager libraryManager,
             ILocalizationManager localization,
             IDtoService dtoService,
+            IAuthorizationContext authContext,
             ILogger<ItemsController> logger,
             ISessionManager sessionManager)
         {
@@ -56,6 +61,7 @@ namespace Jellyfin.Api.Controllers
             _libraryManager = libraryManager;
             _localization = localization;
             _dtoService = dtoService;
+            _authContext = authContext;
             _logger = logger;
             _sessionManager = sessionManager;
         }
@@ -63,7 +69,7 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets items based on a query.
         /// </summary>
-        /// <param name="userId">The user id supplied as query parameter.</param>
+        /// <param name="userId">The user id supplied as query parameter; this is required when not using an API key.</param>
         /// <param name="maxOfficialRating">Optional filter by maximum official rating (PG, PG-13, TV-MA, etc).</param>
         /// <param name="hasThemeSong">Optional filter by items with theme songs.</param>
         /// <param name="hasThemeVideo">Optional filter by items with theme videos.</param>
@@ -151,15 +157,15 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the items.</returns>
         [HttpGet("Items")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<QueryResult<BaseItemDto>> GetItems(
-            [FromQuery] Guid userId,
+        public async Task<ActionResult<QueryResult<BaseItemDto>>> GetItems(
+            [FromQuery] Guid? userId,
             [FromQuery] string? maxOfficialRating,
             [FromQuery] bool? hasThemeSong,
             [FromQuery] bool? hasThemeVideo,
             [FromQuery] bool? hasSubtitles,
             [FromQuery] bool? hasSpecialFeature,
             [FromQuery] bool? hasTrailer,
-            [FromQuery] string? adjacentTo,
+            [FromQuery] Guid? adjacentTo,
             [FromQuery] int? parentIndexNumber,
             [FromQuery] bool? hasParentalRating,
             [FromQuery] bool? isHd,
@@ -238,7 +244,19 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool enableTotalRecordCount = true,
             [FromQuery] bool? enableImages = true)
         {
-            var user = userId.Equals(default) ? null : _userManager.GetUserById(userId);
+            var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
+
+            // if api key is used (auth.IsApiKey == true), then `user` will be null throughout this method
+            var user = !auth.IsApiKey && userId.HasValue && !userId.Value.Equals(default)
+                ? _userManager.GetUserById(userId.Value)
+                : null;
+
+            // beyond this point, we're either using an api key or we have a valid user
+            if (!auth.IsApiKey && user is null)
+            {
+                return BadRequest("userId is required");
+            }
+
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
@@ -270,30 +288,39 @@ namespace Jellyfin.Api.Controllers
                 includeItemTypes = new[] { BaseItemKind.Playlist };
             }
 
-            var enabledChannels = user!.GetPreferenceValues<Guid>(PreferenceKind.EnabledChannels);
+            var enabledChannels = auth.IsApiKey
+                ? Array.Empty<Guid>()
+                : user!.GetPreferenceValues<Guid>(PreferenceKind.EnabledChannels);
 
-            bool isInEnabledFolder = Array.IndexOf(user.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders), item.Id) != -1
+            // api keys are always enabled for all folders
+            bool isInEnabledFolder = auth.IsApiKey
+                                     || Array.IndexOf(user!.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders), item.Id) != -1
                                      // Assume all folders inside an EnabledChannel are enabled
                                      || Array.IndexOf(enabledChannels, item.Id) != -1
                                      // Assume all items inside an EnabledChannel are enabled
                                      || Array.IndexOf(enabledChannels, item.ChannelId) != -1;
 
-            var collectionFolders = _libraryManager.GetCollectionFolders(item);
-            foreach (var collectionFolder in collectionFolders)
+            if (!isInEnabledFolder)
             {
-                if (user.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders).Contains(collectionFolder.Id))
+                var collectionFolders = _libraryManager.GetCollectionFolders(item);
+                foreach (var collectionFolder in collectionFolders)
                 {
-                    isInEnabledFolder = true;
+                    // api keys never enter this block, so user is never null
+                    if (user!.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders).Contains(collectionFolder.Id))
+                    {
+                        isInEnabledFolder = true;
+                    }
                 }
             }
 
+            // api keys are always enabled for all folders, so user is never null
             if (item is not UserRootFolder
                 && !isInEnabledFolder
-                && !user.HasPermission(PermissionKind.EnableAllFolders)
+                && !user!.HasPermission(PermissionKind.EnableAllFolders)
                 && !user.HasPermission(PermissionKind.EnableAllChannels)
                 && !string.Equals(collectionType, CollectionType.Folders, StringComparison.OrdinalIgnoreCase))
             {
-                _logger.LogWarning("{UserName} is not permitted to access Library {ItemName}.", user.Username, item.Name);
+                _logger.LogWarning("{UserName} is not permitted to access Library {ItemName}", user.Username, item.Name);
                 return Unauthorized($"{user.Username} is not permitted to access Library {item.Name}.");
             }
 
@@ -606,7 +633,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the items.</returns>
         [HttpGet("Users/{userId}/Items")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<QueryResult<BaseItemDto>> GetItemsByUserId(
+        public Task<ActionResult<QueryResult<BaseItemDto>>> GetItemsByUserId(
             [FromRoute] Guid userId,
             [FromQuery] string? maxOfficialRating,
             [FromQuery] bool? hasThemeSong,
@@ -614,7 +641,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? hasSubtitles,
             [FromQuery] bool? hasSpecialFeature,
             [FromQuery] bool? hasTrailer,
-            [FromQuery] string? adjacentTo,
+            [FromQuery] Guid? adjacentTo,
             [FromQuery] int? parentIndexNumber,
             [FromQuery] bool? hasParentalRating,
             [FromQuery] bool? isHd,
