@@ -60,9 +60,9 @@ namespace Jellyfin.Api.Controllers
         /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <param name="userId">Optional. Supply a user id to search within a user's library or omit to search all.</param>
         /// <param name="searchTerm">The search term to filter on.</param>
-        /// <param name="includeItemTypes">If specified, only results with the specified item types are returned. This allows multiple, comma delimeted.</param>
-        /// <param name="excludeItemTypes">If specified, results with these item types are filtered out. This allows multiple, comma delimeted.</param>
-        /// <param name="mediaTypes">If specified, only results with the specified media types are returned. This allows multiple, comma delimeted.</param>
+        /// <param name="includeItemTypes">If specified, only results with the specified item types are returned. This allows multiple, comma delimited.</param>
+        /// <param name="excludeItemTypes">If specified, results with these item types are filtered out. This allows multiple, comma delimited.</param>
+        /// <param name="mediaTypes">If specified, only results with the specified media types are returned. This allows multiple, comma delimited.</param>
         /// <param name="parentId">If specified, only children of the parent are returned.</param>
         /// <param name="isMovie">Optional filter for movies.</param>
         /// <param name="isSeries">Optional filter for series.</param>

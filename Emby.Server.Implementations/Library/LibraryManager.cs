@@ -2529,7 +2529,7 @@ namespace Emby.Server.Implementations.Library
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error reading the episode informations with ffprobe. Episode: {EpisodeInfo}", episodeInfo.Path);
+                _logger.LogError(ex, "Error reading the episode information with ffprobe. Episode: {EpisodeInfo}", episodeInfo.Path);
             }
 
             var changed = false;

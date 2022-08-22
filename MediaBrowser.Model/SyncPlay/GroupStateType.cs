@@ -11,7 +11,7 @@ namespace MediaBrowser.Model.SyncPlay
         Idle = 0,
 
         /// <summary>
-        /// The group is in wating state. Playback is paused. Will start playing when users are ready.
+        /// The group is in waiting state. Playback is paused. Will start playing when users are ready.
         /// </summary>
         Waiting = 1,
 
