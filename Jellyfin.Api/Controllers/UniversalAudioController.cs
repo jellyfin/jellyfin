@@ -117,7 +117,13 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool enableRedirection = true)
         {
             var deviceProfile = GetDeviceProfile(container, transcodingContainer, audioCodec, transcodingProtocol, breakOnNonKeyFrames, transcodingAudioChannels, maxAudioSampleRate, maxAudioBitDepth, maxAudioChannels);
-            (await _authorizationContext.GetAuthorizationInfo(Request).ConfigureAwait(false)).DeviceId = deviceId;
+            var authorizationInfo = await _authorizationContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
+            authorizationInfo.DeviceId = deviceId;
+
+            if (!userId.HasValue || userId.Value.Equals(Guid.Empty))
+            {
+                userId = authorizationInfo.UserId;
+            }
 
             var authInfo = await _authorizationContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
 
