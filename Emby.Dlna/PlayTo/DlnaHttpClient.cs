@@ -66,13 +66,15 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        public Task<XDocument?> GetDataAsync(string url, CancellationToken cancellationToken)
+        public async Task<XDocument?> GetDataAsync(string url, CancellationToken cancellationToken)
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
-            return SendRequestAsync(request, cancellationToken);
+
+            // Have to await here instead of returning the Task directly, otherwise request would be disposed too soon
+            return await SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
         }
 
-        public Task<XDocument?> SendCommandAsync(
+        public async Task<XDocument?> SendCommandAsync(
             string baseUrl,
             DeviceService service,
             string command,
@@ -99,7 +101,8 @@ namespace Emby.Dlna.PlayTo
                 request.Headers.TryAddWithoutValidation("contentFeatures.dlna.org", header);
             }
 
-            return SendRequestAsync(request, cancellationToken);
+            // Have to await here instead of returning the Task directly, otherwise request would be disposed too soon
+            return await SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
         }
     }
 }
