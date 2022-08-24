@@ -869,7 +869,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
             else
             {
-                _logger.LogError("Codec Type unknown. The stream will be ignored. Warning: Subsequential streams will have a wrong stream specifier!");
+                _logger.LogError("Codec Type {CodecType} unknown. The stream (index: {Index}) will be ignored. Warning: Subsequential streams will have a wrong stream specifier!", streamInfo.CodecType, streamInfo.Index);
                 return null;
             }
 
