@@ -122,5 +122,6 @@
     "TaskOptimizeDatabaseDescription": "Stisne bazo podatkov in uredi prazen prostor. Zagon tega opravila po iskanju predstavnosti ali drugih spremembah ki vplivajo na bazo podatkov lahko izboljša hitrost delovanja.",
     "TaskOptimizeDatabase": "Optimiziraj bazo podatkov",
     "TaskKeyframeExtractor": "Ekstraktor ključnih sličic",
-    "External": "Zunanje"
+    "External": "Zunanji",
+    "TaskKeyframeExtractorDescription": "Iz video datoteke Izvleče ključne sličice, da ustvari bolj natančne sezname predvajanja HLS. Proces lahko traja dolgo časa."
 }
