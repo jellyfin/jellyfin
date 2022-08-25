@@ -6,16 +6,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Emby.Naming\Emby.Naming.csproj" />
+    
     <ProjectReference Include="..\Emby.Notifications\Emby.Notifications.csproj" />
     <ProjectReference Include="..\Jellyfin.Api\Jellyfin.Api.csproj" />
     <ProjectReference Include="..\Jellyfin.Server.Implementations\Jellyfin.Server.Implementations.csproj" />
-    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
-    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
-    <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
+    
+    
+    
     <ProjectReference Include="..\MediaBrowser.Providers\MediaBrowser.Providers.csproj" />
     <ProjectReference Include="..\MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj" />
-    <ProjectReference Include="..\Emby.Dlna\Emby.Dlna.csproj" />
+    
     <ProjectReference Include="..\MediaBrowser.LocalMetadata\MediaBrowser.LocalMetadata.csproj" />
     <ProjectReference Include="..\Emby.Photos\Emby.Photos.csproj" />
     <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj" />
@@ -25,11 +25,11 @@
   <ItemGroup>
     <PackageReference Include="DiscUtils.Udf" Version="0.16.13" />
     <PackageReference Include="Jellyfin.XmlTv" Version="10.8.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
+    
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
+    
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.8" />
+    
     <PackageReference Include="Mono.Nat" Version="3.0.3" />
     <PackageReference Include="prometheus-net.DotNetRuntime" Version="4.2.4" />
     <PackageReference Include="sharpcompress" Version="0.32.2" />
@@ -54,15 +54,7 @@
   </PropertyGroup>
 
   <!-- Code Analyzers-->
-  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.3">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="SerilogAnalyzer" Version="0.15.0" PrivateAssets="All" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435" PrivateAssets="All" />
-    <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" PrivateAssets="All" />
-  </ItemGroup>
+  
 
   <ItemGroup>
     <EmbeddedResource Include="Localization\iso6392.txt" />

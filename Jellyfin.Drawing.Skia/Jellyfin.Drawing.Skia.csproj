@@ -16,28 +16,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BlurHashSharp" Version="1.2.0" />
+    
     <PackageReference Include="BlurHashSharp.SkiaSharp" Version="1.2.0" />
-    <PackageReference Include="SkiaSharp" Version="2.88.1-preview.79" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.1-preview.79" />
+    
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.1" />
     <PackageReference Include="SkiaSharp.Svg" Version="1.60.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
+    
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
-    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
+    
   </ItemGroup>
 
   <!-- Code analysers-->
-  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.3">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="SerilogAnalyzer" Version="0.15.0" PrivateAssets="All" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435" PrivateAssets="All" />
-    <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" PrivateAssets="All" />
-  </ItemGroup>
+  
 
 </Project>
