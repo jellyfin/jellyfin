@@ -101,7 +101,7 @@ public class ExtractSubtitlesTask : IScheduledTask
                     var format = stream.Codec;
 
                     // SubtitleEncoder has readers only for these formats, everything else converted to SRT.
-                    if (!_supportedFormats.Contains(format, StringComparer.OrdinalIgnoreCase))
+                    if (!_supportedFormats.Contains(format, StringComparison.OrdinalIgnoreCase))
                     {
                         format = SubtitleFormat.SRT;
                     }
