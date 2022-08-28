@@ -1,12 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
 using Jellyfin.Api.Helpers;
-using Jellyfin.Api.Models.StreamingDtos;
-using Jellyfin.Data.Enums;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Moq;
 using Xunit;
 
 namespace Jellyfin.Api.Tests.Helpers
@@ -14,7 +6,7 @@ namespace Jellyfin.Api.Tests.Helpers
     public static class FileStreamResponseHelpersTests
     {
         [Fact]
-        public static async void ProcessPlaylist_Success()
+        public static async void RewriteUrisInM3UPlaylist_Success()
         {
             FileStreamResponseHelpers.SegmentUriHmacKey = "someKey";
             var inputPlaylist = @"#EXTM3U
@@ -41,7 +33,7 @@ https://media.example.com/third.ts";
 /Videos/someItemId/stream.ts?static=true&mediaSourceId=someMediaSourceId&api_key=someAccessToken&segmentUri=%2F%2Fmedia.example.com%2Fsecond.ts&segmentToken=JIyCHnuYGfiwKMPZ3DzxONI9oDyZIIbJNkarh2tYAkg%3D
 #EXTINF:3.003,
 /Videos/someItemId/stream.ts?static=true&mediaSourceId=someMediaSourceId&api_key=someAccessToken&segmentUri=https%3A%2F%2Fmedia.example.com%2Fthird.ts&segmentToken=m4TCMYK0lXtEzNZAfQkYErEK8gAaAoZcqeXIy5qnpDc%3D";
-            var result = await FileStreamResponseHelpers.ProcessPlaylist("someItemId", "someMediaSourceId", "someAccessToken", inputPlaylist);
+            var result = await FileStreamResponseHelpers.RewriteUrisInM3UPlaylist("someItemId", "someMediaSourceId", "someAccessToken", inputPlaylist);
             Assert.Equal(expectedOutput, result.Content);
         }
     }

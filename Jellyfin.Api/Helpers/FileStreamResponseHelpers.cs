@@ -84,16 +84,16 @@ namespace Jellyfin.Api.Helpers
 
             foreach (var headerToCopy in HeadersToCopy)
             {
-                if (response.Content.Headers.Contains(headerToCopy))
+                if (response.Content.Headers.TryGetValues(headerToCopy, out var headerValue))
                 {
-                    httpContext.Response.Headers.Add(headerToCopy, new StringValues(response.Content.Headers.GetValues(headerToCopy).ToArray()));
+                    httpContext.Response.Headers.Add(headerToCopy, headerValue.ToArray());
                 }
             }
 
             if (".m3u8".Equals(new FileInfo(mediaPath.AbsolutePath).Extension, StringComparison.OrdinalIgnoreCase))
             {
                 var playlistContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-                return await ProcessPlaylist(state.Request.Id.ToString(), state.MediaSource.Id, accessToken, playlistContent);
+                return await RewriteUrisInM3UPlaylist(state.Request.Id.ToString(), state.MediaSource.Id, accessToken, playlistContent);
             }
 
             httpContext.Response.StatusCode = (int)response.StatusCode;
@@ -134,7 +134,7 @@ namespace Jellyfin.Api.Helpers
             return $"/Videos/{itemId}/stream{extension}?{queryParameters}";
         }
 
-        internal static async Task<ContentResult> ProcessPlaylist(string itemId, string mediaSourceId, string accessToken, string playlistContent)
+        internal static async Task<ContentResult> RewriteUrisInM3UPlaylist(string itemId, string mediaSourceId, string accessToken, string playlistContent)
         {
             StringReader reader = new StringReader(playlistContent);
             string? line;
