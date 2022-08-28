@@ -11,7 +11,7 @@ namespace Jellyfin.MediaEncoding.Keyframes.FfProbe;
 /// </summary>
 public static class FfProbeKeyframeExtractor
 {
-    private const string DefaultArguments = "-v error -skip_frame nokey -show_entries format=duration -show_entries stream=duration -show_entries packet=pts_time,flags -select_streams v -of csv \"{0}\"";
+    private const string DefaultArguments = "-fflags +genpts -v error -skip_frame nokey -show_entries format=duration -show_entries stream=duration -show_entries packet=pts_time,flags -select_streams v -of csv \"{0}\"";
 
     /// <summary>
     /// Extracts the keyframes using the ffprobe executable at the specified path.
