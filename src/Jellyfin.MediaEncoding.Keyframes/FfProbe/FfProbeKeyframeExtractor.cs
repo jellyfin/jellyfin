@@ -62,10 +62,13 @@ public static class FfProbeKeyframeExtractor
             var rest = line[(firstComma + 1)..];
             if (lineType.Equals("packet", StringComparison.OrdinalIgnoreCase))
             {
-                if (rest.EndsWith(",K_"))
+                // Split time and flags from the packet line. Example line: packet,7169.079000,K_
+                var secondComma = rest.IndexOf(',');
+                var pts_time = rest[..secondComma];
+                var flags = rest[(secondComma + 1)..];
+                if (flags.StartsWith("K_"))
                 {
-                    // Trim the flags from the packet line. Example line: packet,7169.079000,K_
-                    if (double.TryParse(rest[..^3], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var keyframe))
+                    if (double.TryParse(pts_time, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var keyframe))
                     {
                       // Have to manually convert to ticks to avoid rounding errors as TimeSpan is only precise down to 1 ms when converting double.
                       keyframes.Add(Convert.ToInt64(keyframe * TimeSpan.TicksPerSecond));
