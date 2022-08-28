@@ -65,9 +65,11 @@ public static class FfProbeKeyframeExtractor
                 if (rest.EndsWith(",K_"))
                 {
                     // Trim the flags from the packet line. Example line: packet,7169.079000,K_
-                    var keyframe = double.Parse(rest[..^3], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
-                    // Have to manually convert to ticks to avoid rounding errors as TimeSpan is only precise down to 1 ms when converting double.
-                    keyframes.Add(Convert.ToInt64(keyframe * TimeSpan.TicksPerSecond));
+                    if (double.TryParse(rest[..^3], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var keyframe))
+                    {
+                      // Have to manually convert to ticks to avoid rounding errors as TimeSpan is only precise down to 1 ms when converting double.
+                      keyframes.Add(Convert.ToInt64(keyframe * TimeSpan.TicksPerSecond));
+                    }
                 }
             }
             else if (lineType.Equals("stream", StringComparison.OrdinalIgnoreCase))
