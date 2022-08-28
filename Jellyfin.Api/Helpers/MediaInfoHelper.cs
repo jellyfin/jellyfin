@@ -239,12 +239,6 @@ namespace Jellyfin.Api.Helpers
 
             options.MaxBitrate = GetMaxBitrate(maxBitrate, user, ipAddress);
 
-            if (!options.ForceDirectStream)
-            {
-                // direct-stream http streaming is currently broken
-                options.EnableDirectStream = false;
-            }
-
             // Beginning of Playback Determination
             var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase)
                 ? streamBuilder.BuildAudioItem(options)

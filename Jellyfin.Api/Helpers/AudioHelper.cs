@@ -83,10 +83,12 @@ namespace Jellyfin.Api.Helpers
         /// <summary>
         /// Get audio stream.
         /// </summary>
+        /// <param name="request">HTTP request.</param>
         /// <param name="transcodingJobType">Transcoding job type.</param>
         /// <param name="streamingRequest">Streaming controller.Request dto.</param>
         /// <returns>A <see cref="Task"/> containing the resulting <see cref="ActionResult"/>.</returns>
         public async Task<ActionResult> GetAudioStream(
+            HttpRequest request,
             TranscodingJobType transcodingJobType,
             StreamingRequestDto streamingRequest)
         {
@@ -138,7 +140,8 @@ namespace Jellyfin.Api.Helpers
                 StreamingHelpers.AddDlnaHeaders(state, _httpContextAccessor.HttpContext.Response.Headers, true, streamingRequest.StartTimeTicks, _httpContextAccessor.HttpContext.Request, _dlnaManager);
 
                 var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-                return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, httpClient, _httpContextAccessor.HttpContext).ConfigureAwait(false);
+                var authInfo = await _authContext.GetAuthorizationInfo(request).ConfigureAwait(false);
+                return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, httpClient, _httpContextAccessor.HttpContext, authInfo.Token).ConfigureAwait(false);
             }
 
             if (streamingRequest.Static && state.InputProtocol != MediaProtocol.File)

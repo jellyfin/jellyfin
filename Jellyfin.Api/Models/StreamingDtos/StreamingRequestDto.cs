@@ -33,6 +33,16 @@ namespace Jellyfin.Api.Models.StreamingDtos
         public string? SegmentContainer { get; set; }
 
         /// <summary>
+        /// Gets or sets the segment URI.
+        /// </summary>
+        public string? SegmentUri { get; set; }
+
+        /// <summary>
+        /// Gets or sets the segment token for static stream.
+        /// </summary>
+        public string? SegmentToken { get; set; }
+
+        /// <summary>
         /// Gets or sets the segment length.
         /// </summary>
         public int? SegmentLength { get; set; }

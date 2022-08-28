@@ -6,6 +6,7 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dlna;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -20,15 +21,19 @@ namespace Jellyfin.Api.Controllers
     {
         private readonly AudioHelper _audioHelper;
 
+        private readonly IAuthorizationContext _authContext;
+
         private readonly TranscodingJobType _transcodingJobType = TranscodingJobType.Progressive;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AudioController"/> class.
         /// </summary>
         /// <param name="audioHelper">Instance of <see cref="AudioHelper"/>.</param>
-        public AudioController(AudioHelper audioHelper)
+        /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
+        public AudioController(AudioHelper audioHelper, IAuthorizationContext authContext)
         {
             _audioHelper = audioHelper;
+            _authContext = authContext;
         }
 
         /// <summary>
@@ -42,6 +47,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="deviceProfileId">Optional. The dlna device profile id to utilize.</param>
         /// <param name="playSessionId">The play session id.</param>
         /// <param name="segmentContainer">The segment container.</param>
+        /// <param name="segmentUri">Optional. URI of the segment if static stream is pointing at a playlist file.</param>
+        /// <param name="segmentToken">Optional. segment token for static stream.</param>
         /// <param name="segmentLength">The segment length.</param>
         /// <param name="minSegments">The minimum number of segments.</param>
         /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
@@ -98,6 +105,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? deviceProfileId,
             [FromQuery] string? playSessionId,
             [FromQuery] string? segmentContainer,
+            [FromQuery] string? segmentUri,
+            [FromQuery] string? segmentToken,
             [FromQuery] int? segmentLength,
             [FromQuery] int? minSegments,
             [FromQuery] string? mediaSourceId,
@@ -150,6 +159,8 @@ namespace Jellyfin.Api.Controllers
                 DeviceProfileId = deviceProfileId,
                 PlaySessionId = playSessionId,
                 SegmentContainer = segmentContainer,
+                SegmentUri = segmentUri,
+                SegmentToken = segmentToken,
                 SegmentLength = segmentLength,
                 MinSegments = minSegments,
                 MediaSourceId = mediaSourceId,
@@ -193,7 +204,7 @@ namespace Jellyfin.Api.Controllers
                 StreamOptions = streamOptions
             };
 
-            return await _audioHelper.GetAudioStream(_transcodingJobType, streamingRequest).ConfigureAwait(false);
+            return await _audioHelper.GetAudioStream(Request, _transcodingJobType, streamingRequest).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -207,6 +218,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="deviceProfileId">Optional. The dlna device profile id to utilize.</param>
         /// <param name="playSessionId">The play session id.</param>
         /// <param name="segmentContainer">The segment container.</param>
+        /// <param name="segmentUri">Optional. URI of the segment if static stream is pointing at a playlist file.</param>
+        /// <param name="segmentToken">Optional. segment token for static stream.</param>
         /// <param name="segmentLength">The segment lenght.</param>
         /// <param name="minSegments">The minimum number of segments.</param>
         /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
@@ -263,6 +276,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? deviceProfileId,
             [FromQuery] string? playSessionId,
             [FromQuery] string? segmentContainer,
+            [FromQuery] string? segmentUri,
+            [FromQuery] string? segmentToken,
             [FromQuery] int? segmentLength,
             [FromQuery] int? minSegments,
             [FromQuery] string? mediaSourceId,
@@ -315,6 +330,8 @@ namespace Jellyfin.Api.Controllers
                 DeviceProfileId = deviceProfileId,
                 PlaySessionId = playSessionId,
                 SegmentContainer = segmentContainer,
+                SegmentUri = segmentUri,
+                SegmentToken = segmentToken,
                 SegmentLength = segmentLength,
                 MinSegments = minSegments,
                 MediaSourceId = mediaSourceId,
@@ -358,7 +375,7 @@ namespace Jellyfin.Api.Controllers
                 StreamOptions = streamOptions
             };
 
-            return await _audioHelper.GetAudioStream(_transcodingJobType, streamingRequest).ConfigureAwait(false);
+            return await _audioHelper.GetAudioStream(Request, _transcodingJobType, streamingRequest).ConfigureAwait(false);
         }
     }
 }

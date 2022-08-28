@@ -267,6 +267,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="deviceProfileId">Optional. The dlna device profile id to utilize.</param>
         /// <param name="playSessionId">The play session id.</param>
         /// <param name="segmentContainer">The segment container.</param>
+        /// <param name="segmentUri">Optional. URI of the segment if static stream is pointing at a playlist file.</param>
+        /// <param name="segmentToken">Optional. segment token for static stream.</param>
         /// <param name="segmentLength">The segment length.</param>
         /// <param name="minSegments">The minimum number of segments.</param>
         /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
@@ -325,6 +327,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? deviceProfileId,
             [FromQuery] string? playSessionId,
             [FromQuery] string? segmentContainer,
+            [FromQuery] string? segmentUri,
+            [FromQuery] string? segmentToken,
             [FromQuery] int? segmentLength,
             [FromQuery] int? minSegments,
             [FromQuery] string? mediaSourceId,
@@ -382,6 +386,8 @@ namespace Jellyfin.Api.Controllers
                 DeviceProfileId = deviceProfileId,
                 PlaySessionId = playSessionId,
                 SegmentContainer = segmentContainer,
+                SegmentUri = segmentUri,
+                SegmentToken = segmentToken,
                 SegmentLength = segmentLength,
                 MinSegments = minSegments,
                 MediaSourceId = mediaSourceId,
@@ -465,7 +471,8 @@ namespace Jellyfin.Api.Controllers
                 StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, state.Request.StartTimeTicks, Request, _dlnaManager);
 
                 var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-                return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, httpClient, HttpContext).ConfigureAwait(false);
+                var authInfo = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
+                return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, httpClient, HttpContext, authInfo.Token).ConfigureAwait(false);
             }
 
             if (@static.HasValue && @static.Value && state.InputProtocol != MediaProtocol.File)
@@ -521,6 +528,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="deviceProfileId">Optional. The dlna device profile id to utilize.</param>
         /// <param name="playSessionId">The play session id.</param>
         /// <param name="segmentContainer">The segment container.</param>
+        /// <param name="segmentUri">Optional. URI of the segment if static stream is pointing at a playlist file.</param>
+        /// <param name="segmentToken">Optional. segment token for static stream.</param>
         /// <param name="segmentLength">The segment length.</param>
         /// <param name="minSegments">The minimum number of segments.</param>
         /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
@@ -579,6 +588,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? deviceProfileId,
             [FromQuery] string? playSessionId,
             [FromQuery] string? segmentContainer,
+            [FromQuery] string? segmentUri,
+            [FromQuery] string? segmentToken,
             [FromQuery] int? segmentLength,
             [FromQuery] int? minSegments,
             [FromQuery] string? mediaSourceId,
@@ -632,6 +643,8 @@ namespace Jellyfin.Api.Controllers
                 deviceProfileId,
                 playSessionId,
                 segmentContainer,
+                segmentUri,
+                segmentToken,
                 segmentLength,
                 minSegments,
                 mediaSourceId,

@@ -259,7 +259,7 @@ namespace Jellyfin.Api.Controllers
                 Context = EncodingContext.Static
             };
 
-            return await _audioHelper.GetAudioStream(TranscodingJobType.Progressive, audioStreamingDto).ConfigureAwait(false);
+            return await _audioHelper.GetAudioStream(Request, TranscodingJobType.Progressive, audioStreamingDto).ConfigureAwait(false);
         }
 
         private DeviceProfile GetDeviceProfile(

@@ -4,6 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Mime;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.PlaybackDtos;
@@ -21,21 +24,50 @@ namespace Jellyfin.Api.Helpers
     /// </summary>
     public static class FileStreamResponseHelpers
     {
+        private static readonly List<string> HeadersToCopy = new List<string>()
+        {
+            HeaderNames.ContentLength,
+            HeaderNames.ContentRange,
+            HeaderNames.ContentDisposition,
+            HeaderNames.ContentEncoding
+        };
+
+        private static readonly Regex PlaylistAttributeListPattern = new Regex("(?<AttributeName>[A-Z0-9-]+)=((\"(?<AttributeValue>.+?)\")|(?<AttributeValue>.+?))(?=,[^,=]+=|$)");
+        private static readonly Uri DummyBaseUri = new Uri("http://example.com");
+
+        /// <summary>
+        /// Sets the key used for generating HMAC of segment URIs.
+        /// </summary>
+        public static string SegmentUriHmacKey { private get; set; } = Convert.ToHexString(RandomNumberGenerator.GetBytes(16));
+
         /// <summary>
         /// Returns a static file from a remote source.
         /// </summary>
         /// <param name="state">The current <see cref="StreamState"/>.</param>
         /// <param name="httpClient">The <see cref="HttpClient"/> making the remote request.</param>
         /// <param name="httpContext">The current http context.</param>
+        /// <param name="accessToken">Access token used in the request.</param>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
         /// <returns>A <see cref="Task{ActionResult}"/> containing the API response.</returns>
         public static async Task<ActionResult> GetStaticRemoteStreamResult(
             StreamState state,
             HttpClient httpClient,
             HttpContext httpContext,
+            string accessToken,
             CancellationToken cancellationToken = default)
         {
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, new Uri(state.MediaPath));
+            Uri mediaPath = new Uri(state.MediaPath);
+            if (!string.IsNullOrEmpty(state.Request.SegmentUri) && !string.IsNullOrEmpty(state.Request.SegmentToken))
+            {
+                if (!state.Request.SegmentToken.Equals(GenerateSegmentToken(state.MediaSource.Id, state.Request.SegmentUri!), StringComparison.Ordinal))
+                {
+                    throw new ArgumentException("Provided segment token for static stream is invalid");
+                }
+
+                mediaPath = new Uri(mediaPath, state.Request.SegmentUri);
+            }
+
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, mediaPath);
             foreach (KeyValuePair<string, string> entry in state.RemoteHttpHeaders)
             {
                 request.Headers.Add(entry.Key, entry.Value);
@@ -50,8 +82,7 @@ namespace Jellyfin.Api.Helpers
             var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
             var contentType = response.Content.Headers.ContentType?.ToString() ?? MediaTypeNames.Text.Plain;
 
-            var headersToCopy = new List<string>() { HeaderNames.ContentLength, HeaderNames.ContentRange, HeaderNames.ContentDisposition, HeaderNames.ContentEncoding };
-            foreach (var headerToCopy in headersToCopy)
+            foreach (var headerToCopy in HeadersToCopy)
             {
                 if (response.Content.Headers.Contains(headerToCopy))
                 {
@@ -59,8 +90,107 @@ namespace Jellyfin.Api.Helpers
                 }
             }
 
+            if (".m3u8".Equals(new FileInfo(mediaPath.AbsolutePath).Extension, StringComparison.OrdinalIgnoreCase))
+            {
+                var playlistContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                return await ProcessPlaylist(state.Request.Id.ToString(), state.MediaSource.Id, accessToken, playlistContent);
+            }
+
             httpContext.Response.StatusCode = (int)response.StatusCode;
             return new FileStreamResult(await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false), contentType);
+        }
+
+        private static string GetFileExtensionFromUri(string inputUri)
+        {
+            Uri? uri;
+            if (!Uri.TryCreate(inputUri, UriKind.Absolute, out uri))
+            {
+                uri = new Uri(DummyBaseUri, inputUri);
+            }
+
+            return new FileInfo(uri.AbsolutePath).Extension;
+        }
+
+        private static string GenerateSegmentToken(string mediaSourceId, string segmentUri)
+        {
+            using (var hmacsha256 = new HMACSHA256(Encoding.UTF8.GetBytes(SegmentUriHmacKey + mediaSourceId)))
+            {
+                var hash = hmacsha256.ComputeHash(Encoding.UTF8.GetBytes(segmentUri));
+                return Convert.ToBase64String(hash);
+            }
+        }
+
+        private static async Task<string> MapSegmentUri(string itemId, string mediaSourceId, string accessToken, string uri)
+        {
+            var extension = GetFileExtensionFromUri(uri);
+            var queryParameters = await new FormUrlEncodedContent(new Dictionary<string, string>()
+            {
+                { "static", "true" },
+                { "mediaSourceId", mediaSourceId },
+                { "api_key", accessToken },
+                { "segmentUri", uri },
+                { "segmentToken", GenerateSegmentToken(mediaSourceId, uri) }
+            }).ReadAsStringAsync();
+            return $"/Videos/{itemId}/stream{extension}?{queryParameters}";
+        }
+
+        internal static async Task<ContentResult> ProcessPlaylist(string itemId, string mediaSourceId, string accessToken, string playlistContent)
+        {
+            StringReader reader = new StringReader(playlistContent);
+            string? line;
+            var outputLines = new List<string>();
+            while ((line = await reader.ReadLineAsync()) != null)
+            {
+                if (line.StartsWith("#EXT", StringComparison.Ordinal) && line.Contains(":", StringComparison.Ordinal))
+                {
+                    // Parse lines containing tags with attributes, e.g. #EXT-X-TAG:ATTR1=1,ATTR2=value2,ATTR3="Value3"...
+                    StringBuilder sb = new StringBuilder();
+                    var tagComponents = line.Split(":", 2, StringSplitOptions.TrimEntries);
+                    sb.Append(tagComponents[0] + ":");
+                    var matches = PlaylistAttributeListPattern.Matches(tagComponents[1]);
+                    if (matches.Count == 0)
+                    {
+                        // If we fail to parse the attributes, leave them as-is.
+                        sb.Append(tagComponents[1]);
+                    }
+                    else
+                    {
+                        List<string> attributeList = new List<string>();
+                        foreach (Match match in matches)
+                        {
+                            var key = match.Groups["AttributeName"].Value;
+                            var value = match.Groups["AttributeValue"].Value;
+                            if ("URI".Equals(key, StringComparison.Ordinal))
+                            {
+                                // Extract URI attributes and re-write them.
+                                value = await MapSegmentUri(itemId, mediaSourceId, accessToken, value);
+                            }
+
+                            attributeList.Add($"{key}=\"{value}\"");
+                        }
+
+                        // Join attributes together.
+                        sb.Append(string.Join(",", attributeList));
+                    }
+
+                    outputLines.Add(sb.ToString());
+                }
+                else if (!line.StartsWith("#", StringComparison.InvariantCultureIgnoreCase) && line.Trim().Length > 0)
+                {
+                    // Lines containing no tags represent segment URI; re-write them.
+                    outputLines.Add(await MapSegmentUri(itemId, mediaSourceId, accessToken, line));
+                }
+                else
+                {
+                    // Leave everything else intact.
+                    outputLines.Add(line);
+                }
+            }
+
+            return new ContentResult()
+            {
+                Content = string.Join("\n", outputLines)
+            };
         }
 
         /// <summary>
