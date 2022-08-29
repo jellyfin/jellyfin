@@ -944,7 +944,7 @@ namespace Jellyfin.Networking.Manager
                 // Add virtual machine interface names to the list of bind exclusions, so that they are auto-excluded.
                 if (config.IgnoreVirtualInterfaces)
                 {
-                    // each virtual interface name must be pre-pended with the exclusion symbol !
+                    // each virtual interface name must be prepended with the exclusion symbol !
                     var virtualInterfaceNames = config.VirtualInterfaceNames.Split(',').Select(p => "!" + p).ToArray();
                     if (lanAddresses.Length > 0)
                     {

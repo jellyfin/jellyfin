@@ -157,7 +157,7 @@ namespace MediaBrowser.Model.Dlna
                 flagValue |= DlnaFlags.ByteBasedSeek;
             }
 
-            // Time based seek is curently disabled when streaming. On LG CX3 adding DlnaFlags.TimeBasedSeek and orgPn causes the DLNA playback to fail (format not supported). Further investigations are needed before enabling the remaining code paths.
+            // Time based seek is currently disabled when streaming. On LG CX3 adding DlnaFlags.TimeBasedSeek and orgPn causes the DLNA playback to fail (format not supported). Further investigations are needed before enabling the remaining code paths.
             //  else if (runtimeTicks.HasValue)
             // {
             //     flagValue = flagValue | DlnaFlags.TimeBasedSeek;

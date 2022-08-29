@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
@@ -31,7 +32,7 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Finds movies and trailers similar to a given trailer.
         /// </summary>
-        /// <param name="userId">The user id.</param>
+        /// <param name="userId">The user id supplied as query parameter; this is required when not using an API key.</param>
         /// <param name="maxOfficialRating">Optional filter by maximum official rating (PG, PG-13, TV-MA, etc).</param>
         /// <param name="hasThemeSong">Optional filter by items with theme songs.</param>
         /// <param name="hasThemeVideo">Optional filter by items with theme videos.</param>
@@ -118,15 +119,15 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the trailers.</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<QueryResult<BaseItemDto>> GetTrailers(
-            [FromQuery] Guid userId,
+        public Task<ActionResult<QueryResult<BaseItemDto>>> GetTrailers(
+            [FromQuery] Guid? userId,
             [FromQuery] string? maxOfficialRating,
             [FromQuery] bool? hasThemeSong,
             [FromQuery] bool? hasThemeVideo,
             [FromQuery] bool? hasSubtitles,
             [FromQuery] bool? hasSpecialFeature,
             [FromQuery] bool? hasTrailer,
-            [FromQuery] string? adjacentTo,
+            [FromQuery] Guid? adjacentTo,
             [FromQuery] int? parentIndexNumber,
             [FromQuery] bool? hasParentalRating,
             [FromQuery] bool? isHd,

@@ -243,7 +243,7 @@ namespace Jellyfin.Server
                     }
                 }
 
-                appHost.Dispose();
+                await appHost.DisposeAsync().ConfigureAwait(false);
             }
 
             if (_restartOnShutdown)

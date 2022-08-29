@@ -199,7 +199,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 if (string.IsNullOrWhiteSpace(numberString))
                 {
                     // Using this as a fallback now as this leads to Problems with channels like "5 USA"
-                    // where 5 isn't ment to be the channel number
+                    // where 5 isn't meant to be the channel number
                     // Check for channel number with the format from SatIp
                     // #EXTINF:0,84. VOX Schweiz
                     // #EXTINF:0,84.0 - VOX Schweiz

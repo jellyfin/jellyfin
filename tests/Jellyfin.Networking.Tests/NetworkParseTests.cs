@@ -393,7 +393,7 @@ namespace Jellyfin.Networking.Tests
         // User on external network, internal binding only - so assumption is a proxy forward, return external override.
         [InlineData("jellyfin.org", "192.168.1.0/24", "eth16", false, "0.0.0.0=http://helloworld.com", "http://helloworld.com")]
 
-        // User on external network, no binding - so result is the 1st external which is overriden.
+        // User on external network, no binding - so result is the 1st external which is overridden.
         [InlineData("jellyfin.org", "192.168.1.0/24", "", false, "0.0.0.0 = http://helloworld.com", "http://helloworld.com")]
 
         // User assumed to be internal, no binding - so result is the 1st internal.

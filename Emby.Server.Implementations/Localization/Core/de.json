@@ -121,7 +121,7 @@
     "Default": "Standard",
     "TaskOptimizeDatabaseDescription": "Komprimiert die Datenbank und trimmt den freien Speicherplatz. Die Ausführung dieser Aufgabe nach dem Scannen der Bibliothek oder nach anderen Änderungen, die Datenbankänderungen implizieren, kann die Leistung verbessern.",
     "TaskOptimizeDatabase": "Datenbank optimieren",
-    "TaskKeyframeExtractorDescription": "Extrahiere Keyframes aus Videodateien, um präzisere HLS-Playlisten zu erzeugen. Diese Aufgabe kann sehr lange dauern.",
+    "TaskKeyframeExtractorDescription": "Extrahiere Keyframes aus Videodateien, um präzisere HLS-Playlisten zu erzeugen. Dieser Vorgang kann sehr lange dauern.",
     "TaskKeyframeExtractor": "Keyframe Extraktor",
     "External": "Extern"
 }

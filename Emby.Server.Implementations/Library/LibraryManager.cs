@@ -2454,6 +2454,12 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
+        public void QueueLibraryScan()
+        {
+            _taskManager.QueueScheduledTask<RefreshMediaLibraryTask>();
+        }
+
+        /// <inheritdoc />
         public int? GetSeasonNumberFromPath(string path)
             => SeasonPathParser.Parse(path, true, true).SeasonNumber;
 
@@ -2523,7 +2529,7 @@ namespace Emby.Server.Implementations.Library
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error reading the episode informations with ffprobe. Episode: {EpisodeInfo}", episodeInfo.Path);
+                _logger.LogError(ex, "Error reading the episode information with ffprobe. Episode: {EpisodeInfo}", episodeInfo.Path);
             }
 
             var changed = false;

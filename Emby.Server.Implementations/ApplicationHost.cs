@@ -83,6 +83,7 @@ using MediaBrowser.Controller.SyncPlay;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.LocalMetadata.Savers;
 using MediaBrowser.MediaEncoding.BdInfo;
+using MediaBrowser.MediaEncoding.Subtitles;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
@@ -111,7 +112,7 @@ namespace Emby.Server.Implementations
     /// <summary>
     /// Class CompositionRoot.
     /// </summary>
-    public abstract class ApplicationHost : IServerApplicationHost, IDisposable
+    public abstract class ApplicationHost : IServerApplicationHost, IAsyncDisposable, IDisposable
     {
         /// <summary>
         /// The environment variable prefixes to log at server startup.
@@ -634,7 +635,8 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IAuthService, AuthService>();
             serviceCollection.AddSingleton<IQuickConnect, QuickConnectManager>();
 
-            serviceCollection.AddSingleton<ISubtitleEncoder, MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder>();
+            serviceCollection.AddSingleton<ISubtitleParser, SubtitleEditParser>();
+            serviceCollection.AddSingleton<ISubtitleEncoder, SubtitleEncoder>();
 
             serviceCollection.AddSingleton<IAttachmentExtractor, MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor>();
 
@@ -1231,6 +1233,50 @@ namespace Emby.Server.Implementations
             }
 
             _disposed = true;
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await DisposeAsyncCore().ConfigureAwait(false);
+            Dispose(false);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Used to perform asynchronous cleanup of managed resources or for cascading calls to <see cref="DisposeAsync"/>.
+        /// </summary>
+        /// <returns>A ValueTask.</returns>
+        protected virtual async ValueTask DisposeAsyncCore()
+        {
+            var type = GetType();
+
+            Logger.LogInformation("Disposing {Type}", type.Name);
+
+            foreach (var (part, _) in _disposableParts)
+            {
+                var partType = part.GetType();
+                if (partType == type)
+                {
+                    continue;
+                }
+
+                Logger.LogInformation("Disposing {Type}", partType.Name);
+
+                try
+                {
+                    part.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error disposing {Type}", partType.Name);
+                }
+            }
+
+            // used for closing websockets
+            foreach (var session in _sessionManager.Sessions)
+            {
+                await session.DisposeAsync().ConfigureAwait(false);
+            }
         }
     }
 }
