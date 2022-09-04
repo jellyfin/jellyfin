@@ -601,6 +601,11 @@ namespace Jellyfin.Networking.Manager
         {
             NetworkConfiguration config = (NetworkConfiguration)configuration ?? throw new ArgumentNullException(nameof(configuration));
 
+            // Disable IPv6 on dual-stack socket, name resolution, ping, etc...
+            // useful to workaround dual-stack socket issues when the OS reports support of IPv6, but some other
+            // underlying infrastructure element (typically VPN) doesn't function well with IPv6 request
+            AppContext.SetSwitch("System.Net.DisableIPv6", !config.EnableIPV6);
+
             IsIP4Enabled = Socket.OSSupportsIPv4 && config.EnableIPV4;
             IsIP6Enabled = Socket.OSSupportsIPv6 && config.EnableIPV6;
 
