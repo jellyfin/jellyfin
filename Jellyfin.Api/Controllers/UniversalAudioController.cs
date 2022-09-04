@@ -10,13 +10,11 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -31,7 +29,6 @@ namespace Jellyfin.Api.Controllers
     public class UniversalAudioController : BaseJellyfinApiController
     {
         private readonly IAuthorizationContext _authorizationContext;
-        private readonly IDeviceManager _deviceManager;
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger<UniversalAudioController> _logger;
         private readonly MediaInfoHelper _mediaInfoHelper;
@@ -42,7 +39,6 @@ namespace Jellyfin.Api.Controllers
         /// Initializes a new instance of the <see cref="UniversalAudioController"/> class.
         /// </summary>
         /// <param name="authorizationContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
-        /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{UniversalAudioController}"/> interface.</param>
         /// <param name="mediaInfoHelper">Instance of <see cref="MediaInfoHelper"/>.</param>
@@ -50,7 +46,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="dynamicHlsHelper">Instance of <see cref="DynamicHlsHelper"/>.</param>
         public UniversalAudioController(
             IAuthorizationContext authorizationContext,
-            IDeviceManager deviceManager,
             ILibraryManager libraryManager,
             ILogger<UniversalAudioController> logger,
             MediaInfoHelper mediaInfoHelper,
@@ -58,7 +53,6 @@ namespace Jellyfin.Api.Controllers
             DynamicHlsHelper dynamicHlsHelper)
         {
             _authorizationContext = authorizationContext;
-            _deviceManager = deviceManager;
             _libraryManager = libraryManager;
             _logger = logger;
             _mediaInfoHelper = mediaInfoHelper;
@@ -123,70 +117,49 @@ namespace Jellyfin.Api.Controllers
 
             _logger.LogInformation("GetPostedPlaybackInfo profile: {@Profile}", deviceProfile);
 
-            if (deviceProfile == null)
-            {
-                var clientCapabilities = _deviceManager.GetCapabilities(authInfo.DeviceId);
-                if (clientCapabilities != null)
-                {
-                    deviceProfile = clientCapabilities.DeviceProfile;
-                }
-            }
-
             var info = await _mediaInfoHelper.GetPlaybackInfo(
                     itemId,
                     userId,
                     mediaSourceId)
                 .ConfigureAwait(false);
 
-            if (deviceProfile != null)
+            // set device specific data
+            var item = _libraryManager.GetItemById(itemId);
+
+            foreach (var sourceInfo in info.MediaSources)
             {
-                // set device specific data
-                var item = _libraryManager.GetItemById(itemId);
-
-                foreach (var sourceInfo in info.MediaSources)
-                {
-                    _mediaInfoHelper.SetDeviceSpecificData(
-                        item,
-                        sourceInfo,
-                        deviceProfile,
-                        authInfo,
-                        maxStreamingBitrate ?? deviceProfile.MaxStreamingBitrate,
-                        startTimeTicks ?? 0,
-                        mediaSourceId ?? string.Empty,
-                        null,
-                        null,
-                        maxAudioChannels,
-                        info.PlaySessionId!,
-                        userId ?? Guid.Empty,
-                        true,
-                        true,
-                        true,
-                        true,
-                        true,
-                        Request.HttpContext.GetNormalizedRemoteIp());
-                }
-
-                _mediaInfoHelper.SortMediaSources(info, maxStreamingBitrate);
+                _mediaInfoHelper.SetDeviceSpecificData(
+                    item,
+                    sourceInfo,
+                    deviceProfile,
+                    authInfo,
+                    maxStreamingBitrate ?? deviceProfile.MaxStreamingBitrate,
+                    startTimeTicks ?? 0,
+                    mediaSourceId ?? string.Empty,
+                    null,
+                    null,
+                    maxAudioChannels,
+                    info.PlaySessionId!,
+                    userId ?? Guid.Empty,
+                    true,
+                    true,
+                    true,
+                    true,
+                    true,
+                    Request.HttpContext.GetNormalizedRemoteIp());
             }
 
-            if (info.MediaSources != null)
+            _mediaInfoHelper.SortMediaSources(info, maxStreamingBitrate);
+
+            foreach (var source in info.MediaSources)
             {
-                foreach (var source in info.MediaSources)
-                {
-                    _mediaInfoHelper.NormalizeMediaSourceContainer(source, deviceProfile!, DlnaProfileType.Video);
-                }
+                _mediaInfoHelper.NormalizeMediaSourceContainer(source, deviceProfile, DlnaProfileType.Video);
             }
 
-            var mediaSource = info.MediaSources![0];
-            if (mediaSource.SupportsDirectPlay && mediaSource.Protocol == MediaProtocol.Http)
+            var mediaSource = info.MediaSources[0];
+            if (mediaSource.SupportsDirectPlay && mediaSource.Protocol == MediaProtocol.Http && enableRedirection && mediaSource.IsRemote && enableRemoteMedia.HasValue && enableRemoteMedia.Value)
             {
-                if (enableRedirection)
-                {
-                    if (mediaSource.IsRemote && enableRemoteMedia.HasValue && enableRemoteMedia.Value)
-                    {
-                        return Redirect(mediaSource.Path);
-                    }
-                }
+                return Redirect(mediaSource.Path);
             }
 
             var isStatic = mediaSource.SupportsDirectStream;
@@ -249,7 +222,7 @@ namespace Jellyfin.Api.Controllers
                 BreakOnNonKeyFrames = breakOnNonKeyFrames,
                 AudioSampleRate = maxAudioSampleRate,
                 MaxAudioChannels = maxAudioChannels,
-                AudioBitRate = isStatic ? (int?)null : (audioBitRate ?? maxStreamingBitrate),
+                AudioBitRate = isStatic ? null : (audioBitRate ?? maxStreamingBitrate),
                 MaxAudioBitDepth = maxAudioBitDepth,
                 AudioChannels = maxAudioChannels,
                 CopyTimestamps = true,
