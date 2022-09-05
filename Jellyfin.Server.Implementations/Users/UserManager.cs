@@ -326,10 +326,10 @@ namespace Jellyfin.Server.Implementations.Users
                     EnableNextEpisodeAutoPlay = user.EnableNextEpisodeAutoPlay,
                     RememberSubtitleSelections = user.RememberSubtitleSelections,
                     SubtitleLanguagePreference = user.SubtitleLanguagePreference ?? string.Empty,
-                    OrderedViews = user.GetPreference(PreferenceKind.OrderedViews),
-                    GroupedFolders = user.GetPreference(PreferenceKind.GroupedFolders),
-                    MyMediaExcludes = user.GetPreference(PreferenceKind.MyMediaExcludes),
-                    LatestItemsExcludes = user.GetPreference(PreferenceKind.LatestItemExcludes)
+                    OrderedViews = user.GetPreferenceValues<Guid>(PreferenceKind.OrderedViews),
+                    GroupedFolders = user.GetPreferenceValues<Guid>(PreferenceKind.GroupedFolders),
+                    MyMediaExcludes = user.GetPreferenceValues<Guid>(PreferenceKind.MyMediaExcludes),
+                    LatestItemsExcludes = user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes)
                 },
                 Policy = new UserPolicy
                 {
