@@ -69,15 +69,8 @@ namespace Jellyfin.Server.Infrastructure
         /// <inheritdoc />
         protected override Task WriteFileAsync(ActionContext context, PhysicalFileResult result, RangeItemHeaderValue? range, long rangeLength)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (result == null)
-            {
-                throw new ArgumentNullException(nameof(result));
-            }
+            ArgumentNullException.ThrowIfNull(context, nameof(context));
+            ArgumentNullException.ThrowIfNull(result, nameof(result));
 
             if (range != null && rangeLength == 0)
             {

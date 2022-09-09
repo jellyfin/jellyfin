@@ -1,5 +1,3 @@
-#nullable disable
-
 using System;
 using System.Linq;
 using Jellyfin.Extensions;
@@ -19,9 +17,11 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="url">Trailer URL.</param>
         public static void AddTrailerUrl(this BaseItem item, string url)
         {
-            if (string.IsNullOrEmpty(url))
+            ArgumentNullException.ThrowIfNull(url, nameof(url));
+
+            if (url.Length == 0)
             {
-                throw new ArgumentNullException(nameof(url));
+                throw new ArgumentException("String can't be empty", nameof(url));
             }
 
             var current = item.RemoteTrailers.FirstOrDefault(i => string.Equals(i.Url, url, StringComparison.OrdinalIgnoreCase));
