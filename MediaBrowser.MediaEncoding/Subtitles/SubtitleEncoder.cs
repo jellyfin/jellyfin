@@ -746,7 +746,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
         }
 
-        internal readonly struct SubtitleInfo
+        public readonly struct SubtitleInfo
         {
             public SubtitleInfo(string path, MediaProtocol protocol, string format, bool isExternal)
             {
