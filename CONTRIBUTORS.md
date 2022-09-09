@@ -36,6 +36,7 @@
  - [dmitrylyzo](https://github.com/dmitrylyzo)
  - [DMouse10462](https://github.com/DMouse10462)
  - [DrPandemic](https://github.com/DrPandemic)
+ - [eglia](https://github.com/eglia)
  - [EraYaN](https://github.com/EraYaN)
  - [escabe](https://github.com/escabe)
  - [excelite](https://github.com/excelite)
