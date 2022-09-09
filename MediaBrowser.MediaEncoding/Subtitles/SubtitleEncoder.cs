@@ -605,7 +605,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     throw;
                 }
 
-                var ranToCompletion = await process.WaitForExitAsync(TimeSpan.FromMinutes(5)).ConfigureAwait(false);
+                var ranToCompletion = await process.WaitForExitAsync(TimeSpan.FromMinutes(30)).ConfigureAwait(false);
 
                 if (!ranToCompletion)
                 {
