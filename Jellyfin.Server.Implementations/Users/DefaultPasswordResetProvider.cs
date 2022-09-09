@@ -67,7 +67,7 @@ namespace Jellyfin.Server.Implementations.Users
                 else if (string.Equals(
                     spr.Pin.Replace("-", string.Empty, StringComparison.Ordinal),
                     pin.Replace("-", string.Empty, StringComparison.Ordinal),
-                    StringComparison.OrdinalIgnoreCase))
+                    StringComparison.Ordinal))
                 {
                     var resetUser = userManager.GetUserByName(spr.UserName)
                         ?? throw new ResourceNotFoundException($"User with a username of {spr.UserName} not found");
