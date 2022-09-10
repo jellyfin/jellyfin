@@ -281,3 +281,5 @@ apiclient/generated
 
 # Omnisharp crash logs
 mono_crash.*.json
+
+!LrcParser.dll

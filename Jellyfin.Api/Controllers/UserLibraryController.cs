@@ -1,14 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
+using Jellyfin.Api.Models.UserDtos;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
+using Kfstorm.LrcParser;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -380,6 +384,51 @@ namespace Jellyfin.Api.Controllers
             _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
 
             return _userDataRepository.GetUserDataDto(item, user);
+        }
+
+        /// <summary>
+        /// Gets an item's lyrics.
+        /// </summary>
+        /// <param name="userId">User id.</param>
+        /// <param name="itemId">Item id.</param>
+        /// <response code="200">Lyrics returned.</response>
+        /// <response code="404">Something went wrong. No Lyrics will be returned.</response>
+        /// <returns>An <see cref="OkResult"/> containing the intros to play.</returns>
+        [HttpGet("Users/{userId}/Items/{itemId}/Lyrics")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<QueryResult<BaseItemDto>> GetLyrics([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
+        {
+            var user = _userManager.GetUserById(userId);
+
+            if (user == null)
+            {
+                List<Lyrics> lyricsList = new List<Lyrics>
+                {
+                    new Lyrics { Error = "User Not Found" }
+                };
+                return NotFound(new { Results = lyricsList.ToArray() });
+            }
+
+            var item = itemId.Equals(default)
+                ? _libraryManager.GetUserRootFolder()
+                : _libraryManager.GetItemById(itemId);
+
+            if (item == null)
+            {
+                List<Lyrics> lyricsList = new List<Lyrics>
+                {
+                    new Lyrics { Error = "Requested Item Not Found" }
+                };
+                return NotFound(new { Results = lyricsList.ToArray() });
+            }
+
+            List<Lyrics> result = ItemHelper.GetLyricData(item);
+            if (string.IsNullOrEmpty(result.ElementAt(0).Error))
+            {
+                return Ok(new { Results = result });
+            }
+
+            return NotFound(new { Results = result.ToArray() });
         }
     }
 }

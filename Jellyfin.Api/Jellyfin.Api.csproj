@@ -46,4 +46,16 @@
     </AssemblyAttribute>
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="LrcParser">
+      <HintPath>Libraries\LrcParser.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Libraries\LrcParser.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
