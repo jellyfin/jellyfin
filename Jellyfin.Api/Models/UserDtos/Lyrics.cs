@@ -11,7 +11,7 @@ namespace Jellyfin.Api.Models.UserDtos
         public double? Start { get; set; }
 
         /// <summary>
-        /// Gets or sets the test.
+        /// Gets or sets the text.
         /// </summary>
         public string? Text { get; set; }
 
