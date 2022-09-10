@@ -401,11 +401,7 @@ namespace Jellyfin.Api.Controllers
 
             if (user == null)
             {
-                List<Lyrics> lyricsList = new List<Lyrics>
-                {
-                    new Lyrics { Error = "User Not Found" }
-                };
-                return NotFound(new { Results = lyricsList.ToArray() });
+                return NotFound();
             }
 
             var item = itemId.Equals(default)
@@ -414,11 +410,7 @@ namespace Jellyfin.Api.Controllers
 
             if (item == null)
             {
-                List<Lyrics> lyricsList = new List<Lyrics>
-                {
-                    new Lyrics { Error = "Requested Item Not Found" }
-                };
-                return NotFound(new { Results = lyricsList.ToArray() });
+                return NotFound();
             }
 
             var result = ItemHelper.GetLyricData(item);
