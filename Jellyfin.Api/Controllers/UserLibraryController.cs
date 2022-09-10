@@ -411,11 +411,7 @@ namespace Jellyfin.Api.Controllers
 
             if (item == null)
             {
-                List<Lyrics> lyricsList = new List<Lyrics>
-                {
-                    new Lyrics { Error = "Requested Item Not Found" }
-                };
-                return NotFound(new { Results = lyricsList.ToArray() });
+                return NotFound();
             }
 
             List<Lyrics> result = ItemHelper.GetLyricData(item);
