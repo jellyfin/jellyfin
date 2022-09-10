@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
@@ -138,6 +139,10 @@ namespace Emby.Server.Implementations.Dto
             else if (item is LiveTvProgram)
             {
                 LivetvManager.AddInfoToProgramDto(new[] { (item, dto) }, options.Fields, user).GetAwaiter().GetResult();
+            }
+            else if (item is Audio)
+            {
+                dto.HasLocalLyricsFile = ItemHelper.HasLyricFile(item.Path);
             }
 
             if (item is IItemByName itemByName
