@@ -16,7 +16,6 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

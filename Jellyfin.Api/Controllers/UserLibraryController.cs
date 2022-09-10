@@ -8,7 +8,6 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
-using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;

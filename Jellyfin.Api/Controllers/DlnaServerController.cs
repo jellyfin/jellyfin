@@ -54,7 +54,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         [Produces(MediaTypeNames.Text.Xml)]
         [ProducesFile(MediaTypeNames.Text.Xml)]
-        public ActionResult GetDescriptionXml([FromRoute, Required] string serverId)
+        public ActionResult<string> GetDescriptionXml([FromRoute, Required] string serverId)
         {
             var url = GetAbsoluteUri();
             var serverAddress = url.Substring(0, url.IndexOf("/dlna/", StringComparison.OrdinalIgnoreCase));
@@ -77,7 +77,7 @@ namespace Jellyfin.Api.Controllers
         [Produces(MediaTypeNames.Text.Xml)]
         [ProducesFile(MediaTypeNames.Text.Xml)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
-        public ActionResult GetContentDirectory([FromRoute, Required] string serverId)
+        public ActionResult<string> GetContentDirectory([FromRoute, Required] string serverId)
         {
             return Ok(_contentDirectory.GetServiceXml());
         }
@@ -97,7 +97,7 @@ namespace Jellyfin.Api.Controllers
         [Produces(MediaTypeNames.Text.Xml)]
         [ProducesFile(MediaTypeNames.Text.Xml)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
-        public ActionResult GetMediaReceiverRegistrar([FromRoute, Required] string serverId)
+        public ActionResult<string> GetMediaReceiverRegistrar([FromRoute, Required] string serverId)
         {
             return Ok(_mediaReceiverRegistrar.GetServiceXml());
         }
@@ -117,7 +117,7 @@ namespace Jellyfin.Api.Controllers
         [Produces(MediaTypeNames.Text.Xml)]
         [ProducesFile(MediaTypeNames.Text.Xml)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
-        public ActionResult GetConnectionManager([FromRoute, Required] string serverId)
+        public ActionResult<string> GetConnectionManager([FromRoute, Required] string serverId)
         {
             return Ok(_connectionManager.GetServiceXml());
         }
