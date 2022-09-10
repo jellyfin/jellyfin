@@ -12,7 +12,6 @@ using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.UserDtos;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
-using Kfstorm.LrcParser;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -422,13 +421,13 @@ namespace Jellyfin.Api.Controllers
                 return NotFound(new { Results = lyricsList.ToArray() });
             }
 
-            List<Lyrics> result = ItemHelper.GetLyricData(item);
-            if (string.IsNullOrEmpty(result.ElementAt(0).Error))
+            var result = ItemHelper.GetLyricData(item);
+            if (result is not null)
             {
-                return Ok(new { Results = result });
+                return Ok(result);
             }
 
-            return NotFound(new { Results = result.ToArray() });
+            return NotFound();
         }
     }
 }
