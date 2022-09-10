@@ -424,7 +424,7 @@ namespace Jellyfin.Api.Controllers
                 return Ok(new { Results = result });
             }
 
-            return NotFound(new { Results = result.ToArray() });
+            return NotFound();
         }
     }
 }
