@@ -44,6 +44,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         private IReadOnlyList<string> SplitWhitelist => _splitWhiteList ??= new string[]
         {
             "AC/DC",
+            "A/T/O/S",
             "As/Hi Soundworks",
             "Au/Ra",
             "Bremer/McCoy",
