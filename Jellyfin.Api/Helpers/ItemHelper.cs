@@ -40,16 +40,11 @@ namespace Jellyfin.Api.Helpers
                 ILyricsProvider? newProvider = Activator.CreateInstance(provider) as ILyricsProvider;
                 if (newProvider is not null)
                 {
-                    providerList.Add(newProvider);
-                }
-            }
-
-            foreach (ILyricsProvider provider in providerList)
-            {
-                provider.Process(item);
-                if (provider.HasData)
-                {
-                    return provider.Data;
+                    newProvider.Process(item);
+                    if (newProvider.HasData)
+                    {
+                        return newProvider.Data;
+                    }
                 }
             }
 
@@ -86,23 +81,14 @@ namespace Jellyfin.Api.Helpers
 
                 if (foundProvider.FileExtensions.Any())
                 {
-                    // Gather distinct list of handled file extentions
                     foreach (string lyricFileExtension in foundProvider.FileExtensions)
                     {
-                        if (!supportedLyricFileExtensions.Contains(lyricFileExtension))
+                        string lyricFilePath = @Path.ChangeExtension(itemPath, lyricFileExtension);
+                        if (System.IO.File.Exists(lyricFilePath))
                         {
-                            supportedLyricFileExtensions.Add(lyricFileExtension);
+                            return lyricFilePath;
                         }
                     }
-                }
-            }
-
-            foreach (string lyricFileExtension in supportedLyricFileExtensions)
-            {
-                string lyricFilePath = @Path.ChangeExtension(itemPath, lyricFileExtension);
-                if (System.IO.File.Exists(lyricFilePath))
-                {
-                    return lyricFilePath;
                 }
             }
 
