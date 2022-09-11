@@ -37,7 +37,11 @@ namespace Jellyfin.Api.Helpers
 
             foreach (var provider in foundLyricProviders)
             {
-                providerList.Add((ILyricsProvider)Activator.CreateInstance(provider));
+                ILyricsProvider? newProvider = Activator.CreateInstance(provider) as ILyricsProvider;
+                if (newProvider is not null)
+                {
+                    providerList.Add(newProvider);
+                }
             }
 
             foreach (ILyricsProvider provider in providerList)
@@ -74,7 +78,7 @@ namespace Jellyfin.Api.Helpers
             // Iterate over all found lyric providers
             foreach (var provider in foundLyricProviders)
             {
-                var foundProvider = (ILyricsProvider)Activator.CreateInstance(provider);
+                ILyricsProvider? foundProvider = Activator.CreateInstance(provider) as ILyricsProvider;
                 if (foundProvider?.FileExtensions is null)
                 {
                     continue;
