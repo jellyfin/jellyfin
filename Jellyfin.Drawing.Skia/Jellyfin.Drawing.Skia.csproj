@@ -18,8 +18,8 @@
   <ItemGroup>
     <PackageReference Include="BlurHashSharp" Version="1.2.0" />
     <PackageReference Include="BlurHashSharp.SkiaSharp" Version="1.2.0" />
-    <PackageReference Include="SkiaSharp" Version="2.88.1" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.1-preview.79" />
+    <PackageReference Include="SkiaSharp" Version="2.88.2" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.2" />
     <PackageReference Include="SkiaSharp.Svg" Version="1.60.0" />
   </ItemGroup>
 
