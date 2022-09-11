@@ -23,8 +23,6 @@ namespace Jellyfin.Api.Helpers
         /// <returns>Collection of Lyrics.</returns>
         internal static object? GetLyricData(BaseItem item)
         {
-            List<ILyricsProvider> providerList = new List<ILyricsProvider>();
-
             // Find all classes that implement ILyricsProvider Interface
             var foundLyricProviders = System.Reflection.Assembly.GetExecutingAssembly()
                 .GetTypes()
@@ -58,8 +56,6 @@ namespace Jellyfin.Api.Helpers
         /// <returns>True if item has a matching lyrics file.</returns>
         public static string? GetLyricFilePath(string itemPath)
         {
-            List<string> supportedLyricFileExtensions = new List<string>();
-
             // Find all classes that implement ILyricsProvider Interface
             var foundLyricProviders = System.Reflection.Assembly.GetExecutingAssembly()
                 .GetTypes()
