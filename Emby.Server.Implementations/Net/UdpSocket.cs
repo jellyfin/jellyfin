@@ -96,7 +96,7 @@ namespace Emby.Server.Implementations.Net
                 }
                 else
                 {
-                    tcs.TrySetException(new Exception("SocketError: " + e.SocketError));
+                    tcs.TrySetException(new SocketException((int)e.SocketError));
                 }
             }
         }
@@ -114,7 +114,7 @@ namespace Emby.Server.Implementations.Net
                 }
                 else
                 {
-                    tcs.TrySetException(new Exception("SocketError: " + e.SocketError));
+                    tcs.TrySetException(new SocketException((int)e.SocketError));
                 }
             }
         }

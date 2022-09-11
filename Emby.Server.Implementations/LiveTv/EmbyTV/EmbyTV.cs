@@ -995,7 +995,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
             }
 
-            throw new Exception("Tuner not found.");
+            throw new ResourceNotFoundException("Tuner not found.");
         }
 
         public async Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(string channelId, CancellationToken cancellationToken)
