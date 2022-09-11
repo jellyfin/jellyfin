@@ -8,7 +8,7 @@ namespace Jellyfin.Api.Models.UserDtos
         /// <summary>
         /// Gets or sets the start time (ticks).
         /// </summary>
-        public double Start { get; set; }
+        public double? Start { get; set; }
 
         /// <summary>
         /// Gets or sets the text.
