@@ -40,7 +40,6 @@ RUN apt-get update \
  libfreetype6 \
  libomxil-bellagio0 \
  libomxil-bellagio-bin \
- libraspberrypi0 \
  vainfo \
  libva2 \
  locales \
