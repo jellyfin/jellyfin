@@ -233,7 +233,8 @@ namespace Jellyfin.Api.Controllers
             var dtoOptions = new DtoOptions().AddClientFields(Request);
 
             return Ok(item
-                .GetExtras(BaseItem.DisplayExtraTypes)
+                .GetExtras()
+                .Where(i => i.ExtraType.HasValue && BaseItem.DisplayExtraTypes.Contains(i.ExtraType.Value))
                 .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item)));
         }
 

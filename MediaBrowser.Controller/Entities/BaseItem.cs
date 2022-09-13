@@ -2606,19 +2606,6 @@ namespace MediaBrowser.Controller.Entities
                 .OrderBy(i => i.SortName);
         }
 
-        /// <summary>
-        /// Get all extras with specific types that are associated with this item.
-        /// </summary>
-        /// <param name="extraTypes">The types of extras to retrieve.</param>
-        /// <returns>An enumerable containing the extras.</returns>
-        public IEnumerable<BaseItem> GetExtras(IReadOnlyCollection<ExtraType> extraTypes)
-        {
-            return ExtraIds
-                .Select(LibraryManager.GetItemById)
-                .Where(i => i != null)
-                .Where(i => i.ExtraType.HasValue && extraTypes.Contains(i.ExtraType.Value));
-        }
-
         public virtual long GetRunTimeTicksForPlayState()
         {
             return RunTimeTicks ?? 0;
