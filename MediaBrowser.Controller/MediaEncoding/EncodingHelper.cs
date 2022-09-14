@@ -256,6 +256,21 @@ namespace MediaBrowser.Controller.MediaEncoding
             return string.Empty;
         }
 
+        /// <summary>
+        /// Gets the referer param.
+        /// </summary>
+        /// <param name="state">The state.</param>
+        /// <returns>System.String.</returns>
+        public string GetRefererParam(EncodingJobInfo state)
+        {
+            if (state.RemoteHttpHeaders.TryGetValue("Referer", out string referer))
+            {
+                return "-referer \"" + referer + "\"";
+            }
+
+            return string.Empty;
+        }
+
         public static string GetInputFormat(string container)
         {
             if (string.IsNullOrEmpty(container))
@@ -4997,6 +5012,15 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (!string.IsNullOrEmpty(userAgentParam))
             {
                 inputModifier += " " + userAgentParam;
+            }
+
+            inputModifier = inputModifier.Trim();
+
+            var refererParam = GetRefererParam(state);
+
+            if (!string.IsNullOrEmpty(refererParam))
+            {
+                inputModifier += " " + refererParam;
             }
 
             inputModifier = inputModifier.Trim();
