@@ -2616,7 +2616,8 @@ namespace MediaBrowser.Controller.Entities
             return ExtraIds
                 .Select(LibraryManager.GetItemById)
                 .Where(i => i != null)
-                .Where(i => i.ExtraType.HasValue && extraTypes.Contains(i.ExtraType.Value));
+                .Where(i => i.ExtraType.HasValue && extraTypes.Contains(i.ExtraType.Value))
+                .OrderBy(i => i.SortName);
         }
 
         public virtual long GetRunTimeTicksForPlayState()
