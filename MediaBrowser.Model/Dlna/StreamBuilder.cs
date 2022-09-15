@@ -436,9 +436,9 @@ namespace MediaBrowser.Model.Dlna
                 {
                     containerSupported = true;
 
-                    videoSupported = videoStream != null && profile.SupportsVideoCodec(videoStream.Codec);
+                    videoSupported = videoStream == null || profile.SupportsVideoCodec(videoStream.Codec);
 
-                    audioSupported = audioStream != null && profile.SupportsAudioCodec(audioStream.Codec);
+                    audioSupported = audioStream == null || profile.SupportsAudioCodec(audioStream.Codec);
 
                     if (videoSupported && audioSupported)
                     {
@@ -447,18 +447,17 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            var list = new List<TranscodeReason>();
             if (!containerSupported)
             {
                 reasons |= TranscodeReason.ContainerNotSupported;
             }
 
-            if (videoStream != null && !videoSupported)
+            if (!videoSupported)
             {
                 reasons |= TranscodeReason.VideoCodecNotSupported;
             }
 
-            if (audioStream != null && !audioSupported)
+            if (!audioSupported)
             {
                 reasons |= TranscodeReason.AudioCodecNotSupported;
             }
@@ -1182,14 +1181,18 @@ namespace MediaBrowser.Model.Dlna
                     }
 
                     // Check audio codec
-                    var selectedAudioStream = candidateAudioStreams.FirstOrDefault(audioStream => directPlayProfile.SupportsAudioCodec(audioStream.Codec));
-                    if (selectedAudioStream == null)
+                    MediaStream selectedAudioStream = null;
+                    if (candidateAudioStreams.Any())
                     {
-                        directPlayProfileReasons |= TranscodeReason.AudioCodecNotSupported;
-                    }
-                    else
-                    {
-                        audioCodecProfileReasons = audioStreamMatches.GetValueOrDefault(selectedAudioStream);
+                        selectedAudioStream = candidateAudioStreams.FirstOrDefault(audioStream => directPlayProfile.SupportsAudioCodec(audioStream.Codec));
+                        if (selectedAudioStream == null)
+                        {
+                            directPlayProfileReasons |= TranscodeReason.AudioCodecNotSupported;
+                        }
+                        else
+                        {
+                            audioCodecProfileReasons = audioStreamMatches.GetValueOrDefault(selectedAudioStream);
+                        }
                     }
 
                     var failureReasons = directPlayProfileReasons | containerProfileReasons | subtitleProfileReasons;
