@@ -1,4 +1,4 @@
-namespace Jellyfin.Api.Models.UserDtos
+namespace MediaBrowser.Controller.Lyrics
 {
     /// <summary>
     /// Lyric dto.

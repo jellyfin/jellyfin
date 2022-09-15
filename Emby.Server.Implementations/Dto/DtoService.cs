@@ -19,6 +19,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
@@ -51,6 +52,8 @@ namespace Emby.Server.Implementations.Dto
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly Lazy<ILiveTvManager> _livetvManagerFactory;
 
+        private readonly IEnumerable<ILyricsProvider> _lyricProviders;
+
         public DtoService(
             ILogger<DtoService> logger,
             ILibraryManager libraryManager,
@@ -60,7 +63,8 @@ namespace Emby.Server.Implementations.Dto
             IProviderManager providerManager,
             IApplicationHost appHost,
             IMediaSourceManager mediaSourceManager,
-            Lazy<ILiveTvManager> livetvManagerFactory)
+            Lazy<ILiveTvManager> livetvManagerFactory,
+            IEnumerable<ILyricsProvider> lyricProviders)
         {
             _logger = logger;
             _libraryManager = libraryManager;
@@ -71,6 +75,7 @@ namespace Emby.Server.Implementations.Dto
             _appHost = appHost;
             _mediaSourceManager = mediaSourceManager;
             _livetvManagerFactory = livetvManagerFactory;
+            _lyricProviders = lyricProviders;
         }
 
         private ILiveTvManager LivetvManager => _livetvManagerFactory.Value;
@@ -142,7 +147,7 @@ namespace Emby.Server.Implementations.Dto
             }
             else if (item is Audio)
             {
-                dto.HasLocalLyricsFile = ItemHelper.HasLyricFile(item.Path);
+                dto.HasLyrics = MediaBrowser.Controller.Lyrics.LyricInfo.HasLyricFile(_lyricProviders, item.Path);
             }
 
             if (item is IItemByName itemByName

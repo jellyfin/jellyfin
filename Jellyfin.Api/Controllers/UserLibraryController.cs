@@ -13,6 +13,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -414,8 +415,8 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            // Super nieve implementation. I would suggest building a lyric service of some sort and doing this there.
-            foreach (var provider in _lyricProviders)
+            var result = MediaBrowser.Controller.Lyrics.LyricInfo.GetLyricData(_lyricProviders, item);
+            if (result is not null)
             {
                 provider.Process(item);
                 if (provider.HasData)
