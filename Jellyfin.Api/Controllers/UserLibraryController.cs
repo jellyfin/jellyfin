@@ -1,17 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
-using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.UserDtos;
 using Jellyfin.Data.Enums;
-using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -40,6 +37,7 @@ namespace Jellyfin.Api.Controllers
         private readonly IDtoService _dtoService;
         private readonly IUserViewManager _userViewManager;
         private readonly IFileSystem _fileSystem;
+        private readonly IEnumerable<ILyricsProvider> _lyricProviders;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserLibraryController"/> class.
@@ -50,13 +48,15 @@ namespace Jellyfin.Api.Controllers
         /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
         /// <param name="userViewManager">Instance of the <see cref="IUserViewManager"/> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+        /// <param name="lyricProviders">Collection of all registered <see cref="ILyricsProvider"/> interfaces.</param>
         public UserLibraryController(
             IUserManager userManager,
             IUserDataManager userDataRepository,
             ILibraryManager libraryManager,
             IDtoService dtoService,
             IUserViewManager userViewManager,
-            IFileSystem fileSystem)
+            IFileSystem fileSystem,
+            IEnumerable<ILyricsProvider> lyricProviders)
         {
             _userManager = userManager;
             _userDataRepository = userDataRepository;
@@ -64,6 +64,7 @@ namespace Jellyfin.Api.Controllers
             _dtoService = dtoService;
             _userViewManager = userViewManager;
             _fileSystem = fileSystem;
+            _lyricProviders = lyricProviders;
         }
 
         /// <summary>
@@ -413,10 +414,14 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            var result = ItemHelper.GetLyricData(item);
-            if (result is not null)
+            // Super nieve implementation. I would suggest building a lyric service of some sort and doing this there.
+            foreach (var provider in _lyricProviders)
             {
-                return Ok(result);
+                provider.Process(item);
+                if (provider.HasData)
+                {
+                    return Ok(provider.Data);
+                }
             }
 
             return NotFound();

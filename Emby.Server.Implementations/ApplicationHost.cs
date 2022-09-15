@@ -46,6 +46,7 @@ using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.Models.UserDtos;
 using Jellyfin.MediaEncoding.Hls.Playlist;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
@@ -580,6 +581,8 @@ namespace Emby.Server.Implementations
             serviceCollection.AddTransient(provider => new Lazy<ILibraryMonitor>(provider.GetRequiredService<ILibraryMonitor>));
             serviceCollection.AddTransient(provider => new Lazy<IProviderManager>(provider.GetRequiredService<IProviderManager>));
             serviceCollection.AddTransient(provider => new Lazy<IUserViewManager>(provider.GetRequiredService<IUserViewManager>));
+            serviceCollection.AddTransient<ILyricsProvider, TxtLyricsProvider>();
+            serviceCollection.AddTransient<ILyricsProvider, LrcLyricsProvider>();
             serviceCollection.AddSingleton<ILibraryManager, LibraryManager>();
             serviceCollection.AddSingleton<NamingOptions>();
 
