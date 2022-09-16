@@ -16,18 +16,25 @@ namespace MediaBrowser.Providers.Lyric
     /// <summary>
     /// LRC File Lyric Provider.
     /// </summary>
-    public class LrcLyricsProvider : ILyricsProvider
+    public class LrcLyricProvider : ILyricProvider
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="LrcLyricsProvider"/> class.
+        /// Initializes a new instance of the <see cref="LrcLyricProvider"/> class.
         /// </summary>
-        public LrcLyricsProvider()
+        public LrcLyricProvider()
         {
+            Name = "LrcLyricProvider";
+
             SupportedMediaTypes = new Collection<string>
             {
                 "lrc"
             };
         }
+
+        /// <summary>
+        /// Gets a value indicating the provider name.
+        /// </summary>
+        public string Name { get; }
 
         /// <summary>
         /// Gets a value indicating the File Extenstions this provider works with.

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Lyrics;
@@ -12,18 +13,25 @@ namespace MediaBrowser.Providers.Lyric
     /// <summary>
     /// TXT File Lyric Provider.
     /// </summary>
-    public class TxtLyricsProvider : ILyricsProvider
+    public class TxtLyricProvider : ILyricProvider
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="TxtLyricsProvider"/> class.
+        /// Initializes a new instance of the <see cref="TxtLyricProvider"/> class.
         /// </summary>
-        public TxtLyricsProvider()
+        public TxtLyricProvider()
         {
+            Name = "TxtLyricProvider";
+
             SupportedMediaTypes = new Collection<string>
             {
                 "lrc", "txt"
             };
         }
+
+        /// <summary>
+        /// Gets a value indicating the provider name.
+        /// </summary>
+        public string Name { get; }
 
         /// <summary>
         /// Gets a value indicating the File Extenstions this provider works with.

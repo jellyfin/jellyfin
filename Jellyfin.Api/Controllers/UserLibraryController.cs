@@ -38,7 +38,7 @@ namespace Jellyfin.Api.Controllers
         private readonly IDtoService _dtoService;
         private readonly IUserViewManager _userViewManager;
         private readonly IFileSystem _fileSystem;
-        private readonly IEnumerable<ILyricsProvider> _lyricProviders;
+        private readonly ILyricManager _lyricManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserLibraryController"/> class.
@@ -49,7 +49,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
         /// <param name="userViewManager">Instance of the <see cref="IUserViewManager"/> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-        /// <param name="lyricProviders">Collection of all registered <see cref="ILyricsProvider"/> interfaces.</param>
+        /// <param name="lyricManager">Instance of the <see cref="ILyricManager"/> interface.</param>
         public UserLibraryController(
             IUserManager userManager,
             IUserDataManager userDataRepository,
@@ -57,7 +57,7 @@ namespace Jellyfin.Api.Controllers
             IDtoService dtoService,
             IUserViewManager userViewManager,
             IFileSystem fileSystem,
-            IEnumerable<ILyricsProvider> lyricProviders)
+            ILyricManager lyricManager)
         {
             _userManager = userManager;
             _userDataRepository = userDataRepository;
@@ -65,7 +65,7 @@ namespace Jellyfin.Api.Controllers
             _dtoService = dtoService;
             _userViewManager = userViewManager;
             _fileSystem = fileSystem;
-            _lyricProviders = lyricProviders;
+            _lyricManager = lyricManager;
         }
 
         /// <summary>
@@ -415,14 +415,10 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            var result = MediaBrowser.Controller.Lyrics.LyricInfo.GetLyricData(_lyricProviders, item);
+            var result = _lyricManager.GetLyric(item);
             if (result is not null)
             {
-                provider.Process(item);
-                if (provider.HasData)
-                {
-                    return Ok(provider.Data);
-                }
+                return Ok(result);
             }
 
             return NotFound();

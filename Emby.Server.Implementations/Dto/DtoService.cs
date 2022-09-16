@@ -52,7 +52,7 @@ namespace Emby.Server.Implementations.Dto
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly Lazy<ILiveTvManager> _livetvManagerFactory;
 
-        private readonly IEnumerable<ILyricsProvider> _lyricProviders;
+        private readonly ILyricManager _lyricManager;
 
         public DtoService(
             ILogger<DtoService> logger,
@@ -64,7 +64,7 @@ namespace Emby.Server.Implementations.Dto
             IApplicationHost appHost,
             IMediaSourceManager mediaSourceManager,
             Lazy<ILiveTvManager> livetvManagerFactory,
-            IEnumerable<ILyricsProvider> lyricProviders)
+            ILyricManager lyricManager)
         {
             _logger = logger;
             _libraryManager = libraryManager;
@@ -75,7 +75,7 @@ namespace Emby.Server.Implementations.Dto
             _appHost = appHost;
             _mediaSourceManager = mediaSourceManager;
             _livetvManagerFactory = livetvManagerFactory;
-            _lyricProviders = lyricProviders;
+            _lyricManager = lyricManager;
         }
 
         private ILiveTvManager LivetvManager => _livetvManagerFactory.Value;
@@ -147,7 +147,7 @@ namespace Emby.Server.Implementations.Dto
             }
             else if (item is Audio)
             {
-                dto.HasLyrics = MediaBrowser.Controller.Lyrics.LyricInfo.HasLyricFile(_lyricProviders, item.Path);
+                dto.HasLyrics = _lyricManager.HasLyricFile(item);
             }
 
             if (item is IItemByName itemByName

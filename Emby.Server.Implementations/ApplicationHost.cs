@@ -583,8 +583,6 @@ namespace Emby.Server.Implementations
             serviceCollection.AddTransient(provider => new Lazy<ILibraryMonitor>(provider.GetRequiredService<ILibraryMonitor>));
             serviceCollection.AddTransient(provider => new Lazy<IProviderManager>(provider.GetRequiredService<IProviderManager>));
             serviceCollection.AddTransient(provider => new Lazy<IUserViewManager>(provider.GetRequiredService<IUserViewManager>));
-            serviceCollection.AddTransient<ILyricsProvider, TxtLyricsProvider>();
-            serviceCollection.AddTransient<ILyricsProvider, LrcLyricsProvider>();
             serviceCollection.AddSingleton<ILibraryManager, LibraryManager>();
             serviceCollection.AddSingleton<NamingOptions>();
 
@@ -603,6 +601,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IMediaSourceManager, MediaSourceManager>();
 
             serviceCollection.AddSingleton<ISubtitleManager, SubtitleManager>();
+            serviceCollection.AddSingleton<ILyricManager, LyricManager>();
 
             serviceCollection.AddSingleton<IProviderManager, ProviderManager>();
 
@@ -790,6 +789,7 @@ namespace Emby.Server.Implementations
             Resolve<ILiveTvManager>().AddParts(GetExports<ILiveTvService>(), GetExports<ITunerHost>(), GetExports<IListingsProvider>());
 
             Resolve<ISubtitleManager>().AddParts(GetExports<ISubtitleProvider>());
+            Resolve<ILyricManager>().AddParts(GetExports<ILyricProvider>());
 
             Resolve<IChannelManager>().AddParts(GetExports<IChannel>());
 
