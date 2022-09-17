@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using AutoMapper;
 using LrcParser.Model;
 using LrcParser.Parser;
 using MediaBrowser.Controller.Entities;
@@ -44,7 +45,8 @@ public class LrcLyricProvider : ILyricProvider
         List<Controller.Lyrics.Lyric> lyricList = new List<Controller.Lyrics.Lyric>();
         List<LrcParser.Model.Lyric> sortedLyricData = new List<LrcParser.Model.Lyric>();
 
-        IDictionary<string, string> metaData = new Dictionary<string, string>();
+        // Must be <string, object> for automapper support
+        IDictionary<string, object> metaData = new Dictionary<string, object>();
         string lrcFileContent = System.IO.File.ReadAllText(lyricFilePath);
 
         try
@@ -69,7 +71,7 @@ public class LrcLyricProvider : ILyricProvider
                     continue;
                 }
 
-                string metaDataFieldName = metaDataField[0][1..].Trim();
+                string metaDataFieldName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(metaDataField[0][1..].Trim().ToLowerInvariant());
                 string metaDataFieldValue = metaDataField[1][..^1].Trim();
 
                 metaData.Add(metaDataFieldName, metaDataFieldValue);
@@ -85,6 +87,9 @@ public class LrcLyricProvider : ILyricProvider
             return null;
         }
 
+        var config = new MapperConfiguration(cfg => { });
+        var mapper = config.CreateMapper();
+
         for (int i = 0; i < sortedLyricData.Count; i++)
         {
             var timeData = sortedLyricData[i].TimeTags.First().Value;
@@ -99,7 +104,7 @@ public class LrcLyricProvider : ILyricProvider
 
         if (metaData.Any())
         {
-           return new LyricResponse { Metadata = metaData, Lyrics = lyricList };
+           return new LyricResponse { Metadata = mapper.Map<Metadata>(metaData), Lyrics = lyricList };
         }
 
         return new LyricResponse { Lyrics = lyricList };

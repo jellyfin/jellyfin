@@ -10,7 +10,7 @@ public class LyricResponse
     /// <summary>
     /// Gets or sets Metadata.
     /// </summary>
-    public IDictionary<string, string>? Metadata { get; set; }
+    public Metadata? Metadata { get; set; }
 
     /// <summary>
     /// Gets or sets Lyrics.
