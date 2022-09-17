@@ -12,7 +12,7 @@ public interface ILyricManager
     /// </summary>
     /// <param name="item">The media item.</param>
     /// <returns>Lyrics for passed item.</returns>
-    LyricResponse GetLyrics(BaseItem item);
+    LyricResponse? GetLyrics(BaseItem item);
 
     /// <summary>
     /// Checks if requested item has a matching local lyric file.

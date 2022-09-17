@@ -22,7 +22,7 @@ public class LyricManager : ILyricManager
     }
 
     /// <inheritdoc />
-    public LyricResponse GetLyrics(BaseItem item)
+    public LyricResponse? GetLyrics(BaseItem item)
     {
         foreach (ILyricProvider provider in _lyricProviders)
         {

@@ -87,7 +87,12 @@ public class LrcLyricProvider : ILyricProvider
 
         for (int i = 0; i < sortedLyricData.Count; i++)
         {
-            var timeData = sortedLyricData[i].TimeTags.ToArray()[0].Value;
+            var timeData = sortedLyricData[i].TimeTags.First().Value;
+            if (timeData is null)
+            {
+                continue;
+            }
+
             long ticks = TimeSpan.FromMilliseconds((double)timeData).Ticks;
             lyricList.Add(new Controller.Lyrics.Lyric(sortedLyricData[i].Text, ticks));
         }
