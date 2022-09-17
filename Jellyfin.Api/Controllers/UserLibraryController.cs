@@ -397,7 +397,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the item's lyrics.</returns>
         [HttpGet("Users/{userId}/Items/{itemId}/Lyrics")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<QueryResult<LyricResponse>> GetLyrics([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
+        public ActionResult<LyricResponse> GetLyrics([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
         {
             var user = _userManager.GetUserById(userId);
 
