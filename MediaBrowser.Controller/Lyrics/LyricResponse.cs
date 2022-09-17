@@ -1,22 +1,19 @@
-#nullable disable
-
 using System.Collections.Generic;
 
-namespace MediaBrowser.Controller.Lyrics
+namespace MediaBrowser.Controller.Lyrics;
+
+/// <summary>
+/// LyricResponse model.
+/// </summary>
+public class LyricResponse
 {
     /// <summary>
-    /// LyricResponse model.
+    /// Gets or sets Metadata.
     /// </summary>
-    public class LyricResponse
-    {
-        /// <summary>
-        /// Gets or sets Metadata.
-        /// </summary>
-        public IDictionary<string, string> Metadata { get; set; }
+    public IDictionary<string, string>? Metadata { get; set; }
 
-        /// <summary>
-        /// Gets or sets Lyrics.
-        /// </summary>
-        public IEnumerable<Lyric> Lyrics { get; set; }
-    }
+    /// <summary>
+    /// Gets or sets Lyrics.
+    /// </summary>
+    public IEnumerable<Lyric>? Lyrics { get; set; }
 }

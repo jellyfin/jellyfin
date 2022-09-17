@@ -1,18 +1,28 @@
-namespace MediaBrowser.Controller.Lyrics
+namespace MediaBrowser.Controller.Lyrics;
+
+/// <summary>
+/// Lyric model.
+/// </summary>
+public class Lyric
 {
     /// <summary>
-    /// Lyric model.
+    /// Initializes a new instance of the <see cref="Lyric"/> class.
     /// </summary>
-    public class Lyric
+    /// <param name="start">The lyric start time in ticks.</param>
+    /// <param name="text">The lyric text.</param>
+    public Lyric(string text, long? start = null)
     {
-        /// <summary>
-        /// Gets or sets the start time in ticks.
-        /// </summary>
-        public long? Start { get; set; }
-
-        /// <summary>
-        /// Gets or sets the text.
-        /// </summary>
-        public string Text { get; set; } = string.Empty;
+        Start = start;
+        Text = text;
     }
+
+    /// <summary>
+    /// Gets the start time in ticks.
+    /// </summary>
+    public long? Start { get; }
+
+    /// <summary>
+    /// Gets the text.
+    /// </summary>
+    public string Text { get; }
 }
