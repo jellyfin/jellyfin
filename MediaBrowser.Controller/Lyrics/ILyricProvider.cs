@@ -22,8 +22,8 @@ namespace MediaBrowser.Controller.Lyrics
         /// <summary>
         /// Gets the lyrics.
         /// </summary>
-        /// <param name="item">The item to to process.</param>
-        /// <returns>Task{LyricResponse}.</returns>
+        /// <param name="item">The media item.</param>
+        /// <returns>If found, returns lyrics for passed item; otherwise, null.</returns>
         LyricResponse? GetLyrics(BaseItem item);
     }
 }

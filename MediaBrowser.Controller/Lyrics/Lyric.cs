@@ -1,12 +1,12 @@
 namespace MediaBrowser.Controller.Lyrics
 {
     /// <summary>
-    /// Lyric dto.
+    /// Lyric model.
     /// </summary>
     public class Lyric
     {
         /// <summary>
-        /// Gets or sets the start time (ticks).
+        /// Gets or sets the start time in ticks.
         /// </summary>
         public double? Start { get; set; }
 

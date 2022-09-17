@@ -11,16 +11,16 @@ using Microsoft.AspNetCore.Mvc;
 namespace MediaBrowser.Controller.Lyrics
 {
     /// <summary>
-    /// Item helper.
+    /// Lyric helper methods.
     /// </summary>
     public static class LyricInfo
     {
         /// <summary>
-        /// Checks if requested item has a matching lyric file.
+        /// Gets matching lyric file for a requested item.
         /// </summary>
-        /// <param name="lyricProvider">The current lyricProvider interface.</param>
+        /// <param name="lyricProvider">The lyricProvider interface to use.</param>
         /// <param name="itemPath">Path of requested item.</param>
-        /// <returns>True if item has a matching lyrics file.</returns>
+        /// <returns>Lyric file path if passed lyric provider's supported media type is found; otherwise, null.</returns>
         public static string? GetLyricFilePath(ILyricProvider lyricProvider, string itemPath)
         {
             if (lyricProvider.SupportedMediaTypes.Any())

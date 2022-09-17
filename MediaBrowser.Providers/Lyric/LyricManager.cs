@@ -36,32 +36,26 @@ namespace MediaBrowser.Providers.Lyric
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly ILocalizationManager _localization;
 
-        private ILyricProvider[] _lyricProviders;
+        private IEnumerable<ILyricProvider> _lyricProviders;
 
         public LyricManager(
             ILogger<LyricManager> logger,
             IFileSystem fileSystem,
             ILibraryMonitor monitor,
             IMediaSourceManager mediaSourceManager,
-            ILocalizationManager localizationManager)
+            ILocalizationManager localizationManager,
+            IEnumerable<ILyricProvider> lyricProviders)
         {
             _logger = logger;
             _fileSystem = fileSystem;
             _monitor = monitor;
             _mediaSourceManager = mediaSourceManager;
             _localization = localizationManager;
+            _lyricProviders = lyricProviders;
         }
 
         /// <inheritdoc />
-        public void AddParts(IEnumerable<ILyricProvider> lyricProviders)
-        {
-            _lyricProviders = lyricProviders
-                .OrderBy(i => i is IHasOrder hasOrder ? hasOrder.Order : 0)
-                .ToArray();
-        }
-
-        /// <inheritdoc />
-        public LyricResponse GetLyric(BaseItem item)
+        public LyricResponse GetLyrics(BaseItem item)
         {
             foreach (ILyricProvider provider in _lyricProviders)
             {

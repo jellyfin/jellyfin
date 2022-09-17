@@ -394,10 +394,10 @@ namespace Jellyfin.Api.Controllers
         /// <param name="itemId">Item id.</param>
         /// <response code="200">Lyrics returned.</response>
         /// <response code="404">Something went wrong. No Lyrics will be returned.</response>
-        /// <returns>An <see cref="OkResult"/> containing the intros to play.</returns>
+        /// <returns>An <see cref="OkResult"/> containing the item's lyrics.</returns>
         [HttpGet("Users/{userId}/Items/{itemId}/Lyrics")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<QueryResult<BaseItemDto>> GetLyrics([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
+        public ActionResult<QueryResult<LyricResponse>> GetLyrics([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
         {
             var user = _userManager.GetUserById(userId);
 
@@ -415,7 +415,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            var result = _lyricManager.GetLyric(item);
+            var result = _lyricManager.GetLyrics(item);
             if (result is not null)
             {
                 return Ok(result);
