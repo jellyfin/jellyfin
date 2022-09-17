@@ -8,6 +8,7 @@ using LrcParser.Model;
 using LrcParser.Parser;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Lyrics;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace MediaBrowser.Providers.Lyric
 {
@@ -56,7 +57,7 @@ namespace MediaBrowser.Providers.Lyric
             List<Controller.Lyrics.Lyric> lyricList = new List<Controller.Lyrics.Lyric>();
             List<LrcParser.Model.Lyric> sortedLyricData = new List<LrcParser.Model.Lyric>();
 
-            var metaData = new ExpandoObject() as IDictionary<string, object>;
+            IDictionary<string, string> metaData = new Dictionary<string, string>();
             string lrcFileContent = System.IO.File.ReadAllText(lyricFilePath);
 
             try
@@ -77,8 +78,8 @@ namespace MediaBrowser.Providers.Lyric
                 {
                     var metaDataField = metaDataRow.Split(":");
 
-                    string metaDataFieldName = metaDataField[0].Replace("[", string.Empty, StringComparison.Ordinal);
-                    string metaDataFieldValue = metaDataField[1].Replace("]", string.Empty, StringComparison.Ordinal);
+                    string metaDataFieldName = metaDataField[0].Replace("[", string.Empty, StringComparison.Ordinal).Trim();
+                    string metaDataFieldValue = metaDataField[1].Replace("]", string.Empty, StringComparison.Ordinal).Trim();
 
                     metaData.Add(metaDataFieldName, metaDataFieldValue);
                 }
@@ -96,13 +97,13 @@ namespace MediaBrowser.Providers.Lyric
             for (int i = 0; i < sortedLyricData.Count; i++)
             {
                 var timeData = sortedLyricData[i].TimeTags.ToArray()[0].Value;
-                double ticks = Convert.ToDouble(timeData, new NumberFormatInfo()) * 10000;
-                lyricList.Add(new Controller.Lyrics.Lyric { Start = Math.Ceiling(ticks), Text = sortedLyricData[i].Text });
+                long ticks = Convert.ToInt64(timeData, new NumberFormatInfo()) * 10000;
+                lyricList.Add(new Controller.Lyrics.Lyric { Start = ticks, Text = sortedLyricData[i].Text });
             }
 
             if (metaData.Any())
             {
-               return new LyricResponse { MetaData = metaData, Lyrics = lyricList };
+               return new LyricResponse { Metadata = metaData, Lyrics = lyricList };
             }
 
             return new LyricResponse { Lyrics = lyricList };

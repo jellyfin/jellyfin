@@ -10,9 +10,9 @@ namespace MediaBrowser.Controller.Lyrics
     public class LyricResponse
     {
         /// <summary>
-        /// Gets or sets MetaData.
+        /// Gets or sets Metadata.
         /// </summary>
-        public IDictionary<string, object> MetaData { get; set; }
+        public IDictionary<string, string> Metadata { get; set; }
 
         /// <summary>
         /// Gets or sets Lyrics.

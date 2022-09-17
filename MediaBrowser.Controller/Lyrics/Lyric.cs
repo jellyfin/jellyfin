@@ -8,7 +8,7 @@ namespace MediaBrowser.Controller.Lyrics
         /// <summary>
         /// Gets or sets the start time in ticks.
         /// </summary>
-        public double? Start { get; set; }
+        public long? Start { get; set; }
 
         /// <summary>
         /// Gets or sets the text.
