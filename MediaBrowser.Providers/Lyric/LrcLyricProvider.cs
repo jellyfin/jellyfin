@@ -4,8 +4,6 @@ using System.Collections.ObjectModel;
 using System.Dynamic;
 using System.Globalization;
 using System.Linq;
-using System.Threading.Tasks;
-using Jellyfin.Api.Helpers;
 using LrcParser.Model;
 using LrcParser.Parser;
 using MediaBrowser.Controller.Entities;

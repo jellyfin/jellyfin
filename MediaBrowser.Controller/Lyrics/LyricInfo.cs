@@ -1,12 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Lyrics;
-using MediaBrowser.Controller.Net;
-using Microsoft.AspNetCore.Mvc;
 
 namespace MediaBrowser.Controller.Lyrics
 {
