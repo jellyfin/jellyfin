@@ -97,7 +97,7 @@ public class LrcLyricProvider : ILyricProvider
             lyricList.Add(new Controller.Lyrics.Lyric(sortedLyricData[i].Text, ticks));
         }
 
-        if (fileMetaData.Any())
+        if (fileMetaData.Count != 0)
         {
             // Map metaData values from LRC file to LyricMetadata properties
             LyricMetadata lyricMetadata = MapMetadataValues(fileMetaData);
