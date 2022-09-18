@@ -10,7 +10,7 @@ public class LyricResponse
     /// <summary>
     /// Gets or sets Metadata.
     /// </summary>
-    public Metadata? Metadata { get; set; }
+    public LyricMetadata? Metadata { get; set; }
 
     /// <summary>
     /// Gets or sets Lyrics.

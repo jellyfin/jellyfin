@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Globalization;
 using System.Linq;
-using AutoMapper;
 using LrcParser.Model;
 using LrcParser.Parser;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Lyrics;
+using Newtonsoft.Json.Linq;
 
 namespace MediaBrowser.Providers.Lyric;
 
@@ -45,8 +44,7 @@ public class LrcLyricProvider : ILyricProvider
         List<Controller.Lyrics.Lyric> lyricList = new List<Controller.Lyrics.Lyric>();
         List<LrcParser.Model.Lyric> sortedLyricData = new List<LrcParser.Model.Lyric>();
 
-        // Must be <string, object> for automapper support
-        IDictionary<string, object> metaData = new Dictionary<string, object>();
+        IDictionary<string, string> fileMetaData = new Dictionary<string, string>();
         string lrcFileContent = System.IO.File.ReadAllText(lyricFilePath);
 
         try
@@ -71,10 +69,10 @@ public class LrcLyricProvider : ILyricProvider
                     continue;
                 }
 
-                string metaDataFieldName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(metaDataField[0][1..].Trim().ToLowerInvariant());
+                string metaDataFieldName = metaDataField[0][1..].Trim().ToLowerInvariant();
                 string metaDataFieldValue = metaDataField[1][..^1].Trim();
 
-                metaData.Add(metaDataFieldName, metaDataFieldValue);
+                fileMetaData.Add(metaDataFieldName, metaDataFieldValue);
             }
         }
         catch
@@ -86,9 +84,6 @@ public class LrcLyricProvider : ILyricProvider
         {
             return null;
         }
-
-        var config = new MapperConfiguration(cfg => { });
-        var mapper = config.CreateMapper();
 
         for (int i = 0; i < sortedLyricData.Count; i++)
         {
@@ -102,11 +97,72 @@ public class LrcLyricProvider : ILyricProvider
             lyricList.Add(new Controller.Lyrics.Lyric(sortedLyricData[i].Text, ticks));
         }
 
-        if (metaData.Any())
+        if (fileMetaData.Any())
         {
-           return new LyricResponse { Metadata = mapper.Map<Metadata>(metaData), Lyrics = lyricList };
+            // Map metaData values from LRC file to LyricMetadata properties
+            LyricMetadata lyricMetadata = MapMetadataValues(fileMetaData);
+
+            return new LyricResponse { Metadata = lyricMetadata, Lyrics = lyricList };
         }
 
         return new LyricResponse { Lyrics = lyricList };
+    }
+
+    /// <summary>
+    /// Converts metadata from an LRC file to LyricMetadata properties.
+    /// </summary>
+    /// <param name="metaData">The metadata from the LRC file.</param>
+    /// <returns>A lyricMetadata object with mapped property data.</returns>
+    private LyricMetadata MapMetadataValues(IDictionary<string, string> metaData)
+    {
+        LyricMetadata lyricMetadata = new LyricMetadata();
+
+        if (metaData.TryGetValue("ar", out var artist) && artist is not null)
+        {
+            lyricMetadata.Artist = artist;
+        }
+
+        if (metaData.TryGetValue("al", out var album) && album is not null)
+        {
+            lyricMetadata.Album = album;
+        }
+
+        if (metaData.TryGetValue("ti", out var title) && title is not null)
+        {
+            lyricMetadata.Title = title;
+        }
+
+        if (metaData.TryGetValue("au", out var author) && author is not null)
+        {
+            lyricMetadata.Author = author;
+        }
+
+        if (metaData.TryGetValue("length", out var length) && length is not null)
+        {
+            lyricMetadata.Length = length;
+        }
+
+        if (metaData.TryGetValue("by", out var by) && by is not null)
+        {
+            lyricMetadata.By = by;
+        }
+
+        if (metaData.TryGetValue("offset", out var offset) && offset is not null)
+        {
+            lyricMetadata.Offset = offset;
+        }
+
+        if (metaData.TryGetValue("re", out var creator) && creator is not null)
+        {
+            lyricMetadata.Creator = creator;
+        }
+
+        if (metaData.TryGetValue("ve", out var version) && version is not null)
+        {
+            lyricMetadata.Version = version;
+        }
+
+        return lyricMetadata;
+
     }
 }
