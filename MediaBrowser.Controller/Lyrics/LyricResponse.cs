@@ -15,5 +15,5 @@ public class LyricResponse
     /// <summary>
     /// Gets or sets Lyrics.
     /// </summary>
-    public IEnumerable<Lyric>? Lyrics { get; set; }
+    public IEnumerable<Lyric> Lyrics { get; set; }
 }
