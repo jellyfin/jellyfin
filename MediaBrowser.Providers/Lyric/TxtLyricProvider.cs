@@ -16,13 +16,7 @@ public class TxtLyricProvider : ILyricProvider
     public string Name { get; } = "TxtLyricProvider";
 
     /// <inheritdoc />
-    public IEnumerable<string> SupportedMediaTypes
-    {
-        get => new Collection<string>
-            {
-                "lrc", "txt"
-            };
-    }
+    public IEnumerable<string> SupportedMediaTypes { get; } = new[] { "lrc", "txt" };
 
     /// <summary>
     /// Opens lyric file for the requested item, and processes it for API return.
