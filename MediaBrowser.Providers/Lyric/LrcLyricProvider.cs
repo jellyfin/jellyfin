@@ -93,7 +93,7 @@ public class LrcLyricProvider : ILyricProvider
                 continue;
             }
 
-            long ticks = TimeSpan.FromMilliseconds((double)timeData).Ticks;
+            long ticks = TimeSpan.FromMilliseconds(timeData.Value).Ticks;
             lyricList.Add(new Controller.Lyrics.Lyric(sortedLyricData[i].Text, ticks));
         }
 
