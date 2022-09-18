@@ -589,20 +589,18 @@ namespace MediaBrowser.Model.Dlna
             }
 
             // Collect candidate audio streams
-            IEnumerable<MediaStream> candidateAudioStreams = audioStream == null ? Array.Empty<MediaStream>() : new[] { audioStream };
+            ICollection<MediaStream> candidateAudioStreams = audioStream == null ? Array.Empty<MediaStream>() : new[] { audioStream };
             if (!options.AudioStreamIndex.HasValue || options.AudioStreamIndex < 0)
             {
                 if (audioStream?.IsDefault == true)
                 {
-                    candidateAudioStreams = item.MediaStreams.Where(stream => stream.Type == MediaStreamType.Audio && stream.IsDefault);
+                    candidateAudioStreams = item.MediaStreams.Where(stream => stream.Type == MediaStreamType.Audio && stream.IsDefault).ToArray();
                 }
                 else
                 {
-                    candidateAudioStreams = item.MediaStreams.Where(stream => stream.Type == MediaStreamType.Audio && stream.Language == audioStream?.Language);
+                    candidateAudioStreams = item.MediaStreams.Where(stream => stream.Type == MediaStreamType.Audio && stream.Language == audioStream?.Language).ToArray();
                 }
             }
-
-            candidateAudioStreams = candidateAudioStreams.ToArray();
 
             var videoStream = item.VideoStream;
 
@@ -1059,7 +1057,7 @@ namespace MediaBrowser.Model.Dlna
             MediaSourceInfo mediaSource,
             MediaStream videoStream,
             MediaStream audioStream,
-            IEnumerable<MediaStream> candidateAudioStreams,
+            ICollection<MediaStream> candidateAudioStreams,
             MediaStream subtitleStream,
             bool isEligibleForDirectPlay,
             bool isEligibleForDirectStream)
