@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using LrcParser.Model;
 using LrcParser.Parser;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Lyrics;
-using Newtonsoft.Json.Linq;
+using MediaBrowser.Controller.Resolvers;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Lyric;
 
@@ -15,8 +15,25 @@ namespace MediaBrowser.Providers.Lyric;
 /// </summary>
 public class LrcLyricProvider : ILyricProvider
 {
+    private readonly ILogger<LrcLyricProvider> _logger;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="LrcLyricProvider"/> class.
+    /// </summary>
+    /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
+    public LrcLyricProvider(ILogger<LrcLyricProvider> logger)
+    {
+        _logger = logger;
+    }
+
     /// <inheritdoc />
     public string Name => "LrcLyricProvider";
+
+    /// <summary>
+    /// Gets the priority.
+    /// </summary>
+    /// <value>The priority.</value>
+    public ResolverPriority Priority => ResolverPriority.First;
 
     /// <inheritdoc />
     public IEnumerable<string> SupportedMediaTypes { get; } = new[] { "lrc" };
@@ -38,7 +55,7 @@ public class LrcLyricProvider : ILyricProvider
         List<Controller.Lyrics.Lyric> lyricList = new List<Controller.Lyrics.Lyric>();
         List<LrcParser.Model.Lyric> sortedLyricData = new List<LrcParser.Model.Lyric>();
 
-        IDictionary<string, string> fileMetaData = new Dictionary<string, string>();
+        IDictionary<string, string> fileMetaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         string lrcFileContent = System.IO.File.ReadAllText(lyricFilePath);
 
         try
@@ -63,15 +80,15 @@ public class LrcLyricProvider : ILyricProvider
                     continue;
                 }
 
-                string metaDataFieldName = metaDataField[0][1..].Trim().ToLowerInvariant();
+                string metaDataFieldName = metaDataField[0][1..].Trim();
                 string metaDataFieldValue = metaDataField[1][..^1].Trim();
 
                 fileMetaData.Add(metaDataFieldName, metaDataFieldValue);
             }
         }
-        catch
+        catch (Exception ex)
         {
-            return null;
+            _logger.LogError(ex, "Error parsing lyric data from {Provider}", Name);
         }
 
         if (sortedLyricData.Count == 0)
@@ -111,52 +128,51 @@ public class LrcLyricProvider : ILyricProvider
     {
         LyricMetadata lyricMetadata = new LyricMetadata();
 
-        if (metaData.TryGetValue("ar", out var artist) && artist is not null)
+        if (metaData.TryGetValue("ar", out var artist) && !string.IsNullOrEmpty(artist))
         {
             lyricMetadata.Artist = artist;
         }
 
-        if (metaData.TryGetValue("al", out var album) && album is not null)
+        if (metaData.TryGetValue("al", out var album) && !string.IsNullOrEmpty(album))
         {
             lyricMetadata.Album = album;
         }
 
-        if (metaData.TryGetValue("ti", out var title) && title is not null)
+        if (metaData.TryGetValue("ti", out var title) && !string.IsNullOrEmpty(title))
         {
             lyricMetadata.Title = title;
         }
 
-        if (metaData.TryGetValue("au", out var author) && author is not null)
+        if (metaData.TryGetValue("au", out var author) && !string.IsNullOrEmpty(author))
         {
             lyricMetadata.Author = author;
         }
 
-        if (metaData.TryGetValue("length", out var length) && length is not null)
+        if (metaData.TryGetValue("length", out var length) && !string.IsNullOrEmpty(length))
         {
             lyricMetadata.Length = length;
         }
 
-        if (metaData.TryGetValue("by", out var by) && by is not null)
+        if (metaData.TryGetValue("by", out var by) && !string.IsNullOrEmpty(by))
         {
             lyricMetadata.By = by;
         }
 
-        if (metaData.TryGetValue("offset", out var offset) && offset is not null)
+        if (metaData.TryGetValue("offset", out var offset) && !string.IsNullOrEmpty(offset))
         {
             lyricMetadata.Offset = offset;
         }
 
-        if (metaData.TryGetValue("re", out var creator) && creator is not null)
+        if (metaData.TryGetValue("re", out var creator) && !string.IsNullOrEmpty(creator))
         {
             lyricMetadata.Creator = creator;
         }
 
-        if (metaData.TryGetValue("ve", out var version) && version is not null)
+        if (metaData.TryGetValue("ve", out var version) && !string.IsNullOrEmpty(version))
         {
             lyricMetadata.Version = version;
         }
 
         return lyricMetadata;
-
     }
 }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Resolvers;
 
 namespace MediaBrowser.Controller.Lyrics;
 
@@ -12,6 +13,12 @@ public interface ILyricProvider
     /// Gets a value indicating the provider name.
     /// </summary>
     string Name { get; }
+
+    /// <summary>
+    /// Gets the priority.
+    /// </summary>
+    /// <value>The priority.</value>
+    ResolverPriority Priority { get; }
 
     /// <summary>
     /// Gets the supported media types for this provider.

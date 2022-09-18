@@ -18,7 +18,7 @@ public class LyricManager : ILyricManager
     /// <param name="lyricProviders">All found lyricProviders.</param>
     public LyricManager(IEnumerable<ILyricProvider> lyricProviders)
     {
-        _lyricProviders = lyricProviders.ToArray();
+        _lyricProviders = lyricProviders.OrderBy(i => i.Priority).ToArray();
     }
 
     /// <inheritdoc />

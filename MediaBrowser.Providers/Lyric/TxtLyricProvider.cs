@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Lyrics;
+using MediaBrowser.Controller.Resolvers;
 
 namespace MediaBrowser.Providers.Lyric;
 
@@ -14,6 +15,12 @@ public class TxtLyricProvider : ILyricProvider
 {
     /// <inheritdoc />
     public string Name => "TxtLyricProvider";
+
+    /// <summary>
+    /// Gets the priority.
+    /// </summary>
+    /// <value>The priority.</value>
+    public ResolverPriority Priority => ResolverPriority.Second;
 
     /// <inheritdoc />
     public IEnumerable<string> SupportedMediaTypes { get; } = new[] { "lrc", "txt" };
