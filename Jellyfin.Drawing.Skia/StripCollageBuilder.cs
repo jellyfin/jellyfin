@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using SkiaSharp;
+using SkiaSharp.HarfBuzz;
 
 namespace Jellyfin.Drawing.Skia
 {
@@ -92,6 +93,13 @@ namespace Jellyfin.Drawing.Skia
             pixmap.Encode(outputStream, GetEncodedFormat(outputPath), 90);
         }
 
+        internal bool HasArabicCharacters(string? text)
+        {
+            Regex regex = new Regex(
+                "[\u0600-\u06ff]|[\u0750-\u077f]|[\ufb50-\ufc3f]|[\ufe70-\ufefc]");
+            return text != null && regex.IsMatch(text);
+        }
+
         private SKBitmap BuildThumbCollageBitmap(IReadOnlyList<string> paths, int width, int height, string? libraryName)
         {
             var bitmap = new SKBitmap(width, height);
@@ -147,7 +155,14 @@ namespace Jellyfin.Drawing.Skia
                 textPaint.TextSize = 0.9f * width * textPaint.TextSize / textWidth;
             }
 
-            canvas.DrawText(libraryName, width / 2f, (height / 2f) + (textPaint.FontMetrics.XHeight / 2), textPaint);
+            if (HasArabicCharacters(libraryName))
+            {
+                canvas.DrawShapedText(libraryName, 180, (height / 2f) + (textPaint.FontMetrics.XHeight / 2), textPaint);
+            }
+            else
+            {
+                canvas.DrawText(libraryName, width / 2f, (height / 2f) + (textPaint.FontMetrics.XHeight / 2), textPaint);
+            }
 
             return bitmap;
         }
