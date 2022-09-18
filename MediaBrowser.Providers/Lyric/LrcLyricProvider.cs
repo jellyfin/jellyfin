@@ -16,7 +16,7 @@ namespace MediaBrowser.Providers.Lyric;
 public class LrcLyricProvider : ILyricProvider
 {
     /// <inheritdoc />
-    public string Name { get; } = "LrcLyricProvider";
+    public string Name => "LrcLyricProvider";
 
     /// <inheritdoc />
     public IEnumerable<string> SupportedMediaTypes
