@@ -10,10 +10,10 @@ public class LyricResponse
     /// <summary>
     /// Gets or sets Metadata.
     /// </summary>
-    public LyricMetadata Metadata { get; set; }
+    public LyricMetadata Metadata { get; set; } = new LyricMetadata();
 
     /// <summary>
     /// Gets or sets Lyrics.
     /// </summary>
-    public IEnumerable<LyricLine> Lyrics { get; set; }
+    public IReadOnlyCollection<LyricLine> Lyrics { get; set; } = new List<LyricLine>();
 }
