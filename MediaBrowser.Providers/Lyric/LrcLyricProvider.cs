@@ -19,13 +19,7 @@ public class LrcLyricProvider : ILyricProvider
     public string Name => "LrcLyricProvider";
 
     /// <inheritdoc />
-    public IEnumerable<string> SupportedMediaTypes
-    {
-        get => new Collection<string>
-            {
-                "lrc"
-            };
-    }
+    public IEnumerable<string> SupportedMediaTypes { get; } = new[] { "lrc" };
 
     /// <summary>
     /// Opens lyric file for the requested item, and processes it for API return.
