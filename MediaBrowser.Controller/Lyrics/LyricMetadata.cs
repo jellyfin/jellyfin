@@ -1,3 +1,5 @@
+using System;
+
 namespace MediaBrowser.Controller.Lyrics;
 
 /// <summary>
@@ -28,7 +30,7 @@ public class LyricMetadata
     /// <summary>
     /// Gets or sets Length - How long the song is.
     /// </summary>
-    public string? Length { get; set; }
+    public long? Length { get; set; }
 
     /// <summary>
     /// Gets or sets By - Creator of the LRC file.
@@ -38,7 +40,7 @@ public class LyricMetadata
     /// <summary>
     /// Gets or sets Offset - Offset:+/- Timestamp adjustment in milliseconds.
     /// </summary>
-    public string? Offset { get; set; }
+    public long? Offset { get; set; }
 
     /// <summary>
     /// Gets or sets Creator - The Software used to create the LRC file.

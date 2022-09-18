@@ -3,14 +3,14 @@ namespace MediaBrowser.Controller.Lyrics;
 /// <summary>
 /// Lyric model.
 /// </summary>
-public class Lyric
+public class LyricLine
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="Lyric"/> class.
+    /// Initializes a new instance of the <see cref="LyricLine"/> class.
     /// </summary>
     /// <param name="start">The lyric start time in ticks.</param>
     /// <param name="text">The lyric text.</param>
-    public Lyric(string text, long? start = null)
+    public LyricLine(string text, long? start = null)
     {
         Start = start;
         Text = text;

@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using LrcParser.Model;
 using LrcParser.Parser;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Resolvers;
+using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Lyric;
@@ -36,7 +38,7 @@ public class LrcLyricProvider : ILyricProvider
     public ResolverPriority Priority => ResolverPriority.First;
 
     /// <inheritdoc />
-    public IEnumerable<string> SupportedMediaTypes { get; } = new[] { "lrc" };
+    public IReadOnlyCollection<string> SupportedMediaTypes { get; } = new[] { "lrc" };
 
     /// <summary>
     /// Opens lyric file for the requested item, and processes it for API return.
@@ -52,7 +54,7 @@ public class LrcLyricProvider : ILyricProvider
             return null;
         }
 
-        List<Controller.Lyrics.Lyric> lyricList = new List<Controller.Lyrics.Lyric>();
+        List<LyricLine> lyricList = new List<LyricLine>();
         List<LrcParser.Model.Lyric> sortedLyricData = new List<LrcParser.Model.Lyric>();
 
         IDictionary<string, string> fileMetaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -74,14 +76,28 @@ public class LrcLyricProvider : ILyricProvider
 
             foreach (string metaDataRow in metaDataRows)
             {
-                var metaDataField = metaDataRow.Split(':');
-                if (metaDataField.Length != 2)
+                int colonCount = metaDataRow.Count(f => (f == ':'));
+                if (colonCount == 0)
                 {
                     continue;
                 }
 
-                string metaDataFieldName = metaDataField[0][1..].Trim();
-                string metaDataFieldValue = metaDataField[1][..^1].Trim();
+                string[] metaDataField;
+                string metaDataFieldName;
+                string metaDataFieldValue;
+
+                if (colonCount == 1)
+                {
+                    metaDataField = metaDataRow.Split(':');
+                    metaDataFieldName = metaDataField[0][1..].Trim();
+                    metaDataFieldValue = metaDataField[1][..^1].Trim();
+                }
+                else
+                {
+                    int colonIndex = metaDataRow.IndexOf(':', StringComparison.OrdinalIgnoreCase);
+                    metaDataFieldName = metaDataRow[..colonIndex][1..].Trim();
+                    metaDataFieldValue = metaDataRow[(colonIndex + 1)..][..^1].Trim();
+                }
 
                 fileMetaData.Add(metaDataFieldName, metaDataFieldValue);
             }
@@ -105,7 +121,7 @@ public class LrcLyricProvider : ILyricProvider
             }
 
             long ticks = TimeSpan.FromMilliseconds(timeData.Value).Ticks;
-            lyricList.Add(new Controller.Lyrics.Lyric(sortedLyricData[i].Text, ticks));
+            lyricList.Add(new LyricLine(sortedLyricData[i].Text, ticks));
         }
 
         if (fileMetaData.Count != 0)
@@ -150,7 +166,23 @@ public class LrcLyricProvider : ILyricProvider
 
         if (metaData.TryGetValue("length", out var length) && !string.IsNullOrEmpty(length))
         {
-            lyricMetadata.Length = length;
+            // Ensure minutes include leading zero
+            var lengthData = length.Split(':');
+            if (lengthData[0].Length == 1)
+            {
+                length = "0" + length;
+            }
+
+            // If only Minutes and Seconds were provided, prepend zeros for hours
+            if (lengthData.Length == 2)
+            {
+                length = "00:" + length;
+            }
+
+            if (DateTime.TryParseExact(length, "HH:mm:ss", null, DateTimeStyles.None, out var value))
+            {
+                lyricMetadata.Length = value.TimeOfDay.Ticks;
+            }
         }
 
         if (metaData.TryGetValue("by", out var by) && !string.IsNullOrEmpty(by))
@@ -160,7 +192,10 @@ public class LrcLyricProvider : ILyricProvider
 
         if (metaData.TryGetValue("offset", out var offset) && !string.IsNullOrEmpty(offset))
         {
-            lyricMetadata.Offset = offset;
+            if (int.TryParse(offset, out var value))
+            {
+                lyricMetadata.Offset = TimeSpan.FromMilliseconds(value).Ticks;
+            }
         }
 
         if (metaData.TryGetValue("re", out var creator) && !string.IsNullOrEmpty(creator))

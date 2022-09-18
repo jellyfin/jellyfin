@@ -1,7 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Resolvers;
@@ -23,7 +20,7 @@ public class TxtLyricProvider : ILyricProvider
     public ResolverPriority Priority => ResolverPriority.Second;
 
     /// <inheritdoc />
-    public IEnumerable<string> SupportedMediaTypes { get; } = new[] { "lrc", "txt" };
+    public IReadOnlyCollection<string> SupportedMediaTypes { get; } = new[] { "lrc", "txt" };
 
     /// <summary>
     /// Opens lyric file for the requested item, and processes it for API return.
@@ -41,7 +38,7 @@ public class TxtLyricProvider : ILyricProvider
 
         string[] lyricTextLines = System.IO.File.ReadAllLines(lyricFilePath);
 
-        List<Controller.Lyrics.Lyric> lyricList = new List<Controller.Lyrics.Lyric>();
+        List<LyricLine> lyricList = new List<LyricLine>();
 
         if (lyricTextLines.Length == 0)
         {
@@ -50,7 +47,7 @@ public class TxtLyricProvider : ILyricProvider
 
         foreach (string lyricTextLine in lyricTextLines)
         {
-            lyricList.Add(new Controller.Lyrics.Lyric(lyricTextLine));
+            lyricList.Add(new LyricLine(lyricTextLine));
         }
 
         return new LyricResponse { Lyrics = lyricList };

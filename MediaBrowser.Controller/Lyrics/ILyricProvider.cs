@@ -24,7 +24,7 @@ public interface ILyricProvider
     /// Gets the supported media types for this provider.
     /// </summary>
     /// <value>The supported media types.</value>
-    IEnumerable<string> SupportedMediaTypes { get; }
+    IReadOnlyCollection<string> SupportedMediaTypes { get; }
 
     /// <summary>
     /// Gets the lyrics.
