@@ -13,7 +13,7 @@ namespace MediaBrowser.Providers.Lyric;
 public class TxtLyricProvider : ILyricProvider
 {
     /// <inheritdoc />
-    public string Name { get; } = "TxtLyricProvider";
+    public string Name => "TxtLyricProvider";
 
     /// <inheritdoc />
     public IEnumerable<string> SupportedMediaTypes { get; } = new[] { "lrc", "txt" };
