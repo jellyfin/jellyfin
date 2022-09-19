@@ -8,8 +8,8 @@ public class LyricLine
     /// <summary>
     /// Initializes a new instance of the <see cref="LyricLine"/> class.
     /// </summary>
-    /// <param name="start">The lyric start time in ticks.</param>
     /// <param name="text">The lyric text.</param>
+    /// <param name="start">The lyric start time in ticks.</param>
     public LyricLine(string text, long? start = null)
     {
         Start = start;

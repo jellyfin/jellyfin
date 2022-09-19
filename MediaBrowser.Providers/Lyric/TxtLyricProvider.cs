@@ -20,7 +20,7 @@ public class TxtLyricProvider : ILyricProvider
     public ResolverPriority Priority => ResolverPriority.Second;
 
     /// <inheritdoc />
-    public IReadOnlyCollection<string> SupportedMediaTypes { get; } = new[] { "lrc", "txt" };
+    public IReadOnlyCollection<string> SupportedMediaTypes { get; } = new[] { "lrc", "elrc", "txt" };
 
     /// <summary>
     /// Opens lyric file for the requested item, and processes it for API return.
@@ -38,7 +38,7 @@ public class TxtLyricProvider : ILyricProvider
 
         string[] lyricTextLines = System.IO.File.ReadAllLines(lyricFilePath);
 
-        List<LyricLine> lyricList = new List<LyricLine>();
+        List<LyricLine> lyricList = new();
 
         if (lyricTextLines.Length == 0)
         {

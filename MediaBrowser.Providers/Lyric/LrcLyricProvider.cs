@@ -38,7 +38,7 @@ public class LrcLyricProvider : ILyricProvider
     public ResolverPriority Priority => ResolverPriority.First;
 
     /// <inheritdoc />
-    public IReadOnlyCollection<string> SupportedMediaTypes { get; } = new[] { "lrc" };
+    public IReadOnlyCollection<string> SupportedMediaTypes { get; } = new[] { "lrc", "elrc" };
 
     /// <summary>
     /// Opens lyric file for the requested item, and processes it for API return.
@@ -54,8 +54,8 @@ public class LrcLyricProvider : ILyricProvider
             return null;
         }
 
-        List<LyricLine> lyricList = new List<LyricLine>();
-        List<LrcParser.Model.Lyric> sortedLyricData = new List<LrcParser.Model.Lyric>();
+        List<LyricLine> lyricList = new();
+        List<LrcParser.Model.Lyric> sortedLyricData = new();
 
         IDictionary<string, string> fileMetaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         string lrcFileContent = System.IO.File.ReadAllText(lyricFilePath);
@@ -85,19 +85,11 @@ public class LrcLyricProvider : ILyricProvider
                 string[] metaDataField;
                 string metaDataFieldName;
                 string metaDataFieldValue;
+                string[] test;
 
-                if (colonCount == 1)
-                {
-                    metaDataField = metaDataRow.Split(':');
-                    metaDataFieldName = metaDataField[0][1..].Trim();
-                    metaDataFieldValue = metaDataField[1][..^1].Trim();
-                }
-                else
-                {
-                    int colonIndex = metaDataRow.IndexOf(':', StringComparison.OrdinalIgnoreCase);
-                    metaDataFieldName = metaDataRow[..colonIndex][1..].Trim();
-                    metaDataFieldValue = metaDataRow[(colonIndex + 1)..][..^1].Trim();
-                }
+                metaDataField = metaDataRow.Split(':', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                metaDataFieldName = metaDataField[0][1..].Trim();
+                metaDataFieldValue = metaDataField[1][..^1].Trim();
 
                 fileMetaData.Add(metaDataFieldName, metaDataFieldValue);
             }
@@ -142,7 +134,7 @@ public class LrcLyricProvider : ILyricProvider
     /// <returns>A lyricMetadata object with mapped property data.</returns>
     private LyricMetadata MapMetadataValues(IDictionary<string, string> metaData)
     {
-        LyricMetadata lyricMetadata = new LyricMetadata();
+        LyricMetadata lyricMetadata = new();
 
         if (metaData.TryGetValue("ar", out var artist) && !string.IsNullOrEmpty(artist))
         {
@@ -166,20 +158,7 @@ public class LrcLyricProvider : ILyricProvider
 
         if (metaData.TryGetValue("length", out var length) && !string.IsNullOrEmpty(length))
         {
-            // Ensure minutes include leading zero
-            var lengthData = length.Split(':');
-            if (lengthData[0].Length == 1)
-            {
-                length = "0" + length;
-            }
-
-            // If only Minutes and Seconds were provided, prepend zeros for hours
-            if (lengthData.Length == 2)
-            {
-                length = "00:" + length;
-            }
-
-            if (DateTime.TryParseExact(length, "HH:mm:ss", null, DateTimeStyles.None, out var value))
+            if (DateTime.TryParseExact(length, new string[] { "HH:mm:ss", "H:mm:ss", "mm:ss", "m:ss" }, null, DateTimeStyles.None, out var value))
             {
                 lyricMetadata.Length = value.TimeOfDay.Ticks;
             }
