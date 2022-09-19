@@ -18,6 +18,8 @@ public class LrcLyricProvider : ILyricProvider
 {
     private readonly ILogger<LrcLyricProvider> _logger;
 
+    private static readonly IReadOnlyList<string> _acceptedTimeFormats = new string[] { "HH:mm:ss", "H:mm:ss", "mm:ss", "m:ss" };
+
     /// <summary>
     /// Initializes a new instance of the <see cref="LrcLyricProvider"/> class.
     /// </summary>
@@ -38,8 +40,6 @@ public class LrcLyricProvider : ILyricProvider
 
     /// <inheritdoc />
     public IReadOnlyCollection<string> SupportedMediaTypes { get; } = new[] { "lrc", "elrc" };
-
-    private static readonly IReadOnlyList<string> _acceptedTimeFormats = new string[] { "HH:mm:ss", "H:mm:ss", "mm:ss", "m:ss" };
 
     /// <summary>
     /// Opens lyric file for the requested item, and processes it for API return.
@@ -83,8 +83,7 @@ public class LrcLyricProvider : ILyricProvider
 
         foreach (string metaDataRow in metaDataRows)
         {
-            int colonCount = metaDataRow.Count(f => (f == ':'));
-            if (colonCount == 0)
+            if (!metaDataRow.Contains(':', StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
@@ -157,7 +156,7 @@ public class LrcLyricProvider : ILyricProvider
 
         if (metaData.TryGetValue("length", out var length) && !string.IsNullOrEmpty(length))
         {
-            if (DateTime.TryParseExact(length, AcceptedTimeFormats, null, DateTimeStyles.None, out var value))
+            if (DateTime.TryParseExact(length, _acceptedTimeFormats.ToArray(), null, DateTimeStyles.None, out var value))
             {
                 lyricMetadata.Length = value.TimeOfDay.Ticks;
             }
