@@ -7,7 +7,6 @@ using LrcParser.Parser;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Lyric;
@@ -54,55 +53,53 @@ public class LrcLyricProvider : ILyricProvider
             return null;
         }
 
-        List<LyricLine> lyricList = new();
-        List<LrcParser.Model.Lyric> sortedLyricData = new();
-
         IDictionary<string, string> fileMetaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         string lrcFileContent = System.IO.File.ReadAllText(lyricFilePath);
+
+        Song lyricData;
 
         try
         {
             // Parse and sort lyric rows
             LyricParser lrcLyricParser = new LrcParser.Parser.Lrc.LrcParser();
-            Song lyricData = lrcLyricParser.Decode(lrcFileContent);
-            sortedLyricData = lyricData.Lyrics.Where(x => x.TimeTags.Count > 0).OrderBy(x => x.TimeTags.First().Value).ToList();
-
-            // Parse metadata rows
-            var metaDataRows = lyricData.Lyrics
-                .Where(x => x.TimeTags.Count == 0)
-                .Where(x => x.Text.StartsWith('[') && x.Text.EndsWith(']'))
-                .Select(x => x.Text)
-                .ToList();
-
-            foreach (string metaDataRow in metaDataRows)
-            {
-                int colonCount = metaDataRow.Count(f => (f == ':'));
-                if (colonCount == 0)
-                {
-                    continue;
-                }
-
-                string[] metaDataField;
-                string metaDataFieldName;
-                string metaDataFieldValue;
-                string[] test;
-
-                metaDataField = metaDataRow.Split(':', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                metaDataFieldName = metaDataField[0][1..].Trim();
-                metaDataFieldValue = metaDataField[1][..^1].Trim();
-
-                fileMetaData.Add(metaDataFieldName, metaDataFieldValue);
-            }
+            lyricData = lrcLyricParser.Decode(lrcFileContent);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error parsing lyric data from {Provider}", Name);
+            return null;
+        }
+
+        List<LrcParser.Model.Lyric> sortedLyricData = lyricData.Lyrics.Where(x => x.TimeTags.Count > 0).OrderBy(x => x.TimeTags.First().Value).ToList();
+
+        // Parse metadata rows
+        var metaDataRows = lyricData.Lyrics
+            .Where(x => x.TimeTags.Count == 0)
+            .Where(x => x.Text.StartsWith('[') && x.Text.EndsWith(']'))
+            .Select(x => x.Text)
+            .ToList();
+
+        foreach (string metaDataRow in metaDataRows)
+        {
+            int colonCount = metaDataRow.Count(f => (f == ':'));
+            if (colonCount == 0)
+            {
+                continue;
+            }
+
+            string[] metaDataField = metaDataRow.Split(':', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            string metaDataFieldName = metaDataField[0][1..].Trim();
+            string metaDataFieldValue = metaDataField[1][..^1].Trim();
+
+            fileMetaData.Add(metaDataFieldName, metaDataFieldValue);
         }
 
         if (sortedLyricData.Count == 0)
         {
             return null;
         }
+
+        List<LyricLine> lyricList = new();
 
         for (int i = 0; i < sortedLyricData.Count; i++)
         {
@@ -132,7 +129,7 @@ public class LrcLyricProvider : ILyricProvider
     /// </summary>
     /// <param name="metaData">The metadata from the LRC file.</param>
     /// <returns>A lyricMetadata object with mapped property data.</returns>
-    private LyricMetadata MapMetadataValues(IDictionary<string, string> metaData)
+    private static LyricMetadata MapMetadataValues(IDictionary<string, string> metaData)
     {
         LyricMetadata lyricMetadata = new();
 

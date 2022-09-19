@@ -38,12 +38,12 @@ public class TxtLyricProvider : ILyricProvider
 
         string[] lyricTextLines = System.IO.File.ReadAllLines(lyricFilePath);
 
-        List<LyricLine> lyricList = new();
-
         if (lyricTextLines.Length == 0)
         {
             return null;
         }
+
+        List<LyricLine> lyricList = new(lyricTextLines.Length);
 
         foreach (string lyricTextLine in lyricTextLines)
         {
