@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Lyrics;
@@ -15,5 +16,5 @@ public class LyricResponse
     /// <summary>
     /// Gets or sets Lyrics.
     /// </summary>
-    public IReadOnlyList<LyricLine> Lyrics { get; set; } = new List<LyricLine>();
+    public IReadOnlyList<LyricLine> Lyrics { get; set; } = Array.Empty<LyricLine>();
 }

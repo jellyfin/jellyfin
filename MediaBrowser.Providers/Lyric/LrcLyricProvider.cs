@@ -39,6 +39,8 @@ public class LrcLyricProvider : ILyricProvider
     /// <inheritdoc />
     public IReadOnlyCollection<string> SupportedMediaTypes { get; } = new[] { "lrc", "elrc" };
 
+    private static string[] AcceptedTimeFormats => new[] { "HH:mm:ss", "H:mm:ss", "mm:ss", "m:ss" };
+
     /// <summary>
     /// Opens lyric file for the requested item, and processes it for API return.
     /// </summary>
@@ -88,8 +90,8 @@ public class LrcLyricProvider : ILyricProvider
             }
 
             string[] metaDataField = metaDataRow.Split(':', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            string metaDataFieldName = metaDataField[0][1..].Trim();
-            string metaDataFieldValue = metaDataField[1][..^1].Trim();
+            string metaDataFieldName = metaDataField[0][1..];
+            string metaDataFieldValue = metaDataField[1][..^1];
 
             fileMetaData.Add(metaDataFieldName, metaDataFieldValue);
         }
@@ -155,7 +157,7 @@ public class LrcLyricProvider : ILyricProvider
 
         if (metaData.TryGetValue("length", out var length) && !string.IsNullOrEmpty(length))
         {
-            if (DateTime.TryParseExact(length, new string[] { "HH:mm:ss", "H:mm:ss", "mm:ss", "m:ss" }, null, DateTimeStyles.None, out var value))
+            if (DateTime.TryParseExact(length, AcceptedTimeFormats, null, DateTimeStyles.None, out var value))
             {
                 lyricMetadata.Length = value.TimeOfDay.Ticks;
             }
