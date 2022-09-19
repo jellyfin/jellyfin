@@ -39,6 +39,10 @@ public class LrcLyricProvider : ILyricProvider
     /// <inheritdoc />
     public IReadOnlyCollection<string> SupportedMediaTypes { get; } = new[] { "lrc", "elrc" };
 
+    /// <summary>
+    /// Gets the Accepted Time Formats for the metadata numeric values.
+    /// </summary>
+    /// <value>The AcceptedTimeFormats.</value>
     private static string[] AcceptedTimeFormats => new[] { "HH:mm:ss", "H:mm:ss", "mm:ss", "m:ss" };
 
     /// <summary>
