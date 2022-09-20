@@ -46,7 +46,6 @@ using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
-using Jellyfin.Api.Models.UserDtos;
 using Jellyfin.MediaEncoding.Hls.Playlist;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;

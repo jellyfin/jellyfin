@@ -46,7 +46,7 @@ public class LyricManager : ILyricManager
                 continue;
             }
 
-            if (LyricInfo.GetLyricFilePath(provider, item.Path) is not null)
+            if (provider.GetLyricFilePath(item.Path) is not null)
             {
                 return true;
             }

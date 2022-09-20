@@ -20,7 +20,7 @@ public class LrcLyricProvider : ILyricProvider
 
     private readonly LyricParser _lrcLyricParser;
 
-    private static readonly IReadOnlyList<string> _acceptedTimeFormats = new string[] { "HH:mm:ss", "H:mm:ss", "mm:ss", "m:ss" };
+    private static readonly string[] _acceptedTimeFormats = { "HH:mm:ss", "H:mm:ss", "mm:ss", "m:ss" };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LrcLyricProvider"/> class.
@@ -51,14 +51,14 @@ public class LrcLyricProvider : ILyricProvider
     /// <returns>If provider can determine lyrics, returns a <see cref="LyricResponse"/> with or without metadata; otherwise, null.</returns>
     public LyricResponse? GetLyrics(BaseItem item)
     {
-        string? lyricFilePath = LyricInfo.GetLyricFilePath(this, item.Path);
+        string? lyricFilePath = this.GetLyricFilePath(item.Path);
 
         if (string.IsNullOrEmpty(lyricFilePath))
         {
             return null;
         }
 
-        IDictionary<string, string> fileMetaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var fileMetaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         string lrcFileContent = System.IO.File.ReadAllText(lyricFilePath);
 
         Song lyricData;
@@ -90,6 +90,10 @@ public class LrcLyricProvider : ILyricProvider
             }
 
             string[] metaDataField = metaDataRow.Split(':', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            // Remove square bracket before field name, and after field value
+            // Example 1: [au: 1hitsong]
+            // Example 2: [ar: Calabrese]
             string metaDataFieldName = metaDataField[0][1..];
             string metaDataFieldValue = metaDataField[1][..^1];
 
@@ -162,7 +166,7 @@ public class LrcLyricProvider : ILyricProvider
 
         if (metaData.TryGetValue("length", out var length) && !string.IsNullOrEmpty(length))
         {
-            if (DateTime.TryParseExact(length, _acceptedTimeFormats.ToArray(), null, DateTimeStyles.None, out var value))
+            if (DateTime.TryParseExact(length, _acceptedTimeFormats, null, DateTimeStyles.None, out var value))
             {
                 lyricMetadata.Length = value.TimeOfDay.Ticks;
             }

@@ -29,7 +29,7 @@ public class TxtLyricProvider : ILyricProvider
     /// <returns>If provider can determine lyrics, returns a <see cref="LyricResponse"/>; otherwise, null.</returns>
     public LyricResponse? GetLyrics(BaseItem item)
     {
-        string? lyricFilePath = LyricInfo.GetLyricFilePath(this, item.Path);
+        string? lyricFilePath = this.GetLyricFilePath(item.Path);
 
         if (string.IsNullOrEmpty(lyricFilePath))
         {
