@@ -1,6 +1,5 @@
-using System.Collections.Generic;
+using System;
 using System.IO;
-using System.Linq;
 using Jellyfin.Extensions;
 
 namespace MediaBrowser.Controller.Lyrics;
@@ -39,9 +38,7 @@ public static class LyricInfo
 
         foreach (var lyricFilePath in Directory.GetFiles(itemDirectoryPath, $"{Path.GetFileNameWithoutExtension(itemPath)}.*"))
         {
-            if (lyricFilePath is null) { continue; }
-
-            if (lyricProvider.SupportedMediaTypes.Contains(Path.GetExtension(lyricFilePath)[1..]))
+            if (EnumerableExtensions.Contains(lyricProvider.SupportedMediaTypes, Path.GetExtension(lyricFilePath.AsSpan())[1..], StringComparison.OrdinalIgnoreCase))
             {
                 return lyricFilePath;
             }
