@@ -18,6 +18,8 @@ public class LrcLyricProvider : ILyricProvider
 {
     private readonly ILogger<LrcLyricProvider> _logger;
 
+    private readonly LyricParser _lrcLyricParser;
+
     private static readonly IReadOnlyList<string> _acceptedTimeFormats = new string[] { "HH:mm:ss", "H:mm:ss", "mm:ss", "m:ss" };
 
     /// <summary>
@@ -27,6 +29,7 @@ public class LrcLyricProvider : ILyricProvider
     public LrcLyricProvider(ILogger<LrcLyricProvider> logger)
     {
         _logger = logger;
+        _lrcLyricParser = new LrcParser.Parser.Lrc.LrcParser();
     }
 
     /// <inheritdoc />
@@ -62,13 +65,11 @@ public class LrcLyricProvider : ILyricProvider
 
         try
         {
-            // Parse and sort lyric rows
-            LyricParser lrcLyricParser = new LrcParser.Parser.Lrc.LrcParser();
-            lyricData = lrcLyricParser.Decode(lrcFileContent);
+            lyricData = _lrcLyricParser.Decode(lrcFileContent);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error parsing lyric data from {Provider}", Name);
+            _logger.LogError(ex, "Error parsing lyric file {LyricFilePath} from {Provider}", lyricFilePath, Name);
             return null;
         }
 
@@ -92,7 +93,12 @@ public class LrcLyricProvider : ILyricProvider
             string metaDataFieldName = metaDataField[0][1..];
             string metaDataFieldValue = metaDataField[1][..^1];
 
-            fileMetaData.Add(metaDataFieldName, metaDataFieldValue);
+            if (string.IsNullOrEmpty(metaDataFieldName) || string.IsNullOrEmpty(metaDataFieldValue))
+            {
+                continue;
+            }
+
+            fileMetaData[metaDataFieldName] = metaDataFieldValue;
         }
 
         if (sortedLyricData.Count == 0)
