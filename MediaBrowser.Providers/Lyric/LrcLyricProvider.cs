@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using LrcParser.Model;
 using LrcParser.Parser;
@@ -59,7 +60,7 @@ public class LrcLyricProvider : ILyricProvider
         }
 
         var fileMetaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        string lrcFileContent = System.IO.File.ReadAllText(lyricFilePath);
+        string lrcFileContent = File.ReadAllText(lyricFilePath);
 
         Song lyricData;
 
@@ -84,25 +85,24 @@ public class LrcLyricProvider : ILyricProvider
 
         foreach (string metaDataRow in metaDataRows)
         {
-            if (!metaDataRow.Contains(':', StringComparison.OrdinalIgnoreCase))
+            var index = metaDataRow.IndexOf(':', StringComparison.OrdinalIgnoreCase);
+            if (index == -1)
             {
                 continue;
             }
-
-            string[] metaDataField = metaDataRow.Split(':', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
             // Remove square bracket before field name, and after field value
             // Example 1: [au: 1hitsong]
             // Example 2: [ar: Calabrese]
-            string metaDataFieldName = metaDataField[0][1..];
-            string metaDataFieldValue = metaDataField[1][..^1];
+            var metaDataFieldNameSpan = metaDataRow.AsSpan(1, index - 1).Trim();
+            var metaDataFieldValueSpan = metaDataRow.AsSpan(index + 1, metaDataRow.Length - index - 2).Trim();
 
-            if (string.IsNullOrEmpty(metaDataFieldName) || string.IsNullOrEmpty(metaDataFieldValue))
+            if (metaDataFieldValueSpan.IsEmpty || metaDataFieldValueSpan.IsEmpty)
             {
                 continue;
             }
 
-            fileMetaData[metaDataFieldName] = metaDataFieldValue;
+            fileMetaData[metaDataFieldNameSpan.ToString()] = metaDataFieldValueSpan.ToString();
         }
 
         if (sortedLyricData.Count == 0)

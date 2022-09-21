@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Resolvers;
@@ -36,18 +38,18 @@ public class TxtLyricProvider : ILyricProvider
             return null;
         }
 
-        string[] lyricTextLines = System.IO.File.ReadAllLines(lyricFilePath);
+        string[] lyricTextLines = File.ReadAllLines(lyricFilePath);
 
         if (lyricTextLines.Length == 0)
         {
             return null;
         }
 
-        List<LyricLine> lyricList = new(lyricTextLines.Length);
+        LyricLine[] lyricList = new LyricLine[lyricTextLines.Length];
 
-        foreach (string lyricTextLine in lyricTextLines)
+        for (int lyricLine = 0; lyricLine < lyricTextLines.Length; lyricLine++)
         {
-            lyricList.Add(new LyricLine(lyricTextLine));
+            lyricList[lyricLine] = new LyricLine(lyricTextLines[lyricLine]);
         }
 
         return new LyricResponse { Lyrics = lyricList };

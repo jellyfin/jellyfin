@@ -12,17 +12,17 @@ public class LyricLine
     /// <param name="start">The lyric start time in ticks.</param>
     public LyricLine(string text, long? start = null)
     {
-        Start = start;
         Text = text;
+        Start = start;
     }
+
+    /// <summary>
+    /// Gets the text of this lyric line.
+    /// </summary>
+    public string Text { get; }
 
     /// <summary>
     /// Gets the start time in ticks.
     /// </summary>
     public long? Start { get; }
-
-    /// <summary>
-    /// Gets the text.
-    /// </summary>
-    public string Text { get; }
 }

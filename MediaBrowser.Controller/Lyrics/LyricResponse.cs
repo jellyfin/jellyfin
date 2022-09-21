@@ -9,12 +9,12 @@ namespace MediaBrowser.Controller.Lyrics;
 public class LyricResponse
 {
     /// <summary>
-    /// Gets or sets Metadata.
+    /// Gets or sets Metadata for the lyrics.
     /// </summary>
     public LyricMetadata Metadata { get; set; } = new();
 
     /// <summary>
-    /// Gets or sets Lyrics.
+    /// Gets or sets a collection of individual lyric lines.
     /// </summary>
     public IReadOnlyList<LyricLine> Lyrics { get; set; } = Array.Empty<LyricLine>();
 }

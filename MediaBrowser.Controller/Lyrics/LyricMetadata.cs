@@ -8,47 +8,47 @@ namespace MediaBrowser.Controller.Lyrics;
 public class LyricMetadata
 {
     /// <summary>
-    /// Gets or sets Artist - The song artist.
+    /// Gets or sets the song artist.
     /// </summary>
     public string? Artist { get; set; }
 
     /// <summary>
-    /// Gets or sets Album - The album this song is on.
+    /// Gets or sets the album this song is on.
     /// </summary>
     public string? Album { get; set; }
 
     /// <summary>
-    /// Gets or sets Title - The title of the song.
+    /// Gets or sets the title of the song.
     /// </summary>
     public string? Title { get; set; }
 
     /// <summary>
-    /// Gets or sets Author - Creator of the lyric data.
+    /// Gets or sets the author of the lyric data.
     /// </summary>
     public string? Author { get; set; }
 
     /// <summary>
-    /// Gets or sets Length - How long the song is.
+    /// Gets or sets the length of the song in ticks.
     /// </summary>
     public long? Length { get; set; }
 
     /// <summary>
-    /// Gets or sets By - Creator of the LRC file.
+    /// Gets or sets who the LRC file was created by.
     /// </summary>
     public string? By { get; set; }
 
     /// <summary>
-    /// Gets or sets Offset - Offset:+/- Timestamp adjustment in milliseconds.
+    /// Gets or sets the lyric offset compared to audio in ticks.
     /// </summary>
     public long? Offset { get; set; }
 
     /// <summary>
-    /// Gets or sets Creator - The Software used to create the LRC file.
+    /// Gets or sets the software used to create the LRC file.
     /// </summary>
     public string? Creator { get; set; }
 
     /// <summary>
-    /// Gets or sets Version - The version of the Creator used.
+    /// Gets or sets the version of the creator used.
     /// </summary>
     public string? Version { get; set; }
 }
