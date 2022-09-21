@@ -90,7 +90,7 @@
     "UserStartedPlayingItemWithValues": "{0} predvaja {1} na {2}",
     "UserStoppedPlayingItemWithValues": "{0} je nehal predvajati {1} na {2}",
     "ValueHasBeenAddedToLibrary": "{0} je bil dodan vaši knjižnici",
-    "ValueSpecialEpisodeName": "Bonus - {0}",
+    "ValueSpecialEpisodeName": "Posebna epizoda - {0}",
     "VersionNumber": "Različica {0}",
     "TaskDownloadMissingSubtitles": "Prenesi manjkajoče podnapise",
     "TaskRefreshChannelsDescription": "Osveži podatke spletnih kanalov.",
