@@ -397,7 +397,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the item's lyrics.</returns>
         [HttpGet("Users/{userId}/Items/{itemId}/Lyrics")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<LyricResponse> GetLyrics([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
+        public async Task<ActionResult<LyricResponse>> GetLyrics([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
         {
             var user = _userManager.GetUserById(userId);
 
@@ -415,7 +415,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            var result = _lyricManager.GetLyrics(item);
+            var result = await _lyricManager.GetLyrics(item).ConfigureAwait(false);
             if (result is not null)
             {
                 return Ok(result);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using LrcParser.Model;
 using LrcParser.Parser;
 using MediaBrowser.Controller.Entities;
@@ -50,7 +51,7 @@ public class LrcLyricProvider : ILyricProvider
     /// </summary>
     /// <param name="item">The item to to process.</param>
     /// <returns>If provider can determine lyrics, returns a <see cref="LyricResponse"/> with or without metadata; otherwise, null.</returns>
-    public LyricResponse? GetLyrics(BaseItem item)
+    public async Task<LyricResponse?> GetLyrics(BaseItem item)
     {
         string? lyricFilePath = this.GetLyricFilePath(item.Path);
 
@@ -60,7 +61,7 @@ public class LrcLyricProvider : ILyricProvider
         }
 
         var fileMetaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        string lrcFileContent = File.ReadAllText(lyricFilePath);
+        string lrcFileContent = await Task.FromResult(File.ReadAllText(lyricFilePath)).ConfigureAwait(false);
 
         Song lyricData;
 
@@ -94,15 +95,15 @@ public class LrcLyricProvider : ILyricProvider
             // Remove square bracket before field name, and after field value
             // Example 1: [au: 1hitsong]
             // Example 2: [ar: Calabrese]
-            var metaDataFieldNameSpan = metaDataRow.AsSpan(1, index - 1).Trim();
-            var metaDataFieldValueSpan = metaDataRow.AsSpan(index + 1, metaDataRow.Length - index - 2).Trim();
+            var metaDataFieldName = GetMetadataFieldName(metaDataRow, index);
+            var metaDataFieldValue = GetMetadataValue(metaDataRow, index);
 
-            if (metaDataFieldValueSpan.IsEmpty || metaDataFieldValueSpan.IsEmpty)
+            if (string.IsNullOrEmpty(metaDataFieldName) || string.IsNullOrEmpty(metaDataFieldValue))
             {
                 continue;
             }
 
-            fileMetaData[metaDataFieldNameSpan.ToString()] = metaDataFieldValueSpan.ToString();
+            fileMetaData[metaDataFieldName.ToString()] = metaDataFieldValue.ToString();
         }
 
         if (sortedLyricData.Count == 0)
@@ -196,5 +197,15 @@ public class LrcLyricProvider : ILyricProvider
         }
 
         return lyricMetadata;
+    }
+
+    private static string GetMetadataFieldName(string metaDataRow, int index)
+    {
+        return metaDataRow.AsSpan(1, index - 1).Trim().ToString();
+    }
+
+    private static string GetMetadataValue(string metaDataRow, int index)
+    {
+        return metaDataRow.AsSpan(index + 1, metaDataRow.Length - index - 2).Trim().ToString();
     }
 }

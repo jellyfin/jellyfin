@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Resolvers;
 
@@ -30,6 +31,6 @@ public interface ILyricProvider
     /// Gets the lyrics.
     /// </summary>
     /// <param name="item">The media item.</param>
-    /// <returns>If found, returns lyrics for passed item; otherwise, null.</returns>
-    LyricResponse? GetLyrics(BaseItem item);
+    /// <returns>A task representing found lyrics.</returns>
+    Task<LyricResponse?> GetLyrics(BaseItem item);
 }

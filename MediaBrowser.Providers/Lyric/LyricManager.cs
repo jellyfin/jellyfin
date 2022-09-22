@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Lyrics;
 
@@ -22,11 +23,11 @@ public class LyricManager : ILyricManager
     }
 
     /// <inheritdoc />
-    public LyricResponse? GetLyrics(BaseItem item)
+    public async Task<LyricResponse?> GetLyrics(BaseItem item)
     {
         foreach (ILyricProvider provider in _lyricProviders)
         {
-            var results = provider.GetLyrics(item);
+            var results = await provider.GetLyrics(item).ConfigureAwait(false);
             if (results is not null)
             {
                 return results;

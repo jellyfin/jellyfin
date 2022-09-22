@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Controller.Lyrics;
@@ -11,8 +12,8 @@ public interface ILyricManager
     /// Gets the lyrics.
     /// </summary>
     /// <param name="item">The media item.</param>
-    /// <returns>Lyrics for passed item.</returns>
-    LyricResponse? GetLyrics(BaseItem item);
+    /// <returns>A task representing found lyrics the passed item.</returns>
+    Task<LyricResponse?> GetLyrics(BaseItem item);
 
     /// <summary>
     /// Checks if requested item has a matching local lyric file.

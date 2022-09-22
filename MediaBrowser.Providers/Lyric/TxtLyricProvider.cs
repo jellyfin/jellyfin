@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Resolvers;
@@ -29,7 +30,7 @@ public class TxtLyricProvider : ILyricProvider
     /// </summary>
     /// <param name="item">The item to to process.</param>
     /// <returns>If provider can determine lyrics, returns a <see cref="LyricResponse"/>; otherwise, null.</returns>
-    public LyricResponse? GetLyrics(BaseItem item)
+    public async Task<LyricResponse?> GetLyrics(BaseItem item)
     {
         string? lyricFilePath = this.GetLyricFilePath(item.Path);
 
@@ -38,7 +39,7 @@ public class TxtLyricProvider : ILyricProvider
             return null;
         }
 
-        string[] lyricTextLines = File.ReadAllLines(lyricFilePath);
+        string[] lyricTextLines = await Task.FromResult(File.ReadAllLines(lyricFilePath)).ConfigureAwait(false);
 
         if (lyricTextLines.Length == 0)
         {
