@@ -39,7 +39,7 @@ public class TxtLyricProvider : ILyricProvider
             return null;
         }
 
-        string[] lyricTextLines = await Task.FromResult(File.ReadAllLines(lyricFilePath)).ConfigureAwait(false);
+        string[] lyricTextLines = await File.ReadAllLinesAsync(lyricFilePath).ConfigureAwait(false);
 
         if (lyricTextLines.Length == 0)
         {

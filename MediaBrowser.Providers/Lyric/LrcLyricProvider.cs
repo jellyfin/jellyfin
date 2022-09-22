@@ -61,7 +61,7 @@ public class LrcLyricProvider : ILyricProvider
         }
 
         var fileMetaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        string lrcFileContent = await Task.FromResult(File.ReadAllText(lyricFilePath)).ConfigureAwait(false);
+        string lrcFileContent = await File.ReadAllTextAsync(lyricFilePath).ConfigureAwait(false);
 
         Song lyricData;
 
