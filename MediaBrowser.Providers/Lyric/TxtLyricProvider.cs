@@ -48,9 +48,9 @@ public class TxtLyricProvider : ILyricProvider
 
         LyricLine[] lyricList = new LyricLine[lyricTextLines.Length];
 
-        for (int lyricLine = 0; lyricLine < lyricTextLines.Length; lyricLine++)
+        for (int lyricLineIndex = 0; lyricLineIndex < lyricTextLines.Length; lyricLineIndex++)
         {
-            lyricList[lyricLine] = new LyricLine(lyricTextLines[lyricLine]);
+            lyricList[lyricLineIndex] = new LyricLine(lyricTextLines[lyricLineIndex]);
         }
 
         return new LyricResponse { Lyrics = lyricList };

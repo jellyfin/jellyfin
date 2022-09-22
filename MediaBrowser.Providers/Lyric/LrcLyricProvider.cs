@@ -201,11 +201,13 @@ public class LrcLyricProvider : ILyricProvider
 
     private static string GetMetadataFieldName(string metaDataRow, int index)
     {
-        return metaDataRow.AsSpan(1, index - 1).Trim().ToString();
+        var metadataFieldName = metaDataRow.AsSpan(1, index - 1).Trim();
+        return metadataFieldName.IsEmpty ? string.Empty : metadataFieldName.ToString();
     }
 
     private static string GetMetadataValue(string metaDataRow, int index)
     {
-        return metaDataRow.AsSpan(index + 1, metaDataRow.Length - index - 2).Trim().ToString();
+        var metadataValue = metaDataRow.AsSpan(index + 1, metaDataRow.Length - index - 2).Trim();
+        return metadataValue.IsEmpty ? string.Empty : metadataValue.ToString();
     }
 }
