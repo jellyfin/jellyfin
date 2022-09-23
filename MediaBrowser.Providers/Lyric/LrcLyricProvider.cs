@@ -103,7 +103,7 @@ public class LrcLyricProvider : ILyricProvider
                 continue;
             }
 
-            fileMetaData[metaDataFieldName.ToString()] = metaDataFieldValue.ToString();
+            fileMetaData[metaDataFieldName] = metaDataFieldValue;
         }
 
         if (sortedLyricData.Count == 0)
