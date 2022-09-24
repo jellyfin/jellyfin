@@ -2766,7 +2766,8 @@ namespace Emby.Server.Implementations.Library
 
         public List<Person> GetPeopleItems(InternalPeopleQuery query)
         {
-            return _itemRepository.GetPeopleNames(query).Select(i =>
+            return _itemRepository.GetPeopleNames(query)
+            .Select(i =>
             {
                 try
                 {
@@ -2777,7 +2778,12 @@ namespace Emby.Server.Implementations.Library
                     _logger.LogError(ex, "Error getting person");
                     return null;
                 }
-            }).Where(i => i != null).ToList();
+            })
+            .Where(i => i != null)
+            .Where(i => query.User == null ? 
+                true :
+                i.IsVisible(query.User))
+            .ToList();
         }
 
         public List<string> GetPeopleNames(InternalPeopleQuery query)
