@@ -29,7 +29,7 @@
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.9" />
     <PackageReference Include="Mono.Nat" Version="3.0.3" />
     <PackageReference Include="prometheus-net.DotNetRuntime" Version="4.2.4" />
     <PackageReference Include="sharpcompress" Version="0.32.2" />
