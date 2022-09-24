@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
@@ -17,6 +18,7 @@ namespace Jellyfin.Api.Models.PlaybackDtos
         private readonly ILogger<TranscodingThrottler> _logger;
         private readonly IConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
+        private readonly IMediaEncoder _mediaEncoder;
         private Timer? _timer;
         private bool _isPaused;
 
@@ -27,12 +29,14 @@ namespace Jellyfin.Api.Models.PlaybackDtos
         /// <param name="logger">Instance of the <see cref="ILogger{TranscodingThrottler}"/> interface.</param>
         /// <param name="config">Instance of the <see cref="IConfigurationManager"/> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-        public TranscodingThrottler(TranscodingJobDto job, ILogger<TranscodingThrottler> logger, IConfigurationManager config, IFileSystem fileSystem)
+        /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
+        public TranscodingThrottler(TranscodingJobDto job, ILogger<TranscodingThrottler> logger, IConfigurationManager config, IFileSystem fileSystem, IMediaEncoder mediaEncoder)
         {
             _job = job;
             _logger = logger;
             _config = config;
             _fileSystem = fileSystem;
+            _mediaEncoder = mediaEncoder;
         }
 
         /// <summary>
@@ -55,7 +59,8 @@ namespace Jellyfin.Api.Models.PlaybackDtos
 
                 try
                 {
-                    await _job.Process!.StandardInput.WriteLineAsync().ConfigureAwait(false);
+                    var resumeKey = _mediaEncoder.IsPkeyPauseSupported ? "u" : Environment.NewLine;
+                    await _job.Process!.StandardInput.WriteAsync(resumeKey).ConfigureAwait(false);
                     _isPaused = false;
                 }
                 catch (Exception ex)
@@ -125,11 +130,13 @@ namespace Jellyfin.Api.Models.PlaybackDtos
         {
             if (!_isPaused)
             {
-                _logger.LogDebug("Sending pause command to ffmpeg");
+                var pauseKey = _mediaEncoder.IsPkeyPauseSupported ? "p" : "c";
+
+                _logger.LogDebug("Sending pause command [{Key}] to ffmpeg", pauseKey);
 
                 try
                 {
-                    await _job.Process!.StandardInput.WriteAsync("c").ConfigureAwait(false);
+                    await _job.Process!.StandardInput.WriteAsync(pauseKey).ConfigureAwait(false);
                     _isPaused = true;
                 }
                 catch (Exception ex)
