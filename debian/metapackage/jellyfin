@@ -5,7 +5,7 @@ Homepage: https://jellyfin.org
 Standards-Version: 3.9.2
 
 Package: jellyfin
-Version: 10.8.4
+Version: 10.8.5
 Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
 Depends: jellyfin-server, jellyfin-web
 Description: Provides the Jellyfin Free Software Media System
