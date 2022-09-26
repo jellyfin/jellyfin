@@ -38,7 +38,7 @@ public static class LyricInfo
 
         foreach (var lyricFilePath in Directory.GetFiles(itemDirectoryPath, $"{Path.GetFileNameWithoutExtension(itemPath)}.*"))
         {
-            if (EnumerableExtensions.Contains(lyricProvider.SupportedMediaTypes, Path.GetExtension(lyricFilePath.AsSpan())[1..], StringComparison.OrdinalIgnoreCase))
+            if (lyricProvider.SupportedMediaTypes.Contains(Path.GetExtension(lyricFilePath.AsSpan())[1..], StringComparison.OrdinalIgnoreCase))
             {
                 return lyricFilePath;
             }
