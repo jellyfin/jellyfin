@@ -130,10 +130,17 @@ public class LrcLyricProvider : ILyricProvider
             // Map metaData values from LRC file to LyricMetadata properties
             LyricMetadata lyricMetadata = MapMetadataValues(fileMetaData);
 
-            return new LyricResponse { Metadata = lyricMetadata, Lyrics = lyricList };
+            return new LyricResponse
+            {
+                Metadata = lyricMetadata,
+                Lyrics = lyricList
+            };
         }
 
-        return new LyricResponse { Lyrics = lyricList };
+        return new LyricResponse
+        {
+            Lyrics = lyricList
+        };
     }
 
     /// <summary>

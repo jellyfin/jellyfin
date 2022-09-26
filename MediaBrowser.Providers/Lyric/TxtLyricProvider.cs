@@ -53,6 +53,9 @@ public class TxtLyricProvider : ILyricProvider
             lyricList[lyricLineIndex] = new LyricLine(lyricTextLines[lyricLineIndex]);
         }
 
-        return new LyricResponse { Lyrics = lyricList };
+        return new LyricResponse
+        {
+            Lyrics = lyricList
+        };
     }
 }
