@@ -45,42 +45,40 @@ namespace Emby.Server.Implementations.Library
                 .ThenByDescending(x => x.IsForced && string.Equals(x.Language, audioTrackLanguage, StringComparison.OrdinalIgnoreCase))
                 .ThenByDescending(x => x.IsForced)
                 .ThenByDescending(x => x.IsDefault)
+                .ThenByDescending(x => preferredLanguages.Contains(x.Language, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             MediaStream? stream = null;
             if (mode == SubtitlePlaybackMode.Default)
             {
-                // Prefer embedded metadata over smart logic
-                stream = sortedStreams.FirstOrDefault(s => s.IsExternal || s.IsForced || s.IsDefault);
-
-                // if the audio language is not understood by the user, load their preferred subs, if there are any
-                if (stream == null && !preferredLanguages.Contains(audioTrackLanguage, StringComparison.OrdinalIgnoreCase))
-                {
-                    stream = sortedStreams.FirstOrDefault(s => !s.IsForced && preferredLanguages.Contains(s.Language, StringComparison.OrdinalIgnoreCase));
-                }
+                // Load subtitles according to external, forced and default flags.
+                stream = sortedStreams.FirstOrDefault(x => x.IsExternal || x.IsForced || x.IsDefault);
             }
             else if (mode == SubtitlePlaybackMode.Smart)
             {
-                // if the audio language is not understood by the user, load their preferred subs, if there are any
+                // Respect forced flag.
+                stream = sortedStreams.FirstOrDefault(x => x.IsForced);
+
+                // Only attempt to load subtitles if the audio language is not one of the user's preferred subtitle languages.
+                // If no subtitles of preferred language available, use default behaviour.
                 if (!preferredLanguages.Contains(audioTrackLanguage, StringComparison.OrdinalIgnoreCase))
                 {
-                    stream = streams.FirstOrDefault(s => !s.IsForced && preferredLanguages.Contains(s.Language, StringComparison.OrdinalIgnoreCase)) ??
-                        streams.FirstOrDefault(s => preferredLanguages.Contains(s.Language, StringComparison.OrdinalIgnoreCase));
+                    stream = sortedStreams.FirstOrDefault(x => preferredLanguages.Contains(x.Language, StringComparison.OrdinalIgnoreCase)) ??
+                        sortedStreams.FirstOrDefault(x => x.IsExternal || x.IsForced || x.IsDefault);
                 }
             }
             else if (mode == SubtitlePlaybackMode.Always)
             {
-                // always load the most suitable full subtitles
-                stream = sortedStreams.FirstOrDefault(s => !s.IsForced);
+                // Always load subtitles of the user's preferred subtitle language if possible, otherwise default behaviour.
+                stream = sortedStreams.FirstOrDefault(x => preferredLanguages.Contains(x.Language, StringComparison.OrdinalIgnoreCase)) ??
+                    sortedStreams.FirstOrDefault(x => x.IsExternal || x.IsForced || x.IsDefault);
             }
             else if (mode == SubtitlePlaybackMode.OnlyForced)
             {
-                // always load the most suitable full subtitles
+                // Only load subtitles that are flagged forced.
                 stream = sortedStreams.FirstOrDefault(x => x.IsForced);
             }
 
-            // load forced subs if we have found no suitable full subtitles
-            stream ??= sortedStreams.FirstOrDefault(s => s.IsForced && string.Equals(s.Language, audioTrackLanguage, StringComparison.OrdinalIgnoreCase));
             return stream?.Index;
         }
 
