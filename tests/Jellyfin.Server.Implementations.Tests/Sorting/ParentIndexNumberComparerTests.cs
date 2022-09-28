@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Emby.Server.Implementations.Sorting;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;

@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text.Json.Serialization;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;

@@ -11,7 +11,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Extensions.Logging;
-using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 
 namespace Jellyfin.Server.Integration.Tests
 {
