@@ -93,13 +93,6 @@ namespace Jellyfin.Drawing.Skia
             pixmap.Encode(outputStream, GetEncodedFormat(outputPath), 90);
         }
 
-        internal bool HasArabicCharacters(string? text)
-        {
-            Regex regex = new Regex(
-                "[\u0600-\u06ff]|[\u0750-\u077f]|[\ufb50-\ufc3f]|[\ufe70-\ufefc]");
-            return text != null && regex.IsMatch(text);
-        }
-
         private SKBitmap BuildThumbCollageBitmap(IReadOnlyList<string> paths, int width, int height, string? libraryName)
         {
             var bitmap = new SKBitmap(width, height);
@@ -155,9 +148,9 @@ namespace Jellyfin.Drawing.Skia
                 textPaint.TextSize = 0.9f * width * textPaint.TextSize / textWidth;
             }
 
-            if (HasArabicCharacters(libraryName))
+            if (Utils.HasRTLCharacters(libraryName))
             {
-                canvas.DrawShapedText(libraryName, 180, (height / 2f) + (textPaint.FontMetrics.XHeight / 2), textPaint);
+                canvas.DrawShapedText(libraryName, 250, (height / 2f) + (textPaint.FontMetrics.XHeight / 2), textPaint);
             }
             else
             {
