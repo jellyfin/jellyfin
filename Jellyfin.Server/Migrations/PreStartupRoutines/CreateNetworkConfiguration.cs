@@ -114,7 +114,7 @@ public class CreateNetworkConfiguration : IMigrationRoutine
 
         public bool IgnoreVirtualInterfaces { get; set; } = true;
 
-        public string VirtualInterfaceNames { get; set; } = "veth";
+        public string[] VirtualInterfaceNames { get; set; } = new string[] { "veth" };
 
         public string[] PublishedServerUriBySubnet { get; set; } = Array.Empty<string>();
 

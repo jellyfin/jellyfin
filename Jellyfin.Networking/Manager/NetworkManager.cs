@@ -359,12 +359,11 @@ namespace Jellyfin.Networking.Manager
                 {
                     // Remove potentially exisiting * and split config string into prefixes
                     var virtualInterfacePrefixes = config.VirtualInterfaceNames
-                        .Replace("*", string.Empty, StringComparison.OrdinalIgnoreCase)
-                        .ToLowerInvariant()
-                        .Split(',');
+                        .Select(i => i.ToLowerInvariant()
+                            .Replace("*", string.Empty, StringComparison.OrdinalIgnoreCase));
 
                     // Check all interfaces for matches against the prefixes and remove them
-                    if (_interfaces.Count > 0 && virtualInterfacePrefixes.Length > 0)
+                    if (_interfaces.Count > 0 && virtualInterfacePrefixes.Any())
                     {
                         foreach (var virtualInterfacePrefix in virtualInterfacePrefixes)
                         {
@@ -726,7 +725,15 @@ namespace Jellyfin.Networking.Manager
 
                 if (MatchesPublishedServerUrl(source, isExternal, out string res, out port))
                 {
-                    _logger.LogInformation("{Source}: Using BindAddress {Address}:{Port}", source, res, port);
+                    if (port != null)
+                    {
+                        _logger.LogInformation("{Source}: Using BindAddress {Address}:{Port}", source, res, port);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("{Source}: Using BindAddress {Address}", source, res);
+                    }
+
                     return res;
                 }
 
@@ -756,7 +763,7 @@ namespace Jellyfin.Networking.Manager
                         if (intf.Address.Equals(source))
                         {
                             result = NetworkExtensions.FormatIpString(intf.Address);
-                            _logger.LogDebug("{Source}: GetBindInterface: Has found matching interface. {Result}", source, result);
+                            _logger.LogDebug("{Source}: GetBindInterface: Has found matching interface: {Result}", source, result);
                             return result;
                         }
                     }
@@ -768,14 +775,14 @@ namespace Jellyfin.Networking.Manager
                         if (intf.Subnet.Contains(source))
                         {
                             result = NetworkExtensions.FormatIpString(intf.Address);
-                            _logger.LogDebug("{Source}: GetBindInterface: Has source, matched best internal interface on range. {Result}", source, result);
+                            _logger.LogDebug("{Source}: GetBindInterface: Has source, matched best internal interface on range: {Result}", source, result);
                             return result;
                         }
                     }
                 }
 
                 result = NetworkExtensions.FormatIpString(availableInterfaces.First().Address);
-                _logger.LogDebug("{Source}: GetBindInterface: Matched first internal interface. {Result}", source, result);
+                _logger.LogDebug("{Source}: GetBindInterface: Matched first internal interface: {Result}", source, result);
                 return result;
             }
 
@@ -956,7 +963,7 @@ namespace Jellyfin.Networking.Manager
                         if (bindAddress != null)
                         {
                             result = NetworkExtensions.FormatIpString(bindAddress);
-                            _logger.LogDebug("{Source}: GetBindInterface: Has source, found a matching external bind interface. {Result}", source, result);
+                            _logger.LogDebug("{Source}: GetBindInterface: Has source, found a matching external bind interface: {Result}", source, result);
                             return true;
                         }
                     }
@@ -976,7 +983,7 @@ namespace Jellyfin.Networking.Manager
                     if (bindAddress != null)
                     {
                         result = NetworkExtensions.FormatIpString(bindAddress);
-                        _logger.LogWarning("{Source}: Request received, matching internal interface bind found. {Result}", source, result);
+                        _logger.LogWarning("{Source}: Request received, matching internal interface bind found: {Result}", source, result);
                         return true;
                     }
                 }
@@ -1006,7 +1013,7 @@ namespace Jellyfin.Networking.Manager
                 if (!IsInLocalNetwork(intf.Address) && intf.Subnet.Contains(source))
                 {
                     result = NetworkExtensions.FormatIpString(intf.Address);
-                    _logger.LogDebug("{Source}: GetBindInterface: Selected best external on interface on range. {Result}", source, result);
+                    _logger.LogDebug("{Source}: GetBindInterface: Selected best external on interface on range: {Result}", source, result);
                     return true;
                 }
             }
@@ -1014,7 +1021,7 @@ namespace Jellyfin.Networking.Manager
             if (hasResult != null)
             {
                 result = NetworkExtensions.FormatIpString(hasResult);
-                _logger.LogDebug("{Source}: GetBindInterface: Selected first external interface. {Result}", source, result);
+                _logger.LogDebug("{Source}: GetBindInterface: Selected first external interface: {Result}", source, result);
                 return true;
             }
 

@@ -150,7 +150,7 @@ namespace Jellyfin.Networking.Configuration
         /// <summary>
         /// Gets or sets a value indicating the interface name prefixes that should be ignored. The list can be comma separated and values are case-insensitive. <seealso cref="IgnoreVirtualInterfaces"/>.
         /// </summary>
-        public string VirtualInterfaceNames { get; set; } = "veth";
+        public string[] VirtualInterfaceNames { get; set; } = new string[] { "veth" };
 
         /// <summary>
         /// Gets or sets a value indicating whether the published server uri is based on information in HTTP requests.
