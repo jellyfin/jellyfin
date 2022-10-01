@@ -863,13 +863,8 @@ namespace MediaBrowser.MediaEncoding.Probing
                     }
                 }
             }
-            else if (string.Equals(streamInfo.CodecType, "data", StringComparison.OrdinalIgnoreCase))
-            {
-                stream.Type = MediaStreamType.Data;
-            }
             else
             {
-                _logger.LogError("Codec Type {CodecType} unknown. The stream (index: {Index}) will be ignored. Warning: Subsequential streams will have a wrong stream specifier!", streamInfo.CodecType, streamInfo.Index);
                 return null;
             }
 
