@@ -182,7 +182,7 @@ namespace Emby.Server.Implementations.Dto
 
             if (options.ContainsField(ItemFields.People))
             {
-                AttachPeople(dto, item);
+                AttachPeople(dto, item, user);
             }
 
             if (options.ContainsField(ItemFields.PrimaryImageAspectRatio))
@@ -503,7 +503,8 @@ namespace Emby.Server.Implementations.Dto
         /// </summary>
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
-        private void AttachPeople(BaseItemDto dto, BaseItem item)
+        /// <param name="user">The requesting user.</param>
+        private void AttachPeople(BaseItemDto dto, BaseItem item, User user = null)
         {
             // Ordering by person type to ensure actors and artists are at the front.
             // This is taking advantage of the fact that they both begin with A
@@ -560,6 +561,9 @@ namespace Emby.Server.Implementations.Dto
                         return null;
                     }
                 }).Where(i => i != null)
+                .Where(i => user == null ?
+                    true :
+                    i.IsVisible(user))
                 .GroupBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
                 .Select(x => x.First())
                 .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);

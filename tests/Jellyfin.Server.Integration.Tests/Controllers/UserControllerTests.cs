@@ -46,6 +46,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             var users = await JsonSerializer.DeserializeAsync<UserDto[]>(
                 await response.Content.ReadAsStreamAsync().ConfigureAwait(false), _jsonOpions).ConfigureAwait(false);
             // User are hidden by default
+            Assert.NotNull(users);
             Assert.Empty(users);
         }
 
@@ -60,6 +61,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var users = await JsonSerializer.DeserializeAsync<UserDto[]>(
                 await response.Content.ReadAsStreamAsync().ConfigureAwait(false), _jsonOpions).ConfigureAwait(false);
+            Assert.NotNull(users);
             Assert.Single(users);
             Assert.False(users![0].HasConfiguredPassword);
         }

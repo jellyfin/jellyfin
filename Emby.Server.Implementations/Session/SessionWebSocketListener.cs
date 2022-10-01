@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Net;
@@ -37,7 +36,7 @@ namespace Emby.Server.Implementations.Session
         private const float ForceKeepAliveFactor = 0.75f;
 
         /// <summary>
-        /// Lock used for accesing the KeepAlive cancellation token.
+        /// Lock used for accessing the KeepAlive cancellation token.
         /// </summary>
         private readonly object _keepAliveLock = new object();
 

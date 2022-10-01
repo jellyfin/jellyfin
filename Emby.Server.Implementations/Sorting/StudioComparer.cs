@@ -3,7 +3,6 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Linq;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Sorting;

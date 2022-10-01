@@ -16,7 +16,7 @@ namespace Emby.Dlna
         /// </summary>
         /// <param name="subscriptionId">The subscription identifier.</param>
         /// <param name="notificationType">The notification type.</param>
-        /// <param name="requestedTimeoutString">The requested timeout as a sting.</param>
+        /// <param name="requestedTimeoutString">The requested timeout as a string.</param>
         /// <param name="callbackUrl">The callback url.</param>
         /// <returns>The response.</returns>
         EventSubscriptionResponse RenewEventSubscription(string subscriptionId, string notificationType, string requestedTimeoutString, string callbackUrl);
@@ -25,7 +25,7 @@ namespace Emby.Dlna
         /// Creates the event subscription.
         /// </summary>
         /// <param name="notificationType">The notification type.</param>
-        /// <param name="requestedTimeoutString">The requested timeout as a sting.</param>
+        /// <param name="requestedTimeoutString">The requested timeout as a string.</param>
         /// <param name="callbackUrl">The callback url.</param>
         /// <returns>The response.</returns>
         EventSubscriptionResponse CreateEventSubscription(string notificationType, string requestedTimeoutString, string callbackUrl);

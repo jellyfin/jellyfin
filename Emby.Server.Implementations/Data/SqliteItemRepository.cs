@@ -4934,6 +4934,7 @@ SELECT key FROM UserDatas WHERE isFavorite=@IsFavorite AND userId=@UserId)
 AND Type = @InternalPersonType)");
                 statement?.TryBind("@IsFavorite", query.IsFavorite.Value);
                 statement?.TryBind("@InternalPersonType", typeof(Person).FullName);
+                statement?.TryBind("@UserId", query.User.InternalId);
             }
 
             if (!query.ItemId.Equals(default))
@@ -4986,11 +4987,6 @@ AND Type = @InternalPersonType)");
             {
                 whereClauses.Add("p.Name like @NameContains");
                 statement?.TryBind("@NameContains", "%" + query.NameContains + "%");
-            }
-
-            if (query.User != null)
-            {
-                statement?.TryBind("@UserId", query.User.InternalId);
             }
 
             return whereClauses;

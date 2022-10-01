@@ -1242,7 +1242,7 @@ namespace Emby.Server.Implementations.Session
 
             if (item == null)
             {
-                _logger.LogError("A non-existant item Id {0} was passed into TranslateItemForPlayback", id);
+                _logger.LogError("A non-existent item Id {0} was passed into TranslateItemForPlayback", id);
                 return Array.Empty<BaseItem>();
             }
 

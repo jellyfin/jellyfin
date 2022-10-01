@@ -209,7 +209,7 @@ public class MediaInfoResolverTests
         Assert.Empty(streams);
     }
 
-    private static TheoryData<string, MediaStream[], MediaStream[]> GetExternalStreams_MergeMetadata_HandlesOverridesCorrectly_Data()
+    public static TheoryData<string, MediaStream[], MediaStream[]> GetExternalStreams_MergeMetadata_HandlesOverridesCorrectly_Data()
     {
         var data = new TheoryData<string, MediaStream[], MediaStream[]>();
 

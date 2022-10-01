@@ -170,7 +170,7 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            return Ok(categories.OrderBy(i => i.RecommendationType));
+            return Ok(categories.OrderBy(i => i.RecommendationType).AsEnumerable());
         }
 
         private IEnumerable<RecommendationDto> GetWithDirector(

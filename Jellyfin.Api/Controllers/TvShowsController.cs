@@ -77,7 +77,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-            [FromQuery] string? seriesId,
+            [FromQuery] Guid? seriesId,
             [FromQuery] Guid? parentId,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
@@ -206,7 +206,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? season,
             [FromQuery] Guid? seasonId,
             [FromQuery] bool? isMissing,
-            [FromQuery] string? adjacentTo,
+            [FromQuery] Guid? adjacentTo,
             [FromQuery] Guid? startItemId,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
@@ -278,9 +278,9 @@ namespace Jellyfin.Api.Controllers
             }
 
             // This must be the last filter
-            if (!string.IsNullOrEmpty(adjacentTo))
+            if (adjacentTo.HasValue && !adjacentTo.Value.Equals(default))
             {
-                episodes = UserViewBuilder.FilterForAdjacency(episodes, adjacentTo).ToList();
+                episodes = UserViewBuilder.FilterForAdjacency(episodes, adjacentTo.Value).ToList();
             }
 
             if (string.Equals(sortBy, ItemSortBy.Random, StringComparison.OrdinalIgnoreCase))
@@ -326,7 +326,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] bool? isSpecialSeason,
             [FromQuery] bool? isMissing,
-            [FromQuery] string? adjacentTo,
+            [FromQuery] Guid? adjacentTo,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,

@@ -119,5 +119,6 @@
     "SubtitleDownloadFailureFromForItem": "Subtiitrite allalaadimine {0} > {1} nurjus",
     "UserPolicyUpdatedWithName": "Kasutaja {0} õigusi värskendati",
     "UserStoppedPlayingItemWithValues": "{0} lõpetas {1} taasesituse seadmes {2}",
-    "UserOnlineFromDevice": "{0} on ühendatud seadmest {1}"
+    "UserOnlineFromDevice": "{0} on ühendatud seadmest {1}",
+    "External": "Väline"
 }

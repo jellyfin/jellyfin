@@ -123,7 +123,7 @@ namespace Emby.Dlna
         /// <summary>
         /// Attempts to match a device with a profile.
         /// Rules:
-        /// - If the profile field has no value, the field matches irregardless of its contents.
+        /// - If the profile field has no value, the field matches regardless of its contents.
         /// - the profile field can be an exact match, or a reg exp.
         /// </summary>
         /// <param name="deviceInfo">The <see cref="DeviceIdentification"/> of the device.</param>

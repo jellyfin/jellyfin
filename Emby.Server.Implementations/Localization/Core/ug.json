@@ -3,7 +3,16 @@
     "Channels": "قانال",
     "CameraImageUploadedFrom": "{0} ئورۇندىن يېڭى سۈرەت چىقىرىلدى",
     "Books": "كىتاب",
-    "AuthenticationSucceededWithUserName": "تىزىملىتىش مۇۋەپپەقىيەتلىك بول",
+    "AuthenticationSucceededWithUserName": "{0} تەستىقلاش مۇۋاپىقىيەتلىك بولدى",
     "Artists": "سەنئەتكار",
-    "Albums": "پىلاستىنكا"
+    "Albums": "پىلاستىنكا",
+    "DeviceOnlineWithName": "{0} ئۇلاندى",
+    "DeviceOfflineWithName": "{0} ئۈزۈلدى",
+    "Collections": "توپلام",
+    "Application": "ئەپ",
+    "AppDeviceValues": "ئەپ: {0}، ئۈسكۈنە: {1}",
+    "HeaderLiveTV": "تور تېلېۋىزىيەسى",
+    "Default": "سۈكۈتتىكى",
+    "Folders": "ھۆججەت خالتىسى",
+    "Favorites": "ساقلىغۇچ"
 }

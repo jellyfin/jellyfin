@@ -46,7 +46,6 @@ using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using EpisodeInfo = Emby.Naming.TV.EpisodeInfo;
@@ -2454,6 +2453,12 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
+        public void QueueLibraryScan()
+        {
+            _taskManager.QueueScheduledTask<RefreshMediaLibraryTask>();
+        }
+
+        /// <inheritdoc />
         public int? GetSeasonNumberFromPath(string path)
             => SeasonPathParser.Parse(path, true, true).SeasonNumber;
 
@@ -2523,7 +2528,7 @@ namespace Emby.Server.Implementations.Library
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error reading the episode informations with ffprobe. Episode: {EpisodeInfo}", episodeInfo.Path);
+                _logger.LogError(ex, "Error reading the episode information with ffprobe. Episode: {EpisodeInfo}", episodeInfo.Path);
             }
 
             var changed = false;
@@ -2760,7 +2765,8 @@ namespace Emby.Server.Implementations.Library
 
         public List<Person> GetPeopleItems(InternalPeopleQuery query)
         {
-            return _itemRepository.GetPeopleNames(query).Select(i =>
+            return _itemRepository.GetPeopleNames(query)
+            .Select(i =>
             {
                 try
                 {
@@ -2771,7 +2777,12 @@ namespace Emby.Server.Implementations.Library
                     _logger.LogError(ex, "Error getting person");
                     return null;
                 }
-            }).Where(i => i != null).ToList();
+            })
+            .Where(i => i != null)
+            .Where(i => query.User == null ? 
+                true :
+                i.IsVisible(query.User))
+            .ToList();
         }
 
         public List<string> GetPeopleNames(InternalPeopleQuery query)

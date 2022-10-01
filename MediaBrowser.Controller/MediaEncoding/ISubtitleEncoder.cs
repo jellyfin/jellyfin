@@ -6,7 +6,8 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
@@ -37,11 +38,11 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Gets the subtitle language encoding parameter.
         /// </summary>
-        /// <param name="path">The path.</param>
+        /// <param name="subtitleStream">The subtitle stream.</param>
         /// <param name="language">The language.</param>
-        /// <param name="protocol">The protocol.</param>
+        /// <param name="mediaSource">The media source.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>System.String.</returns>
-        Task<string> GetSubtitleFileCharacterSet(string path, string language, MediaProtocol protocol, CancellationToken cancellationToken);
+        Task<string> GetSubtitleFileCharacterSet(MediaStream subtitleStream, string language, MediaSourceInfo mediaSource, CancellationToken cancellationToken);
     }
 }
