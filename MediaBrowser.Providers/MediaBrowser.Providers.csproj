@@ -22,7 +22,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="OptimizedPriorityQueue" Version="5.1.0" />
     <PackageReference Include="PlaylistsNET" Version="1.2.1" />
-    <PackageReference Include="TagLibSharp" Version="2.2.0" />
+    <PackageReference Include="TagLibSharp" Version="2.3.0" />
     <PackageReference Include="TMDbLib" Version="1.9.2" />
   </ItemGroup>
 
