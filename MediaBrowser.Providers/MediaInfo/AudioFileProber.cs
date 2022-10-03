@@ -134,6 +134,10 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 tags = file.GetTag(TagTypes.FlacMetadata);
             }
+            else if (tagTypes.HasFlag(TagTypes.Apple))
+            {
+                tags = file.GetTag(TagTypes.Apple);
+            }
             else if (tagTypes.HasFlag(TagTypes.AudibleMetadata))
             {
                 tags = file.GetTag(TagTypes.AudibleMetadata);
