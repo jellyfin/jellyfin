@@ -386,6 +386,7 @@ namespace Emby.Server.Implementations.Localization
             yield return new LocalizationOption("Español (Dominicana)", "es_DO");
             yield return new LocalizationOption("Español (México)", "es-MX");
             yield return new LocalizationOption("Eesti", "et");
+            yield return new LocalizationOption("Basque", "eu");
             yield return new LocalizationOption("فارسی", "fa");
             yield return new LocalizationOption("Suomi", "fi");
             yield return new LocalizationOption("Filipino", "fil");
