@@ -83,11 +83,11 @@ namespace Jellyfin.Api.Controllers
         [HttpGet]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers(
+        public ActionResult<IEnumerable<UserDto>> GetUsers(
             [FromQuery] bool? isHidden,
             [FromQuery] bool? isDisabled)
         {
-            var users = await Get(isHidden, isDisabled, false, false).ConfigureAwait(false);
+            var users = Get(isHidden, isDisabled, false, false);
             return Ok(users);
         }
 
@@ -98,15 +98,15 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="IEnumerable{UserDto}"/> containing the public users.</returns>
         [HttpGet("Public")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<UserDto>>> GetPublicUsers()
+        public ActionResult<IEnumerable<UserDto>> GetPublicUsers()
         {
             // If the startup wizard hasn't been completed then just return all users
             if (!_config.Configuration.IsStartupWizardCompleted)
             {
-                return Ok(await Get(false, false, false, false).ConfigureAwait(false));
+                return Ok(Get(false, false, false, false));
             }
 
-            return Ok(await Get(false, false, true, true).ConfigureAwait(false));
+            return Ok(Get(false, false, true, true));
         }
 
         /// <summary>
@@ -552,7 +552,7 @@ namespace Jellyfin.Api.Controllers
             return _userManager.GetUserDto(user);
         }
 
-        private async Task<IEnumerable<UserDto>> Get(bool? isHidden, bool? isDisabled, bool filterByDevice, bool filterByNetwork)
+        private IEnumerable<UserDto> Get(bool? isHidden, bool? isDisabled, bool filterByDevice, bool filterByNetwork)
         {
             var users = _userManager.Users;
 

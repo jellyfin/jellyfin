@@ -313,7 +313,8 @@ namespace Jellyfin.Api.Helpers
                 }
 
                 // Do this after the above so that StartPositionTicks is set
-                SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, claimsPrincipal.GetToken());
+                // The token must not be null
+                SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, claimsPrincipal.GetToken()!);
                 mediaSource.DefaultAudioStreamIndex = streamInfo.AudioStreamIndex;
             }
 

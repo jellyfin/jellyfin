@@ -152,7 +152,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the items.</returns>
         [HttpGet("Items")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<QueryResult<BaseItemDto>>> GetItems(
+        public ActionResult<QueryResult<BaseItemDto>> GetItems(
             [FromQuery] Guid? userId,
             [FromQuery] string? maxOfficialRating,
             [FromQuery] bool? hasThemeSong,
@@ -627,7 +627,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the items.</returns>
         [HttpGet("Users/{userId}/Items")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public Task<ActionResult<QueryResult<BaseItemDto>>> GetItemsByUserId(
+        public ActionResult<QueryResult<BaseItemDto>> GetItemsByUserId(
             [FromRoute] Guid userId,
             [FromQuery] string? maxOfficialRating,
             [FromQuery] bool? hasThemeSong,
