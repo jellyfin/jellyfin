@@ -2779,7 +2779,7 @@ namespace Emby.Server.Implementations.Library
                 }
             })
             .Where(i => i != null)
-            .Where(i => query.User == null ? 
+            .Where(i => query.User == null ?
                 true :
                 i.IsVisible(query.User))
             .ToList();
