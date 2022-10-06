@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Models.PlaybackDtos;
 using Jellyfin.Api.Models.StreamingDtos;
 using Jellyfin.Data.Enums;
@@ -17,7 +18,6 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
@@ -46,7 +46,6 @@ namespace Jellyfin.Api.Helpers
 
         private readonly IAttachmentExtractor _attachmentExtractor;
         private readonly IApplicationPaths _appPaths;
-        private readonly IAuthorizationContext _authorizationContext;
         private readonly EncodingHelper _encodingHelper;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger<TranscodingJobHelper> _logger;
@@ -55,6 +54,7 @@ namespace Jellyfin.Api.Helpers
         private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly ISessionManager _sessionManager;
         private readonly ILoggerFactory _loggerFactory;
+        private readonly IUserManager _userManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TranscodingJobHelper"/> class.
@@ -67,9 +67,9 @@ namespace Jellyfin.Api.Helpers
         /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
-        /// <param name="authorizationContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
         /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
+        /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         public TranscodingJobHelper(
             IAttachmentExtractor attachmentExtractor,
             IApplicationPaths appPaths,
@@ -79,9 +79,9 @@ namespace Jellyfin.Api.Helpers
             IMediaEncoder mediaEncoder,
             IServerConfigurationManager serverConfigurationManager,
             ISessionManager sessionManager,
-            IAuthorizationContext authorizationContext,
             EncodingHelper encodingHelper,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory,
+            IUserManager userManager)
         {
             _attachmentExtractor = attachmentExtractor;
             _appPaths = appPaths;
@@ -91,9 +91,9 @@ namespace Jellyfin.Api.Helpers
             _mediaEncoder = mediaEncoder;
             _serverConfigurationManager = serverConfigurationManager;
             _sessionManager = sessionManager;
-            _authorizationContext = authorizationContext;
             _encodingHelper = encodingHelper;
             _loggerFactory = loggerFactory;
+            _userManager = userManager;
 
             DeleteEncodedMediaCache();
 
@@ -512,8 +512,9 @@ namespace Jellyfin.Api.Helpers
 
             if (state.VideoRequest != null && !EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
             {
-                var auth = await _authorizationContext.GetAuthorizationInfo(request).ConfigureAwait(false);
-                if (auth.User != null && !auth.User.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding))
+                var userId = request.HttpContext.User.GetUserId();
+                var user = userId.Equals(default) ? null : _userManager.GetUserById(userId);
+                if (user != null && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding))
                 {
                     this.OnTranscodeFailedToStart(outputPath, transcodingJobType, state);
 

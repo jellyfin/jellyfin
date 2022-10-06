@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Jellyfin.Api.Helpers;
+using System.Security.Claims;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Model.Entities;
@@ -22,14 +22,14 @@ namespace Jellyfin.Api.Extensions
         /// Legacy order: 2.
         /// </remarks>
         /// <param name="dtoOptions">DtoOptions object.</param>
-        /// <param name="request">Current request.</param>
+        /// <param name="user">Current claims principal.</param>
         /// <returns>Modified DtoOptions object.</returns>
         internal static DtoOptions AddClientFields(
-            this DtoOptions dtoOptions, HttpRequest request)
+            this DtoOptions dtoOptions, ClaimsPrincipal user)
         {
             dtoOptions.Fields ??= Array.Empty<ItemFields>();
 
-            string? client = ClaimHelpers.GetClient(request.HttpContext.User);
+            string? client = user.GetClient();
 
             // No client in claim
             if (string.IsNullOrEmpty(client))

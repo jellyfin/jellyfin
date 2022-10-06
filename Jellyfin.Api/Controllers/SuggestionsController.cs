@@ -67,7 +67,7 @@ namespace Jellyfin.Api.Controllers
                 ? null
                 : _userManager.GetUserById(userId);
 
-            var dtoOptions = new DtoOptions().AddClientFields(Request);
+            var dtoOptions = new DtoOptions().AddClientFields(User);
             var result = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
             {
                 OrderBy = new[] { (ItemSortBy.Random, SortOrder.Descending) },

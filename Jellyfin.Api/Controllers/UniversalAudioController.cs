@@ -6,13 +6,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.AspNetCore.Authorization;
@@ -28,7 +28,6 @@ namespace Jellyfin.Api.Controllers
     [Route("")]
     public class UniversalAudioController : BaseJellyfinApiController
     {
-        private readonly IAuthorizationContext _authorizationContext;
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger<UniversalAudioController> _logger;
         private readonly MediaInfoHelper _mediaInfoHelper;
@@ -38,21 +37,18 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="UniversalAudioController"/> class.
         /// </summary>
-        /// <param name="authorizationContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{UniversalAudioController}"/> interface.</param>
         /// <param name="mediaInfoHelper">Instance of <see cref="MediaInfoHelper"/>.</param>
         /// <param name="audioHelper">Instance of <see cref="AudioHelper"/>.</param>
         /// <param name="dynamicHlsHelper">Instance of <see cref="DynamicHlsHelper"/>.</param>
         public UniversalAudioController(
-            IAuthorizationContext authorizationContext,
             ILibraryManager libraryManager,
             ILogger<UniversalAudioController> logger,
             MediaInfoHelper mediaInfoHelper,
             AudioHelper audioHelper,
             DynamicHlsHelper dynamicHlsHelper)
         {
-            _authorizationContext = authorizationContext;
             _libraryManager = libraryManager;
             _logger = logger;
             _mediaInfoHelper = mediaInfoHelper;
@@ -111,15 +107,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool enableRedirection = true)
         {
             var deviceProfile = GetDeviceProfile(container, transcodingContainer, audioCodec, transcodingProtocol, breakOnNonKeyFrames, transcodingAudioChannels, maxAudioSampleRate, maxAudioBitDepth, maxAudioChannels);
-            var authorizationInfo = await _authorizationContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
-            authorizationInfo.DeviceId = deviceId;
 
             if (!userId.HasValue || userId.Value.Equals(Guid.Empty))
             {
-                userId = authorizationInfo.UserId;
+                userId = User.GetUserId();
             }
-
-            var authInfo = await _authorizationContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
 
             _logger.LogInformation("GetPostedPlaybackInfo profile: {@Profile}", deviceProfile);
 
@@ -138,7 +130,7 @@ namespace Jellyfin.Api.Controllers
                     item,
                     sourceInfo,
                     deviceProfile,
-                    authInfo,
+                    User,
                     maxStreamingBitrate ?? deviceProfile.MaxStreamingBitrate,
                     startTimeTicks ?? 0,
                     mediaSourceId ?? string.Empty,

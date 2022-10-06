@@ -24,7 +24,6 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Configuration;
@@ -50,7 +49,6 @@ namespace Jellyfin.Api.Controllers
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IDtoService _dtoService;
-        private readonly IAuthorizationContext _authContext;
         private readonly IActivityManager _activityManager;
         private readonly ILocalizationManager _localization;
         private readonly ILibraryMonitor _libraryMonitor;
@@ -64,7 +62,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
-        /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="activityManager">Instance of the <see cref="IActivityManager"/> interface.</param>
         /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
         /// <param name="libraryMonitor">Instance of the <see cref="ILibraryMonitor"/> interface.</param>
@@ -75,7 +72,6 @@ namespace Jellyfin.Api.Controllers
             ILibraryManager libraryManager,
             IUserManager userManager,
             IDtoService dtoService,
-            IAuthorizationContext authContext,
             IActivityManager activityManager,
             ILocalizationManager localization,
             ILibraryMonitor libraryMonitor,
@@ -86,7 +82,6 @@ namespace Jellyfin.Api.Controllers
             _libraryManager = libraryManager;
             _userManager = userManager;
             _dtoService = dtoService;
-            _authContext = authContext;
             _activityManager = activityManager;
             _localization = localization;
             _libraryMonitor = libraryMonitor;
@@ -184,7 +179,7 @@ namespace Jellyfin.Api.Controllers
                 item = parent;
             }
 
-            var dtoOptions = new DtoOptions().AddClientFields(Request);
+            var dtoOptions = new DtoOptions().AddClientFields(User);
             var items = themeItems
                 .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item))
                 .ToArray();
@@ -250,7 +245,7 @@ namespace Jellyfin.Api.Controllers
                 item = parent;
             }
 
-            var dtoOptions = new DtoOptions().AddClientFields(Request);
+            var dtoOptions = new DtoOptions().AddClientFields(User);
             var items = themeItems
                 .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item))
                 .ToArray();
@@ -331,11 +326,10 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult> DeleteItem(Guid itemId)
+        public ActionResult DeleteItem(Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
-            var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
-            var user = auth.User;
+            var user = _userManager.GetUserById(User.GetUserId());
 
             if (!item.CanDelete(user))
             {
@@ -361,7 +355,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult> DeleteItems([FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids)
+        public ActionResult DeleteItems([FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids)
         {
             if (ids.Length == 0)
             {
@@ -371,8 +365,7 @@ namespace Jellyfin.Api.Controllers
             foreach (var i in ids)
             {
                 var item = _libraryManager.GetItemById(i);
-                var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
-                var user = auth.User;
+                var user = _userManager.GetUserById(User.GetUserId());
 
                 if (!item.CanDelete(user))
                 {
@@ -453,7 +446,7 @@ namespace Jellyfin.Api.Controllers
                 ? null
                 : _userManager.GetUserById(userId.Value);
 
-            var dtoOptions = new DtoOptions().AddClientFields(Request);
+            var dtoOptions = new DtoOptions().AddClientFields(User);
             BaseItem? parent = item.GetParent();
 
             while (parent != null)
@@ -505,7 +498,7 @@ namespace Jellyfin.Api.Controllers
                 items = items.Where(i => i.IsHidden == val).ToList();
             }
 
-            var dtoOptions = new DtoOptions().AddClientFields(Request);
+            var dtoOptions = new DtoOptions().AddClientFields(User);
             var resultArray = _dtoService.GetBaseItemDtos(items, dtoOptions);
             return new QueryResult<BaseItemDto>(resultArray);
         }
@@ -622,9 +615,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
-
-            var user = auth.User;
+            var user = _userManager.GetUserById(User.GetUserId());
 
             if (user != null)
             {
@@ -643,7 +634,7 @@ namespace Jellyfin.Api.Controllers
 
             if (user != null)
             {
-                await LogDownloadAsync(item, user, auth).ConfigureAwait(false);
+                await LogDownloadAsync(item, user).ConfigureAwait(false);
             }
 
             var path = item.Path;
@@ -704,7 +695,7 @@ namespace Jellyfin.Api.Controllers
                 ? null
                 : _userManager.GetUserById(userId.Value);
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request);
+                .AddClientFields(User);
 
             var program = item as IHasProgramAttributes;
             bool? isMovie = item is Movie || (program != null && program.IsMovie) || item is Trailer;
@@ -892,16 +883,16 @@ namespace Jellyfin.Api.Controllers
                 : item;
         }
 
-        private async Task LogDownloadAsync(BaseItem item, User user, AuthorizationInfo auth)
+        private async Task LogDownloadAsync(BaseItem item, User user)
         {
             try
             {
                 await _activityManager.CreateAsync(new ActivityLog(
                     string.Format(CultureInfo.InvariantCulture, _localization.GetLocalizedString("UserDownloadingItemWithValues"), user.Username, item.Name),
                     "UserDownloadingContent",
-                    auth.UserId)
+                    User.GetUserId())
                 {
-                    ShortOverview = string.Format(CultureInfo.InvariantCulture, _localization.GetLocalizedString("AppDeviceValues"), auth.Client, auth.Device),
+                    ShortOverview = string.Format(CultureInfo.InvariantCulture, _localization.GetLocalizedString("AppDeviceValues"), User.GetClient(), User.GetDevice()),
                 }).ConfigureAwait(false);
             }
             catch

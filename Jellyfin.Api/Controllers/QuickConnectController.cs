@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
@@ -104,15 +105,15 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<bool>> AuthorizeQuickConnect([FromQuery, Required] string code)
         {
-            var userId = ClaimHelpers.GetUserId(Request.HttpContext.User);
-            if (!userId.HasValue)
+            var userId = User.GetUserId();
+            if (userId.Equals(default))
             {
                 return StatusCode(StatusCodes.Status403Forbidden, "Unknown user id");
             }
 
             try
             {
-                return await _quickConnect.AuthorizeRequest(userId.Value, code).ConfigureAwait(false);
+                return await _quickConnect.AuthorizeRequest(userId, code).ConfigureAwait(false);
             }
             catch (AuthenticationException)
             {

@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.ClientLogDtos;
 using MediaBrowser.Controller.ClientEvent;
@@ -69,10 +70,10 @@ namespace Jellyfin.Api.Controllers
 
         private (string ClientName, string ClientVersion) GetRequestInformation()
         {
-            var clientName = ClaimHelpers.GetClient(HttpContext.User) ?? "unknown-client";
-            var clientVersion = ClaimHelpers.GetIsApiKey(HttpContext.User)
+            var clientName = HttpContext.User.GetClient() ?? "unknown-client";
+            var clientVersion = HttpContext.User.GetIsApiKey()
                 ? "apikey"
-                : ClaimHelpers.GetVersion(HttpContext.User) ?? "unknown-version";
+                : HttpContext.User.GetVersion() ?? "unknown-version";
 
             return (clientName, clientVersion);
         }

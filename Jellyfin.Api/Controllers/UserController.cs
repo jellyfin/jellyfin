@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.UserDtos;
 using Jellyfin.Data.Enums;
@@ -264,7 +265,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid userId,
             [FromBody, Required] UpdateUserPassword request)
         {
-            if (!await RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true).ConfigureAwait(false))
+            if (!RequestHelpers.AssertCanUpdateUser(_userManager, User, userId, true))
             {
                 return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the password.");
             }
@@ -282,7 +283,7 @@ namespace Jellyfin.Api.Controllers
             }
             else
             {
-                if (!HttpContext.User.IsInRole(UserRoles.Administrator))
+                if (!User.IsInRole(UserRoles.Administrator))
                 {
                     var success = await _userManager.AuthenticateUser(
                         user.Username,
@@ -299,7 +300,7 @@ namespace Jellyfin.Api.Controllers
 
                 await _userManager.ChangePassword(user, request.NewPw).ConfigureAwait(false);
 
-                var currentToken = (await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false)).Token;
+                var currentToken = User.GetToken();
 
                 await _sessionManager.RevokeUserTokens(user.Id, currentToken).ConfigureAwait(false);
             }
@@ -325,7 +326,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid userId,
             [FromBody, Required] UpdateUserEasyPassword request)
         {
-            if (!await RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true).ConfigureAwait(false))
+            if (!RequestHelpers.AssertCanUpdateUser(_userManager, User, userId, true))
             {
                 return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the easy password.");
             }
@@ -367,7 +368,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid userId,
             [FromBody, Required] UserDto updateUser)
         {
-            if (!await RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, false).ConfigureAwait(false))
+            if (!RequestHelpers.AssertCanUpdateUser(_userManager, User, userId, true))
             {
                 return StatusCode(StatusCodes.Status403Forbidden, "User update not allowed.");
             }
@@ -427,7 +428,7 @@ namespace Jellyfin.Api.Controllers
                     return StatusCode(StatusCodes.Status403Forbidden, "There must be at least one enabled user in the system.");
                 }
 
-                var currentToken = (await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false)).Token;
+                var currentToken = User.GetToken();
                 await _sessionManager.RevokeUserTokens(user.Id, currentToken).ConfigureAwait(false);
             }
 
@@ -452,7 +453,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid userId,
             [FromBody, Required] UserConfiguration userConfig)
         {
-            if (!await RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, false).ConfigureAwait(false))
+            if (!RequestHelpers.AssertCanUpdateUser(_userManager, User, userId, true))
             {
                 return StatusCode(StatusCodes.Status403Forbidden, "User configuration update not allowed");
             }
@@ -536,13 +537,13 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public ActionResult<UserDto> GetCurrentUser()
         {
-            var userId = ClaimHelpers.GetUserId(Request.HttpContext.User);
-            if (userId is null)
+            var userId = User.GetUserId();
+            if (userId.Equals(default))
             {
                 return BadRequest();
             }
 
-            var user = _userManager.GetUserById(userId.Value);
+            var user = _userManager.GetUserById(userId);
             if (user == null)
             {
                 return BadRequest();
@@ -567,7 +568,7 @@ namespace Jellyfin.Api.Controllers
 
             if (filterByDevice)
             {
-                var deviceId = (await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false)).DeviceId;
+                var deviceId = User.GetDeviceId();
 
                 if (!string.IsNullOrWhiteSpace(deviceId))
                 {
