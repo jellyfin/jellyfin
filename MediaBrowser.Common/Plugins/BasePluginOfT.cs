@@ -164,10 +164,7 @@ namespace MediaBrowser.Common.Plugins
         /// <inheritdoc />
         public virtual void UpdateConfiguration(BasePluginConfiguration configuration)
         {
-            if (configuration == null)
-            {
-                throw new ArgumentNullException(nameof(configuration));
-            }
+            ArgumentNullException.ThrowIfNull(configuration);
 
             Configuration = (TConfigurationType)configuration;
 

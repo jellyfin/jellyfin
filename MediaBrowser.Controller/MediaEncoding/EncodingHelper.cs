@@ -5105,15 +5105,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             MediaSourceInfo mediaSource,
             string requestedUrl)
         {
-            if (state == null)
-            {
-                throw new ArgumentNullException(nameof(state));
-            }
+            ArgumentNullException.ThrowIfNull(state);
 
-            if (mediaSource == null)
-            {
-                throw new ArgumentNullException(nameof(mediaSource));
-            }
+            ArgumentNullException.ThrowIfNull(mediaSource);
 
             var path = mediaSource.Path;
             var protocol = mediaSource.Protocol;

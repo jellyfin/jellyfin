@@ -665,10 +665,7 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
-            if (info == null)
-            {
-                throw new ArgumentNullException(nameof(info));
-            }
+            ArgumentNullException.ThrowIfNull(info);
 
             var session = GetSession(info.SessionId);
 
@@ -762,10 +759,7 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
-            if (info == null)
-            {
-                throw new ArgumentNullException(nameof(info));
-            }
+            ArgumentNullException.ThrowIfNull(info);
 
             var session = GetSession(info.SessionId);
 
@@ -897,10 +891,7 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
-            if (info == null)
-            {
-                throw new ArgumentNullException(nameof(info));
-            }
+            ArgumentNullException.ThrowIfNull(info);
 
             if (info.PositionTicks.HasValue && info.PositionTicks.Value < 0)
             {
@@ -1341,15 +1332,9 @@ namespace Emby.Server.Implementations.Session
 
         private static void AssertCanControl(SessionInfo session, SessionInfo controllingSession)
         {
-            if (session == null)
-            {
-                throw new ArgumentNullException(nameof(session));
-            }
+            ArgumentNullException.ThrowIfNull(session);
 
-            if (controllingSession == null)
-            {
-                throw new ArgumentNullException(nameof(controllingSession));
-            }
+            ArgumentNullException.ThrowIfNull(controllingSession);
         }
 
         /// <summary>
@@ -1688,10 +1673,7 @@ namespace Emby.Server.Implementations.Session
         /// </summary>
         private BaseItemDto GetItemInfo(BaseItem item, MediaSourceInfo mediaSource)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
+            ArgumentNullException.ThrowIfNull(item);
 
             var dtoOptions = _itemInfoDtoOptions;
 
@@ -1802,10 +1784,7 @@ namespace Emby.Server.Implementations.Session
         /// <inheritdoc />
         public Task<SessionInfo> GetSessionByAuthenticationToken(Device info, string deviceId, string remoteEndpoint, string appVersion)
         {
-            if (info == null)
-            {
-                throw new ArgumentNullException(nameof(info));
-            }
+            ArgumentNullException.ThrowIfNull(info);
 
             var user = info.UserId.Equals(default)
                 ? null

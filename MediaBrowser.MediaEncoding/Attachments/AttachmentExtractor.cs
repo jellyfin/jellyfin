@@ -52,10 +52,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
         /// <inheritdoc />
         public async Task<(MediaAttachment Attachment, Stream Stream)> GetAttachment(BaseItem item, string mediaSourceId, int attachmentStreamIndex, CancellationToken cancellationToken)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
+            ArgumentNullException.ThrowIfNull(item);
 
             if (string.IsNullOrWhiteSpace(mediaSourceId))
             {

@@ -1223,10 +1223,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private async Task RecordStream(TimerInfo timer, DateTime recordingEndDate, ActiveRecordingInfo activeRecordingInfo)
         {
-            if (timer == null)
-            {
-                throw new ArgumentNullException(nameof(timer));
-            }
+            ArgumentNullException.ThrowIfNull(timer);
 
             LiveTvProgram programInfo = null;
 
@@ -2347,10 +2344,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private IEnumerable<TimerInfo> GetTimersForSeries(SeriesTimerInfo seriesTimer)
         {
-            if (seriesTimer == null)
-            {
-                throw new ArgumentNullException(nameof(seriesTimer));
-            }
+            ArgumentNullException.ThrowIfNull(seriesTimer);
 
             var query = new InternalItemsQuery
             {

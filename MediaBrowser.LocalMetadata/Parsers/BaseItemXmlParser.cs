@@ -53,10 +53,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
         /// <exception cref="ArgumentNullException">Item is null.</exception>
         public void Fetch(MetadataResult<T> item, string metadataFile, CancellationToken cancellationToken)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
+            ArgumentNullException.ThrowIfNull(item);
 
             if (string.IsNullOrEmpty(metadataFile))
             {

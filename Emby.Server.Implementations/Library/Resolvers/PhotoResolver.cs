@@ -91,10 +91,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
 
         internal static bool IsImageFile(string path, IImageProcessor imageProcessor)
         {
-            if (path == null)
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
+            ArgumentNullException.ThrowIfNull(path);
 
             var filename = Path.GetFileNameWithoutExtension(path);
 

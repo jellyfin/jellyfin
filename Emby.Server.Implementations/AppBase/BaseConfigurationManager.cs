@@ -210,10 +210,7 @@ namespace Emby.Server.Implementations.AppBase
         /// <exception cref="ArgumentNullException"><c>newConfiguration</c> is <c>null</c>.</exception>
         public virtual void ReplaceConfiguration(BaseApplicationConfiguration newConfiguration)
         {
-            if (newConfiguration == null)
-            {
-                throw new ArgumentNullException(nameof(newConfiguration));
-            }
+            ArgumentNullException.ThrowIfNull(newConfiguration);
 
             ValidateCachePath(newConfiguration);
 
