@@ -3541,6 +3541,12 @@ namespace Emby.Server.Implementations.Data
                 statement?.TryBind("@MinIndexNumber", query.MinIndexNumber.Value);
             }
 
+            if (query.MinParentIndexNumber.HasValue)
+            {
+                whereClauses.Add("ParentIndexNumber>=@MinParentIndexNumber");
+                statement?.TryBind("@MinParentIndexNumber", query.MinParentIndexNumber.Value);
+            }
+
             if (query.MinDateCreated.HasValue)
             {
                 whereClauses.Add("DateCreated>=@MinDateCreated");

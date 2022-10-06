@@ -224,7 +224,8 @@ namespace Emby.Server.Implementations.TV
                     IsVirtualItem = false,
                     ParentIndexNumberNotEquals = 0,
                     DtoOptions = dtoOptions,
-                    MinIndexNumber = lastWatchedEpisode?.IndexNumberEnd ?? lastWatchedEpisode?.IndexNumber
+                    MinIndexNumber = lastWatchedEpisode?.IndexNumberEnd ?? lastWatchedEpisode?.IndexNumber,
+                    MinParentIndexNumber = lastWatchedEpisode?.ParentIndexNumber
                 };
 
                 Episode nextEpisode;
