@@ -7,11 +7,13 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.ModelBinders;
+using Jellyfin.Api.Models.UserDtos;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -36,6 +38,7 @@ namespace Jellyfin.Api.Controllers
         private readonly IDtoService _dtoService;
         private readonly IUserViewManager _userViewManager;
         private readonly IFileSystem _fileSystem;
+        private readonly ILyricManager _lyricManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserLibraryController"/> class.
@@ -46,13 +49,15 @@ namespace Jellyfin.Api.Controllers
         /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
         /// <param name="userViewManager">Instance of the <see cref="IUserViewManager"/> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+        /// <param name="lyricManager">Instance of the <see cref="ILyricManager"/> interface.</param>
         public UserLibraryController(
             IUserManager userManager,
             IUserDataManager userDataRepository,
             ILibraryManager libraryManager,
             IDtoService dtoService,
             IUserViewManager userViewManager,
-            IFileSystem fileSystem)
+            IFileSystem fileSystem,
+            ILyricManager lyricManager)
         {
             _userManager = userManager;
             _userDataRepository = userDataRepository;
@@ -60,6 +65,7 @@ namespace Jellyfin.Api.Controllers
             _dtoService = dtoService;
             _userViewManager = userViewManager;
             _fileSystem = fileSystem;
+            _lyricManager = lyricManager;
         }
 
         /// <summary>
@@ -380,6 +386,43 @@ namespace Jellyfin.Api.Controllers
             _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
 
             return _userDataRepository.GetUserDataDto(item, user);
+        }
+
+        /// <summary>
+        /// Gets an item's lyrics.
+        /// </summary>
+        /// <param name="userId">User id.</param>
+        /// <param name="itemId">Item id.</param>
+        /// <response code="200">Lyrics returned.</response>
+        /// <response code="404">Something went wrong. No Lyrics will be returned.</response>
+        /// <returns>An <see cref="OkResult"/> containing the item's lyrics.</returns>
+        [HttpGet("Users/{userId}/Items/{itemId}/Lyrics")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<LyricResponse>> GetLyrics([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
+        {
+            var user = _userManager.GetUserById(userId);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var item = itemId.Equals(default)
+                ? _libraryManager.GetUserRootFolder()
+                : _libraryManager.GetItemById(itemId);
+
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            var result = await _lyricManager.GetLyrics(item).ConfigureAwait(false);
+            if (result is not null)
+            {
+                return Ok(result);
+            }
+
+            return NotFound();
         }
     }
 }
