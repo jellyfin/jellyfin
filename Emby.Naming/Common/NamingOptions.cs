@@ -181,6 +181,24 @@ namespace Emby.Naming.Common
                 "volume"
             };
 
+            ArtistSubfolders = new[]
+            {
+                "albums",
+                "broadcasts",
+                "bootlegs",
+                "compilations",
+                "dj-mixes",
+                "eps",
+                "live",
+                "mixtapes",
+                "others",
+                "remixes",
+                "singles",
+                "soundtracks",
+                "spokenwords",
+                "streets"
+            };
+
             AudioFileExtensions = new[]
             {
                 ".669",
@@ -743,6 +761,11 @@ namespace Emby.Naming.Common
         /// Gets or sets list of album stacking prefixes.
         /// </summary>
         public string[] AlbumStackingPrefixes { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of artist subfolders.
+        /// </summary>
+        public string[] ArtistSubfolders { get; set; }
 
         /// <summary>
         /// Gets or sets list of subtitle file extensions.
