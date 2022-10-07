@@ -176,7 +176,7 @@ namespace Emby.Server.Implementations.LiveTv
                     try
                     {
                         dto.ParentThumbImageTag = _imageProcessor.GetImageCacheTag(librarySeries, image);
-                        dto.ParentThumbItemId = librarySeries.Id.ToString("N", CultureInfo.InvariantCulture);
+                        dto.ParentThumbItemId = librarySeries.Id;
                     }
                     catch (Exception ex)
                     {
@@ -193,7 +193,7 @@ namespace Emby.Server.Implementations.LiveTv
                             {
                                 _imageProcessor.GetImageCacheTag(librarySeries, image)
                             };
-                        dto.ParentBackdropItemId = librarySeries.Id.ToString("N", CultureInfo.InvariantCulture);
+                        dto.ParentBackdropItemId = librarySeries.Id;
                     }
                     catch (Exception ex)
                     {
@@ -240,7 +240,7 @@ namespace Emby.Server.Implementations.LiveTv
                                 _imageProcessor.GetImageCacheTag(program, image)
                             };
 
-                            dto.ParentBackdropItemId = program.Id.ToString("N", CultureInfo.InvariantCulture);
+                            dto.ParentBackdropItemId = program.Id;
                         }
                         catch (Exception ex)
                         {
@@ -456,7 +456,7 @@ namespace Emby.Server.Implementations.LiveTv
                 info.Id = timer.ExternalId;
             }
 
-            if (!dto.ChannelId.Equals(Guid.Empty) && string.IsNullOrEmpty(info.ChannelId))
+            if (!dto.ChannelId.Equals(default) && string.IsNullOrEmpty(info.ChannelId))
             {
                 var channel = _libraryManager.GetItemById(dto.ChannelId);
 
@@ -522,7 +522,7 @@ namespace Emby.Server.Implementations.LiveTv
                 info.Id = timer.ExternalId;
             }
 
-            if (!dto.ChannelId.Equals(Guid.Empty) && string.IsNullOrEmpty(info.ChannelId))
+            if (!dto.ChannelId.Equals(default) && string.IsNullOrEmpty(info.ChannelId))
             {
                 var channel = _libraryManager.GetItemById(dto.ChannelId);
 

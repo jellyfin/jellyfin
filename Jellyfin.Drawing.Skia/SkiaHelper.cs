@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using SkiaSharp;
 
 namespace Jellyfin.Drawing.Skia
@@ -8,16 +9,39 @@ namespace Jellyfin.Drawing.Skia
     public static class SkiaHelper
     {
         /// <summary>
-        /// Ensures the result is a success
-        /// by throwing an exception when that's not the case.
+        /// Gets the next valid image as a bitmap.
         /// </summary>
-        /// <param name="result">The result returned by Skia.</param>
-        public static void EnsureSuccess(SKCodecResult result)
+        /// <param name="skiaEncoder">The current skia encoder.</param>
+        /// <param name="paths">The list of image paths.</param>
+        /// <param name="currentIndex">The current checked index.</param>
+        /// <param name="newIndex">The new index.</param>
+        /// <returns>A valid bitmap, or null if no bitmap exists after <c>currentIndex</c>.</returns>
+        public static SKBitmap? GetNextValidImage(SkiaEncoder skiaEncoder, IReadOnlyList<string> paths, int currentIndex, out int newIndex)
         {
-            if (result != SKCodecResult.Success)
+            var imagesTested = new Dictionary<int, int>();
+            SKBitmap? bitmap = null;
+
+            while (imagesTested.Count < paths.Count)
             {
-                throw new SkiaCodecException(result);
+                if (currentIndex >= paths.Count)
+                {
+                    currentIndex = 0;
+                }
+
+                bitmap = skiaEncoder.Decode(paths[currentIndex], false, null, out _);
+
+                imagesTested[currentIndex] = 0;
+
+                currentIndex++;
+
+                if (bitmap != null)
+                {
+                    break;
+                }
             }
+
+            newIndex = currentIndex;
+            return bitmap;
         }
     }
 }

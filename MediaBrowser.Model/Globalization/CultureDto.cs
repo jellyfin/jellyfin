@@ -1,7 +1,6 @@
-#nullable disable
 #pragma warning disable CS1591
 
-using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Globalization
 {
@@ -10,39 +9,42 @@ namespace MediaBrowser.Model.Globalization
     /// </summary>
     public class CultureDto
     {
-        public CultureDto()
+        public CultureDto(string name, string displayName, string twoLetterISOLanguageName, IReadOnlyList<string> threeLetterISOLanguageNames)
         {
-            ThreeLetterISOLanguageNames = Array.Empty<string>();
+            Name = name;
+            DisplayName = displayName;
+            TwoLetterISOLanguageName = twoLetterISOLanguageName;
+            ThreeLetterISOLanguageNames = threeLetterISOLanguageNames;
         }
 
         /// <summary>
-        /// Gets or sets the name.
+        /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name { get; set; }
+        public string Name { get; }
 
         /// <summary>
-        /// Gets or sets the display name.
+        /// Gets the display name.
         /// </summary>
         /// <value>The display name.</value>
-        public string DisplayName { get; set; }
+        public string DisplayName { get; }
 
         /// <summary>
-        /// Gets or sets the name of the two letter ISO language.
+        /// Gets the name of the two letter ISO language.
         /// </summary>
         /// <value>The name of the two letter ISO language.</value>
-        public string TwoLetterISOLanguageName { get; set; }
+        public string TwoLetterISOLanguageName { get; }
 
         /// <summary>
         /// Gets the name of the three letter ISO language.
         /// </summary>
         /// <value>The name of the three letter ISO language.</value>
-        public string ThreeLetterISOLanguageName
+        public string? ThreeLetterISOLanguageName
         {
             get
             {
                 var vals = ThreeLetterISOLanguageNames;
-                if (vals.Length > 0)
+                if (vals.Count > 0)
                 {
                     return vals[0];
                 }
@@ -51,6 +53,6 @@ namespace MediaBrowser.Model.Globalization
             }
         }
 
-        public string[] ThreeLetterISOLanguageNames { get; set; }
+        public IReadOnlyList<string> ThreeLetterISOLanguageNames { get; }
     }
 }

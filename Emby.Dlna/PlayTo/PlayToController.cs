@@ -174,13 +174,13 @@ namespace Emby.Dlna.PlayTo
                 await _sessionManager.OnPlaybackStart(newItemProgress).ConfigureAwait(false);
 
                 // Send a message to the DLNA device to notify what is the next track in the playlist.
-                var currentItemIndex = _playlist.FindIndex(item => item.StreamInfo.ItemId == streamInfo.ItemId);
+                var currentItemIndex = _playlist.FindIndex(item => item.StreamInfo.ItemId.Equals(streamInfo.ItemId));
                 if (currentItemIndex >= 0)
                 {
                     _currentPlaylistIndex = currentItemIndex;
                 }
 
-                await SendNextTrackMessage(currentItemIndex, CancellationToken.None);
+                await SendNextTrackMessage(currentItemIndex, CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -349,7 +349,9 @@ namespace Emby.Dlna.PlayTo
         {
             _logger.LogDebug("{0} - Received PlayRequest: {1}", _session.DeviceName, command.PlayCommand);
 
-            var user = command.ControllingUserId.Equals(Guid.Empty) ? null : _userManager.GetUserById(command.ControllingUserId);
+            var user = command.ControllingUserId.Equals(default)
+                ? null :
+                _userManager.GetUserById(command.ControllingUserId);
 
             var items = new List<BaseItem>();
             foreach (var id in command.ItemIds)
@@ -392,7 +394,7 @@ namespace Emby.Dlna.PlayTo
                 _playlist.AddRange(playlist);
             }
 
-            if (!command.ControllingUserId.Equals(Guid.Empty))
+            if (!command.ControllingUserId.Equals(default))
             {
                 _sessionManager.LogSessionActivity(
                     _session.Client,
@@ -446,14 +448,16 @@ namespace Emby.Dlna.PlayTo
 
                 if (info.Item != null && !EnableClientSideSeek(info))
                 {
-                    var user = !_session.UserId.Equals(Guid.Empty) ? _userManager.GetUserById(_session.UserId) : null;
+                    var user = _session.UserId.Equals(default)
+                        ? null
+                        : _userManager.GetUserById(_session.UserId);
                     var newItem = CreatePlaylistItem(info.Item, user, newPosition, info.MediaSourceId, info.AudioStreamIndex, info.SubtitleStreamIndex);
 
                     await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl, CancellationToken.None).ConfigureAwait(false);
 
                     // Send a message to the DLNA device to notify what is the next track in the play list.
                     var newItemIndex = _playlist.FindIndex(item => item.StreamUrl == newItem.StreamUrl);
-                    await SendNextTrackMessage(newItemIndex, CancellationToken.None);
+                    await SendNextTrackMessage(newItemIndex, CancellationToken.None).ConfigureAwait(false);
 
                     return;
                 }
@@ -557,6 +561,7 @@ namespace Emby.Dlna.PlayTo
                         streamInfo.IsDirectStream,
                         streamInfo.RunTimeTicks ?? 0,
                         streamInfo.TargetVideoProfile,
+                        streamInfo.TargetVideoRangeType,
                         streamInfo.TargetVideoLevel,
                         streamInfo.TargetFramerate ?? 0,
                         streamInfo.TargetPacketLength,
@@ -569,7 +574,7 @@ namespace Emby.Dlna.PlayTo
                         streamInfo.TargetVideoCodecTag,
                         streamInfo.IsTargetAVC);
 
-                return list.Count == 0 ? null : list[0];
+                return list.FirstOrDefault();
             }
 
             return null;
@@ -654,7 +659,7 @@ namespace Emby.Dlna.PlayTo
             await _device.SetAvTransport(currentitem.StreamUrl, GetDlnaHeaders(currentitem), currentitem.Didl, cancellationToken).ConfigureAwait(false);
 
             // Send a message to the DLNA device to notify what is the next track in the play list.
-            await SendNextTrackMessage(index, cancellationToken);
+            await SendNextTrackMessage(index, cancellationToken).ConfigureAwait(false);
 
             var streamInfo = currentitem.StreamInfo;
             if (streamInfo.StartPositionTicks > 0 && EnableClientSideSeek(streamInfo))
@@ -764,14 +769,16 @@ namespace Emby.Dlna.PlayTo
                 {
                     var newPosition = GetProgressPositionTicks(info) ?? 0;
 
-                    var user = !_session.UserId.Equals(Guid.Empty) ? _userManager.GetUserById(_session.UserId) : null;
+                    var user = _session.UserId.Equals(default)
+                        ? null
+                        : _userManager.GetUserById(_session.UserId);
                     var newItem = CreatePlaylistItem(info.Item, user, newPosition, info.MediaSourceId, newIndex, info.SubtitleStreamIndex);
 
                     await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl, CancellationToken.None).ConfigureAwait(false);
 
                     // Send a message to the DLNA device to notify what is the next track in the play list.
                     var newItemIndex = _playlist.FindIndex(item => item.StreamUrl == newItem.StreamUrl);
-                    await SendNextTrackMessage(newItemIndex, CancellationToken.None);
+                    await SendNextTrackMessage(newItemIndex, CancellationToken.None).ConfigureAwait(false);
 
                     if (EnableClientSideSeek(newItem.StreamInfo))
                     {
@@ -793,14 +800,16 @@ namespace Emby.Dlna.PlayTo
                 {
                     var newPosition = GetProgressPositionTicks(info) ?? 0;
 
-                    var user = !_session.UserId.Equals(Guid.Empty) ? _userManager.GetUserById(_session.UserId) : null;
+                    var user = _session.UserId.Equals(default)
+                        ? null
+                        : _userManager.GetUserById(_session.UserId);
                     var newItem = CreatePlaylistItem(info.Item, user, newPosition, info.MediaSourceId, info.AudioStreamIndex, newIndex);
 
                     await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl, CancellationToken.None).ConfigureAwait(false);
 
                     // Send a message to the DLNA device to notify what is the next track in the play list.
                     var newItemIndex = _playlist.FindIndex(item => item.StreamUrl == newItem.StreamUrl);
-                    await SendNextTrackMessage(newItemIndex, CancellationToken.None);
+                    await SendNextTrackMessage(newItemIndex, CancellationToken.None).ConfigureAwait(false);
 
                     if (EnableClientSideSeek(newItem.StreamInfo) && newPosition > 0)
                     {
@@ -816,7 +825,7 @@ namespace Emby.Dlna.PlayTo
             const int Interval = 500;
 
             var currentWait = 0;
-            while (_device.TransportState != TransportState.Playing && currentWait < MaxWait)
+            while (_device.TransportState != TransportState.PLAYING && currentWait < MaxWait)
             {
                 await Task.Delay(Interval, cancellationToken).ConfigureAwait(false);
                 currentWait += Interval;
@@ -883,7 +892,7 @@ namespace Emby.Dlna.PlayTo
 
         private class StreamParams
         {
-            private MediaSourceInfo mediaSource;
+            private MediaSourceInfo _mediaSource;
             private IMediaSourceManager _mediaSourceManager;
 
             public Guid ItemId { get; set; }
@@ -908,24 +917,22 @@ namespace Emby.Dlna.PlayTo
 
             public async Task<MediaSourceInfo> GetMediaSource(CancellationToken cancellationToken)
             {
-                if (mediaSource != null)
+                if (_mediaSource != null)
                 {
-                    return mediaSource;
+                    return _mediaSource;
                 }
 
-                var hasMediaSources = Item as IHasMediaSources;
-
-                if (hasMediaSources == null)
+                if (Item is not IHasMediaSources)
                 {
                     return null;
                 }
 
                 if (_mediaSourceManager != null)
                 {
-                    mediaSource = await _mediaSourceManager.GetMediaSource(Item, MediaSourceId, LiveStreamId, false, cancellationToken).ConfigureAwait(false);
+                    _mediaSource = await _mediaSourceManager.GetMediaSource(Item, MediaSourceId, LiveStreamId, false, cancellationToken).ConfigureAwait(false);
                 }
 
-                return mediaSource;
+                return _mediaSource;
             }
 
             private static Guid GetItemId(string url)
@@ -951,7 +958,7 @@ namespace Emby.Dlna.PlayTo
                     }
                 }
 
-                return Guid.Empty;
+                return default;
             }
 
             public static StreamParams ParseFromUrl(string url, ILibraryManager libraryManager, IMediaSourceManager mediaSourceManager)
@@ -966,7 +973,7 @@ namespace Emby.Dlna.PlayTo
                     ItemId = GetItemId(url)
                 };
 
-                if (request.ItemId.Equals(Guid.Empty))
+                if (request.ItemId.Equals(default))
                 {
                     return request;
                 }

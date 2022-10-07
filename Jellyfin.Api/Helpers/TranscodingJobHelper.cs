@@ -8,16 +8,18 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Models.PlaybackDtos;
 using Jellyfin.Api.Models.StreamingDtos;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
@@ -42,7 +44,8 @@ namespace Jellyfin.Api.Helpers
         /// </summary>
         private static readonly Dictionary<string, SemaphoreSlim> _transcodingLocks = new Dictionary<string, SemaphoreSlim>();
 
-        private readonly IAuthorizationContext _authorizationContext;
+        private readonly IAttachmentExtractor _attachmentExtractor;
+        private readonly IApplicationPaths _appPaths;
         private readonly EncodingHelper _encodingHelper;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger<TranscodingJobHelper> _logger;
@@ -51,39 +54,46 @@ namespace Jellyfin.Api.Helpers
         private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly ISessionManager _sessionManager;
         private readonly ILoggerFactory _loggerFactory;
+        private readonly IUserManager _userManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TranscodingJobHelper"/> class.
         /// </summary>
+        /// <param name="attachmentExtractor">Instance of the <see cref="IAttachmentExtractor"/> interface.</param>
+        /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{TranscodingJobHelpers}"/> interface.</param>
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
-        /// <param name="authorizationContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
         /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
+        /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         public TranscodingJobHelper(
+            IAttachmentExtractor attachmentExtractor,
+            IApplicationPaths appPaths,
             ILogger<TranscodingJobHelper> logger,
             IMediaSourceManager mediaSourceManager,
             IFileSystem fileSystem,
             IMediaEncoder mediaEncoder,
             IServerConfigurationManager serverConfigurationManager,
             ISessionManager sessionManager,
-            IAuthorizationContext authorizationContext,
             EncodingHelper encodingHelper,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory,
+            IUserManager userManager)
         {
+            _attachmentExtractor = attachmentExtractor;
+            _appPaths = appPaths;
             _logger = logger;
             _mediaSourceManager = mediaSourceManager;
             _fileSystem = fileSystem;
             _mediaEncoder = mediaEncoder;
             _serverConfigurationManager = serverConfigurationManager;
             _sessionManager = sessionManager;
-            _authorizationContext = authorizationContext;
             _encodingHelper = encodingHelper;
             _loggerFactory = loggerFactory;
+            _userManager = userManager;
 
             DeleteEncodedMediaCache();
 
@@ -449,9 +459,12 @@ namespace Jellyfin.Api.Helpers
                 var audioCodec = state.ActualOutputAudioCodec;
                 var videoCodec = state.ActualOutputVideoCodec;
                 var hardwareAccelerationTypeString = _serverConfigurationManager.GetEncodingOptions().HardwareAccelerationType;
-                HardwareEncodingType? hardwareAccelerationType = string.IsNullOrEmpty(hardwareAccelerationTypeString)
-                    ? null
-                    : (HardwareEncodingType)Enum.Parse(typeof(HardwareEncodingType), hardwareAccelerationTypeString, true);
+                HardwareEncodingType? hardwareAccelerationType = null;
+                if (!string.IsNullOrEmpty(hardwareAccelerationTypeString)
+                    && Enum.TryParse<HardwareEncodingType>(hardwareAccelerationTypeString, out var parsedHardwareAccelerationType))
+                {
+                    hardwareAccelerationType = parsedHardwareAccelerationType;
+                }
 
                 _sessionManager.ReportTranscodingInfo(deviceId, new TranscodingInfo
                 {
@@ -499,8 +512,9 @@ namespace Jellyfin.Api.Helpers
 
             if (state.VideoRequest != null && !EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
             {
-                var auth = await _authorizationContext.GetAuthorizationInfo(request).ConfigureAwait(false);
-                if (auth.User != null && !auth.User.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding))
+                var userId = request.HttpContext.User.GetUserId();
+                var user = userId.Equals(default) ? null : _userManager.GetUserById(userId);
+                if (user != null && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding))
                 {
                     this.OnTranscodeFailedToStart(outputPath, transcodingJobType, state);
 
@@ -511,6 +525,22 @@ namespace Jellyfin.Api.Helpers
             if (string.IsNullOrEmpty(_mediaEncoder.EncoderPath))
             {
                 throw new ArgumentException("FFmpeg path not set.");
+            }
+
+            // If subtitles get burned in fonts may need to be extracted from the media file
+            if (state.SubtitleStream != null && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode)
+            {
+                var attachmentPath = Path.Combine(_appPaths.CachePath, "attachments", state.MediaSource.Id);
+                await _attachmentExtractor.ExtractAllAttachments(state.MediaPath, state.MediaSource, attachmentPath, cancellationTokenSource.Token).ConfigureAwait(false);
+
+                if (state.SubtitleStream.IsExternal && string.Equals(Path.GetExtension(state.SubtitleStream.Path), ".mks", StringComparison.OrdinalIgnoreCase))
+                {
+                    string subtitlePath = state.SubtitleStream.Path;
+                    string subtitlePathArgument = string.Format(CultureInfo.InvariantCulture, "file:\"{0}\"", subtitlePath.Replace("\"", "\\\"", StringComparison.Ordinal));
+                    string subtitleId = subtitlePath.GetMD5().ToString("N", CultureInfo.InvariantCulture);
+
+                    await _attachmentExtractor.ExtractAllAttachmentsExternal(subtitlePathArgument, subtitleId, attachmentPath, cancellationTokenSource.Token).ConfigureAwait(false);
+                }
             }
 
             var process = new Process
@@ -625,8 +655,8 @@ namespace Jellyfin.Api.Helpers
         {
             if (EnableThrottling(state))
             {
-                transcodingJob.TranscodingThrottler = state.TranscodingThrottler = new TranscodingThrottler(transcodingJob, new Logger<TranscodingThrottler>(new LoggerFactory()), _serverConfigurationManager, _fileSystem);
-                state.TranscodingThrottler.Start();
+                transcodingJob.TranscodingThrottler = new TranscodingThrottler(transcodingJob, new Logger<TranscodingThrottler>(new LoggerFactory()), _serverConfigurationManager, _fileSystem, _mediaEncoder);
+                transcodingJob.TranscodingThrottler.Start();
             }
         }
 
@@ -634,18 +664,11 @@ namespace Jellyfin.Api.Helpers
         {
             var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
 
-            // enable throttling when NOT using hardware acceleration
-            if (string.IsNullOrEmpty(encodingOptions.HardwareAccelerationType))
-            {
-                return state.InputProtocol == MediaProtocol.File &&
-                       state.RunTimeTicks.HasValue &&
-                       state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks &&
-                       state.IsInputVideo &&
-                       state.VideoType == VideoType.VideoFile &&
-                       !EncodingHelper.IsCopyCodec(state.OutputVideoCodec);
-            }
-
-            return false;
+            return state.InputProtocol == MediaProtocol.File &&
+                   state.RunTimeTicks.HasValue &&
+                   state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks &&
+                   state.IsInputVideo &&
+                   state.VideoType == VideoType.VideoFile;
         }
 
         /// <summary>
@@ -752,6 +775,8 @@ namespace Jellyfin.Api.Helpers
         {
             job.HasExited = true;
             job.ExitCode = process.ExitCode;
+
+            ReportTranscodingProgress(job, state, null, null, null, null, null);
 
             _logger.LogDebug("Disposing stream resources");
             state.Dispose();

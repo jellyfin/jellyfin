@@ -1,0 +1,211 @@
+{
+    "EnableAlbumArtInDidl": false,
+    "EnableSingleAlbumArtLimit": false,
+    "EnableSingleSubtitleLimit": false,
+    "SupportedMediaTypes": "Audio,Photo,Video",
+    "MaxAlbumArtWidth": 0,
+    "MaxAlbumArtHeight": 0,
+    "MaxStreamingBitrate": 120000000,
+    "MaxStaticBitrate": 100000000,
+    "MusicStreamingTranscodingBitrate": 192000,
+    "TimelineOffsetSeconds": 0,
+    "RequiresPlainVideoItems": false,
+    "RequiresPlainFolders": false,
+    "EnableMSMediaReceiverRegistrar": false,
+    "IgnoreTranscodeByteRangeRequests": false,
+    "DirectPlayProfiles": [
+        {
+            "Container": "mp4,m4v,mov",
+            "AudioCodec": "mp3,pcm,lpcm,wav,alac,aac",
+            "VideoCodec": "h264,h265,hevc,mpeg2video",
+            "Type": "Video",
+            "$type": "DirectPlayProfile"
+        },
+        {
+            "Container": "mkv,webm",
+            "AudioCodec": "mp3,pcm,lpcm,wav,flac,alac,aac,opus,vorbis",
+            "VideoCodec": "h264,vp8,h265,hevc,vp9,mpeg2video",
+            "Type": "Video",
+            "$type": "DirectPlayProfile"
+        },
+        {
+            "Container": "mp3,pcm,lpcm,wav,wma,flac,alac,aac,wmapro",
+            "Type": "Audio",
+            "$type": "DirectPlayProfile"
+        }
+    ],
+    "TranscodingProfiles": [
+        {
+            "Container": "aac",
+            "Type": "Audio",
+            "AudioCodec": "aac",
+            "Protocol": "http",
+            "EstimateContentLength": false,
+            "EnableMpegtsM2TsMode": false,
+            "TranscodeSeekInfo": "Auto",
+            "CopyTimestamps": false,
+            "Context": "Streaming",
+            "EnableSubtitlesInManifest": false,
+            "MaxAudioChannels": " 2",
+            "MinSegments": 0,
+            "SegmentLength": 0,
+            "BreakOnNonKeyFrames": false,
+            "$type": "TranscodingProfile"
+        },
+        {
+            "Container": "mp3",
+            "Type": "Audio",
+            "AudioCodec": "mp3",
+            "Protocol": "http",
+            "EstimateContentLength": false,
+            "EnableMpegtsM2TsMode": false,
+            "TranscodeSeekInfo": "Auto",
+            "CopyTimestamps": false,
+            "Context": "Streaming",
+            "EnableSubtitlesInManifest": false,
+            "MaxAudioChannels": "2",
+            "MinSegments": 0,
+            "SegmentLength": 0,
+            "BreakOnNonKeyFrames": false,
+            "$type": "TranscodingProfile"
+        },
+        {
+            "Container": "mp3",
+            "Type": "Audio",
+            "AudioCodec": "mp3",
+            "Protocol": "http",
+            "EstimateContentLength": false,
+            "EnableMpegtsM2TsMode": false,
+            "TranscodeSeekInfo": "Auto",
+            "CopyTimestamps": false,
+            "Context": "Static",
+            "EnableSubtitlesInManifest": false,
+            "MaxAudioChannels": "2",
+            "MinSegments": 0,
+            "SegmentLength": 0,
+            "BreakOnNonKeyFrames": false,
+            "$type": "TranscodingProfile"
+        },
+        {
+            "Container": "aac",
+            "Type": "Audio",
+            "AudioCodec": "aac",
+            "Protocol": "http",
+            "EstimateContentLength": false,
+            "EnableMpegtsM2TsMode": false,
+            "TranscodeSeekInfo": "Auto",
+            "CopyTimestamps": false,
+            "Context": "Static",
+            "EnableSubtitlesInManifest": false,
+            "MaxAudioChannels": " 2",
+            "MinSegments": 0,
+            "SegmentLength": 0,
+            "BreakOnNonKeyFrames": false,
+            "$type": "TranscodingProfile"
+        },
+        {
+            "Container": "ts",
+            "Type": "Video",
+            "VideoCodec": "h264,mpeg2video",
+            "AudioCodec": "aac",
+            "Protocol": "hls",
+            "EstimateContentLength": false,
+            "EnableMpegtsM2TsMode": false,
+            "TranscodeSeekInfo": "Auto",
+            "CopyTimestamps": false,
+            "Context": "Streaming",
+            "EnableSubtitlesInManifest": false,
+            "MaxAudioChannels": " 2",
+            "MinSegments": 1,
+            "SegmentLength": 0,
+            "BreakOnNonKeyFrames": false,
+            "$type": "TranscodingProfile"
+        },
+        {
+            "Container": "mp4",
+            "Type": "Video",
+            "VideoCodec": "h264,h265,hevc,mpeg2video",
+            "AudioCodec": "mp3,pcm,lpcm,wav,alac,aac",
+            "Protocol": "http",
+            "EstimateContentLength": false,
+            "EnableMpegtsM2TsMode": false,
+            "TranscodeSeekInfo": "Auto",
+            "CopyTimestamps": false,
+            "Context": "Static",
+            "EnableSubtitlesInManifest": false,
+            "MinSegments": 0,
+            "SegmentLength": 0,
+            "BreakOnNonKeyFrames": false,
+            "$type": "TranscodingProfile"
+        }
+    ],
+    "CodecProfiles": [
+        {
+            "Type": "Video",
+            "Conditions": [
+                {
+                    "Condition": "EqualsAny",
+                    "Property": "VideoProfile",
+                    "Value": "high|main|baseline|constrained baseline",
+                    "IsRequired": false,
+                    "$type": "ProfileCondition"
+                },
+                {
+                    "Condition": "LessThanEqual",
+                    "Property": "VideoLevel",
+                    "Value": "51",
+                    "IsRequired": false,
+                    "$type": "ProfileCondition"
+                }
+            ],
+            "Codec": "h264",
+            "$type": "CodecProfile"
+        },
+        {
+            "Type": "Video",
+            "Conditions": [
+                {
+                    "Condition": "NotEquals",
+                    "Property": "IsAnamorphic",
+                    "Value": "true",
+                    "IsRequired": false,
+                    "$type": "ProfileCondition"
+                },
+                {
+                    "Condition": "EqualsAny",
+                    "Property": "VideoProfile",
+                    "Value": "main|main 10",
+                    "IsRequired": false,
+                    "$type": "ProfileCondition"
+                },
+                {
+                    "Condition": "NotEquals",
+                    "Property": "IsInterlaced",
+                    "Value": "true",
+                    "IsRequired": false,
+                    "$type": "ProfileCondition"
+                }
+            ],
+            "Codec": "hevc",
+            "$type": "CodecProfile"
+        }
+    ],
+    "SubtitleProfiles": [
+        {
+            "Format": "vtt",
+            "Method": "External",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "srt",
+            "Method": "External",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "ttml",
+            "Method": "External",
+            "$type": "SubtitleProfile"
+        }
+    ],
+    "$type": "DeviceProfile"
+}

@@ -34,7 +34,7 @@ namespace Rssdp.Infrastructure
         }
 
         /// <summary>
-        /// The <see cref="UdpEndPoint"/> the request came from.
+        /// The <see cref="IPEndPoint"/> the request came from.
         /// </summary>
         public IPEndPoint ReceivedFrom
         {

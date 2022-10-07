@@ -1,7 +1,8 @@
-﻿#nullable disable
+#nullable disable
 
 using Emby.Naming.Common;
 using MediaBrowser.Controller.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Resolvers
 {
@@ -15,9 +16,10 @@ namespace Emby.Server.Implementations.Library.Resolvers
         /// <summary>
         /// Initializes a new instance of the <see cref="GenericVideoResolver{T}"/> class.
         /// </summary>
+        /// <param name="logger">The logger.</param>
         /// <param name="namingOptions">The naming options.</param>
-        public GenericVideoResolver(NamingOptions namingOptions)
-            : base(namingOptions)
+        public GenericVideoResolver(ILogger logger, NamingOptions namingOptions)
+            : base(logger, namingOptions)
         {
         }
     }

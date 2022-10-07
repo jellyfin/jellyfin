@@ -75,11 +75,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var item = _libraryManager.GetItemById(id);
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
             var items = _musicManager.GetInstantMixFromItem(item, user, dtoOptions);
             return GetResult(items, user, limit, dtoOptions);
@@ -111,11 +111,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var album = _libraryManager.GetItemById(id);
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
             var items = _musicManager.GetInstantMixFromItem(album, user, dtoOptions);
             return GetResult(items, user, limit, dtoOptions);
@@ -147,11 +147,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var playlist = (Playlist)_libraryManager.GetItemById(id);
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
             var items = _musicManager.GetInstantMixFromItem(playlist, user, dtoOptions);
             return GetResult(items, user, limit, dtoOptions);
@@ -182,11 +182,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageTypeLimit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
             var items = _musicManager.GetInstantMixFromGenres(new[] { name }, user, dtoOptions);
             return GetResult(items, user, limit, dtoOptions);
@@ -218,11 +218,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var item = _libraryManager.GetItemById(id);
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
             var items = _musicManager.GetInstantMixFromItem(item, user, dtoOptions);
             return GetResult(items, user, limit, dtoOptions);
@@ -254,11 +254,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var item = _libraryManager.GetItemById(id);
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
             var items = _musicManager.GetInstantMixFromItem(item, user, dtoOptions);
             return GetResult(items, user, limit, dtoOptions);
@@ -327,11 +327,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var item = _libraryManager.GetItemById(id);
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
             var items = _musicManager.GetInstantMixFromItem(item, user, dtoOptions);
             return GetResult(items, user, limit, dtoOptions);
@@ -341,10 +341,7 @@ namespace Jellyfin.Api.Controllers
         {
             var list = items;
 
-            var result = new QueryResult<BaseItemDto>
-            {
-                TotalRecordCount = list.Count
-            };
+            var totalCount = list.Count;
 
             if (limit.HasValue && limit < list.Count)
             {
@@ -353,7 +350,10 @@ namespace Jellyfin.Api.Controllers
 
             var returnList = _dtoService.GetBaseItemDtos(list, dtoOptions, user);
 
-            result.Items = returnList;
+            var result = new QueryResult<BaseItemDto>(
+                0,
+                totalCount,
+                returnList);
 
             return result;
         }

@@ -44,7 +44,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             return new List<ImageType>
             {
                 ImageType.Primary,
-                ImageType.Backdrop
+                ImageType.Backdrop,
+                ImageType.Logo
             };
         }
 
@@ -85,10 +86,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             var posters = movie.Images.Posters;
             var backdrops = movie.Images.Backdrops;
-            var remoteImages = new List<RemoteImageInfo>(posters.Count + backdrops.Count);
+            var logos = movie.Images.Logos;
+            var remoteImages = new List<RemoteImageInfo>(posters.Count + backdrops.Count + logos.Count);
 
             _tmdbClientManager.ConvertPostersToRemoteImageInfo(posters, language, remoteImages);
             _tmdbClientManager.ConvertBackdropsToRemoteImageInfo(backdrops, language, remoteImages);
+            _tmdbClientManager.ConvertLogosToRemoteImageInfo(logos, language, remoteImages);
 
             return remoteImages;
         }

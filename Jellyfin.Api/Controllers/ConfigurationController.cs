@@ -2,7 +2,6 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.ConfigurationDtos;
@@ -86,21 +85,23 @@ namespace Jellyfin.Api.Controllers
         /// Updates named configuration.
         /// </summary>
         /// <param name="key">Configuration key.</param>
+        /// <param name="configuration">Configuration.</param>
         /// <response code="204">Named configuration updated.</response>
         /// <returns>Update status.</returns>
         [HttpPost("Configuration/{key}")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> UpdateNamedConfiguration([FromRoute, Required] string key)
+        public ActionResult UpdateNamedConfiguration([FromRoute, Required] string key, [FromBody, Required] JsonDocument configuration)
         {
             var configurationType = _configurationManager.GetConfigurationType(key);
-            var configuration = await JsonSerializer.DeserializeAsync(Request.Body, configurationType, _serializerOptions).ConfigureAwait(false);
-            if (configuration == null)
+            var deserializedConfiguration = configuration.Deserialize(configurationType, _serializerOptions);
+
+            if (deserializedConfiguration == null)
             {
                 throw new ArgumentException("Body doesn't contain a valid configuration");
             }
 
-            _configurationManager.SaveConfiguration(key, configuration);
+            _configurationManager.SaveConfiguration(key, deserializedConfiguration);
             return NoContent();
         }
 

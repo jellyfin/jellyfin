@@ -120,13 +120,13 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool enableTotalRecordCount = true)
         {
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             User? user = null;
             BaseItem parentItem = _libraryManager.GetParentItem(parentId, userId);
 
-            if (userId.HasValue && !userId.Equals(Guid.Empty))
+            if (userId.HasValue && !userId.Equals(default))
             {
                 user = _userManager.GetUserById(userId.Value);
             }
@@ -243,11 +243,10 @@ namespace Jellyfin.Api.Controllers
                 return dto;
             });
 
-            return new QueryResult<BaseItemDto>
-            {
-                Items = dtos.ToArray(),
-                TotalRecordCount = result.TotalRecordCount
-            };
+            return new QueryResult<BaseItemDto>(
+                query.StartIndex,
+                result.TotalRecordCount,
+                dtos.ToArray());
         }
 
         /// <summary>
@@ -324,13 +323,13 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool enableTotalRecordCount = true)
         {
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             User? user = null;
             BaseItem parentItem = _libraryManager.GetParentItem(parentId, userId);
 
-            if (userId.HasValue && !userId.Equals(Guid.Empty))
+            if (userId.HasValue && !userId.Equals(default))
             {
                 user = _userManager.GetUserById(userId.Value);
             }
@@ -447,11 +446,10 @@ namespace Jellyfin.Api.Controllers
                 return dto;
             });
 
-            return new QueryResult<BaseItemDto>
-            {
-                Items = dtos.ToArray(),
-                TotalRecordCount = result.TotalRecordCount
-            };
+            return new QueryResult<BaseItemDto>(
+                query.StartIndex,
+                result.TotalRecordCount,
+                dtos.ToArray());
         }
 
         /// <summary>
@@ -465,11 +463,11 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<BaseItemDto> GetArtistByName([FromRoute, Required] string name, [FromQuery] Guid? userId)
         {
-            var dtoOptions = new DtoOptions().AddClientFields(Request);
+            var dtoOptions = new DtoOptions().AddClientFields(User);
 
             var item = _libraryManager.GetArtist(name, dtoOptions);
 
-            if (userId.HasValue && !userId.Equals(Guid.Empty))
+            if (userId.HasValue && !userId.Value.Equals(default))
             {
                 var user = _userManager.GetUserById(userId.Value);
 

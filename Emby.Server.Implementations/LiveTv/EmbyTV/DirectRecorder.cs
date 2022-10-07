@@ -46,7 +46,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             Directory.CreateDirectory(Path.GetDirectoryName(targetFile) ?? throw new ArgumentException("Path can't be a root directory.", nameof(targetFile)));
 
-            using (var output = new FileStream(targetFile, FileMode.CreateNew, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous))
+            await using (var output = new FileStream(targetFile, FileMode.CreateNew, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous))
             {
                 onStarted();
 
@@ -56,14 +56,16 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 using var durationToken = new CancellationTokenSource(duration);
                 using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token);
                 var linkedCancellationToken = cancellationTokenSource.Token;
-
-                await using var fileStream = new ProgressiveFileStream(directStreamProvider.GetStream());
-                await _streamHelper.CopyToAsync(
-                    fileStream,
-                    output,
-                    IODefaults.CopyToBufferSize,
-                    1000,
-                    linkedCancellationToken).ConfigureAwait(false);
+                var fileStream = new ProgressiveFileStream(directStreamProvider.GetStream());
+                await using (fileStream.ConfigureAwait(false))
+                {
+                    await _streamHelper.CopyToAsync(
+                        fileStream,
+                        output,
+                        IODefaults.CopyToBufferSize,
+                        1000,
+                        linkedCancellationToken).ConfigureAwait(false);
+                }
             }
 
             _logger.LogInformation("Recording completed: {FilePath}", targetFile);

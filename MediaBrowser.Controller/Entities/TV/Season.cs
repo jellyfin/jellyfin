@@ -48,12 +48,12 @@ namespace MediaBrowser.Controller.Entities.TV
             get
             {
                 var seriesId = SeriesId;
-                if (seriesId == Guid.Empty)
+                if (seriesId.Equals(default))
                 {
                     seriesId = FindSeriesId();
                 }
 
-                return seriesId == Guid.Empty ? null : (LibraryManager.GetItemById(seriesId) as Series);
+                return seriesId.Equals(default) ? null : (LibraryManager.GetItemById(seriesId) as Series);
             }
         }
 
@@ -244,7 +244,7 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <summary>
         /// This is called before any metadata refresh and returns true or false indicating if changes were made.
         /// </summary>
-        /// <param name="replaceAllMetadata"><c>true</c> to replace metdata, <c>false</c> to not.</param>
+        /// <param name="replaceAllMetadata"><c>true</c> to replace metadata, <c>false</c> to not.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {

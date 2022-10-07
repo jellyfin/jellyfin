@@ -89,12 +89,9 @@ namespace Jellyfin.Api.Controllers
 
             // Load all custom display preferences
             var customDisplayPreferences = _displayPreferencesManager.ListCustomItemDisplayPreferences(displayPreferences.UserId, itemId, displayPreferences.Client);
-            if (customDisplayPreferences != null)
+            foreach (var (key, value) in customDisplayPreferences)
             {
-                foreach (var (key, value) in customDisplayPreferences)
-                {
-                    dto.CustomPrefs.TryAdd(key, value);
-                }
+                dto.CustomPrefs.TryAdd(key, value);
             }
 
             // This will essentially be a noop if no changes have been made, but new prefs must be saved at least.
@@ -126,9 +123,11 @@ namespace Jellyfin.Api.Controllers
                 HomeSectionType.SmallLibraryTiles,
                 HomeSectionType.Resume,
                 HomeSectionType.ResumeAudio,
+                HomeSectionType.ResumeBook,
                 HomeSectionType.LiveTv,
                 HomeSectionType.NextUp,
-                HomeSectionType.LatestMedia, HomeSectionType.None,
+                HomeSectionType.LatestMedia,
+                HomeSectionType.None,
             };
 
             if (!Guid.TryParse(displayPreferencesId, out var itemId))
@@ -182,7 +181,7 @@ namespace Jellyfin.Api.Controllers
                 var order = int.Parse(key.AsSpan().Slice("homesection".Length));
                 if (!Enum.TryParse<HomeSectionType>(displayPreferences.CustomPrefs[key], true, out var type))
                 {
-                    type = order < 7 ? defaults[order] : HomeSectionType.None;
+                    type = order < 8 ? defaults[order] : HomeSectionType.None;
                 }
 
                 displayPreferences.CustomPrefs.Remove(key);

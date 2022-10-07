@@ -120,5 +120,8 @@
     "Forced": "Forçado",
     "Default": "Padrão",
     "TaskOptimizeDatabaseDescription": "Compactar base de dados e liberar espaço livre. Executar esta tarefa após realizar mudanças que impliquem em modificações da base de dados pode trazer melhorias de desempenho.",
-    "TaskOptimizeDatabase": "Otimizar base de dados"
+    "TaskOptimizeDatabase": "Otimizar base de dados",
+    "TaskKeyframeExtractor": "Extrator de quadro-chave",
+    "TaskKeyframeExtractorDescription": "Extrai quadros-chave de arquivos de vídeo para criar listas de reprodução HLS mais precisas. Esta tarefa pode ser executada por um longo tempo.",
+    "External": "Externo"
 }

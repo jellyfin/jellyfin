@@ -353,10 +353,7 @@ namespace Jellyfin.Networking.Manager
         public string GetBindInterface(IPObject source, out int? port)
         {
             port = null;
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
+            ArgumentNullException.ThrowIfNull(source);
 
             // Do we have a source?
             bool haveSource = !source.Address.Equals(IPAddress.None);
@@ -464,10 +461,19 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public bool IsInLocalNetwork(IPObject address)
         {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
+            return IsInLocalNetwork(address.Address);
+        }
+
+        /// <inheritdoc/>
+        public bool IsInLocalNetwork(string address)
+        {
+            return IPHost.TryParse(address, out IPHost ipHost) && IsInLocalNetwork(ipHost);
+        }
+
+        /// <inheritdoc/>
+        public bool IsInLocalNetwork(IPAddress address)
+        {
+            ArgumentNullException.ThrowIfNull(address);
 
             if (address.Equals(IPAddress.None))
             {
@@ -481,45 +487,13 @@ namespace Jellyfin.Networking.Manager
             }
 
             // As private addresses can be redefined by Configuration.LocalNetworkAddresses
-            return address.IsLoopback() || (_lanSubnets.ContainsAddress(address) && !_excludedSubnets.ContainsAddress(address));
-        }
-
-        /// <inheritdoc/>
-        public bool IsInLocalNetwork(string address)
-        {
-            if (IPHost.TryParse(address, out IPHost ep))
-            {
-                return _lanSubnets.ContainsAddress(ep) && !_excludedSubnets.ContainsAddress(ep);
-            }
-
-            return false;
-        }
-
-        /// <inheritdoc/>
-        public bool IsInLocalNetwork(IPAddress address)
-        {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
-
-            // See conversation at https://github.com/jellyfin/jellyfin/pull/3515.
-            if (TrustAllIP6Interfaces && address.AddressFamily == AddressFamily.InterNetworkV6)
-            {
-                return true;
-            }
-
-            // As private addresses can be redefined by Configuration.LocalNetworkAddresses
-            return _lanSubnets.ContainsAddress(address) && !_excludedSubnets.ContainsAddress(address);
+            return IPAddress.IsLoopback(address) || (_lanSubnets.ContainsAddress(address) && !_excludedSubnets.ContainsAddress(address));
         }
 
         /// <inheritdoc/>
         public bool IsPrivateAddressRange(IPObject address)
         {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
+            ArgumentNullException.ThrowIfNull(address);
 
             // See conversation at https://github.com/jellyfin/jellyfin/pull/3515.
             if (TrustAllIP6Interfaces && address.AddressFamily == AddressFamily.InterNetworkV6)
@@ -628,7 +602,6 @@ namespace Jellyfin.Networking.Manager
             }
 
             TrustAllIP6Interfaces = config.TrustAllIP6Interfaces;
-            // UdpHelper.EnableMultiSocketBinding = config.EnableMultiSocketBinding;
 
             if (string.IsNullOrEmpty(MockNetworkSettings))
             {
@@ -750,7 +723,7 @@ namespace Jellyfin.Networking.Manager
                 bool partial = token[^1] == '*';
                 if (partial)
                 {
-                    token = token[0..^1];
+                    token = token[..^1];
                 }
 
                 foreach ((string interfc, int interfcIndex) in _interfaceNames)
@@ -962,7 +935,7 @@ namespace Jellyfin.Networking.Manager
                 // Add virtual machine interface names to the list of bind exclusions, so that they are auto-excluded.
                 if (config.IgnoreVirtualInterfaces)
                 {
-                    // each virtual interface name must be pre-pended with the exclusion symbol !
+                    // each virtual interface name must be prepended with the exclusion symbol !
                     var virtualInterfaceNames = config.VirtualInterfaceNames.Split(',').Select(p => "!" + p).ToArray();
                     if (lanAddresses.Length > 0)
                     {

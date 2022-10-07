@@ -22,27 +22,24 @@
 <a href="https://hub.docker.com/r/jellyfin/jellyfin">
 <img alt="Docker Pull Count" src="https://img.shields.io/docker/pulls/jellyfin/jellyfin.svg"/>
 </a>
-</br>
+<br/>
 <a href="https://opencollective.com/jellyfin">
 <img alt="Donate" src="https://img.shields.io/opencollective/all/jellyfin.svg?label=backers"/>
 </a>
 <a href="https://features.jellyfin.org">
 <img alt="Submit Feature Requests" src="https://img.shields.io/badge/fider-vote%20on%20features-success.svg"/>
 </a>
-<a href="https://matrix.to/#/+jellyfin:matrix.org">
+<a href="https://matrix.to/#/#jellyfinorg:matrix.org">
 <img alt="Chat on Matrix" src="https://img.shields.io/matrix/jellyfin:matrix.org.svg?logo=matrix"/>
 </a>
 <a href="https://www.reddit.com/r/jellyfin">
 <img alt="Join our Subreddit" src="https://img.shields.io/badge/reddit-r%2Fjellyfin-%23FF5700.svg"/>
 </a>
 <a href="https://github.com/jellyfin/jellyfin/releases.atom">
-<img alt="Release RSS Feed"" src="https://img.shields.io/badge/rss-releases-ffa500?logo=rss" />
+<img alt="Release RSS Feed" src="https://img.shields.io/badge/rss-releases-ffa500?logo=rss" />
 </a>
 <a href="https://github.com/jellyfin/jellyfin/commits/master.atom">
-<img alt="Master Commits RSS Feed"" src="https://img.shields.io/badge/rss-commits-ffa500?logo=rss" />
-</a>
-<a href="https://lgtm.com/projects/g/jellyfin/jellyfin/alerts/">
-<img alt="Total LGTM alerts" src="https://img.shields.io/lgtm/alerts/g/jellyfin/jellyfin.svg?logo=lgtm&logoWidth=18"/>
+<img alt="Master Commits RSS Feed" src="https://img.shields.io/badge/rss-commits-ffa500?logo=rss" />
 </a>
 </p>
 

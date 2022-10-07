@@ -2,20 +2,26 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
-namespace MediaBrowser.Model.Session
+namespace MediaBrowser.Model.Session;
+
+public class GeneralCommand
 {
-    public class GeneralCommand
+    public GeneralCommand()
+        : this(new Dictionary<string, string>())
     {
-        public GeneralCommand()
-        {
-            Arguments = new Dictionary<string, string>();
-        }
-
-        public GeneralCommandType Name { get; set; }
-
-        public Guid ControllingUserId { get; set; }
-
-        public Dictionary<string, string> Arguments { get; }
     }
+
+    [JsonConstructor]
+    public GeneralCommand(Dictionary<string, string>? arguments)
+    {
+        Arguments = arguments ?? new Dictionary<string, string>();
+    }
+
+    public GeneralCommandType Name { get; set; }
+
+    public Guid ControllingUserId { get; set; }
+
+    public Dictionary<string, string> Arguments { get; }
 }

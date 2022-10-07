@@ -1,0 +1,9 @@
+{
+    "Name": "Jellyfin Media Player",
+    "SupportedMediaTypes": "Audio,Photo,Video",
+    "MaxStreamingBitrate": 120000,
+    "MaxStaticBitrate": 100000,
+    "MusicStreamingTranscodingBitrate": 3840,
+    "TimelineOffsetSeconds": 5,
+    "$type": "DeviceProfile"
+}

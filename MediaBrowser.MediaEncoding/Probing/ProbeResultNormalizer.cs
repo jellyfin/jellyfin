@@ -44,14 +44,28 @@ namespace MediaBrowser.MediaEncoding.Probing
         private IReadOnlyList<string> SplitWhitelist => _splitWhiteList ??= new string[]
         {
             "AC/DC",
+            "A/T/O/S",
+            "As/Hi Soundworks",
             "Au/Ra",
             "Bremer/McCoy",
+            "b/bqスタヂオ",
+            "DOV/S",
+            "DJ'TEKINA//SOMETHING",
+            "IX/ON",
+            "J-CORE SLi//CER",
+            "M(a/u)SH",
+            "Kaoru/Brilliance",
+            "signum/ii",
+            "Richiter(LORB/DUGEM DI BARAT)",
             "이달의 소녀 1/3",
+            "R!N / Gemie",
             "LOONA 1/3",
             "LOONA / yyxy",
             "LOONA / ODD EYE CIRCLE",
             "K/DA",
-            "22/7"
+            "22/7",
+            "諭吉佳作/men",
+            "//dARTH nULL"
         };
 
         public MediaInfo GetMediaInfo(InternalMediaInfoResult data, VideoType? videoType, bool isAudio, string path, MediaProtocol protocol)
@@ -611,6 +625,17 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
+        /// Determines whether a stream code time base is double the frame rate.
+        /// </summary>
+        /// <param name="averageFrameRate">average frame rate.</param>
+        /// <param name="codecTimeBase">codec time base string.</param>
+        /// <returns>true if the codec time base is double the frame rate.</returns>
+        internal static bool IsCodecTimeBaseDoubleTheFrameRate(float? averageFrameRate, string codecTimeBase)
+        {
+            return MathF.Abs(((averageFrameRate ?? 0) * (GetFrameRate(codecTimeBase) ?? 0)) - 0.5f) <= float.Epsilon;
+        }
+
+        /// <summary>
         /// Converts ffprobe stream info to our MediaStream class.
         /// </summary>
         /// <param name="isAudio">if set to <c>true</c> [is info].</param>
@@ -689,9 +714,9 @@ namespace MediaBrowser.MediaEncoding.Probing
 
                 if (string.IsNullOrEmpty(stream.Title))
                 {
-                    // mp4 missing track title workaround: fall back to handler_name if populated
+                    // mp4 missing track title workaround: fall back to handler_name if populated and not the default "SoundHandler"
                     string handlerName = GetDictionaryValue(streamInfo.Tags, "handler_name");
-                    if (!string.IsNullOrEmpty(handlerName))
+                    if (!string.IsNullOrEmpty(handlerName) && !string.Equals(handlerName, "SoundHandler", StringComparison.OrdinalIgnoreCase))
                     {
                         stream.Title = handlerName;
                     }
@@ -704,6 +729,8 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.LocalizedUndefined = _localization.GetLocalizedString("Undefined");
                 stream.LocalizedDefault = _localization.GetLocalizedString("Default");
                 stream.LocalizedForced = _localization.GetLocalizedString("Forced");
+                stream.LocalizedExternal = _localization.GetLocalizedString("External");
+                stream.LocalizedHearingImpaired = _localization.GetLocalizedString("HearingImpaired");
 
                 if (string.IsNullOrEmpty(stream.Title))
                 {
@@ -720,17 +747,16 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.AverageFrameRate = GetFrameRate(streamInfo.AverageFrameRate);
                 stream.RealFrameRate = GetFrameRate(streamInfo.RFrameRate);
 
-                // Some interlaced H.264 files in mp4 containers using MBAFF coding aren't flagged as being interlaced by FFprobe,
-                // so for H.264 files we also calculate the frame rate from the codec time base and check if it is double the reported
-                // frame rate (both rounded to the nearest integer) to determine if the file is interlaced
-                int roundedTimeBaseFPS = Convert.ToInt32(1 / GetFrameRate(stream.CodecTimeBase) ?? 0);
-                int roundedDoubleFrameRate = Convert.ToInt32(stream.AverageFrameRate * 2 ?? 0);
-
                 bool videoInterlaced = !string.IsNullOrWhiteSpace(streamInfo.FieldOrder)
                     && !string.Equals(streamInfo.FieldOrder, "progressive", StringComparison.OrdinalIgnoreCase);
+
+                // Some interlaced H.264 files in mp4 containers using MBAFF coding aren't flagged as being interlaced by FFprobe,
+                // so for H.264 files we also calculate the frame rate from the codec time base and check if it is double the reported
+                // frame rate to determine if the file is interlaced
+
                 bool h264MbaffCoded = string.Equals(stream.Codec, "h264", StringComparison.OrdinalIgnoreCase)
                     && string.IsNullOrWhiteSpace(streamInfo.FieldOrder)
-                    && roundedTimeBaseFPS == roundedDoubleFrameRate;
+                    && IsCodecTimeBaseDoubleTheFrameRate(stream.AverageFrameRate, stream.CodecTimeBase);
 
                 if (videoInterlaced || h264MbaffCoded)
                 {
@@ -828,9 +854,35 @@ namespace MediaBrowser.MediaEncoding.Probing
                 {
                     stream.ColorPrimaries = streamInfo.ColorPrimaries;
                 }
+
+                if (streamInfo.SideDataList != null)
+                {
+                    foreach (var data in streamInfo.SideDataList)
+                    {
+                        // Parse Dolby Vision metadata from side_data
+                        if (string.Equals(data.SideDataType, "DOVI configuration record", StringComparison.OrdinalIgnoreCase))
+                        {
+                            stream.DvVersionMajor = data.DvVersionMajor;
+                            stream.DvVersionMinor = data.DvVersionMinor;
+                            stream.DvProfile = data.DvProfile;
+                            stream.DvLevel = data.DvLevel;
+                            stream.RpuPresentFlag = data.RpuPresentFlag;
+                            stream.ElPresentFlag = data.ElPresentFlag;
+                            stream.BlPresentFlag = data.BlPresentFlag;
+                            stream.DvBlSignalCompatibilityId = data.DvBlSignalCompatibilityId;
+
+                            break;
+                        }
+                    }
+                }
+            }
+            else if (string.Equals(streamInfo.CodecType, "data", StringComparison.OrdinalIgnoreCase))
+            {
+                stream.Type = MediaStreamType.Data;
             }
             else
             {
+                _logger.LogError("Codec Type {CodecType} unknown. The stream (index: {Index}) will be ignored. Warning: Subsequential streams will have a wrong stream specifier!", streamInfo.CodecType, streamInfo.Index);
                 return null;
             }
 
@@ -903,6 +955,11 @@ namespace MediaBrowser.MediaEncoding.Probing
                 if (disposition.GetValueOrDefault("forced") == 1)
                 {
                     stream.IsForced = true;
+                }
+
+                if (disposition.GetValueOrDefault("hearing_impaired") == 1)
+                {
+                    stream.IsHearingImpaired = true;
                 }
             }
 

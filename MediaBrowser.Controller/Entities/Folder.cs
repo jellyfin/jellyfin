@@ -189,21 +189,6 @@ namespace MediaBrowser.Controller.Entities
             return baseResult;
         }
 
-        protected override bool IsAllowTagFilterEnforced()
-        {
-            if (this is ICollectionFolder)
-            {
-                return false;
-            }
-
-            if (this is UserView)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
         /// <summary>
         /// Adds the child.
         /// </summary>
@@ -213,7 +198,7 @@ namespace MediaBrowser.Controller.Entities
         {
             item.SetParent(this);
 
-            if (item.Id.Equals(Guid.Empty))
+            if (item.Id.Equals(default))
             {
                 item.Id = LibraryManager.GetNewItemId(item.Path, item.GetType());
             }
@@ -730,7 +715,9 @@ namespace MediaBrowser.Controller.Entities
                 return PostFilterAndSort(items, query, true);
             }
 
-            if (this is not UserRootFolder && this is not AggregateFolder && query.ParentId == Guid.Empty)
+            if (this is not UserRootFolder
+                && this is not AggregateFolder
+                && query.ParentId.Equals(default))
             {
                 query.Parent = this;
             }
@@ -783,11 +770,10 @@ namespace MediaBrowser.Controller.Entities
                 returnItems = returnItems.Skip(startIndex.Value);
             }
 
-            return new QueryResult<BaseItem>
-            {
-                TotalRecordCount = totalCount,
-                Items = returnItems.ToArray()
-            };
+            return new QueryResult<BaseItem>(
+                query.StartIndex,
+                totalCount,
+                returnItems.ToArray());
         }
 
         private bool RequiresPostFiltering2(InternalItemsQuery query)
@@ -849,6 +835,18 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
+            if (query.HasThemeSong.HasValue)
+            {
+                Logger.LogDebug("Query requires post-filtering due to HasThemeSong");
+                return true;
+            }
+
+            if (query.HasThemeVideo.HasValue)
+            {
+                Logger.LogDebug("Query requires post-filtering due to HasThemeVideo");
+                return true;
+            }
+
             // Filter by VideoType
             if (query.VideoTypes.Length > 0)
             {
@@ -862,7 +860,7 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            if (!string.IsNullOrEmpty(query.AdjacentTo))
+            if (query.AdjacentTo.HasValue && !query.AdjacentTo.Value.Equals(default))
             {
                 Logger.LogDebug("Query requires post-filtering due to AdjacentTo");
                 return true;
@@ -894,29 +892,7 @@ namespace MediaBrowser.Controller.Entities
 
         private static BaseItem[] SortItemsByRequest(InternalItemsQuery query, IReadOnlyList<BaseItem> items)
         {
-            var ids = query.ItemIds;
-            int size = items.Count;
-
-            // ids can potentially contain non-unique guids, but query result cannot,
-            // so we include only first occurrence of each guid
-            var positions = new Dictionary<Guid, int>(size);
-            int index = 0;
-            for (int i = 0; i < ids.Length; i++)
-            {
-                if (positions.TryAdd(ids[i], index))
-                {
-                    index++;
-                }
-            }
-
-            var newItems = new BaseItem[size];
-            for (int i = 0; i < size; i++)
-            {
-                var item = items[i];
-                newItems[positions[item.Id]] = item;
-            }
-
-            return newItems;
+            return items.OrderBy(i => Array.IndexOf(query.ItemIds, i.Id)).ToArray();
         }
 
         public QueryResult<BaseItem> GetItems(InternalItemsQuery query)
@@ -965,7 +941,7 @@ namespace MediaBrowser.Controller.Entities
                     query.ChannelIds = new[] { ChannelId };
 
                     // Don't blow up here because it could cause parent screens with other content to fail
-                    return ChannelManager.GetChannelItemsInternal(query, new SimpleProgress<double>(), CancellationToken.None).Result;
+                    return ChannelManager.GetChannelItemsInternal(query, new SimpleProgress<double>(), CancellationToken.None).GetAwaiter().GetResult();
                 }
                 catch
                 {
@@ -1031,9 +1007,9 @@ namespace MediaBrowser.Controller.Entities
             #pragma warning restore CA1309
 
             // This must be the last filter
-            if (!string.IsNullOrEmpty(query.AdjacentTo))
+            if (query.AdjacentTo.HasValue && !query.AdjacentTo.Value.Equals(default))
             {
-                items = UserViewBuilder.FilterForAdjacency(items.ToList(), query.AdjacentTo);
+                items = UserViewBuilder.FilterForAdjacency(items.ToList(), query.AdjacentTo.Value);
             }
 
             return UserViewBuilder.SortAndPage(items, null, query, LibraryManager, enableSorting);
@@ -1047,10 +1023,7 @@ namespace MediaBrowser.Controller.Entities
             IServerConfigurationManager configurationManager,
             ICollectionManager collectionManager)
         {
-            if (items == null)
-            {
-                throw new ArgumentNullException(nameof(items));
-            }
+            ArgumentNullException.ThrowIfNull(items);
 
             if (CollapseBoxSetItems(query, queryParent, user, configurationManager))
             {
@@ -1297,20 +1270,14 @@ namespace MediaBrowser.Controller.Entities
 
         public List<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ArgumentNullException.ThrowIfNull(user);
 
             return GetChildren(user, includeLinkedChildren, null);
         }
 
         public virtual List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ArgumentNullException.ThrowIfNull(user);
 
             // the true root should return our users root folder children
             if (IsPhysicalRoot)
@@ -1391,10 +1358,7 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual IEnumerable<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ArgumentNullException.ThrowIfNull(user);
 
             var result = new Dictionary<Guid, BaseItem>();
 
@@ -1493,7 +1457,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (i.ItemId.HasValue)
                 {
-                    if (i.ItemId.Value == itemId)
+                    if (i.ItemId.Value.Equals(itemId))
                     {
                         return true;
                     }
@@ -1503,7 +1467,7 @@ namespace MediaBrowser.Controller.Entities
 
                 var child = GetLinkedChild(i);
 
-                if (child != null && child.Id == itemId)
+                if (child != null && child.Id.Equals(itemId))
                 {
                     return true;
                 }
@@ -1586,7 +1550,7 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => i.Item2 != null);
         }
 
-        protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
+        protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, IReadOnlyList<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
             var changesFound = false;
 

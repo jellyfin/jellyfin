@@ -107,7 +107,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public User? GetUserById(Guid id)
         {
-            if (id == Guid.Empty)
+            if (id.Equals(default))
             {
                 throw new ArgumentException("Guid can't be empty", nameof(id));
             }
@@ -130,10 +130,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task RenameUser(User user, string newName)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ArgumentNullException.ThrowIfNull(user);
 
             ThrowIfInvalidUsername(newName);
 
@@ -146,8 +143,7 @@ namespace Jellyfin.Server.Implementations.Users
 
             if (await dbContext.Users
                 .AsQueryable()
-                .Where(u => u.Username == newName && u.Id != user.Id)
-                .AnyAsync()
+                .AnyAsync(u => u.Username == newName && !u.Id.Equals(user.Id))
                 .ConfigureAwait(false))
             {
                 throw new ArgumentException(string.Format(
@@ -268,10 +264,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task ChangePassword(User user, string newPassword)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ArgumentNullException.ThrowIfNull(user);
 
             await GetAuthenticationProvider(user).ChangePassword(user, newPassword).ConfigureAwait(false);
             await UpdateUserAsync(user).ConfigureAwait(false);
@@ -327,10 +320,10 @@ namespace Jellyfin.Server.Implementations.Users
                     EnableNextEpisodeAutoPlay = user.EnableNextEpisodeAutoPlay,
                     RememberSubtitleSelections = user.RememberSubtitleSelections,
                     SubtitleLanguagePreference = user.SubtitleLanguagePreference ?? string.Empty,
-                    OrderedViews = user.GetPreference(PreferenceKind.OrderedViews),
-                    GroupedFolders = user.GetPreference(PreferenceKind.GroupedFolders),
-                    MyMediaExcludes = user.GetPreference(PreferenceKind.MyMediaExcludes),
-                    LatestItemsExcludes = user.GetPreference(PreferenceKind.LatestItemExcludes)
+                    OrderedViews = user.GetPreferenceValues<Guid>(PreferenceKind.OrderedViews),
+                    GroupedFolders = user.GetPreferenceValues<Guid>(PreferenceKind.GroupedFolders),
+                    MyMediaExcludes = user.GetPreferenceValues<Guid>(PreferenceKind.MyMediaExcludes),
+                    LatestItemsExcludes = user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes)
                 },
                 Policy = new UserPolicy
                 {
@@ -597,7 +590,7 @@ namespace Jellyfin.Server.Implementations.Users
                            .Include(u => u.Preferences)
                            .Include(u => u.AccessSchedules)
                            .Include(u => u.ProfileImage)
-                           .FirstOrDefault(u => u.Id == userId)
+                           .FirstOrDefault(u => u.Id.Equals(userId))
                        ?? throw new ArgumentException("No user exists with given Id!");
 
             user.SubtitleMode = config.SubtitleMode;
@@ -631,7 +624,7 @@ namespace Jellyfin.Server.Implementations.Users
                            .Include(u => u.Preferences)
                            .Include(u => u.AccessSchedules)
                            .Include(u => u.ProfileImage)
-                           .FirstOrDefault(u => u.Id == userId)
+                           .FirstOrDefault(u => u.Id.Equals(userId))
                        ?? throw new ArgumentException("No user exists with given Id!");
 
             // The default number of login attempts is 3, but for some god forsaken reason it's sent to the server as "0"

@@ -26,9 +26,6 @@ namespace Emby.Server.Implementations.Data
             DbFilePath = Path.Combine(appPaths.DataPath, "library.db");
         }
 
-        /// <inheritdoc />
-        public string Name => "SQLite";
-
         /// <summary>
         /// Opens the connection to the database.
         /// </summary>
@@ -102,7 +99,7 @@ namespace Emby.Server.Implementations.Data
                         continue;
                     }
 
-                    statement.TryBind("@UserId", user.Id.ToByteArray());
+                    statement.TryBind("@UserId", user.Id);
                     statement.TryBind("@InternalUserId", user.InternalId);
 
                     statement.MoveNext();
@@ -136,10 +133,7 @@ namespace Emby.Server.Implementations.Data
         /// <inheritdoc />
         public void SaveUserData(long userId, string key, UserItemData userData, CancellationToken cancellationToken)
         {
-            if (userData == null)
-            {
-                throw new ArgumentNullException(nameof(userData));
-            }
+            ArgumentNullException.ThrowIfNull(userData);
 
             if (userId <= 0)
             {
@@ -157,10 +151,7 @@ namespace Emby.Server.Implementations.Data
         /// <inheritdoc />
         public void SaveAllUserData(long userId, UserItemData[] userData, CancellationToken cancellationToken)
         {
-            if (userData == null)
-            {
-                throw new ArgumentNullException(nameof(userData));
-            }
+            ArgumentNullException.ThrowIfNull(userData);
 
             if (userId <= 0)
             {
@@ -307,10 +298,7 @@ namespace Emby.Server.Implementations.Data
 
         public UserItemData GetUserData(long userId, List<string> keys)
         {
-            if (keys == null)
-            {
-                throw new ArgumentNullException(nameof(keys));
-            }
+            ArgumentNullException.ThrowIfNull(keys);
 
             if (keys.Count == 0)
             {
@@ -390,6 +378,7 @@ namespace Emby.Server.Implementations.Data
             return userData;
         }
 
+#pragma warning disable CA2215
         /// <inheritdoc/>
         /// <remarks>
         /// There is nothing to dispose here since <see cref="BaseSqliteRepository.WriteLock"/> and
@@ -398,6 +387,10 @@ namespace Emby.Server.Implementations.Data
         /// </remarks>
         protected override void Dispose(bool dispose)
         {
+            // The write lock and connection for the item repository are shared with the user data repository
+            // since they point to the same database. The item repo has responsibility for disposing these two objects,
+            // so the user data repo should not attempt to dispose them as well
         }
+#pragma warning restore CA2215
     }
 }

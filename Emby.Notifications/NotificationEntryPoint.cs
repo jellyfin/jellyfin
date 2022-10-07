@@ -112,7 +112,7 @@ namespace Emby.Notifications
 
             var userId = e.Argument.UserId;
 
-            if (!userId.Equals(Guid.Empty) && !GetOptions().IsEnabledToMonitorUser(type, userId))
+            if (!userId.Equals(default) && !GetOptions().IsEnabledToMonitorUser(type, userId))
             {
                 return;
             }

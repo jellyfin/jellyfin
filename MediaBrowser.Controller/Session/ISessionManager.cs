@@ -352,6 +352,6 @@ namespace MediaBrowser.Controller.Session
         /// <returns>Task.</returns>
         Task RevokeUserTokens(Guid userId, string currentAccessToken);
 
-        void CloseIfNeeded(SessionInfo session);
+        Task CloseIfNeededAsync(SessionInfo session);
     }
 }

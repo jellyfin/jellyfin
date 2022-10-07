@@ -63,9 +63,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? limit,
             [FromQuery] bool enableTotalRecordCount = false)
         {
-            var user = !userId.Equals(Guid.Empty) ? _userManager.GetUserById(userId) : null;
+            var user = userId.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId);
 
-            var dtoOptions = new DtoOptions().AddClientFields(Request);
+            var dtoOptions = new DtoOptions().AddClientFields(User);
             var result = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
             {
                 OrderBy = new[] { (ItemSortBy.Random, SortOrder.Descending) },
@@ -81,11 +83,10 @@ namespace Jellyfin.Api.Controllers
 
             var dtoList = _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user);
 
-            return new QueryResult<BaseItemDto>
-            {
-                TotalRecordCount = result.TotalRecordCount,
-                Items = dtoList
-            };
+            return new QueryResult<BaseItemDto>(
+                startIndex,
+                result.TotalRecordCount,
+                dtoList);
         }
     }
 }

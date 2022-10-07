@@ -155,7 +155,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Package repositories saved.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Repositories")]
-        [Authorize(Policy = Policies.DefaultAuthorization)]
+        [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SetRepositories([FromBody, Required] List<RepositoryInfo> repositoryInfos)
         {

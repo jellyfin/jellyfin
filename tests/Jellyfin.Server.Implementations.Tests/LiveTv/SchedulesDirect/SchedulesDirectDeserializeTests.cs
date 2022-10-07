@@ -18,7 +18,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
         }
 
         /// <summary>
-        /// /token reponse.
+        /// /token response.
         /// </summary>
         [Fact]
         public void Deserialize_Token_Response_Live_Success()

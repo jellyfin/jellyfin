@@ -184,6 +184,11 @@ namespace MediaBrowser.Controller.Entities.TV
                 list.Insert(0, key);
             }
 
+            if (this.TryGetProviderId(MetadataProvider.Custom, out key))
+            {
+                list.Insert(0, key);
+            }
+
             return list;
         }
 
@@ -261,7 +266,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 DtoOptions = options
             };
 
-            if (!user.DisplayMissingEpisodes)
+            if (user == null || !user.DisplayMissingEpisodes)
             {
                 query.IsMissing = false;
             }

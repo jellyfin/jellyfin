@@ -43,7 +43,6 @@ namespace Jellyfin.Api.Controllers
         private readonly IUserManager _userManager;
         private readonly IDtoService _dtoService;
         private readonly IDlnaManager _dlnaManager;
-        private readonly IAuthorizationContext _authContext;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly IMediaEncoder _mediaEncoder;
@@ -61,7 +60,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
         /// <param name="dlnaManager">Instance of the <see cref="IDlnaManager"/> interface.</param>
-        /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
@@ -74,7 +72,6 @@ namespace Jellyfin.Api.Controllers
             IUserManager userManager,
             IDtoService dtoService,
             IDlnaManager dlnaManager,
-            IAuthorizationContext authContext,
             IMediaSourceManager mediaSourceManager,
             IServerConfigurationManager serverConfigurationManager,
             IMediaEncoder mediaEncoder,
@@ -87,7 +84,6 @@ namespace Jellyfin.Api.Controllers
             _userManager = userManager;
             _dtoService = dtoService;
             _dlnaManager = dlnaManager;
-            _authContext = authContext;
             _mediaSourceManager = mediaSourceManager;
             _serverConfigurationManager = serverConfigurationManager;
             _mediaEncoder = mediaEncoder;
@@ -109,18 +105,18 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetAdditionalPart([FromRoute, Required] Guid itemId, [FromQuery] Guid? userId)
         {
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
 
-            var item = itemId.Equals(Guid.Empty)
-                ? (!userId.Equals(Guid.Empty)
-                    ? _libraryManager.GetUserRootFolder()
-                    : _libraryManager.RootFolder)
+            var item = itemId.Equals(default)
+                ? (userId is null || userId.Value.Equals(default)
+                    ? _libraryManager.RootFolder
+                    : _libraryManager.GetUserRootFolder())
                 : _libraryManager.GetItemById(itemId);
 
             var dtoOptions = new DtoOptions();
-            dtoOptions = dtoOptions.AddClientFields(Request);
+            dtoOptions = dtoOptions.AddClientFields(User);
 
             BaseItemDto[] items;
             if (item is Video video)
@@ -134,12 +130,7 @@ namespace Jellyfin.Api.Controllers
                 items = Array.Empty<BaseItemDto>();
             }
 
-            var result = new QueryResult<BaseItemDto>
-            {
-                Items = items,
-                TotalRecordCount = items.Length
-            };
-
+            var result = new QueryResult<BaseItemDto>(items);
             return result;
         }
 
@@ -226,7 +217,7 @@ namespace Jellyfin.Api.Controllers
 
             var alternateVersionsOfPrimary = primaryVersion.LinkedAlternateVersions.ToList();
 
-            foreach (var item in items.Where(i => i.Id != primaryVersion.Id))
+            foreach (var item in items.Where(i => !i.Id.Equals(primaryVersion.Id)))
             {
                 item.SetPrimaryVersionId(primaryVersion.Id.ToString("N", CultureInfo.InvariantCulture));
 
@@ -432,10 +423,9 @@ namespace Jellyfin.Api.Controllers
                 StreamOptions = streamOptions
             };
 
-            using var state = await StreamingHelpers.GetStreamingState(
+            var state = await StreamingHelpers.GetStreamingState(
                     streamingRequest,
-                    Request,
-                    _authContext,
+                    HttpContext,
                     _mediaSourceManager,
                     _userManager,
                     _libraryManager,
@@ -470,7 +460,7 @@ namespace Jellyfin.Api.Controllers
                 StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, state.Request.StartTimeTicks, Request, _dlnaManager);
 
                 var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-                return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, isHeadRequest, httpClient, HttpContext).ConfigureAwait(false);
+                return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, httpClient, HttpContext).ConfigureAwait(false);
             }
 
             if (@static.HasValue && @static.Value && state.InputProtocol != MediaProtocol.File)
@@ -499,9 +489,7 @@ namespace Jellyfin.Api.Controllers
 
                 return FileStreamResponseHelpers.GetStaticFileResult(
                     state.MediaPath,
-                    contentType,
-                    isHeadRequest,
-                    HttpContext);
+                    contentType);
             }
 
             // Need to start ffmpeg (because media can't be returned directly)

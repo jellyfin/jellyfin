@@ -22,7 +22,7 @@ Depends: at,
          libsqlite3-0,
          libfontconfig1,
          libfreetype6,
-         libssl1.1
+         libssl1.1 | libssl3
 Recommends: jellyfin-web, sudo
 Description: Jellyfin is the Free Software Media System.
  This package provides the Jellyfin server backend and API.

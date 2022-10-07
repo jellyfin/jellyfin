@@ -7,7 +7,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
-using Jellyfin.Api.Models.PluginDtos;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
@@ -41,61 +40,6 @@ namespace Jellyfin.Api.Controllers
             _installationManager = installationManager;
             _pluginManager = pluginManager;
             _serializerOptions = JsonDefaults.Options;
-        }
-
-        /// <summary>
-        /// Get plugin security info.
-        /// </summary>
-        /// <response code="200">Plugin security info returned.</response>
-        /// <returns>Plugin security info.</returns>
-        [Obsolete("This endpoint should not be used.")]
-        [HttpGet("SecurityInfo")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public static ActionResult<PluginSecurityInfo> GetPluginSecurityInfo()
-        {
-            return new PluginSecurityInfo
-            {
-                IsMbSupporter = true,
-                SupporterKey = "IAmTotallyLegit"
-            };
-        }
-
-        /// <summary>
-        /// Gets registration status for a feature.
-        /// </summary>
-        /// <param name="name">Feature name.</param>
-        /// <response code="200">Registration status returned.</response>
-        /// <returns>Mb registration record.</returns>
-        [Obsolete("This endpoint should not be used.")]
-        [HttpPost("RegistrationRecords/{name}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public static ActionResult<MBRegistrationRecord> GetRegistrationStatus([FromRoute, Required] string name)
-        {
-            return new MBRegistrationRecord
-            {
-                IsRegistered = true,
-                RegChecked = true,
-                TrialVersion = false,
-                IsValid = true,
-                RegError = false
-            };
-        }
-
-        /// <summary>
-        /// Gets registration status for a feature.
-        /// </summary>
-        /// <param name="name">Feature name.</param>
-        /// <response code="501">Not implemented.</response>
-        /// <returns>Not Implemented.</returns>
-        /// <exception cref="NotImplementedException">This endpoint is not implemented.</exception>
-        [Obsolete("Paid plugins are not supported")]
-        [HttpGet("Registrations/{name}")]
-        [ProducesResponseType(StatusCodes.Status501NotImplemented)]
-        public static ActionResult GetRegistration([FromRoute, Required] string name)
-        {
-            // TODO Once we have proper apps and plugins and decide to break compatibility with paid plugins,
-            // delete all these registration endpoints. They are only kept for compatibility.
-            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -316,21 +260,6 @@ namespace Jellyfin.Api.Controllers
             }
 
             return NotFound();
-        }
-
-        /// <summary>
-        /// Updates plugin security info.
-        /// </summary>
-        /// <param name="pluginSecurityInfo">Plugin security info.</param>
-        /// <response code="204">Plugin security info updated.</response>
-        /// <returns>An <see cref="NoContentResult"/>.</returns>
-        [Obsolete("This endpoint should not be used.")]
-        [HttpPost("SecurityInfo")]
-        [Authorize(Policy = Policies.RequiresElevation)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult UpdatePluginSecurityInfo([FromBody, Required] PluginSecurityInfo pluginSecurityInfo)
-        {
-            return NoContent();
         }
     }
 }

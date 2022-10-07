@@ -92,10 +92,12 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool enableTotalRecordCount = true)
         {
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, false, imageTypeLimit, enableImageTypes);
 
-            User? user = userId.HasValue && userId != Guid.Empty ? _userManager.GetUserById(userId.Value) : null;
+            User? user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
 
             var parentItem = _libraryManager.GetParentItem(parentId, userId);
 
@@ -155,31 +157,28 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<BaseItemDto> GetGenre([FromRoute, Required] string genreName, [FromQuery] Guid? userId)
         {
             var dtoOptions = new DtoOptions()
-                .AddClientFields(Request);
+                .AddClientFields(User);
 
-            Genre item = new Genre();
-            if (genreName.IndexOf(BaseItem.SlugChar, StringComparison.OrdinalIgnoreCase) != -1)
+            Genre? item;
+            if (genreName.Contains(BaseItem.SlugChar, StringComparison.OrdinalIgnoreCase))
             {
-                var result = GetItemFromSlugName<Genre>(_libraryManager, genreName, dtoOptions, BaseItemKind.Genre);
-
-                if (result != null)
-                {
-                    item = result;
-                }
+                item = GetItemFromSlugName<Genre>(_libraryManager, genreName, dtoOptions, BaseItemKind.Genre);
             }
             else
             {
                 item = _libraryManager.GetGenre(genreName);
             }
 
-            if (userId.HasValue && !userId.Equals(Guid.Empty))
-            {
-                var user = _userManager.GetUserById(userId.Value);
+            item ??= new Genre();
 
-                return _dtoService.GetBaseItemDto(item, dtoOptions, user);
+            if (userId is null || userId.Value.Equals(default))
+            {
+                return _dtoService.GetBaseItemDto(item, dtoOptions);
             }
 
-            return _dtoService.GetBaseItemDto(item, dtoOptions);
+            var user = _userManager.GetUserById(userId.Value);
+
+            return _dtoService.GetBaseItemDto(item, dtoOptions, user);
         }
 
         private T? GetItemFromSlugName<T>(ILibraryManager libraryManager, string name, DtoOptions dtoOptions, BaseItemKind baseItemKind)

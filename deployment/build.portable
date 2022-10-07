@@ -16,7 +16,7 @@ else
 fi
 
 # Build archives
-dotnet publish Jellyfin.Server --configuration Release --output dist/jellyfin-server_${version}/ "-p:DebugSymbols=false;DebugType=none;UseAppHost=false"
+dotnet publish Jellyfin.Server --configuration Release --output dist/jellyfin-server_${version}/ -p:DebugSymbols=false -p:DebugType=none -p:UseAppHost=false
 tar -czf jellyfin-server_${version}_portable.tar.gz -C dist jellyfin-server_${version}
 rm -rf dist/jellyfin-server_${version}
 

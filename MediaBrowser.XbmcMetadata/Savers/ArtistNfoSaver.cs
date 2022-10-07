@@ -58,7 +58,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 var formatString = ConfigurationManager.GetNfoConfiguration().ReleaseDateFormat;
 
-                writer.WriteElementString("disbanded", artist.EndDate.Value.ToLocalTime().ToString(formatString, CultureInfo.InvariantCulture));
+                writer.WriteElementString("disbanded", artist.EndDate.Value.ToString(formatString, CultureInfo.InvariantCulture));
             }
 
             var albums = artist

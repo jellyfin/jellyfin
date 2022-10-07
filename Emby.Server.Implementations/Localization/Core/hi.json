@@ -61,5 +61,11 @@
     "LabelRunningTimeValue": "चलने का समय: {0}",
     "ItemAddedWithName": "{0} को लाइब्रेरी में जोड़ा गया",
     "Inherit": "इनहेरिट",
-    "NotificationOptionVideoPlaybackStopped": "चलचित्र रुका हुआ"
+    "NotificationOptionVideoPlaybackStopped": "चलचित्र रुका हुआ",
+    "PluginUninstalledWithName": "{0} अनइंस्टॉल हुए",
+    "PluginInstalledWithName": "{0} इंस्टॉल हुए",
+    "Plugin": "प्लग-इन",
+    "Playlists": "प्लेलिस्ट",
+    "Photos": "तस्वीरें",
+    "External": "बाहरी"
 }

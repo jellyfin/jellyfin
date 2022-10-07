@@ -5,9 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Diacritics.Extensions;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -30,7 +30,7 @@ namespace Emby.Server.Implementations.Library
         public QueryResult<SearchHintInfo> GetSearchHints(SearchQuery query)
         {
             User user = null;
-            if (query.UserId != Guid.Empty)
+            if (!query.UserId.Equals(default))
             {
                 user = _userManager.GetUserById(query.UserId);
             }
@@ -48,12 +48,10 @@ namespace Emby.Server.Implementations.Library
                 results = results.GetRange(0, Math.Min(query.Limit.Value, results.Count));
             }
 
-            return new QueryResult<SearchHintInfo>
-            {
-                TotalRecordCount = totalRecordCount,
-
-                Items = results
-            };
+            return new QueryResult<SearchHintInfo>(
+                query.StartIndex,
+                totalRecordCount,
+                results);
         }
 
         private static void AddIfMissing(List<BaseItemKind> list, BaseItemKind value)
@@ -170,10 +168,10 @@ namespace Emby.Server.Implementations.Library
                 {
                     Fields = new ItemFields[]
                     {
-                         ItemFields.AirTime,
-                         ItemFields.DateCreated,
-                         ItemFields.ChannelInfo,
-                         ItemFields.ParentId
+                        ItemFields.AirTime,
+                        ItemFields.DateCreated,
+                        ItemFields.ChannelInfo,
+                        ItemFields.ParentId
                     }
                 }
             };
@@ -182,12 +180,12 @@ namespace Emby.Server.Implementations.Library
 
             if (searchQuery.IncludeItemTypes.Length == 1 && searchQuery.IncludeItemTypes[0] == BaseItemKind.MusicArtist)
             {
-                if (!searchQuery.ParentId.Equals(Guid.Empty))
+                if (!searchQuery.ParentId.Equals(default))
                 {
                     searchQuery.AncestorIds = new[] { searchQuery.ParentId };
+                    searchQuery.ParentId = Guid.Empty;
                 }
 
-                searchQuery.ParentId = Guid.Empty;
                 searchQuery.IncludeItemsByName = true;
                 searchQuery.IncludeItemTypes = Array.Empty<BaseItemKind>();
                 mediaItems = _libraryManager.GetAllArtists(searchQuery).Items.Select(i => i.Item).ToList();

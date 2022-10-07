@@ -227,9 +227,9 @@ namespace Emby.Server.Implementations.Updates
                 availablePackages = availablePackages.Where(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
             }
 
-            if (id != default)
+            if (!id.Equals(default))
             {
-                availablePackages = availablePackages.Where(x => x.Id == id);
+                availablePackages = availablePackages.Where(x => x.Id.Equals(id));
             }
 
             if (specificVersion != null)
@@ -294,10 +294,7 @@ namespace Emby.Server.Implementations.Updates
         /// <inheritdoc />
         public async Task InstallPackage(InstallationInfo package, CancellationToken cancellationToken)
         {
-            if (package == null)
-            {
-                throw new ArgumentNullException(nameof(package));
-            }
+            ArgumentNullException.ThrowIfNull(package);
 
             var innerCancellationTokenSource = new CancellationTokenSource();
 
@@ -399,7 +396,7 @@ namespace Emby.Server.Implementations.Updates
         {
             lock (_currentInstallationsLock)
             {
-                var install = _currentInstallations.Find(x => x.Info.Id == id);
+                var install = _currentInstallations.Find(x => x.Info.Id.Equals(id));
                 if (install == default((InstallationInfo, CancellationTokenSource)))
                 {
                     return false;
@@ -498,7 +495,7 @@ namespace Emby.Server.Implementations.Updates
                 var compatibleVersions = GetCompatibleVersions(pluginCatalog, plugin.Name, plugin.Id, minVersion: plugin.Version);
                 var version = compatibleVersions.FirstOrDefault(y => y.Version > plugin.Version);
 
-                if (version != null && CompletedInstallations.All(x => x.Id != version.Id))
+                if (version != null && CompletedInstallations.All(x => !x.Id.Equals(version.Id)))
                 {
                     yield return version;
                 }

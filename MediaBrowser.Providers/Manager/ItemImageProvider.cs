@@ -388,7 +388,7 @@ namespace MediaBrowser.Providers.Manager
         /// <returns><c>true</c> if changes were made to the item; otherwise <c>false</c>.</returns>
         public bool MergeImages(BaseItem item, IReadOnlyList<LocalImageInfo> images)
         {
-            var changed = item.ValidateImages(new DirectoryService(_fileSystem));
+            var changed = item.ValidateImages();
 
             for (var i = 0; i < _singularImages.Length; i++)
             {

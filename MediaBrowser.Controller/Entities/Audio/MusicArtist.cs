@@ -8,9 +8,9 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Diacritics.Extensions;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
@@ -24,7 +24,7 @@ namespace MediaBrowser.Controller.Entities.Audio
     public class MusicArtist : Folder, IItemByName, IHasMusicGenres, IHasDualAccess, IHasLookupInfo<ArtistInfo>
     {
         [JsonIgnore]
-        public bool IsAccessedByName => ParentId.Equals(Guid.Empty);
+        public bool IsAccessedByName => ParentId.Equals(default);
 
         [JsonIgnore]
         public override bool IsFolder => !IsAccessedByName;

@@ -16,6 +16,7 @@ namespace MediaBrowser.Model.Dlna
             int? videoBitDepth,
             int? videoBitrate,
             string? videoProfile,
+            string? videoRangeType,
             double? videoLevel,
             float? videoFramerate,
             int? packetLength,
@@ -42,6 +43,8 @@ namespace MediaBrowser.Model.Dlna
                     return IsConditionSatisfied(condition, videoLevel);
                 case ProfileConditionValue.VideoProfile:
                     return IsConditionSatisfied(condition, videoProfile);
+                case ProfileConditionValue.VideoRangeType:
+                    return IsConditionSatisfied(condition, videoRangeType);
                 case ProfileConditionValue.VideoCodecTag:
                     return IsConditionSatisfied(condition, videoCodecTag);
                 case ProfileConditionValue.PacketLength:

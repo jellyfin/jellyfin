@@ -12,7 +12,7 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
 {
     public class SubtitleEncoderTests
     {
-        internal static TheoryData<MediaSourceInfo, MediaStream, SubtitleEncoder.SubtitleInfo> GetReadableFile_Valid_TestData()
+        public static TheoryData<MediaSourceInfo, MediaStream, SubtitleEncoder.SubtitleInfo> GetReadableFile_Valid_TestData()
         {
             var data = new TheoryData<MediaSourceInfo, MediaStream, SubtitleEncoder.SubtitleInfo>();
 

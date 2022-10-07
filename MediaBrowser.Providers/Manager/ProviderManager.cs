@@ -30,6 +30,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
 using Priority_Queue;
@@ -128,9 +129,7 @@ namespace MediaBrowser.Providers.Manager
             _metadataProviders = metadataProviders.ToArray();
             _externalIds = externalIds.OrderBy(i => i.ProviderName).ToArray();
 
-            _savers = metadataSavers
-                .Where(i => i is not IConfigurableProvider configurable || configurable.IsEnabled)
-                .ToArray();
+            _savers = metadataSavers.ToArray();
         }
 
         /// <inheritdoc/>
@@ -188,6 +187,12 @@ namespace MediaBrowser.Providers.Manager
             if (contentType.Equals(MediaTypeNames.Text.Html, StringComparison.OrdinalIgnoreCase))
             {
                 throw new HttpRequestException("Invalid image received.", null, HttpStatusCode.NotFound);
+            }
+
+            // some iptv/epg providers don't correctly report media type, extract from url if no extension found
+            if (string.IsNullOrWhiteSpace(MimeTypes.ToExtension(contentType)))
+            {
+                contentType = MimeTypes.GetMimeType(url);
             }
 
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
@@ -414,7 +419,7 @@ namespace MediaBrowser.Providers.Manager
             }
 
             // If this restriction is ever lifted, movie xml providers will have to be updated to prevent owned items like trailers from reading those files
-            if (!item.OwnerId.Equals(Guid.Empty))
+            if (!item.OwnerId.Equals(default))
             {
                 if (provider is ILocalMetadataProvider || provider is IRemoteMetadataProvider)
                 {
@@ -653,16 +658,12 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <inheritdoc/>
-        public void SaveMetadata(BaseItem item, ItemUpdateType updateType)
-        {
-            SaveMetadata(item, updateType, _savers);
-        }
+        public Task SaveMetadataAsync(BaseItem item, ItemUpdateType updateType)
+            => SaveMetadataAsync(item, updateType, _savers);
 
         /// <inheritdoc/>
-        public void SaveMetadata(BaseItem item, ItemUpdateType updateType, IEnumerable<string> savers)
-        {
-            SaveMetadata(item, updateType, _savers.Where(i => savers.Contains(i.Name, StringComparison.OrdinalIgnoreCase)));
-        }
+        public Task SaveMetadataAsync(BaseItem item, ItemUpdateType updateType, IEnumerable<string> savers)
+            => SaveMetadataAsync(item, updateType, _savers.Where(i => savers.Contains(i.Name, StringComparison.OrdinalIgnoreCase)));
 
         /// <summary>
         /// Saves the metadata.
@@ -670,7 +671,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="item">The item.</param>
         /// <param name="updateType">Type of the update.</param>
         /// <param name="savers">The savers.</param>
-        private void SaveMetadata(BaseItem item, ItemUpdateType updateType, IEnumerable<IMetadataSaver> savers)
+        private async Task SaveMetadataAsync(BaseItem item, ItemUpdateType updateType, IEnumerable<IMetadataSaver> savers)
         {
             var libraryOptions = _libraryManager.GetLibraryOptions(item);
 
@@ -695,7 +696,7 @@ namespace MediaBrowser.Providers.Manager
                     try
                     {
                         _libraryMonitor.ReportFileSystemChangeBeginning(path);
-                        saver.Save(item, CancellationToken.None);
+                        await saver.SaveAsync(item, CancellationToken.None).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -710,7 +711,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     try
                     {
-                        saver.Save(item, CancellationToken.None);
+                        await saver.SaveAsync(item, CancellationToken.None).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -787,7 +788,7 @@ namespace MediaBrowser.Providers.Manager
         {
             BaseItem referenceItem = null;
 
-            if (!searchInfo.ItemId.Equals(Guid.Empty))
+            if (!searchInfo.ItemId.Equals(default))
             {
                 referenceItem = _libraryManager.GetItemById(searchInfo.ItemId);
             }
@@ -925,7 +926,7 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error in {Provider}.Suports", i.GetType().Name);
+                    _logger.LogError(ex, "Error in {Provider}.Supports", i.GetType().Name);
                     return false;
                 }
             });

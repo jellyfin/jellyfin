@@ -165,8 +165,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         private async Task<TvGroupCollection> GetSeriesGroupAsync(int tvShowId, string displayOrder, string language, string imageLanguages, CancellationToken cancellationToken)
         {
             TvGroupType? groupType =
+                string.Equals(displayOrder, "originalAirDate", StringComparison.Ordinal) ? TvGroupType.OriginalAirDate :
                 string.Equals(displayOrder, "absolute", StringComparison.Ordinal) ? TvGroupType.Absolute :
                 string.Equals(displayOrder, "dvd", StringComparison.Ordinal) ? TvGroupType.DVD :
+                string.Equals(displayOrder, "digital", StringComparison.Ordinal) ? TvGroupType.Digital :
+                string.Equals(displayOrder, "storyArc", StringComparison.Ordinal) ? TvGroupType.StoryArc :
+                string.Equals(displayOrder, "production", StringComparison.Ordinal) ? TvGroupType.Production :
+                string.Equals(displayOrder, "tv", StringComparison.Ordinal) ? TvGroupType.TV :
                 null;
 
             if (groupType == null)
@@ -544,6 +549,17 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         }
 
         /// <summary>
+        /// Converts logo <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
+        /// </summary>
+        /// <param name="images">The input images.</param>
+        /// <param name="requestLanguage">The requested language.</param>
+        /// <param name="results">The collection to add the remote images into.</param>
+        public void ConvertLogosToRemoteImageInfo(List<ImageData> images, string requestLanguage, List<RemoteImageInfo> results)
+        {
+            ConvertToRemoteImageInfo(images, Plugin.Instance.Configuration.LogoSize, ImageType.Logo, requestLanguage, results);
+        }
+
+        /// <summary>
         /// Converts profile <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
         /// </summary>
         /// <param name="images">The input images.</param>
@@ -620,6 +636,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             if (!imageConfig.BackdropSizes.Contains(pluginConfig.BackdropSize))
             {
                 pluginConfig.BackdropSize = imageConfig.BackdropSizes[^1];
+            }
+
+            if (!imageConfig.LogoSizes.Contains(pluginConfig.LogoSize))
+            {
+                pluginConfig.LogoSize = imageConfig.LogoSizes[^1];
             }
 
             if (!imageConfig.ProfileSizes.Contains(pluginConfig.ProfileSize))

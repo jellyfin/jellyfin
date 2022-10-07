@@ -23,7 +23,7 @@
     "HeaderFavoriteShows": "Oblíbené seriály",
     "HeaderFavoriteSongs": "Oblíbená hudba",
     "HeaderLiveTV": "Televize",
-    "HeaderNextUp": "Nadcházející",
+    "HeaderNextUp": "Další díly",
     "HeaderRecordingGroups": "Skupiny nahrávek",
     "HomeVideos": "Domácí videa",
     "Inherit": "Zdědit",
@@ -77,7 +77,7 @@
     "SubtitleDownloadFailureFromForItem": "Stažení titulků pro {1} z {0} selhalo",
     "Sync": "Synchronizace",
     "System": "Systém",
-    "TvShows": "TV seriály",
+    "TvShows": "Seriály",
     "User": "Uživatel",
     "UserCreatedWithName": "Uživatel {0} byl vytvořen",
     "UserDeletedWithName": "Uživatel {0} byl smazán",
@@ -120,5 +120,8 @@
     "Forced": "Vynucené",
     "Default": "Výchozí",
     "TaskOptimizeDatabaseDescription": "Zmenší databázi a odstraní prázdné místo. Spuštění této úlohy po skenování knihovny či jiných změnách databáze může zlepšit výkon.",
-    "TaskOptimizeDatabase": "Optimalizovat databázi"
+    "TaskOptimizeDatabase": "Optimalizovat databázi",
+    "TaskKeyframeExtractorDescription": "Vytahuje klíčové snímky ze souborů videa za účelem vytváření přesnějších seznamů přehrávání HLS. Tento úkol může trvat velmi dlouho.",
+    "TaskKeyframeExtractor": "Vytahovač klíčových snímků",
+    "External": "Externí"
 }

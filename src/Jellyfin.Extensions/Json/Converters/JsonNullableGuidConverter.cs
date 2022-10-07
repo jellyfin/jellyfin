@@ -16,14 +16,15 @@ namespace Jellyfin.Extensions.Json.Converters
         /// <inheritdoc />
         public override void Write(Utf8JsonWriter writer, Guid? value, JsonSerializerOptions options)
         {
-            if (value == Guid.Empty)
+            // null got handled higher up the call stack
+            var val = value!.Value;
+            if (val.Equals(default))
             {
                 writer.WriteNullValue();
             }
             else
             {
-                // null got handled higher up the call stack
-                JsonGuidConverter.WriteInternal(writer, value!.Value);
+                JsonGuidConverter.WriteInternal(writer, val);
             }
         }
     }

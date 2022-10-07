@@ -1,5 +1,6 @@
 # Jellyfin Contributors
 
+ - [1337joe](https://github.com/1337joe)
  - [97carmine](https://github.com/97carmine)
  - [Abbe98](https://github.com/Abbe98)
  - [agrenott](https://github.com/agrenott)
@@ -35,6 +36,7 @@
  - [dmitrylyzo](https://github.com/dmitrylyzo)
  - [DMouse10462](https://github.com/DMouse10462)
  - [DrPandemic](https://github.com/DrPandemic)
+ - [eglia](https://github.com/eglia)
  - [EraYaN](https://github.com/EraYaN)
  - [escabe](https://github.com/escabe)
  - [excelite](https://github.com/excelite)
@@ -45,6 +47,7 @@
  - [Froghut](https://github.com/Froghut)
  - [fruhnow](https://github.com/fruhnow)
  - [geilername](https://github.com/geilername)
+ - [GermanCoding](https://github.com/GermanCoding)
  - [gnattu](https://github.com/gnattu)
  - [GodTamIt](https://github.com/GodTamIt)
  - [grafixeyehero](https://github.com/grafixeyehero)
@@ -76,6 +79,7 @@
  - [mitchfizz05](https://github.com/mitchfizz05)
  - [MrTimscampi](https://github.com/MrTimscampi)
  - [n8225](https://github.com/n8225)
+ - [Nalsai](https://github.com/Nalsai)
  - [Narfinger](https://github.com/Narfinger)
  - [NathanPickard](https://github.com/NathanPickard)
  - [neilsb](https://github.com/neilsb)
@@ -115,6 +119,7 @@
  - [ssenart](https://github.com/ssenart)
  - [stanionascu](https://github.com/stanionascu)
  - [stevehayles](https://github.com/stevehayles)
+ - [StollD](https://github.com/StollD)
  - [SuperSandro2000](https://github.com/SuperSandro2000)
  - [tbraeutigam](https://github.com/tbraeutigam)
  - [teacupx](https://github.com/teacupx)
@@ -143,6 +148,7 @@
  - [xosdy](https://github.com/xosdy)
  - [XVicarious](https://github.com/XVicarious)
  - [YouKnowBlom](https://github.com/YouKnowBlom)
+ - [ZachPhelan](https://github.com/ZachPhelan)
  - [KristupasSavickas](https://github.com/KristupasSavickas)
  - [Pusta](https://github.com/pusta)
  - [nielsvanvelzen](https://github.com/nielsvanvelzen)
@@ -151,6 +157,9 @@
  - [peterspenler](https://github.com/peterspenler)
  - [MBR-0001](https://github.com/MBR-0001)
  - [jonas-resch](https://github.com/jonas-resch)
+ - [vgambier](https://github.com/vgambier)
+ - [MinecraftPlaye](https://github.com/MinecraftPlaye)
+ - [RealGreenDragon](https://github.com/RealGreenDragon)
 
 # Emby Contributors
 
@@ -217,3 +226,6 @@
  - [olsh](https://github.com/olsh)
  - [lbenini](https://github.com/lbenini)
  - [gnuyent](https://github.com/gnuyent)
+ - [Matthew Jones](https://github.com/matthew-jones-uk)
+ - [Jakob Kukla](https://github.com/jakobkukla)
+ - [Utku Özdemir](https://github.com/utkuozdemir)

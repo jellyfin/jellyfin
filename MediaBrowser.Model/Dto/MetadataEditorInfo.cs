@@ -1,7 +1,7 @@
-#nullable disable
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Providers;
@@ -19,16 +19,16 @@ namespace MediaBrowser.Model.Dto
             ContentTypeOptions = Array.Empty<NameValuePair>();
         }
 
-        public ParentalRating[] ParentalRatingOptions { get; set; }
+        public IReadOnlyList<ParentalRating> ParentalRatingOptions { get; set; }
 
-        public CountryInfo[] Countries { get; set; }
+        public IReadOnlyList<CountryInfo> Countries { get; set; }
 
-        public CultureDto[] Cultures { get; set; }
+        public IReadOnlyList<CultureDto> Cultures { get; set; }
 
-        public ExternalIdInfo[] ExternalIdInfos { get; set; }
+        public IReadOnlyList<ExternalIdInfo> ExternalIdInfos { get; set; }
 
-        public string ContentType { get; set; }
+        public string? ContentType { get; set; }
 
-        public NameValuePair[] ContentTypeOptions { get; set; }
+        public IReadOnlyList<NameValuePair> ContentTypeOptions { get; set; }
     }
 }

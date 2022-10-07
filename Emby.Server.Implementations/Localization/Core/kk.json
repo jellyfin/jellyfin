@@ -120,5 +120,8 @@
     "TaskCleanCacheDescription": "Jüiede qajet emes keştelgen faildardy joiady.",
     "TaskCleanActivityLogDescription": "Äreket jūrnalyndağy teñşelgen jasynan asqan jazbalary joiady.",
     "TaskOptimizeDatabaseDescription": "Derekqordy qysyp, bos oryndy qysqartady. Būl tapsyrmany tasyğyşhanany skanerlegennen keiın nemese derekqorğa meñzeitın basqa özgertuler ıstelgennen keiın oryndau önımdılıktı damytuy mümkın.",
-    "TaskOptimizeDatabase": "Derekqordy oñtailandyru"
+    "TaskOptimizeDatabase": "Derekqordy oñtailandyru",
+    "TaskKeyframeExtractorDescription": "Naqtyraq HLS oynatu tızımderın jasau üşın beinefaildardan negızgı kadrlardy şyğarady. Būl tapsyrma ūzaq uaqytqa sozyluy mümkın.",
+    "TaskKeyframeExtractor": "Negızgı kadrlardy şyğaru",
+    "External": "Syrtqy"
 }

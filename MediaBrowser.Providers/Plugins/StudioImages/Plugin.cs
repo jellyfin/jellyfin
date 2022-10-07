@@ -7,13 +7,13 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Providers.Plugins.StudioImages.Configuration;
 
 namespace MediaBrowser.Providers.Plugins.StudioImages
 {
     public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     {
-        // TODO change this for a Jellyfin-hosted repository.
-        public const string DefaultServer = "https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/images/imagesbyname";
+        public const string DefaultServer = "https://raw.github.com/jellyfin/emby-artwork/master/studios";
 
         public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
             : base(applicationPaths, xmlSerializer)

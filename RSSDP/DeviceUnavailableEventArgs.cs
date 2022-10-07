@@ -3,7 +3,7 @@ using System;
 namespace Rssdp
 {
     /// <summary>
-    /// Event arguments for the <see cref="Infrastructure.SsdpDeviceLocatorBase.DeviceUnavailable"/> event.
+    /// Event arguments for the <see cref="Infrastructure.SsdpDeviceLocator.DeviceUnavailable"/> event.
     /// </summary>
     public sealed class DeviceUnavailableEventArgs : EventArgs
     {

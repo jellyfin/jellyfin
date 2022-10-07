@@ -41,5 +41,15 @@ namespace Jellyfin.Api.Models.StreamingDtos
         /// Gets or sets the min segments.
         /// </summary>
         public int? MinSegments { get; set; }
+
+        /// <summary>
+        /// Gets or sets the position of the requested segment in ticks.
+        /// </summary>
+        public long CurrentRuntimeTicks { get; set; }
+
+        /// <summary>
+        /// Gets or sets the actual segment length in ticks.
+        /// </summary>
+        public long ActualSegmentLengthTicks { get; set; }
     }
 }

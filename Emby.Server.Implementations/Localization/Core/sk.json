@@ -120,5 +120,8 @@
     "Forced": "Vynútené",
     "Default": "Predvolené",
     "TaskOptimizeDatabaseDescription": "Zmenší databázu a odstráni prázdne miesto. Spustenie tejto úlohy po skenovaní knižnice alebo po iných zmenách zahŕňajúcich úpravy databáze môže zlepšiť výkon.",
-    "TaskOptimizeDatabase": "Optimalizovať databázu"
+    "TaskOptimizeDatabase": "Optimalizovať databázu",
+    "TaskKeyframeExtractorDescription": "Extrahuje kľúčové snímky z video súborov na vytvorenie presnejších HLS playlistov. Táto úloha môže trvať dlhšiu dobu.",
+    "TaskKeyframeExtractor": "Extraktor kľúčových snímkov",
+    "External": "Externé"
 }

@@ -11,8 +11,4 @@ Defaults!RESTARTSERVER_SYSTEMD !requiretty
 Defaults!STARTSERVER_SYSTEMD !requiretty
 Defaults!STOPSERVER_SYSTEMD !requiretty
 
-# Allow the server to mount iso images
-jellyfin ALL=(ALL) NOPASSWD: /bin/mount
-jellyfin ALL=(ALL) NOPASSWD: /bin/umount
-
 Defaults:jellyfin !requiretty

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +14,6 @@ using Emby.Server.Implementations;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +26,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
 using Serilog.Extensions.Logging;
 using SQLitePCL;
-using ConfigurationExtensions = MediaBrowser.Controller.Extensions.ConfigurationExtensions;
+using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Jellyfin.Server
@@ -168,7 +168,7 @@ namespace Jellyfin.Server
                         "server, you may set the '--nowebclient' command line flag, or set" +
                         "'{ConfigKey}=false' in your config settings.",
                         webContentPath,
-                        ConfigurationExtensions.HostWebClientKey);
+                        HostWebClientKey);
                     Environment.ExitCode = 1;
                     return;
                 }
@@ -198,6 +198,13 @@ namespace Jellyfin.Server
                 try
                 {
                     await webHost.StartAsync(_tokenSource.Token).ConfigureAwait(false);
+
+                    if (startupConfig.UseUnixSocket() && Environment.OSVersion.Platform == PlatformID.Unix)
+                    {
+                        var socketPath = GetUnixSocketPath(startupConfig, appPaths);
+
+                        SetUnixSocketPermissions(startupConfig, socketPath);
+                    }
                 }
                 catch (Exception ex) when (ex is not TaskCanceledException)
                 {
@@ -224,15 +231,19 @@ namespace Jellyfin.Server
             }
             finally
             {
-                _logger.LogInformation("Running query planner optimizations in the database... This might take a while");
-                // Run before disposing the application
-                using var context = appHost.Resolve<JellyfinDbProvider>().CreateContext();
-                if (context.Database.IsSqlite())
+                // Don't throw additional exception if startup failed.
+                if (appHost.ServiceProvider != null)
                 {
-                    context.Database.ExecuteSqlRaw("PRAGMA optimize");
+                    _logger.LogInformation("Running query planner optimizations in the database... This might take a while");
+                    // Run before disposing the application
+                    using var context = appHost.Resolve<JellyfinDbProvider>().CreateContext();
+                    if (context.Database.IsSqlite())
+                    {
+                        context.Database.ExecuteSqlRaw("PRAGMA optimize");
+                    }
                 }
 
-                appHost.Dispose();
+                await appHost.DisposeAsync().ConfigureAwait(false);
             }
 
             if (_restartOnShutdown)
@@ -323,20 +334,7 @@ namespace Jellyfin.Server
                     // Bind to unix socket (only on unix systems)
                     if (startupConfig.UseUnixSocket() && Environment.OSVersion.Platform == PlatformID.Unix)
                     {
-                        var socketPath = startupConfig.GetUnixSocketPath();
-                        if (string.IsNullOrEmpty(socketPath))
-                        {
-                            var xdgRuntimeDir = Environment.GetEnvironmentVariable("XDG_RUNTIME_DIR");
-                            if (xdgRuntimeDir == null)
-                            {
-                                // Fall back to config dir
-                                socketPath = Path.Join(appPaths.ConfigurationDirectoryPath, "socket.sock");
-                            }
-                            else
-                            {
-                                socketPath = Path.Join(xdgRuntimeDir, "jellyfin-socket");
-                            }
-                        }
+                        var socketPath = GetUnixSocketPath(startupConfig, appPaths);
 
                         // Workaround for https://github.com/aspnet/AspNetCore/issues/14134
                         if (File.Exists(socketPath))
@@ -545,12 +543,17 @@ namespace Jellyfin.Server
             // Get a stream of the resource contents
             // NOTE: The .csproj name is used instead of the assembly name in the resource path
             const string ResourcePath = "Jellyfin.Server.Resources.Configuration.logging.json";
-            await using Stream resource = typeof(Program).Assembly.GetManifestResourceStream(ResourcePath)
+            Stream resource = typeof(Program).Assembly.GetManifestResourceStream(ResourcePath)
                 ?? throw new InvalidOperationException($"Invalid resource path: '{ResourcePath}'");
-
-            // Copy the resource contents to the expected file path for the config file
-            await using Stream dst = new FileStream(configPath, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
-            await resource.CopyToAsync(dst).ConfigureAwait(false);
+            await using (resource.ConfigureAwait(false))
+            {
+                Stream dst = new FileStream(configPath, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+                await using (dst.ConfigureAwait(false))
+                {
+                    // Copy the resource contents to the expected file path for the config file
+                    await resource.CopyToAsync(dst).ConfigureAwait(false);
+                }
+            }
         }
 
         /// <summary>
@@ -576,7 +579,7 @@ namespace Jellyfin.Server
             var inMemoryDefaultConfig = ConfigurationOptions.DefaultConfiguration;
             if (startupConfig != null && !startupConfig.HostWebClient())
             {
-                inMemoryDefaultConfig[ConfigurationExtensions.DefaultRedirectKey] = "api-docs/swagger";
+                inMemoryDefaultConfig[DefaultRedirectKey] = "api-docs/swagger";
             }
 
             return config
@@ -656,6 +659,52 @@ namespace Jellyfin.Server
             }
 
             return "\"" + arg + "\"";
+        }
+
+        private static string GetUnixSocketPath(IConfiguration startupConfig, IApplicationPaths appPaths)
+        {
+            var socketPath = startupConfig.GetUnixSocketPath();
+
+            if (string.IsNullOrEmpty(socketPath))
+            {
+                var xdgRuntimeDir = Environment.GetEnvironmentVariable("XDG_RUNTIME_DIR");
+                var socketFile = "jellyfin.sock";
+                if (xdgRuntimeDir == null)
+                {
+                    // Fall back to config dir
+                    socketPath = Path.Join(appPaths.ConfigurationDirectoryPath, socketFile);
+                }
+                else
+                {
+                    socketPath = Path.Join(xdgRuntimeDir, socketFile);
+                }
+            }
+
+            return socketPath;
+        }
+
+        private static void SetUnixSocketPermissions(IConfiguration startupConfig, string socketPath)
+        {
+            var socketPerms = startupConfig.GetUnixSocketPermissions();
+
+            if (!string.IsNullOrEmpty(socketPerms))
+            {
+                #pragma warning disable SA1300 // Entrypoint is case sensitive.
+                [DllImport("libc")]
+                static extern int chmod(string pathname, int mode);
+                #pragma warning restore SA1300
+
+                var exitCode = chmod(socketPath, Convert.ToInt32(socketPerms, 8));
+
+                if (exitCode < 0)
+                {
+                    _logger.LogError("Failed to set Kestrel unix socket permissions to {SocketPerms}, return code: {ExitCode}", socketPerms, exitCode);
+                }
+                else
+                {
+                    _logger.LogInformation("Kestrel unix socket permissions set to {SocketPerms}", socketPerms);
+                }
+            }
         }
     }
 }

@@ -44,6 +44,8 @@ JELLYFIN_ADDITIONAL_OPTS=""
 #
 # SysV init/Upstart options
 #
+# Note: These options are ignored by systemd; use /etc/systemd/system/jellyfin.d overrides instead.
+#
 
 # Application username
 JELLYFIN_USER="jellyfin"

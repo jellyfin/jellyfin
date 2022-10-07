@@ -33,13 +33,13 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
     /// </summary>
     private const uint MusicBrainzQueryAttempts = 5u;
 
-    /// <summary>
-    /// The Jellyfin user-agent is unrestricted but source IP must not exceed
-    /// one request per second, therefore we rate limit to avoid throttling.
-    /// Be prudent, use a value slightly above the minimun required.
-    /// https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting.
-    /// </summary>
-    private readonly long _musicBrainzQueryIntervalMs;
+        /// <summary>
+        /// The Jellyfin user-agent is unrestricted but source IP must not exceed
+        /// one request per second, therefore we rate limit to avoid throttling.
+        /// Be prudent, use a value slightly above the minimum required.
+        /// https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting.
+        /// </summary>
+        private readonly long _musicBrainzQueryIntervalMs;
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<MusicBrainzAlbumProvider> _logger;
@@ -465,7 +465,8 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
             ValidationType = ValidationType.None,
             CheckCharacters = false,
             IgnoreProcessingInstructions = true,
-            IgnoreComments = true
+            IgnoreComments = true,
+            Async = true
         };
 
         using var reader = XmlReader.Create(oReader, settings);

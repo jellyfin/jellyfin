@@ -92,10 +92,12 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool enableTotalRecordCount = true)
         {
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, false, imageTypeLimit, enableImageTypes);
 
-            User? user = userId.HasValue && userId != Guid.Empty ? _userManager.GetUserById(userId.Value) : null;
+            User? user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
 
             var parentItem = _libraryManager.GetParentItem(parentId, userId);
 
@@ -143,7 +145,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<BaseItemDto> GetMusicGenre([FromRoute, Required] string genreName, [FromQuery] Guid? userId)
         {
-            var dtoOptions = new DtoOptions().AddClientFields(Request);
+            var dtoOptions = new DtoOptions().AddClientFields(User);
 
             MusicGenre? item;
 
@@ -156,7 +158,7 @@ namespace Jellyfin.Api.Controllers
                 item = _libraryManager.GetMusicGenre(genreName);
             }
 
-            if (userId.HasValue && !userId.Equals(Guid.Empty))
+            if (userId.HasValue && !userId.Value.Equals(default))
             {
                 var user = _userManager.GetUserById(userId.Value);
 

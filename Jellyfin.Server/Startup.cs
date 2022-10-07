@@ -1,9 +1,11 @@
 using System;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
+using Jellyfin.MediaEncoding.Hls.Extensions;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Implementations;
@@ -102,8 +104,26 @@ namespace Jellyfin.Server
                 })
                 .ConfigurePrimaryHttpMessageHandler(defaultHttpClientHandlerDelegate);
 
+            services.AddHttpClient(NamedClient.Dlna, c =>
+                {
+                    c.DefaultRequestHeaders.UserAgent.ParseAdd(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{0}/{1} UPnP/1.0 {2}/{3}",
+                            MediaBrowser.Common.System.OperatingSystem.Name,
+                            Environment.OSVersion,
+                            _serverApplicationHost.Name,
+                            _serverApplicationHost.ApplicationVersionString));
+
+                    c.DefaultRequestHeaders.Add("CPFN.UPNP.ORG", _serverApplicationHost.FriendlyName); // Required for UPnP DeviceArchitecture v2.0
+                    c.DefaultRequestHeaders.Add("FriendlyName.DLNA.ORG", _serverApplicationHost.FriendlyName); // REVIEW: where does this come from?
+                })
+                .ConfigurePrimaryHttpMessageHandler(defaultHttpClientHandlerDelegate);
+
             services.AddHealthChecks()
                 .AddDbContextCheck<JellyfinDb>();
+
+            services.AddHlsPlaylistGenerator();
         }
 
         /// <summary>

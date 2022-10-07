@@ -114,15 +114,9 @@ namespace Emby.Dlna.ContentDirectory
         /// <inheritdoc />
         protected override void WriteResult(string methodName, IReadOnlyDictionary<string, string> methodParams, XmlWriter xmlWriter)
         {
-            if (xmlWriter == null)
-            {
-                throw new ArgumentNullException(nameof(xmlWriter));
-            }
+            ArgumentNullException.ThrowIfNull(xmlWriter);
 
-            if (methodParams == null)
-            {
-                throw new ArgumentNullException(nameof(methodParams));
-            }
+            ArgumentNullException.ThrowIfNull(methodParams);
 
             const string DeviceId = "test";
 
@@ -619,7 +613,7 @@ namespace Emby.Dlna.ContentDirectory
 
             var queryResult = folder.GetItems(query);
 
-            return ToResult(queryResult);
+            return ToResult(startIndex, queryResult);
         }
 
         /// <summary>
@@ -642,7 +636,7 @@ namespace Emby.Dlna.ContentDirectory
 
             var result = _libraryManager.GetItemsResult(query);
 
-            return ToResult(result);
+            return ToResult(startIndex, result);
         }
 
         /// <summary>
@@ -707,11 +701,10 @@ namespace Emby.Dlna.ContentDirectory
                 serverItems = serverItems[..limit.Value];
             }
 
-            return new QueryResult<ServerItem>
-            {
-                Items = serverItems,
-                TotalRecordCount = serverItems.Length
-            };
+            return new QueryResult<ServerItem>(
+                startIndex,
+                serverItems.Length,
+                serverItems);
         }
 
         /// <summary>
@@ -764,11 +757,10 @@ namespace Emby.Dlna.ContentDirectory
                 array = array[..limit.Value];
             }
 
-            return new QueryResult<ServerItem>
-            {
-                Items = array,
-                TotalRecordCount = array.Length
-            };
+            return new QueryResult<ServerItem>(
+                startIndex,
+                array.Length,
+                array);
         }
 
         /// <summary>
@@ -790,11 +782,10 @@ namespace Emby.Dlna.ContentDirectory
                 .Select(i => new ServerItem(i, StubType.Folder))
                 .ToArray();
 
-            return new QueryResult<ServerItem>
-            {
-                Items = items,
-                TotalRecordCount = totalRecordCount
-            };
+            return new QueryResult<ServerItem>(
+                startIndex,
+                totalRecordCount,
+                items);
         }
 
         /// <summary>
@@ -850,11 +841,10 @@ namespace Emby.Dlna.ContentDirectory
                 serverItems = serverItems[..limit.Value];
             }
 
-            return new QueryResult<ServerItem>
-            {
-                Items = serverItems,
-                TotalRecordCount = serverItems.Length
-            };
+            return new QueryResult<ServerItem>(
+                startIndex,
+                serverItems.Length,
+                serverItems);
         }
 
         /// <summary>
@@ -879,7 +869,7 @@ namespace Emby.Dlna.ContentDirectory
 
             var result = _libraryManager.GetItemsResult(query);
 
-            return ToResult(result);
+            return ToResult(query.StartIndex, result);
         }
 
         /// <summary>
@@ -894,7 +884,7 @@ namespace Emby.Dlna.ContentDirectory
 
             var result = _libraryManager.GetItemsResult(query);
 
-            return ToResult(result);
+            return ToResult(query.StartIndex, result);
         }
 
         /// <summary>
@@ -914,7 +904,7 @@ namespace Emby.Dlna.ContentDirectory
 
             var result = _libraryManager.GetItemsResult(query);
 
-            return ToResult(result);
+            return ToResult(query.StartIndex, result);
         }
 
         /// <summary>
@@ -931,7 +921,7 @@ namespace Emby.Dlna.ContentDirectory
             query.AncestorIds = new[] { parent.Id };
             var genresResult = _libraryManager.GetGenres(query);
 
-            return ToResult(genresResult);
+            return ToResult(query.StartIndex, genresResult);
         }
 
         /// <summary>
@@ -947,7 +937,7 @@ namespace Emby.Dlna.ContentDirectory
             query.AncestorIds = new[] { parent.Id };
             var genresResult = _libraryManager.GetMusicGenres(query);
 
-            return ToResult(genresResult);
+            return ToResult(query.StartIndex, genresResult);
         }
 
         /// <summary>
@@ -963,7 +953,7 @@ namespace Emby.Dlna.ContentDirectory
             query.AncestorIds = new[] { parent.Id };
             var artists = _libraryManager.GetAlbumArtists(query);
 
-            return ToResult(artists);
+            return ToResult(query.StartIndex, artists);
         }
 
         /// <summary>
@@ -978,7 +968,7 @@ namespace Emby.Dlna.ContentDirectory
             query.OrderBy = Array.Empty<(string, SortOrder)>();
             query.AncestorIds = new[] { parent.Id };
             var artists = _libraryManager.GetArtists(query);
-            return ToResult(artists);
+            return ToResult(query.StartIndex, artists);
         }
 
         /// <summary>
@@ -994,7 +984,7 @@ namespace Emby.Dlna.ContentDirectory
             query.AncestorIds = new[] { parent.Id };
             query.IsFavorite = true;
             var artists = _libraryManager.GetArtists(query);
-            return ToResult(artists);
+            return ToResult(query.StartIndex, artists);
         }
 
         /// <summary>
@@ -1010,7 +1000,7 @@ namespace Emby.Dlna.ContentDirectory
 
             var result = _libraryManager.GetItemsResult(query);
 
-            return ToResult(result);
+            return ToResult(query.StartIndex, result);
         }
 
         /// <summary>
@@ -1034,7 +1024,7 @@ namespace Emby.Dlna.ContentDirectory
                 new[] { parent },
                 query.DtoOptions);
 
-            return ToResult(result);
+            return ToResult(query.StartIndex, result);
         }
 
         /// <summary>
@@ -1060,7 +1050,7 @@ namespace Emby.Dlna.ContentDirectory
                 },
                 query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null).ToArray();
 
-            return ToResult(items);
+            return ToResult(query.StartIndex, items);
         }
 
         /// <summary>
@@ -1087,7 +1077,7 @@ namespace Emby.Dlna.ContentDirectory
 
             var result = _libraryManager.GetItemsResult(query);
 
-            return ToResult(result);
+            return ToResult(startIndex, result);
         }
 
         /// <summary>
@@ -1118,7 +1108,7 @@ namespace Emby.Dlna.ContentDirectory
 
             var result = _libraryManager.GetItemsResult(query);
 
-            return ToResult(result);
+            return ToResult(startIndex, result);
         }
 
         /// <summary>
@@ -1145,33 +1135,34 @@ namespace Emby.Dlna.ContentDirectory
 
             var result = _libraryManager.GetItemsResult(query);
 
-            return ToResult(result);
+            return ToResult(startIndex, result);
         }
 
         /// <summary>
         /// Converts <see cref="IReadOnlyCollection{BaseItem}"/> into a <see cref="QueryResult{ServerItem}"/>.
         /// </summary>
+        /// <param name="startIndex">The start index.</param>
         /// <param name="result">An array of <see cref="BaseItem"/>.</param>
         /// <returns>A <see cref="QueryResult{ServerItem}"/>.</returns>
-        private static QueryResult<ServerItem> ToResult(IReadOnlyCollection<BaseItem> result)
+        private static QueryResult<ServerItem> ToResult(int? startIndex, IReadOnlyCollection<BaseItem> result)
         {
             var serverItems = result
                 .Select(i => new ServerItem(i, null))
                 .ToArray();
 
-            return new QueryResult<ServerItem>
-            {
-                TotalRecordCount = result.Count,
-                Items = serverItems
-            };
+            return new QueryResult<ServerItem>(
+                startIndex,
+                result.Count,
+                serverItems);
         }
 
         /// <summary>
         /// Converts a <see cref="QueryResult{BaseItem}"/> to a <see cref="QueryResult{ServerItem}"/>.
         /// </summary>
+        /// <param name="startIndex">The index the result started at.</param>
         /// <param name="result">A <see cref="QueryResult{BaseItem}"/>.</param>
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private static QueryResult<ServerItem> ToResult(QueryResult<BaseItem> result)
+        private static QueryResult<ServerItem> ToResult(int? startIndex, QueryResult<BaseItem> result)
         {
             var length = result.Items.Count;
             var serverItems = new ServerItem[length];
@@ -1180,19 +1171,19 @@ namespace Emby.Dlna.ContentDirectory
                 serverItems[i] = new ServerItem(result.Items[i], null);
             }
 
-            return new QueryResult<ServerItem>
-            {
-                TotalRecordCount = result.TotalRecordCount,
-                Items = serverItems
-            };
+            return new QueryResult<ServerItem>(
+                startIndex,
+                result.TotalRecordCount,
+                serverItems);
         }
 
         /// <summary>
         /// Converts a query result to a <see cref="QueryResult{ServerItem}"/>.
         /// </summary>
+        /// <param name="startIndex">The start index.</param>
         /// <param name="result">A <see cref="QueryResult{BaseItem}"/>.</param>
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private static QueryResult<ServerItem> ToResult(QueryResult<(BaseItem Item, ItemCounts ItemCounts)> result)
+        private static QueryResult<ServerItem> ToResult(int? startIndex, QueryResult<(BaseItem Item, ItemCounts ItemCounts)> result)
         {
             var length = result.Items.Count;
             var serverItems = new ServerItem[length];
@@ -1201,11 +1192,10 @@ namespace Emby.Dlna.ContentDirectory
                 serverItems[i] = new ServerItem(result.Items[i].Item, null);
             }
 
-            return new QueryResult<ServerItem>
-            {
-                TotalRecordCount = result.TotalRecordCount,
-                Items = serverItems
-            };
+            return new QueryResult<ServerItem>(
+                startIndex,
+                result.TotalRecordCount,
+                serverItems);
         }
 
         /// <summary>

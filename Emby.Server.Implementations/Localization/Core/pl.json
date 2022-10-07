@@ -120,5 +120,8 @@
     "Forced": "Wymuszony",
     "Default": "Domyślne",
     "TaskOptimizeDatabase": "Optymalizuj bazę danych",
-    "TaskOptimizeDatabaseDescription": "Kompaktuje bazę danych i obcina wolne miejsce. Uruchomienie tego zadania po przeskanowaniu biblioteki lub dokonaniu innych zmian, które pociągają za sobą modyfikacje bazy danych, może poprawić wydajność."
+    "TaskOptimizeDatabaseDescription": "Kompaktuje bazę danych i obcina wolne miejsce. Uruchomienie tego zadania po przeskanowaniu biblioteki lub dokonaniu innych zmian, które pociągają za sobą modyfikacje bazy danych, może poprawić wydajność.",
+    "External": "Zewnętrzny",
+    "TaskKeyframeExtractorDescription": "Wyodrębnia klatki kluczowe z plików wideo w celu utworzenia bardziej precyzyjnych list odtwarzania HLS. To zadanie może trwać przez długi czas.",
+    "TaskKeyframeExtractor": "Ekstraktor klatek kluczowych"
 }

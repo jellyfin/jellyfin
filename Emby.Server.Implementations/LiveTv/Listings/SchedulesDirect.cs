@@ -20,6 +20,7 @@ using Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -28,7 +29,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.Listings
 {
-    public class SchedulesDirect : IListingsProvider
+    public class SchedulesDirect : IListingsProvider, IDisposable
     {
         private const string ApiUrl = "https://json.schedulesdirect.org/20141201";
 
@@ -39,6 +40,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         private readonly ConcurrentDictionary<string, NameValuePair> _tokens = new ConcurrentDictionary<string, NameValuePair>();
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private DateTime _lastErrorResponse;
+        private bool _disposed = false;
 
         public SchedulesDirect(
             ILogger<SchedulesDirect> logger,
@@ -58,8 +60,8 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         {
             var dates = new List<string>();
 
-            var start = new List<DateTime> { startDateUtc, startDateUtc.ToLocalTime() }.Min().Date;
-            var end = new List<DateTime> { endDateUtc, endDateUtc.ToLocalTime() }.Max().Date;
+            var start = new[] { startDateUtc, startDateUtc.ToLocalTime() }.Min().Date;
+            var end = new[] { endDateUtc, endDateUtc.ToLocalTime() }.Max().Date;
 
             while (start <= end)
             {
@@ -590,13 +592,10 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
             catch (HttpRequestException ex)
             {
-                if (ex.StatusCode.HasValue)
+                if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.BadRequest)
                 {
-                    if ((int)ex.StatusCode.Value == 400)
-                    {
-                        _tokens.Clear();
-                        _lastErrorResponse = DateTime.UtcNow;
-                    }
+                    _tokens.Clear();
+                    _lastErrorResponse = DateTime.UtcNow;
                 }
 
                 throw;
@@ -661,7 +660,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 return root.Token;
             }
 
-            throw new Exception("Could not authenticate with Schedules Direct Error: " + root.Message);
+            throw new AuthenticationException("Could not authenticate with Schedules Direct Error: " + root.Message);
         }
 
         private async Task AddLineupToAccount(ListingsProviderInfo info, CancellationToken cancellationToken)
@@ -696,7 +695,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             if (string.IsNullOrEmpty(token))
             {
-                throw new Exception("token required");
+                throw new ArgumentException("token required");
             }
 
             _logger.LogInformation("Headends on account ");
@@ -767,14 +766,14 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             var listingsId = info.ListingsId;
             if (string.IsNullOrEmpty(listingsId))
             {
-                throw new Exception("ListingsId required");
+                throw new ArgumentException("ListingsId required");
             }
 
             var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
 
             if (string.IsNullOrEmpty(token))
             {
-                throw new Exception("token required");
+                throw new ArgumentException("token required");
             }
 
             using var options = new HttpRequestMessage(HttpMethod.Get, ApiUrl + "/lineups/" + listingsId);
@@ -821,6 +820,32 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
 
             return list;
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and optionally managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _tokenSemaphore?.Dispose();
+            }
+
+            _disposed = true;
         }
     }
 }

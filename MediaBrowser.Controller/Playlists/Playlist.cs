@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -233,7 +232,7 @@ namespace MediaBrowser.Controller.Playlists
                 return base.IsVisible(user);
             }
 
-            if (user.Id == OwnerUserId)
+            if (user.Id.Equals(OwnerUserId))
             {
                 return true;
             }
@@ -244,8 +243,8 @@ namespace MediaBrowser.Controller.Playlists
                 return base.IsVisible(user);
             }
 
-            var userId = user.Id.ToString("N", CultureInfo.InvariantCulture);
-            return shares.Any(share => string.Equals(share.UserId, userId, StringComparison.OrdinalIgnoreCase));
+            var userId = user.Id;
+            return shares.Any(share => Guid.TryParse(share.UserId, out var id) && id.Equals(userId));
         }
 
         public override bool IsVisibleStandalone(User user)

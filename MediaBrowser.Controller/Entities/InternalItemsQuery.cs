@@ -129,7 +129,7 @@ namespace MediaBrowser.Controller.Entities
 
         public Guid[] ExcludeItemIds { get; set; }
 
-        public string? AdjacentTo { get; set; }
+        public Guid? AdjacentTo { get; set; }
 
         public string[] PersonTypes { get; set; }
 

@@ -75,7 +75,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 var formatString = ConfigurationManager.GetNfoConfiguration().ReleaseDateFormat;
 
-                writer.WriteElementString("aired", episode.PremiereDate.Value.ToLocalTime().ToString(formatString, CultureInfo.InvariantCulture));
+                writer.WriteElementString("aired", episode.PremiereDate.Value.ToString(formatString, CultureInfo.InvariantCulture));
             }
 
             if (!episode.ParentIndexNumber.HasValue || episode.ParentIndexNumber.Value == 0)

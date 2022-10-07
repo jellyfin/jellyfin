@@ -3,6 +3,8 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Udp;
+using Jellyfin.Networking.Configuration;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
 using Microsoft.Extensions.Configuration;
@@ -26,6 +28,7 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly ILogger<UdpServerEntryPoint> _logger;
         private readonly IServerApplicationHost _appHost;
         private readonly IConfiguration _config;
+        private readonly IConfigurationManager _configurationManager;
 
         /// <summary>
         /// The UDP server.
@@ -40,20 +43,28 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <param name="logger">Instance of the <see cref="ILogger{UdpServerEntryPoint}"/> interface.</param>
         /// <param name="appHost">Instance of the <see cref="IServerApplicationHost"/> interface.</param>
         /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
+        /// <param name="configurationManager">Instance of the <see cref="IConfigurationManager"/> interface.</param>
         public UdpServerEntryPoint(
             ILogger<UdpServerEntryPoint> logger,
             IServerApplicationHost appHost,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IConfigurationManager configurationManager)
         {
             _logger = logger;
             _appHost = appHost;
             _config = configuration;
+            _configurationManager = configurationManager;
         }
 
         /// <inheritdoc />
         public Task RunAsync()
         {
             CheckDisposed();
+
+            if (!_configurationManager.GetNetworkConfiguration().AutoDiscovery)
+            {
+                return Task.CompletedTask;
+            }
 
             try
             {

@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -24,18 +25,19 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
-    public class EncodedRecorder : IRecorder
+    public class EncodedRecorder : IRecorder, IDisposable
     {
         private readonly ILogger _logger;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IServerApplicationPaths _appPaths;
-        private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
+        private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private bool _hasExited;
         private Stream _logFileStream;
         private string _targetPath;
         private Process _process;
+        private bool _disposed = false;
 
         public EncodedRecorder(
             ILogger logger,
@@ -64,7 +66,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             await RecordFromFile(mediaSource, mediaSource.Path, targetFile, onStarted, cancellationTokenSource.Token).ConfigureAwait(false);
 
-            _logger.LogInformation("Recording completed to file {0}", targetFile);
+            _logger.LogInformation("Recording completed to file {Path}", targetFile);
         }
 
         private async Task RecordFromFile(MediaSourceInfo mediaSource, string inputFile, string targetFile, Action onStarted, CancellationToken cancellationToken)
@@ -114,7 +116,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
             _ = StartStreamingLog(_process.StandardError.BaseStream, _logFileStream);
 
-            _logger.LogInformation("ffmpeg recording process started for {0}", _targetPath);
+            _logger.LogInformation("ffmpeg recording process started for {Path}", _targetPath);
+
+            // Block until ffmpeg exits
+            await _taskCompletionSource.Task.ConfigureAwait(false);
         }
 
         private string GetCommandLineArgs(MediaSourceInfo mediaSource, string inputTempFile, string targetFile)
@@ -293,7 +298,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 else
                 {
                     _taskCompletionSource.TrySetException(
-                        new Exception(
+                        new FfmpegException(
                             string.Format(
                                 CultureInfo.InvariantCulture,
                                 "Recording for {0} failed. Exit code {1}",
@@ -322,6 +327,36 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 _logger.LogError(ex, "Error reading ffmpeg recording log");
             }
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and optionally managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _logFileStream?.Dispose();
+                _process?.Dispose();
+            }
+
+            _logFileStream = null;
+            _process = null;
+
+            _disposed = true;
         }
     }
 }

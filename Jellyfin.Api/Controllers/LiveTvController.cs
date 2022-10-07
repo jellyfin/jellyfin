@@ -17,6 +17,7 @@ using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LiveTvDtos;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -24,6 +25,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
@@ -45,10 +47,10 @@ namespace Jellyfin.Api.Controllers
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILibraryManager _libraryManager;
         private readonly IDtoService _dtoService;
-        private readonly ISessionContext _sessionContext;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IConfigurationManager _configurationManager;
         private readonly TranscodingJobHelper _transcodingJobHelper;
+        private readonly ISessionManager _sessionManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LiveTvController"/> class.
@@ -58,30 +60,30 @@ namespace Jellyfin.Api.Controllers
         /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
-        /// <param name="sessionContext">Instance of the <see cref="ISessionContext"/> interface.</param>
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="configurationManager">Instance of the <see cref="IConfigurationManager"/> interface.</param>
         /// <param name="transcodingJobHelper">Instance of the <see cref="TranscodingJobHelper"/> class.</param>
+        /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
         public LiveTvController(
             ILiveTvManager liveTvManager,
             IUserManager userManager,
             IHttpClientFactory httpClientFactory,
             ILibraryManager libraryManager,
             IDtoService dtoService,
-            ISessionContext sessionContext,
             IMediaSourceManager mediaSourceManager,
             IConfigurationManager configurationManager,
-            TranscodingJobHelper transcodingJobHelper)
+            TranscodingJobHelper transcodingJobHelper,
+            ISessionManager sessionManager)
         {
             _liveTvManager = liveTvManager;
             _userManager = userManager;
             _httpClientFactory = httpClientFactory;
             _libraryManager = libraryManager;
             _dtoService = dtoService;
-            _sessionContext = sessionContext;
             _mediaSourceManager = mediaSourceManager;
             _configurationManager = configurationManager;
             _transcodingJobHelper = transcodingJobHelper;
+            _sessionManager = sessionManager;
         }
 
         /// <summary>
@@ -154,7 +156,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool addCurrentProgram = true)
         {
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             var channelResult = _liveTvManager.GetInternalChannels(
@@ -180,9 +182,9 @@ namespace Jellyfin.Api.Controllers
                 dtoOptions,
                 CancellationToken.None);
 
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
 
             var fieldsList = dtoOptions.Fields.ToList();
             fieldsList.Remove(ItemFields.CanDelete);
@@ -193,11 +195,10 @@ namespace Jellyfin.Api.Controllers
             dtoOptions.AddCurrentProgram = addCurrentProgram;
 
             var returnArray = _dtoService.GetBaseItemDtos(channelResult.Items, dtoOptions, user);
-            return new QueryResult<BaseItemDto>
-            {
-                Items = returnArray,
-                TotalRecordCount = channelResult.TotalRecordCount
-            };
+            return new QueryResult<BaseItemDto>(
+                startIndex,
+                channelResult.TotalRecordCount,
+                returnArray);
         }
 
         /// <summary>
@@ -212,15 +213,15 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         public ActionResult<BaseItemDto> GetChannel([FromRoute, Required] Guid channelId, [FromQuery] Guid? userId)
         {
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
-            var item = channelId.Equals(Guid.Empty)
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
+            var item = channelId.Equals(default)
                 ? _libraryManager.GetUserRootFolder()
                 : _libraryManager.GetItemById(channelId);
 
             var dtoOptions = new DtoOptions()
-                .AddClientFields(Request);
+                .AddClientFields(User);
             return _dtoService.GetBaseItemDto(item, dtoOptions, user);
         }
 
@@ -273,7 +274,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool enableTotalRecordCount = true)
         {
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             return _liveTvManager.GetRecordings(
@@ -383,18 +384,14 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         public ActionResult<QueryResult<BaseItemDto>> GetRecordingFolders([FromQuery] Guid? userId)
         {
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
             var folders = _liveTvManager.GetRecordingFolders(user);
 
             var returnArray = _dtoService.GetBaseItemDtos(folders, new DtoOptions(), user);
 
-            return new QueryResult<BaseItemDto>
-            {
-                Items = returnArray,
-                TotalRecordCount = returnArray.Count
-            };
+            return new QueryResult<BaseItemDto>(returnArray);
         }
 
         /// <summary>
@@ -409,13 +406,13 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         public ActionResult<BaseItemDto> GetRecording([FromRoute, Required] Guid recordingId, [FromQuery] Guid? userId)
         {
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
-            var item = recordingId.Equals(Guid.Empty) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(recordingId);
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
+            var item = recordingId.Equals(default) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(recordingId);
 
             var dtoOptions = new DtoOptions()
-                .AddClientFields(Request);
+                .AddClientFields(User);
 
             return _dtoService.GetBaseItemDto(item, dtoOptions, user);
         }
@@ -566,9 +563,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] bool enableTotalRecordCount = true)
         {
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
 
             var query = new InternalItemsQuery(user)
             {
@@ -593,7 +590,7 @@ namespace Jellyfin.Api.Controllers
                 GenreIds = genreIds
             };
 
-            if (librarySeriesId != null && !librarySeriesId.Equals(Guid.Empty))
+            if (librarySeriesId.HasValue && !librarySeriesId.Equals(default))
             {
                 query.IsSeries = true;
 
@@ -604,7 +601,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
             return await _liveTvManager.GetPrograms(query, dtoOptions, CancellationToken.None).ConfigureAwait(false);
         }
@@ -622,7 +619,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         public async Task<ActionResult<QueryResult<BaseItemDto>>> GetPrograms([FromBody] GetProgramsDto body)
         {
-            var user = body.UserId.Equals(Guid.Empty) ? null : _userManager.GetUserById(body.UserId);
+            var user = body.UserId.Equals(default) ? null : _userManager.GetUserById(body.UserId);
 
             var query = new InternalItemsQuery(user)
             {
@@ -647,7 +644,7 @@ namespace Jellyfin.Api.Controllers
                 GenreIds = body.GenreIds
             };
 
-            if (!body.LibrarySeriesId.Equals(Guid.Empty))
+            if (!body.LibrarySeriesId.Equals(default))
             {
                 query.IsSeries = true;
 
@@ -658,7 +655,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             var dtoOptions = new DtoOptions { Fields = body.Fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(body.EnableImages, body.EnableUserData, body.ImageTypeLimit, body.EnableImageTypes);
             return await _liveTvManager.GetPrograms(query, dtoOptions, CancellationToken.None).ConfigureAwait(false);
         }
@@ -687,7 +684,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Programs/Recommended")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<QueryResult<BaseItemDto>> GetRecommendedPrograms(
+        public async Task<ActionResult<QueryResult<BaseItemDto>>> GetRecommendedPrograms(
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
             [FromQuery] bool? isAiring,
@@ -705,9 +702,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableUserData,
             [FromQuery] bool enableTotalRecordCount = true)
         {
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
 
             var query = new InternalItemsQuery(user)
             {
@@ -724,9 +721,9 @@ namespace Jellyfin.Api.Controllers
             };
 
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
-            return _liveTvManager.GetRecommendedPrograms(query, dtoOptions, CancellationToken.None);
+            return await _liveTvManager.GetRecommendedProgramsAsync(query, dtoOptions, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -743,9 +740,9 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string programId,
             [FromQuery] Guid? userId)
         {
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
 
             return await _liveTvManager.GetProgram(programId, CancellationToken.None, user).ConfigureAwait(false);
         }
@@ -1215,9 +1212,16 @@ namespace Jellyfin.Api.Controllers
 
         private async Task AssertUserCanManageLiveTv()
         {
-            var user = await _sessionContext.GetUser(Request).ConfigureAwait(false);
+            var user = _userManager.GetUserById(User.GetUserId());
+            var session = await _sessionManager.LogSessionActivity(
+                User.GetClient(),
+                User.GetVersion(),
+                User.GetDeviceId(),
+                User.GetDevice(),
+                HttpContext.GetNormalizedRemoteIp().ToString(),
+                user).ConfigureAwait(false);
 
-            if (user == null)
+            if (session.UserId.Equals(default))
             {
                 throw new SecurityException("Anonymous live tv management is not allowed.");
             }

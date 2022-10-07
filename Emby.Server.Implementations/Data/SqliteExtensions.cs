@@ -54,10 +54,7 @@ namespace Emby.Server.Implementations.Data
 
         public static void RunQueries(this SQLiteDatabaseConnection connection, string[] queries)
         {
-            if (queries == null)
-            {
-                throw new ArgumentNullException(nameof(queries));
-            }
+            ArgumentNullException.ThrowIfNull(queries);
 
             connection.RunInTransaction(conn =>
             {

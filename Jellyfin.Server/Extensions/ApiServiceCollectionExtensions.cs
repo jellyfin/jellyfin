@@ -29,6 +29,7 @@ using Jellyfin.Server.Filters;
 using Jellyfin.Server.Formatters;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -428,6 +429,23 @@ namespace Jellyfin.Server.Extensions
                         Nullable = true
                     }
                 });
+
+            // Manually describe Flags enum.
+            options.MapType<TranscodeReason>(() =>
+                new OpenApiSchema
+                {
+                    Type = "string",
+                    Enum = Enum.GetNames<TranscodeReason>()
+                        .Select(e => new OpenApiString(e))
+                        .Cast<IOpenApiAny>()
+                        .ToArray()
+                });
+
+            // Swashbuckle doesn't use JsonOptions to describe responses, so we need to manually describe it.
+            options.MapType<Version>(() => new OpenApiSchema
+            {
+                Type = "string"
+            });
         }
     }
 }

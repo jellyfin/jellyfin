@@ -15,6 +15,11 @@ namespace MediaBrowser.Controller.Extensions
         public const string DefaultRedirectKey = "DefaultRedirectPath";
 
         /// <summary>
+        /// The key for the address override option.
+        /// </summary>
+        public const string AddressOverrideKey = "PublishedServerUrl";
+
+        /// <summary>
         /// The key for a setting that indicates whether the application should host web client content.
         /// </summary>
         public const string HostWebClientKey = "hostwebclient";
@@ -48,6 +53,11 @@ namespace MediaBrowser.Controller.Extensions
         /// The key for the unix socket path.
         /// </summary>
         public const string UnixSocketPathKey = "kestrel:socketPath";
+
+        /// <summary>
+        /// The permissions for the unix socket.
+        /// </summary>
+        public const string UnixSocketPermissionsKey = "kestrel:socketPermissions";
 
         /// <summary>
         /// Gets a value indicating whether the application should host static web content from the <see cref="IConfiguration"/>.
@@ -97,5 +107,13 @@ namespace MediaBrowser.Controller.Extensions
         /// <returns>The unix socket path.</returns>
         public static string GetUnixSocketPath(this IConfiguration configuration)
             => configuration[UnixSocketPathKey];
+
+        /// <summary>
+        /// Gets the permissions for the unix socket from the <see cref="IConfiguration" />.
+        /// </summary>
+        /// <param name="configuration">The configuration to read the setting from.</param>
+        /// <returns>The unix socket permissions.</returns>
+        public static string GetUnixSocketPermissions(this IConfiguration configuration)
+            => configuration[UnixSocketPermissionsKey];
     }
 }

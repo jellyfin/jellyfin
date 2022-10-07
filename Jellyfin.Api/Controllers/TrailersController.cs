@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
@@ -31,7 +32,7 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Finds movies and trailers similar to a given trailer.
         /// </summary>
-        /// <param name="userId">The user id.</param>
+        /// <param name="userId">The user id supplied as query parameter; this is required when not using an API key.</param>
         /// <param name="maxOfficialRating">Optional filter by maximum official rating (PG, PG-13, TV-MA, etc).</param>
         /// <param name="hasThemeSong">Optional filter by items with theme songs.</param>
         /// <param name="hasThemeVideo">Optional filter by items with theme videos.</param>
@@ -57,6 +58,11 @@ namespace Jellyfin.Api.Controllers
         /// <param name="hasImdbId">Optional filter by items that have an imdb id or not.</param>
         /// <param name="hasTmdbId">Optional filter by items that have a tmdb id or not.</param>
         /// <param name="hasTvdbId">Optional filter by items that have a tvdb id or not.</param>
+        /// <param name="isMovie">Optional filter for live tv movies.</param>
+        /// <param name="isSeries">Optional filter for live tv series.</param>
+        /// <param name="isNews">Optional filter for live tv news.</param>
+        /// <param name="isKids">Optional filter for live tv kids.</param>
+        /// <param name="isSports">Optional filter for live tv sports.</param>
         /// <param name="excludeItemIds">Optional. If specified, results will be filtered by excluding item ids. This allows multiple, comma delimited.</param>
         /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
@@ -114,14 +120,14 @@ namespace Jellyfin.Api.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetTrailers(
-            [FromQuery] Guid userId,
+            [FromQuery] Guid? userId,
             [FromQuery] string? maxOfficialRating,
             [FromQuery] bool? hasThemeSong,
             [FromQuery] bool? hasThemeVideo,
             [FromQuery] bool? hasSubtitles,
             [FromQuery] bool? hasSpecialFeature,
             [FromQuery] bool? hasTrailer,
-            [FromQuery] string? adjacentTo,
+            [FromQuery] Guid? adjacentTo,
             [FromQuery] int? parentIndexNumber,
             [FromQuery] bool? hasParentalRating,
             [FromQuery] bool? isHd,
@@ -140,6 +146,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? hasImdbId,
             [FromQuery] bool? hasTmdbId,
             [FromQuery] bool? hasTvdbId,
+            [FromQuery] bool? isMovie,
+            [FromQuery] bool? isSeries,
+            [FromQuery] bool? isNews,
+            [FromQuery] bool? isKids,
+            [FromQuery] bool? isSports,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] excludeItemIds,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
@@ -224,6 +235,11 @@ namespace Jellyfin.Api.Controllers
                     hasImdbId,
                     hasTmdbId,
                     hasTvdbId,
+                    isMovie,
+                    isSeries,
+                    isNews,
+                    isKids,
+                    isSports,
                     excludeItemIds,
                     startIndex,
                     limit,

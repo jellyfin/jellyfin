@@ -87,18 +87,13 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableImages = true)
         {
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
-            User? user = null;
+            User? user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
             BaseItem parentItem = _libraryManager.GetParentItem(parentId, userId);
-
-            if (userId.HasValue && !userId.Equals(Guid.Empty))
-            {
-                user = _userManager.GetUserById(userId.Value);
-            }
-
-            IList<BaseItem> items;
 
             var query = new InternalItemsQuery(user)
             {
@@ -110,17 +105,18 @@ namespace Jellyfin.Api.Controllers
 
             bool Filter(BaseItem i) => FilterItem(i, excludeItemTypes, includeItemTypes, mediaTypes);
 
+            IList<BaseItem> items;
             if (parentItem.IsFolder)
             {
                 var folder = (Folder)parentItem;
 
-                if (!userId.Equals(Guid.Empty))
+                if (userId.Equals(default))
                 {
-                    items = recursive ? folder.GetRecursiveChildren(user, query).ToList() : folder.GetChildren(user, true).Where(Filter).ToList();
+                    items = recursive ? folder.GetRecursiveChildren(Filter) : folder.Children.Where(Filter).ToList();
                 }
                 else
                 {
-                    items = recursive ? folder.GetRecursiveChildren(Filter) : folder.Children.Where(Filter).ToList();
+                    items = recursive ? folder.GetRecursiveChildren(user, query).ToList() : folder.GetChildren(user, true).Where(Filter).ToList();
                 }
             }
             else
@@ -135,8 +131,6 @@ namespace Jellyfin.Api.Controllers
             var ibnItemsArray = filteredItems.ToList();
 
             IEnumerable<BaseItem> ibnItems = ibnItemsArray;
-
-            var result = new QueryResult<BaseItemDto> { TotalRecordCount = ibnItemsArray.Count };
 
             if (startIndex.HasValue || limit.HasValue)
             {
@@ -155,8 +149,10 @@ namespace Jellyfin.Api.Controllers
 
             var dtos = tuples.Select(i => _dtoService.GetItemByNameDto(i.Item1, dtoOptions, i.Item2, user));
 
-            result.Items = dtos.Where(i => i != null).ToArray();
-
+            var result = new QueryResult<BaseItemDto>(
+                startIndex,
+                ibnItemsArray.Count,
+                dtos.Where(i => i != null).ToArray());
             return result;
         }
 
@@ -183,9 +179,9 @@ namespace Jellyfin.Api.Controllers
             }
 
             var dtoOptions = new DtoOptions()
-                .AddClientFields(Request);
+                .AddClientFields(User);
 
-            if (userId.HasValue && !userId.Equals(Guid.Empty))
+            if (userId.HasValue && !userId.Value.Equals(default))
             {
                 var user = _userManager.GetUserById(userId.Value);
                 return _dtoService.GetBaseItemDto(item, dtoOptions, user);

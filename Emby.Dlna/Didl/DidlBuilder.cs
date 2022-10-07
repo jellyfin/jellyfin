@@ -160,7 +160,7 @@ namespace Emby.Dlna.Didl
             else
             {
                 var parent = item.DisplayParentId;
-                if (!parent.Equals(Guid.Empty))
+                if (!parent.Equals(default))
                 {
                     writer.WriteAttributeString("parentID", GetClientId(parent, null));
                 }
@@ -221,6 +221,7 @@ namespace Emby.Dlna.Didl
                 streamInfo.IsDirectStream,
                 streamInfo.RunTimeTicks ?? 0,
                 streamInfo.TargetVideoProfile,
+                streamInfo.TargetVideoRangeType,
                 streamInfo.TargetVideoLevel,
                 streamInfo.TargetFramerate ?? 0,
                 streamInfo.TargetPacketLength,
@@ -376,6 +377,7 @@ namespace Emby.Dlna.Didl
                 targetHeight,
                 streamInfo.TargetVideoBitDepth,
                 streamInfo.TargetVideoProfile,
+                streamInfo.TargetVideoRangeType,
                 streamInfo.TargetVideoLevel,
                 streamInfo.TargetFramerate ?? 0,
                 streamInfo.TargetPacketLength,
@@ -444,7 +446,7 @@ namespace Emby.Dlna.Didl
         /// </summary>
         /// <remarks>
         /// If context is a season, this will return a string containing just episode number and name.
-        /// Otherwise the result will include series nams and season number.
+        /// Otherwise the result will include series names and season number.
         /// </remarks>
         /// <param name="episode">The episode.</param>
         /// <param name="context">Current context.</param>
@@ -657,7 +659,7 @@ namespace Emby.Dlna.Didl
                 else
                 {
                     var parent = folder.DisplayParentId;
-                    if (parent.Equals(Guid.Empty))
+                    if (parent.Equals(default))
                     {
                         writer.WriteAttributeString("parentID", "0");
                     }

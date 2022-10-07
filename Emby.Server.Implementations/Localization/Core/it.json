@@ -120,5 +120,8 @@
     "Forced": "Forzato",
     "Default": "Predefinito",
     "TaskOptimizeDatabaseDescription": "Compatta Database e tronca spazi liberi. Eseguire questa azione dopo la scansione o dopo aver fatto altri cambiamenti inerenti il database potrebbe aumentarne la performance.",
-    "TaskOptimizeDatabase": "Ottimizza Database"
+    "TaskOptimizeDatabase": "Ottimizza Database",
+    "TaskKeyframeExtractor": "Estrattore di Keyframe",
+    "TaskKeyframeExtractorDescription": "Estrae i keyframe dai video per creare migliori playlist HLS. Questa procedura potrebbe richiedere molto tempo.",
+    "External": "Esterno"
 }

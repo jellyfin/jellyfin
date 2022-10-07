@@ -103,7 +103,7 @@
     "TaskCleanTranscodeDescription": "刪除超過一天的轉碼文件。",
     "TaskCleanTranscode": "清理轉碼目錄",
     "TaskUpdatePluginsDescription": "下載並安裝配置為自動更新的插件的更新。",
-    "TaskRefreshPeopleDescription": "更新媒體庫中演員和導演的metadata。",
+    "TaskRefreshPeopleDescription": "更新媒體庫中演員和導演的元數據。",
     "TaskCleanLogsDescription": "刪除超過{0}天的日誌文件。",
     "TaskCleanLogs": "清理日誌目錄",
     "TaskRefreshLibrary": "掃描媒體庫",
@@ -120,5 +120,8 @@
     "Default": "預設",
     "TaskOptimizeDatabaseDescription": "壓縮數據庫並截斷可用空間。在掃描媒體庫或執行其他數據庫的修改後運行此任務可能會提高性能。",
     "TaskOptimizeDatabase": "最佳化數據庫",
-    "TaskCleanActivityLogDescription": "刪除早於設定時間的日誌記錄。"
+    "TaskCleanActivityLogDescription": "刪除早於設定時間的日誌記錄。",
+    "TaskKeyframeExtractorDescription": "提取關鍵格以創建更準確的HLS播放列表。次指示可能用時很長。",
+    "TaskKeyframeExtractor": "關鍵幀提取器",
+    "External": "外部"
 }

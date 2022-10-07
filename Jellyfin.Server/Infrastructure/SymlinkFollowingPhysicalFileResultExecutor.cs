@@ -69,15 +69,8 @@ namespace Jellyfin.Server.Infrastructure
         /// <inheritdoc />
         protected override Task WriteFileAsync(ActionContext context, PhysicalFileResult result, RangeItemHeaderValue? range, long rangeLength)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (result == null)
-            {
-                throw new ArgumentNullException(nameof(result));
-            }
+            ArgumentNullException.ThrowIfNull(context);
+            ArgumentNullException.ThrowIfNull(result);
 
             if (range != null && rangeLength == 0)
             {
@@ -125,18 +118,20 @@ namespace Jellyfin.Server.Infrastructure
             // Copied from SendFileFallback.SendFileAsync
             const int BufferSize = 1024 * 16;
 
-            await using var fileStream = new FileStream(
+            var fileStream = new FileStream(
                 filePath,
                 FileMode.Open,
                 FileAccess.Read,
                 FileShare.ReadWrite,
                 bufferSize: BufferSize,
                 options: FileOptions.Asynchronous | FileOptions.SequentialScan);
-
-            fileStream.Seek(offset, SeekOrigin.Begin);
-            await StreamCopyOperation
-                .CopyToAsync(fileStream, response.Body, count, BufferSize, CancellationToken.None)
-                .ConfigureAwait(true);
+            await using (fileStream.ConfigureAwait(false))
+            {
+                fileStream.Seek(offset, SeekOrigin.Begin);
+                await StreamCopyOperation
+                    .CopyToAsync(fileStream, response.Body, count, BufferSize, CancellationToken.None)
+                    .ConfigureAwait(true);
+            }
         }
 
         private static bool IsSymLink(string path) => (File.GetAttributes(path) & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint;

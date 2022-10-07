@@ -9,11 +9,12 @@ namespace Emby.Server.Implementations.ScheduledTasks.Triggers
     /// <summary>
     /// Represents a task trigger that runs repeatedly on an interval.
     /// </summary>
-    public sealed class IntervalTrigger : ITaskTrigger
+    public sealed class IntervalTrigger : ITaskTrigger, IDisposable
     {
         private readonly TimeSpan _interval;
         private DateTime _lastStartDate;
         private Timer? _timer;
+        private bool _disposed = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IntervalTrigger"/> class.
@@ -89,6 +90,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Triggers
         private void DisposeTimer()
         {
             _timer?.Dispose();
+            _timer = null;
         }
 
         /// <summary>
@@ -103,6 +105,19 @@ namespace Emby.Server.Implementations.ScheduledTasks.Triggers
                 _lastStartDate = DateTime.UtcNow;
                 Triggered(this, EventArgs.Empty);
             }
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            DisposeTimer();
+
+            _disposed = true;
         }
     }
 }

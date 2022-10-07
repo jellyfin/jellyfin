@@ -31,12 +31,12 @@
     "ItemRemovedWithName": "{0} - изъято из медиатеки",
     "LabelIpAddressValue": "IP-адрес: {0}",
     "LabelRunningTimeValue": "Длительность: {0}",
-    "Latest": "Крайнее",
+    "Latest": "Новое",
     "MessageApplicationUpdated": "Jellyfin Server был обновлён",
     "MessageApplicationUpdatedTo": "Jellyfin Server был обновлён до {0}",
     "MessageNamedServerConfigurationUpdatedWithValue": "Конфигурация сервера (раздел {0}) была обновлена",
     "MessageServerConfigurationUpdated": "Конфигурация сервера была обновлена",
-    "MixedContent": "Смешанное содержимое",
+    "MixedContent": "Смешанное содержание",
     "Movies": "Кино",
     "Music": "Музыка",
     "MusicVideos": "Муз. видео",
@@ -120,5 +120,8 @@
     "Forced": "Форсир-ые",
     "Default": "По умолчанию",
     "TaskOptimizeDatabaseDescription": "Сжимает базу данных и вырезает свободные места. Выполнение этой задачи после сканирования библиотеки или внесения других изменений, предполагающих модификации базы данных, может повысить производительность.",
-    "TaskOptimizeDatabase": "Оптимизация базы данных"
+    "TaskOptimizeDatabase": "Оптимизация базы данных",
+    "TaskKeyframeExtractorDescription": "Извлекаются ключевые кадры из видеофайлов для создания более точных списков плей-листов HLS. Эта задача может выполняться в течение длительного времени.",
+    "TaskKeyframeExtractor": "Извлечение ключевых кадров",
+    "External": "Внешние"
 }

@@ -262,6 +262,10 @@ namespace Emby.Server.Implementations.IO
                             _logger.LogError(ex, "Reading the file size of the symlink at {Path} failed. Marking the file as not existing.", fileInfo.FullName);
                             result.Exists = false;
                         }
+                        catch (UnauthorizedAccessException ex)
+                        {
+                            _logger.LogError(ex, "Reading the file at {Path} failed due to a permissions exception.", fileInfo.FullName);
+                        }
                     }
                 }
 
@@ -581,7 +585,7 @@ namespace Emby.Server.Implementations.IO
         }
 
         /// <inheritdoc />
-        public virtual List<FileSystemMetadata> GetDrives()
+        public virtual IEnumerable<FileSystemMetadata> GetDrives()
         {
             // check for ready state to avoid waiting for drives to timeout
             // some drives on linux have no actual size or are used for other purposes
@@ -595,7 +599,7 @@ namespace Emby.Server.Implementations.IO
                     Name = d.Name,
                     FullName = d.RootDirectory.FullName,
                     IsDirectory = true
-                }).ToList();
+                });
         }
 
         /// <inheritdoc />
@@ -702,6 +706,18 @@ namespace Emby.Server.Implementations.IO
         public virtual IEnumerable<string> GetFileSystemEntryPaths(string path, bool recursive = false)
         {
             return Directory.EnumerateFileSystemEntries(path, "*", GetEnumerationOptions(recursive));
+        }
+
+        /// <inheritdoc />
+        public virtual bool DirectoryExists(string path)
+        {
+            return Directory.Exists(path);
+        }
+
+        /// <inheritdoc />
+        public virtual bool FileExists(string path)
+        {
+            return File.Exists(path);
         }
 
         private EnumerationOptions GetEnumerationOptions(bool recursive)

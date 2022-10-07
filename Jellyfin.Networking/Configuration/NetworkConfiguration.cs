@@ -193,7 +193,7 @@ namespace Jellyfin.Networking.Configuration
         public bool AutoDiscovery { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets the filter for remote IP connectivity. Used in conjuntion with <seealso cref="IsRemoteIPFilterBlacklist"/>.
+        /// Gets or sets the filter for remote IP connectivity. Used in conjunction with <seealso cref="IsRemoteIPFilterBlacklist"/>.
         /// </summary>
         public string[] RemoteIPFilter { get; set; } = Array.Empty<string>();
 

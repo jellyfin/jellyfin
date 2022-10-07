@@ -85,6 +85,17 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
                     EpisodeTitle = "The VCR Illumination"
                 });
 
+            data.Add(
+               "Lorem ipsum dolor sit amet: consect 2018_12_06_21_06_00",
+               new TimerInfo
+               {
+                   Name = "Lorem ipsum dolor sit amet: consect",
+                   IsProgramSeries = true,
+                   StartDate = new DateTime(2018, 12, 6, 21, 6, 0, DateTimeKind.Local),
+                   OriginalAirDate = new DateTime(2018, 12, 6),
+                   EpisodeTitle = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor"
+               });
+
             return data;
         }
 

@@ -68,6 +68,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="nextUpDateCutoff">Optional. Starting date of shows to show in Next Up section.</param>
         /// <param name="enableTotalRecordCount">Whether to enable the total records count. Defaults to true.</param>
         /// <param name="disableFirstEpisode">Whether to disable sending the first episode in a series as next up.</param>
+        /// <param name="enableRewatching">Whether to include watched episode in next up results.</param>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the next up episodes.</returns>
         [HttpGet("NextUp")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -76,7 +77,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-            [FromQuery] string? seriesId,
+            [FromQuery] Guid? seriesId,
             [FromQuery] Guid? parentId,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
@@ -84,10 +85,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableUserData,
             [FromQuery] DateTime? nextUpDateCutoff,
             [FromQuery] bool enableTotalRecordCount = true,
-            [FromQuery] bool disableFirstEpisode = false)
+            [FromQuery] bool disableFirstEpisode = false,
+            [FromQuery] bool enableRewatching = false)
         {
             var options = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             var result = _tvSeriesManager.GetNextUp(
@@ -100,21 +102,21 @@ namespace Jellyfin.Api.Controllers
                     UserId = userId ?? Guid.Empty,
                     EnableTotalRecordCount = enableTotalRecordCount,
                     DisableFirstEpisode = disableFirstEpisode,
-                    NextUpDateCutoff = nextUpDateCutoff ?? DateTime.MinValue
+                    NextUpDateCutoff = nextUpDateCutoff ?? DateTime.MinValue,
+                    EnableRewatching = enableRewatching
                 },
                 options);
 
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
 
             var returnItems = _dtoService.GetBaseItemDtos(result.Items, options, user);
 
-            return new QueryResult<BaseItemDto>
-            {
-                TotalRecordCount = result.TotalRecordCount,
-                Items = returnItems
-            };
+            return new QueryResult<BaseItemDto>(
+                startIndex,
+                result.TotalRecordCount,
+                returnItems);
         }
 
         /// <summary>
@@ -143,16 +145,16 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] bool? enableUserData)
         {
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
 
             var minPremiereDate = DateTime.UtcNow.Date.AddDays(-1);
 
             var parentIdGuid = parentId ?? Guid.Empty;
 
             var options = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
@@ -169,11 +171,10 @@ namespace Jellyfin.Api.Controllers
 
             var returnItems = _dtoService.GetBaseItemDtos(itemsResult, options, user);
 
-            return new QueryResult<BaseItemDto>
-            {
-                TotalRecordCount = itemsResult.Count,
-                Items = returnItems
-            };
+            return new QueryResult<BaseItemDto>(
+                startIndex,
+                itemsResult.Count,
+                returnItems);
         }
 
         /// <summary>
@@ -205,7 +206,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? season,
             [FromQuery] Guid? seasonId,
             [FromQuery] bool? isMissing,
-            [FromQuery] string? adjacentTo,
+            [FromQuery] Guid? adjacentTo,
             [FromQuery] Guid? startItemId,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
@@ -215,14 +216,14 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableUserData,
             [FromQuery] string? sortBy)
         {
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
 
             List<BaseItem> episodes;
 
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             if (seasonId.HasValue) // Season id was supplied. Get episodes by season id.
@@ -277,9 +278,9 @@ namespace Jellyfin.Api.Controllers
             }
 
             // This must be the last filter
-            if (!string.IsNullOrEmpty(adjacentTo))
+            if (adjacentTo.HasValue && !adjacentTo.Value.Equals(default))
             {
-                episodes = UserViewBuilder.FilterForAdjacency(episodes, adjacentTo).ToList();
+                episodes = UserViewBuilder.FilterForAdjacency(episodes, adjacentTo.Value).ToList();
             }
 
             if (string.Equals(sortBy, ItemSortBy.Random, StringComparison.OrdinalIgnoreCase))
@@ -296,11 +297,10 @@ namespace Jellyfin.Api.Controllers
 
             var dtos = _dtoService.GetBaseItemDtos(returnItems, dtoOptions, user);
 
-            return new QueryResult<BaseItemDto>
-            {
-                TotalRecordCount = episodes.Count,
-                Items = dtos
-            };
+            return new QueryResult<BaseItemDto>(
+                startIndex,
+                episodes.Count,
+                dtos);
         }
 
         /// <summary>
@@ -326,15 +326,15 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery] bool? isSpecialSeason,
             [FromQuery] bool? isMissing,
-            [FromQuery] string? adjacentTo,
+            [FromQuery] Guid? adjacentTo,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] bool? enableUserData)
         {
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
+            var user = userId is null || userId.Value.Equals(default)
+                ? null
+                : _userManager.GetUserById(userId.Value);
 
             if (_libraryManager.GetItemById(seriesId) is not Series series)
             {
@@ -349,16 +349,12 @@ namespace Jellyfin.Api.Controllers
             });
 
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             var returnItems = _dtoService.GetBaseItemDtos(seasons, dtoOptions, user);
 
-            return new QueryResult<BaseItemDto>
-            {
-                TotalRecordCount = returnItems.Count,
-                Items = returnItems
-            };
+            return new QueryResult<BaseItemDto>(returnItems);
         }
 
         /// <summary>

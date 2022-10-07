@@ -192,7 +192,9 @@ namespace Jellyfin.Api.Tests.ModelBinders
 
             await modelBinder.BindModelAsync(bindingContextMock.Object);
             Assert.True(bindingContextMock.Object.Result.IsModelSet);
-            Assert.Empty((IReadOnlyList<TestType>?)bindingContextMock.Object.Result.Model);
+            var listResult = (IReadOnlyList<TestType>?)bindingContextMock.Object.Result.Model;
+            Assert.NotNull(listResult);
+            Assert.Empty(listResult);
         }
 
         [Fact]
@@ -220,7 +222,9 @@ namespace Jellyfin.Api.Tests.ModelBinders
 
             await modelBinder.BindModelAsync(bindingContextMock.Object);
             Assert.True(bindingContextMock.Object.Result.IsModelSet);
-            Assert.Single((IReadOnlyList<TestType>?)bindingContextMock.Object.Result.Model);
+            var listResult = (IReadOnlyList<TestType>?)bindingContextMock.Object.Result.Model;
+            Assert.NotNull(listResult);
+            Assert.Single(listResult);
         }
     }
 }

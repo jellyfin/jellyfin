@@ -17,6 +17,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Resolvers.Movies
 {
@@ -32,7 +33,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 CollectionType.Movies,
                 CollectionType.HomeVideos,
                 CollectionType.MusicVideos,
-                CollectionType.Movies,
+                CollectionType.TvShows,
                 CollectionType.Photos
         };
 
@@ -40,9 +41,10 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         /// Initializes a new instance of the <see cref="MovieResolver"/> class.
         /// </summary>
         /// <param name="imageProcessor">The image processor.</param>
+        /// <param name="logger">The logger.</param>
         /// <param name="namingOptions">The naming options.</param>
-        public MovieResolver(IImageProcessor imageProcessor, NamingOptions namingOptions)
-            : base(namingOptions)
+        public MovieResolver(IImageProcessor imageProcessor, ILogger<MovieResolver> logger, NamingOptions namingOptions)
+            : base(logger, namingOptions)
         {
             _imageProcessor = imageProcessor;
         }
@@ -221,6 +223,11 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 return ResolveVideos<Movie>(parent, files, true, collectionType, true);
             }
 
+            if (string.Equals(collectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
+            {
+                return ResolveVideos<Episode>(parent, files, false, collectionType, true);
+            }
+
             return null;
         }
 
@@ -380,7 +387,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
                 if (!string.IsNullOrEmpty(item.Path))
                 {
-                    // check for imdb id - we use full media path, as we can assume, that this will match in any use case (wither id in parent dir or in file name)
+                    // check for imdb id - we use full media path, as we can assume, that this will match in any use case (either id in parent dir or in file name)
                     var imdbid = item.Path.AsSpan().GetAttributeValue("imdbid");
 
                     if (!string.IsNullOrWhiteSpace(imdbid))
@@ -457,7 +464,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             var result = ResolveVideos<T>(parent, fileSystemEntries, SupportsMultiVersion, collectionType, parseName) ??
                 new MultiItemResolverResult();
 
-            if (result.Items.Count == 1)
+            var isPhotosCollection = string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase)
+                                         || string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase);
+            if (!isPhotosCollection && result.Items.Count == 1)
             {
                 var videoPath = result.Items[0].Path;
                 var hasPhotos = photos.Any(i => !PhotoResolver.IsOwnedByResolvedMedia(videoPath, i.Name));

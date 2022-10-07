@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System;
@@ -63,17 +61,9 @@ namespace Emby.Server.Implementations.Net
         }
 
         /// <inheritdoc />
-        public ISocket CreateUdpMulticastSocket(string ipAddress, int multicastTimeToLive, int localPort)
+        public ISocket CreateUdpMulticastSocket(IPAddress ipAddress, int multicastTimeToLive, int localPort)
         {
-            if (ipAddress == null)
-            {
-                throw new ArgumentNullException(nameof(ipAddress));
-            }
-
-            if (ipAddress.Length == 0)
-            {
-                throw new ArgumentException("ipAddress cannot be an empty string.", nameof(ipAddress));
-            }
+            ArgumentNullException.ThrowIfNull(ipAddress);
 
             if (multicastTimeToLive <= 0)
             {
@@ -87,14 +77,7 @@ namespace Emby.Server.Implementations.Net
 
             var retVal = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
-            try
-            {
-                // not supported on all platforms. throws on ubuntu with .net core 2.0
-                retVal.ExclusiveAddressUse = false;
-            }
-            catch (SocketException)
-            {
-            }
+            retVal.ExclusiveAddressUse = false;
 
             try
             {
@@ -114,7 +97,7 @@ namespace Emby.Server.Implementations.Net
 
                 var localIp = IPAddress.Any;
 
-                retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(IPAddress.Parse(ipAddress), localIp));
+                retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(ipAddress, localIp));
                 retVal.MulticastLoopback = true;
 
                 return new UdpSocket(retVal, localPort, localIp);

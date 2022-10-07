@@ -171,10 +171,7 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="ArgumentNullException">Throws if child is null.</exception>
         public void AddVirtualChild(BaseItem child)
         {
-            if (child == null)
-            {
-                throw new ArgumentNullException(nameof(child));
-            }
+            ArgumentNullException.ThrowIfNull(child);
 
             _virtualChildren.Add(child);
         }
@@ -187,14 +184,14 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="ArgumentNullException">The id is empty.</exception>
         public BaseItem FindVirtualChild(Guid id)
         {
-            if (id.Equals(Guid.Empty))
+            if (id.Equals(default))
             {
                 throw new ArgumentNullException(nameof(id));
             }
 
             foreach (var child in _virtualChildren)
             {
-                if (child.Id == id)
+                if (child.Id.Equals(id))
                 {
                     return child;
                 }
