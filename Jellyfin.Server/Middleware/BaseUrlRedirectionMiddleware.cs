@@ -46,9 +46,6 @@ namespace Jellyfin.Server.Middleware
             var baseUrlPrefix = serverConfigurationManager.GetNetworkConfiguration().BaseUrl;
 
             if (string.IsNullOrEmpty(localPath)
-                || string.Equals(localPath, "/", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(localPath, "/web", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(localPath, "/web/", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(localPath, baseUrlPrefix, StringComparison.OrdinalIgnoreCase)
                 || string.Equals(localPath, baseUrlPrefix + "/", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(localPath, baseUrlPrefix + "/web", StringComparison.OrdinalIgnoreCase)
