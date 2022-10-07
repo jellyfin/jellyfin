@@ -98,13 +98,16 @@ namespace MediaBrowser.Providers.Music
                 .ToArray();
 
             var musicbrainzAlbumArtistId = item.GetProviderId(MetadataProvider.MusicBrainzAlbumArtist);
-            var firstMusicbrainzAlbumArtistId = musicbrainzAlbumArtistIds[0];
-            if (!string.IsNullOrEmpty(firstMusicbrainzAlbumArtistId) &&
-                (string.IsNullOrEmpty(musicbrainzAlbumArtistId)
-                    || !musicbrainzAlbumArtistId.Equals(firstMusicbrainzAlbumArtistId, StringComparison.OrdinalIgnoreCase)))
+            if (musicbrainzAlbumArtistIds.Any())
             {
-                item.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, firstMusicbrainzAlbumArtistId);
-                updateType |= ItemUpdateType.MetadataEdit;
+                var firstMusicbrainzAlbumArtistId = musicbrainzAlbumArtistIds[0];
+                if (!string.IsNullOrEmpty(firstMusicbrainzAlbumArtistId)
+                    && (string.IsNullOrEmpty(musicbrainzAlbumArtistId)
+                        || !musicbrainzAlbumArtistId.Equals(firstMusicbrainzAlbumArtistId, StringComparison.OrdinalIgnoreCase)))
+                {
+                    item.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, firstMusicbrainzAlbumArtistId);
+                    updateType |= ItemUpdateType.MetadataEdit;
+                }
             }
 
             if (!item.AlbumArtists.SequenceEqual(albumArtists, StringComparer.OrdinalIgnoreCase))
@@ -148,12 +151,16 @@ namespace MediaBrowser.Providers.Music
                 .ToArray();
 
             var musicbrainzAlbumId = item.GetProviderId(MetadataProvider.MusicBrainzAlbum);
-            if (!String.IsNullOrEmpty(musicbrainzAlbumIds[0])
-                && (String.IsNullOrEmpty(musicbrainzAlbumId)
-                    || !musicbrainzAlbumId.Equals(musicbrainzAlbumIds[0], StringComparison.OrdinalIgnoreCase)))
+            if (musicbrainzAlbumIds.Any())
             {
-                item.SetProviderId(MetadataProvider.MusicBrainzAlbum, musicbrainzAlbumIds[0]!);
-                updateType |= ItemUpdateType.MetadataEdit;
+                var firstMusicbrainzAlbumId = musicbrainzAlbumIds[0];
+                if (!string.IsNullOrEmpty(firstMusicbrainzAlbumId)
+                    && (string.IsNullOrEmpty(musicbrainzAlbumId)
+                        || !musicbrainzAlbumId.Equals(firstMusicbrainzAlbumId, StringComparison.OrdinalIgnoreCase)))
+                {
+                    item.SetProviderId(MetadataProvider.MusicBrainzAlbum, firstMusicbrainzAlbumId);
+                    updateType |= ItemUpdateType.MetadataEdit;
+                }
             }
 
             var musicbrainzReleaseGroupIds = songs
@@ -164,12 +171,16 @@ namespace MediaBrowser.Providers.Music
                 .ToArray();
 
             var musicbrainzReleaseGroupId = item.GetProviderId(MetadataProvider.MusicBrainzReleaseGroup);
-            if (!String.IsNullOrEmpty(musicbrainzReleaseGroupIds[0])
-                && (String.IsNullOrEmpty(musicbrainzReleaseGroupId)
-                    || !musicbrainzReleaseGroupId.Equals(musicbrainzReleaseGroupIds[0], StringComparison.OrdinalIgnoreCase)))
+            if (musicbrainzReleaseGroupIds.Any())
             {
-                item.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, musicbrainzReleaseGroupIds[0]!);
-                updateType |= ItemUpdateType.MetadataEdit;
+                var firstMusicbrainzReleaseGroupId = musicbrainzReleaseGroupIds[0];
+                if (!string.IsNullOrEmpty(firstMusicbrainzReleaseGroupId)
+                    && (string.IsNullOrEmpty(musicbrainzReleaseGroupId)
+                        || !musicbrainzReleaseGroupId.Equals(firstMusicbrainzReleaseGroupId, StringComparison.OrdinalIgnoreCase)))
+                {
+                    item.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, firstMusicbrainzReleaseGroupId);
+                    updateType |= ItemUpdateType.MetadataEdit;
+                }
             }
 
             return updateType;
@@ -228,41 +239,29 @@ namespace MediaBrowser.Providers.Music
 
             if (replaceData || string.IsNullOrEmpty(targetItem.GetProviderId(MetadataProvider.MusicBrainzAlbumArtist)))
             {
-                var targetAlbumArtistId = targetItem.GetProviderId(MetadataProvider.MusicBrainzAlbumArtist);
-                var sourceAlbumArtistId = sourceItem.GetProviderId(MetadataProvider.MusicBrainzAlbumArtist);
-
-                if (!string.IsNullOrEmpty(sourceAlbumArtistId)
-                    && (string.IsNullOrEmpty(targetAlbumArtistId)
-                        || !targetAlbumArtistId.Equals(sourceAlbumArtistId, StringComparison.Ordinal)))
-                {
-                    targetItem.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, sourceAlbumArtistId);
-                }
+                setProviderId(sourceItem, targetItem, MetadataProvider.MusicBrainzAlbumArtist);
             }
 
             if (replaceData || string.IsNullOrEmpty(targetItem.GetProviderId(MetadataProvider.MusicBrainzAlbum)))
             {
-                var targetAlbumId = targetItem.GetProviderId(MetadataProvider.MusicBrainzAlbum);
-                var sourceAlbumId = sourceItem.GetProviderId(MetadataProvider.MusicBrainzAlbum);
-
-                if (!string.IsNullOrEmpty(sourceAlbumId)
-                    && (string.IsNullOrEmpty(targetAlbumId)
-                        || !targetAlbumId.Equals(sourceAlbumId, StringComparison.Ordinal)))
-                {
-                    targetItem.SetProviderId(MetadataProvider.MusicBrainzAlbum, sourceAlbumId);
-                }
+                setProviderId(sourceItem, targetItem, MetadataProvider.MusicBrainzAlbum);
             }
 
             if (replaceData || string.IsNullOrEmpty(targetItem.GetProviderId(MetadataProvider.MusicBrainzReleaseGroup)))
             {
-                var targetReleaseGroupId = targetItem.GetProviderId(MetadataProvider.MusicBrainzReleaseGroup);
-                var sourceReleaseGroupId = sourceItem.GetProviderId(MetadataProvider.MusicBrainzReleaseGroup);
+                setProviderId(sourceItem, targetItem, MetadataProvider.MusicBrainzReleaseGroup);
+            }
+        }
 
-                if (!string.IsNullOrEmpty(sourceReleaseGroupId)
-                    && (string.IsNullOrEmpty(targetReleaseGroupId)
-                        || !targetReleaseGroupId.Equals(sourceItem)))
-                {
-                    targetItem.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, sourceReleaseGroupId);
-                }
+        private void setProviderId(MusicAlbum sourceItem, MusicAlbum targetItem, MetadataProvider provider)
+        {
+            var source = sourceItem.GetProviderId(provider);
+            var target = targetItem.GetProviderId(provider);
+            if (!string.IsNullOrEmpty(source)
+                && (string.IsNullOrEmpty(target)
+                    || !target.Equals(source, StringComparison.Ordinal)))
+            {
+                targetItem.SetProviderId(provider, source);
             }
         }
     }
