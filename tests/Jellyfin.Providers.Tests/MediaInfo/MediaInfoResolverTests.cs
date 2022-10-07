@@ -227,7 +227,7 @@ public class MediaInfoResolverTests
             });
 
         // filename has metadata
-        file = "My.Video.Title1.default.forced.en.srt";
+        file = "My.Video.Title1.default.forced.sdh.en.srt";
         data.Add(
             file,
             new[]
@@ -236,7 +236,7 @@ public class MediaInfoResolverTests
             },
             new[]
             {
-                CreateMediaStream(VideoDirectoryPath + "/" + file, "eng", "Title1", 0, true, true)
+                CreateMediaStream(VideoDirectoryPath + "/" + file, "eng", "Title1", 0, true, true, true)
             });
 
         // single stream with metadata
@@ -245,15 +245,15 @@ public class MediaInfoResolverTests
             file,
             new[]
             {
-                CreateMediaStream(VideoDirectoryPath + "/" + file, "eng", "Title", 0, true, true)
+                CreateMediaStream(VideoDirectoryPath + "/" + file, "eng", "Title", 0, true, true, true)
             },
             new[]
             {
-                CreateMediaStream(VideoDirectoryPath + "/" + file, "eng", "Title", 0, true, true)
+                CreateMediaStream(VideoDirectoryPath + "/" + file, "eng", "Title", 0, true, true, true)
             });
 
         // stream wins for title/language, filename wins for flags when conflicting
-        file = "My.Video.Title2.default.forced.en.srt";
+        file = "My.Video.Title2.default.forced.sdh.en.srt";
         data.Add(
             file,
             new[]
@@ -262,7 +262,7 @@ public class MediaInfoResolverTests
             },
             new[]
             {
-                CreateMediaStream(VideoDirectoryPath + "/" + file, "fra", "Metadata", 0, true, true)
+                CreateMediaStream(VideoDirectoryPath + "/" + file, "fra", "Metadata", 0, true, true, true)
             });
 
         // multiple stream with metadata - filename flags ignored but other data filled in when missing from stream
@@ -324,6 +324,7 @@ public class MediaInfoResolverTests
             Assert.Equal(expected.Path, actual.Path);
             Assert.Equal(expected.IsDefault, actual.IsDefault);
             Assert.Equal(expected.IsForced, actual.IsForced);
+            Assert.Equal(expected.IsHearingImpaired, actual.IsHearingImpaired);
             Assert.Equal(expected.Language, actual.Language);
             Assert.Equal(expected.Title, actual.Title);
         }
@@ -396,7 +397,7 @@ public class MediaInfoResolverTests
         }
     }
 
-    private static MediaStream CreateMediaStream(string path, string? language, string? title, int index, bool isForced = false, bool isDefault = false)
+    private static MediaStream CreateMediaStream(string path, string? language, string? title, int index, bool isForced = false, bool isDefault = false, bool isHearingImpaired = false)
     {
         return new MediaStream
         {
@@ -405,6 +406,7 @@ public class MediaInfoResolverTests
             Path = path,
             IsDefault = isDefault,
             IsForced = isForced,
+            IsHearingImpaired = isHearingImpaired,
             Language = language,
             Title = title
         };

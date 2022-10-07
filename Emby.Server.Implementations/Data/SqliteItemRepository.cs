@@ -178,7 +178,8 @@ namespace Emby.Server.Implementations.Data
             "RpuPresentFlag",
             "ElPresentFlag",
             "BlPresentFlag",
-            "DvBlSignalCompatibilityId"
+            "DvBlSignalCompatibilityId",
+            "IsHearingImpaired"
         };
 
         private static readonly string _mediaStreamSaveColumnsInsertQuery =
@@ -349,7 +350,8 @@ namespace Emby.Server.Implementations.Data
         public void Initialize(SqliteUserDataRepository userDataRepo, IUserManager userManager)
         {
             const string CreateMediaStreamsTableCommand
-                    = "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, CodecTag TEXT NULL, Comment TEXT NULL, NalLengthSize TEXT NULL, IsAvc BIT NULL, Title TEXT NULL, TimeBase TEXT NULL, CodecTimeBase TEXT NULL, ColorPrimaries TEXT NULL, ColorSpace TEXT NULL, ColorTransfer TEXT NULL, DvVersionMajor INT NULL, DvVersionMinor INT NULL, DvProfile INT NULL, DvLevel INT NULL, RpuPresentFlag INT NULL, ElPresentFlag INT NULL, BlPresentFlag INT NULL, DvBlSignalCompatibilityId INT NULL, PRIMARY KEY (ItemId, StreamIndex))";
+                    = "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, CodecTag TEXT NULL, Comment TEXT NULL, NalLengthSize TEXT NULL, IsAvc BIT NULL, Title TEXT NULL, TimeBase TEXT NULL, CodecTimeBase TEXT NULL, ColorPrimaries TEXT NULL, ColorSpace TEXT NULL, ColorTransfer TEXT NULL, DvVersionMajor INT NULL, DvVersionMinor INT NULL, DvProfile INT NULL, DvLevel INT NULL, RpuPresentFlag INT NULL, ElPresentFlag INT NULL, BlPresentFlag INT NULL, DvBlSignalCompatibilityId INT NULL, IsHearingImpaired BIT NULL, PRIMARY KEY (ItemId, StreamIndex))";
+
             const string CreateMediaAttachmentsTableCommand
                     = "create table if not exists mediaattachments (ItemId GUID, AttachmentIndex INT, Codec TEXT, CodecTag TEXT NULL, Comment TEXT NULL, Filename TEXT NULL, MIMEType TEXT NULL, PRIMARY KEY (ItemId, AttachmentIndex))";
 
@@ -572,6 +574,8 @@ namespace Emby.Server.Implementations.Data
                         AddColumn(db, "MediaStreams", "ElPresentFlag", "INT", existingColumnNames);
                         AddColumn(db, "MediaStreams", "BlPresentFlag", "INT", existingColumnNames);
                         AddColumn(db, "MediaStreams", "DvBlSignalCompatibilityId", "INT", existingColumnNames);
+                        
+                        AddColumn(db, "MediaStreams", "IsHearingImpaired", "TEXT", existingColumnNames);
                     },
                     TransactionMode);
 
@@ -5836,6 +5840,8 @@ AND Type = @InternalPersonType)");
                         statement.TryBind("@ElPresentFlag" + index, stream.ElPresentFlag);
                         statement.TryBind("@BlPresentFlag" + index, stream.BlPresentFlag);
                         statement.TryBind("@DvBlSignalCompatibilityId" + index, stream.DvBlSignalCompatibilityId);
+
+                        statement.TryBind("@IsHearingImpaired" + index, stream.IsHearingImpaired);
                     }
 
                     statement.Reset();
@@ -6047,12 +6053,15 @@ AND Type = @InternalPersonType)");
                 item.DvBlSignalCompatibilityId = dvBlSignalCompatibilityId;
             }
 
+            item.IsHearingImpaired = reader.GetBoolean(43);
+
             if (item.Type == MediaStreamType.Subtitle)
             {
                 item.LocalizedUndefined = _localization.GetLocalizedString("Undefined");
                 item.LocalizedDefault = _localization.GetLocalizedString("Default");
                 item.LocalizedForced = _localization.GetLocalizedString("Forced");
                 item.LocalizedExternal = _localization.GetLocalizedString("External");
+                item.LocalizedHearingImpaired = _localization.GetLocalizedString("Hearing Impaired");
             }
 
             return item;
