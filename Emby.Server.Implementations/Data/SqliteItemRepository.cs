@@ -574,8 +574,8 @@ namespace Emby.Server.Implementations.Data
                         AddColumn(db, "MediaStreams", "ElPresentFlag", "INT", existingColumnNames);
                         AddColumn(db, "MediaStreams", "BlPresentFlag", "INT", existingColumnNames);
                         AddColumn(db, "MediaStreams", "DvBlSignalCompatibilityId", "INT", existingColumnNames);
-                        
-                        AddColumn(db, "MediaStreams", "IsHearingImpaired", "TEXT", existingColumnNames);
+
+                        AddColumn(db, "MediaStreams", "IsHearingImpaired", "BIT", existingColumnNames);
                     },
                     TransactionMode);
 
@@ -6061,7 +6061,7 @@ AND Type = @InternalPersonType)");
                 item.LocalizedDefault = _localization.GetLocalizedString("Default");
                 item.LocalizedForced = _localization.GetLocalizedString("Forced");
                 item.LocalizedExternal = _localization.GetLocalizedString("External");
-                item.LocalizedHearingImpaired = _localization.GetLocalizedString("Hearing Impaired");
+                item.LocalizedHearingImpaired = _localization.GetLocalizedString("HearingImpaired");
             }
 
             return item;
