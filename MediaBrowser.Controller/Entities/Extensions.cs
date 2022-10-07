@@ -17,7 +17,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="url">Trailer URL.</param>
         public static void AddTrailerUrl(this BaseItem item, string url)
         {
-            ArgumentNullException.ThrowIfNull(url, nameof(url));
+            ArgumentNullException.ThrowIfNull(url);
 
             if (url.Length == 0)
             {

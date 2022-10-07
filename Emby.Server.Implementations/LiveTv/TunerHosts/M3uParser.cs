@@ -44,10 +44,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         public async Task<Stream> GetListingsStream(TunerHostInfo info, CancellationToken cancellationToken)
         {
-            if (info == null)
-            {
-                throw new ArgumentNullException(nameof(info));
-            }
+            ArgumentNullException.ThrowIfNull(info);
 
             if (!info.Url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {

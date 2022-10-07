@@ -281,10 +281,7 @@ namespace Emby.Server.Implementations.Library
 
         public void RegisterItem(BaseItem item)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
+            ArgumentNullException.ThrowIfNull(item);
 
             if (item is IItemByName)
             {
@@ -311,10 +308,7 @@ namespace Emby.Server.Implementations.Library
 
         public void DeleteItem(BaseItem item, DeleteOptions options, bool notifyParentItem)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
+            ArgumentNullException.ThrowIfNull(item);
 
             var parent = item.GetOwner() ?? item.GetParent();
 
@@ -323,10 +317,7 @@ namespace Emby.Server.Implementations.Library
 
         public void DeleteItem(BaseItem item, DeleteOptions options, BaseItem parent, bool notifyParentItem)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
+            ArgumentNullException.ThrowIfNull(item);
 
             if (item.SourceType == SourceType.Channel)
             {
@@ -509,10 +500,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
+            ArgumentNullException.ThrowIfNull(type);
 
             string programDataPath = _configurationManager.ApplicationPaths.ProgramDataPath;
             if (key.StartsWith(programDataPath, StringComparison.Ordinal))
@@ -544,10 +532,7 @@ namespace Emby.Server.Implementations.Library
             string collectionType = null,
             LibraryOptions libraryOptions = null)
         {
-            if (fileInfo == null)
-            {
-                throw new ArgumentNullException(nameof(fileInfo));
-            }
+            ArgumentNullException.ThrowIfNull(fileInfo);
 
             var fullPath = fileInfo.FullName;
 
@@ -1854,10 +1839,7 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public async Task UpdateImagesAsync(BaseItem item, bool forceUpdate = false)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
+            ArgumentNullException.ThrowIfNull(item);
 
             var outdated = forceUpdate
                 ? item.ImageInfos.Where(i => i.Path != null).ToArray()
@@ -2296,10 +2278,7 @@ namespace Emby.Server.Implementations.Library
             string viewType,
             string sortName)
         {
-            if (parent == null)
-            {
-                throw new ArgumentNullException(nameof(parent));
-            }
+            ArgumentNullException.ThrowIfNull(parent);
 
             var name = parent.Name;
             var parentId = parent.Id;
@@ -2983,10 +2962,7 @@ namespace Emby.Server.Implementations.Library
 
         private void AddMediaPathInternal(string virtualFolderName, MediaPathInfo pathInfo, bool saveLibraryOptions)
         {
-            if (pathInfo == null)
-            {
-                throw new ArgumentNullException(nameof(pathInfo));
-            }
+            ArgumentNullException.ThrowIfNull(pathInfo);
 
             var path = pathInfo.Path;
 
@@ -3033,10 +3009,7 @@ namespace Emby.Server.Implementations.Library
 
         public void UpdateMediaPath(string virtualFolderName, MediaPathInfo mediaPath)
         {
-            if (mediaPath == null)
-            {
-                throw new ArgumentNullException(nameof(mediaPath));
-            }
+            ArgumentNullException.ThrowIfNull(mediaPath);
 
             var rootFolderPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
             var virtualFolderPath = Path.Combine(rootFolderPath, virtualFolderName);
