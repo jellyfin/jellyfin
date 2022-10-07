@@ -188,16 +188,20 @@ namespace Jellyfin.Server
                 var serviceCollection = new ServiceCollection();
                 appHost.Init(serviceCollection);
 
-                var webHost = new WebHostBuilder().ConfigureWebHostBuilder(appHost, serviceCollection, options, startupConfig, appPaths).Build();
+                var hostBuilder = new HostBuilder();
+                hostBuilder.ConfigureHostBuilder(serviceCollection, options, startupConfig, appPaths);
+                hostBuilder.ConfigureWebHost(c => c.ConfigureWebHostBuilder(serviceCollection, appHost, startupConfig, appPaths));
+
+                var host = hostBuilder.Build();
 
                 // Re-use the web host service provider in the app host since ASP.NET doesn't allow a custom service collection.
-                appHost.ServiceProvider = webHost.Services;
+                appHost.ServiceProvider = host.Services;
                 await appHost.InitializeServices().ConfigureAwait(false);
                 Migrations.MigrationRunner.Run(appHost, _loggerFactory);
 
                 try
                 {
-                    await webHost.StartAsync(_tokenSource.Token).ConfigureAwait(false);
+                    await host.StartAsync(_tokenSource.Token).ConfigureAwait(false);
 
                     if (startupConfig.UseUnixSocket() && Environment.OSVersion.Platform == PlatformID.Unix)
                     {
@@ -282,7 +286,6 @@ namespace Jellyfin.Server
         /// <param name="builder">The builder to configure.</param>
         /// <param name="appHost">The application host.</param>
         /// <param name="serviceCollection">The application service collection.</param>
-        /// <param name="commandLineOpts">The command line options passed to the application.</param>
         /// <param name="startupConfig">The application configuration.</param>
         /// <param name="appPaths">The application paths.</param>
         /// <returns>The configured web host builder.</returns>
@@ -290,7 +293,6 @@ namespace Jellyfin.Server
             this IWebHostBuilder builder,
             ApplicationHost appHost,
             IServiceCollection serviceCollection,
-            StartupOptions commandLineOpts,
             IConfiguration startupConfig,
             IApplicationPaths appPaths)
         {
@@ -346,14 +348,38 @@ namespace Jellyfin.Server
                         _logger.LogInformation("Kestrel listening to unix socket {SocketPath}", socketPath);
                     }
                 })
-                .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(commandLineOpts, appPaths, startupConfig))
-                .UseSerilog()
                 .ConfigureServices(services =>
                 {
                     // Merge the external ServiceCollection into ASP.NET DI
                     services.Add(serviceCollection);
                 })
                 .UseStartup<Startup>();
+        }
+
+        /// <summary>
+        /// Configure the host builder.
+        /// </summary>
+        /// <param name="builder">The application host.</param>
+        /// <param name="serviceCollection">The application service collection.</param>
+        /// <param name="commandLineOpts">The command line options passed to the application.</param>
+        /// <param name="startupConfig">The application configuration.</param>
+        /// <param name="appPaths">The application paths.</param>
+        /// <returns>The configured host builder.</returns>
+        public static IHostBuilder ConfigureHostBuilder(
+            this IHostBuilder builder,
+            IServiceCollection serviceCollection,
+            StartupOptions commandLineOpts,
+            IConfiguration startupConfig,
+            IApplicationPaths appPaths)
+        {
+            return builder
+                .UseSerilog()
+                .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(commandLineOpts, appPaths, startupConfig))
+                .ConfigureServices(services =>
+                {
+                    // Merge the external ServiceCollection into ASP.NET DI
+                    services.Add(serviceCollection);
+                });
         }
 
         /// <summary>
