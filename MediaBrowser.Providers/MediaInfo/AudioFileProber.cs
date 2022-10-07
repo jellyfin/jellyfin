@@ -118,7 +118,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var file = TagLib.File.Create(audio.Path);
             var tagTypes = file.TagTypesOnDisk;
-            Tag tags = new TagLib.Id3v2.Tag();
+            Tag? tags = null;
 
             if (tagTypes.HasFlag(TagTypes.Id3v2))
             {
@@ -149,7 +149,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 tags = file.GetTag(TagTypes.Id3v1);
             }
 
-            if (tags.IsEmpty)
+            if (tags != null)
             {
                 if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataField.Cast))
                 {
