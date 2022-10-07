@@ -90,25 +90,7 @@ namespace MediaBrowser.Providers.Music
                 .Select(g => g.Key)
                 .ToArray();
 
-            var musicbrainzAlbumArtistIds = songs
-                .Select(i => i.GetProviderId(MetadataProvider.MusicBrainzAlbumArtist))
-                .GroupBy(i => i)
-                .OrderByDescending(g => g.Count())
-                .Select(g => g.Key)
-                .ToArray();
-
-            var musicbrainzAlbumArtistId = item.GetProviderId(MetadataProvider.MusicBrainzAlbumArtist);
-            if (musicbrainzAlbumArtistIds.Any())
-            {
-                var firstMusicbrainzAlbumArtistId = musicbrainzAlbumArtistIds[0];
-                if (!string.IsNullOrEmpty(firstMusicbrainzAlbumArtistId)
-                    && (string.IsNullOrEmpty(musicbrainzAlbumArtistId)
-                        || !musicbrainzAlbumArtistId.Equals(firstMusicbrainzAlbumArtistId, StringComparison.OrdinalIgnoreCase)))
-                {
-                    item.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, firstMusicbrainzAlbumArtistId);
-                    updateType |= ItemUpdateType.MetadataEdit;
-                }
-            }
+            updateType |= setProviderIdFromSongs(item, songs, MetadataProvider.MusicBrainzAlbumArtist);
 
             if (!item.AlbumArtists.SequenceEqual(albumArtists, StringComparer.OrdinalIgnoreCase))
             {
@@ -143,45 +125,8 @@ namespace MediaBrowser.Providers.Music
         {
             var updateType = ItemUpdateType.None;
 
-            var musicbrainzAlbumIds = songs
-                .Select(i => i.GetProviderId(MetadataProvider.MusicBrainzAlbum))
-                .GroupBy(i => i)
-                .OrderByDescending(g => g.Count())
-                .Select(g => g.Key)
-                .ToArray();
-
-            var musicbrainzAlbumId = item.GetProviderId(MetadataProvider.MusicBrainzAlbum);
-            if (musicbrainzAlbumIds.Any())
-            {
-                var firstMusicbrainzAlbumId = musicbrainzAlbumIds[0];
-                if (!string.IsNullOrEmpty(firstMusicbrainzAlbumId)
-                    && (string.IsNullOrEmpty(musicbrainzAlbumId)
-                        || !musicbrainzAlbumId.Equals(firstMusicbrainzAlbumId, StringComparison.OrdinalIgnoreCase)))
-                {
-                    item.SetProviderId(MetadataProvider.MusicBrainzAlbum, firstMusicbrainzAlbumId);
-                    updateType |= ItemUpdateType.MetadataEdit;
-                }
-            }
-
-            var musicbrainzReleaseGroupIds = songs
-                .Select(i => i.GetProviderId(MetadataProvider.MusicBrainzReleaseGroup))
-                .GroupBy(i => i)
-                .OrderByDescending(g => g.Count())
-                .Select(g => g.Key)
-                .ToArray();
-
-            var musicbrainzReleaseGroupId = item.GetProviderId(MetadataProvider.MusicBrainzReleaseGroup);
-            if (musicbrainzReleaseGroupIds.Any())
-            {
-                var firstMusicbrainzReleaseGroupId = musicbrainzReleaseGroupIds[0];
-                if (!string.IsNullOrEmpty(firstMusicbrainzReleaseGroupId)
-                    && (string.IsNullOrEmpty(musicbrainzReleaseGroupId)
-                        || !musicbrainzReleaseGroupId.Equals(firstMusicbrainzReleaseGroupId, StringComparison.OrdinalIgnoreCase)))
-                {
-                    item.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, firstMusicbrainzReleaseGroupId);
-                    updateType |= ItemUpdateType.MetadataEdit;
-                }
-            }
+            updateType |= setProviderIdFromSongs(item, songs, MetadataProvider.MusicBrainzAlbum);
+            updateType |= setProviderIdFromSongs(item, songs, MetadataProvider.MusicBrainzReleaseGroup);
 
             return updateType;
         }
@@ -263,6 +208,30 @@ namespace MediaBrowser.Providers.Music
             {
                 targetItem.SetProviderId(provider, source);
             }
+        }
+
+        private ItemUpdateType setProviderIdFromSongs(BaseItem item, IReadOnlyList<Audio> songs, MetadataProvider provider)
+        {
+            var ids = songs
+                .Select(i => i.GetProviderId(provider))
+                .GroupBy(i => i)
+                .OrderByDescending(g => g.Count())
+                .Select(g => g.Key)
+                .ToArray();
+
+            var id = item.GetProviderId(provider);
+            if (ids.Any())
+            {
+                var firstId = ids[0];
+                if (!string.IsNullOrEmpty(firstId)
+                    && (string.IsNullOrEmpty(id)
+                        || !id.Equals(firstId, StringComparison.OrdinalIgnoreCase)))
+                {
+                    item.SetProviderId(provider, firstId);
+                    return ItemUpdateType.MetadataEdit;
+                }
+            }
+            return ItemUpdateType.None;
         }
     }
 }
