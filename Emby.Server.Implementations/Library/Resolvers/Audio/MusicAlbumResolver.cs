@@ -83,7 +83,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// </summary>
         /// <param name="path">The path to check.</param>
         /// <param name="directoryService">The directory service.</param>
-        /// <returns><c>true</c> if the provided path points to a music album, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if the provided path points to a music album; otherwise, <c>false</c>.</returns>
         public bool IsMusicAlbum(string path, IDirectoryService directoryService)
         {
             return ContainsMusic(directoryService.GetFileSystemEntries(path), true, directoryService);
@@ -93,7 +93,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// Determine if the supplied resolve args should be considered a music album.
         /// </summary>
         /// <param name="args">The args.</param>
-        /// <returns><c>true</c> if [is music album] [the specified args], <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if [is music album] [the specified args]; otherwise, <c>false</c>.</returns>
         private bool IsMusicAlbum(ItemResolveArgs args)
         {
             if (args.IsDirectory)
@@ -121,7 +121,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// <summary>
         /// Determine if the supplied list contains what we should consider music.
         /// </summary>
-        /// <returns><c>true</c> if the provided path list contains music, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if the provided path list contains music; otherwise, <c>false</c>.</returns>
         private bool ContainsMusic(
             ICollection<FileSystemMetadata> list,
             bool allowSubfolders,

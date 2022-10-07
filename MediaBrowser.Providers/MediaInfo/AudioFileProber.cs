@@ -1,5 +1,3 @@
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -120,7 +118,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var file = TagLib.File.Create(audio.Path);
             var tagTypes = file.TagTypesOnDisk;
-            Tag tags = null;
+            Tag tags = new TagLib.Id3v2.Tag();
 
             if (tagTypes.HasFlag(TagTypes.Id3v2))
             {
@@ -151,7 +149,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 tags = file.GetTag(TagTypes.Id3v1);
             }
 
-            if (tags != null)
+            if (tags.IsEmpty)
             {
                 if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataField.Cast))
                 {
