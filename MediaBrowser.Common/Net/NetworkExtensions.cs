@@ -28,10 +28,7 @@ namespace MediaBrowser.Common.Net
         /// </remarks>
         public static bool IsIPv6LinkLocal(IPAddress address)
         {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
+            ArgumentNullException.ThrowIfNull(address);
 
             if (address.IsIPv4MappedToIPv6)
             {
@@ -75,10 +72,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>Byte CIDR representing the mask.</returns>
         public static byte MaskToCidr(IPAddress mask)
         {
-            if (mask == null)
-            {
-                throw new ArgumentNullException(nameof(mask));
-            }
+            ArgumentNullException.ThrowIfNull(mask);
 
             byte cidrnet = 0;
             if (!mask.Equals(IPAddress.Any))

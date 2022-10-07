@@ -294,10 +294,7 @@ namespace Emby.Server.Implementations.Updates
         /// <inheritdoc />
         public async Task InstallPackage(InstallationInfo package, CancellationToken cancellationToken)
         {
-            if (package == null)
-            {
-                throw new ArgumentNullException(nameof(package));
-            }
+            ArgumentNullException.ThrowIfNull(package);
 
             var innerCancellationTokenSource = new CancellationTokenSource();
 

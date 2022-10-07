@@ -77,8 +77,11 @@ namespace Jellyfin.Networking.Manager
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. : Values are set in UpdateSettings function. Compiler doesn't yet recognise this.
         public NetworkManager(IConfigurationManager configurationManager, ILogger<NetworkManager> logger)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _configurationManager = configurationManager ?? throw new ArgumentNullException(nameof(configurationManager));
+            ArgumentNullException.ThrowIfNull(logger);
+            ArgumentNullException.ThrowIfNull(configurationManager);
+
+            _logger = logger;
+            _configurationManager = configurationManager;
             _initLock = new();
             _interfaces = new List<IPData>();
             _macAddresses = new List<PhysicalAddress>();
@@ -497,7 +500,9 @@ namespace Jellyfin.Networking.Manager
         /// <param name="configuration">The <see cref="NetworkConfiguration"/> to use.</param>
         public void UpdateSettings(object configuration)
         {
-            NetworkConfiguration config = (NetworkConfiguration)configuration ?? throw new ArgumentNullException(nameof(configuration));
+            ArgumentNullException.ThrowIfNull(configuration);
+
+            var config = (NetworkConfiguration)configuration;
 
             InitialiseLan(config);
             InitialiseRemote(config);
@@ -826,10 +831,7 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public bool IsInLocalNetwork(IPAddress address)
         {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
+            ArgumentNullException.ThrowIfNull(address);
 
             // See conversation at https://github.com/jellyfin/jellyfin/pull/3515.
             if (TrustAllIpv6Interfaces && address.AddressFamily == AddressFamily.InterNetworkV6)

@@ -630,8 +630,6 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IEncodingManager, MediaEncoder.EncodingManager>();
 
-            serviceCollection.AddScoped<ISessionContext, SessionContext>();
-
             serviceCollection.AddSingleton<IAuthService, AuthService>();
             serviceCollection.AddSingleton<IQuickConnect, QuickConnectManager>();
 

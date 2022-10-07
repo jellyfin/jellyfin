@@ -100,10 +100,7 @@ namespace Emby.Dlna
         /// <inheritdoc />
         public DeviceProfile? GetProfile(DeviceIdentification deviceInfo)
         {
-            if (deviceInfo == null)
-            {
-                throw new ArgumentNullException(nameof(deviceInfo));
-            }
+            ArgumentNullException.ThrowIfNull(deviceInfo);
 
             var profile = GetProfiles()
                 .FirstOrDefault(i => i.Identification != null && IsMatch(deviceInfo, i.Identification));
@@ -170,10 +167,7 @@ namespace Emby.Dlna
         /// <inheritdoc />
         public DeviceProfile? GetProfile(IHeaderDictionary headers)
         {
-            if (headers == null)
-            {
-                throw new ArgumentNullException(nameof(headers));
-            }
+            ArgumentNullException.ThrowIfNull(headers);
 
             var profile = GetProfiles().FirstOrDefault(i => i.Identification != null && IsMatch(headers, i.Identification));
             if (profile == null)

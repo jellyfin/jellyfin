@@ -15,10 +15,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <param name="result">The result.</param>
         public static void NormalizeFFProbeResult(InternalMediaInfoResult result)
         {
-            if (result == null)
-            {
-                throw new ArgumentNullException(nameof(result));
-            }
+            ArgumentNullException.ThrowIfNull(result);
 
             if (result.Format?.Tags != null)
             {

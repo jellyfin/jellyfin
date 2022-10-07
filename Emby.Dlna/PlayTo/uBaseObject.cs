@@ -54,10 +54,7 @@ namespace Emby.Dlna.PlayTo
 
         public bool Equals(UBaseObject obj)
         {
-            if (obj == null)
-            {
-                throw new ArgumentNullException(nameof(obj));
-            }
+            ArgumentNullException.ThrowIfNull(obj);
 
             return string.Equals(Id, obj.Id, StringComparison.Ordinal);
         }

@@ -5,13 +5,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.SessionDtos;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Session;
@@ -29,7 +29,6 @@ namespace Jellyfin.Api.Controllers
     {
         private readonly ISessionManager _sessionManager;
         private readonly IUserManager _userManager;
-        private readonly IAuthorizationContext _authContext;
         private readonly IDeviceManager _deviceManager;
 
         /// <summary>
@@ -37,17 +36,14 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="sessionManager">Instance of <see cref="ISessionManager"/> interface.</param>
         /// <param name="userManager">Instance of <see cref="IUserManager"/> interface.</param>
-        /// <param name="authContext">Instance of <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="deviceManager">Instance of <see cref="IDeviceManager"/> interface.</param>
         public SessionController(
             ISessionManager sessionManager,
             IUserManager userManager,
-            IAuthorizationContext authContext,
             IDeviceManager deviceManager)
         {
             _sessionManager = sessionManager;
             _userManager = userManager;
-            _authContext = authContext;
             _deviceManager = deviceManager;
         }
 
@@ -139,7 +135,7 @@ namespace Jellyfin.Api.Controllers
             };
 
             await _sessionManager.SendBrowseCommand(
-                await RequestHelpers.GetSessionId(_sessionManager, _authContext, Request).ConfigureAwait(false),
+                await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false),
                 sessionId,
                 command,
                 CancellationToken.None)
@@ -186,7 +182,7 @@ namespace Jellyfin.Api.Controllers
             };
 
             await _sessionManager.SendPlayCommand(
-                await RequestHelpers.GetSessionId(_sessionManager, _authContext, Request).ConfigureAwait(false),
+                    await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false),
                 sessionId,
                 playRequest,
                 CancellationToken.None)
@@ -214,7 +210,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? controllingUserId)
         {
             await _sessionManager.SendPlaystateCommand(
-                await RequestHelpers.GetSessionId(_sessionManager, _authContext, Request).ConfigureAwait(false),
+                    await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false),
                 sessionId,
                 new PlaystateRequest()
                 {
@@ -242,14 +238,14 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string sessionId,
             [FromRoute, Required] GeneralCommandType command)
         {
-            var currentSession = await RequestHelpers.GetSession(_sessionManager, _authContext, Request).ConfigureAwait(false);
+            var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
             var generalCommand = new GeneralCommand
             {
                 Name = command,
                 ControllingUserId = currentSession.UserId
             };
 
-            await _sessionManager.SendGeneralCommand(currentSession.Id, sessionId, generalCommand, CancellationToken.None);
+            await _sessionManager.SendGeneralCommand(currentSession.Id, sessionId, generalCommand, CancellationToken.None).ConfigureAwait(false);
 
             return NoContent();
         }
@@ -268,7 +264,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string sessionId,
             [FromRoute, Required] GeneralCommandType command)
         {
-            var currentSession = await RequestHelpers.GetSession(_sessionManager, _authContext, Request).ConfigureAwait(false);
+            var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
 
             var generalCommand = new GeneralCommand
             {
@@ -296,8 +292,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string sessionId,
             [FromBody, Required] GeneralCommand command)
         {
-            var currentSession = await RequestHelpers.GetSession(_sessionManager, _authContext, Request)
-                .ConfigureAwait(false);
+            var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
 
             if (command == null)
             {
@@ -336,7 +331,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             await _sessionManager.SendMessageCommand(
-                await RequestHelpers.GetSessionId(_sessionManager, _authContext, Request).ConfigureAwait(false),
+                await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false),
                 sessionId,
                 command,
                 CancellationToken.None)
@@ -405,7 +400,7 @@ namespace Jellyfin.Api.Controllers
         {
             if (string.IsNullOrWhiteSpace(id))
             {
-                id = await RequestHelpers.GetSessionId(_sessionManager, _authContext, Request).ConfigureAwait(false);
+                id = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
             }
 
             _sessionManager.ReportCapabilities(id, new ClientCapabilities
@@ -435,7 +430,7 @@ namespace Jellyfin.Api.Controllers
         {
             if (string.IsNullOrWhiteSpace(id))
             {
-                id = await RequestHelpers.GetSessionId(_sessionManager, _authContext, Request).ConfigureAwait(false);
+                id = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
             }
 
             _sessionManager.ReportCapabilities(id, capabilities.ToClientCapabilities());
@@ -457,7 +452,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? sessionId,
             [FromQuery, Required] string? itemId)
         {
-            string session = sessionId ?? await RequestHelpers.GetSessionId(_sessionManager, _authContext, Request).ConfigureAwait(false);
+            string session = sessionId ?? await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
 
             _sessionManager.ReportNowViewingItem(session, itemId);
             return NoContent();
@@ -473,9 +468,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> ReportSessionEnded()
         {
-            AuthorizationInfo auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
-
-            await _sessionManager.Logout(auth.Token).ConfigureAwait(false);
+            await _sessionManager.Logout(User.GetToken()).ConfigureAwait(false);
             return NoContent();
         }
 

@@ -31,15 +31,9 @@ namespace Emby.Server.Implementations.Sorting
         /// <returns>System.Int32.</returns>
         public int Compare(BaseItem? x, BaseItem? y)
         {
-            if (x == null)
-            {
-                throw new ArgumentNullException(nameof(x));
-            }
+            ArgumentNullException.ThrowIfNull(x);
 
-            if (y == null)
-            {
-                throw new ArgumentNullException(nameof(y));
-            }
+            ArgumentNullException.ThrowIfNull(y);
 
             var levelX = string.IsNullOrEmpty(x.OfficialRating) ? 0 : _localization.GetRatingLevel(x.OfficialRating) ?? 0;
             var levelY = string.IsNullOrEmpty(y.OfficialRating) ? 0 : _localization.GetRatingLevel(y.OfficialRating) ?? 0;

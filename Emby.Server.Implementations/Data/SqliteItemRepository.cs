@@ -583,10 +583,7 @@ namespace Emby.Server.Implementations.Data
 
         public void SaveImages(BaseItem item)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
+            ArgumentNullException.ThrowIfNull(item);
 
             CheckDisposed();
 
@@ -617,10 +614,7 @@ namespace Emby.Server.Implementations.Data
         /// </exception>
         public void SaveItems(IEnumerable<BaseItem> items, CancellationToken cancellationToken)
         {
-            if (items == null)
-            {
-                throw new ArgumentNullException(nameof(items));
-            }
+            ArgumentNullException.ThrowIfNull(items);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -2085,10 +2079,7 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException(nameof(id));
             }
 
-            if (chapters == null)
-            {
-                throw new ArgumentNullException(nameof(chapters));
-            }
+            ArgumentNullException.ThrowIfNull(chapters);
 
             var idBlob = id.ToByteArray();
 
@@ -2557,10 +2548,7 @@ namespace Emby.Server.Implementations.Data
 
         public int GetCount(InternalItemsQuery query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             CheckDisposed();
 
@@ -2613,10 +2601,7 @@ namespace Emby.Server.Implementations.Data
 
         public List<BaseItem> GetItemList(InternalItemsQuery query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             CheckDisposed();
 
@@ -2794,10 +2779,7 @@ namespace Emby.Server.Implementations.Data
 
         public QueryResult<BaseItem> GetItems(InternalItemsQuery query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             CheckDisposed();
 
@@ -3174,10 +3156,7 @@ namespace Emby.Server.Implementations.Data
 
         public List<Guid> GetItemIdsList(InternalItemsQuery query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             CheckDisposed();
 
@@ -4837,10 +4816,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
         public List<string> GetPeopleNames(InternalPeopleQuery query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             CheckDisposed();
 
@@ -4880,10 +4856,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
         public List<PersonInfo> GetPeople(InternalPeopleQuery query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             CheckDisposed();
 
@@ -4999,10 +4972,7 @@ AND Type = @InternalPersonType)");
                 throw new ArgumentNullException(nameof(itemId));
             }
 
-            if (ancestorIds == null)
-            {
-                throw new ArgumentNullException(nameof(ancestorIds));
-            }
+            ArgumentNullException.ThrowIfNull(ancestorIds);
 
             CheckDisposed();
 
@@ -5175,10 +5145,7 @@ AND Type = @InternalPersonType)");
 
         private QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetItemValues(InternalItemsQuery query, int[] itemValueTypes, string returnType)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             if (!query.Limit.HasValue)
             {
@@ -5531,10 +5498,7 @@ AND Type = @InternalPersonType)");
                 throw new ArgumentNullException(nameof(itemId));
             }
 
-            if (values == null)
-            {
-                throw new ArgumentNullException(nameof(values));
-            }
+            ArgumentNullException.ThrowIfNull(values);
 
             CheckDisposed();
 
@@ -5607,10 +5571,7 @@ AND Type = @InternalPersonType)");
                 throw new ArgumentNullException(nameof(itemId));
             }
 
-            if (people == null)
-            {
-                throw new ArgumentNullException(nameof(people));
-            }
+            ArgumentNullException.ThrowIfNull(people);
 
             CheckDisposed();
 
@@ -5710,10 +5671,7 @@ AND Type = @InternalPersonType)");
         {
             CheckDisposed();
 
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             var cmdText = _mediaStreamSaveColumnsSelectQuery;
 
@@ -5766,10 +5724,7 @@ AND Type = @InternalPersonType)");
                 throw new ArgumentNullException(nameof(id));
             }
 
-            if (streams == null)
-            {
-                throw new ArgumentNullException(nameof(streams));
-            }
+            ArgumentNullException.ThrowIfNull(streams);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -6107,10 +6062,7 @@ AND Type = @InternalPersonType)");
         {
             CheckDisposed();
 
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             var cmdText = _mediaAttachmentSaveColumnsSelectQuery;
 
@@ -6152,10 +6104,7 @@ AND Type = @InternalPersonType)");
                 throw new ArgumentException("Guid can't be empty.", nameof(id));
             }
 
-            if (attachments == null)
-            {
-                throw new ArgumentNullException(nameof(attachments));
-            }
+            ArgumentNullException.ThrowIfNull(attachments);
 
             cancellationToken.ThrowIfCancellationRequested();
 

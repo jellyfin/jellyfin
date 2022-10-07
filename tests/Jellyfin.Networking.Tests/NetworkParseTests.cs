@@ -180,20 +180,11 @@ namespace Jellyfin.Networking.Tests
         [InlineData("", "", false, "eth16")]
         public void TestBindInterfaces(string source, string bindAddresses, bool ipv6enabled, string result)
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
+            ArgumentNullException.ThrowIfNull(source);
 
-            if (bindAddresses == null)
-            {
-                throw new ArgumentNullException(nameof(bindAddresses));
-            }
+            ArgumentNullException.ThrowIfNull(bindAddresses);
 
-            if (result == null)
-            {
-                throw new ArgumentNullException(nameof(result));
-            }
+            ArgumentNullException.ThrowIfNull(result);
 
             var conf = new NetworkConfiguration()
             {
@@ -252,15 +243,9 @@ namespace Jellyfin.Networking.Tests
         [InlineData("192.168.1.1", "192.168.1.0/24", "", false, "eth16=http://helloworld.com", "http://helloworld.com")]
         public void TestBindInterfaceOverrides(string source, string lan, string bindAddresses, bool ipv6enabled, string publishedServers, string result)
         {
-            if (lan == null)
-            {
-                throw new ArgumentNullException(nameof(lan));
-            }
+            ArgumentNullException.ThrowIfNull(lan);
 
-            if (bindAddresses == null)
-            {
-                throw new ArgumentNullException(nameof(bindAddresses));
-            }
+            ArgumentNullException.ThrowIfNull(bindAddresses);
 
             var conf = new NetworkConfiguration()
             {

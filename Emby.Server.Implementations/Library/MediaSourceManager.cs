@@ -322,10 +322,7 @@ namespace Emby.Server.Implementations.Library
 
         public List<MediaSourceInfo> GetStaticMediaSources(BaseItem item, bool enablePathSubstitution, User user = null)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
+            ArgumentNullException.ThrowIfNull(item);
 
             var hasMediaSources = (IHasMediaSources)item;
 
