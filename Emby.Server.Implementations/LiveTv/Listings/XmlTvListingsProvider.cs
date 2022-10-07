@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions;
@@ -26,6 +27,8 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 {
     public class XmlTvListingsProvider : IListingsProvider
     {
+        private static readonly TimeSpan _maxCacheAge = TimeSpan.FromHours(1);
+
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<XmlTvListingsProvider> _logger;
@@ -69,11 +72,17 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 return UnzipIfNeeded(info.Path, info.Path);
             }
 
-            string cacheFilename = DateTime.UtcNow.DayOfYear.ToString(CultureInfo.InvariantCulture) + "-" + DateTime.UtcNow.Hour.ToString(CultureInfo.InvariantCulture) + "-" + info.Id + ".xml";
+            string cacheFilename = info.Id + ".xml";
             string cacheFile = Path.Combine(_config.ApplicationPaths.CachePath, "xmltv", cacheFilename);
-            if (File.Exists(cacheFile))
+            if (File.Exists(cacheFile) && File.GetLastWriteTimeUtc(cacheFile) >= DateTime.UtcNow.Subtract(_maxCacheAge))
             {
                 return UnzipIfNeeded(info.Path, cacheFile);
+            }
+
+            // Must check if file exists as parent directory may not exist.
+            if (File.Exists(cacheFile))
+            {
+                File.Delete(cacheFile);
             }
 
             _logger.LogInformation("Downloading xmltv listings from {Path}", info.Path);
@@ -124,7 +133,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         {
             using (var stream = File.OpenRead(file))
             {
-                string tempFolder = Path.Combine(_config.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString());
+                string tempFolder = GetTempFolderPath(stream);
                 Directory.CreateDirectory(tempFolder);
 
                 _zipClient.ExtractFirstFileFromGz(stream, tempFolder, "data.xml");
@@ -137,13 +146,23 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         {
             using (var stream = File.OpenRead(file))
             {
-                string tempFolder = Path.Combine(_config.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString());
+                string tempFolder = GetTempFolderPath(stream);
                 Directory.CreateDirectory(tempFolder);
 
                 _zipClient.ExtractAllFromGz(stream, tempFolder, true);
 
                 return tempFolder;
             }
+        }
+
+        private string GetTempFolderPath(Stream stream)
+        {
+#pragma warning disable CA5351
+            using var md5 = MD5.Create();
+#pragma warning restore CA5351
+            var checksum = Convert.ToHexString(md5.ComputeHash(stream));
+            stream.Position = 0;
+            return Path.Combine(_config.ApplicationPaths.TempDirectory, checksum);
         }
 
         private string FindXmlFile(string directory)

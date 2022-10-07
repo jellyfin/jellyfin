@@ -11,10 +11,7 @@ namespace MediaBrowser.Controller.Entities
     {
         public static void AddPerson(List<PersonInfo> people, PersonInfo person)
         {
-            if (person == null)
-            {
-                throw new ArgumentNullException(nameof(person));
-            }
+            ArgumentNullException.ThrowIfNull(person);
 
             if (string.IsNullOrEmpty(person.Name))
             {

@@ -91,7 +91,7 @@
     "MessageApplicationUpdated": "Jellyfin Server đã được cập nhật",
     "Latest": "Gần Nhất",
     "LabelRunningTimeValue": "Thời Gian Chạy: {0}",
-    "LabelIpAddressValue": "Địa Chỉ IP: {0}",
+    "LabelIpAddressValue": "Địa chỉ IP: {0}",
     "ItemRemovedWithName": "{0} đã xóa khỏi thư viện",
     "ItemAddedWithName": "{0} được thêm vào thư viện",
     "Inherit": "Thừa hưởng",

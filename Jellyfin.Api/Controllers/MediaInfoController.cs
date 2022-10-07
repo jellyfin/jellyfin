@@ -6,13 +6,12 @@ using System.Net.Mime;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.MediaInfoDtos;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -32,7 +31,6 @@ namespace Jellyfin.Api.Controllers
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IDeviceManager _deviceManager;
         private readonly ILibraryManager _libraryManager;
-        private readonly IAuthorizationContext _authContext;
         private readonly ILogger<MediaInfoController> _logger;
         private readonly MediaInfoHelper _mediaInfoHelper;
 
@@ -42,21 +40,18 @@ namespace Jellyfin.Api.Controllers
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
-        /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{MediaInfoController}"/> interface.</param>
         /// <param name="mediaInfoHelper">Instance of the <see cref="MediaInfoHelper"/>.</param>
         public MediaInfoController(
             IMediaSourceManager mediaSourceManager,
             IDeviceManager deviceManager,
             ILibraryManager libraryManager,
-            IAuthorizationContext authContext,
             ILogger<MediaInfoController> logger,
             MediaInfoHelper mediaInfoHelper)
         {
             _mediaSourceManager = mediaSourceManager;
             _deviceManager = deviceManager;
             _libraryManager = libraryManager;
-            _authContext = authContext;
             _logger = logger;
             _mediaInfoHelper = mediaInfoHelper;
         }
@@ -123,14 +118,12 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ParameterObsolete] bool? allowAudioStreamCopy,
             [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] PlaybackInfoDto? playbackInfoDto)
         {
-            var authInfo = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
-
             var profile = playbackInfoDto?.DeviceProfile;
             _logger.LogDebug("GetPostedPlaybackInfo profile: {@Profile}", profile);
 
             if (profile == null)
             {
-                var caps = _deviceManager.GetCapabilities(authInfo.DeviceId);
+                var caps = _deviceManager.GetCapabilities(User.GetDeviceId());
                 if (caps != null)
                 {
                     profile = caps.DeviceProfile;
@@ -177,7 +170,7 @@ namespace Jellyfin.Api.Controllers
                         item,
                         mediaSource,
                         profile,
-                        authInfo,
+                        User,
                         maxStreamingBitrate ?? profile.MaxStreamingBitrate,
                         startTimeTicks ?? 0,
                         mediaSourceId ?? string.Empty,
@@ -204,7 +197,7 @@ namespace Jellyfin.Api.Controllers
                 if (mediaSource != null && mediaSource.RequiresOpening && string.IsNullOrWhiteSpace(mediaSource.LiveStreamId))
                 {
                     var openStreamResult = await _mediaInfoHelper.OpenMediaSource(
-                        Request,
+                        HttpContext,
                         new LiveStreamRequest
                         {
                             AudioStreamIndex = audioStreamIndex,
@@ -277,7 +270,7 @@ namespace Jellyfin.Api.Controllers
                 EnableDirectStream = enableDirectStream ?? openLiveStreamDto?.EnableDirectStream ?? true,
                 DirectPlayProtocols = openLiveStreamDto?.DirectPlayProtocols ?? new[] { MediaProtocol.Http }
             };
-            return await _mediaInfoHelper.OpenMediaSource(Request, request).ConfigureAwait(false);
+            return await _mediaInfoHelper.OpenMediaSource(HttpContext, request).ConfigureAwait(false);
         }
 
         /// <summary>

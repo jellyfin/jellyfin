@@ -44,16 +44,28 @@ namespace MediaBrowser.MediaEncoding.Probing
         private IReadOnlyList<string> SplitWhitelist => _splitWhiteList ??= new string[]
         {
             "AC/DC",
+            "A/T/O/S",
             "As/Hi Soundworks",
             "Au/Ra",
             "Bremer/McCoy",
+            "b/bqスタヂオ",
+            "DOV/S",
+            "DJ'TEKINA//SOMETHING",
+            "IX/ON",
+            "J-CORE SLi//CER",
+            "M(a/u)SH",
+            "Kaoru/Brilliance",
+            "signum/ii",
+            "Richiter(LORB/DUGEM DI BARAT)",
             "이달의 소녀 1/3",
             "R!N / Gemie",
             "LOONA 1/3",
             "LOONA / yyxy",
             "LOONA / ODD EYE CIRCLE",
             "K/DA",
-            "22/7"
+            "22/7",
+            "諭吉佳作/men",
+            "//dARTH nULL"
         };
 
         public MediaInfo GetMediaInfo(InternalMediaInfoResult data, VideoType? videoType, bool isAudio, string path, MediaProtocol protocol)
@@ -841,9 +853,35 @@ namespace MediaBrowser.MediaEncoding.Probing
                 {
                     stream.ColorPrimaries = streamInfo.ColorPrimaries;
                 }
+
+                if (streamInfo.SideDataList != null)
+                {
+                    foreach (var data in streamInfo.SideDataList)
+                    {
+                        // Parse Dolby Vision metadata from side_data
+                        if (string.Equals(data.SideDataType, "DOVI configuration record", StringComparison.OrdinalIgnoreCase))
+                        {
+                            stream.DvVersionMajor = data.DvVersionMajor;
+                            stream.DvVersionMinor = data.DvVersionMinor;
+                            stream.DvProfile = data.DvProfile;
+                            stream.DvLevel = data.DvLevel;
+                            stream.RpuPresentFlag = data.RpuPresentFlag;
+                            stream.ElPresentFlag = data.ElPresentFlag;
+                            stream.BlPresentFlag = data.BlPresentFlag;
+                            stream.DvBlSignalCompatibilityId = data.DvBlSignalCompatibilityId;
+
+                            break;
+                        }
+                    }
+                }
+            }
+            else if (string.Equals(streamInfo.CodecType, "data", StringComparison.OrdinalIgnoreCase))
+            {
+                stream.Type = MediaStreamType.Data;
             }
             else
             {
+                _logger.LogError("Codec Type {CodecType} unknown. The stream (index: {Index}) will be ignored. Warning: Subsequential streams will have a wrong stream specifier!", streamInfo.CodecType, streamInfo.Index);
                 return null;
             }
 

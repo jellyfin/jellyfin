@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -277,6 +276,29 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 return TargetVideoStream?.Profile;
+            }
+        }
+
+        /// <summary>
+        /// Gets the target video range type that will be in the output stream.
+        /// </summary>
+        public string TargetVideoRangeType
+        {
+            get
+            {
+                if (IsDirectStream)
+                {
+                    return TargetVideoStream?.VideoRangeType;
+                }
+
+                var targetVideoCodecs = TargetVideoCodec;
+                var videoCodec = targetVideoCodecs.Length == 0 ? null : targetVideoCodecs[0];
+                if (!string.IsNullOrEmpty(videoCodec))
+                {
+                    return GetOption(videoCodec, "rangetype");
+                }
+
+                return TargetVideoStream?.VideoRangeType;
             }
         }
 

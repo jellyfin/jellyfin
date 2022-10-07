@@ -1,6 +1,6 @@
 {
     "Albums": "专辑",
-    "AppDeviceValues": "应用: {0}, 设备: {1}",
+    "AppDeviceValues": "应用：{0}，设备：{1}",
     "Application": "应用程序",
     "Artists": "艺术家",
     "AuthenticationSucceededWithUserName": "{0} 认证成功",

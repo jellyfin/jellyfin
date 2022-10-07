@@ -17,7 +17,7 @@ namespace MediaBrowser.Model.Configuration
             RequirePerfectSubtitleMatch = true;
             AllowEmbeddedSubtitles = EmbeddedSubtitleOptions.AllowAll;
 
-            AutomaticallyAddToCollection = true;
+            AutomaticallyAddToCollection = false;
             EnablePhotos = true;
             SaveSubtitlesWithMedia = true;
             EnableRealtimeMonitor = true;

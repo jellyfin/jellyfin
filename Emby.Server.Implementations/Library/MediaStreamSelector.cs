@@ -13,11 +13,11 @@ namespace Emby.Server.Implementations.Library
     {
         public static int? GetDefaultAudioStreamIndex(IReadOnlyList<MediaStream> streams, IReadOnlyList<string> preferredLanguages, bool preferDefaultTrack)
         {
-            var sortedStreams = GetSortedStreams(streams, MediaStreamType.Audio, preferredLanguages);
+            var sortedStreams = GetSortedStreams(streams, MediaStreamType.Audio, preferredLanguages).ToList();
 
             if (preferDefaultTrack)
             {
-                var defaultStream = streams.FirstOrDefault(i => i.IsDefault);
+                var defaultStream = sortedStreams.FirstOrDefault(i => i.IsDefault);
 
                 if (defaultStream != null)
                 {

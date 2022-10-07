@@ -48,11 +48,6 @@ namespace Jellyfin.Api.Models.StreamingDtos
         }
 
         /// <summary>
-        /// Gets or sets the transcoding throttler.
-        /// </summary>
-        public TranscodingThrottler? TranscodingThrottler { get; set; }
-
-        /// <summary>
         /// Gets the video request.
         /// </summary>
         public VideoRequestDto? VideoRequest => Request as VideoRequestDto;
@@ -174,7 +169,7 @@ namespace Jellyfin.Api.Models.StreamingDtos
         /// <summary>
         /// Disposes the stream state.
         /// </summary>
-        /// <param name="disposing">Whether the object is currently beeing disposed.</param>
+        /// <param name="disposing">Whether the object is currently being disposed.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)
@@ -191,11 +186,8 @@ namespace Jellyfin.Api.Models.StreamingDtos
                 {
                     _mediaSourceManager.CloseLiveStream(MediaSource.LiveStreamId).GetAwaiter().GetResult();
                 }
-
-                TranscodingThrottler?.Dispose();
             }
 
-            TranscodingThrottler = null;
             TranscodingJob = null;
 
             _disposed = true;

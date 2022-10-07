@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text.Json.Serialization;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
@@ -366,6 +365,28 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
+        /// <summary>
+        /// Gets the target video range type.
+        /// </summary>
+        public string TargetVideoRangeType
+        {
+            get
+            {
+                if (BaseRequest.Static || EncodingHelper.IsCopyCodec(OutputVideoCodec))
+                {
+                    return VideoStream?.VideoRangeType;
+                }
+
+                var requestedRangeType = GetRequestedRangeTypes(ActualOutputVideoCodec).FirstOrDefault();
+                if (!string.IsNullOrEmpty(requestedRangeType))
+                {
+                    return requestedRangeType;
+                }
+
+                return null;
+            }
+        }
+
         public string TargetVideoCodecTag
         {
             get
@@ -573,6 +594,26 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (!string.IsNullOrEmpty(profile))
                 {
                     return profile.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                }
+            }
+
+            return Array.Empty<string>();
+        }
+
+        public string[] GetRequestedRangeTypes(string codec)
+        {
+            if (!string.IsNullOrEmpty(BaseRequest.VideoRangeType))
+            {
+                return BaseRequest.VideoRangeType.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
+            }
+
+            if (!string.IsNullOrEmpty(codec))
+            {
+                var rangetype = BaseRequest.GetOption(codec, "rangetype");
+
+                if (!string.IsNullOrEmpty(rangetype))
+                {
+                    return rangetype.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
                 }
             }
 

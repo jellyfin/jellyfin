@@ -84,8 +84,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         public static bool IsTrailerType(Video video)
         {
             return video.Site.Equals("youtube", StringComparison.OrdinalIgnoreCase)
-                   && (!video.Type.Equals("trailer", StringComparison.OrdinalIgnoreCase)
-                       || !video.Type.Equals("teaser", StringComparison.OrdinalIgnoreCase));
+                   && (video.Type.Equals("trailer", StringComparison.OrdinalIgnoreCase)
+                       || video.Type.Equals("teaser", StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>

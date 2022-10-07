@@ -1,0 +1,17 @@
+{
+    "Id": "f6eab7118618ab26e61e495a1853481a",
+    "Path": "/Media/MyVideo-WEBDL-2160p.mp4",
+    "Container": "mov,mp4,m4a,3gp,3g2,mj2",
+    "Size": 6521110016,
+    "Name": "MyVideo WEBDL-2160p",
+    "ETag": "a2fb84b618ba2467fe377543f879e9bf",
+    "RunTimeTicks": 34318510080,
+    "SupportsTranscoding": true,
+    "SupportsDirectStream": true,
+    "SupportsDirectPlay": true,
+    "SupportsProbing": true,
+    "MediaStreams": [],
+    "Bitrate": 15201382,
+    "DefaultAudioStreamIndex": null,
+    "DefaultSubtitleStreamIndex": null
+}

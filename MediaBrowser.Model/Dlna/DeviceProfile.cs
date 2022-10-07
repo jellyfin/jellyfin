@@ -423,6 +423,7 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="bitDepth">The bit depth.</param>
         /// <param name="videoBitrate">The video bitrate.</param>
         /// <param name="videoProfile">The video profile.</param>
+        /// <param name="videoRangeType">The video range type.</param>
         /// <param name="videoLevel">The video level.</param>
         /// <param name="videoFramerate">The video framerate.</param>
         /// <param name="packetLength">The packet length.</param>
@@ -444,6 +445,7 @@ namespace MediaBrowser.Model.Dlna
             int? bitDepth,
             int? videoBitrate,
             string videoProfile,
+            string videoRangeType,
             double? videoLevel,
             float? videoFramerate,
             int? packetLength,
@@ -483,7 +485,7 @@ namespace MediaBrowser.Model.Dlna
                 var anyOff = false;
                 foreach (ProfileCondition c in i.Conditions)
                 {
-                    if (!ConditionProcessor.IsVideoConditionSatisfied(GetModelProfileCondition(c), width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
+                    if (!ConditionProcessor.IsVideoConditionSatisfied(GetModelProfileCondition(c), width, height, bitDepth, videoBitrate, videoProfile, videoRangeType, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
                     {
                         anyOff = true;
                         break;

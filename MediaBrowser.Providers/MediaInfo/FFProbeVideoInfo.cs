@@ -173,16 +173,30 @@ namespace MediaBrowser.Providers.MediaInfo
             IReadOnlyList<MediaAttachment> mediaAttachments;
             ChapterInfo[] chapters;
 
+            mediaStreams = new List<MediaStream>();
+
+            // Add external streams before adding the streams from the file to preserve stream IDs on remote videos
+            await AddExternalSubtitlesAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
+
+            await AddExternalAudioAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
+
+            var startIndex = mediaStreams.Count == 0 ? 0 : (mediaStreams.Max(i => i.Index) + 1);
+
             if (mediaInfo != null)
             {
-                mediaStreams = mediaInfo.MediaStreams.ToList();
+                foreach (var mediaStream in mediaInfo.MediaStreams)
+                {
+                    mediaStream.Index = startIndex++;
+                    mediaStreams.Add(mediaStream);
+                }
+
                 mediaAttachments = mediaInfo.MediaAttachments;
 
                 video.TotalBitrate = mediaInfo.Bitrate;
                 // video.FormatName = (mediaInfo.Container ?? string.Empty)
                 //    .Replace("matroska", "mkv", StringComparison.OrdinalIgnoreCase);
 
-                // For dvd's this may not always be accurate, so don't set the runtime if the item already has one
+                // For DVDs this may not always be accurate, so don't set the runtime if the item already has one
                 var needToSetRuntime = video.VideoType != VideoType.Dvd || video.RunTimeTicks == null || video.RunTimeTicks.Value == 0;
 
                 if (needToSetRuntime)
@@ -213,14 +227,19 @@ namespace MediaBrowser.Providers.MediaInfo
             }
             else
             {
-                mediaStreams = new List<MediaStream>();
+                var currentMediaStreams = video.GetMediaStreams();
+                foreach (var mediaStream in currentMediaStreams)
+                {
+                    if (!mediaStream.IsExternal)
+                    {
+                        mediaStream.Index = startIndex++;
+                        mediaStreams.Add(mediaStream);
+                    }
+                }
+
                 mediaAttachments = Array.Empty<MediaAttachment>();
                 chapters = Array.Empty<ChapterInfo>();
             }
-
-            await AddExternalSubtitlesAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
-
-            await AddExternalAudioAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
 
             var libraryOptions = _libraryManager.GetLibraryOptions(video);
 
@@ -254,7 +273,11 @@ namespace MediaBrowser.Providers.MediaInfo
             video.HasSubtitles = mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle);
 
             _itemRepo.SaveMediaStreams(video.Id, mediaStreams, cancellationToken);
-            _itemRepo.SaveMediaAttachments(video.Id, mediaAttachments, cancellationToken);
+
+            if (mediaAttachments.Any())
+            {
+                _itemRepo.SaveMediaAttachments(video.Id, mediaAttachments, cancellationToken);
+            }
 
             if (options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh ||
                 options.MetadataRefreshMode == MetadataRefreshMode.Default)
