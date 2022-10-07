@@ -72,7 +72,7 @@ namespace Jellyfin.Api.Controllers
                 ? null
                 : _userManager.GetUserById(userId.Value);
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request);
+                .AddClientFields(User);
 
             var categories = new List<RecommendationDto>();
 

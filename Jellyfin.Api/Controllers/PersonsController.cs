@@ -79,7 +79,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableImages = true)
         {
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             User? user = userId is null || userId.Value.Equals(default)
@@ -119,7 +119,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<BaseItemDto> GetPerson([FromRoute, Required] string name, [FromQuery] Guid? userId)
         {
             var dtoOptions = new DtoOptions()
-                .AddClientFields(Request);
+                .AddClientFields(User);
 
             var item = _libraryManager.GetPerson(name);
             if (item == null)

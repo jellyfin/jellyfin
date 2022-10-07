@@ -6,7 +6,6 @@ using Jellyfin.Api.Extensions;
 using Jellyfin.Api.ModelBinders;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Collections;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -23,22 +22,18 @@ namespace Jellyfin.Api.Controllers
     {
         private readonly ICollectionManager _collectionManager;
         private readonly IDtoService _dtoService;
-        private readonly IAuthorizationContext _authContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CollectionController"/> class.
         /// </summary>
         /// <param name="collectionManager">Instance of <see cref="ICollectionManager"/> interface.</param>
         /// <param name="dtoService">Instance of <see cref="IDtoService"/> interface.</param>
-        /// <param name="authContext">Instance of <see cref="IAuthorizationContext"/> interface.</param>
         public CollectionController(
             ICollectionManager collectionManager,
-            IDtoService dtoService,
-            IAuthorizationContext authContext)
+            IDtoService dtoService)
         {
             _collectionManager = collectionManager;
             _dtoService = dtoService;
-            _authContext = authContext;
         }
 
         /// <summary>
@@ -58,7 +53,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] Guid? parentId,
             [FromQuery] bool isLocked = false)
         {
-            var userId = (await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false)).UserId;
+            var userId = User.GetUserId();
 
             var item = await _collectionManager.CreateCollectionAsync(new CollectionCreationOptions
             {
@@ -69,7 +64,7 @@ namespace Jellyfin.Api.Controllers
                 UserIds = new[] { userId }
             }).ConfigureAwait(false);
 
-            var dtoOptions = new DtoOptions().AddClientFields(Request);
+            var dtoOptions = new DtoOptions().AddClientFields(User);
 
             var dto = _dtoService.GetBaseItemDto(item, dtoOptions);
 

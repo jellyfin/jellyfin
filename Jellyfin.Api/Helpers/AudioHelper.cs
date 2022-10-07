@@ -11,7 +11,6 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Http;
@@ -25,7 +24,6 @@ namespace Jellyfin.Api.Helpers
     public class AudioHelper
     {
         private readonly IDlnaManager _dlnaManager;
-        private readonly IAuthorizationContext _authContext;
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IMediaSourceManager _mediaSourceManager;
@@ -41,7 +39,6 @@ namespace Jellyfin.Api.Helpers
         /// Initializes a new instance of the <see cref="AudioHelper"/> class.
         /// </summary>
         /// <param name="dlnaManager">Instance of the <see cref="IDlnaManager"/> interface.</param>
-        /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
@@ -54,7 +51,6 @@ namespace Jellyfin.Api.Helpers
         /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
         public AudioHelper(
             IDlnaManager dlnaManager,
-            IAuthorizationContext authContext,
             IUserManager userManager,
             ILibraryManager libraryManager,
             IMediaSourceManager mediaSourceManager,
@@ -67,7 +63,6 @@ namespace Jellyfin.Api.Helpers
             EncodingHelper encodingHelper)
         {
             _dlnaManager = dlnaManager;
-            _authContext = authContext;
             _userManager = userManager;
             _libraryManager = libraryManager;
             _mediaSourceManager = mediaSourceManager;
@@ -102,8 +97,7 @@ namespace Jellyfin.Api.Helpers
 
             using var state = await StreamingHelpers.GetStreamingState(
                     streamingRequest,
-                    _httpContextAccessor.HttpContext.Request,
-                    _authContext,
+                    _httpContextAccessor.HttpContext,
                     _mediaSourceManager,
                     _userManager,
                     _libraryManager,

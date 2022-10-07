@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -15,7 +16,6 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Net;
@@ -34,7 +34,6 @@ namespace Jellyfin.Api.Helpers
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IDlnaManager _dlnaManager;
-        private readonly IAuthorizationContext _authContext;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly IMediaEncoder _mediaEncoder;
@@ -51,7 +50,6 @@ namespace Jellyfin.Api.Helpers
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="dlnaManager">Instance of the <see cref="IDlnaManager"/> interface.</param>
-        /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
@@ -65,7 +63,6 @@ namespace Jellyfin.Api.Helpers
             ILibraryManager libraryManager,
             IUserManager userManager,
             IDlnaManager dlnaManager,
-            IAuthorizationContext authContext,
             IMediaSourceManager mediaSourceManager,
             IServerConfigurationManager serverConfigurationManager,
             IMediaEncoder mediaEncoder,
@@ -79,7 +76,6 @@ namespace Jellyfin.Api.Helpers
             _libraryManager = libraryManager;
             _userManager = userManager;
             _dlnaManager = dlnaManager;
-            _authContext = authContext;
             _mediaSourceManager = mediaSourceManager;
             _serverConfigurationManager = serverConfigurationManager;
             _mediaEncoder = mediaEncoder;
@@ -128,8 +124,7 @@ namespace Jellyfin.Api.Helpers
 
             using var state = await StreamingHelpers.GetStreamingState(
                     streamingRequest,
-                    _httpContextAccessor.HttpContext.Request,
-                    _authContext,
+                    _httpContextAccessor.HttpContext,
                     _mediaSourceManager,
                     _userManager,
                     _libraryManager,
@@ -483,7 +478,7 @@ namespace Jellyfin.Api.Helpers
                     state.Request.MediaSourceId,
                     stream.Index.ToString(CultureInfo.InvariantCulture),
                     30.ToString(CultureInfo.InvariantCulture),
-                    ClaimHelpers.GetToken(user));
+                    user.GetToken());
 
                 var line = string.Format(
                     CultureInfo.InvariantCulture,

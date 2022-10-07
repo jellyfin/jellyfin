@@ -11,13 +11,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Models.SubtitleDtos;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Entities;
@@ -45,7 +45,6 @@ namespace Jellyfin.Api.Controllers
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IProviderManager _providerManager;
         private readonly IFileSystem _fileSystem;
-        private readonly IAuthorizationContext _authContext;
         private readonly ILogger<SubtitleController> _logger;
 
         /// <summary>
@@ -58,7 +57,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="mediaSourceManager">Instance of <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="providerManager">Instance of <see cref="IProviderManager"/> interface.</param>
         /// <param name="fileSystem">Instance of <see cref="IFileSystem"/> interface.</param>
-        /// <param name="authContext">Instance of <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="logger">Instance of <see cref="ILogger{SubtitleController}"/> interface.</param>
         public SubtitleController(
             IServerConfigurationManager serverConfigurationManager,
@@ -68,7 +66,6 @@ namespace Jellyfin.Api.Controllers
             IMediaSourceManager mediaSourceManager,
             IProviderManager providerManager,
             IFileSystem fileSystem,
-            IAuthorizationContext authContext,
             ILogger<SubtitleController> logger)
         {
             _serverConfigurationManager = serverConfigurationManager;
@@ -78,7 +75,6 @@ namespace Jellyfin.Api.Controllers
             _mediaSourceManager = mediaSourceManager;
             _providerManager = providerManager;
             _fileSystem = fileSystem;
-            _authContext = authContext;
             _logger = logger;
         }
 
@@ -361,7 +357,7 @@ namespace Jellyfin.Api.Controllers
 
             long positionTicks = 0;
 
-            var accessToken = (await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false)).Token;
+            var accessToken = User.GetToken();
 
             while (positionTicks < runtime)
             {
