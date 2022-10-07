@@ -7,6 +7,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Providers.Plugins.StudioImages.Configuration;
 
 namespace MediaBrowser.Providers.Plugins.StudioImages
 {

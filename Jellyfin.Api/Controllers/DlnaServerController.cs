@@ -20,6 +20,7 @@ namespace Jellyfin.Api.Controllers
     /// Dlna Server Controller.
     /// </summary>
     [Route("Dlna")]
+    [DlnaEnabled]
     [Authorize(Policy = Policies.AnonymousLanAccessPolicy)]
     public class DlnaServerController : BaseJellyfinApiController
     {
@@ -53,17 +54,12 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         [Produces(MediaTypeNames.Text.Xml)]
         [ProducesFile(MediaTypeNames.Text.Xml)]
-        public ActionResult GetDescriptionXml([FromRoute, Required] string serverId)
+        public ActionResult<string> GetDescriptionXml([FromRoute, Required] string serverId)
         {
-            if (DlnaEntryPoint.Enabled)
-            {
-                var url = GetAbsoluteUri();
-                var serverAddress = url.Substring(0, url.IndexOf("/dlna/", StringComparison.OrdinalIgnoreCase));
-                var xml = _dlnaManager.GetServerDescriptionXml(Request.Headers, serverId, serverAddress);
-                return Ok(xml);
-            }
-
-            return StatusCode(StatusCodes.Status503ServiceUnavailable);
+            var url = GetAbsoluteUri();
+            var serverAddress = url.Substring(0, url.IndexOf("/dlna/", StringComparison.OrdinalIgnoreCase));
+            var xml = _dlnaManager.GetServerDescriptionXml(Request.Headers, serverId, serverAddress);
+            return Ok(xml);
         }
 
         /// <summary>
@@ -81,14 +77,9 @@ namespace Jellyfin.Api.Controllers
         [Produces(MediaTypeNames.Text.Xml)]
         [ProducesFile(MediaTypeNames.Text.Xml)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
-        public ActionResult GetContentDirectory([FromRoute, Required] string serverId)
+        public ActionResult<string> GetContentDirectory([FromRoute, Required] string serverId)
         {
-            if (DlnaEntryPoint.Enabled)
-            {
-                return Ok(_contentDirectory.GetServiceXml());
-            }
-
-            return StatusCode(StatusCodes.Status503ServiceUnavailable);
+            return Ok(_contentDirectory.GetServiceXml());
         }
 
         /// <summary>
@@ -106,14 +97,9 @@ namespace Jellyfin.Api.Controllers
         [Produces(MediaTypeNames.Text.Xml)]
         [ProducesFile(MediaTypeNames.Text.Xml)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
-        public ActionResult GetMediaReceiverRegistrar([FromRoute, Required] string serverId)
+        public ActionResult<string> GetMediaReceiverRegistrar([FromRoute, Required] string serverId)
         {
-            if (DlnaEntryPoint.Enabled)
-            {
-                return Ok(_mediaReceiverRegistrar.GetServiceXml());
-            }
-
-            return StatusCode(StatusCodes.Status503ServiceUnavailable);
+            return Ok(_mediaReceiverRegistrar.GetServiceXml());
         }
 
         /// <summary>
@@ -131,14 +117,9 @@ namespace Jellyfin.Api.Controllers
         [Produces(MediaTypeNames.Text.Xml)]
         [ProducesFile(MediaTypeNames.Text.Xml)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
-        public ActionResult GetConnectionManager([FromRoute, Required] string serverId)
+        public ActionResult<string> GetConnectionManager([FromRoute, Required] string serverId)
         {
-            if (DlnaEntryPoint.Enabled)
-            {
-                return Ok(_connectionManager.GetServiceXml());
-            }
-
-            return StatusCode(StatusCodes.Status503ServiceUnavailable);
+            return Ok(_connectionManager.GetServiceXml());
         }
 
         /// <summary>
@@ -155,12 +136,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesFile(MediaTypeNames.Text.Xml)]
         public async Task<ActionResult<ControlResponse>> ProcessContentDirectoryControlRequest([FromRoute, Required] string serverId)
         {
-            if (DlnaEntryPoint.Enabled)
-            {
-                return await ProcessControlRequestInternalAsync(serverId, Request.Body, _contentDirectory).ConfigureAwait(false);
-            }
-
-            return StatusCode(StatusCodes.Status503ServiceUnavailable);
+            return await ProcessControlRequestInternalAsync(serverId, Request.Body, _contentDirectory).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -177,12 +153,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesFile(MediaTypeNames.Text.Xml)]
         public async Task<ActionResult<ControlResponse>> ProcessConnectionManagerControlRequest([FromRoute, Required] string serverId)
         {
-            if (DlnaEntryPoint.Enabled)
-            {
-                return await ProcessControlRequestInternalAsync(serverId, Request.Body, _connectionManager).ConfigureAwait(false);
-            }
-
-            return StatusCode(StatusCodes.Status503ServiceUnavailable);
+            return await ProcessControlRequestInternalAsync(serverId, Request.Body, _connectionManager).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -199,12 +170,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesFile(MediaTypeNames.Text.Xml)]
         public async Task<ActionResult<ControlResponse>> ProcessMediaReceiverRegistrarControlRequest([FromRoute, Required] string serverId)
         {
-            if (DlnaEntryPoint.Enabled)
-            {
-                return await ProcessControlRequestInternalAsync(serverId, Request.Body, _mediaReceiverRegistrar).ConfigureAwait(false);
-            }
-
-            return StatusCode(StatusCodes.Status503ServiceUnavailable);
+            return await ProcessControlRequestInternalAsync(serverId, Request.Body, _mediaReceiverRegistrar).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -224,12 +190,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesFile(MediaTypeNames.Text.Xml)]
         public ActionResult<EventSubscriptionResponse> ProcessMediaReceiverRegistrarEventRequest(string serverId)
         {
-            if (DlnaEntryPoint.Enabled)
-            {
-                return ProcessEventRequest(_mediaReceiverRegistrar);
-            }
-
-            return StatusCode(StatusCodes.Status503ServiceUnavailable);
+            return ProcessEventRequest(_mediaReceiverRegistrar);
         }
 
         /// <summary>
@@ -249,12 +210,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesFile(MediaTypeNames.Text.Xml)]
         public ActionResult<EventSubscriptionResponse> ProcessContentDirectoryEventRequest(string serverId)
         {
-            if (DlnaEntryPoint.Enabled)
-            {
-                return ProcessEventRequest(_contentDirectory);
-            }
-
-            return StatusCode(StatusCodes.Status503ServiceUnavailable);
+            return ProcessEventRequest(_contentDirectory);
         }
 
         /// <summary>
@@ -274,12 +230,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesFile(MediaTypeNames.Text.Xml)]
         public ActionResult<EventSubscriptionResponse> ProcessConnectionManagerEventRequest(string serverId)
         {
-            if (DlnaEntryPoint.Enabled)
-            {
-                return ProcessEventRequest(_connectionManager);
-            }
-
-            return StatusCode(StatusCodes.Status503ServiceUnavailable);
+            return ProcessEventRequest(_connectionManager);
         }
 
         /// <summary>
@@ -299,12 +250,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesImageFile]
         public ActionResult GetIconId([FromRoute, Required] string serverId, [FromRoute, Required] string fileName)
         {
-            if (DlnaEntryPoint.Enabled)
-            {
-                return GetIconInternal(fileName);
-            }
-
-            return StatusCode(StatusCodes.Status503ServiceUnavailable);
+            return GetIconInternal(fileName);
         }
 
         /// <summary>
@@ -322,12 +268,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesImageFile]
         public ActionResult GetIcon([FromRoute, Required] string fileName)
         {
-            if (DlnaEntryPoint.Enabled)
-            {
-                return GetIconInternal(fileName);
-            }
-
-            return StatusCode(StatusCodes.Status503ServiceUnavailable);
+            return GetIconInternal(fileName);
         }
 
         private ActionResult GetIconInternal(string fileName)

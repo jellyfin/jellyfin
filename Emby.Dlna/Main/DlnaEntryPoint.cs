@@ -313,7 +313,7 @@ namespace Emby.Dlna.Main
 
                 _logger.LogInformation("Registering publisher for {ResourceName} on {DeviceAddress}", fullService, address);
 
-                var uri = new UriBuilder(_appHost.GetApiUrlForLocalAccess(false) + descriptorUri);
+                var uri = new UriBuilder(_appHost.GetApiUrlForLocalAccess(address, false) + descriptorUri);
 
                 var device = new SsdpRootDevice
                 {
@@ -362,7 +362,7 @@ namespace Emby.Dlna.Main
                 guid = text.GetMD5();
             }
 
-            return guid.ToString("N", CultureInfo.InvariantCulture);
+            return guid.ToString("D", CultureInfo.InvariantCulture);
         }
 
         private void SetProperies(SsdpDevice device, string fullDeviceType)

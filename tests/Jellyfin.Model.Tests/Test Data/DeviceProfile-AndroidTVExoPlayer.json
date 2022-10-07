@@ -1,0 +1,216 @@
+{
+    "Name": "Jellyfin AndroidTV-ExoPlayer",
+    "EnableAlbumArtInDidl": false,
+    "EnableSingleAlbumArtLimit": false,
+    "EnableSingleSubtitleLimit": false,
+    "SupportedMediaTypes": "Audio,Photo,Video",
+    "MaxAlbumArtWidth": 0,
+    "MaxAlbumArtHeight": 0,
+    "MaxStreamingBitrate": 120000000,
+    "MaxStaticBitrate": 100000000,
+    "MusicStreamingTranscodingBitrate": 192000,
+    "TimelineOffsetSeconds": 0,
+    "RequiresPlainVideoItems": false,
+    "RequiresPlainFolders": false,
+    "EnableMSMediaReceiverRegistrar": false,
+    "IgnoreTranscodeByteRangeRequests": false,
+    "DirectPlayProfiles": [
+        {
+            "Container": "m4v,mov,xvid,vob,mkv,wmv,asf,ogm,ogv,mp4,webm",
+            "AudioCodec": "aac,mp3,mp2,aac_latm,alac,ac3,eac3,dca,dts,mlp,truehd,pcm_alaw,pcm_mulaw",
+            "VideoCodec": "h264,hevc,vp8,vp9,mpeg,mpeg2video",
+            "Type": "Video",
+            "$type": "DirectPlayProfile"
+        },
+        {
+            "Container": "aac,mp3,mp2,aac_latm,alac,ac3,eac3,dca,dts,mlp,truehd,pcm_alaw,pcm_mulaw,,pa,flac,wav,wma,ogg,oga,webma,ape,opus",
+            "Type": "Audio",
+            "$type": "DirectPlayProfile"
+        },
+        {
+            "Container": "jpg,jpeg,png,gif,web",
+            "Type": "Photo",
+            "$type": "DirectPlayProfile"
+        }
+    ],
+    "CodecProfiles": [
+        {
+            "Type": "Video",
+            "Conditions": [
+                {
+                    "Condition": "EqualsAny",
+                    "Property": "VideoProfile",
+                    "Value": "high|main|baseline|constrained baseline",
+                    "IsRequired": false,
+                    "$type": "ProfileCondition"
+                },
+                {
+                    "Condition": "LessThanEqual",
+                    "Property": "VideoLevel",
+                    "Value": "51",
+                    "IsRequired": false,
+                    "$type": "ProfileCondition"
+                }
+            ],
+            "Codec": "h264",
+            "$type": "CodecProfile"
+        },
+        {
+            "Type": "Video",
+            "Conditions": [
+                {
+                    "Condition": "LessThanEqual",
+                    "Property": "RefFrames",
+                    "Value": "12",
+                    "IsRequired": false,
+                    "$type": "ProfileCondition"
+                }
+            ],
+            "ApplyConditions": [
+                {
+                    "Condition": "GreaterThanEqual",
+                    "Property": "Width",
+                    "Value": "1200",
+                    "IsRequired": false,
+                    "$type": "ProfileCondition"
+                }
+            ],
+            "Codec": "h264",
+            "$type": "CodecProfile"
+        },
+        {
+            "Type": "Video",
+            "Conditions": [
+                {
+                    "Condition": "LessThanEqual",
+                    "Property": "RefFrames",
+                    "Value": "4",
+                    "IsRequired": false,
+                    "$type": "ProfileCondition"
+                }
+            ],
+            "ApplyConditions": [
+                {
+                    "Condition": "GreaterThanEqual",
+                    "Property": "Width",
+                    "Value": "1900",
+                    "IsRequired": false,
+                    "$type": "ProfileCondition"
+                }
+            ],
+            "Codec": "h264",
+            "$type": "CodecProfile"
+        },
+        {
+            "Type": "VideoAudio",
+            "Conditions": [
+                {
+                    "Condition": "LessThanEqual",
+                    "Property": "AudioChannels",
+                    "Value": "6",
+                    "IsRequired": false,
+                    "$type": "ProfileCondition"
+                }
+            ],
+            "$type": "CodecProfile"
+        }
+    ],
+    "TranscodingProfiles": [
+        {
+            "Container": "ts",
+            "Type": "Video",
+            "VideoCodec": "h264",
+            "AudioCodec": "aac,mp3",
+            "Protocol": "hls",
+            "EstimateContentLength": false,
+            "EnableMpegtsM2TsMode": false,
+            "TranscodeSeekInfo": "Auto",
+            "CopyTimestamps": false,
+            "Context": "Streaming",
+            "EnableSubtitlesInManifest": false,
+            "MinSegments": 0,
+            "SegmentLength": 0,
+            "BreakOnNonKeyFrames": false,
+            "$type": "TranscodingProfile"
+        },
+        {
+            "Container": "mp3",
+            "Type": "Audio",
+            "AudioCodec": "mp3",
+            "Protocol": "http",
+            "EstimateContentLength": false,
+            "EnableMpegtsM2TsMode": false,
+            "TranscodeSeekInfo": "Auto",
+            "CopyTimestamps": false,
+            "Context": "Streaming",
+            "EnableSubtitlesInManifest": false,
+            "MinSegments": 0,
+            "SegmentLength": 0,
+            "BreakOnNonKeyFrames": false,
+            "$type": "TranscodingProfile"
+        }
+    ],
+    "SubtitleProfiles": [
+        {
+            "Format": "srt",
+            "Method": "Embed",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "srt",
+            "Method": "External",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "subrip",
+            "Method": "Embed",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "subrip",
+            "Method": "External",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "ass",
+            "Method": "Encode",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "ssa",
+            "Method": "Encode",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "pgs",
+            "Method": "Encode",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "pgssub",
+            "Method": "Encode",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "dvdsub",
+            "Method": "Encode",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "vtt",
+            "Method": "Embed",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "sub",
+            "Method": "Embed",
+            "$type": "SubtitleProfile"
+        },
+        {
+            "Format": "idx",
+            "Method": "Embed",
+            "$type": "SubtitleProfile"
+        }
+    ],
+    "$type": "DeviceProfile"
+}

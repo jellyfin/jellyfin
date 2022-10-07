@@ -1,32 +1,45 @@
 #pragma warning disable CS1591
 
+using System;
+
 namespace MediaBrowser.Model.Session
 {
+    [Flags]
     public enum TranscodeReason
     {
-        ContainerNotSupported = 0,
-        VideoCodecNotSupported = 1,
-        AudioCodecNotSupported = 2,
-        ContainerBitrateExceedsLimit = 3,
-        AudioBitrateNotSupported = 4,
-        AudioChannelsNotSupported = 5,
-        VideoResolutionNotSupported = 6,
-        UnknownVideoStreamInfo = 7,
-        UnknownAudioStreamInfo = 8,
-        AudioProfileNotSupported = 9,
-        AudioSampleRateNotSupported = 10,
-        AnamorphicVideoNotSupported = 11,
-        InterlacedVideoNotSupported = 12,
-        SecondaryAudioNotSupported = 13,
-        RefFramesNotSupported = 14,
-        VideoBitDepthNotSupported = 15,
-        VideoBitrateNotSupported = 16,
-        VideoFramerateNotSupported = 17,
-        VideoLevelNotSupported = 18,
-        VideoProfileNotSupported = 19,
-        AudioBitDepthNotSupported = 20,
-        SubtitleCodecNotSupported = 21,
-        DirectPlayError = 22,
-        AudioIsExternal = 23
+        // Primary
+        ContainerNotSupported = 1 << 0,
+        VideoCodecNotSupported = 1 << 1,
+        AudioCodecNotSupported = 1 << 2,
+        SubtitleCodecNotSupported = 1 << 3,
+        AudioIsExternal = 1 << 4,
+        SecondaryAudioNotSupported = 1 << 5,
+
+        // Video Constraints
+        VideoProfileNotSupported = 1 << 6,
+        VideoRangeTypeNotSupported = 1 << 24,
+        VideoLevelNotSupported = 1 << 7,
+        VideoResolutionNotSupported = 1 << 8,
+        VideoBitDepthNotSupported = 1 << 9,
+        VideoFramerateNotSupported = 1 << 10,
+        RefFramesNotSupported = 1 << 11,
+        AnamorphicVideoNotSupported = 1 << 12,
+        InterlacedVideoNotSupported = 1 << 13,
+
+        // Audio Constraints
+        AudioChannelsNotSupported = 1 << 14,
+        AudioProfileNotSupported = 1 << 15,
+        AudioSampleRateNotSupported = 1 << 16,
+        AudioBitDepthNotSupported = 1 << 17,
+
+        // Bitrate Constraints
+        ContainerBitrateExceedsLimit = 1 << 18,
+        VideoBitrateNotSupported = 1 << 19,
+        AudioBitrateNotSupported = 1 << 20,
+
+        // Errors
+        UnknownVideoStreamInfo = 1 << 21,
+        UnknownAudioStreamInfo = 1 << 22,
+        DirectPlayError = 1 << 23,
     }
 }

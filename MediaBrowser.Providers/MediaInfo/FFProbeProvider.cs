@@ -47,7 +47,6 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
 
         public FFProbeProvider(
-            ILogger<FFProbeProvider> logger,
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
             IItemRepository itemRepo,
@@ -59,11 +58,12 @@ namespace MediaBrowser.Providers.MediaInfo
             IChapterManager chapterManager,
             ILibraryManager libraryManager,
             IFileSystem fileSystem,
+            ILoggerFactory loggerFactory,
             NamingOptions namingOptions)
         {
-            _logger = logger;
-            _audioResolver = new AudioResolver(localization, mediaEncoder, fileSystem, namingOptions);
-            _subtitleResolver = new SubtitleResolver(localization, mediaEncoder, fileSystem, namingOptions);
+            _logger = loggerFactory.CreateLogger<FFProbeProvider>();
+            _audioResolver = new AudioResolver(loggerFactory.CreateLogger<AudioResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
+            _subtitleResolver = new SubtitleResolver(loggerFactory.CreateLogger<SubtitleResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
             _videoProber = new FFProbeVideoInfo(
                 _logger,
                 mediaSourceManager,

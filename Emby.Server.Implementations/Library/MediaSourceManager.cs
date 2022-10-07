@@ -151,7 +151,11 @@ namespace Emby.Server.Implementations.Library
         {
             var mediaSources = GetStaticMediaSources(item, enablePathSubstitution, user);
 
-            if (allowMediaProbe && mediaSources[0].Type != MediaSourceType.Placeholder && !mediaSources[0].MediaStreams.Any(i => i.Type == MediaStreamType.Audio || i.Type == MediaStreamType.Video))
+            // If file is strm or main media stream is missing, force a metadata refresh with remote probing
+            if (allowMediaProbe && mediaSources[0].Type != MediaSourceType.Placeholder
+                && (item.Path.EndsWith(".strm", StringComparison.OrdinalIgnoreCase)
+                    || (item.MediaType == MediaType.Video && !mediaSources[0].MediaStreams.Any(i => i.Type == MediaStreamType.Video))
+                    || (item.MediaType == MediaType.Audio && !mediaSources[0].MediaStreams.Any(i => i.Type == MediaStreamType.Audio))))
             {
                 await item.RefreshMetadata(
                     new MetadataRefreshOptions(_directoryService)
@@ -172,24 +176,16 @@ namespace Emby.Server.Implementations.Library
 
             foreach (var source in dynamicMediaSources)
             {
-                if (user != null)
-                {
-                    SetDefaultAudioAndSubtitleStreamIndexes(item, source, user);
-                }
-
                 // Validate that this is actually possible
                 if (source.SupportsDirectStream)
                 {
                     source.SupportsDirectStream = SupportsDirectStream(source.Path, source.Protocol);
                 }
 
-                list.Add(source);
-            }
-
-            if (user != null)
-            {
-                foreach (var source in list)
+                if (user != null)
                 {
+                    SetDefaultAudioAndSubtitleStreamIndexes(item, source, user);
+
                     if (string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
                     {
                         source.SupportsTranscoding = user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding);
@@ -200,6 +196,8 @@ namespace Emby.Server.Implementations.Library
                         source.SupportsDirectStream = user.HasPermission(PermissionKind.EnablePlaybackRemuxing);
                     }
                 }
+
+                list.Add(source);
             }
 
             return SortMediaSources(list);
@@ -324,10 +322,7 @@ namespace Emby.Server.Implementations.Library
 
         public List<MediaSourceInfo> GetStaticMediaSources(BaseItem item, bool enablePathSubstitution, User user = null)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
+            ArgumentNullException.ThrowIfNull(item);
 
             var hasMediaSources = (IHasMediaSources)item;
 
@@ -338,6 +333,16 @@ namespace Emby.Server.Implementations.Library
                 foreach (var source in sources)
                 {
                     SetDefaultAudioAndSubtitleStreamIndexes(item, source, user);
+
+                    if (string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
+                    {
+                        source.SupportsTranscoding = user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding);
+                    }
+                    else if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
+                    {
+                        source.SupportsTranscoding = user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding);
+                        source.SupportsDirectStream = user.HasPermission(PermissionKind.EnablePlaybackRemuxing);
+                    }
                 }
             }
 

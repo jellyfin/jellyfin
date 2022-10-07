@@ -104,6 +104,10 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
                 {
                     _logger.LogError(ex, "Error updating {0}", package.Name);
                 }
+                catch (InvalidDataException ex)
+                {
+                    _logger.LogError(ex, "Error updating {0}", package.Name);
+                }
 
                 // Update progress
                 lock (progress)

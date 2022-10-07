@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -197,6 +198,13 @@ namespace Jellyfin.Server
                 try
                 {
                     await webHost.StartAsync(_tokenSource.Token).ConfigureAwait(false);
+
+                    if (startupConfig.UseUnixSocket() && Environment.OSVersion.Platform == PlatformID.Unix)
+                    {
+                        var socketPath = GetUnixSocketPath(startupConfig, appPaths);
+
+                        SetUnixSocketPermissions(startupConfig, socketPath);
+                    }
                 }
                 catch (Exception ex) when (ex is not TaskCanceledException)
                 {
@@ -235,7 +243,7 @@ namespace Jellyfin.Server
                     }
                 }
 
-                appHost.Dispose();
+                await appHost.DisposeAsync().ConfigureAwait(false);
             }
 
             if (_restartOnShutdown)
@@ -326,20 +334,7 @@ namespace Jellyfin.Server
                     // Bind to unix socket (only on unix systems)
                     if (startupConfig.UseUnixSocket() && Environment.OSVersion.Platform == PlatformID.Unix)
                     {
-                        var socketPath = startupConfig.GetUnixSocketPath();
-                        if (string.IsNullOrEmpty(socketPath))
-                        {
-                            var xdgRuntimeDir = Environment.GetEnvironmentVariable("XDG_RUNTIME_DIR");
-                            if (xdgRuntimeDir == null)
-                            {
-                                // Fall back to config dir
-                                socketPath = Path.Join(appPaths.ConfigurationDirectoryPath, "socket.sock");
-                            }
-                            else
-                            {
-                                socketPath = Path.Join(xdgRuntimeDir, "jellyfin-socket");
-                            }
-                        }
+                        var socketPath = GetUnixSocketPath(startupConfig, appPaths);
 
                         // Workaround for https://github.com/aspnet/AspNetCore/issues/14134
                         if (File.Exists(socketPath))
@@ -550,12 +545,14 @@ namespace Jellyfin.Server
             const string ResourcePath = "Jellyfin.Server.Resources.Configuration.logging.json";
             Stream resource = typeof(Program).Assembly.GetManifestResourceStream(ResourcePath)
                 ?? throw new InvalidOperationException($"Invalid resource path: '{ResourcePath}'");
-            Stream dst = new FileStream(configPath, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
             await using (resource.ConfigureAwait(false))
-            await using (dst.ConfigureAwait(false))
             {
-                // Copy the resource contents to the expected file path for the config file
-                await resource.CopyToAsync(dst).ConfigureAwait(false);
+                Stream dst = new FileStream(configPath, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+                await using (dst.ConfigureAwait(false))
+                {
+                    // Copy the resource contents to the expected file path for the config file
+                    await resource.CopyToAsync(dst).ConfigureAwait(false);
+                }
             }
         }
 
@@ -662,6 +659,52 @@ namespace Jellyfin.Server
             }
 
             return "\"" + arg + "\"";
+        }
+
+        private static string GetUnixSocketPath(IConfiguration startupConfig, IApplicationPaths appPaths)
+        {
+            var socketPath = startupConfig.GetUnixSocketPath();
+
+            if (string.IsNullOrEmpty(socketPath))
+            {
+                var xdgRuntimeDir = Environment.GetEnvironmentVariable("XDG_RUNTIME_DIR");
+                var socketFile = "jellyfin.sock";
+                if (xdgRuntimeDir == null)
+                {
+                    // Fall back to config dir
+                    socketPath = Path.Join(appPaths.ConfigurationDirectoryPath, socketFile);
+                }
+                else
+                {
+                    socketPath = Path.Join(xdgRuntimeDir, socketFile);
+                }
+            }
+
+            return socketPath;
+        }
+
+        private static void SetUnixSocketPermissions(IConfiguration startupConfig, string socketPath)
+        {
+            var socketPerms = startupConfig.GetUnixSocketPermissions();
+
+            if (!string.IsNullOrEmpty(socketPerms))
+            {
+                #pragma warning disable SA1300 // Entrypoint is case sensitive.
+                [DllImport("libc")]
+                static extern int chmod(string pathname, int mode);
+                #pragma warning restore SA1300
+
+                var exitCode = chmod(socketPath, Convert.ToInt32(socketPerms, 8));
+
+                if (exitCode < 0)
+                {
+                    _logger.LogError("Failed to set Kestrel unix socket permissions to {SocketPerms}, return code: {ExitCode}", socketPerms, exitCode);
+                }
+                else
+                {
+                    _logger.LogInformation("Kestrel unix socket permissions set to {SocketPerms}", socketPerms);
+                }
+            }
         }
     }
 }

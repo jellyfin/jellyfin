@@ -30,6 +30,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
 using Priority_Queue;
@@ -186,6 +187,12 @@ namespace MediaBrowser.Providers.Manager
             if (contentType.Equals(MediaTypeNames.Text.Html, StringComparison.OrdinalIgnoreCase))
             {
                 throw new HttpRequestException("Invalid image received.", null, HttpStatusCode.NotFound);
+            }
+
+            // some iptv/epg providers don't correctly report media type, extract from url if no extension found
+            if (string.IsNullOrWhiteSpace(MimeTypes.ToExtension(contentType)))
+            {
+                contentType = MimeTypes.GetMimeType(url);
             }
 
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
@@ -919,7 +926,7 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error in {0}.Suports", i.GetType().Name);
+                    _logger.LogError(ex, "Error in {0}.Supports", i.GetType().Name);
                     return false;
                 }
             });

@@ -262,6 +262,10 @@ namespace Emby.Server.Implementations.IO
                             _logger.LogError(ex, "Reading the file size of the symlink at {Path} failed. Marking the file as not existing.", fileInfo.FullName);
                             result.Exists = false;
                         }
+                        catch (UnauthorizedAccessException ex)
+                        {
+                            _logger.LogError(ex, "Reading the file at {Path} failed due to a permissions exception.", fileInfo.FullName);
+                        }
                     }
                 }
 

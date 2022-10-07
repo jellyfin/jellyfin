@@ -11,7 +11,6 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Diacritics.Extensions;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
@@ -878,10 +877,7 @@ namespace MediaBrowser.Controller.Entities
             return CanDownload() && IsAuthorizedToDownload(user);
         }
 
-        /// <summary>
-        /// Returns a <see cref="string" /> that represents this instance.
-        /// </summary>
-        /// <returns>A <see cref="string" /> that represents this instance.</returns>
+        /// <inheritdoc />
         public override string ToString()
         {
             return Name;
@@ -1105,10 +1101,7 @@ namespace MediaBrowser.Controller.Entities
 
         private MediaSourceInfo GetVersionInfo(bool enablePathSubstitution, BaseItem item, MediaSourceType type)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
+            ArgumentNullException.ThrowIfNull(item);
 
             var protocol = item.PathProtocol;
 
@@ -1548,10 +1541,7 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="ArgumentNullException">If user is null.</exception>
         public bool IsParentalAllowed(User user)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ArgumentNullException.ThrowIfNull(user);
 
             if (!IsVisibleViaTags(user))
             {
@@ -1595,23 +1585,6 @@ namespace MediaBrowser.Controller.Entities
             return value.Value <= maxAllowedRating.Value;
         }
 
-        public int? GetParentalRatingValue()
-        {
-            var rating = CustomRating;
-
-            if (string.IsNullOrEmpty(rating))
-            {
-                rating = OfficialRating;
-            }
-
-            if (string.IsNullOrEmpty(rating))
-            {
-                return null;
-            }
-
-            return LocalizationManager.GetRatingLevel(rating);
-        }
-
         public int? GetInheritedParentalRatingValue()
         {
             var rating = CustomRatingForComparison;
@@ -1652,11 +1625,6 @@ namespace MediaBrowser.Controller.Entities
             return true;
         }
 
-        protected virtual bool IsAllowTagFilterEnforced()
-        {
-            return true;
-        }
-
         public virtual UnratedItem GetBlockUnratedType()
         {
             if (SourceType == SourceType.Channel)
@@ -1693,10 +1661,7 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="ArgumentNullException"><paramref name="user" /> is <c>null</c>.</exception>
         public virtual bool IsVisible(User user)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ArgumentNullException.ThrowIfNull(user);
 
             return IsParentalAllowed(user);
         }
@@ -1868,10 +1833,7 @@ namespace MediaBrowser.Controller.Entities
             DateTime? datePlayed,
             bool resetPosition)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ArgumentNullException.ThrowIfNull(user);
 
             var data = UserDataManager.GetUserData(user, this);
 
@@ -1902,10 +1864,7 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="ArgumentNullException">Throws if user is null.</exception>
         public virtual void MarkUnplayed(User user)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ArgumentNullException.ThrowIfNull(user);
 
             var data = UserDataManager.GetUserData(user, this);
 
@@ -2136,10 +2095,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Image index.</returns>
         public int GetImageIndex(ItemImageInfo image)
         {
-            if (image == null)
-            {
-                throw new ArgumentNullException(nameof(image));
-            }
+            ArgumentNullException.ThrowIfNull(image);
 
             if (image.Type == ImageType.Chapter)
             {
@@ -2346,10 +2302,7 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool IsUnplayed(User user)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ArgumentNullException.ThrowIfNull(user);
 
             var userdata = UserDataManager.GetUserData(user, this);
 
@@ -2642,7 +2595,8 @@ namespace MediaBrowser.Controller.Entities
             return ExtraIds
                 .Select(LibraryManager.GetItemById)
                 .Where(i => i != null)
-                .Where(i => i.ExtraType.HasValue && extraTypes.Contains(i.ExtraType.Value));
+                .Where(i => i.ExtraType.HasValue && extraTypes.Contains(i.ExtraType.Value))
+                .OrderBy(i => i.SortName);
         }
 
         public virtual long GetRunTimeTicksForPlayState()

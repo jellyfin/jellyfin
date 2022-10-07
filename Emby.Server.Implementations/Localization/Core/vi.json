@@ -91,7 +91,7 @@
     "MessageApplicationUpdated": "Jellyfin Server đã được cập nhật",
     "Latest": "Gần Nhất",
     "LabelRunningTimeValue": "Thời Gian Chạy: {0}",
-    "LabelIpAddressValue": "Địa Chỉ IP: {0}",
+    "LabelIpAddressValue": "Địa chỉ IP: {0}",
     "ItemRemovedWithName": "{0} đã xóa khỏi thư viện",
     "ItemAddedWithName": "{0} được thêm vào thư viện",
     "Inherit": "Thừa hưởng",
@@ -121,5 +121,6 @@
     "TaskOptimizeDatabaseDescription": "Thu gọn cơ sở dữ liệu và cắt bớt dung lượng trống. Chạy tác vụ này sau khi quét thư viện hoặc thực hiện các thay đổi khác ngụ ý sửa đổi cơ sở dữ liệu có thể cải thiện hiệu suất.",
     "TaskOptimizeDatabase": "Tối ưu hóa cơ sở dữ liệu",
     "TaskKeyframeExtractor": "Trích Xuất Khung Hình",
-    "TaskKeyframeExtractorDescription": "Trích xuất khung hình chính từ các tệp video để tạo danh sách phát HLS chính xác hơn. Tác vụ này có thể chạy trong một thời gian dài."
+    "TaskKeyframeExtractorDescription": "Trích xuất khung hình chính từ các tệp video để tạo danh sách phát HLS chính xác hơn. Tác vụ này có thể chạy trong một thời gian dài.",
+    "External": "Bên ngoài"
 }

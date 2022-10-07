@@ -1330,7 +1330,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             };
 
         /// <summary>
-        /// Used to split names of comma or pipe delimeted genres and people.
+        /// Used to split names of comma or pipe delimited genres and people.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>IEnumerable{System.String}.</returns>

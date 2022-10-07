@@ -36,7 +36,7 @@
     "Songs": "Lagu",
     "Playlists": "Daftar putar",
     "NotificationOptionPluginUninstalled": "Plugin dihapus",
-    "MusicVideos": "Video musik",
+    "MusicVideos": "Video Musik",
     "VersionNumber": "Versi {0}",
     "ValueSpecialEpisodeName": "Spesial - {0}",
     "ValueHasBeenAddedToLibrary": "{0} telah ditambahkan ke pustaka media Anda",
@@ -81,8 +81,8 @@
     "Movies": "Film",
     "MessageServerConfigurationUpdated": "Konfigurasi server telah diperbarui",
     "MessageNamedServerConfigurationUpdatedWithValue": "Bagian konfigurasi server {0} telah diperbarui",
-    "FailedLoginAttemptWithUserName": "Percobaan login gagal dari {0}",
-    "CameraImageUploadedFrom": "Sebuah gambar baru telah diunggah dari {0}",
+    "FailedLoginAttemptWithUserName": "Gagal melakukan login dari {0}",
+    "CameraImageUploadedFrom": "Gambar kamera baru telah diunggah dari {0}",
     "DeviceOfflineWithName": "{0} telah terputus",
     "DeviceOnlineWithName": "{0} telah terhubung",
     "NotificationOptionVideoPlaybackStopped": "Pemutaran video berhenti",
@@ -119,5 +119,8 @@
     "Forced": "Dipaksa",
     "Default": "Bawaan",
     "TaskOptimizeDatabaseDescription": "Rapihkan basis data dan membersihkan ruang kosong. Menjalankan tugas ini setelah memindai pustaka atau melakukan perubahan lain yang menyiratkan modifikasi basis data dapat meningkatkan kinerja.",
-    "TaskOptimizeDatabase": "Optimalkan basis data"
+    "TaskOptimizeDatabase": "Optimalkan basis data",
+    "TaskKeyframeExtractorDescription": "Ekstrak bingkai utama dari file video untuk membuat daftar putar HLS yang lebih tepat. Tugas ini dapat berjalan untuk waktu yang lama.",
+    "TaskKeyframeExtractor": "Ekstraktor Bingkai Utama",
+    "External": "Luar"
 }

@@ -23,7 +23,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         public int? OutputAudioBitrate;
         public int? OutputAudioChannels;
 
-        private TranscodeReason[] _transcodeReasons = null;
+        private TranscodeReason? _transcodeReasons = null;
 
         public EncodingJobInfo(TranscodingJobType jobType)
         {
@@ -34,25 +34,23 @@ namespace MediaBrowser.Controller.MediaEncoding
             SupportedSubtitleCodecs = Array.Empty<string>();
         }
 
-        public TranscodeReason[] TranscodeReasons
+        public TranscodeReason TranscodeReasons
         {
             get
             {
-                if (_transcodeReasons == null)
+                if (!_transcodeReasons.HasValue)
                 {
                     if (BaseRequest.TranscodeReasons == null)
                     {
-                        return Array.Empty<TranscodeReason>();
+                        _transcodeReasons = 0;
+                        return 0;
                     }
 
-                    _transcodeReasons = BaseRequest.TranscodeReasons
-                        .Split(',')
-                        .Where(i => !string.IsNullOrEmpty(i))
-                        .Select(v => (TranscodeReason)Enum.Parse(typeof(TranscodeReason), v, true))
-                        .ToArray();
+                    _ = Enum.TryParse<TranscodeReason>(BaseRequest.TranscodeReasons, out var reason);
+                    _transcodeReasons = reason;
                 }
 
-                return _transcodeReasons;
+                return _transcodeReasons.Value;
             }
         }
 
@@ -367,6 +365,28 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
+        /// <summary>
+        /// Gets the target video range type.
+        /// </summary>
+        public string TargetVideoRangeType
+        {
+            get
+            {
+                if (BaseRequest.Static || EncodingHelper.IsCopyCodec(OutputVideoCodec))
+                {
+                    return VideoStream?.VideoRangeType;
+                }
+
+                var requestedRangeType = GetRequestedRangeTypes(ActualOutputVideoCodec).FirstOrDefault();
+                if (!string.IsNullOrEmpty(requestedRangeType))
+                {
+                    return requestedRangeType;
+                }
+
+                return null;
+            }
+        }
+
         public string TargetVideoCodecTag
         {
             get
@@ -574,6 +594,26 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (!string.IsNullOrEmpty(profile))
                 {
                     return profile.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                }
+            }
+
+            return Array.Empty<string>();
+        }
+
+        public string[] GetRequestedRangeTypes(string codec)
+        {
+            if (!string.IsNullOrEmpty(BaseRequest.VideoRangeType))
+            {
+                return BaseRequest.VideoRangeType.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
+            }
+
+            if (!string.IsNullOrEmpty(codec))
+            {
+                var rangetype = BaseRequest.GetOption(codec, "rangetype");
+
+                if (!string.IsNullOrEmpty(rangetype))
+                {
+                    return rangetype.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries);
                 }
             }
 

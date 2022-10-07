@@ -57,5 +57,21 @@ namespace Jellyfin.Extensions
 
             return -1;
         }
+
+        /// <summary>
+        /// Get the first or default item from a list.
+        /// </summary>
+        /// <param name="source">The source list.</param>
+        /// <typeparam name="T">The type of item.</typeparam>
+        /// <returns>The first item or default if list is empty.</returns>
+        public static T? FirstOrDefault<T>(this IReadOnlyList<T>? source)
+        {
+            if (source is null || source.Count == 0)
+            {
+                return default;
+            }
+
+            return source[0];
+        }
     }
 }

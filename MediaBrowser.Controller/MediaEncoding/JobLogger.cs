@@ -111,7 +111,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                         percent = 100.0 * currentMs / totalMs;
 
-                        transcodingPosition = val;
+                        transcodingPosition = TimeSpan.FromMilliseconds(currentMs);
                     }
                 }
                 else if (part.StartsWith("size=", StringComparison.OrdinalIgnoreCase))

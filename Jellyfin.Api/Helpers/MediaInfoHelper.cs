@@ -2,9 +2,11 @@
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
@@ -15,7 +17,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -39,7 +40,6 @@ namespace Jellyfin.Api.Helpers
         private readonly ILogger<MediaInfoHelper> _logger;
         private readonly INetworkManager _networkManager;
         private readonly IDeviceManager _deviceManager;
-        private readonly IAuthorizationContext _authContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MediaInfoHelper"/> class.
@@ -52,7 +52,6 @@ namespace Jellyfin.Api.Helpers
         /// <param name="logger">Instance of the <see cref="ILogger{MediaInfoHelper}"/> interface.</param>
         /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
         /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
-        /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         public MediaInfoHelper(
             IUserManager userManager,
             ILibraryManager libraryManager,
@@ -61,8 +60,7 @@ namespace Jellyfin.Api.Helpers
             IServerConfigurationManager serverConfigurationManager,
             ILogger<MediaInfoHelper> logger,
             INetworkManager networkManager,
-            IDeviceManager deviceManager,
-            IAuthorizationContext authContext)
+            IDeviceManager deviceManager)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
@@ -72,7 +70,6 @@ namespace Jellyfin.Api.Helpers
             _logger = logger;
             _networkManager = networkManager;
             _deviceManager = deviceManager;
-            _authContext = authContext;
         }
 
         /// <summary>
@@ -147,7 +144,7 @@ namespace Jellyfin.Api.Helpers
         /// <param name="item">Item to set data for.</param>
         /// <param name="mediaSource">Media source info.</param>
         /// <param name="profile">Device profile.</param>
-        /// <param name="auth">Authorization info.</param>
+        /// <param name="claimsPrincipal">Current claims principal.</param>
         /// <param name="maxBitrate">Max bitrate.</param>
         /// <param name="startTimeTicks">Start time ticks.</param>
         /// <param name="mediaSourceId">Media source id.</param>
@@ -166,7 +163,7 @@ namespace Jellyfin.Api.Helpers
             BaseItem item,
             MediaSourceInfo mediaSource,
             DeviceProfile profile,
-            AuthorizationInfo auth,
+            ClaimsPrincipal claimsPrincipal,
             int? maxBitrate,
             long startTimeTicks,
             string mediaSourceId,
@@ -188,10 +185,12 @@ namespace Jellyfin.Api.Helpers
             {
                 MediaSources = new[] { mediaSource },
                 Context = EncodingContext.Streaming,
-                DeviceId = auth.DeviceId,
+                DeviceId = claimsPrincipal.GetDeviceId(),
                 ItemId = item.Id,
                 Profile = profile,
-                MaxAudioChannels = maxAudioChannels
+                MaxAudioChannels = maxAudioChannels,
+                AllowAudioStreamCopy = allowAudioStreamCopy,
+                AllowVideoStreamCopy = allowVideoStreamCopy
             };
 
             if (string.Equals(mediaSourceId, mediaSource.Id, StringComparison.OrdinalIgnoreCase))
@@ -208,7 +207,7 @@ namespace Jellyfin.Api.Helpers
                 mediaSource.SupportsDirectPlay = false;
             }
 
-            if (!enableDirectStream)
+            if (!enableDirectStream || !allowVideoStreamCopy)
             {
                 mediaSource.SupportsDirectStream = false;
             }
@@ -235,168 +234,88 @@ namespace Jellyfin.Api.Helpers
                     user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding));
             }
 
-            // Beginning of Playback Determination: Attempt DirectPlay first
-            if (mediaSource.SupportsDirectPlay)
+            options.MaxBitrate = GetMaxBitrate(maxBitrate, user, ipAddress);
+
+            if (!options.ForceDirectStream)
             {
+                // direct-stream http streaming is currently broken
+                options.EnableDirectStream = false;
+            }
+
+            // Beginning of Playback Determination
+            var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase)
+                ? streamBuilder.BuildAudioItem(options)
+                : streamBuilder.BuildVideoItem(options);
+
+            if (streamInfo != null)
+            {
+                streamInfo.PlaySessionId = playSessionId;
+                streamInfo.StartPositionTicks = startTimeTicks;
+
+                mediaSource.SupportsDirectPlay = streamInfo.PlayMethod == PlayMethod.DirectPlay;
+
+                // Players do not handle this being set according to PlayMethod
+                mediaSource.SupportsDirectStream =
+                    options.EnableDirectStream
+                        ? streamInfo.PlayMethod == PlayMethod.DirectPlay || streamInfo.PlayMethod == PlayMethod.DirectStream
+                        : streamInfo.PlayMethod == PlayMethod.DirectPlay;
+
+                mediaSource.SupportsTranscoding =
+                    streamInfo.PlayMethod == PlayMethod.DirectStream
+                    || mediaSource.TranscodingContainer != null
+                    || profile.TranscodingProfiles.Any(i => i.Type == streamInfo.MediaType && i.Context == options.Context);
+
+                if (item is Audio)
+                {
+                    if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding))
+                    {
+                        mediaSource.SupportsTranscoding = false;
+                    }
+                }
+                else if (item is Video)
+                {
+                    if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding)
+                        && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding)
+                        && !user.HasPermission(PermissionKind.EnablePlaybackRemuxing))
+                    {
+                        mediaSource.SupportsTranscoding = false;
+                    }
+                }
+
                 if (mediaSource.IsRemote && user.HasPermission(PermissionKind.ForceRemoteSourceTranscoding))
                 {
                     mediaSource.SupportsDirectPlay = false;
-                }
-                else
-                {
-                    var supportsDirectStream = mediaSource.SupportsDirectStream;
-
-                    // Dummy this up to fool StreamBuilder
-                    mediaSource.SupportsDirectStream = true;
-                    options.MaxBitrate = maxBitrate;
-
-                    if (item is Audio)
-                    {
-                        if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding))
-                        {
-                            options.ForceDirectPlay = true;
-                        }
-                    }
-                    else if (item is Video)
-                    {
-                        if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding)
-                            && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding)
-                            && !user.HasPermission(PermissionKind.EnablePlaybackRemuxing))
-                        {
-                            options.ForceDirectPlay = true;
-                        }
-                    }
-
-                    // The MediaSource supports direct stream, now test to see if the client supports it
-                    var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase)
-                        ? streamBuilder.BuildAudioItem(options)
-                        : streamBuilder.BuildVideoItem(options);
-
-                    if (streamInfo == null || !streamInfo.IsDirectStream)
-                    {
-                        mediaSource.SupportsDirectPlay = false;
-                    }
-
-                    // Set this back to what it was
-                    mediaSource.SupportsDirectStream = supportsDirectStream;
-
-                    if (streamInfo != null)
-                    {
-                        SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
-                        mediaSource.DefaultAudioStreamIndex = streamInfo.AudioStreamIndex;
-                    }
-                }
-            }
-
-            if (mediaSource.SupportsDirectStream)
-            {
-                if (mediaSource.IsRemote && user.HasPermission(PermissionKind.ForceRemoteSourceTranscoding))
-                {
                     mediaSource.SupportsDirectStream = false;
+
+                    mediaSource.TranscodingUrl = streamInfo.ToUrl("-", claimsPrincipal.GetToken()).TrimStart('-');
+                    mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
+                    mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
+                    mediaSource.TranscodingContainer = streamInfo.Container;
+                    mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
                 }
                 else
                 {
-                    options.MaxBitrate = GetMaxBitrate(maxBitrate, user, ipAddress);
-
-                    if (item is Audio)
+                    if (!mediaSource.SupportsDirectPlay && (mediaSource.SupportsTranscoding || mediaSource.SupportsDirectStream))
                     {
-                        if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding))
+                        streamInfo.PlayMethod = PlayMethod.Transcode;
+                        mediaSource.TranscodingUrl = streamInfo.ToUrl("-", claimsPrincipal.GetToken()).TrimStart('-');
+
+                        if (!allowVideoStreamCopy)
                         {
-                            options.ForceDirectStream = true;
-                        }
-                    }
-                    else if (item is Video)
-                    {
-                        if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding)
-                            && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding)
-                            && user.HasPermission(PermissionKind.EnablePlaybackRemuxing))
-                        {
-                            options.ForceDirectStream = true;
-                        }
-                    }
-
-                    // The MediaSource supports direct stream, now test to see if the client supports it
-                    var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase)
-                        ? streamBuilder.BuildAudioItem(options)
-                        : streamBuilder.BuildVideoItem(options);
-
-                    if (streamInfo == null || !streamInfo.IsDirectStream)
-                    {
-                        mediaSource.SupportsDirectStream = false;
-                    }
-
-                    if (streamInfo != null)
-                    {
-                        SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
-                        mediaSource.DefaultAudioStreamIndex = streamInfo.AudioStreamIndex;
-                    }
-                }
-            }
-
-            if (mediaSource.SupportsTranscoding)
-            {
-                options.MaxBitrate = GetMaxBitrate(maxBitrate, user, ipAddress);
-
-                // The MediaSource supports direct stream, now test to see if the client supports it
-                var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase)
-                    ? streamBuilder.BuildAudioItem(options)
-                    : streamBuilder.BuildVideoItem(options);
-
-                if (mediaSource.IsRemote && user.HasPermission(PermissionKind.ForceRemoteSourceTranscoding))
-                {
-                    if (streamInfo != null)
-                    {
-                        streamInfo.PlaySessionId = playSessionId;
-                        streamInfo.StartPositionTicks = startTimeTicks;
-                        mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).TrimStart('-');
-                        mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
-                        mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
-                        mediaSource.TranscodingContainer = streamInfo.Container;
-                        mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
-
-                        // Do this after the above so that StartPositionTicks is set
-                        SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
-                        mediaSource.DefaultAudioStreamIndex = streamInfo.AudioStreamIndex;
-                    }
-                }
-                else
-                {
-                    if (streamInfo != null)
-                    {
-                        streamInfo.PlaySessionId = playSessionId;
-
-                        if (streamInfo.PlayMethod == PlayMethod.Transcode)
-                        {
-                            streamInfo.StartPositionTicks = startTimeTicks;
-                            mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).TrimStart('-');
-
-                            if (!allowVideoStreamCopy)
-                            {
-                                mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
-                            }
-
-                            if (!allowAudioStreamCopy)
-                            {
-                                mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
-                            }
-
-                            mediaSource.TranscodingContainer = streamInfo.Container;
-                            mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
+                            mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
                         }
 
                         if (!allowAudioStreamCopy)
                         {
                             mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
                         }
-
-                        mediaSource.TranscodingContainer = streamInfo.Container;
-                        mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
-
-                        // Do this after the above so that StartPositionTicks is set
-                        SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
-                        mediaSource.DefaultAudioStreamIndex = streamInfo.AudioStreamIndex;
                     }
                 }
+
+                // Do this after the above so that StartPositionTicks is set
+                // The token must not be null
+                SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, claimsPrincipal.GetToken()!);
+                mediaSource.DefaultAudioStreamIndex = streamInfo.AudioStreamIndex;
             }
 
             foreach (var attachment in mediaSource.MediaAttachments)
@@ -463,19 +382,17 @@ namespace Jellyfin.Api.Helpers
         /// <summary>
         /// Open media source.
         /// </summary>
-        /// <param name="httpRequest">Http Request.</param>
+        /// <param name="httpContext">Http Context.</param>
         /// <param name="request">Live stream request.</param>
         /// <returns>A <see cref="Task"/> containing the <see cref="LiveStreamResponse"/>.</returns>
-        public async Task<LiveStreamResponse> OpenMediaSource(HttpRequest httpRequest, LiveStreamRequest request)
+        public async Task<LiveStreamResponse> OpenMediaSource(HttpContext httpContext, LiveStreamRequest request)
         {
-            var authInfo = await _authContext.GetAuthorizationInfo(httpRequest).ConfigureAwait(false);
-
             var result = await _mediaSourceManager.OpenLiveStream(request, CancellationToken.None).ConfigureAwait(false);
 
             var profile = request.DeviceProfile;
             if (profile == null)
             {
-                var clientCapabilities = _deviceManager.GetCapabilities(authInfo.DeviceId);
+                var clientCapabilities = _deviceManager.GetCapabilities(httpContext.User.GetDeviceId());
                 if (clientCapabilities != null)
                 {
                     profile = clientCapabilities.DeviceProfile;
@@ -490,7 +407,7 @@ namespace Jellyfin.Api.Helpers
                     item,
                     result.MediaSource,
                     profile,
-                    authInfo,
+                    httpContext.User,
                     request.MaxStreamingBitrate,
                     request.StartTimeTicks ?? 0,
                     result.MediaSource.Id,
@@ -504,7 +421,7 @@ namespace Jellyfin.Api.Helpers
                     true,
                     true,
                     true,
-                    httpRequest.HttpContext.GetNormalizedRemoteIp());
+                    httpContext.GetNormalizedRemoteIp());
             }
             else
             {

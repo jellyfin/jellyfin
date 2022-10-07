@@ -18,6 +18,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Providers.MediaInfo;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -70,7 +71,7 @@ public class MediaInfoResolverTests
         fileSystem.Setup(fs => fs.DirectoryExists(It.IsRegex(MetadataDirectoryRegex)))
             .Returns(true);
 
-        _subtitleResolver = new SubtitleResolver(_localizationManager, mediaEncoder.Object, fileSystem.Object, new NamingOptions());
+        _subtitleResolver = new SubtitleResolver(Mock.Of<ILogger<SubtitleResolver>>(), _localizationManager, mediaEncoder.Object, fileSystem.Object, new NamingOptions());
     }
 
     [Fact]
@@ -201,14 +202,14 @@ public class MediaInfoResolverTests
         var mediaEncoder = Mock.Of<IMediaEncoder>(MockBehavior.Strict);
         var fileSystem = Mock.Of<IFileSystem>();
 
-        var subtitleResolver = new SubtitleResolver(_localizationManager, mediaEncoder, fileSystem, new NamingOptions());
+        var subtitleResolver = new SubtitleResolver(Mock.Of<ILogger<SubtitleResolver>>(), _localizationManager, mediaEncoder, fileSystem, new NamingOptions());
 
         var streams = await subtitleResolver.GetExternalStreamsAsync(video, 0, directoryService.Object, false, CancellationToken.None);
 
         Assert.Empty(streams);
     }
 
-    private static TheoryData<string, MediaStream[], MediaStream[]> GetExternalStreams_MergeMetadata_HandlesOverridesCorrectly_Data()
+    public static TheoryData<string, MediaStream[], MediaStream[]> GetExternalStreams_MergeMetadata_HandlesOverridesCorrectly_Data()
     {
         var data = new TheoryData<string, MediaStream[], MediaStream[]>();
 
@@ -306,7 +307,7 @@ public class MediaInfoResolverTests
         fileSystem.Setup(fs => fs.DirectoryExists(It.IsRegex(MetadataDirectoryRegex)))
             .Returns(true);
 
-        var subtitleResolver = new SubtitleResolver(_localizationManager, mediaEncoder.Object, fileSystem.Object, new NamingOptions());
+        var subtitleResolver = new SubtitleResolver(Mock.Of<ILogger<SubtitleResolver>>(), _localizationManager, mediaEncoder.Object, fileSystem.Object, new NamingOptions());
 
         var directoryService = GetDirectoryServiceForExternalFile(file);
         var streams = await subtitleResolver.GetExternalStreamsAsync(video, 0, directoryService, false, CancellationToken.None);
@@ -360,7 +361,10 @@ public class MediaInfoResolverTests
             var mediaStreams = new List<MediaStream>();
             for (int i = 0; i < streamCount; i++)
             {
-                mediaStreams.Add(new());
+                mediaStreams.Add(new()
+                {
+                    Type = MediaStreamType.Subtitle
+                });
             }
 
             return mediaStreams;
@@ -379,7 +383,7 @@ public class MediaInfoResolverTests
         fileSystem.Setup(fs => fs.DirectoryExists(It.IsRegex(MetadataDirectoryRegex)))
             .Returns(true);
 
-        var subtitleResolver = new SubtitleResolver(_localizationManager, mediaEncoder.Object, fileSystem.Object, new NamingOptions());
+        var subtitleResolver = new SubtitleResolver(Mock.Of<ILogger<SubtitleResolver>>(), _localizationManager, mediaEncoder.Object, fileSystem.Object, new NamingOptions());
 
         int startIndex = 1;
         var streams = await subtitleResolver.GetExternalStreamsAsync(video, startIndex, directoryService.Object, false, CancellationToken.None);

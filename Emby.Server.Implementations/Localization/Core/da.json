@@ -120,5 +120,8 @@
     "Forced": "Tvunget",
     "Default": "Standard",
     "TaskOptimizeDatabaseDescription": "Kompakter database og forkorter fri plads. Ved at køre denne proces efter at scanne biblioteket eller efter at ændre noget som kunne have indflydelse på databasen, kan forbedre ydeevne.",
-    "TaskOptimizeDatabase": "Optimér database"
+    "TaskOptimizeDatabase": "Optimér database",
+    "TaskKeyframeExtractorDescription": "Udtrækker billeder fra videofiler for at lave mere præcise HLS playlister. Denne opgave kan godt tage lang tid.",
+    "TaskKeyframeExtractor": "Billedramme udtrækker",
+    "External": "Ekstern"
 }

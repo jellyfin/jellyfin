@@ -473,7 +473,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("lockedfields", string.Join('|', item.LockedFields));
             }
 
-            writer.WriteElementString("dateadded", item.DateCreated.ToLocalTime().ToString(DateAddedFormat, CultureInfo.InvariantCulture));
+            writer.WriteElementString("dateadded", item.DateCreated.ToString(DateAddedFormat, CultureInfo.InvariantCulture));
 
             writer.WriteElementString("title", item.Name ?? string.Empty);
 
@@ -601,16 +601,16 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 {
                     writer.WriteElementString(
                         "formed",
-                        item.PremiereDate.Value.ToLocalTime().ToString(formatString, CultureInfo.InvariantCulture));
+                        item.PremiereDate.Value.ToString(formatString, CultureInfo.InvariantCulture));
                 }
                 else
                 {
                     writer.WriteElementString(
                         "premiered",
-                        item.PremiereDate.Value.ToLocalTime().ToString(formatString, CultureInfo.InvariantCulture));
+                        item.PremiereDate.Value.ToString(formatString, CultureInfo.InvariantCulture));
                     writer.WriteElementString(
                         "releasedate",
-                        item.PremiereDate.Value.ToLocalTime().ToString(formatString, CultureInfo.InvariantCulture));
+                        item.PremiereDate.Value.ToString(formatString, CultureInfo.InvariantCulture));
                 }
             }
 
@@ -622,7 +622,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                     writer.WriteElementString(
                         "enddate",
-                        item.EndDate.Value.ToLocalTime().ToString(formatString, CultureInfo.InvariantCulture));
+                        item.EndDate.Value.ToString(formatString, CultureInfo.InvariantCulture));
                 }
             }
 
@@ -891,7 +891,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 {
                     writer.WriteElementString(
                         "lastplayed",
-                        userdata.LastPlayedDate.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture).ToLowerInvariant());
+                        userdata.LastPlayedDate.Value.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture).ToLowerInvariant());
                 }
 
                 writer.WriteStartElement("resume");

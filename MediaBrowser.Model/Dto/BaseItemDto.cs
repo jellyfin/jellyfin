@@ -294,13 +294,13 @@ namespace MediaBrowser.Model.Dto
         public NameGuidPair[] GenreItems { get; set; }
 
         /// <summary>
-        /// Gets or sets wether the item has a logo, this will hold the Id of the Parent that has one.
+        /// Gets or sets whether the item has a logo, this will hold the Id of the Parent that has one.
         /// </summary>
         /// <value>The parent logo item id.</value>
         public Guid? ParentLogoItemId { get; set; }
 
         /// <summary>
-        /// Gets or sets wether the item has any backdrops, this will hold the Id of the Parent that has one.
+        /// Gets or sets whether the item has any backdrops, this will hold the Id of the Parent that has one.
         /// </summary>
         /// <value>The parent backdrop item id.</value>
         public Guid? ParentBackdropItemId { get; set; }
@@ -506,7 +506,7 @@ namespace MediaBrowser.Model.Dto
         public string ParentLogoImageTag { get; set; }
 
         /// <summary>
-        /// Gets or sets wether the item has fan art, this will hold the Id of the Parent that has one.
+        /// Gets or sets whether the item has fan art, this will hold the Id of the Parent that has one.
         /// </summary>
         /// <value>The parent art item id.</value>
         public Guid? ParentArtItemId { get; set; }

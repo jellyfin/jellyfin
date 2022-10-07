@@ -2,7 +2,6 @@
 
 using System;
 using System.Globalization;
-using System.Linq;
 using MediaBrowser.Model.Dlna;
 
 namespace Emby.Dlna.Profiles
@@ -163,19 +162,6 @@ namespace Emby.Dlna.Profiles
                     MimeType = "video/mp4"
                 }
             };
-        }
-
-        public void AddXmlRootAttribute(string name, string value)
-        {
-            var list = XmlRootAttributes.ToList();
-
-            list.Add(new XmlAttribute
-            {
-                Name = name,
-                Value = value
-            });
-
-            XmlRootAttributes = list.ToArray();
         }
     }
 }

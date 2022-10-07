@@ -6,6 +6,11 @@ namespace MediaBrowser.Controller.Resolvers
     public enum ResolverPriority
     {
         /// <summary>
+        /// The highest priority. Used by plugins to bypass the default server resolvers.
+        /// </summary>
+        Plugin = 0,
+
+        /// <summary>
         /// The first.
         /// </summary>
         First = 1,

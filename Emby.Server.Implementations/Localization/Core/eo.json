@@ -121,5 +121,6 @@
     "CameraImageUploadedFrom": "Nova kamera bildo estis alŝutita de {0}",
     "AuthenticationSucceededWithUserName": "{0} sukcese aŭtentikigis",
     "TaskKeyframeExtractorDescription": "Eltiras ĉefkadrojn el videodosieroj por krei pli precizajn HLS-ludlistojn. Ĉi tiu tasko povas funkcii dum longa tempo.",
-    "TaskKeyframeExtractor": "Eltiri Ĉefkadrojn"
+    "TaskKeyframeExtractor": "Eltiri Ĉefkadrojn",
+    "External": "Ekstera"
 }

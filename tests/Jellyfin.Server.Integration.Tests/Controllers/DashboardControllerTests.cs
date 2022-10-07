@@ -14,6 +14,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
     {
         private readonly JellyfinApplicationFactory _factory;
         private readonly JsonSerializerOptions _jsonOpions = JsonDefaults.Options;
+        private static string? _accessToken;
 
         public DashboardControllerTests(JellyfinApplicationFactory factory)
         {
@@ -57,6 +58,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         public async Task GetConfigurationPages_NoParams_AllConfigurationPages()
         {
             var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
 
             var response = await client.GetAsync("/web/ConfigurationPages").ConfigureAwait(false);
 
@@ -71,6 +73,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         public async Task GetConfigurationPages_True_MainMenuConfigurationPages()
         {
             var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
 
             var response = await client.GetAsync("/web/ConfigurationPages?enableInMainMenu=true").ConfigureAwait(false);
 
@@ -80,6 +83,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
 
             var res = await response.Content.ReadAsStreamAsync();
             var data = await JsonSerializer.DeserializeAsync<ConfigurationPageInfo[]>(res, _jsonOpions);
+            Assert.NotNull(data);
             Assert.Empty(data);
         }
     }

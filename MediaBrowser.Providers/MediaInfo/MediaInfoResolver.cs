@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -16,6 +15,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -34,6 +34,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// </summary>
         private readonly IMediaEncoder _mediaEncoder;
 
+        private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
@@ -49,18 +50,21 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <summary>
         /// Initializes a new instance of the <see cref="MediaInfoResolver"/> class.
         /// </summary>
+        /// <param name="logger">The logger.</param>
         /// <param name="localizationManager">The localization manager.</param>
         /// <param name="mediaEncoder">The media encoder.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="namingOptions">The <see cref="NamingOptions"/> object containing FileExtensions, MediaDefaultFlags, MediaForcedFlags and MediaFlagDelimiters.</param>
         /// <param name="type">The <see cref="DlnaProfileType"/> of the parsed file.</param>
         protected MediaInfoResolver(
+            ILogger logger,
             ILocalizationManager localizationManager,
             IMediaEncoder mediaEncoder,
             IFileSystem fileSystem,
             NamingOptions namingOptions,
             DlnaProfileType type)
         {
+            _logger = logger;
             _mediaEncoder = mediaEncoder;
             _fileSystem = fileSystem;
             _namingOptions = namingOptions;
@@ -100,25 +104,46 @@ namespace MediaBrowser.Providers.MediaInfo
 
             foreach (var pathInfo in pathInfos)
             {
-                var mediaInfo = await GetMediaInfo(pathInfo.Path, _type, cancellationToken).ConfigureAwait(false);
-
-                if (mediaInfo.MediaStreams.Count == 1)
+                if (!pathInfo.Path.AsSpan().EndsWith(".strm", StringComparison.OrdinalIgnoreCase))
                 {
-                    MediaStream mediaStream = mediaInfo.MediaStreams[0];
-                    mediaStream.Index = startIndex++;
-                    mediaStream.IsDefault = pathInfo.IsDefault || mediaStream.IsDefault;
-                    mediaStream.IsForced = pathInfo.IsForced || mediaStream.IsForced;
-                    mediaStream.IsHearingImpaired = pathInfo.IsHearingImpaired || mediaStream.IsHearingImpaired;
-
-                    mediaStreams.Add(MergeMetadata(mediaStream, pathInfo));
-                }
-                else
-                {
-                    foreach (MediaStream mediaStream in mediaInfo.MediaStreams)
+                    try
                     {
-                        mediaStream.Index = startIndex++;
+                        var mediaInfo = await GetMediaInfo(pathInfo.Path, _type, cancellationToken).ConfigureAwait(false);
 
-                        mediaStreams.Add(MergeMetadata(mediaStream, pathInfo));
+                        if (mediaInfo.MediaStreams.Count == 1)
+                        {
+                            MediaStream mediaStream = mediaInfo.MediaStreams[0];
+
+                            if ((mediaStream.Type == MediaStreamType.Audio && _type == DlnaProfileType.Audio)
+                                || (mediaStream.Type == MediaStreamType.Subtitle && _type == DlnaProfileType.Subtitle))
+                            {
+                                mediaStream.Index = startIndex++;
+                                mediaStream.IsDefault = pathInfo.IsDefault || mediaStream.IsDefault;
+                                mediaStream.IsForced = pathInfo.IsForced || mediaStream.IsForced;
+                                mediaStream.IsHearingImpaired = pathInfo.IsHearingImpaired || mediaStream.IsHearingImpaired;
+
+                                mediaStreams.Add(MergeMetadata(mediaStream, pathInfo));
+                            }
+                        }
+                        else
+                        {
+                            foreach (MediaStream mediaStream in mediaInfo.MediaStreams)
+                            {
+                                if ((mediaStream.Type == MediaStreamType.Audio && _type == DlnaProfileType.Audio)
+                                    || (mediaStream.Type == MediaStreamType.Subtitle && _type == DlnaProfileType.Subtitle))
+                                {
+                                    mediaStream.Index = startIndex++;
+
+                                    mediaStreams.Add(MergeMetadata(mediaStream, pathInfo));
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error getting external streams from {Path}", pathInfo.Path);
+
+                        continue;
                     }
                 }
             }
@@ -151,6 +176,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             var files = directoryService.GetFilePaths(folder, clearCache).ToList();
+            files.Remove(video.Path);
             var internalMetadataPath = video.GetInternalMetadataPath();
             if (_fileSystem.DirectoryExists(internalMetadataPath))
             {
@@ -219,13 +245,6 @@ namespace MediaBrowser.Providers.MediaInfo
             mediaStream.IsExternal = true;
             mediaStream.Title = string.IsNullOrEmpty(mediaStream.Title) ? (string.IsNullOrEmpty(pathInfo.Title) ? null : pathInfo.Title) : mediaStream.Title;
             mediaStream.Language = string.IsNullOrEmpty(mediaStream.Language) ? (string.IsNullOrEmpty(pathInfo.Language) ? null : pathInfo.Language) : mediaStream.Language;
-
-            mediaStream.Type = _type switch
-            {
-                DlnaProfileType.Audio => MediaStreamType.Audio,
-                DlnaProfileType.Subtitle => MediaStreamType.Subtitle,
-                _ => mediaStream.Type
-            };
 
             return mediaStream;
         }

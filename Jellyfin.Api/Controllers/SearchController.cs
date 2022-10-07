@@ -6,6 +6,7 @@ using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -59,9 +60,9 @@ namespace Jellyfin.Api.Controllers
         /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <param name="userId">Optional. Supply a user id to search within a user's library or omit to search all.</param>
         /// <param name="searchTerm">The search term to filter on.</param>
-        /// <param name="includeItemTypes">If specified, only results with the specified item types are returned. This allows multiple, comma delimeted.</param>
-        /// <param name="excludeItemTypes">If specified, results with these item types are filtered out. This allows multiple, comma delimeted.</param>
-        /// <param name="mediaTypes">If specified, only results with the specified media types are returned. This allows multiple, comma delimeted.</param>
+        /// <param name="includeItemTypes">If specified, only results with the specified item types are returned. This allows multiple, comma delimited.</param>
+        /// <param name="excludeItemTypes">If specified, results with these item types are filtered out. This allows multiple, comma delimited.</param>
+        /// <param name="mediaTypes">If specified, only results with the specified media types are returned. This allows multiple, comma delimited.</param>
         /// <param name="parentId">If specified, only children of the parent are returned.</param>
         /// <param name="isMovie">Optional filter for movies.</param>
         /// <param name="isSeries">Optional filter for series.</param>
@@ -78,7 +79,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet]
         [Description("Gets search hints based on a search term")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<SearchHintResult> Get(
+        public ActionResult<SearchHintResult> GetSearchHints(
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] Guid? userId,
@@ -139,7 +140,7 @@ namespace Jellyfin.Api.Controllers
                 IndexNumber = item.IndexNumber,
                 ParentIndexNumber = item.ParentIndexNumber,
                 Id = item.Id,
-                Type = item.GetClientTypeName(),
+                Type = item.GetBaseItemKind(),
                 MediaType = item.MediaType,
                 MatchedTerm = hintInfo.MatchedTerm,
                 RunTimeTicks = item.RunTimeTicks,
@@ -148,8 +149,10 @@ namespace Jellyfin.Api.Controllers
                 EndDate = item.EndDate
             };
 
-            // legacy
+#pragma warning disable CS0618
+            // Kept for compatibility with older clients
             result.ItemId = result.Id;
+#pragma warning restore CS0618
 
             if (item.IsFolder)
             {
@@ -187,7 +190,7 @@ namespace Jellyfin.Api.Controllers
                     result.AlbumArtist = album.AlbumArtist;
                     break;
                 case Audio song:
-                    result.AlbumArtist = song.AlbumArtists?[0];
+                    result.AlbumArtist = song.AlbumArtists?.FirstOrDefault();
                     result.Artists = song.Artists;
 
                     MusicAlbum musicAlbum = song.AlbumEntity;

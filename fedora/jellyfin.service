@@ -1,15 +1,17 @@
 [Unit]
-After=network-online.target
-Description=Jellyfin is a free software media system that puts you in control of managing and streaming your media.
+Description = Jellyfin Media Server
+After = network-online.target
 
 [Service]
-EnvironmentFile=/etc/sysconfig/jellyfin
-WorkingDirectory=/var/lib/jellyfin
-ExecStart=/usr/bin/jellyfin ${JELLYFIN_WEB_OPT} ${JELLYFIN_RESTART_OPT} ${JELLYFIN_FFMPEG_OPT} ${JELLYFIN_SERVICE_OPT} ${JELLYFIN_NOWEBAPP_OPT}
-TimeoutSec=15
-Restart=on-failure
-User=jellyfin
-Group=jellyfin
+Type = simple
+EnvironmentFile = /etc/sysconfig/jellyfin
+User = jellyfin
+Group = jellyfin
+WorkingDirectory = /var/lib/jellyfin
+ExecStart = /usr/bin/jellyfin $JELLYFIN_WEB_OPT $JELLYFIN_RESTART_OPT $JELLYFIN_FFMPEG_OPT $JELLYFIN_SERVICE_OPT $JELLYFIN_NOWEBAPP_OPT $JELLYFIN_ADDITIONAL_OPTS
+Restart = on-failure
+TimeoutSec = 15
+SuccessExitStatus=0 143
 
 [Install]
-WantedBy=multi-user.target
+WantedBy = multi-user.target

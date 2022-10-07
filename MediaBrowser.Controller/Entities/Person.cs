@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Diacritics.Extensions;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Providers;
 using Microsoft.Extensions.Logging;
 

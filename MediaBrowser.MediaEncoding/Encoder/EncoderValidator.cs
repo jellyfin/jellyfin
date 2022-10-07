@@ -100,6 +100,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "scale_vaapi",
             "deinterlace_vaapi",
             "tonemap_vaapi",
+            "procamp_vaapi",
             "overlay_vaapi",
             "hwupload_vaapi"
         };
@@ -152,7 +153,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             string output;
             try
             {
-                output = GetProcessOutput(_encoderPath, "-version", false);
+                output = GetProcessOutput(_encoderPath, "-version", false, null);
             }
             catch (Exception ex)
             {
@@ -233,7 +234,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             string output;
             try
             {
-                output = GetProcessOutput(_encoderPath, "-version", false);
+                output = GetProcessOutput(_encoderPath, "-version", false, null);
             }
             catch (Exception ex)
             {
@@ -340,7 +341,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             try
             {
-                var output = GetProcessOutput(_encoderPath, "-v verbose -hide_banner -init_hw_device vaapi=va:" + renderNodePath, true);
+                var output = GetProcessOutput(_encoderPath, "-v verbose -hide_banner -init_hw_device vaapi=va:" + renderNodePath, true, null);
                 return output.Contains(driverName, StringComparison.Ordinal);
             }
             catch (Exception ex)
@@ -355,7 +356,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             string? output = null;
             try
             {
-                output = GetProcessOutput(_encoderPath, "-hwaccels", false);
+                output = GetProcessOutput(_encoderPath, "-hwaccels", false, null);
             }
             catch (Exception ex)
             {
@@ -383,7 +384,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             string output;
             try
             {
-                output = GetProcessOutput(_encoderPath, "-h filter=" + filter, false);
+                output = GetProcessOutput(_encoderPath, "-h filter=" + filter, false, null);
             }
             catch (Exception ex)
             {
@@ -401,13 +402,34 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return false;
         }
 
+        public bool CheckSupportedRuntimeKey(string keyDesc)
+        {
+            if (string.IsNullOrEmpty(keyDesc))
+            {
+                return false;
+            }
+
+            string output;
+            try
+            {
+                output = GetProcessOutput(_encoderPath, "-hide_banner -f lavfi -i nullsrc=s=1x1:d=500 -f null -", true, "?");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking supported runtime key");
+                return false;
+            }
+
+            return output.Contains(keyDesc, StringComparison.Ordinal);
+        }
+
         private IEnumerable<string> GetCodecs(Codec codec)
         {
             string codecstr = codec == Codec.Encoder ? "encoders" : "decoders";
             string output;
             try
             {
-                output = GetProcessOutput(_encoderPath, "-" + codecstr, false);
+                output = GetProcessOutput(_encoderPath, "-" + codecstr, false, null);
             }
             catch (Exception ex)
             {
@@ -438,7 +460,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             string output;
             try
             {
-                output = GetProcessOutput(_encoderPath, "-filters", false);
+                output = GetProcessOutput(_encoderPath, "-filters", false, null);
             }
             catch (Exception ex)
             {
@@ -476,7 +498,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return dict;
         }
 
-        private string GetProcessOutput(string path, string arguments, bool readStdErr)
+        private string GetProcessOutput(string path, string arguments, bool readStdErr, string? testKey)
         {
             using (var process = new Process()
             {
@@ -486,6 +508,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     UseShellExecute = false,
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false,
+                    RedirectStandardInput = !string.IsNullOrEmpty(testKey),
                     RedirectStandardOutput = true,
                     RedirectStandardError = true
                 }
@@ -494,6 +517,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _logger.LogDebug("Running {Path} {Arguments}", path, arguments);
 
                 process.Start();
+
+                if (!string.IsNullOrEmpty(testKey))
+                {
+                    process.StandardInput.Write(testKey);
+                }
 
                 return readStdErr ? process.StandardError.ReadToEnd() : process.StandardOutput.ReadToEnd();
             }

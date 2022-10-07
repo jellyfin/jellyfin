@@ -24,14 +24,13 @@ namespace Emby.Server.Implementations.Sorting
         /// <returns>System.Int32.</returns>
         public int Compare(BaseItem? x, BaseItem? y)
         {
-            if (x == null)
-            {
-                throw new ArgumentNullException(nameof(x));
-            }
+            ArgumentNullException.ThrowIfNull(x);
 
-            if (y == null)
+            ArgumentNullException.ThrowIfNull(y);
+
+            if (!x.IndexNumber.HasValue && !y.IndexNumber.HasValue)
             {
-                throw new ArgumentNullException(nameof(y));
+                return 0;
             }
 
             if (!x.IndexNumber.HasValue)

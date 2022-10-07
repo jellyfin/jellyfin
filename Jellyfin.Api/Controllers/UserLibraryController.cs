@@ -8,7 +8,6 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
-using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -82,7 +81,7 @@ namespace Jellyfin.Api.Controllers
 
             await RefreshItemOnDemandIfNeeded(item).ConfigureAwait(false);
 
-            var dtoOptions = new DtoOptions().AddClientFields(Request);
+            var dtoOptions = new DtoOptions().AddClientFields(User);
 
             return _dtoService.GetBaseItemDto(item, dtoOptions, user);
         }
@@ -99,7 +98,7 @@ namespace Jellyfin.Api.Controllers
         {
             var user = _userManager.GetUserById(userId);
             var item = _libraryManager.GetUserRootFolder();
-            var dtoOptions = new DtoOptions().AddClientFields(Request);
+            var dtoOptions = new DtoOptions().AddClientFields(User);
             return _dtoService.GetBaseItemDto(item, dtoOptions, user);
         }
 
@@ -121,7 +120,7 @@ namespace Jellyfin.Api.Controllers
                 : _libraryManager.GetItemById(itemId);
 
             var items = await _libraryManager.GetIntros(item, user).ConfigureAwait(false);
-            var dtoOptions = new DtoOptions().AddClientFields(Request);
+            var dtoOptions = new DtoOptions().AddClientFields(User);
             var dtos = items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user)).ToArray();
 
             return new QueryResult<BaseItemDto>(dtos);
@@ -201,7 +200,7 @@ namespace Jellyfin.Api.Controllers
                 ? _libraryManager.GetUserRootFolder()
                 : _libraryManager.GetItemById(itemId);
 
-            var dtoOptions = new DtoOptions().AddClientFields(Request);
+            var dtoOptions = new DtoOptions().AddClientFields(User);
 
             if (item is IHasTrailers hasTrailers)
             {
@@ -231,10 +230,11 @@ namespace Jellyfin.Api.Controllers
                 ? _libraryManager.GetUserRootFolder()
                 : _libraryManager.GetItemById(itemId);
 
-            var dtoOptions = new DtoOptions().AddClientFields(Request);
+            var dtoOptions = new DtoOptions().AddClientFields(User);
 
             return Ok(item
-                .GetExtras(BaseItem.DisplayExtraTypes)
+                .GetExtras()
+                .Where(i => i.ExtraType.HasValue && BaseItem.DisplayExtraTypes.Contains(i.ExtraType.Value))
                 .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item)));
         }
 
@@ -280,7 +280,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             var list = _userViewManager.GetLatestItems(

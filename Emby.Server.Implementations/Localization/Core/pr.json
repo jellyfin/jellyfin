@@ -12,5 +12,6 @@
     "DeviceOnlineWithName": "{0} joined yer crew",
     "DeviceOfflineWithName": "{0} abandoned ship",
     "AppDeviceValues": "Captain: {0}, Ship: {1}",
-    "CameraImageUploadedFrom": "Yer looking glass has glimpsed another painting from {0}"
+    "CameraImageUploadedFrom": "Yer looking glass has glimpsed another painting from {0}",
+    "Collections": "Barrels"
 }

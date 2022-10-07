@@ -77,11 +77,6 @@ namespace MediaBrowser.Controller.Channels
             return false;
         }
 
-        protected override bool IsAllowTagFilterEnforced()
-        {
-            return false;
-        }
-
         internal static bool IsChannelVisible(BaseItem channelItem, User user)
         {
             var channel = ChannelManager.GetChannel(channelItem.ChannelId.ToString(string.Empty));

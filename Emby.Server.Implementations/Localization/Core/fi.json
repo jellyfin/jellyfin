@@ -1,5 +1,5 @@
 {
-    "HeaderLiveTV": "Suora TV",
+    "HeaderLiveTV": "Televisio",
     "NewVersionIsAvailable": "Uusi versio Jellyfin-palvelimesta on ladattavissa.",
     "NameSeasonUnknown": "Tuntematon kausi",
     "NameSeasonNumber": "Kausi {0}",
@@ -121,5 +121,6 @@
     "TaskOptimizeDatabaseDescription": "Tiivistää ja puhdistaa tietokannan. Tämän toiminnon suorittaminen kirjastojen skannauksen tai muiden tietokantaan liittyvien muutoksien jälkeen voi parantaa suorituskykyä.",
     "TaskOptimizeDatabase": "Optimoi tietokanta",
     "TaskKeyframeExtractorDescription": "Purkaa videotiedostojen avainkuvat tarkempien HLS-toistolistojen luomiseksi. Tehtävä saattaa kestää huomattavan pitkään.",
-    "TaskKeyframeExtractor": "Avainkuvien purkain"
+    "TaskKeyframeExtractor": "Avainkuvien purkain",
+    "External": "Ulkoinen"
 }
