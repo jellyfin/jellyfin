@@ -4475,6 +4475,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var threeDFormat = state.MediaSource.Video3DFormat;
             var newfilters = new List<string>();
             var noOverlay = swFilterChain.OverlayFilters.Count == 0;
+            var supportsHwDeint = _mediaEncoder.SupportsFilter("yadif_videotoolbox");
 
             // ffmpeg cannot use videotoolbox to scale
             var swScaleFilter = GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH);
@@ -4487,7 +4488,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (doDeintH2645)
             {
-                var deintFilter = GetHwDeinterlaceFilter(state, options, "videotoolbox");
+                var deintFilter = supportsHwDeint ? GetHwDeinterlaceFilter(state, options, "videotoolbox") : GetSwDeinterlaceFilter(state, options);
                 newfilters.Add(deintFilter);
             }
 
