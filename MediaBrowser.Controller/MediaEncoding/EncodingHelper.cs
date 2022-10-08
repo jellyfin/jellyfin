@@ -4457,6 +4457,12 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             var swFilterChain = GetSwVidFilterChain(state, options, vidEncoder);
+
+            if (!options.EnableHardwareEncoding)
+            {
+                return swFilterChain;
+            }
+
             if (_mediaEncoder.EncoderVersion.CompareTo(new Version("5.0.0")) < 0)
             {
                 // All features used here requires ffmpeg 5.0 or later, fallback to software filters if using an old ffmpeg
