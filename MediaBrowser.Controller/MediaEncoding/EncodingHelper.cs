@@ -4482,6 +4482,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             var newfilters = new List<string>();
             var noOverlay = swFilterChain.OverlayFilters.Count == 0;
             var supportsHwDeint = _mediaEncoder.SupportsFilter("yadif_videotoolbox");
+            // fallback to software filters if we are using filters not supported by hardware yet.
+            var useHardwareFilters = noOverlay && (!doDeintH2645 || supportsHwDeint);
+
+            if (!useHardwareFilters)
+            {
+                return swFilterChain;
+            }
 
             // ffmpeg cannot use videotoolbox to scale
             var swScaleFilter = GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH);
@@ -4494,12 +4501,11 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (doDeintH2645)
             {
-                var deintFilter = supportsHwDeint ? GetHwDeinterlaceFilter(state, options, "videotoolbox") : GetSwDeinterlaceFilter(state, options);
+                var deintFilter = GetHwDeinterlaceFilter(state, options, "videotoolbox");
                 newfilters.Add(deintFilter);
             }
 
-            var mainFilters = noOverlay ? newfilters : swFilterChain.MainFilters;
-            return (mainFilters, swFilterChain.SubFilters, swFilterChain.OverlayFilters);
+            return (newfilters, swFilterChain.SubFilters, swFilterChain.OverlayFilters);
         }
 
         /// <summary>
