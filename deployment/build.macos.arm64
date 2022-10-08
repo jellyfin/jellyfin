@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#= MacOS 10.13+ .tar.gz
+#= macOS 11.0+ arm64 .tar.gz
 
 set -o errexit
 set -o xtrace
@@ -16,7 +16,7 @@ else
 fi
 
 # Build archives
-dotnet publish Jellyfin.Server --configuration Release --self-contained --runtime osx-x64 --output dist/jellyfin-server_${version}/ -p:DebugSymbols=false -p:DebugType=none -p:UseAppHost=true
+dotnet publish Jellyfin.Server --configuration Release --self-contained --runtime osx-arm64 --output dist/jellyfin-server_${version}/ -p:DebugSymbols=false -p:DebugType=none -p:UseAppHost=true
 tar -czf jellyfin-server_${version}_macos-amd64.tar.gz -C dist jellyfin-server_${version}
 rm -rf dist/jellyfin-server_${version}
 
