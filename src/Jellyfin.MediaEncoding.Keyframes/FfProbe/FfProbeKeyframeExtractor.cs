@@ -38,9 +38,28 @@ public static class FfProbeKeyframeExtractor
             EnableRaisingEvents = true
         };
 
-        process.Start();
+        try
+        {
+            process.Start();
 
-        return ParseStream(process.StandardOutput);
+            return ParseStream(process.StandardOutput);
+        }
+        catch (Exception)
+        {
+            try
+            {
+                if (!process.HasExited)
+                {
+                    process.Kill();
+                }
+            }
+            catch
+            {
+                // We do not care if this fails
+            }
+
+            throw;
+        }
     }
 
     internal static KeyframeData ParseStream(StreamReader reader)
