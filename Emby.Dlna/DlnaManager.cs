@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -61,6 +62,7 @@ namespace Emby.Dlna
             try
             {
                 await ExtractSystemProfilesAsync().ConfigureAwait(false);
+                Directory.CreateDirectory(UserProfilesPath);
                 LoadProfiles();
             }
             catch (Exception ex)
@@ -100,10 +102,7 @@ namespace Emby.Dlna
         /// <inheritdoc />
         public DeviceProfile? GetProfile(DeviceIdentification deviceInfo)
         {
-            if (deviceInfo == null)
-            {
-                throw new ArgumentNullException(nameof(deviceInfo));
-            }
+            ArgumentNullException.ThrowIfNull(deviceInfo);
 
             var profile = GetProfiles()
                 .FirstOrDefault(i => i.Identification != null && IsMatch(deviceInfo, i.Identification));
@@ -170,10 +169,7 @@ namespace Emby.Dlna
         /// <inheritdoc />
         public DeviceProfile? GetProfile(IHeaderDictionary headers)
         {
-            if (headers == null)
-            {
-                throw new ArgumentNullException(nameof(headers));
-            }
+            ArgumentNullException.ThrowIfNull(headers);
 
             var profile = GetProfiles().FirstOrDefault(i => i.Identification != null && IsMatch(headers, i.Identification));
             if (profile == null)
@@ -328,32 +324,28 @@ namespace Emby.Dlna
 
                 var path = Path.Join(
                     systemProfilesPath,
-                    Path.GetFileName(name.AsSpan()).Slice(namespaceName.Length));
+                    Path.GetFileName(name.AsSpan())[namespaceName.Length..]);
+
+                if (File.Exists(path))
+                {
+                    continue;
+                }
 
                 // The stream should exist as we just got its name from GetManifestResourceNames
                 using (var stream = _assembly.GetManifestResourceStream(name)!)
                 {
-                    var length = stream.Length;
-                    var fileInfo = _fileSystem.GetFileInfo(path);
+                    Directory.CreateDirectory(systemProfilesPath);
 
-                    if (!fileInfo.Exists || fileInfo.Length != length)
+                    var fileOptions = AsyncFile.WriteOptions;
+                    fileOptions.Mode = FileMode.CreateNew;
+                    fileOptions.PreallocationSize = stream.Length;
+                    var fileStream = new FileStream(path, fileOptions);
+                    await using (fileStream.ConfigureAwait(false))
                     {
-                        Directory.CreateDirectory(systemProfilesPath);
-
-                        var fileOptions = AsyncFile.WriteOptions;
-                        fileOptions.Mode = FileMode.Create;
-                        fileOptions.PreallocationSize = length;
-                        var fileStream = new FileStream(path, fileOptions);
-                        await using (fileStream.ConfigureAwait(false))
-                        {
-                            await stream.CopyToAsync(fileStream).ConfigureAwait(false);
-                        }
+                        await stream.CopyToAsync(fileStream).ConfigureAwait(false);
                     }
                 }
             }
-
-            // Not necessary, but just to make it easy to find
-            Directory.CreateDirectory(UserProfilesPath);
         }
 
         /// <inheritdoc />
@@ -406,14 +398,20 @@ namespace Emby.Dlna
             }
 
             var current = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, profileId, StringComparison.OrdinalIgnoreCase));
+            if (current.Info.Type == DeviceProfileType.System)
+            {
+                throw new ArgumentException("System profiles can't be edited");
+            }
 
             var newFilename = _fileSystem.GetValidFilename(profile.Name) + ".xml";
-            var path = Path.Combine(UserProfilesPath, newFilename);
+            var path = Path.Join(UserProfilesPath, newFilename);
 
-            if (!string.Equals(path, current.Path, StringComparison.Ordinal) &&
-                current.Info.Type != DeviceProfileType.System)
+            if (!string.Equals(path, current.Path, StringComparison.Ordinal))
             {
-                _fileSystem.DeleteFile(current.Path);
+                lock (_profiles)
+                {
+                    _profiles.Remove(current.Path);
+                }
             }
 
             SaveProfile(profile, path, DeviceProfileType.User);
@@ -496,72 +494,4 @@ namespace Emby.Dlna
             internal string Path { get; }
         }
     }
-
-    /*
-    class DlnaProfileEntryPoint : IServerEntryPoint
-    {
-        private readonly IApplicationPaths _appPaths;
-        private readonly IFileSystem _fileSystem;
-        private readonly IXmlSerializer _xmlSerializer;
-
-        public DlnaProfileEntryPoint(IApplicationPaths appPaths, IFileSystem fileSystem, IXmlSerializer xmlSerializer)
-        {
-            _appPaths = appPaths;
-            _fileSystem = fileSystem;
-            _xmlSerializer = xmlSerializer;
-        }
-
-        public void Run()
-        {
-            DumpProfiles();
-        }
-
-        private void DumpProfiles()
-        {
-            DeviceProfile[] list = new[]
-            {
-                new SamsungSmartTvProfile(),
-                new XboxOneProfile(),
-                new SonyPs3Profile(),
-                new SonyPs4Profile(),
-                new SonyBravia2010Profile(),
-                new SonyBravia2011Profile(),
-                new SonyBravia2012Profile(),
-                new SonyBravia2013Profile(),
-                new SonyBravia2014Profile(),
-                new SonyBlurayPlayer2013(),
-                new SonyBlurayPlayer2014(),
-                new SonyBlurayPlayer2015(),
-                new SonyBlurayPlayer2016(),
-                new SonyBlurayPlayerProfile(),
-                new PanasonicVieraProfile(),
-                new WdtvLiveProfile(),
-                new DenonAvrProfile(),
-                new LinksysDMA2100Profile(),
-                new LgTvProfile(),
-                new Foobar2000Profile(),
-                new SharpSmartTvProfile(),
-                new MediaMonkeyProfile(),
-                // new Windows81Profile(),
-                // new WindowsMediaCenterProfile(),
-                // new WindowsPhoneProfile(),
-                new DirectTvProfile(),
-                new DishHopperJoeyProfile(),
-                new DefaultProfile(),
-                new PopcornHourProfile(),
-                new MarantzProfile()
-            };
-
-            foreach (var item in list)
-            {
-                var path = Path.Combine(_appPaths.ProgramDataPath, _fileSystem.GetValidFilename(item.Name) + ".xml");
-
-                _xmlSerializer.SerializeToFile(item, path);
-            }
-        }
-
-        public void Dispose()
-        {
-        }
-    }*/
 }

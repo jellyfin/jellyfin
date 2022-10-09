@@ -31,13 +31,14 @@ namespace MediaBrowser.Providers.MediaInfo
             "poster",
             "folder",
             "cover",
-            "default"
+            "default",
+            "movie",
+            "show"
         };
 
         private static readonly string[] _backdropImageFileNames =
         {
             "backdrop",
-            "fanart",
             "background",
             "art"
         };

@@ -256,6 +256,21 @@ namespace MediaBrowser.Controller.MediaEncoding
             return string.Empty;
         }
 
+        /// <summary>
+        /// Gets the referer param.
+        /// </summary>
+        /// <param name="state">The state.</param>
+        /// <returns>System.String.</returns>
+        public string GetRefererParam(EncodingJobInfo state)
+        {
+            if (state.RemoteHttpHeaders.TryGetValue("Referer", out string referer))
+            {
+                return "-referer \"" + referer + "\"";
+            }
+
+            return string.Empty;
+        }
+
         public static string GetInputFormat(string container)
         {
             if (string.IsNullOrEmpty(container))
@@ -4976,13 +4991,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             // The default value of -probesize is more than enough, so leave it as is.
             var ffmpegAnalyzeDuration = _config.GetFFmpegAnalyzeDuration() ?? string.Empty;
 
-            if (!string.IsNullOrEmpty(ffmpegAnalyzeDuration))
-            {
-                analyzeDurationArgument = "-analyzeduration " + ffmpegAnalyzeDuration;
-            }
-            else if (state.MediaSource.AnalyzeDurationMs.HasValue)
+            if (state.MediaSource.AnalyzeDurationMs > 0)
             {
                 analyzeDurationArgument = "-analyzeduration " + (state.MediaSource.AnalyzeDurationMs.Value * 1000).ToString(CultureInfo.InvariantCulture);
+            }
+            else if (!string.IsNullOrEmpty(ffmpegAnalyzeDuration))
+            {
+                analyzeDurationArgument = "-analyzeduration " + ffmpegAnalyzeDuration;
             }
 
             if (!string.IsNullOrEmpty(analyzeDurationArgument))
@@ -4997,6 +5012,15 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (!string.IsNullOrEmpty(userAgentParam))
             {
                 inputModifier += " " + userAgentParam;
+            }
+
+            inputModifier = inputModifier.Trim();
+
+            var refererParam = GetRefererParam(state);
+
+            if (!string.IsNullOrEmpty(refererParam))
+            {
+                inputModifier += " " + refererParam;
             }
 
             inputModifier = inputModifier.Trim();
@@ -5081,15 +5105,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             MediaSourceInfo mediaSource,
             string requestedUrl)
         {
-            if (state == null)
-            {
-                throw new ArgumentNullException(nameof(state));
-            }
+            ArgumentNullException.ThrowIfNull(state);
 
-            if (mediaSource == null)
-            {
-                throw new ArgumentNullException(nameof(mediaSource));
-            }
+            ArgumentNullException.ThrowIfNull(mediaSource);
 
             var path = mediaSource.Path;
             var protocol = mediaSource.Protocol;

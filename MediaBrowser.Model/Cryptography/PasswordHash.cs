@@ -29,10 +29,7 @@ namespace MediaBrowser.Model.Cryptography
 
         public PasswordHash(string id, byte[] hash, byte[] salt, Dictionary<string, string> parameters)
         {
-            if (id == null)
-            {
-                throw new ArgumentNullException(nameof(id));
-            }
+            ArgumentNullException.ThrowIfNull(id);
 
             if (id.Length == 0)
             {

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,7 +19,7 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.Library.Resolvers.Audio
 {
     /// <summary>
-    /// Class MusicAlbumResolver.
+    /// The music album resolver.
     /// </summary>
     public class MusicAlbumResolver : ItemResolver<MusicAlbum>
     {
@@ -82,7 +83,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// </summary>
         /// <param name="path">The path to check.</param>
         /// <param name="directoryService">The directory service.</param>
-        /// <returns><c>true</c> if the provided path points to a music album, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if the provided path points to a music album; otherwise, <c>false</c>.</returns>
         public bool IsMusicAlbum(string path, IDirectoryService directoryService)
         {
             return ContainsMusic(directoryService.GetFileSystemEntries(path), true, directoryService);
@@ -95,10 +96,19 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// <returns><c>true</c> if [is music album] [the specified args]; otherwise, <c>false</c>.</returns>
         private bool IsMusicAlbum(ItemResolveArgs args)
         {
-            // Args points to an album if parent is an Artist folder or it directly contains music
             if (args.IsDirectory)
             {
-                // if (args.Parent is MusicArtist) return true;  // saves us from testing children twice
+                // If args is a artist subfolder it's not a music album
+                foreach (var subfolder in _namingOptions.ArtistSubfolders)
+                {
+                    if (Path.GetDirectoryName(args.Path.AsSpan()).Equals(subfolder, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _logger.LogDebug("Found release folder: {Path}", args.Path);
+                        return false;
+                    }
+                }
+
+                // If args contains music it's a music album
                 if (ContainsMusic(args.FileSystemChildren, true, args.DirectoryService))
                 {
                     return true;
@@ -111,22 +121,23 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// <summary>
         /// Determine if the supplied list contains what we should consider music.
         /// </summary>
+        /// <returns><c>true</c> if the provided path list contains music; otherwise, <c>false</c>.</returns>
         private bool ContainsMusic(
             ICollection<FileSystemMetadata> list,
             bool allowSubfolders,
             IDirectoryService directoryService)
         {
-            // check for audio files before digging down into directories
+            // Check for audio files before digging down into directories
             var foundAudioFile = list.Any(fileSystemInfo => !fileSystemInfo.IsDirectory && AudioFileParser.IsAudioFile(fileSystemInfo.FullName, _namingOptions));
             if (foundAudioFile)
             {
-                // at least one audio file exists
+                // At least one audio file exists
                 return true;
             }
 
             if (!allowSubfolders)
             {
-                // not music since no audio file exists and we're not looking into subfolders
+                // Not music since no audio file exists and we're not looking into subfolders
                 return false;
             }
 

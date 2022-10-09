@@ -103,10 +103,7 @@ namespace Jellyfin.Networking.Tests
             "[192.158.0.0/16,192.0.0.0/8]")]
         public void TestCollections(string settings, string result1, string result2, string result3, string result4, string result5)
         {
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
+            ArgumentNullException.ThrowIfNull(settings);
 
             var conf = new NetworkConfiguration()
             {
@@ -155,20 +152,11 @@ namespace Jellyfin.Networking.Tests
         [InlineData("127.0.0.1", "127.0.0.1/8", "[127.0.0.1/32]")]
         public void UnionCheck(string settings, string compare, string result)
         {
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
+            ArgumentNullException.ThrowIfNull(settings);
 
-            if (compare == null)
-            {
-                throw new ArgumentNullException(nameof(compare));
-            }
+            ArgumentNullException.ThrowIfNull(compare);
 
-            if (result == null)
-            {
-                throw new ArgumentNullException(nameof(result));
-            }
+            ArgumentNullException.ThrowIfNull(result);
 
             var conf = new NetworkConfiguration()
             {
@@ -264,20 +252,11 @@ namespace Jellyfin.Networking.Tests
 
         public void TestCollectionEquality(string source, string dest, string result)
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
+            ArgumentNullException.ThrowIfNull(source);
 
-            if (dest == null)
-            {
-                throw new ArgumentNullException(nameof(dest));
-            }
+            ArgumentNullException.ThrowIfNull(dest);
 
-            if (result == null)
-            {
-                throw new ArgumentNullException(nameof(result));
-            }
+            ArgumentNullException.ThrowIfNull(result);
 
             var conf = new NetworkConfiguration()
             {
@@ -331,20 +310,11 @@ namespace Jellyfin.Networking.Tests
         [InlineData("", "", false, "eth16")]
         public void TestBindInterfaces(string source, string bindAddresses, bool ipv6enabled, string result)
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
+            ArgumentNullException.ThrowIfNull(source);
 
-            if (bindAddresses == null)
-            {
-                throw new ArgumentNullException(nameof(bindAddresses));
-            }
+            ArgumentNullException.ThrowIfNull(bindAddresses);
 
-            if (result == null)
-            {
-                throw new ArgumentNullException(nameof(result));
-            }
+            ArgumentNullException.ThrowIfNull(result);
 
             var conf = new NetworkConfiguration()
             {
@@ -403,15 +373,9 @@ namespace Jellyfin.Networking.Tests
         [InlineData("192.168.1.1", "192.168.1.0/24", "", false, "eth16=http://helloworld.com", "http://helloworld.com")]
         public void TestBindInterfaceOverrides(string source, string lan, string bindAddresses, bool ipv6enabled, string publishedServers, string result)
         {
-            if (lan == null)
-            {
-                throw new ArgumentNullException(nameof(lan));
-            }
+            ArgumentNullException.ThrowIfNull(lan);
 
-            if (bindAddresses == null)
-            {
-                throw new ArgumentNullException(nameof(bindAddresses));
-            }
+            ArgumentNullException.ThrowIfNull(bindAddresses);
 
             var conf = new NetworkConfiguration()
             {

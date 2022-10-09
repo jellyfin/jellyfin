@@ -12,12 +12,12 @@ ENV IS_DOCKER=YES
 # Prepare Debian build environment
 RUN apt-get update -yqq \
   && apt-get install -yqq --no-install-recommends \
-    apt-transport-https debhelper gnupg wget ca-certificates devscripts \
+    debhelper gnupg wget ca-certificates devscripts \
     mmv build-essential libcurl4-openssl-dev libfontconfig1-dev \
     libfreetype6-dev libssl-dev libssl1.1 liblttng-ust0
 
 # Install dotnet repository
-RUN wget -q https://download.visualstudio.microsoft.com/download/pr/cd0d0a4d-2a6a-4d0d-b42e-dfd3b880e222/008a93f83aba6d1acf75ded3d2cfba24/dotnet-sdk-6.0.400-linux-x64.tar.gz -O dotnet-sdk.tar.gz \
+RUN wget -q https://download.visualstudio.microsoft.com/download/pr/8159607a-e686-4ead-ac99-b4c97290a5fd/ec6070b1b2cc0651ebe57cf1bd411315/dotnet-sdk-6.0.401-linux-x64.tar.gz -O dotnet-sdk.tar.gz \
   && mkdir -p dotnet-sdk \
   && tar -xzf dotnet-sdk.tar.gz -C dotnet-sdk \
   && ln -s $( pwd )/dotnet-sdk/dotnet /usr/bin/dotnet

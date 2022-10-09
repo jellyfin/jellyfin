@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Emby.Naming.Common;
 using Emby.Naming.Video;
-using MediaBrowser.Model.IO;
 using Xunit;
 
 namespace Jellyfin.Naming.Tests.Video

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Models.StreamingDtos;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
@@ -14,7 +15,6 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -33,8 +33,7 @@ namespace Jellyfin.Api.Helpers
         /// Gets the current streaming state.
         /// </summary>
         /// <param name="streamingRequest">The <see cref="StreamingRequestDto"/>.</param>
-        /// <param name="httpRequest">The <see cref="HttpRequest"/>.</param>
-        /// <param name="authorizationContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
+        /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
@@ -49,8 +48,7 @@ namespace Jellyfin.Api.Helpers
         /// <returns>A <see cref="Task"/> containing the current <see cref="StreamState"/>.</returns>
         public static async Task<StreamState> GetStreamingState(
             StreamingRequestDto streamingRequest,
-            HttpRequest httpRequest,
-            IAuthorizationContext authorizationContext,
+            HttpContext httpContext,
             IMediaSourceManager mediaSourceManager,
             IUserManager userManager,
             ILibraryManager libraryManager,
@@ -63,6 +61,7 @@ namespace Jellyfin.Api.Helpers
             TranscodingJobType transcodingJobType,
             CancellationToken cancellationToken)
         {
+            var httpRequest = httpContext.Request;
             // Parse the DLNA time seek header
             if (!streamingRequest.StartTimeTicks.HasValue)
             {
@@ -101,10 +100,10 @@ namespace Jellyfin.Api.Helpers
                 EnableDlnaHeaders = enableDlnaHeaders
             };
 
-            var auth = await authorizationContext.GetAuthorizationInfo(httpRequest).ConfigureAwait(false);
-            if (!auth.UserId.Equals(default))
+            var userId = httpContext.User.GetUserId();
+            if (!userId.Equals(default))
             {
-                state.User = userManager.GetUserById(auth.UserId);
+                state.User = userManager.GetUserById(userId);
             }
 
             if (state.IsVideoRequest && !string.IsNullOrWhiteSpace(state.Request.VideoCodec))

@@ -10,7 +10,6 @@ using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -34,7 +33,6 @@ namespace Jellyfin.Api.Controllers
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localization;
         private readonly IDtoService _dtoService;
-        private readonly IAuthorizationContext _authContext;
         private readonly ILogger<ItemsController> _logger;
         private readonly ISessionManager _sessionManager;
 
@@ -45,7 +43,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
         /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
-        /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
         /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
         public ItemsController(
@@ -53,7 +50,6 @@ namespace Jellyfin.Api.Controllers
             ILibraryManager libraryManager,
             ILocalizationManager localization,
             IDtoService dtoService,
-            IAuthorizationContext authContext,
             ILogger<ItemsController> logger,
             ISessionManager sessionManager)
         {
@@ -61,7 +57,6 @@ namespace Jellyfin.Api.Controllers
             _libraryManager = libraryManager;
             _localization = localization;
             _dtoService = dtoService;
-            _authContext = authContext;
             _logger = logger;
             _sessionManager = sessionManager;
         }
@@ -157,7 +152,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the items.</returns>
         [HttpGet("Items")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<QueryResult<BaseItemDto>>> GetItems(
+        public ActionResult<QueryResult<BaseItemDto>> GetItems(
             [FromQuery] Guid? userId,
             [FromQuery] string? maxOfficialRating,
             [FromQuery] bool? hasThemeSong,
@@ -244,21 +239,20 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool enableTotalRecordCount = true,
             [FromQuery] bool? enableImages = true)
         {
-            var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
-
+            var isApiKey = User.GetIsApiKey();
             // if api key is used (auth.IsApiKey == true), then `user` will be null throughout this method
-            var user = !auth.IsApiKey && userId.HasValue && !userId.Value.Equals(default)
+            var user = !isApiKey && userId.HasValue && !userId.Value.Equals(default)
                 ? _userManager.GetUserById(userId.Value)
                 : null;
 
             // beyond this point, we're either using an api key or we have a valid user
-            if (!auth.IsApiKey && user is null)
+            if (!isApiKey && user is null)
             {
                 return BadRequest("userId is required");
             }
 
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             if (includeItemTypes.Length == 1
@@ -288,12 +282,12 @@ namespace Jellyfin.Api.Controllers
                 includeItemTypes = new[] { BaseItemKind.Playlist };
             }
 
-            var enabledChannels = auth.IsApiKey
+            var enabledChannels = isApiKey
                 ? Array.Empty<Guid>()
                 : user!.GetPreferenceValues<Guid>(PreferenceKind.EnabledChannels);
 
             // api keys are always enabled for all folders
-            bool isInEnabledFolder = auth.IsApiKey
+            bool isInEnabledFolder = isApiKey
                                      || Array.IndexOf(user!.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders), item.Id) != -1
                                      // Assume all folders inside an EnabledChannel are enabled
                                      || Array.IndexOf(enabledChannels, item.Id) != -1
@@ -633,7 +627,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the items.</returns>
         [HttpGet("Users/{userId}/Items")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public Task<ActionResult<QueryResult<BaseItemDto>>> GetItemsByUserId(
+        public ActionResult<QueryResult<BaseItemDto>> GetItemsByUserId(
             [FromRoute] Guid userId,
             [FromQuery] string? maxOfficialRating,
             [FromQuery] bool? hasThemeSong,
@@ -850,7 +844,7 @@ namespace Jellyfin.Api.Controllers
             var user = _userManager.GetUserById(userId);
             var parentIdGuid = parentId ?? Guid.Empty;
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             var ancestorIds = Array.Empty<Guid>();

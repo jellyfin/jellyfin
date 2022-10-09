@@ -931,10 +931,7 @@ namespace Emby.Dlna.PlayTo
 
         private static UBaseObject CreateUBaseObject(XElement container, string trackUri)
         {
-            if (container == null)
-            {
-                throw new ArgumentNullException(nameof(container));
-            }
+            ArgumentNullException.ThrowIfNull(container);
 
             var url = container.GetValue(UPnpNamespaces.Res);
 
@@ -958,10 +955,7 @@ namespace Emby.Dlna.PlayTo
 
         private static string[] GetProtocolInfo(XElement container)
         {
-            if (container == null)
-            {
-                throw new ArgumentNullException(nameof(container));
-            }
+            ArgumentNullException.ThrowIfNull(container);
 
             var resElement = container.Element(UPnpNamespaces.Res);
 
@@ -1183,10 +1177,7 @@ namespace Emby.Dlna.PlayTo
 #nullable enable
         private static DeviceIcon CreateIcon(XElement element)
         {
-            if (element == null)
-            {
-                throw new ArgumentNullException(nameof(element));
-            }
+            ArgumentNullException.ThrowIfNull(element);
 
             var width = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("width"));
             var height = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("height"));

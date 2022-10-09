@@ -38,6 +38,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         Version EncoderVersion { get; }
 
         /// <summary>
+        /// Whether p key pausing is supported.
+        /// </summary>
+        /// <value><c>true</c> if p key pausing is supported, <c>false</c> otherwise.</value>
+        bool IsPkeyPauseSupported { get; }
+
+        /// <summary>
         /// Gets a value indicating whether the configured Vaapi device is from AMD(radeonsi/r600 Mesa driver).
         /// </summary>
         /// <value><c>true</c> if the Vaapi device is an AMD(radeonsi/r600 Mesa driver) GPU, <c>false</c> otherwise.</value>

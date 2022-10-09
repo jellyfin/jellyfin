@@ -7,7 +7,7 @@ namespace Jellyfin.Model.Drawing;
 
 public static class ImageFormatExtensionsTests
 {
-    private static TheoryData<ImageFormat> GetAllImageFormats()
+    public static TheoryData<ImageFormat> GetAllImageFormats()
     {
         var theoryTypes = new TheoryData<ImageFormat>();
         foreach (var x in Enum.GetValues<ImageFormat>())

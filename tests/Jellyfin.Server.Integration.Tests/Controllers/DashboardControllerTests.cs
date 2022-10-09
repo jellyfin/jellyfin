@@ -83,6 +83,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
 
             var res = await response.Content.ReadAsStreamAsync();
             var data = await JsonSerializer.DeserializeAsync<ConfigurationPageInfo[]>(res, _jsonOpions);
+            Assert.NotNull(data);
             Assert.Empty(data);
         }
     }

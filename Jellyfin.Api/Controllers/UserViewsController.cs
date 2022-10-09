@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
-using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.ModelBinders;
@@ -11,9 +10,7 @@ using Jellyfin.Api.Models.UserViewDtos;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
@@ -32,7 +29,6 @@ namespace Jellyfin.Api.Controllers
         private readonly IUserManager _userManager;
         private readonly IUserViewManager _userViewManager;
         private readonly IDtoService _dtoService;
-        private readonly IAuthorizationContext _authContext;
         private readonly ILibraryManager _libraryManager;
 
         /// <summary>
@@ -41,19 +37,16 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="userViewManager">Instance of the <see cref="IUserViewManager"/> interface.</param>
         /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
-        /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         public UserViewsController(
             IUserManager userManager,
             IUserViewManager userViewManager,
             IDtoService dtoService,
-            IAuthorizationContext authContext,
             ILibraryManager libraryManager)
         {
             _userManager = userManager;
             _userViewManager = userViewManager;
             _dtoService = dtoService;
-            _authContext = authContext;
             _libraryManager = libraryManager;
         }
 
@@ -92,7 +85,7 @@ namespace Jellyfin.Api.Controllers
 
             var folders = _userViewManager.GetUserViews(query);
 
-            var dtoOptions = new DtoOptions().AddClientFields(Request);
+            var dtoOptions = new DtoOptions().AddClientFields(User);
             var fields = dtoOptions.Fields.ToList();
 
             fields.Add(ItemFields.PrimaryImageAspectRatio);
@@ -138,7 +131,8 @@ namespace Jellyfin.Api.Controllers
                     Name = i.Name,
                     Id = i.Id.ToString("N", CultureInfo.InvariantCulture)
                 })
-                .OrderBy(i => i.Name));
+                .OrderBy(i => i.Name)
+                .AsEnumerable());
         }
     }
 }

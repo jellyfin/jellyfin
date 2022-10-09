@@ -84,7 +84,7 @@
     "CameraImageUploadedFrom": "Jauns kameras attēls ir ticis augšupielādēts no {0}",
     "Books": "Grāmatas",
     "Artists": "Izpildītāji",
-    "Albums": "Albumi",
+    "Albums": "Albūmi",
     "ProviderValue": "Provider: {0}",
     "HeaderFavoriteSongs": "Dziesmu Favorīti",
     "HeaderFavoriteShows": "Raidījumu Favorīti",
@@ -117,7 +117,8 @@
     "TaskCleanActivityLogDescription": "Nodzēš darbību žurnāla ierakstus, kuri ir vecāki par doto vecumu.",
     "TaskCleanActivityLog": "Notīrīt Darbību Žurnālu",
     "Undefined": "Nenoteikts",
-    "Default": "Noklusējums",
+    "Default": "Noklusējuma",
     "TaskOptimizeDatabaseDescription": "Saspiež datubāzi un atbrīvo atmiņu. Uzdevum palaišana pēc bibliotēku skenēšanas vai citām, ar datubāzi saistītām, izmaiņām iespējams uzlabos ātrdarbību.",
-    "TaskOptimizeDatabase": "Optimizēt datubāzi"
+    "TaskOptimizeDatabase": "Optimizēt datubāzi",
+    "External": "Ārējais"
 }
