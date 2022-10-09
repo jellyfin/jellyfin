@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -25,7 +26,7 @@ namespace Emby.Server.Implementations.Localization
         private const string CulturesPath = "Emby.Server.Implementations.Localization.iso6392.txt";
         private const string CountriesPath = "Emby.Server.Implementations.Localization.countries.json";
         private static readonly Assembly _assembly = typeof(LocalizationManager).Assembly;
-        private static readonly string[] _unratedValues = { "n/a", "unrated", "not rated" };
+        private static readonly string[] _unratedValues = { "n/a", "unrated", "not rated", "nr" };
 
         private readonly IServerConfigurationManager _configurationManager;
         private readonly ILogger<LocalizationManager> _logger;
@@ -194,6 +195,7 @@ namespace Emby.Server.Implementations.Localization
         {
             var countryCode = _configurationManager.Configuration.MetadataCountryCode;
 
+            // Fall back to US ratings if no country code is specified or country code does not exist.
             if (string.IsNullOrEmpty(countryCode))
             {
                 countryCode = "us";
@@ -221,12 +223,14 @@ namespace Emby.Server.Implementations.Localization
         {
             ArgumentException.ThrowIfNullOrEmpty(rating);
 
+            // Handle unrated content
             if (_unratedValues.Contains(rating.AsSpan(), StringComparison.OrdinalIgnoreCase))
             {
                 return null;
             }
 
             // Fairly common for some users to have "Rated R" in their rating field
+            rating = rating.Replace("Rated :", string.Empty, StringComparison.OrdinalIgnoreCase);
             rating = rating.Replace("Rated ", string.Empty, StringComparison.OrdinalIgnoreCase);
 
             var ratingsDictionary = GetParentalRatingsDictionary();
@@ -250,6 +254,18 @@ namespace Emby.Server.Implementations.Localization
             if (index != -1)
             {
                 var trimmedRating = rating.AsSpan(index).TrimStart(':').Trim();
+
+                if (!trimmedRating.IsEmpty)
+                {
+                    return GetRatingLevel(trimmedRating.ToString());
+                }
+            }
+
+            // Remove prefix country code to handle "DE-18"
+            index = rating.IndexOf('-', StringComparison.Ordinal);
+            if (index != -1)
+            {
+                var trimmedRating = rating.AsSpan(index).TrimStart('-').Trim();
 
                 if (!trimmedRating.IsEmpty)
                 {
