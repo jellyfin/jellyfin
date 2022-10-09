@@ -530,6 +530,12 @@ namespace Emby.Naming.Common
                     MediaType.Video),
 
                 new ExtraRule(
+                    ExtraType.Unknown,
+                    ExtraRuleType.DirectoryName,
+                    "other",
+                    MediaType.Video),
+
+                new ExtraRule(
                     ExtraType.Trailer,
                     ExtraRuleType.Filename,
                     "trailer",
@@ -647,6 +653,12 @@ namespace Emby.Naming.Common
                     ExtraType.Unknown,
                     ExtraRuleType.Suffix,
                     "-extra",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.Unknown,
+                    ExtraRuleType.Suffix,
+                    "-other",
                     MediaType.Video)
             };
 
