@@ -44,16 +44,28 @@ namespace MediaBrowser.MediaEncoding.Probing
         private IReadOnlyList<string> SplitWhitelist => _splitWhiteList ??= new string[]
         {
             "AC/DC",
+            "A/T/O/S",
             "As/Hi Soundworks",
             "Au/Ra",
             "Bremer/McCoy",
+            "b/bqスタヂオ",
+            "DOV/S",
+            "DJ'TEKINA//SOMETHING",
+            "IX/ON",
+            "J-CORE SLi//CER",
+            "M(a/u)SH",
+            "Kaoru/Brilliance",
+            "signum/ii",
+            "Richiter(LORB/DUGEM DI BARAT)",
             "이달의 소녀 1/3",
             "R!N / Gemie",
             "LOONA 1/3",
             "LOONA / yyxy",
             "LOONA / ODD EYE CIRCLE",
             "K/DA",
-            "22/7"
+            "22/7",
+            "諭吉佳作/men",
+            "//dARTH nULL"
         };
 
         public MediaInfo GetMediaInfo(InternalMediaInfoResult data, VideoType? videoType, bool isAudio, string path, MediaProtocol protocol)
@@ -718,6 +730,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.LocalizedDefault = _localization.GetLocalizedString("Default");
                 stream.LocalizedForced = _localization.GetLocalizedString("Forced");
                 stream.LocalizedExternal = _localization.GetLocalizedString("External");
+                stream.LocalizedHearingImpaired = _localization.GetLocalizedString("HearingImpaired");
 
                 if (string.IsNullOrEmpty(stream.Title))
                 {
@@ -863,8 +876,13 @@ namespace MediaBrowser.MediaEncoding.Probing
                     }
                 }
             }
+            else if (string.Equals(streamInfo.CodecType, "data", StringComparison.OrdinalIgnoreCase))
+            {
+                stream.Type = MediaStreamType.Data;
+            }
             else
             {
+                _logger.LogError("Codec Type {CodecType} unknown. The stream (index: {Index}) will be ignored. Warning: Subsequential streams will have a wrong stream specifier!", streamInfo.CodecType, streamInfo.Index);
                 return null;
             }
 
@@ -937,6 +955,11 @@ namespace MediaBrowser.MediaEncoding.Probing
                 if (disposition.GetValueOrDefault("forced") == 1)
                 {
                     stream.IsForced = true;
+                }
+
+                if (disposition.GetValueOrDefault("hearing_impaired") == 1)
+                {
+                    stream.IsHearingImpaired = true;
                 }
             }
 

@@ -120,10 +120,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         async Task<Stream> ISubtitleEncoder.GetSubtitles(BaseItem item, string mediaSourceId, int subtitleStreamIndex, string outputFormat, long startTimeTicks, long endTimeTicks, bool preserveOriginalTimestamps, CancellationToken cancellationToken)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
+            ArgumentNullException.ThrowIfNull(item);
 
             if (string.IsNullOrWhiteSpace(mediaSourceId))
             {
@@ -241,7 +238,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 // Convert
                 var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, ".srt");
 
-                await ConvertTextSubtitleToSrt(subtitleStream.Path, subtitleStream.Language, mediaSource, outputPath, cancellationToken).ConfigureAwait(false);
+                await ConvertTextSubtitleToSrt(subtitleStream, mediaSource, outputPath, cancellationToken).ConfigureAwait(false);
 
                 return new SubtitleInfo(outputPath, MediaProtocol.File, "srt", true);
             }
@@ -320,13 +317,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <summary>
         /// Converts the text subtitle to SRT.
         /// </summary>
-        /// <param name="inputPath">The input path.</param>
-        /// <param name="language">The language.</param>
+        /// <param name="subtitleStream">The subtitle stream.</param>
         /// <param name="mediaSource">The input mediaSource.</param>
         /// <param name="outputPath">The output path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task ConvertTextSubtitleToSrt(string inputPath, string language, MediaSourceInfo mediaSource, string outputPath, CancellationToken cancellationToken)
+        private async Task ConvertTextSubtitleToSrt(MediaStream subtitleStream, MediaSourceInfo mediaSource, string outputPath, CancellationToken cancellationToken)
         {
             var semaphore = GetLock(outputPath);
 
@@ -336,7 +332,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 if (!File.Exists(outputPath))
                 {
-                    await ConvertTextSubtitleToSrtInternal(inputPath, language, mediaSource, outputPath, cancellationToken).ConfigureAwait(false);
+                    await ConvertTextSubtitleToSrtInternal(subtitleStream, mediaSource, outputPath, cancellationToken).ConfigureAwait(false);
                 }
             }
             finally
@@ -348,8 +344,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <summary>
         /// Converts the text subtitle to SRT internal.
         /// </summary>
-        /// <param name="inputPath">The input path.</param>
-        /// <param name="language">The language.</param>
+        /// <param name="subtitleStream">The subtitle stream.</param>
         /// <param name="mediaSource">The input mediaSource.</param>
         /// <param name="outputPath">The output path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -357,8 +352,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <exception cref="ArgumentNullException">
         /// The <c>inputPath</c> or <c>outputPath</c> is <c>null</c>.
         /// </exception>
-        private async Task ConvertTextSubtitleToSrtInternal(string inputPath, string language, MediaSourceInfo mediaSource, string outputPath, CancellationToken cancellationToken)
+        private async Task ConvertTextSubtitleToSrtInternal(MediaStream subtitleStream, MediaSourceInfo mediaSource, string outputPath, CancellationToken cancellationToken)
         {
+            var inputPath = subtitleStream.Path;
             if (string.IsNullOrEmpty(inputPath))
             {
                 throw new ArgumentNullException(nameof(inputPath));
@@ -371,7 +367,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath)));
 
-            var encodingParam = await GetSubtitleFileCharacterSet(inputPath, language, mediaSource.Protocol, cancellationToken).ConfigureAwait(false);
+            var encodingParam = await GetSubtitleFileCharacterSet(subtitleStream, subtitleStream.Language, mediaSource, cancellationToken).ConfigureAwait(false);
 
             // FFmpeg automatically convert character encoding when it is UTF-16
             // If we specify character encoding, it rejects with "do not specify a character encoding" and "Unable to recode subtitle event"
@@ -389,18 +385,18 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             int exitCode;
 
             using (var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
                 {
-                    StartInfo = new ProcessStartInfo
-                    {
-                        CreateNoWindow = true,
-                        UseShellExecute = false,
-                        FileName = _mediaEncoder.EncoderPath,
-                        Arguments = string.Format(CultureInfo.InvariantCulture, "{0} -i \"{1}\" -c:s srt \"{2}\"", encodingParam, inputPath, outputPath),
-                        WindowStyle = ProcessWindowStyle.Hidden,
-                        ErrorDialog = false
-                    },
-                    EnableRaisingEvents = true
-                })
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    FileName = _mediaEncoder.EncoderPath,
+                    Arguments = string.Format(CultureInfo.InvariantCulture, "{0} -i \"{1}\" -c:s srt \"{2}\"", encodingParam, inputPath, outputPath),
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    ErrorDialog = false
+                },
+                EnableRaisingEvents = true
+            })
             {
                 _logger.LogInformation("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
@@ -540,7 +536,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             var processArgs = string.Format(
                 CultureInfo.InvariantCulture,
-                "-i {0} -map 0:{1} -an -vn -c:s {2} \"{3}\"",
+                "-i {0} -copyts -map 0:{1} -an -vn -c:s {2} \"{3}\"",
                 inputPath,
                 subtitleStreamIndex,
                 outputCodec,
@@ -549,18 +545,18 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             int exitCode;
 
             using (var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
                 {
-                    StartInfo = new ProcessStartInfo
-                    {
-                        CreateNoWindow = true,
-                        UseShellExecute = false,
-                        FileName = _mediaEncoder.EncoderPath,
-                        Arguments = processArgs,
-                        WindowStyle = ProcessWindowStyle.Hidden,
-                        ErrorDialog = false
-                    },
-                    EnableRaisingEvents = true
-                })
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    FileName = _mediaEncoder.EncoderPath,
+                    Arguments = processArgs,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    ErrorDialog = false
+                },
+                EnableRaisingEvents = true
+            })
             {
                 _logger.LogInformation("{File} {Arguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
@@ -575,7 +571,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     throw;
                 }
 
-                var ranToCompletion = await process.WaitForExitAsync(TimeSpan.FromMinutes(5)).ConfigureAwait(false);
+                var ranToCompletion = await process.WaitForExitAsync(TimeSpan.FromMinutes(30)).ConfigureAwait(false);
 
                 if (!ranToCompletion)
                 {
@@ -698,9 +694,19 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         }
 
         /// <inheritdoc />
-        public async Task<string> GetSubtitleFileCharacterSet(string path, string language, MediaProtocol protocol, CancellationToken cancellationToken)
+        public async Task<string> GetSubtitleFileCharacterSet(MediaStream subtitleStream, string language, MediaSourceInfo mediaSource, CancellationToken cancellationToken)
         {
-            using (var stream = await GetStream(path, protocol, cancellationToken).ConfigureAwait(false))
+            var subtitleCodec = subtitleStream.Codec;
+            var path = subtitleStream.Path;
+
+            if (path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
+            {
+                path = GetSubtitleCachePath(mediaSource, subtitleStream.Index, "." + subtitleCodec);
+                await ExtractTextSubtitle(mediaSource, subtitleStream, subtitleCodec, path, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
+            using (var stream = await GetStream(path, mediaSource.Protocol, cancellationToken).ConfigureAwait(false))
             {
                 var charset = CharsetDetector.DetectFromStream(stream).Detected?.EncodingName ?? string.Empty;
 
@@ -723,12 +729,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             switch (protocol)
             {
                 case MediaProtocol.Http:
-                {
-                    using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                        .GetAsync(new Uri(path), cancellationToken)
-                        .ConfigureAwait(false);
-                    return await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                }
+                    {
+                        using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                            .GetAsync(new Uri(path), cancellationToken)
+                            .ConfigureAwait(false);
+                        return await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                    }
 
                 case MediaProtocol.File:
                     return AsyncFile.OpenRead(path);
@@ -737,7 +743,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
         }
 
-        internal readonly struct SubtitleInfo
+        public readonly struct SubtitleInfo
         {
             public SubtitleInfo(string path, MediaProtocol protocol, string format, bool isExternal)
             {

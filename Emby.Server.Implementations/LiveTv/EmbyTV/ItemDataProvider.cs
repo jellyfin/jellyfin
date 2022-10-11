@@ -84,10 +84,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public virtual void Update(T item)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
+            ArgumentNullException.ThrowIfNull(item);
 
             lock (_fileDataLock)
             {
@@ -107,10 +104,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public virtual void Add(T item)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
+            ArgumentNullException.ThrowIfNull(item);
 
             lock (_fileDataLock)
             {

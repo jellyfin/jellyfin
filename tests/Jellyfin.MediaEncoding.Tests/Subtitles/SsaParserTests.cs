@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using System.Threading;
 using MediaBrowser.MediaEncoding.Subtitles;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging.Abstractions;

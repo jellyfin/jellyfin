@@ -67,6 +67,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private List<string> _filters = new List<string>();
         private IDictionary<int, bool> _filtersWithOption = new Dictionary<int, bool>();
 
+        private bool _isPkeyPauseSupported = false;
+
         private bool _isVaapiDeviceAmd = false;
         private bool _isVaapiDeviceInteliHD = false;
         private bool _isVaapiDeviceInteli965 = false;
@@ -99,6 +101,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public string ProbePath => _ffprobePath;
 
         public Version EncoderVersion => _ffmpegVersion;
+
+        public bool IsPkeyPauseSupported => _isPkeyPauseSupported;
 
         public bool IsVaapiDeviceAmd => _isVaapiDeviceAmd;
 
@@ -153,6 +157,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 SetMediaEncoderVersion(validator);
 
                 _threads = EncodingHelper.GetNumberOfThreads(null, options, null);
+
+                _isPkeyPauseSupported = validator.CheckSupportedRuntimeKey("p      pause transcoding");
 
                 // Check the Vaapi device vendor
                 if (OperatingSystem.IsLinux()
@@ -376,14 +382,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
             string analyzeDuration = string.Empty;
             string ffmpegAnalyzeDuration = _config.GetFFmpegAnalyzeDuration() ?? string.Empty;
 
-            if (!string.IsNullOrEmpty(ffmpegAnalyzeDuration))
-            {
-                analyzeDuration = "-analyzeduration " + ffmpegAnalyzeDuration;
-            }
-            else if (request.MediaSource.AnalyzeDurationMs > 0)
+            if (request.MediaSource.AnalyzeDurationMs > 0)
             {
                 analyzeDuration = "-analyzeduration " +
                                   (request.MediaSource.AnalyzeDurationMs * 1000).ToString();
+            }
+            else if (!string.IsNullOrEmpty(ffmpegAnalyzeDuration))
+            {
+                analyzeDuration = "-analyzeduration " + ffmpegAnalyzeDuration;
             }
 
             var forceEnableLogging = request.MediaSource.Protocol != MediaProtocol.File;
@@ -619,9 +625,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 Video3DFormat.HalfSideBySide => "crop=iw/2:ih:0:0,scale=(iw*2):ih,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1",
                 // fsbs crop width in half,set the display aspect,crop out any black bars we may have made
                 Video3DFormat.FullSideBySide => "crop=iw/2:ih:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1",
-                // htab crop heigh in half,scale to correct size, set the display aspect,crop out any black bars we may have made
+                // htab crop height in half,scale to correct size, set the display aspect,crop out any black bars we may have made
                 Video3DFormat.HalfTopAndBottom => "crop=iw:ih/2:0:0,scale=(iw*2):ih),setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1",
-                // ftab crop heigt in half, set the display aspect,crop out any black bars we may have made
+                // ftab crop height in half, set the display aspect,crop out any black bars we may have made
                 Video3DFormat.FullTopAndBottom => "crop=iw:ih/2:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1",
                 _ => "scale=trunc(iw*sar):ih"
             };

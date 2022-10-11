@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
@@ -51,21 +52,21 @@ namespace Jellyfin.Api.Auth
             bool requiredDownloadPermission = false)
         {
             // ApiKey is currently global admin, always allow.
-            var isApiKey = ClaimHelpers.GetIsApiKey(claimsPrincipal);
+            var isApiKey = claimsPrincipal.GetIsApiKey();
             if (isApiKey)
             {
                 return true;
             }
 
             // Ensure claim has userId.
-            var userId = ClaimHelpers.GetUserId(claimsPrincipal);
-            if (!userId.HasValue)
+            var userId = claimsPrincipal.GetUserId();
+            if (userId.Equals(default))
             {
                 return false;
             }
 
             // Ensure userId links to a valid user.
-            var user = _userManager.GetUserById(userId.Value);
+            var user = _userManager.GetUserById(userId);
             if (user == null)
             {
                 return false;

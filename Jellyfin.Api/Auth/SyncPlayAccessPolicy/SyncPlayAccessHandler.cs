@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Net;
@@ -44,14 +45,14 @@ namespace Jellyfin.Api.Auth.SyncPlayAccessPolicy
                 return Task.CompletedTask;
             }
 
-            var userId = ClaimHelpers.GetUserId(context.User);
-            var user = _userManager.GetUserById(userId!.Value);
+            var userId = context.User.GetUserId();
+            var user = _userManager.GetUserById(userId);
 
             if (requirement.RequiredAccess == SyncPlayAccessRequirementType.HasAccess)
             {
                 if (user.SyncPlayAccess == SyncPlayUserAccessType.CreateAndJoinGroups
                     || user.SyncPlayAccess == SyncPlayUserAccessType.JoinGroups
-                    || _syncPlayManager.IsUserActive(userId.Value))
+                    || _syncPlayManager.IsUserActive(userId))
                 {
                     context.Succeed(requirement);
                 }
@@ -85,7 +86,7 @@ namespace Jellyfin.Api.Auth.SyncPlayAccessPolicy
             }
             else if (requirement.RequiredAccess == SyncPlayAccessRequirementType.IsInGroup)
             {
-                if (_syncPlayManager.IsUserActive(userId.Value))
+                if (_syncPlayManager.IsUserActive(userId))
                 {
                     context.Succeed(requirement);
                 }

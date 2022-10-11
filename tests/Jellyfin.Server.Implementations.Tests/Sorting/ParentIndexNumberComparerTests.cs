@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Emby.Server.Implementations.Sorting;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -12,7 +11,7 @@ public class ParentIndexNumberComparerTests
 {
     private readonly IBaseItemComparer _cmp = new ParentIndexNumberComparer();
 
-    private static TheoryData<BaseItem?, BaseItem?> Compare_GivenNull_ThrowsArgumentNullException_TestData()
+    public static TheoryData<BaseItem?, BaseItem?> Compare_GivenNull_ThrowsArgumentNullException_TestData()
         => new()
         {
             { null, new Audio() },

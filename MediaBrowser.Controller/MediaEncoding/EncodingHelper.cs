@@ -194,7 +194,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Gets the name of the output video codec.
         /// </summary>
-        /// <param name="state">Encording state.</param>
+        /// <param name="state">Encoding state.</param>
         /// <param name="encodingOptions">Encoding options.</param>
         /// <returns>Encoder string.</returns>
         public string GetVideoEncoder(EncodingJobInfo state, EncodingOptions encodingOptions)
@@ -251,6 +251,21 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (state.RemoteHttpHeaders.TryGetValue("User-Agent", out string useragent))
             {
                 return "-user_agent \"" + useragent + "\"";
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the referer param.
+        /// </summary>
+        /// <param name="state">The state.</param>
+        /// <returns>System.String.</returns>
+        public string GetRefererParam(EncodingJobInfo state)
+        {
+            if (state.RemoteHttpHeaders.TryGetValue("Referer", out string referer))
+            {
+                return "-referer \"" + referer + "\"";
             }
 
             return string.Empty;
@@ -1152,16 +1167,15 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (state.SubtitleStream.IsExternal)
             {
-                var subtitlePath = state.SubtitleStream.Path;
                 var charsetParam = string.Empty;
 
                 if (!string.IsNullOrEmpty(state.SubtitleStream.Language))
                 {
                     var charenc = _subtitleEncoder.GetSubtitleFileCharacterSet(
-                        subtitlePath,
-                        state.SubtitleStream.Language,
-                        state.MediaSource.Protocol,
-                        CancellationToken.None).GetAwaiter().GetResult();
+                            state.SubtitleStream,
+                            state.SubtitleStream.Language,
+                            state.MediaSource,
+                            CancellationToken.None).GetAwaiter().GetResult();
 
                     if (!string.IsNullOrEmpty(charenc))
                     {
@@ -1173,7 +1187,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return string.Format(
                     CultureInfo.InvariantCulture,
                     "subtitles=f='{0}'{1}{2}{3}{4}{5}",
-                    _mediaEncoder.EscapeSubtitleFilterPath(subtitlePath),
+                    _mediaEncoder.EscapeSubtitleFilterPath(state.SubtitleStream.Path),
                     charsetParam,
                     alphaParam,
                     sub2videoParam,
@@ -1981,7 +1995,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
-            // Cap the max target bitrate to intMax/2 to satisify the bufsize=bitrate*2.
+            // Cap the max target bitrate to intMax/2 to satisfy the bufsize=bitrate*2.
             return Math.Min(bitrate ?? 0, int.MaxValue / 2);
         }
 
@@ -4977,13 +4991,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             // The default value of -probesize is more than enough, so leave it as is.
             var ffmpegAnalyzeDuration = _config.GetFFmpegAnalyzeDuration() ?? string.Empty;
 
-            if (!string.IsNullOrEmpty(ffmpegAnalyzeDuration))
-            {
-                analyzeDurationArgument = "-analyzeduration " + ffmpegAnalyzeDuration;
-            }
-            else if (state.MediaSource.AnalyzeDurationMs.HasValue)
+            if (state.MediaSource.AnalyzeDurationMs > 0)
             {
                 analyzeDurationArgument = "-analyzeduration " + (state.MediaSource.AnalyzeDurationMs.Value * 1000).ToString(CultureInfo.InvariantCulture);
+            }
+            else if (!string.IsNullOrEmpty(ffmpegAnalyzeDuration))
+            {
+                analyzeDurationArgument = "-analyzeduration " + ffmpegAnalyzeDuration;
             }
 
             if (!string.IsNullOrEmpty(analyzeDurationArgument))
@@ -4998,6 +5012,15 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (!string.IsNullOrEmpty(userAgentParam))
             {
                 inputModifier += " " + userAgentParam;
+            }
+
+            inputModifier = inputModifier.Trim();
+
+            var refererParam = GetRefererParam(state);
+
+            if (!string.IsNullOrEmpty(refererParam))
+            {
+                inputModifier += " " + refererParam;
             }
 
             inputModifier = inputModifier.Trim();
@@ -5082,15 +5105,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             MediaSourceInfo mediaSource,
             string requestedUrl)
         {
-            if (state == null)
-            {
-                throw new ArgumentNullException(nameof(state));
-            }
+            ArgumentNullException.ThrowIfNull(state);
 
-            if (mediaSource == null)
-            {
-                throw new ArgumentNullException(nameof(mediaSource));
-            }
+            ArgumentNullException.ThrowIfNull(mediaSource);
 
             var path = mediaSource.Path;
             var protocol = mediaSource.Protocol;
@@ -5536,7 +5553,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return index;
                 }
 
-                 if (string.Equals(currentMediaStream.Path, streamToFind.Path, StringComparison.Ordinal))
+                if (string.Equals(currentMediaStream.Path, streamToFind.Path, StringComparison.Ordinal))
                 {
                     index++;
                 }

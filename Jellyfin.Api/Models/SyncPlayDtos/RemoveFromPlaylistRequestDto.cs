@@ -17,9 +17,9 @@ namespace Jellyfin.Api.Models.SyncPlayDtos
         }
 
         /// <summary>
-        /// Gets or sets the playlist identifiers ot the items. Ignored when clearing the playlist.
+        /// Gets or sets the playlist identifiers of the items. Ignored when clearing the playlist.
         /// </summary>
-        /// <value>The playlist identifiers ot the items.</value>
+        /// <value>The playlist identifiers of the items.</value>
         public IReadOnlyList<Guid> PlaylistItemIds { get; set; }
 
         /// <summary>

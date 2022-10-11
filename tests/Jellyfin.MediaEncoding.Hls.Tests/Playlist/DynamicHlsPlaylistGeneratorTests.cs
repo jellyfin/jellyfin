@@ -53,7 +53,7 @@ namespace Jellyfin.MediaEncoding.Hls.Tests.Playlist
             Assert.False(DynamicHlsPlaylistGenerator.IsExtractionAllowedForFile(filePath, allowedExtensions));
         }
 
-        private static TheoryData<int, long, double[]> ComputeEqualLengthSegments_Valid_Success_Data()
+        public static TheoryData<int, long, double[]> ComputeEqualLengthSegments_Valid_Success_Data()
         {
             var data = new TheoryData<int, long, double[]>
             {
@@ -67,7 +67,7 @@ namespace Jellyfin.MediaEncoding.Hls.Tests.Playlist
             return data;
         }
 
-        private static TheoryData<KeyframeData, int, double[]> ComputeSegments_Valid_Success_Data()
+        public static TheoryData<KeyframeData, int, double[]> ComputeSegments_Valid_Success_Data()
         {
             var data = new TheoryData<KeyframeData, int, double[]>
             {

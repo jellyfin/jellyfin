@@ -40,10 +40,7 @@ namespace MediaBrowser.Controller.IO
                 throw new ArgumentNullException(nameof(path));
             }
 
-            if (args == null)
-            {
-                throw new ArgumentNullException(nameof(args));
-            }
+            ArgumentNullException.ThrowIfNull(args);
 
             var entries = directoryService.GetFileSystemEntries(path);
 

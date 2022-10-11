@@ -12,7 +12,7 @@ ENV IS_DOCKER=YES
 # Prepare Debian build environment
 RUN apt-get update -yqq \
   && apt-get install -yqq --no-install-recommends \
-    apt-transport-https debhelper gnupg devscripts unzip \
+    debhelper gnupg devscripts unzip \
     mmv libcurl4-openssl-dev libfontconfig1-dev \
     libfreetype6-dev libssl-dev libssl1.1 liblttng-ust0
 

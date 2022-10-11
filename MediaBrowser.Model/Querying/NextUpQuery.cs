@@ -33,7 +33,7 @@ namespace MediaBrowser.Model.Querying
         /// Gets or sets the series id.
         /// </summary>
         /// <value>The series id.</value>
-        public string SeriesId { get; set; }
+        public Guid? SeriesId { get; set; }
 
         /// <summary>
         /// Gets or sets the start index. Use for paging.

@@ -13,7 +13,7 @@ namespace Jellyfin.Drawing.Skia
         /// </summary>
         /// <param name="skiaEncoder">The current skia encoder.</param>
         /// <param name="paths">The list of image paths.</param>
-        /// <param name="currentIndex">The current checked indes.</param>
+        /// <param name="currentIndex">The current checked index.</param>
         /// <param name="newIndex">The new index.</param>
         /// <returns>A valid bitmap, or null if no bitmap exists after <c>currentIndex</c>.</returns>
         public static SKBitmap? GetNextValidImage(SkiaEncoder skiaEncoder, IReadOnlyList<string> paths, int currentIndex, out int newIndex)

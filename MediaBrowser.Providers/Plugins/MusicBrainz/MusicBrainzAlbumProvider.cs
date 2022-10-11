@@ -36,7 +36,7 @@ namespace MediaBrowser.Providers.Music
         /// <summary>
         /// The Jellyfin user-agent is unrestricted but source IP must not exceed
         /// one request per second, therefore we rate limit to avoid throttling.
-        /// Be prudent, use a value slightly above the minimun required.
+        /// Be prudent, use a value slightly above the minimum required.
         /// https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting.
         /// </summary>
         private readonly long _musicBrainzQueryIntervalMs;

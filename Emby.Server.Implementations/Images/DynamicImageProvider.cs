@@ -93,6 +93,7 @@ namespace Emby.Server.Implementations.Images
                 returnItems.Shuffle();
                 return returnItems;
             }
+
             returnItems = items
                 .Where(i => i.HasImage(ImageType.Primary))
                 .ToList();
