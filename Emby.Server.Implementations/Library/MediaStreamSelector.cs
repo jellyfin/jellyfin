@@ -71,8 +71,8 @@ namespace Emby.Server.Implementations.Library
             }
             else if (mode == SubtitlePlaybackMode.Always)
             {
-                // Always load subtitles of the user's preferred subtitle language if possible, otherwise default behaviour.
-                stream = sortedStreams.FirstOrDefault(x => preferredLanguages.Contains(x.Language, StringComparison.OrdinalIgnoreCase)) ??
+                // Always load (full/non-forced) subtitles of the user's preferred subtitle language if possible, otherwise default behaviour.
+                stream = sortedStreams.FirstOrDefault(x => !x.IsForced && preferredLanguages.Contains(x.Language, StringComparison.OrdinalIgnoreCase)) ??
                     sortedStreams.FirstOrDefault(x => x.IsExternal || x.IsForced || x.IsDefault);
             }
             else if (mode == SubtitlePlaybackMode.OnlyForced)
