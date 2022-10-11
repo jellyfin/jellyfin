@@ -22,7 +22,6 @@ using Emby.Drawing;
 using Emby.Naming.Common;
 using Emby.Notifications;
 using Emby.Photos;
-using Emby.Server.Implementations.Archiving;
 using Emby.Server.Implementations.Channels;
 using Emby.Server.Implementations.Collections;
 using Emby.Server.Implementations.Configuration;
@@ -560,8 +559,6 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<ISocketFactory, SocketFactory>();
 
             serviceCollection.AddSingleton<IInstallationManager, InstallationManager>();
-
-            serviceCollection.AddSingleton<IZipClient, ZipClient>();
 
             serviceCollection.AddSingleton<IServerApplicationHost>(this);
             serviceCollection.AddSingleton(ApplicationPaths);
