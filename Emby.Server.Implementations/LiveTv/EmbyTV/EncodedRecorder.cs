@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -297,7 +298,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 else
                 {
                     _taskCompletionSource.TrySetException(
-                        new Exception(
+                        new FfmpegException(
                             string.Format(
                                 CultureInfo.InvariantCulture,
                                 "Recording for {0} failed. Exit code {1}",

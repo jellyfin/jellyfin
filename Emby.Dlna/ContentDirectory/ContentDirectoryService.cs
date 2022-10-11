@@ -103,10 +103,7 @@ namespace Emby.Dlna.ContentDirectory
         /// <inheritdoc />
         public Task<ControlResponse> ProcessControlRequestAsync(ControlRequest request)
         {
-            if (request == null)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
+            ArgumentNullException.ThrowIfNull(request);
 
             var profile = _dlna.GetProfile(request.Headers) ?? _dlna.GetDefaultProfile();
 

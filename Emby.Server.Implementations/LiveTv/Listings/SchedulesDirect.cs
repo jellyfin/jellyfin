@@ -20,6 +20,7 @@ using Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -591,13 +592,10 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
             catch (HttpRequestException ex)
             {
-                if (ex.StatusCode.HasValue)
+                if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.BadRequest)
                 {
-                    if ((int)ex.StatusCode.Value == 400)
-                    {
-                        _tokens.Clear();
-                        _lastErrorResponse = DateTime.UtcNow;
-                    }
+                    _tokens.Clear();
+                    _lastErrorResponse = DateTime.UtcNow;
                 }
 
                 throw;
@@ -662,7 +660,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 return root.Token;
             }
 
-            throw new Exception("Could not authenticate with Schedules Direct Error: " + root.Message);
+            throw new AuthenticationException("Could not authenticate with Schedules Direct Error: " + root.Message);
         }
 
         private async Task AddLineupToAccount(ListingsProviderInfo info, CancellationToken cancellationToken)
@@ -697,7 +695,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             if (string.IsNullOrEmpty(token))
             {
-                throw new Exception("token required");
+                throw new ArgumentException("token required");
             }
 
             _logger.LogInformation("Headends on account ");
@@ -768,14 +766,14 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             var listingsId = info.ListingsId;
             if (string.IsNullOrEmpty(listingsId))
             {
-                throw new Exception("ListingsId required");
+                throw new ArgumentException("ListingsId required");
             }
 
             var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
 
             if (string.IsNullOrEmpty(token))
             {
-                throw new Exception("token required");
+                throw new ArgumentException("token required");
             }
 
             using var options = new HttpRequestMessage(HttpMethod.Get, ApiUrl + "/lineups/" + listingsId);

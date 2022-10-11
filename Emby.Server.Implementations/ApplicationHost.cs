@@ -66,6 +66,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Notifications;
@@ -93,6 +94,7 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Providers.Chapters;
+using MediaBrowser.Providers.Lyric;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Plugins.Tmdb;
 using MediaBrowser.Providers.Subtitles;
@@ -595,6 +597,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IMediaSourceManager, MediaSourceManager>();
 
             serviceCollection.AddSingleton<ISubtitleManager, SubtitleManager>();
+            serviceCollection.AddSingleton<ILyricManager, LyricManager>();
 
             serviceCollection.AddSingleton<IProviderManager, ProviderManager>();
 
@@ -626,8 +629,6 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IChapterManager, ChapterManager>();
 
             serviceCollection.AddSingleton<IEncodingManager, MediaEncoder.EncodingManager>();
-
-            serviceCollection.AddScoped<ISessionContext, SessionContext>();
 
             serviceCollection.AddSingleton<IAuthService, AuthService>();
             serviceCollection.AddSingleton<IQuickConnect, QuickConnectManager>();

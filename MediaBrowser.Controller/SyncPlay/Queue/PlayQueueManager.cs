@@ -102,7 +102,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         }
 
         /// <summary>
-        /// Appends new items to the playlist. The specified order is mantained.
+        /// Appends new items to the playlist. The specified order is maintained.
         /// </summary>
         /// <param name="items">The items to add to the playlist.</param>
         public void Queue(IReadOnlyList<Guid> items)
@@ -197,7 +197,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         }
 
         /// <summary>
-        /// Adds new items to the playlist right after the playing item. The specified order is mantained.
+        /// Adds new items to the playlist right after the playing item. The specified order is maintained.
         /// </summary>
         /// <param name="items">The items to add to the playlist.</param>
         public void QueueNext(IReadOnlyList<Guid> items)

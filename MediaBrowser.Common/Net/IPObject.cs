@@ -55,10 +55,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>IPAddress.</returns>
         public static (IPAddress Address, byte PrefixLength) NetworkAddressOf(IPAddress address, byte prefixLength)
         {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
+            ArgumentNullException.ThrowIfNull(address);
 
             if (address.IsIPv4MappedToIPv6)
             {
@@ -109,10 +106,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>True if it is.</returns>
         public static bool IsIP6(IPAddress address)
         {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
+            ArgumentNullException.ThrowIfNull(address);
 
             if (address.IsIPv4MappedToIPv6)
             {
@@ -129,10 +123,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>True if it contains a private address.</returns>
         public static bool IsPrivateAddressRange(IPAddress address)
         {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
+            ArgumentNullException.ThrowIfNull(address);
 
             if (!address.Equals(IPAddress.None))
             {
@@ -179,10 +170,7 @@ namespace MediaBrowser.Common.Net
         /// </remarks>
         public static bool IsIPv6LinkLocal(IPAddress address)
         {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
+            ArgumentNullException.ThrowIfNull(address);
 
             if (address.IsIPv4MappedToIPv6)
             {
@@ -226,10 +214,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>Byte CIDR representing the mask.</returns>
         public static byte MaskToCidr(IPAddress mask)
         {
-            if (mask == null)
-            {
-                throw new ArgumentNullException(nameof(mask));
-            }
+            ArgumentNullException.ThrowIfNull(mask);
 
             byte cidrnet = 0;
             if (!mask.Equals(IPAddress.Any))

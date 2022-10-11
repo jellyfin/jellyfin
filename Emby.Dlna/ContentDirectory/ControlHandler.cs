@@ -114,15 +114,9 @@ namespace Emby.Dlna.ContentDirectory
         /// <inheritdoc />
         protected override void WriteResult(string methodName, IReadOnlyDictionary<string, string> methodParams, XmlWriter xmlWriter)
         {
-            if (xmlWriter == null)
-            {
-                throw new ArgumentNullException(nameof(xmlWriter));
-            }
+            ArgumentNullException.ThrowIfNull(xmlWriter);
 
-            if (methodParams == null)
-            {
-                throw new ArgumentNullException(nameof(methodParams));
-            }
+            ArgumentNullException.ThrowIfNull(methodParams);
 
             const string DeviceId = "test";
 

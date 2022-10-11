@@ -3,7 +3,7 @@ namespace Emby.Naming.AudioBook
     /// <summary>
     /// Data object for passing result of audiobook part/chapter extraction.
     /// </summary>
-    public struct AudioBookFilePathParserResult
+    public record struct AudioBookFilePathParserResult
     {
         /// <summary>
         /// Gets or sets optional number of path extracted from audiobook filename.

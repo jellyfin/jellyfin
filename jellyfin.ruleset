@@ -84,6 +84,8 @@
     <!-- error on CA2016: Forward the CancellationToken parameter to methods that take one
         or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token -->
     <Rule Id="CA2016" Action="Error" />
+    <!-- error on CA2201: Exception type System.Exception is not sufficiently specific -->
+    <Rule Id="CA2201" Action="Error" />
     <!-- error on CA2215: Dispose methods should call base class dispose -->
     <Rule Id="CA2215" Action="Error" />
     <!-- error on CA2254: Template should be a static expression -->

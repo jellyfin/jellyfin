@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
@@ -39,7 +40,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Whether Quick Connect is enabled on the server or not.</returns>
         [HttpGet("Enabled")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<bool> GetEnabled()
+        public ActionResult<bool> GetQuickConnectEnabled()
         {
             return _quickConnect.IsEnabled;
         }
@@ -52,7 +53,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="QuickConnectResult"/> with a secret and code for future use or an error message.</returns>
         [HttpGet("Initiate")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<QuickConnectResult>> Initiate()
+        public async Task<ActionResult<QuickConnectResult>> InitiateQuickConnect()
         {
             try
             {
@@ -75,7 +76,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Connect")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<QuickConnectResult> Connect([FromQuery, Required] string secret)
+        public ActionResult<QuickConnectResult> GetQuickConnectState([FromQuery, Required] string secret)
         {
             try
             {
@@ -102,17 +103,17 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult<bool>> Authorize([FromQuery, Required] string code)
+        public async Task<ActionResult<bool>> AuthorizeQuickConnect([FromQuery, Required] string code)
         {
-            var userId = ClaimHelpers.GetUserId(Request.HttpContext.User);
-            if (!userId.HasValue)
+            var userId = User.GetUserId();
+            if (userId.Equals(default))
             {
                 return StatusCode(StatusCodes.Status403Forbidden, "Unknown user id");
             }
 
             try
             {
-                return await _quickConnect.AuthorizeRequest(userId.Value, code).ConfigureAwait(false);
+                return await _quickConnect.AuthorizeRequest(userId, code).ConfigureAwait(false);
             }
             catch (AuthenticationException)
             {

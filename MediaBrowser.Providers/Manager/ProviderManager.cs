@@ -926,7 +926,7 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error in {0}.Suports", i.GetType().Name);
+                    _logger.LogError(ex, "Error in {0}.Supports", i.GetType().Name);
                     return false;
                 }
             });

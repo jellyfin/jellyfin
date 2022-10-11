@@ -36,6 +36,7 @@
  - [dmitrylyzo](https://github.com/dmitrylyzo)
  - [DMouse10462](https://github.com/DMouse10462)
  - [DrPandemic](https://github.com/DrPandemic)
+ - [eglia](https://github.com/eglia)
  - [EraYaN](https://github.com/EraYaN)
  - [escabe](https://github.com/escabe)
  - [excelite](https://github.com/excelite)
@@ -147,6 +148,7 @@
  - [xosdy](https://github.com/xosdy)
  - [XVicarious](https://github.com/XVicarious)
  - [YouKnowBlom](https://github.com/YouKnowBlom)
+ - [ZachPhelan](https://github.com/ZachPhelan)
  - [KristupasSavickas](https://github.com/KristupasSavickas)
  - [Pusta](https://github.com/pusta)
  - [nielsvanvelzen](https://github.com/nielsvanvelzen)
@@ -157,6 +159,7 @@
  - [jonas-resch](https://github.com/jonas-resch)
  - [vgambier](https://github.com/vgambier)
  - [MinecraftPlaye](https://github.com/MinecraftPlaye)
+ - [RealGreenDragon](https://github.com/RealGreenDragon)
 
 # Emby Contributors
 
@@ -225,3 +228,4 @@
  - [gnuyent](https://github.com/gnuyent)
  - [Matthew Jones](https://github.com/matthew-jones-uk)
  - [Jakob Kukla](https://github.com/jakobkukla)
+ - [Utku Özdemir](https://github.com/utkuozdemir)

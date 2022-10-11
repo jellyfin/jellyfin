@@ -104,13 +104,14 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             int index = originalUrl.IndexOf('?', StringComparison.CurrentCulture);
             string ext = Path.GetExtension(index > -1 ? originalUrl.Remove(index) : originalUrl);
 
+            await using var fileStream = new FileStream(file, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.CopyToBufferSize, FileOptions.Asynchronous);
+
             if (ext.Equals(".gz", StringComparison.OrdinalIgnoreCase))
             {
                 try
                 {
                     using var reader = new GZipStream(stream, CompressionMode.Decompress);
-                    await using var writer = File.Create(file);
-                    await reader.CopyToAsync(writer, cancellationToken).ConfigureAwait(false);
+                    await reader.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -119,7 +120,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
             else
             {
-                await using var fileStream = new FileStream(file, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.CopyToBufferSize, FileOptions.Asynchronous);
                 await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
             }
 
