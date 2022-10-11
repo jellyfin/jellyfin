@@ -182,7 +182,7 @@ namespace Jellyfin.Api.Controllers
             };
 
             await _sessionManager.SendPlayCommand(
-                    await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false),
+                await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false),
                 sessionId,
                 playRequest,
                 CancellationToken.None)
@@ -210,7 +210,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? controllingUserId)
         {
             await _sessionManager.SendPlaystateCommand(
-                    await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false),
+                await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false),
                 sessionId,
                 new PlaystateRequest()
                 {

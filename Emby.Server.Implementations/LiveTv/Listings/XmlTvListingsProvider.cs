@@ -88,25 +88,20 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
                 using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(info.Path, cancellationToken).ConfigureAwait(false);
                 await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-
                 return await UnzipIfNeededAndCopy(info.Path, stream, cacheFile, cancellationToken).ConfigureAwait(false);
             }
             else
             {
-                await using var stream = new FileStream(info.Path, FileMode.Open, FileAccess.Read, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
-
+                await using var stream = AsyncFile.OpenRead(info.Path);
                 return await UnzipIfNeededAndCopy(info.Path, stream, cacheFile, cancellationToken).ConfigureAwait(false);
             }
         }
 
         private async Task<string> UnzipIfNeededAndCopy(string originalUrl, Stream stream, string file, CancellationToken cancellationToken)
         {
-            int index = originalUrl.IndexOf('?', StringComparison.CurrentCulture);
-            string ext = Path.GetExtension(index > -1 ? originalUrl.Remove(index) : originalUrl);
+            await using var fileStream = new FileStream(file, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
 
-            await using var fileStream = new FileStream(file, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.CopyToBufferSize, FileOptions.Asynchronous);
-
-            if (ext.Equals(".gz", StringComparison.OrdinalIgnoreCase))
+            if (Path.GetExtension(originalUrl.AsSpan().LeftPart('?')).Equals(".gz", StringComparison.OrdinalIgnoreCase))
             {
                 try
                 {
@@ -166,16 +161,16 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 IsMovie = program.Categories.Any(c => info.MovieCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
                 IsNews = program.Categories.Any(c => info.NewsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
                 IsSports = program.Categories.Any(c => info.SportsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
-                ImageUrl = program.Icon != null && !string.IsNullOrEmpty(program.Icon.Source) ? program.Icon.Source : null,
-                HasImage = program.Icon != null && !string.IsNullOrEmpty(program.Icon.Source),
-                OfficialRating = program.Rating != null && !string.IsNullOrEmpty(program.Rating.Value) ? program.Rating.Value : null,
+                ImageUrl = !string.IsNullOrEmpty(program.Icon?.Source) ? program.Icon.Source : null,
+                HasImage = !string.IsNullOrEmpty(program.Icon?.Source),
+                OfficialRating = !string.IsNullOrEmpty(program.Rating?.Value) ? program.Rating.Value : null,
                 CommunityRating = program.StarRating,
                 SeriesId = program.Episode == null ? null : program.Title.GetMD5().ToString("N", CultureInfo.InvariantCulture)
             };
 
             if (string.IsNullOrWhiteSpace(program.ProgramId))
             {
-                string uniqueString = (program.Title ?? string.Empty) + (episodeTitle ?? string.Empty) /*+ (p.IceTvEpisodeNumber ?? string.Empty)*/;
+                string uniqueString = (program.Title ?? string.Empty) + (episodeTitle ?? string.Empty);
 
                 if (programInfo.SeasonNumber.HasValue)
                 {

@@ -80,7 +80,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns>Video.</returns>
-        public override Video Resolve(ItemResolveArgs args)
+        protected override Video Resolve(ItemResolveArgs args)
         {
             var collectionType = args.GetCollectionType();
 
