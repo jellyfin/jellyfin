@@ -108,7 +108,7 @@ namespace Jellyfin.Api.Controllers
         {
             var deviceProfile = GetDeviceProfile(container, transcodingContainer, audioCodec, transcodingProtocol, breakOnNonKeyFrames, transcodingAudioChannels, maxAudioSampleRate, maxAudioBitDepth, maxAudioChannels);
 
-            if (!userId.HasValue || userId.Value.Equals(Guid.Empty))
+            if (!userId.HasValue || userId.Value.Equals(default))
             {
                 userId = User.GetUserId();
             }
