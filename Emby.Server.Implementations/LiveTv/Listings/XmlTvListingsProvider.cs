@@ -161,9 +161,9 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 IsMovie = program.Categories.Any(c => info.MovieCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
                 IsNews = program.Categories.Any(c => info.NewsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
                 IsSports = program.Categories.Any(c => info.SportsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
-                ImageUrl = !string.IsNullOrEmpty(program.Icon?.Source) ? program.Icon.Source : null,
+                ImageUrl = string.IsNullOrEmpty(program.Icon?.Source) ? null : program.Icon.Source,
                 HasImage = !string.IsNullOrEmpty(program.Icon?.Source),
-                OfficialRating = !string.IsNullOrEmpty(program.Rating?.Value) ? program.Rating.Value : null,
+                OfficialRating = string.IsNullOrEmpty(program.Rating?.Value) ? null : program.Rating.Value,
                 CommunityRating = program.StarRating,
                 SeriesId = program.Episode == null ? null : program.Title.GetMD5().ToString("N", CultureInfo.InvariantCulture)
             };
