@@ -665,11 +665,7 @@ namespace Emby.Server.Implementations.Library
                     if (result?.Items.Count > 0)
                     {
                         var items = result.Items;
-                        foreach (var item in items)
-                        {
-                            ResolverHelper.SetInitialItemValues(item, parent, this, directoryService);
-                        }
-
+                        items.RemoveAll(item => !ResolverHelper.SetInitialItemValues(item, parent, this, directoryService));
                         items.AddRange(ResolveFileList(result.ExtraFiles, directoryService, parent, collectionType, resolvers, libraryOptions));
                         return items;
                     }

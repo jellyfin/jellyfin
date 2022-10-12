@@ -20,8 +20,9 @@ namespace Emby.Server.Implementations.Library
         /// <param name="parent">The parent.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="directoryService">The directory service.</param>
+        /// <returns>True if initializing was successful.</returns>
         /// <exception cref="ArgumentException">Item must have a path.</exception>
-        public static void SetInitialItemValues(BaseItem item, Folder? parent, ILibraryManager libraryManager, IDirectoryService directoryService)
+        public static bool SetInitialItemValues(BaseItem item, Folder? parent, ILibraryManager libraryManager, IDirectoryService directoryService)
         {
             // This version of the below method has no ItemResolveArgs, so we have to require the path already being set
             if (string.IsNullOrEmpty(item.Path))
@@ -44,12 +45,14 @@ namespace Emby.Server.Implementations.Library
             var fileInfo = directoryService.GetFile(item.Path);
             if (fileInfo == null)
             {
-                throw new FileNotFoundException("Can't find item path.", item.Path);
+                return false;
             }
 
             SetDateCreated(item, fileInfo);
 
             EnsureName(item, fileInfo);
+
+            return true;
         }
 
         /// <summary>
