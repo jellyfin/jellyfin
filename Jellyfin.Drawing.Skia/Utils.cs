@@ -13,7 +13,8 @@ namespace Jellyfin.Drawing.Skia
             if (text == null)
                 return false;
             bool hasRandALCat = false;
-            foreach (char c in text) {
+            for (var i = 0; i < text.Length; i += char.IsSurrogatePair(text, i) ? 2 : 1) {
+                var c = char.ConvertToUtf32(text, i);
                 if(c >= 0x5BE && c <= 0x10B7F)
                 {
                     if(c <= 0x85E)
