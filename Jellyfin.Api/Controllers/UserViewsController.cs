@@ -85,7 +85,7 @@ namespace Jellyfin.Api.Controllers
 
             var folders = _userViewManager.GetUserViews(query);
 
-            var dtoOptions = new DtoOptions().AddClientFields(Request);
+            var dtoOptions = new DtoOptions().AddClientFields(User);
             var fields = dtoOptions.Fields.ToList();
 
             fields.Add(ItemFields.PrimaryImageAspectRatio);

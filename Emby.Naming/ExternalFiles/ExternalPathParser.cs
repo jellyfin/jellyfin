@@ -99,6 +99,18 @@ namespace Emby.Naming.ExternalFiles
                         pathInfo.Language = culture.ThreeLetterISOLanguageName;
                         extraString = extraString.Replace(currentSlice, string.Empty, StringComparison.OrdinalIgnoreCase);
                     }
+                    else if (culture != null && pathInfo.Language == "hin")
+                    {
+                        // Hindi language code "hi" collides with a hearing impaired flag - use as Hindi only if no other language is set
+                        pathInfo.IsHearingImpaired = true;
+                        pathInfo.Language = culture.ThreeLetterISOLanguageName;
+                        extraString = extraString.Replace(currentSlice, string.Empty, StringComparison.OrdinalIgnoreCase);
+                    }
+                    else if (_namingOptions.MediaHearingImpairedFlags.Any(s => currentSliceWithoutSeparator.Contains(s, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        pathInfo.IsHearingImpaired = true;
+                        extraString = extraString.Replace(currentSlice, string.Empty, StringComparison.OrdinalIgnoreCase);
+                    }
                     else
                     {
                         titleString = currentSlice + titleString;

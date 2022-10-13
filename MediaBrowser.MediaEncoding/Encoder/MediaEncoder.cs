@@ -67,6 +67,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private List<string> _filters = new List<string>();
         private IDictionary<int, bool> _filtersWithOption = new Dictionary<int, bool>();
 
+        private bool _isPkeyPauseSupported = false;
+
         private bool _isVaapiDeviceAmd = false;
         private bool _isVaapiDeviceInteliHD = false;
         private bool _isVaapiDeviceInteli965 = false;
@@ -99,6 +101,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public string ProbePath => _ffprobePath;
 
         public Version EncoderVersion => _ffmpegVersion;
+
+        public bool IsPkeyPauseSupported => _isPkeyPauseSupported;
 
         public bool IsVaapiDeviceAmd => _isVaapiDeviceAmd;
 
@@ -153,6 +157,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 SetMediaEncoderVersion(validator);
 
                 _threads = EncodingHelper.GetNumberOfThreads(null, options, null);
+
+                _isPkeyPauseSupported = validator.CheckSupportedRuntimeKey("p      pause transcoding");
 
                 // Check the Vaapi device vendor
                 if (OperatingSystem.IsLinux()
@@ -376,14 +382,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
             string analyzeDuration = string.Empty;
             string ffmpegAnalyzeDuration = _config.GetFFmpegAnalyzeDuration() ?? string.Empty;
 
-            if (!string.IsNullOrEmpty(ffmpegAnalyzeDuration))
-            {
-                analyzeDuration = "-analyzeduration " + ffmpegAnalyzeDuration;
-            }
-            else if (request.MediaSource.AnalyzeDurationMs > 0)
+            if (request.MediaSource.AnalyzeDurationMs > 0)
             {
                 analyzeDuration = "-analyzeduration " +
                                   (request.MediaSource.AnalyzeDurationMs * 1000).ToString();
+            }
+            else if (!string.IsNullOrEmpty(ffmpegAnalyzeDuration))
+            {
+                analyzeDuration = "-analyzeduration " + ffmpegAnalyzeDuration;
             }
 
             var forceEnableLogging = request.MediaSource.Protocol != MediaProtocol.File;

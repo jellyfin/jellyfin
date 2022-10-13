@@ -120,7 +120,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool enableTotalRecordCount = true)
         {
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             User? user = null;
@@ -323,7 +323,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool enableTotalRecordCount = true)
         {
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             User? user = null;
@@ -463,7 +463,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<BaseItemDto> GetArtistByName([FromRoute, Required] string name, [FromQuery] Guid? userId)
         {
-            var dtoOptions = new DtoOptions().AddClientFields(Request);
+            var dtoOptions = new DtoOptions().AddClientFields(User);
 
             var item = _libraryManager.GetArtist(name, dtoOptions);
 

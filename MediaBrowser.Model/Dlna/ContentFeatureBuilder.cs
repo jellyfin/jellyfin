@@ -8,7 +8,7 @@ using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Model.Dlna
 {
-    public class ContentFeatureBuilder
+    public static class ContentFeatureBuilder
     {
         public static string BuildImageHeader(
             DeviceProfile profile,

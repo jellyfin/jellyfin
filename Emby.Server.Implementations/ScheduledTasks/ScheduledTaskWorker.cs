@@ -92,25 +92,13 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </exception>
         public ScheduledTaskWorker(IScheduledTask scheduledTask, IApplicationPaths applicationPaths, ITaskManager taskManager, ILogger logger)
         {
-            if (scheduledTask == null)
-            {
-                throw new ArgumentNullException(nameof(scheduledTask));
-            }
+            ArgumentNullException.ThrowIfNull(scheduledTask);
 
-            if (applicationPaths == null)
-            {
-                throw new ArgumentNullException(nameof(applicationPaths));
-            }
+            ArgumentNullException.ThrowIfNull(applicationPaths);
 
-            if (taskManager == null)
-            {
-                throw new ArgumentNullException(nameof(taskManager));
-            }
+            ArgumentNullException.ThrowIfNull(taskManager);
 
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
+            ArgumentNullException.ThrowIfNull(logger);
 
             ScheduledTask = scheduledTask;
             _applicationPaths = applicationPaths;
@@ -249,10 +237,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             get => _triggers;
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
+                ArgumentNullException.ThrowIfNull(value);
 
                 // Cleanup current triggers
                 if (_triggers != null)
@@ -281,10 +266,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
+                ArgumentNullException.ThrowIfNull(value);
 
                 // This null check is not great, but is needed to handle bad user input, or user mucking with the config file incorrectly
                 var triggerList = value.Where(i => i != null).ToArray();

@@ -119,7 +119,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the trailers.</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public Task<ActionResult<QueryResult<BaseItemDto>>> GetTrailers(
+        public ActionResult<QueryResult<BaseItemDto>> GetTrailers(
             [FromQuery] Guid? userId,
             [FromQuery] string? maxOfficialRating,
             [FromQuery] bool? hasThemeSong,

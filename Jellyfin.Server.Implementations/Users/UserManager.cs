@@ -130,10 +130,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task RenameUser(User user, string newName)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ArgumentNullException.ThrowIfNull(user);
 
             ThrowIfInvalidUsername(newName);
 
@@ -267,10 +264,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task ChangePassword(User user, string newPassword)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ArgumentNullException.ThrowIfNull(user);
 
             await GetAuthenticationProvider(user).ChangePassword(user, newPassword).ConfigureAwait(false);
             await UpdateUserAsync(user).ConfigureAwait(false);

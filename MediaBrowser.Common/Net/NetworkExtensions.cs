@@ -61,10 +61,7 @@ namespace MediaBrowser.Common.Net
                 return false;
             }
 
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
+            ArgumentNullException.ThrowIfNull(item);
 
             if (item.IsIPv4MappedToIPv6)
             {
@@ -96,10 +93,7 @@ namespace MediaBrowser.Common.Net
                 return false;
             }
 
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
+            ArgumentNullException.ThrowIfNull(item);
 
             foreach (var i in source)
             {
@@ -153,10 +147,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>Collection{IPObject} object containing the subnets.</returns>
         public static Collection<IPObject> AsNetworks(this Collection<IPObject> source)
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
+            ArgumentNullException.ThrowIfNull(source);
 
             Collection<IPObject> res = new Collection<IPObject>();
 
@@ -239,10 +230,7 @@ namespace MediaBrowser.Common.Net
                 return new Collection<IPObject>();
             }
 
-            if (target == null)
-            {
-                throw new ArgumentNullException(nameof(target));
-            }
+            ArgumentNullException.ThrowIfNull(target);
 
             Collection<IPObject> nc = new Collection<IPObject>();
 

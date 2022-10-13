@@ -18,10 +18,10 @@
   <ItemGroup>
     <PackageReference Include="BlurHashSharp" Version="1.2.0" />
     <PackageReference Include="BlurHashSharp.SkiaSharp" Version="1.2.0" />
-    <PackageReference Include="SkiaSharp" Version="2.88.2" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.2" />
-    <PackageReference Include="SkiaSharp.HarfBuzz" Version="2.88.2" />
-    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" Version="2.8.2.2" />
+    <PackageReference Include="SkiaSharp" Version="2.88.3" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.3" />
+    <PackageReference Include="SkiaSharp.HarfBuzz" Version="2.88.3" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" Version="2.8.2.3" />
     <PackageReference Include="SkiaSharp.Svg" Version="1.60.0" />
   </ItemGroup>
 

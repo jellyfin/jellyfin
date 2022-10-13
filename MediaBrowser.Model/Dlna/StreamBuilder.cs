@@ -565,10 +565,7 @@ namespace MediaBrowser.Model.Dlna
 
         private StreamInfo BuildVideoItem(MediaSourceInfo item, VideoOptions options)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
+            ArgumentNullException.ThrowIfNull(item);
 
             StreamInfo playlistItem = new StreamInfo
             {

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Extensions;
+using Jellyfin.Api.Extensions;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Net;
@@ -54,7 +54,6 @@ namespace Emby.Server.Implementations.Session
         private readonly ISessionManager _sessionManager;
         private readonly ILogger<SessionWebSocketListener> _logger;
         private readonly ILoggerFactory _loggerFactory;
-        private readonly IAuthorizationContext _authorizationContext;
 
         /// <summary>
         /// The KeepAlive cancellation token.
@@ -67,17 +66,14 @@ namespace Emby.Server.Implementations.Session
         /// <param name="logger">The logger.</param>
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="loggerFactory">The logger factory.</param>
-        /// <param name="authorizationContext">The authorization context.</param>
         public SessionWebSocketListener(
             ILogger<SessionWebSocketListener> logger,
             ISessionManager sessionManager,
-            ILoggerFactory loggerFactory,
-            IAuthorizationContext authorizationContext)
+            ILoggerFactory loggerFactory)
         {
             _logger = logger;
             _sessionManager = sessionManager;
             _loggerFactory = loggerFactory;
-            _authorizationContext = authorizationContext;
         }
 
         /// <inheritdoc />
@@ -111,21 +107,18 @@ namespace Emby.Server.Implementations.Session
 
         private async Task<SessionInfo> GetSession(HttpContext httpContext, string remoteEndpoint)
         {
-            var authorizationInfo = await _authorizationContext.GetAuthorizationInfo(httpContext)
-                .ConfigureAwait(false);
-
-            if (!authorizationInfo.IsAuthenticated)
+            if (!httpContext.User.Identity?.IsAuthenticated ?? false)
             {
                 return null;
             }
 
-            var deviceId = authorizationInfo.DeviceId;
+            var deviceId = httpContext.User.GetDeviceId();
             if (httpContext.Request.Query.TryGetValue("deviceId", out var queryDeviceId))
             {
                 deviceId = queryDeviceId;
             }
 
-            return await _sessionManager.GetSessionByAuthenticationToken(authorizationInfo.Token, deviceId, remoteEndpoint)
+            return await _sessionManager.GetSessionByAuthenticationToken(httpContext.User.GetToken(), deviceId, remoteEndpoint)
                 .ConfigureAwait(false);
         }
 

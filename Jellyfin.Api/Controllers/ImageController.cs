@@ -17,7 +17,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Branding;
 using MediaBrowser.Model.Drawing;
@@ -44,11 +43,9 @@ namespace Jellyfin.Api.Controllers
         private readonly IProviderManager _providerManager;
         private readonly IImageProcessor _imageProcessor;
         private readonly IFileSystem _fileSystem;
-        private readonly IAuthorizationContext _authContext;
         private readonly ILogger<ImageController> _logger;
         private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly IApplicationPaths _appPaths;
-        private readonly IImageEncoder _imageEncoder;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageController"/> class.
@@ -58,33 +55,27 @@ namespace Jellyfin.Api.Controllers
         /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
         /// <param name="imageProcessor">Instance of the <see cref="IImageProcessor"/> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-        /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{ImageController}"/> interface.</param>
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
-        /// <param name="imageEncoder">Instance of the <see cref="IImageEncoder"/> interface.</param>
         public ImageController(
             IUserManager userManager,
             ILibraryManager libraryManager,
             IProviderManager providerManager,
             IImageProcessor imageProcessor,
             IFileSystem fileSystem,
-            IAuthorizationContext authContext,
             ILogger<ImageController> logger,
             IServerConfigurationManager serverConfigurationManager,
-            IApplicationPaths appPaths,
-            IImageEncoder imageEncoder)
+            IApplicationPaths appPaths)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
             _providerManager = providerManager;
             _imageProcessor = imageProcessor;
             _fileSystem = fileSystem;
-            _authContext = authContext;
             _logger = logger;
             _serverConfigurationManager = serverConfigurationManager;
             _appPaths = appPaths;
-            _imageEncoder = imageEncoder;
         }
 
         /// <summary>
@@ -108,7 +99,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] ImageType imageType,
             [FromQuery] int? index = null)
         {
-            if (!await RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true).ConfigureAwait(false))
+            if (!RequestHelpers.AssertCanUpdateUser(_userManager, HttpContext.User, userId, true))
             {
                 return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the image.");
             }
@@ -155,7 +146,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] ImageType imageType,
             [FromRoute] int index)
         {
-            if (!await RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true).ConfigureAwait(false))
+            if (!RequestHelpers.AssertCanUpdateUser(_userManager, HttpContext.User, userId, true))
             {
                 return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the image.");
             }
@@ -201,7 +192,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] ImageType imageType,
             [FromQuery] int? index = null)
         {
-            if (!await RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true).ConfigureAwait(false))
+            if (!RequestHelpers.AssertCanUpdateUser(_userManager, HttpContext.User, userId, true))
             {
                 return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to delete the image.");
             }
@@ -245,7 +236,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] ImageType imageType,
             [FromRoute] int index)
         {
-            if (!await RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true).ConfigureAwait(false))
+            if (!RequestHelpers.AssertCanUpdateUser(_userManager, HttpContext.User, userId, true))
             {
                 return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to delete the image.");
             }

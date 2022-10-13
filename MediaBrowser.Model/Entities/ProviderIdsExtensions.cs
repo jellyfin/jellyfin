@@ -28,10 +28,7 @@ namespace MediaBrowser.Model.Entities
         /// <returns><c>true</c> if a provider id with the given name was found; otherwise <c>false</c>.</returns>
         public static bool HasProviderId(this IHasProviderIds instance, string name)
         {
-            if (instance == null)
-            {
-                throw new ArgumentNullException(nameof(instance));
-            }
+            ArgumentNullException.ThrowIfNull(instance);
 
             return instance.TryGetProviderId(name, out _);
         }
@@ -56,10 +53,7 @@ namespace MediaBrowser.Model.Entities
         /// <returns><c>true</c> if a provider id with the given name was found; otherwise <c>false</c>.</returns>
         public static bool TryGetProviderId(this IHasProviderIds instance, string name, [NotNullWhen(true)] out string? id)
         {
-            if (instance == null)
-            {
-                throw new ArgumentNullException(nameof(instance));
-            }
+            ArgumentNullException.ThrowIfNull(instance);
 
             if (instance.ProviderIds == null)
             {
@@ -121,10 +115,7 @@ namespace MediaBrowser.Model.Entities
         /// <param name="value">The value.</param>
         public static void SetProviderId(this IHasProviderIds instance, string name, string? value)
         {
-            if (instance == null)
-            {
-                throw new ArgumentNullException(nameof(instance));
-            }
+            ArgumentNullException.ThrowIfNull(instance);
 
             // If it's null remove the key from the dictionary
             if (string.IsNullOrEmpty(value))

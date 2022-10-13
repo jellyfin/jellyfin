@@ -730,6 +730,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.LocalizedDefault = _localization.GetLocalizedString("Default");
                 stream.LocalizedForced = _localization.GetLocalizedString("Forced");
                 stream.LocalizedExternal = _localization.GetLocalizedString("External");
+                stream.LocalizedHearingImpaired = _localization.GetLocalizedString("HearingImpaired");
 
                 if (string.IsNullOrEmpty(stream.Title))
                 {
@@ -875,8 +876,13 @@ namespace MediaBrowser.MediaEncoding.Probing
                     }
                 }
             }
+            else if (string.Equals(streamInfo.CodecType, "data", StringComparison.OrdinalIgnoreCase))
+            {
+                stream.Type = MediaStreamType.Data;
+            }
             else
             {
+                _logger.LogError("Codec Type {CodecType} unknown. The stream (index: {Index}) will be ignored. Warning: Subsequential streams will have a wrong stream specifier!", streamInfo.CodecType, streamInfo.Index);
                 return null;
             }
 
@@ -949,6 +955,11 @@ namespace MediaBrowser.MediaEncoding.Probing
                 if (disposition.GetValueOrDefault("forced") == 1)
                 {
                     stream.IsForced = true;
+                }
+
+                if (disposition.GetValueOrDefault("hearing_impaired") == 1)
+                {
+                    stream.IsHearingImpaired = true;
                 }
             }
 

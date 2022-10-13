@@ -892,29 +892,7 @@ namespace MediaBrowser.Controller.Entities
 
         private static BaseItem[] SortItemsByRequest(InternalItemsQuery query, IReadOnlyList<BaseItem> items)
         {
-            var ids = query.ItemIds;
-            int size = items.Count;
-
-            // ids can potentially contain non-unique guids, but query result cannot,
-            // so we include only first occurrence of each guid
-            var positions = new Dictionary<Guid, int>(size);
-            int index = 0;
-            for (int i = 0; i < ids.Length; i++)
-            {
-                if (positions.TryAdd(ids[i], index))
-                {
-                    index++;
-                }
-            }
-
-            var newItems = new BaseItem[size];
-            for (int i = 0; i < size; i++)
-            {
-                var item = items[i];
-                newItems[positions[item.Id]] = item;
-            }
-
-            return newItems;
+            return items.OrderBy(i => Array.IndexOf(query.ItemIds, i.Id)).ToArray();
         }
 
         public QueryResult<BaseItem> GetItems(InternalItemsQuery query)
@@ -1045,10 +1023,7 @@ namespace MediaBrowser.Controller.Entities
             IServerConfigurationManager configurationManager,
             ICollectionManager collectionManager)
         {
-            if (items == null)
-            {
-                throw new ArgumentNullException(nameof(items));
-            }
+            ArgumentNullException.ThrowIfNull(items);
 
             if (CollapseBoxSetItems(query, queryParent, user, configurationManager))
             {
@@ -1295,20 +1270,14 @@ namespace MediaBrowser.Controller.Entities
 
         public List<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ArgumentNullException.ThrowIfNull(user);
 
             return GetChildren(user, includeLinkedChildren, null);
         }
 
         public virtual List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ArgumentNullException.ThrowIfNull(user);
 
             // the true root should return our users root folder children
             if (IsPhysicalRoot)
@@ -1389,10 +1358,7 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual IEnumerable<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ArgumentNullException.ThrowIfNull(user);
 
             var result = new Dictionary<Guid, BaseItem>();
 

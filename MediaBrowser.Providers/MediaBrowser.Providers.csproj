@@ -16,12 +16,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="LrcParser" Version="2022.529.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="OptimizedPriorityQueue" Version="5.1.0" />
     <PackageReference Include="PlaylistsNET" Version="1.2.1" />
+    <PackageReference Include="TagLibSharp" Version="2.3.0" />
     <PackageReference Include="TMDbLib" Version="1.9.2" />
   </ItemGroup>
 

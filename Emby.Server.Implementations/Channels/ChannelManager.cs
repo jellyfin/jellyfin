@@ -1188,10 +1188,7 @@ namespace Emby.Server.Implementations.Channels
 
         internal IChannel GetChannelProvider(Channel channel)
         {
-            if (channel == null)
-            {
-                throw new ArgumentNullException(nameof(channel));
-            }
+            ArgumentNullException.ThrowIfNull(channel);
 
             var result = GetAllChannels()
                 .FirstOrDefault(i => GetInternalChannelId(i.Name).Equals(channel.ChannelId) || string.Equals(i.Name, channel.Name, StringComparison.OrdinalIgnoreCase));

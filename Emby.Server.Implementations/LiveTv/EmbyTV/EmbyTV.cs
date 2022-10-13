@@ -1223,10 +1223,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private async Task RecordStream(TimerInfo timer, DateTime recordingEndDate, ActiveRecordingInfo activeRecordingInfo)
         {
-            if (timer == null)
-            {
-                throw new ArgumentNullException(nameof(timer));
-            }
+            ArgumentNullException.ThrowIfNull(timer);
 
             LiveTvProgram programInfo = null;
 
@@ -2222,6 +2219,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     continue;
                 }
 
+                // Skip ShowId without SubKey from duplicate removal actions - https://github.com/jellyfin/jellyfin/issues/5856
+                if (group.Key.EndsWith("0000", StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
                 HandleDuplicateShowIds(groupTimers);
             }
         }
@@ -2347,10 +2350,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private IEnumerable<TimerInfo> GetTimersForSeries(SeriesTimerInfo seriesTimer)
         {
-            if (seriesTimer == null)
-            {
-                throw new ArgumentNullException(nameof(seriesTimer));
-            }
+            ArgumentNullException.ThrowIfNull(seriesTimer);
 
             var query = new InternalItemsQuery
             {
