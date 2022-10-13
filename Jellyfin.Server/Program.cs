@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -201,7 +202,7 @@ namespace Jellyfin.Server
                 {
                     await webHost.StartAsync(_tokenSource.Token).ConfigureAwait(false);
 
-                    if (startupConfig.UseUnixSocket() && Environment.OSVersion.Platform == PlatformID.Unix)
+                    if (!OperatingSystem.IsWindows() && startupConfig.UseUnixSocket())
                     {
                         var socketPath = GetUnixSocketPath(startupConfig, appPaths);
 
@@ -691,27 +692,15 @@ namespace Jellyfin.Server
             return socketPath;
         }
 
+        [UnsupportedOSPlatform("windows")]
         private static void SetUnixSocketPermissions(IConfiguration startupConfig, string socketPath)
         {
             var socketPerms = startupConfig.GetUnixSocketPermissions();
 
             if (!string.IsNullOrEmpty(socketPerms))
             {
-                #pragma warning disable SA1300 // Entrypoint is case sensitive.
-                [DllImport("libc")]
-                static extern int chmod(string pathname, int mode);
-                #pragma warning restore SA1300
-
-                var exitCode = chmod(socketPath, Convert.ToInt32(socketPerms, 8));
-
-                if (exitCode < 0)
-                {
-                    _logger.LogError("Failed to set Kestrel unix socket permissions to {SocketPerms}, return code: {ExitCode}", socketPerms, exitCode);
-                }
-                else
-                {
-                    _logger.LogInformation("Kestrel unix socket permissions set to {SocketPerms}", socketPerms);
-                }
+                File.SetUnixFileMode(socketPath, (UnixFileMode)Convert.ToInt32(socketPerms, 8));
+                _logger.LogInformation("Kestrel unix socket permissions set to {SocketPerms}", socketPerms);
             }
         }
     }
