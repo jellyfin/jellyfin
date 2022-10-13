@@ -27,12 +27,17 @@ namespace Jellyfin.Api.Helpers
         /// <summary>
         /// Codec name for FLAC.
         /// </summary>
-        public const string FLAC = "fLaC";
+        public const string FLAC = "flac";
 
         /// <summary>
         /// Codec name for ALAC.
         /// </summary>
         public const string ALAC = "alac";
+
+        /// <summary>
+        /// Codec name for OPUS.
+        /// </summary>
+        public const string OPUS = "opus";
 
         /// <summary>
         /// Gets a MP3 codec string.
@@ -99,6 +104,15 @@ namespace Jellyfin.Api.Helpers
         public static string GetALACString()
         {
             return ALAC;
+        }
+
+        /// <summary>
+        /// Gets an OPUS codec string.
+        /// </summary>
+        /// <returns>OPUS codec string.</returns>
+        public static string GetOPUSString()
+        {
+            return OPUS;
         }
 
         /// <summary>
