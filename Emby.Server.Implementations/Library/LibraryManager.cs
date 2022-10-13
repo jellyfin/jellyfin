@@ -495,11 +495,7 @@ namespace Emby.Server.Implementations.Library
 
         private Guid GetNewItemIdInternal(string key, Type type, bool forceCaseInsensitive)
         {
-            if (string.IsNullOrEmpty(key))
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
+            ArgumentException.ThrowIfNullOrEmpty(key);
             ArgumentNullException.ThrowIfNull(type);
 
             string programDataPath = _configurationManager.ApplicationPaths.ProgramDataPath;
@@ -818,10 +814,7 @@ namespace Emby.Server.Implementations.Library
         {
             // If this returns multiple items it could be tricky figuring out which one is correct.
             // In most cases, the newest one will be and the others obsolete but not yet cleaned up
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(path);
 
             var query = new InternalItemsQuery
             {
@@ -2340,10 +2333,7 @@ namespace Emby.Server.Implementations.Library
             string sortName,
             string uniqueId)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(name);
 
             var parentIdString = parentId.Equals(default)
                 ? null
@@ -3125,10 +3115,7 @@ namespace Emby.Server.Implementations.Library
 
         public void RemoveMediaPath(string virtualFolderName, string mediaPath)
         {
-            if (string.IsNullOrEmpty(mediaPath))
-            {
-                throw new ArgumentNullException(nameof(mediaPath));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(mediaPath);
 
             var rootFolderPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
             var virtualFolderPath = Path.Combine(rootFolderPath, virtualFolderName);

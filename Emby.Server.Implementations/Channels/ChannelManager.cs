@@ -601,10 +601,7 @@ namespace Emby.Server.Implementations.Channels
 
         private Guid GetInternalChannelId(string name)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(name);
 
             return _libraryManager.GetNewItemId("Channel " + name, typeof(Channel));
         }

@@ -1017,10 +1017,7 @@ namespace Emby.Dlna.PlayTo
             }
 
             var avService = GetServiceRenderingControl();
-            if (avService is null)
-            {
-                throw new ArgumentException("Device AvService is null");
-            }
+            ArgumentNullException.ThrowIfNull(avService);
 
             string url = NormalizeUrl(Properties.BaseUrl, avService.ScpdUrl);
 

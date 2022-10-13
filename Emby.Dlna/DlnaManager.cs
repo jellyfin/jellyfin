@@ -265,10 +265,7 @@ namespace Emby.Dlna
         /// <inheritdoc />
         public DeviceProfile? GetProfile(string id)
         {
-            if (string.IsNullOrEmpty(id))
-            {
-                throw new ArgumentNullException(nameof(id));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(id);
 
             var info = GetProfileInfosInternal().FirstOrDefault(i => string.Equals(i.Info.Id, id, StringComparison.OrdinalIgnoreCase));
 
@@ -371,10 +368,7 @@ namespace Emby.Dlna
         {
             profile = ReserializeProfile(profile);
 
-            if (string.IsNullOrEmpty(profile.Name))
-            {
-                throw new ArgumentException("Profile is missing Name");
-            }
+            ArgumentException.ThrowIfNullOrEmpty(profile.Name);
 
             var newFilename = _fileSystem.GetValidFilename(profile.Name) + ".xml";
             var path = Path.Combine(UserProfilesPath, newFilename);
@@ -387,15 +381,9 @@ namespace Emby.Dlna
         {
             profile = ReserializeProfile(profile);
 
-            if (string.IsNullOrEmpty(profile.Id))
-            {
-                throw new ArgumentException("Profile is missing Id");
-            }
+            ArgumentException.ThrowIfNullOrEmpty(profile.Id);
 
-            if (string.IsNullOrEmpty(profile.Name))
-            {
-                throw new ArgumentException("Profile is missing Name");
-            }
+            ArgumentException.ThrowIfNullOrEmpty(profile.Name);
 
             var current = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, profileId, StringComparison.OrdinalIgnoreCase));
             if (current.Info.Type == DeviceProfileType.System)

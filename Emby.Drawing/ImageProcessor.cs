@@ -503,20 +503,9 @@ namespace Emby.Drawing
         /// </exception>
         public string GetCachePath(string path, string uniqueName, string fileExtension)
         {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
-            if (string.IsNullOrEmpty(uniqueName))
-            {
-                throw new ArgumentNullException(nameof(uniqueName));
-            }
-
-            if (string.IsNullOrEmpty(fileExtension))
-            {
-                throw new ArgumentNullException(nameof(fileExtension));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(path);
+            ArgumentException.ThrowIfNullOrEmpty(uniqueName);
+            ArgumentException.ThrowIfNullOrEmpty(fileExtension);
 
             var filename = uniqueName.GetMD5() + fileExtension;
 

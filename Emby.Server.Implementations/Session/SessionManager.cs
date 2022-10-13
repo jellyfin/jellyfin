@@ -264,20 +264,9 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
-            if (string.IsNullOrEmpty(appName))
-            {
-                throw new ArgumentNullException(nameof(appName));
-            }
-
-            if (string.IsNullOrEmpty(appVersion))
-            {
-                throw new ArgumentNullException(nameof(appVersion));
-            }
-
-            if (string.IsNullOrEmpty(deviceId))
-            {
-                throw new ArgumentNullException(nameof(deviceId));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(appName);
+            ArgumentException.ThrowIfNullOrEmpty(appVersion);
+            ArgumentException.ThrowIfNullOrEmpty(deviceId);
 
             var activityDate = DateTime.UtcNow;
             var session = await GetSessionInfo(appName, appVersion, deviceId, deviceName, remoteEndPoint, user).ConfigureAwait(false);
@@ -478,10 +467,7 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
-            if (string.IsNullOrEmpty(deviceId))
-            {
-                throw new ArgumentNullException(nameof(deviceId));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(deviceId);
 
             var key = GetSessionKey(appName, deviceId);
 
@@ -1571,10 +1557,7 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
-            if (string.IsNullOrEmpty(accessToken))
-            {
-                throw new ArgumentNullException(nameof(accessToken));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(accessToken);
 
             var existing = (await _deviceManager.GetDevices(
                 new DeviceQuery
@@ -1744,10 +1727,7 @@ namespace Emby.Server.Implementations.Session
         /// <inheritdoc />
         public void ReportNowViewingItem(string sessionId, string itemId)
         {
-            if (string.IsNullOrEmpty(itemId))
-            {
-                throw new ArgumentNullException(nameof(itemId));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(itemId);
 
             var item = _libraryManager.GetItemById(new Guid(itemId));
             var session = GetSession(sessionId);

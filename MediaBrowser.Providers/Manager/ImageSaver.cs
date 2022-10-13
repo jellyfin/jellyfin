@@ -87,10 +87,7 @@ namespace MediaBrowser.Providers.Manager
 
         public async Task SaveImage(BaseItem item, Stream source, string mimeType, ImageType type, int? imageIndex, bool? saveLocallyWithMedia, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(mimeType))
-            {
-                throw new ArgumentNullException(nameof(mimeType));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(mimeType);
 
             var saveLocally = item.SupportsLocalMetadata && item.IsSaveLocalMetadataEnabled() && !item.ExtraType.HasValue && item is not Audio;
 

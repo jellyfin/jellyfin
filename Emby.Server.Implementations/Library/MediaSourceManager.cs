@@ -762,10 +762,7 @@ namespace Emby.Server.Implementations.Library
 
         public Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetLiveStreamWithDirectStreamProvider(string id, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(id))
-            {
-                throw new ArgumentNullException(nameof(id));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(id);
 
             // TODO probably shouldn't throw here but it is kept for "backwards compatibility"
             var info = GetLiveStreamInfo(id) ?? throw new ResourceNotFoundException();
@@ -774,10 +771,7 @@ namespace Emby.Server.Implementations.Library
 
         public ILiveStream GetLiveStreamInfo(string id)
         {
-            if (string.IsNullOrEmpty(id))
-            {
-                throw new ArgumentNullException(nameof(id));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(id);
 
             if (_openStreams.TryGetValue(id, out ILiveStream info))
             {
@@ -801,10 +795,7 @@ namespace Emby.Server.Implementations.Library
 
         public async Task CloseLiveStream(string id)
         {
-            if (string.IsNullOrEmpty(id))
-            {
-                throw new ArgumentNullException(nameof(id));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(id);
 
             await _liveStreamSemaphore.WaitAsync().ConfigureAwait(false);
 
@@ -835,10 +826,7 @@ namespace Emby.Server.Implementations.Library
 
         private (IMediaSourceProvider MediaSourceProvider, string KeyId) GetProvider(string key)
         {
-            if (string.IsNullOrEmpty(key))
-            {
-                throw new ArgumentException("Key can't be empty.", nameof(key));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(key);
 
             var keys = key.Split(LiveStreamIdDelimeter, 2);
 

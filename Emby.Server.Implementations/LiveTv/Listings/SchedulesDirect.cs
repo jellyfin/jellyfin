@@ -74,10 +74,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(channelId))
-            {
-                throw new ArgumentNullException(nameof(channelId));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(channelId);
 
             // Normalize incoming input
             channelId = channelId.Replace(".json.schedulesdirect.org", string.Empty, StringComparison.OrdinalIgnoreCase).TrimStart('I');
@@ -670,15 +667,8 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         {
             var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
 
-            if (string.IsNullOrEmpty(token))
-            {
-                throw new ArgumentException("Authentication required.");
-            }
-
-            if (string.IsNullOrEmpty(info.ListingsId))
-            {
-                throw new ArgumentException("Listings Id required");
-            }
+            ArgumentException.ThrowIfNullOrEmpty(token);
+            ArgumentException.ThrowIfNullOrEmpty(info.ListingsId);
 
             _logger.LogInformation("Adding new LineUp ");
 
@@ -689,17 +679,11 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
         private async Task<bool> HasLineup(ListingsProviderInfo info, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(info.ListingsId))
-            {
-                throw new ArgumentException("Listings Id required");
-            }
+            ArgumentException.ThrowIfNullOrEmpty(info.ListingsId);
 
             var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
 
-            if (string.IsNullOrEmpty(token))
-            {
-                throw new ArgumentException("token required");
-            }
+            ArgumentException.ThrowIfNullOrEmpty(token);
 
             _logger.LogInformation("Headends on account ");
 
@@ -732,23 +716,13 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         {
             if (validateLogin)
             {
-                if (string.IsNullOrEmpty(info.Username))
-                {
-                    throw new ArgumentException("Username is required");
-                }
-
-                if (string.IsNullOrEmpty(info.Password))
-                {
-                    throw new ArgumentException("Password is required");
-                }
+                ArgumentException.ThrowIfNullOrEmpty(info.Username);
+                ArgumentException.ThrowIfNullOrEmpty(info.Password);
             }
 
             if (validateListings)
             {
-                if (string.IsNullOrEmpty(info.ListingsId))
-                {
-                    throw new ArgumentException("Listings Id required");
-                }
+                ArgumentException.ThrowIfNullOrEmpty(info.ListingsId);
 
                 var hasLineup = await HasLineup(info, CancellationToken.None).ConfigureAwait(false);
 
@@ -767,17 +741,11 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         public async Task<List<ChannelInfo>> GetChannels(ListingsProviderInfo info, CancellationToken cancellationToken)
         {
             var listingsId = info.ListingsId;
-            if (string.IsNullOrEmpty(listingsId))
-            {
-                throw new ArgumentException("ListingsId required");
-            }
+            ArgumentException.ThrowIfNullOrEmpty(listingsId);
 
             var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
 
-            if (string.IsNullOrEmpty(token))
-            {
-                throw new ArgumentException("token required");
-            }
+            ArgumentException.ThrowIfNullOrEmpty(token);
 
             using var options = new HttpRequestMessage(HttpMethod.Get, ApiUrl + "/lineups/" + listingsId);
             options.Headers.TryAddWithoutValidation("token", token);

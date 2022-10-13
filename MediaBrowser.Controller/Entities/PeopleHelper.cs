@@ -12,11 +12,7 @@ namespace MediaBrowser.Controller.Entities
         public static void AddPerson(List<PersonInfo> people, PersonInfo person)
         {
             ArgumentNullException.ThrowIfNull(person);
-
-            if (string.IsNullOrEmpty(person.Name))
-            {
-                throw new ArgumentException("The person's name was empty or null.", nameof(person));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(person.Name);
 
             // Normalize
             if (string.Equals(person.Role, PersonType.GuestStar, StringComparison.OrdinalIgnoreCase))

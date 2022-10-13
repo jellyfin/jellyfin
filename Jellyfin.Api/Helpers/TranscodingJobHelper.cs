@@ -136,10 +136,7 @@ namespace Jellyfin.Api.Helpers
         /// <exception cref="ArgumentNullException">Play session id is null.</exception>
         public void PingTranscodingJob(string playSessionId, bool? isUserPaused)
         {
-            if (string.IsNullOrEmpty(playSessionId))
-            {
-                throw new ArgumentNullException(nameof(playSessionId));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(playSessionId);
 
             _logger.LogDebug("PingTranscodingJob PlaySessionId={0} isUsedPaused: {1}", playSessionId, isUserPaused);
 
@@ -522,10 +519,7 @@ namespace Jellyfin.Api.Helpers
                 }
             }
 
-            if (string.IsNullOrEmpty(_mediaEncoder.EncoderPath))
-            {
-                throw new ArgumentException("FFmpeg path not set.");
-            }
+            ArgumentException.ThrowIfNullOrEmpty(_mediaEncoder.EncoderPath);
 
             // If subtitles get burned in fonts may need to be extracted from the media file
             if (state.SubtitleStream is not null && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode)

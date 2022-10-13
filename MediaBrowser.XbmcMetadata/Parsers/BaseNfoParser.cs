@@ -90,10 +90,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 throw new ArgumentException("Item can't be null.", nameof(item));
             }
 
-            if (string.IsNullOrEmpty(metadataFile))
-            {
-                throw new ArgumentException("The metadata filepath was empty.", nameof(metadataFile));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(metadataFile);
 
             _validProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 

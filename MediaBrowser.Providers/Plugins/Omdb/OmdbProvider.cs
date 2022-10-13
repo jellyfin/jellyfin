@@ -365,10 +365,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         internal string GetDataFilePath(string imdbId)
         {
-            if (string.IsNullOrEmpty(imdbId))
-            {
-                throw new ArgumentNullException(nameof(imdbId));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(imdbId);
 
             var dataPath = Path.Combine(_configurationManager.ApplicationPaths.CachePath, "omdb");
 
@@ -379,10 +376,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         internal string GetSeasonFilePath(string imdbId, int seasonId)
         {
-            if (string.IsNullOrEmpty(imdbId))
-            {
-                throw new ArgumentNullException(nameof(imdbId));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(imdbId);
 
             var dataPath = Path.Combine(_configurationManager.ApplicationPaths.CachePath, "omdb");
 

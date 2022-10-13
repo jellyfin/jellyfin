@@ -29,20 +29,9 @@ namespace Jellyfin.Data.Entities
         /// <param name="passwordResetProviderId">The Id of the user's password reset provider.</param>
         public User(string username, string authenticationProviderId, string passwordResetProviderId)
         {
-            if (string.IsNullOrEmpty(username))
-            {
-                throw new ArgumentNullException(nameof(username));
-            }
-
-            if (string.IsNullOrEmpty(authenticationProviderId))
-            {
-                throw new ArgumentNullException(nameof(authenticationProviderId));
-            }
-
-            if (string.IsNullOrEmpty(passwordResetProviderId))
-            {
-                throw new ArgumentNullException(nameof(passwordResetProviderId));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(username);
+            ArgumentException.ThrowIfNullOrEmpty(authenticationProviderId);
+            ArgumentException.ThrowIfNullOrEmpty(passwordResetProviderId);
 
             Username = username;
             AuthenticationProviderId = authenticationProviderId;

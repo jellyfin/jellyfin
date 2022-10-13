@@ -25,10 +25,7 @@ namespace Emby.Server.Implementations.Library
         public static bool SetInitialItemValues(BaseItem item, Folder? parent, ILibraryManager libraryManager, IDirectoryService directoryService)
         {
             // This version of the below method has no ItemResolveArgs, so we have to require the path already being set
-            if (string.IsNullOrEmpty(item.Path))
-            {
-                throw new ArgumentException("Item must have a Path");
-            }
+            ArgumentException.ThrowIfNullOrEmpty(item.Path);
 
             // If the resolver didn't specify this
             if (parent is not null)

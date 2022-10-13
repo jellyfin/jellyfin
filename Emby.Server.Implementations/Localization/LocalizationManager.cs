@@ -219,10 +219,7 @@ namespace Emby.Server.Implementations.Localization
         /// <inheritdoc />
         public int? GetRatingLevel(string rating)
         {
-            if (string.IsNullOrEmpty(rating))
-            {
-                throw new ArgumentNullException(nameof(rating));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(rating);
 
             if (_unratedValues.Contains(rating.AsSpan(), StringComparison.OrdinalIgnoreCase))
             {
@@ -295,10 +292,7 @@ namespace Emby.Server.Implementations.Localization
 
         private Dictionary<string, string> GetLocalizationDictionary(string culture)
         {
-            if (string.IsNullOrEmpty(culture))
-            {
-                throw new ArgumentNullException(nameof(culture));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(culture);
 
             const string Prefix = "Core";
 
@@ -310,10 +304,7 @@ namespace Emby.Server.Implementations.Localization
 
         private async Task<Dictionary<string, string>> GetDictionary(string prefix, string culture, string baseFilename)
         {
-            if (string.IsNullOrEmpty(culture))
-            {
-                throw new ArgumentNullException(nameof(culture));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(culture);
 
             var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 

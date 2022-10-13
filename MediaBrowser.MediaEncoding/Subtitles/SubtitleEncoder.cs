@@ -249,15 +249,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         private bool TryGetWriter(string format, [NotNullWhen(true)] out ISubtitleWriter? value)
         {
+            ArgumentException.ThrowIfNullOrEmpty(format);
+
             if (string.Equals(format, SubtitleFormat.ASS, StringComparison.OrdinalIgnoreCase))
             {
                 value = new AssWriter();
                 return true;
-            }
-
-            if (string.IsNullOrEmpty(format))
-            {
-                throw new ArgumentNullException(nameof(format));
             }
 
             if (string.Equals(format, "json", StringComparison.OrdinalIgnoreCase))
@@ -355,15 +352,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private async Task ConvertTextSubtitleToSrtInternal(MediaStream subtitleStream, MediaSourceInfo mediaSource, string outputPath, CancellationToken cancellationToken)
         {
             var inputPath = subtitleStream.Path;
-            if (string.IsNullOrEmpty(inputPath))
-            {
-                throw new ArgumentNullException(nameof(inputPath));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(inputPath);
 
-            if (string.IsNullOrEmpty(outputPath))
-            {
-                throw new ArgumentNullException(nameof(outputPath));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(outputPath);
 
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath)));
 
@@ -522,15 +513,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             string outputPath,
             CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(inputPath))
-            {
-                throw new ArgumentNullException(nameof(inputPath));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(inputPath);
 
-            if (string.IsNullOrEmpty(outputPath))
-            {
-                throw new ArgumentNullException(nameof(outputPath));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(outputPath);
 
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath)));
 

@@ -171,10 +171,7 @@ namespace MediaBrowser.Controller.Library
         /// <exception cref="ArgumentNullException"><paramref name="path"/> is <c>null</c> or empty.</exception>
         public void AddAdditionalLocation(string path)
         {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentException("The path was empty or null.", nameof(path));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(path);
 
             AdditionalLocations ??= new List<string>();
             AdditionalLocations.Add(path);
@@ -190,10 +187,7 @@ namespace MediaBrowser.Controller.Library
         /// <exception cref="ArgumentNullException"><paramref name="name"/> is <c>null</c> or empty.</exception>
         public FileSystemMetadata GetFileSystemEntryByName(string name)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentException("The name was empty or null.", nameof(name));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(name);
 
             return GetFileSystemEntryByPath(System.IO.Path.Combine(Path, name));
         }
@@ -206,10 +200,7 @@ namespace MediaBrowser.Controller.Library
         /// <exception cref="ArgumentNullException">Throws if path is invalid.</exception>
         public FileSystemMetadata GetFileSystemEntryByPath(string path)
         {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentException("The path was empty or null.", nameof(path));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(path);
 
             foreach (var file in FileSystemChildren)
             {

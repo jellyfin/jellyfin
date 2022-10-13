@@ -145,12 +145,7 @@ namespace Jellyfin.Drawing.Skia
         /// <exception cref="SkiaCodecException">The file at the specified path could not be used to generate a codec.</exception>
         public string GetImageBlurHash(int xComp, int yComp, string path)
         {
-            ArgumentNullException.ThrowIfNull(path);
-
-            if (path.Length == 0)
-            {
-                throw new ArgumentException("String can't be empty", nameof(path));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(path);
 
             var extension = Path.GetExtension(path.AsSpan()).TrimStart('.');
             if (!SupportedInputFormats.Contains(extension, StringComparison.OrdinalIgnoreCase))
@@ -389,15 +384,8 @@ namespace Jellyfin.Drawing.Skia
         /// <inheritdoc/>
         public string EncodeImage(string inputPath, DateTime dateModified, string outputPath, bool autoOrient, ImageOrientation? orientation, int quality, ImageProcessingOptions options, ImageFormat outputFormat)
         {
-            if (inputPath.Length == 0)
-            {
-                throw new ArgumentException("String can't be empty.", nameof(inputPath));
-            }
-
-            if (outputPath.Length == 0)
-            {
-                throw new ArgumentException("String can't be empty.", nameof(outputPath));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(inputPath);
+            ArgumentException.ThrowIfNullOrEmpty(outputPath);
 
             var inputFormat = Path.GetExtension(inputPath.AsSpan()).TrimStart('.');
             if (!SupportedInputFormats.Contains(inputFormat, StringComparison.OrdinalIgnoreCase))

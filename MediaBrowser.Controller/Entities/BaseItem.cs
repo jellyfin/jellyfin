@@ -1755,10 +1755,7 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="ArgumentNullException">Throws if name is null.</exception>
         public void AddStudio(string name)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(name);
 
             var current = Studios;
 
@@ -1791,10 +1788,7 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="ArgumentNullException">Throwns if name is null.</exception>
         public void AddGenre(string name)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(name);
 
             var genres = Genres;
             if (!genres.Contains(name, StringComparison.OrdinalIgnoreCase))
