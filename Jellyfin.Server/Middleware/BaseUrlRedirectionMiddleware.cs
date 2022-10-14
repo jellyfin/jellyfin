@@ -62,11 +62,20 @@ namespace Jellyfin.Server.Middleware
                     return;
                 }
 
+                // Properly format baseUrlPrefix
+                if (!string.IsNullOrEmpty(baseUrlPrefix))
+                {
+                    if (!baseUrlPrefix.StartsWith("/", StringComparison.OrdinalIgnoreCase))
+                    {
+                        baseUrlPrefix = "/" + baseUrlPrefix;
+                    }
+                }
+
                 // Always redirect back to the default path if the base prefix is invalid or missing
                 _logger.LogDebug("Normalizing an URL at {LocalPath}", localPath);
 
-                var uri = new Uri(localPath);
-                var redirectUri = new Uri(baseUrlPrefix + "/" + _configuration[DefaultRedirectKey]);
+                var uri = new Uri(httpContext.Request.Scheme + "://" + httpContext.Request.Host + localPath, UriKind.Absolute);
+                var redirectUri = new Uri(httpContext.Request.Scheme + "://" + httpContext.Request.Host + baseUrlPrefix + "/" + _configuration[DefaultRedirectKey], UriKind.Absolute);
                 var target = uri.MakeRelativeUri(redirectUri).ToString();
                 _logger.LogDebug("Redirecting to {Target}", target);
 
