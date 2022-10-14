@@ -286,10 +286,10 @@ namespace Emby.Dlna.Main
 
             // Only get bind addresses in LAN
             var bindAddresses = _networkManager
-                .GetInternalBindAddresses()
-                .Where(i => i.Address.AddressFamily == AddressFamily.InterNetwork
-                    || (i.AddressFamily == AddressFamily.InterNetworkV6 && i.Address.ScopeId != 0))
-                .ToList();
+                                    .GetInternalBindAddresses()
+                                    .Where(i => i.Address.AddressFamily == AddressFamily.InterNetwork
+                                                || (i.AddressFamily == AddressFamily.InterNetworkV6 && i.Address.ScopeId != 0))
+                                    .ToList();
 
             if (bindAddresses.Count == 0)
             {

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Networking.Configuration;
 using MediaBrowser.Common.Configuration;
@@ -34,7 +35,7 @@ namespace Jellyfin.Networking.Manager
 
         private readonly IConfigurationManager _configurationManager;
 
-        private readonly object _eventFireLock;
+        private readonly SemaphoreSlim _networkEvent;
 
         /// <summary>
         /// Holds the published server URLs and the IPs to use them on.
@@ -86,7 +87,7 @@ namespace Jellyfin.Networking.Manager
             _interfaces = new List<IPData>();
             _macAddresses = new List<PhysicalAddress>();
             _publishedServerUrls = new Dictionary<IPData, string>();
-            _eventFireLock = new object();
+            _networkEvent = new SemaphoreSlim(1, 1);
             _remoteAddressFilter = new List<IPNetwork>();
 
             UpdateSettings(_configurationManager.GetNetworkConfiguration());
@@ -143,7 +144,7 @@ namespace Jellyfin.Networking.Manager
         private void OnNetworkAvailabilityChanged(object? sender, NetworkAvailabilityEventArgs e)
         {
             _logger.LogDebug("Network availability changed.");
-            OnNetworkChanged();
+            HandleNetworkChange();
         }
 
         /// <summary>
@@ -154,35 +155,34 @@ namespace Jellyfin.Networking.Manager
         private void OnNetworkAddressChanged(object? sender, EventArgs e)
         {
             _logger.LogDebug("Network address change detected.");
-            OnNetworkChanged();
+            HandleNetworkChange();
         }
 
         /// <summary>
         /// Triggers our event, and re-loads interface information.
         /// </summary>
-        private void OnNetworkChanged()
+        private void HandleNetworkChange()
         {
-            lock (_eventFireLock)
+            _networkEvent.Wait();
+            if (!_eventfire)
             {
-                if (!_eventfire)
-                {
-                    _logger.LogDebug("Network Address Change Event.");
-                    // As network events tend to fire one after the other only fire once every second.
-                    _eventfire = true;
-                    OnNetworkChangeAsync().GetAwaiter().GetResult();
-                }
+                _logger.LogDebug("Network Address Change Event.");
+                // As network events tend to fire one after the other only fire once every second.
+                _eventfire = true;
+                OnNetworkChange();
             }
+
+            _networkEvent.Release();
         }
 
         /// <summary>
-        /// Async task that waits for 2 seconds before re-initialising the settings, as typically these events fire multiple times in succession.
+        /// Waits for 2 seconds before re-initialising the settings, as typically these events fire multiple times in succession.
         /// </summary>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        private async Task OnNetworkChangeAsync()
+        private void OnNetworkChange()
         {
             try
             {
-                await Task.Delay(2000).ConfigureAwait(false);
+                Thread.Sleep(2000);
                 var networkConfig = _configurationManager.GetNetworkConfiguration();
                 InitialiseLan(networkConfig);
                 InitialiseInterfaces();
@@ -234,7 +234,7 @@ namespace Jellyfin.Networking.Manager
                                 {
                                     var interfaceObject = new IPData(info.Address, new IPNetwork(info.Address, info.PrefixLength), adapter.Name);
                                     interfaceObject.Index = ipProperties.GetIPv4Properties().Index;
-                                    interfaceObject.Name = adapter.Name.ToLowerInvariant();
+                                    interfaceObject.Name = adapter.Name;
 
                                     _interfaces.Add(interfaceObject);
                                 }
@@ -242,7 +242,7 @@ namespace Jellyfin.Networking.Manager
                                 {
                                     var interfaceObject = new IPData(info.Address, new IPNetwork(info.Address, info.PrefixLength), adapter.Name);
                                     interfaceObject.Index = ipProperties.GetIPv6Properties().Index;
-                                    interfaceObject.Name = adapter.Name.ToLowerInvariant();
+                                    interfaceObject.Name = adapter.Name;
 
                                     _interfaces.Add(interfaceObject);
                                 }
@@ -362,11 +362,10 @@ namespace Jellyfin.Networking.Manager
                 {
                     // Remove potentially exisiting * and split config string into prefixes
                     var virtualInterfacePrefixes = config.VirtualInterfaceNames
-                        .Select(i => i.ToLowerInvariant()
-                            .Replace("*", string.Empty, StringComparison.OrdinalIgnoreCase));
+                        .Select(i => i.Replace("*", string.Empty, StringComparison.OrdinalIgnoreCase));
 
                     // Check all interfaces for matches against the prefixes and remove them
-                    if (_interfaces.Count > 0 && virtualInterfacePrefixes.Any())
+                    if (_interfaces.Count > 0)
                     {
                         foreach (var virtualInterfacePrefix in virtualInterfacePrefixes)
                         {
@@ -548,6 +547,7 @@ namespace Jellyfin.Networking.Manager
                     _configurationManager.NamedConfigurationUpdated -= ConfigurationUpdated;
                     NetworkChange.NetworkAddressChanged -= OnNetworkAddressChanged;
                     NetworkChange.NetworkAvailabilityChanged -= OnNetworkAvailabilityChanged;
+                    _networkEvent.Dispose();
                 }
 
                 _disposed = true;
@@ -566,7 +566,7 @@ namespace Jellyfin.Networking.Manager
             if (_interfaces != null)
             {
                 // Match all interfaces starting with names starting with token
-                var matchedInterfaces = _interfaces.Where(s => s.Name.Equals(intf.ToLowerInvariant(), StringComparison.OrdinalIgnoreCase)).OrderBy(x => x.Index);
+                var matchedInterfaces = _interfaces.Where(s => s.Name.Equals(intf, StringComparison.OrdinalIgnoreCase)).OrderBy(x => x.Index);
                 if (matchedInterfaces.Any())
                 {
                     _logger.LogInformation("Interface {Token} used in settings. Using its interface addresses.", intf);
@@ -609,7 +609,7 @@ namespace Jellyfin.Networking.Manager
                     return false;
                 }
             }
-            else if (!_lanSubnets.Where(x => x.Contains(remoteIp)).Any())
+            else if (!_lanSubnets.Any(x => x.Contains(remoteIp)))
             {
                 // Remote not enabled. So everyone should be LAN.
                 return false;
@@ -875,10 +875,12 @@ namespace Jellyfin.Networking.Manager
             bindPreference = string.Empty;
             port = null;
 
-            var validPublishedServerUrls = _publishedServerUrls.Where(x => x.Key.Address.Equals(IPAddress.Any)).ToList();
-            validPublishedServerUrls.AddRange(_publishedServerUrls.Where(x => x.Key.Address.Equals(IPAddress.IPv6Any)));
-            validPublishedServerUrls.AddRange(_publishedServerUrls.Where(x => x.Key.Subnet.Contains(source)));
-            validPublishedServerUrls = validPublishedServerUrls.GroupBy(x => x.Key).Select(y => y.First()).ToList();
+            var validPublishedServerUrls = _publishedServerUrls.Where(x => x.Key.Address.Equals(IPAddress.Any)
+                                                                            || x.Key.Address.Equals(IPAddress.IPv6Any)
+                                                                            || x.Key.Subnet.Contains(source))
+                                                                .GroupBy(x => x.Key)
+                                                                .Select(y => y.First())
+                                                                .ToList();
 
             // Check for user override.
             foreach (var data in validPublishedServerUrls)

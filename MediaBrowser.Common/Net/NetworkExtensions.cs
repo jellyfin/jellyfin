@@ -138,7 +138,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Try parsing an array of strings into subnets, respecting exclusions.
         /// </summary>
-        /// <param name="values">Input string to be parsed.</param>
+        /// <param name="values">Input string array to be parsed.</param>
         /// <param name="result">Collection of <see cref="IPNetwork"/>.</param>
         /// <param name="negated">Boolean signaling if negated or not negated values should be parsed.</param>
         /// <returns><c>True</c> if parsing was successful.</returns>
@@ -183,6 +183,58 @@ namespace MediaBrowser.Common.Net
             }
 
             if (result.Count > 0)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Try parsing a string into a subnet, respecting exclusions.
+        /// </summary>
+        /// <param name="value">Input string to be parsed.</param>
+        /// <param name="result">An <see cref="IPNetwork"/>.</param>
+        /// <param name="negated">Boolean signaling if negated or not negated values should be parsed.</param>
+        /// <returns><c>True</c> if parsing was successful.</returns>
+        public static bool TryParseSubnet(string value, out IPNetwork? result, bool negated = false)
+        {
+            result = null;
+
+            if (string.IsNullOrEmpty(value))
+            {
+                return false;
+            }
+
+            string[] v = value.Trim().Split("/");
+
+            var address = IPAddress.None;
+            if (negated && v[0].StartsWith('!'))
+            {
+                _ = IPAddress.TryParse(v[0][1..], out address);
+            }
+            else if (!negated)
+            {
+                _ = IPAddress.TryParse(v[0][0..], out address);
+            }
+
+            if (address != IPAddress.None && address != null)
+            {
+                if (int.TryParse(v[1], out var netmask))
+                {
+                    result = new IPNetwork(address, netmask);
+                }
+                else if (address.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    result = new IPNetwork(address, 32);
+                }
+                else if (address.AddressFamily == AddressFamily.InterNetworkV6)
+                {
+                    result = new IPNetwork(address, 128);
+                }
+            }
+
+            if (result != null)
             {
                 return true;
             }

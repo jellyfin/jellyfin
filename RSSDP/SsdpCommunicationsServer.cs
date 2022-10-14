@@ -117,7 +117,7 @@ namespace Rssdp.Infrastructure
                 {
                     try
                     {
-                        _BroadcastListenSockets = ListenForBroadcastsAsync();
+                        _BroadcastListenSockets = ListenForBroadcasts();
                     }
                     catch (SocketException ex)
                     {
@@ -333,7 +333,7 @@ namespace Rssdp.Infrastructure
             return Task.CompletedTask;
         }
 
-        private List<ISocket> ListenForBroadcastsAsync()
+        private List<ISocket> ListenForBroadcasts()
         {
             var sockets = new List<ISocket>();
             if (_enableMultiSocketBinding)
@@ -352,7 +352,7 @@ namespace Rssdp.Infrastructure
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error in ListenForBroadcastsAsync. IPAddress: {0}", address);
+                        _logger.LogError(ex, "Error in ListenForBroadcasts. IPAddress: {0}", address);
                     }
                 }
             }
