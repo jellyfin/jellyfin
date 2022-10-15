@@ -56,7 +56,23 @@ namespace MediaBrowser.Common.Net
         /// <returns>String value of the subnet mask in dotted decimal notation.</returns>
         public static IPAddress CidrToMask(byte cidr, AddressFamily family)
         {
-            uint addr = 0xFFFFFFFF << (family == AddressFamily.InterNetwork ? 32 : 128 - cidr);
+            uint addr = 0xFFFFFFFF << ((family == AddressFamily.InterNetwork ? 32 : 128) - cidr);
+            addr = ((addr & 0xff000000) >> 24)
+                   | ((addr & 0x00ff0000) >> 8)
+                   | ((addr & 0x0000ff00) << 8)
+                   | ((addr & 0x000000ff) << 24);
+            return new IPAddress(addr);
+        }
+
+        /// <summary>
+        /// Convert a subnet mask in CIDR notation to a dotted decimal string value. IPv4 only.
+        /// </summary>
+        /// <param name="cidr">Subnet mask in CIDR notation.</param>
+        /// <param name="family">IPv4 or IPv6 family.</param>
+        /// <returns>String value of the subnet mask in dotted decimal notation.</returns>
+        public static IPAddress CidrToMask(int cidr, AddressFamily family)
+        {
+            uint addr = 0xFFFFFFFF << ((family == AddressFamily.InterNetwork ? 32 : 128) - cidr);
             addr = ((addr & 0xff000000) >> 24)
                    | ((addr & 0x00ff0000) >> 8)
                    | ((addr & 0x0000ff00) << 8)
@@ -318,6 +334,20 @@ namespace MediaBrowser.Common.Net
 
             addresses = Array.Empty<IPAddress>();
             return false;
+        }
+
+        /// <summary>
+        /// Gets the broadcast address for a <see cref="IPNetwork"/>.
+        /// </summary>
+        /// <param name="network">The <see cref="IPNetwork"/>.</param>
+        /// <returns>The broadcast address.</returns>
+        public static IPAddress GetBroadcastAddress(IPNetwork network)
+        {
+            uint ipAddress = BitConverter.ToUInt32(network.Prefix.GetAddressBytes(), 0);
+            uint ipMaskV4 = BitConverter.ToUInt32(CidrToMask(network.PrefixLength, AddressFamily.InterNetwork).GetAddressBytes(), 0);
+            uint broadCastIpAddress = ipAddress | ~ipMaskV4;
+
+            return new IPAddress(BitConverter.GetBytes(broadCastIpAddress));
         }
     }
 }

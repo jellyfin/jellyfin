@@ -79,6 +79,10 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 if (_enableMultiSocketBinding)
                 {
+                    // Add global broadcast socket
+                    _udpServers.Add(new UdpServer(_logger, _appHost, _config, System.Net.IPAddress.Broadcast, PortNumber));
+
+                    // Add bind address specific broadcast sockets
                     foreach (var bindAddress in _networkManager.GetInternalBindAddresses())
                     {
                         if (bindAddress.AddressFamily == AddressFamily.InterNetworkV6)
@@ -87,7 +91,10 @@ namespace Emby.Server.Implementations.EntryPoints
                             continue;
                         }
 
-                        _udpServers.Add(new UdpServer(_logger, _appHost, _config, bindAddress.Address, PortNumber));
+                        var broadcastAddress = NetworkExtensions.GetBroadcastAddress(bindAddress.Subnet);
+                        _logger.LogDebug("Binding UDP server to {Address}", broadcastAddress.ToString());
+
+                        _udpServers.Add(new UdpServer(_logger, _appHost, _config, broadcastAddress, PortNumber));
                     }
                 }
                 else

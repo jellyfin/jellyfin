@@ -280,7 +280,7 @@ namespace Jellyfin.Networking.Manager
                 }
 
                 _logger.LogDebug("Discovered {0} interfaces.", _interfaces.Count);
-                _logger.LogDebug("Interfaces addresses : {0}", _interfaces.Select(s => s.Address).ToString());
+                _logger.LogDebug("Interfaces addresses : {0}", _interfaces.Select(s => s.Address.ToString()));
             }
         }
 
@@ -726,20 +726,11 @@ namespace Jellyfin.Networking.Manager
                 }
 
                 bool isExternal = !_lanSubnets.Any(network => network.Contains(source));
-                _logger.LogDebug("GetBindInterface with source. External: {IsExternal}:", isExternal);
+                _logger.LogDebug("GetBindInterface with source {Source}. External: {IsExternal}:", source, isExternal);
 
-                if (MatchesPublishedServerUrl(source, isExternal, out string res, out port))
+                if (MatchesPublishedServerUrl(source, isExternal, out result))
                 {
-                    if (port != null)
-                    {
-                        _logger.LogInformation("{Source}: Using BindAddress {Address}:{Port}", source, res, port);
-                    }
-                    else
-                    {
-                        _logger.LogInformation("{Source}: Using BindAddress {Address}", source, res);
-                    }
-
-                    return res;
+                    return result;
                 }
 
                 // No preference given, so move on to bind addresses.
@@ -868,41 +859,37 @@ namespace Jellyfin.Networking.Manager
         /// <param name="source">IP source address to use.</param>
         /// <param name="isInExternalSubnet">True if the source is in an external subnet.</param>
         /// <param name="bindPreference">The published server URL that matches the source address.</param>
-        /// <param name="port">The resultant port, if one exists.</param>
         /// <returns><c>true</c> if a match is found, <c>false</c> otherwise.</returns>
-        private bool MatchesPublishedServerUrl(IPAddress source, bool isInExternalSubnet, out string bindPreference, out int? port)
+        private bool MatchesPublishedServerUrl(IPAddress source, bool isInExternalSubnet, out string bindPreference)
         {
             bindPreference = string.Empty;
-            port = null;
+            int? port = null;
 
             var validPublishedServerUrls = _publishedServerUrls.Where(x => x.Key.Address.Equals(IPAddress.Any)
                                                                             || x.Key.Address.Equals(IPAddress.IPv6Any)
                                                                             || x.Key.Subnet.Contains(source))
                                                                 .GroupBy(x => x.Key)
-                                                                .Select(y => y.First())
+                                                                .Select(x => x.First())
+                                                                .OrderBy(x => x.Key.Address.Equals(IPAddress.Any)
+                                                                            || x.Key.Address.Equals(IPAddress.IPv6Any))
                                                                 .ToList();
 
             // Check for user override.
             foreach (var data in validPublishedServerUrls)
             {
-                // Get address interface
-                var intf = _interfaces.OrderBy(x => x.Index).FirstOrDefault(s => s.Subnet.Contains(data.Key.Address));
+                // Get address interface.
+                var intf = _interfaces.OrderBy(x => x.Index).FirstOrDefault(x => data.Key.Subnet.Contains(x.Address));
 
-                // Remaining. Match anything.
-                if (data.Key.Address.Equals(IPAddress.Broadcast))
-                {
-                    bindPreference = data.Value;
-                    break;
-                }
-                else if ((data.Key.Address.Equals(IPAddress.Any) || data.Key.Address.Equals(IPAddress.IPv6Any)) && isInExternalSubnet)
+                if (isInExternalSubnet && (data.Key.Address.Equals(IPAddress.Any) || data.Key.Address.Equals(IPAddress.IPv6Any)))
                 {
                     // External.
                     bindPreference = data.Value;
                     break;
                 }
-                else if (intf?.Address != null)
+
+                if (intf?.Address != null)
                 {
-                    // Match ip address.
+                    // Match IP address.
                     bindPreference = data.Value;
                     break;
                 }
@@ -910,6 +897,7 @@ namespace Jellyfin.Networking.Manager
 
             if (string.IsNullOrEmpty(bindPreference))
             {
+                _logger.LogInformation("{Source}: No matching bind address override found", source);
                 return false;
             }
 
@@ -922,6 +910,15 @@ namespace Jellyfin.Networking.Manager
                     bindPreference = parts[0];
                     port = p;
                 }
+            }
+
+            if (port != null)
+            {
+                _logger.LogInformation("{Source}: Matching bind address override found {Address}:{Port}", source, bindPreference, port);
+            }
+            else
+            {
+                _logger.LogInformation("{Source}: Matching bind address override found {Address}", source, bindPreference);
             }
 
             return true;
@@ -967,12 +964,12 @@ namespace Jellyfin.Networking.Manager
                         if (bindAddress != null)
                         {
                             result = NetworkExtensions.FormatIpString(bindAddress);
-                            _logger.LogDebug("{Source}: GetBindInterface: Has source, found a matching external bind interface: {Result}", source, result);
+                            _logger.LogDebug("{Source}: External request received, matching external bind interface found: {Result}", source, result);
                             return true;
                         }
                     }
 
-                    _logger.LogWarning("{Source}: External request received, no external interface bind found, trying internal interfaces.", source);
+                    _logger.LogWarning("{Source}: External request received, no matching external bind interface found, trying internal interfaces.", source);
                 }
                 else
                 {
@@ -987,7 +984,7 @@ namespace Jellyfin.Networking.Manager
                     if (bindAddress != null)
                     {
                         result = NetworkExtensions.FormatIpString(bindAddress);
-                        _logger.LogWarning("{Source}: Request received, matching internal interface bind found: {Result}", source, result);
+                        _logger.LogDebug("{Source}: Internal request received, matching internal bind interface found: {Result}", source, result);
                         return true;
                     }
                 }
