@@ -6,7 +6,6 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading;
-using System.Threading.Tasks;
 using Jellyfin.Networking.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
@@ -280,7 +279,7 @@ namespace Jellyfin.Networking.Manager
                 }
 
                 _logger.LogDebug("Discovered {0} interfaces.", _interfaces.Count);
-                _logger.LogDebug("Interfaces addresses : {0}", _interfaces.Select(s => s.Address.ToString()));
+                _logger.LogDebug("Interfaces addresses: {0}", _interfaces.OrderByDescending(s => s.AddressFamily == AddressFamily.InterNetwork).Select(s => s.Address.ToString()));
             }
         }
 
@@ -320,8 +319,8 @@ namespace Jellyfin.Networking.Manager
                     }
                 }
 
-                _logger.LogInformation("Defined LAN addresses : {0}", _lanSubnets.Select(s => s.Prefix + "/" + s.PrefixLength));
-                _logger.LogInformation("Defined LAN exclusions : {0}", _excludedSubnets.Select(s => s.Prefix + "/" + s.PrefixLength));
+                _logger.LogInformation("Defined LAN addresses: {0}", _lanSubnets.Select(s => s.Prefix + "/" + s.PrefixLength));
+                _logger.LogInformation("Defined LAN exclusions: {0}", _excludedSubnets.Select(s => s.Prefix + "/" + s.PrefixLength));
                 _logger.LogInformation("Using LAN addresses: {0}", _lanSubnets.Where(s => !_excludedSubnets.Contains(s)).Select(s => s.Prefix + "/" + s.PrefixLength));
             }
         }
@@ -386,7 +385,7 @@ namespace Jellyfin.Networking.Manager
                     _interfaces.RemoveAll(x => x.AddressFamily == AddressFamily.InterNetworkV6);
                 }
 
-                _logger.LogInformation("Using bind addresses: {0}", _interfaces.Select(x => x.Address));
+                _logger.LogInformation("Using bind addresses: {0}", _interfaces.OrderByDescending(x => x.AddressFamily == AddressFamily.InterNetwork).Select(x => x.Address));
             }
         }
 
@@ -691,7 +690,7 @@ namespace Jellyfin.Networking.Manager
         public string GetBindInterface(string source, out int? port)
         {
             _ = NetworkExtensions.TryParseHost(source, out var address, IsIpv4Enabled, IsIpv6Enabled);
-            var result = GetBindInterface(address.FirstOrDefault(), out port);
+            var result = GetBindAddress(address.FirstOrDefault(), out port);
             return result;
         }
 
@@ -700,14 +699,14 @@ namespace Jellyfin.Networking.Manager
         {
             string result;
             _ = NetworkExtensions.TryParseHost(source.Host.Host, out var addresses, IsIpv4Enabled, IsIpv6Enabled);
-            result = GetBindInterface(addresses.FirstOrDefault(), out port);
+            result = GetBindAddress(addresses.FirstOrDefault(), out port);
             port ??= source.Host.Port;
 
             return result;
         }
 
         /// <inheritdoc/>
-        public string GetBindInterface(IPAddress? source, out int? port)
+        public string GetBindAddress(IPAddress? source, out int? port)
         {
             port = null;
 
@@ -726,7 +725,7 @@ namespace Jellyfin.Networking.Manager
                 }
 
                 bool isExternal = !_lanSubnets.Any(network => network.Contains(source));
-                _logger.LogDebug("GetBindInterface with source {Source}. External: {IsExternal}:", source, isExternal);
+                _logger.LogDebug("Trying to get bind address for source {Source} - External: {IsExternal}", source, isExternal);
 
                 if (MatchesPublishedServerUrl(source, isExternal, out result))
                 {
@@ -759,7 +758,7 @@ namespace Jellyfin.Networking.Manager
                         if (intf.Address.Equals(source))
                         {
                             result = NetworkExtensions.FormatIpString(intf.Address);
-                            _logger.LogDebug("{Source}: GetBindInterface: Has found matching interface: {Result}", source, result);
+                            _logger.LogDebug("{Source}: Found matching interface to use as bind address: {Result}", source, result);
                             return result;
                         }
                     }
@@ -771,20 +770,20 @@ namespace Jellyfin.Networking.Manager
                         if (intf.Subnet.Contains(source))
                         {
                             result = NetworkExtensions.FormatIpString(intf.Address);
-                            _logger.LogDebug("{Source}: GetBindInterface: Has source, matched best internal interface on range: {Result}", source, result);
+                            _logger.LogDebug("{Source}: Found internal interface with matching subnet, using it as bind address: {Result}", source, result);
                             return result;
                         }
                     }
                 }
 
                 result = NetworkExtensions.FormatIpString(availableInterfaces.First().Address);
-                _logger.LogDebug("{Source}: GetBindInterface: Matched first internal interface: {Result}", source, result);
+                _logger.LogDebug("{Source}: Using first internal interface as bind address: {Result}", source, result);
                 return result;
             }
 
             // There isn't any others, so we'll use the loopback.
             result = IsIpv4Enabled && !IsIpv6Enabled ? "127.0.0.1" : "::1";
-            _logger.LogWarning("{Source}: GetBindInterface: Loopback {Result} returned.", source, result);
+            _logger.LogWarning("{Source}: Only loopback {Result} returned, using that as bind address.", source, result);
             return result;
         }
 
@@ -897,7 +896,7 @@ namespace Jellyfin.Networking.Manager
 
             if (string.IsNullOrEmpty(bindPreference))
             {
-                _logger.LogInformation("{Source}: No matching bind address override found", source);
+                _logger.LogDebug("{Source}: No matching bind address override found.", source);
                 return false;
             }
 
@@ -914,18 +913,18 @@ namespace Jellyfin.Networking.Manager
 
             if (port != null)
             {
-                _logger.LogInformation("{Source}: Matching bind address override found {Address}:{Port}", source, bindPreference, port);
+                _logger.LogDebug("{Source}: Matching bind address override found: {Address}:{Port}", source, bindPreference, port);
             }
             else
             {
-                _logger.LogInformation("{Source}: Matching bind address override found {Address}", source, bindPreference);
+                _logger.LogDebug("{Source}: Matching bind address override found: {Address}", source, bindPreference);
             }
 
             return true;
         }
 
         /// <summary>
-        /// Attempts to match the source against a user defined bind interface.
+        /// Attempts to match the source against the user defined bind interfaces.
         /// </summary>
         /// <param name="source">IP source address to use.</param>
         /// <param name="isInExternalSubnet">True if the source is in the external subnet.</param>
@@ -964,12 +963,12 @@ namespace Jellyfin.Networking.Manager
                         if (bindAddress != null)
                         {
                             result = NetworkExtensions.FormatIpString(bindAddress);
-                            _logger.LogDebug("{Source}: External request received, matching external bind interface found: {Result}", source, result);
+                            _logger.LogDebug("{Source}: External request received, matching external bind address found: {Result}", source, result);
                             return true;
                         }
                     }
 
-                    _logger.LogWarning("{Source}: External request received, no matching external bind interface found, trying internal interfaces.", source);
+                    _logger.LogWarning("{Source}: External request received, no matching external bind address found, trying internal addresses.", source);
                 }
                 else
                 {
@@ -984,7 +983,7 @@ namespace Jellyfin.Networking.Manager
                     if (bindAddress != null)
                     {
                         result = NetworkExtensions.FormatIpString(bindAddress);
-                        _logger.LogDebug("{Source}: Internal request received, matching internal bind interface found: {Result}", source, result);
+                        _logger.LogDebug("{Source}: Internal request received, matching internal bind address found: {Result}", source, result);
                         return true;
                     }
                 }
@@ -994,7 +993,7 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <summary>
-        /// Attempts to match the source against an external interface.
+        /// Attempts to match the source against external interfaces.
         /// </summary>
         /// <param name="source">IP source address to use.</param>
         /// <param name="result">The result, if a match is found.</param>
@@ -1014,7 +1013,7 @@ namespace Jellyfin.Networking.Manager
                 if (!IsInLocalNetwork(intf.Address) && intf.Subnet.Contains(source))
                 {
                     result = NetworkExtensions.FormatIpString(intf.Address);
-                    _logger.LogDebug("{Source}: GetBindInterface: Selected best external on interface on range: {Result}", source, result);
+                    _logger.LogDebug("{Source}: Found external interface with matching subnet, using it as bind address: {Result}", source, result);
                     return true;
                 }
             }
@@ -1022,11 +1021,11 @@ namespace Jellyfin.Networking.Manager
             if (hasResult != null)
             {
                 result = NetworkExtensions.FormatIpString(hasResult);
-                _logger.LogDebug("{Source}: GetBindInterface: Selected first external interface: {Result}", source, result);
+                _logger.LogDebug("{Source}: Using first external interface as bind address: {Result}", source, result);
                 return true;
             }
 
-            _logger.LogDebug("{Source}: External request received, but no WAN interface found. Need to route through internal network.", source);
+            _logger.LogWarning("{Source}: External request received, but no external interface found. Need to route through internal network.", source);
             return false;
         }
     }

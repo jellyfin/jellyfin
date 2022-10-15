@@ -75,17 +75,17 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Retrieves the bind address to use in system URLs. (Server Discovery, PlayTo, LiveTV, SystemInfo)
         /// If no bind addresses are specified, an internal interface address is selected.
-        /// (See <see cref="GetBindInterface(IPAddress, out int?)"/>.
+        /// (See <see cref="GetBindAddress(IPAddress, out int?)"/>.
         /// </summary>
         /// <param name="source">IP address of the request.</param>
         /// <param name="port">Optional port returned, if it's part of an override.</param>
         /// <returns>IP address to use, or loopback address if all else fails.</returns>
-        string GetBindInterface(IPAddress source, out int? port);
+        string GetBindAddress(IPAddress source, out int? port);
 
         /// <summary>
         /// Retrieves the bind address to use in system URLs. (Server Discovery, PlayTo, LiveTV, SystemInfo)
         /// If no bind addresses are specified, an internal interface address is selected.
-        /// (See <see cref="GetBindInterface(IPAddress, out int?)"/>.
+        /// (See <see cref="GetBindAddress(IPAddress, out int?)"/>.
         /// </summary>
         /// <param name="source">Source of the request.</param>
         /// <param name="port">Optional port returned, if it's part of an override.</param>

@@ -92,7 +92,7 @@ namespace Emby.Server.Implementations.EntryPoints
                         }
 
                         var broadcastAddress = NetworkExtensions.GetBroadcastAddress(bindAddress.Subnet);
-                        _logger.LogDebug("Binding UDP server to {Address}", broadcastAddress.ToString());
+                        _logger.LogDebug("Binding UDP server to {Address} on port {PortNumber}", broadcastAddress.ToString(), PortNumber);
 
                         _udpServers.Add(new UdpServer(_logger, _appHost, _config, broadcastAddress, PortNumber));
                     }
