@@ -40,6 +40,7 @@ RUN apt-get update \
    jellyfin-ffmpeg \
    openssl \
    locales \
+   fonts-noto-cjk-extra \
 # Intel VAAPI Tone mapping dependencies:
 # Prefer NEO to Beignet since the latter one doesn't support Comet Lake or newer for now.
 # Do not use the intel-opencl-icd package from repo since they will not build with RELEASE_WITH_REGKEYS enabled.
