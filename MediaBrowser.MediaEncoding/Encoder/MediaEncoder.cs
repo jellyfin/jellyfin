@@ -72,6 +72,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private bool _isVaapiDeviceAmd = false;
         private bool _isVaapiDeviceInteliHD = false;
         private bool _isVaapiDeviceInteli965 = false;
+        private bool _isVaapiDeviceSupportVulkanFmtModifier = false;
+
+        private static string[] _vulkanFmtModifierExts = {
+            "VK_KHR_sampler_ycbcr_conversion",
+            "VK_EXT_image_drm_format_modifier",
+            "VK_KHR_external_memory_fd",
+            "VK_EXT_external_memory_dma_buf",
+            "VK_KHR_external_semaphore_fd",
+            "VK_EXT_external_memory_host"
+        };
 
         private Version _ffmpegVersion = null;
         private string _ffmpegPath = string.Empty;
@@ -109,6 +119,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public bool IsVaapiDeviceInteliHD => _isVaapiDeviceInteliHD;
 
         public bool IsVaapiDeviceInteli965 => _isVaapiDeviceInteli965;
+
+        public bool IsVaapiDeviceSupportVulkanFmtModifier => _isVaapiDeviceSupportVulkanFmtModifier;
 
         /// <summary>
         /// Run at startup or if the user removes a Custom path from transcode page.
@@ -169,6 +181,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     _isVaapiDeviceAmd = validator.CheckVaapiDeviceByDriverName("Mesa Gallium driver", options.VaapiDevice);
                     _isVaapiDeviceInteliHD = validator.CheckVaapiDeviceByDriverName("Intel iHD driver", options.VaapiDevice);
                     _isVaapiDeviceInteli965 = validator.CheckVaapiDeviceByDriverName("Intel i965 driver", options.VaapiDevice);
+                    _isVaapiDeviceSupportVulkanFmtModifier = validator.CheckVulkanDrmDeviceByExtensionName(options.VaapiDevice, _vulkanFmtModifierExts);
+
                     if (_isVaapiDeviceAmd)
                     {
                         _logger.LogInformation("VAAPI device {RenderNodePath} is AMD GPU", options.VaapiDevice);
@@ -180,6 +194,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     else if (_isVaapiDeviceInteli965)
                     {
                         _logger.LogInformation("VAAPI device {RenderNodePath} is Intel GPU (i965)", options.VaapiDevice);
+                    }
+
+                    if (_isVaapiDeviceSupportVulkanFmtModifier)
+                    {
+                        _logger.LogInformation("VAAPI device {RenderNodePath} supports Vulkan DRM format modifier", options.VaapiDevice);
                     }
                 }
             }
