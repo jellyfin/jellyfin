@@ -295,8 +295,8 @@ namespace Jellyfin.Networking.Manager
                 // Get configuration options
                 string[] subnets = config.LocalNetworkSubnets;
 
-                _ = NetworkExtensions.TryParseSubnets(subnets, out _lanSubnets, false);
-                _ = NetworkExtensions.TryParseSubnets(subnets, out _excludedSubnets, true);
+                _ = NetworkExtensions.TryParseToSubnets(subnets, out _lanSubnets, false);
+                _ = NetworkExtensions.TryParseToSubnets(subnets, out _excludedSubnets, true);
 
                 if (_lanSubnets.Count == 0)
                 {
@@ -336,8 +336,8 @@ namespace Jellyfin.Networking.Manager
                 var localNetworkAddresses = config.LocalNetworkAddresses;
                 if (localNetworkAddresses.Length > 0 && !string.IsNullOrWhiteSpace(localNetworkAddresses.First()))
                 {
-                    var bindAddresses = localNetworkAddresses.Select(p => IPAddress.TryParse(p, out var addresses)
-                        ? addresses
+                    var bindAddresses = localNetworkAddresses.Select(p => NetworkExtensions.TryParseToSubnet(p, out var network)
+                        ? network.Prefix
                         : (_interfaces.Where(x => x.Name.Equals(p, StringComparison.OrdinalIgnoreCase))
                             .Select(x => x.Address)
                             .FirstOrDefault() ?? IPAddress.None))
@@ -401,7 +401,7 @@ namespace Jellyfin.Networking.Manager
                 if (remoteIPFilter.Any() && !string.IsNullOrWhiteSpace(remoteIPFilter.First()))
                 {
                     // Parse all IPs with netmask to a subnet
-                    _ = NetworkExtensions.TryParseSubnets(remoteIPFilter.Where(x => x.Contains('/', StringComparison.OrdinalIgnoreCase)).ToArray(), out _remoteAddressFilter, false);
+                    _ = NetworkExtensions.TryParseToSubnets(remoteIPFilter.Where(x => x.Contains('/', StringComparison.OrdinalIgnoreCase)).ToArray(), out _remoteAddressFilter, false);
 
                     // Parse everything else as an IP and construct subnet with a single IP
                     var ips = remoteIPFilter.Where(x => !x.Contains('/', StringComparison.OrdinalIgnoreCase));
@@ -440,17 +440,17 @@ namespace Jellyfin.Networking.Manager
                     else
                     {
                         var replacement = parts[1].Trim();
-                        var ipParts = parts[0].Split("/");
-                        if (string.Equals(parts[0], "all", StringComparison.OrdinalIgnoreCase))
+                        var identifier = parts[0];
+                        if (string.Equals(identifier, "all", StringComparison.OrdinalIgnoreCase))
                         {
                             _publishedServerUrls[new IPData(IPAddress.Broadcast, null)] = replacement;
                         }
-                        else if (string.Equals(parts[0], "external", StringComparison.OrdinalIgnoreCase))
+                        else if (string.Equals(identifier, "external", StringComparison.OrdinalIgnoreCase))
                         {
                             _publishedServerUrls[new IPData(IPAddress.Any, new IPNetwork(IPAddress.Any, 0))] = replacement;
                             _publishedServerUrls[new IPData(IPAddress.IPv6Any, new IPNetwork(IPAddress.IPv6Any, 0))] = replacement;
                         }
-                        else if (string.Equals(parts[0], "internal", StringComparison.OrdinalIgnoreCase))
+                        else if (string.Equals(identifier, "internal", StringComparison.OrdinalIgnoreCase))
                         {
                             foreach (var lan in _lanSubnets)
                             {
@@ -458,17 +458,12 @@ namespace Jellyfin.Networking.Manager
                                 _publishedServerUrls[new IPData(lanPrefix, new IPNetwork(lanPrefix, lan.PrefixLength))] = replacement;
                             }
                         }
-                        else if (IPAddress.TryParse(ipParts[0], out IPAddress? result))
+                        else if (NetworkExtensions.TryParseToSubnet(identifier, out var result) && result != null)
                         {
-                            var data = new IPData(result, null);
-                            if (ipParts.Length > 1 && int.TryParse(ipParts[1], out var netmask))
-                            {
-                                data.Subnet = new IPNetwork(result, netmask);
-                            }
-
+                            var data = new IPData(result.Prefix, result);
                             _publishedServerUrls[data] = replacement;
                         }
-                        else if (TryParseInterface(ipParts[0], out var ifaces))
+                        else if (TryParseInterface(identifier, out var ifaces))
                         {
                             foreach (var iface in ifaces)
                             {
@@ -516,15 +511,20 @@ namespace Jellyfin.Networking.Manager
                 foreach (var details in interfaceList)
                 {
                     var parts = details.Split(',');
-                    var split = parts[0].Split("/");
-                    var address = IPAddress.Parse(split[0]);
-                    var network = new IPNetwork(address, int.Parse(split[1], CultureInfo.InvariantCulture));
-                    var index = int.Parse(parts[1], CultureInfo.InvariantCulture);
-                    if (address.AddressFamily == AddressFamily.InterNetwork || address.AddressFamily == AddressFamily.InterNetworkV6)
+                    if (NetworkExtensions.TryParseToSubnet(parts[0], out var subnet))
                     {
-                        var data = new IPData(address, network, parts[2]);
-                        data.Index = index;
-                        _interfaces.Add(data);
+                        var address = subnet.Prefix;
+                        var index = int.Parse(parts[1], CultureInfo.InvariantCulture);
+                        if (address.AddressFamily == AddressFamily.InterNetwork || address.AddressFamily == AddressFamily.InterNetworkV6)
+                        {
+                            var data = new IPData(address, subnet, parts[2]);
+                            data.Index = index;
+                            _interfaces.Add(data);
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Could not parse mock interface settings: {Part}", details);
                     }
                 }
             }
@@ -799,9 +799,9 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public bool IsInLocalNetwork(string address)
         {
-            if (IPAddress.TryParse(address, out var ep))
+            if (NetworkExtensions.TryParseToSubnet(address, out var subnet))
             {
-                return IPAddress.IsLoopback(ep) || (_lanSubnets.Any(x => x.Contains(ep)) && !_excludedSubnets.Any(x => x.Contains(ep)));
+                return IPAddress.IsLoopback(subnet.Prefix) || (_lanSubnets.Any(x => x.Contains(subnet.Prefix)) && !_excludedSubnets.Any(x => x.Contains(subnet.Prefix)));
             }
 
             if (NetworkExtensions.TryParseHost(address, out var addresses, IsIpv4Enabled, IsIpv6Enabled))

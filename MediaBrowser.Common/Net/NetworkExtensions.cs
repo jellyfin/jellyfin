@@ -152,13 +152,14 @@ namespace MediaBrowser.Common.Net
         }
 
         /// <summary>
-        /// Try parsing an array of strings into subnets, respecting exclusions.
+        /// Try parsing an array of strings into <see cref="IPNetwork"/> objects, respecting exclusions.
+        /// Elements without a subnet mask will be represented as <see cref="IPNetwork"/> with a single IP.
         /// </summary>
         /// <param name="values">Input string array to be parsed.</param>
         /// <param name="result">Collection of <see cref="IPNetwork"/>.</param>
         /// <param name="negated">Boolean signaling if negated or not negated values should be parsed.</param>
         /// <returns><c>True</c> if parsing was successful.</returns>
-        public static bool TryParseSubnets(string[] values, out List<IPNetwork> result, bool negated = false)
+        public static bool TryParseToSubnets(string[] values, out List<IPNetwork> result, bool negated = false)
         {
             result = new List<IPNetwork>();
 
@@ -183,9 +184,13 @@ namespace MediaBrowser.Common.Net
 
                 if (address != IPAddress.None && address != null)
                 {
-                    if (int.TryParse(v[1], out var netmask))
+                    if (v.Length > 1 && int.TryParse(v[1], out var netmask))
                     {
                         result.Add(new IPNetwork(address, netmask));
+                    }
+                    else if (v.Length > 1 && IPAddress.TryParse(v[1], out var netmaskAddress))
+                    {
+                        result.Add(new IPNetwork(address, NetworkExtensions.MaskToCidr(netmaskAddress)));
                     }
                     else if (address.AddressFamily == AddressFamily.InterNetwork)
                     {
@@ -207,15 +212,16 @@ namespace MediaBrowser.Common.Net
         }
 
         /// <summary>
-        /// Try parsing a string into a subnet, respecting exclusions.
+        /// Try parsing a string into an <see cref="IPNetwork"/>, respecting exclusions.
+        /// Inputs without a subnet mask will be represented as <see cref="IPNetwork"/> with a single IP.
         /// </summary>
         /// <param name="value">Input string to be parsed.</param>
         /// <param name="result">An <see cref="IPNetwork"/>.</param>
         /// <param name="negated">Boolean signaling if negated or not negated values should be parsed.</param>
         /// <returns><c>True</c> if parsing was successful.</returns>
-        public static bool TryParseSubnet(string value, out IPNetwork? result, bool negated = false)
+        public static bool TryParseToSubnet(string value, out IPNetwork result, bool negated = false)
         {
-            result = null;
+            result = new IPNetwork(IPAddress.None, 32);
 
             if (string.IsNullOrEmpty(value))
             {
@@ -236,9 +242,13 @@ namespace MediaBrowser.Common.Net
 
             if (address != IPAddress.None && address != null)
             {
-                if (int.TryParse(v[1], out var netmask))
+                if (v.Length > 1 && int.TryParse(v[1], out var netmask))
                 {
                     result = new IPNetwork(address, netmask);
+                }
+                else if (v.Length > 1 && IPAddress.TryParse(v[1], out var netmaskAddress))
+                {
+                    result = new IPNetwork(address, NetworkExtensions.MaskToCidr(netmaskAddress));
                 }
                 else if (address.AddressFamily == AddressFamily.InterNetwork)
                 {
@@ -250,7 +260,7 @@ namespace MediaBrowser.Common.Net
                 }
             }
 
-            if (result != null)
+            if (!result.Prefix.Equals(IPAddress.None))
             {
                 return true;
             }

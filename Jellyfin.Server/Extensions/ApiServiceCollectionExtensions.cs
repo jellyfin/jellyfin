@@ -348,7 +348,7 @@ namespace Jellyfin.Server.Extensions
                 {
                     AddIpAddress(config, options, addr, addr.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);
                 }
-                else if (NetworkExtensions.TryParseSubnet(allowedProxies[i], out var subnet))
+                else if (NetworkExtensions.TryParseToSubnet(allowedProxies[i], out var subnet))
                 {
                     if (subnet != null)
                     {

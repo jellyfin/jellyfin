@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Net;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -37,6 +35,8 @@ namespace Jellyfin.Networking.Tests
         [InlineData("192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.0/24", "[192.168.1.208/24,200.200.200.200/24]")]
         // eth16 only
         [InlineData("192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[192.168.1.208/24]")]
+        // eth16 only without mask
+        [InlineData("192.168.1.208,-16,eth16|200.200.200.200,11,eth11", "192.168.1.0/24", "[192.168.1.208/32]")]
         // All interfaces excluded. (including loopbacks)
         [InlineData("192.168.1.208/24,-16,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[]")]
         // vEthernet1 and vEthernet212 should be excluded.
@@ -65,66 +65,79 @@ namespace Jellyfin.Networking.Tests
         /// <param name="address">IP Address.</param>
         [Theory]
         [InlineData("127.0.0.1")]
+        [InlineData("127.0.0.1/8")]
+        [InlineData("192.168.1.2")]
+        [InlineData("192.168.1.2/24")]
+        [InlineData("192.168.1.2/255.255.255.0")]
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517")]
         [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517]")]
         [InlineData("fe80::7add:12ff:febb:c67b%16")]
         [InlineData("[fe80::7add:12ff:febb:c67b%16]:123")]
         [InlineData("fe80::7add:12ff:febb:c67b%16:123")]
         [InlineData("[fe80::7add:12ff:febb:c67b%16]")]
-        [InlineData("192.168.1.2")]
+        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517/56")]
         public static void TryParseValidIPStringsTrue(string address)
-            => Assert.True(IPAddress.TryParse(address, out _));
+            => Assert.True(NetworkExtensions.TryParseToSubnet(address, out _));
 
         /// <summary>
         /// Checks invalid IP address formats.
         /// </summary>
         /// <param name="address">IP Address.</param>
         [Theory]
-        [InlineData("192.168.1.2/255.255.255.0")]
-        [InlineData("192.168.1.2/24")]
-        [InlineData("127.0.0.1/8")]
         [InlineData("127.0.0.1#")]
         [InlineData("localhost!")]
         [InlineData("256.128.0.0.0.1")]
-        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517/56")]
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517:1231")]
         [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517:1231]")]
         public static void TryParseInvalidIPStringsFalse(string address)
-            => Assert.False(IPAddress.TryParse(address, out _));
+            => Assert.False(NetworkExtensions.TryParseToSubnet(address, out _));
 
+        /// <summary>
+        /// Checks if IPv4 address is within a defined subnet.
+        /// </summary>
+        /// <param name="netMask">Network mask.</param>
+        /// <param name="ipAddress">IP Address.</param>
         [Theory]
         [InlineData("192.168.5.85/24", "192.168.5.1")]
         [InlineData("192.168.5.85/24", "192.168.5.254")]
+        [InlineData("192.168.5.85/255.255.255.0", "192.168.5.254")]
         [InlineData("10.128.240.50/30", "10.128.240.48")]
         [InlineData("10.128.240.50/30", "10.128.240.49")]
         [InlineData("10.128.240.50/30", "10.128.240.50")]
         [InlineData("10.128.240.50/30", "10.128.240.51")]
+        [InlineData("10.128.240.50/255.255.255.252", "10.128.240.51")]
         [InlineData("127.0.0.1/8", "127.0.0.1")]
         public void IpV4SubnetMaskMatchesValidIpAddress(string netMask, string ipAddress)
         {
-            var split = netMask.Split("/");
-            var mask = int.Parse(split[1], CultureInfo.InvariantCulture);
-            var ipa = IPAddress.Parse(split[0]);
-            var ipn = new IPNetwork(ipa, mask);
-            Assert.True(ipn.Contains(IPAddress.Parse(ipAddress)));
+            var ipa = IPAddress.Parse(ipAddress);
+            Assert.True(NetworkExtensions.TryParseToSubnet(netMask, out var subnet) && subnet.Contains(IPAddress.Parse(ipAddress)));
         }
 
+        /// <summary>
+        /// Checks if IPv4 address is not within a defined subnet.
+        /// </summary>
+        /// <param name="netMask">Network mask.</param>
+        /// <param name="ipAddress">IP Address.</param>
         [Theory]
         [InlineData("192.168.5.85/24", "192.168.4.254")]
         [InlineData("192.168.5.85/24", "191.168.5.254")]
+        [InlineData("192.168.5.85/255.255.255.252", "192.168.4.254")]
         [InlineData("10.128.240.50/30", "10.128.240.47")]
         [InlineData("10.128.240.50/30", "10.128.240.52")]
         [InlineData("10.128.240.50/30", "10.128.239.50")]
         [InlineData("10.128.240.50/30", "10.127.240.51")]
+        [InlineData("10.128.240.50/255.255.255.252", "10.127.240.51")]
         public void IpV4SubnetMaskDoesNotMatchInvalidIpAddress(string netMask, string ipAddress)
         {
-            var split = netMask.Split("/");
-            var mask = int.Parse(split[1], CultureInfo.InvariantCulture);
-            var ipa = IPAddress.Parse(split[0]);
-            var ipn = new IPNetwork(ipa, mask);
-            Assert.False(ipn.Contains(IPAddress.Parse(ipAddress)));
+            var ipa = IPAddress.Parse(ipAddress);
+            Assert.False(NetworkExtensions.TryParseToSubnet(netMask, out var subnet) && subnet.Contains(IPAddress.Parse(ipAddress)));
         }
 
+        /// <summary>
+        /// Checks if IPv6 address is within a defined subnet.
+        /// </summary>
+        /// <param name="netMask">Network mask.</param>
+        /// <param name="ipAddress">IP Address.</param>
         [Theory]
         [InlineData("2001:db8:abcd:0012::0/64", "2001:0DB8:ABCD:0012:0000:0000:0000:0000")]
         [InlineData("2001:db8:abcd:0012::0/64", "2001:0DB8:ABCD:0012:FFFF:FFFF:FFFF:FFFF")]
@@ -133,11 +146,7 @@ namespace Jellyfin.Networking.Tests
         [InlineData("2001:db8:abcd:0012::0/128", "2001:0DB8:ABCD:0012:0000:0000:0000:0000")]
         public void IpV6SubnetMaskMatchesValidIpAddress(string netMask, string ipAddress)
         {
-            var split = netMask.Split("/");
-            var mask = int.Parse(split[1], CultureInfo.InvariantCulture);
-            var ipa = IPAddress.Parse(split[0]);
-            var ipn = new IPNetwork(ipa, mask);
-            Assert.True(ipn.Contains(IPAddress.Parse(ipAddress)));
+            Assert.True(NetworkExtensions.TryParseToSubnet(netMask, out var subnet) && subnet.Contains(IPAddress.Parse(ipAddress)));
         }
 
         [Theory]
@@ -148,11 +157,7 @@ namespace Jellyfin.Networking.Tests
         [InlineData("2001:db8:abcd:0012::0/128", "2001:0DB8:ABCD:0012:0000:0000:0000:0001")]
         public void IpV6SubnetMaskDoesNotMatchInvalidIpAddress(string netMask, string ipAddress)
         {
-            var split = netMask.Split("/");
-            var mask = int.Parse(split[1], CultureInfo.InvariantCulture);
-            var ipa = IPAddress.Parse(split[0]);
-            var ipn = new IPNetwork(ipa, mask);
-            Assert.False(ipn.Contains(IPAddress.Parse(ipAddress)));
+            Assert.False(NetworkExtensions.TryParseToSubnet(netMask, out var subnet) && subnet.Contains(IPAddress.Parse(ipAddress)));
         }
 
         [Theory]
@@ -262,7 +267,7 @@ namespace Jellyfin.Networking.Tests
 
             if (nm.TryParseInterface(result, out List<IPData>? resultObj) && resultObj != null)
             {
-                // Parse out IPAddresses so we can do a string comparison. (Ignore subnet masks).
+                // Parse out IPAddresses so we can do a string comparison (ignore subnet masks).
                 result = resultObj.First().Address.ToString();
             }
 
