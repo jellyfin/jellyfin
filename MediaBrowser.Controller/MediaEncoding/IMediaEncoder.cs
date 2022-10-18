@@ -62,6 +62,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         bool IsVaapiDeviceInteli965 { get; }
 
         /// <summary>
+        /// Gets a value indicating whether the configured Vaapi device supports vulkan drm format modifier.
+        /// </summary>
+        /// <value><c>true</c> if the Vaapi device supports vulkan drm format modifier, <c>false</c> otherwise.</value>
+        bool IsVaapiDeviceSupportVulkanFmtModifier { get; }
+
+        /// <summary>
         /// Whether given encoder codec is supported.
         /// </summary>
         /// <param name="encoder">The encoder.</param>
