@@ -50,7 +50,7 @@ jobs:
           path: "$(System.ArtifactsDirectory)/new-artifacts"
           runVersion: "latest"
 
-      - task: CopyFiles@2
+      - task: CopyFiles@2.211.0
         displayName: 'Copy New Assembly Build Artifact'
         inputs:
           sourceFolder: $(System.ArtifactsDirectory)/new-artifacts
@@ -72,7 +72,7 @@ jobs:
           runVersion: "latestFromBranch"
           runBranch: "refs/heads/$(System.PullRequest.TargetBranch)"
 
-      - task: CopyFiles@2
+      - task: CopyFiles@2.211.0
         displayName: 'Copy Reference Assembly Build Artifact'
         enabled: false
         inputs:
