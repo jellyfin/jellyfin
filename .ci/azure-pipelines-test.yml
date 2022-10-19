@@ -90,7 +90,7 @@ jobs:
           pathToSources: $(Build.SourcesDirectory)
           failIfCoverageEmpty: true
 
-      - task: PublishPipelineArtifact@1
+      - task: PublishPipelineArtifact@1.199.0
         displayName: 'Publish OpenAPI Artifact'
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
         inputs:

@@ -56,7 +56,7 @@ jobs:
     displayName: 'Run Dockerfile (stable)'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
 
-  - task: PublishPipelineArtifact@1
+  - task: PublishPipelineArtifact@1.199.0
     displayName: 'Publish Release'
     inputs:
       targetPath: '$(Build.SourcesDirectory)/deployment/dist'
