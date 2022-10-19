@@ -42,7 +42,7 @@ jobs:
           custom: tool
           arguments: 'update compatibilitychecker -g'
 
-      - task: DownloadPipelineArtifact@2
+      - task: DownloadPipelineArtifact@2.198.0
         displayName: 'Download New Assembly Build Artifact'
         inputs:
           source: 'current'
@@ -60,7 +60,7 @@ jobs:
           overWrite: true
           flattenFolders: true
 
-      - task: DownloadPipelineArtifact@2
+      - task: DownloadPipelineArtifact@2.198.0
         displayName: 'Download Reference Assembly Build Artifact'
         enabled: false
         inputs:

@@ -20,7 +20,7 @@ jobs:
         submodules: true
         persistCredentials: true
 
-      - task: DownloadPipelineArtifact@2
+      - task: DownloadPipelineArtifact@2.198.0
         displayName: 'Download Web Branch'
         condition: in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI', 'BuildCompletion')
         inputs:
@@ -31,7 +31,7 @@ jobs:
           pipeline: 'Jellyfin Web'
           runBranch: variables['Build.SourceBranch']
 
-      - task: DownloadPipelineArtifact@2
+      - task: DownloadPipelineArtifact@2.198.0
         displayName: 'Download Web Target'
         condition: eq(variables['Build.Reason'], 'PullRequest')
         inputs:
