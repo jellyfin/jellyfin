@@ -240,7 +240,7 @@ jobs:
       custom: 'pack'
       arguments: '--version-suffix $(Build.BuildNumber) -o $(Build.ArtifactStagingDirectory) -p:Stability=Unstable'
 
-  - task: PublishBuildArtifacts@1
+  - task: PublishBuildArtifacts@1.211.0
     displayName: 'Publish Nuget packages'
     inputs:
       pathToPublish: $(Build.ArtifactStagingDirectory)
