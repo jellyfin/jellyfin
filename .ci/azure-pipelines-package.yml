@@ -246,7 +246,7 @@ jobs:
       pathToPublish: $(Build.ArtifactStagingDirectory)
       artifactName: Jellyfin Nuget Packages
 
-  - task: NuGetCommand@2
+  - task: NuGetCommand@2.211.0
     displayName: 'Push Nuget packages to stable feed'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
     inputs:
@@ -260,7 +260,7 @@ jobs:
     displayName: 'Authenticate to unstable Nuget feed'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
 
-  - task: NuGetCommand@2
+  - task: NuGetCommand@2.211.0
     displayName: 'Push Nuget packages to unstable feed'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
     inputs:
