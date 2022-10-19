@@ -35,7 +35,7 @@ jobs:
           packageType: sdk
           version: ${{ parameters.DotNetSdkVersion }}
 
-      - task: DotNetCoreCLI@2
+      - task: DotNetCoreCLI@2.210.0
         displayName: 'Install ABI CompatibilityChecker Tool'
         inputs:
           command: custom
@@ -83,7 +83,7 @@ jobs:
           overWrite: true
           flattenFolders: true
 
-      - task: DotNetCoreCLI@2
+      - task: DotNetCoreCLI@2.210.0
         displayName: 'Execute ABI Compatibility Check Tool'
         enabled: false
         inputs:

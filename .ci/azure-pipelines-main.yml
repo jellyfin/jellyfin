@@ -55,7 +55,7 @@ jobs:
           packageType: sdk
           version: ${{ parameters.DotNetSdkVersion }}
 
-      - task: DotNetCoreCLI@2
+      - task: DotNetCoreCLI@2.210.0
         displayName: 'Publish Server'
         inputs:
           command: publish
