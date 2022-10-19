@@ -80,7 +80,7 @@ jobs:
           reporttypes: "Cobertura"
 
       ## V2 is already in the repository but it does not work "wrong number of segments" YAML error.
-      - task: PublishCodeCoverageResults@1
+      - task: PublishCodeCoverageResults@1.200.0
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux')) # !! THIS is for V1 only V2 will/should support merging
         displayName: 'Publish Code Coverage'
         inputs:
