@@ -137,7 +137,7 @@ jobs:
     displayName: Set release version (stable)
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
 
-  - task: Docker@2
+  - task: Docker@2.211.0
     displayName: 'Push Unstable Image'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
     inputs:
@@ -150,7 +150,7 @@ jobs:
         unstable-$(Build.BuildNumber)-$(BuildConfiguration)
         unstable-$(BuildConfiguration)
 
-  - task: Docker@2
+  - task: Docker@2.211.0
     displayName: 'Push Stable Image'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
     inputs:
