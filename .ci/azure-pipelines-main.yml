@@ -42,7 +42,7 @@ jobs:
           pipeline: 'Jellyfin Web'
           runBranch: variables['System.PullRequest.TargetBranch']
 
-      - task: ExtractFiles@1
+      - task: ExtractFiles@1.211.0
         displayName: 'Extract Web Client'
         inputs:
           archiveFilePatterns: '$(Agent.TempDirectory)/*.zip'
