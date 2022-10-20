@@ -36,6 +36,11 @@ namespace Jellyfin.Networking.HappyEyeballs
         private const int ConnectionEstablishTimeout = 2000;
 
         /// <summary>
+        /// Interlocked doesn't support bool types.
+        /// </summary>
+        private static int _useIPv6 = 0;
+
+        /// <summary>
         /// Gets a value indicating whether the initial IPv6 check has been performed (to determine whether v6 is available or not).
         /// </summary>
         private static bool _hasResolvedIPv6Availability;
@@ -43,7 +48,21 @@ namespace Jellyfin.Networking.HappyEyeballs
         /// <summary>
         /// Gets or sets a value indicating whether IPv6 should be preferred. Value may change based on runtime failures.
         /// </summary>
-        public static bool? UseIPv6 { get; set; } = null;
+        public static bool UseIPv6
+        {
+            get => Interlocked.CompareExchange(ref _useIPv6, 1, 1) == 1;
+            set
+            {
+                if (value)
+                {
+                    Interlocked.CompareExchange(ref _useIPv6, 1, 0);
+                }
+                else
+                {
+                    Interlocked.CompareExchange(ref _useIPv6, 0, 1);
+                }
+            }
+        }
 
         /// <summary>
         /// Implements the httpclient callback method.
@@ -56,7 +75,7 @@ namespace Jellyfin.Networking.HappyEyeballs
             // Until .NET supports an implementation of Happy Eyeballs (https://tools.ietf.org/html/rfc8305#section-2),
             // let's make IPv4 fallback work in a simple way. This issue is being tracked at https://github.com/dotnet/runtime/issues/26177
             // and expected to be fixed in .NET 6.
-            if (UseIPv6 == true)
+            if (UseIPv6)
             {
                 try
                 {
