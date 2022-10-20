@@ -127,7 +127,7 @@ namespace Emby.Drawing
             ImageDimensions? originalImageSize = null;
             if (originalImage.Width > 0 && originalImage.Height > 0)
             {
-                originalImageSize = new ImageDimensions(originalImage.Width, originalImage.Height);
+                originalImageSize = GetImageDimensions(originalImagePath);
             }
 
             var mimeType = MimeTypes.GetMimeType(originalImagePath);

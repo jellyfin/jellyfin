@@ -160,6 +160,7 @@
  - [vgambier](https://github.com/vgambier)
  - [MinecraftPlaye](https://github.com/MinecraftPlaye)
  - [RealGreenDragon](https://github.com/RealGreenDragon)
+ - [Neuheit](https://github.com/Neuheit)
 
 # Emby Contributors
 
