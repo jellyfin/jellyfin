@@ -49,7 +49,7 @@ jobs:
           destinationFolder: '$(Build.SourcesDirectory)/MediaBrowser.WebDashboard'
           cleanDestinationFolder: false
 
-      - task: UseDotNet@2
+      - task: UseDotNet@2.207.2
         displayName: 'Update DotNet'
         inputs:
           packageType: sdk

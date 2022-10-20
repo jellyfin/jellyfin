@@ -204,7 +204,7 @@ jobs:
     value: $[replace(variables['Build.SourceBranch'],'refs/tags/v','')]
 
   steps:
-  - task: UseDotNet@2
+  - task: UseDotNet@2.207.2
     displayName: 'Use .NET 6.0 sdk'
     inputs:
       packageType: 'sdk'
