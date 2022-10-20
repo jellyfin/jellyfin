@@ -62,7 +62,7 @@ jobs:
       targetPath: '$(Build.SourcesDirectory)/deployment/dist'
       artifactName: 'jellyfin-server-$(BuildConfiguration)'
 
-  - task: SSH@0
+  - task: SSH@0.207.1
     displayName: 'Create target directory on repository server'
     inputs:
       sshEndpoint: repository
@@ -98,7 +98,7 @@ jobs:
       path: "$(System.ArtifactsDirectory)/openapispec"
       runVersion: "latest"
 
-  - task: SSH@0
+  - task: SSH@0.207.1
     displayName: 'Create target directory on repository server'
     inputs:
       sshEndpoint: repository
@@ -175,7 +175,7 @@ jobs:
     vmImage: 'ubuntu-latest'
 
   steps:
-  - task: SSH@0
+  - task: SSH@0.207.1
     displayName: 'Update Unstable Repository'
     continueOnError: true
     condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
@@ -184,7 +184,7 @@ jobs:
       runOptions: 'commands'
       commands: nohup sudo /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) unstable &
 
-  - task: SSH@0
+  - task: SSH@0.207.1
     displayName: 'Update Stable Repository'
     continueOnError: true
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
