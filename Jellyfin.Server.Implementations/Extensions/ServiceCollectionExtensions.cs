@@ -25,8 +25,6 @@ public static class ServiceCollectionExtensions
                 .CacheAllQueries(CacheExpirationMode.Sliding, TimeSpan.FromMinutes(10))
                 .DisableLogging(true)
                 .UseCacheKeyPrefix("EF_")
-                .SkipCachingCommands(commandText =>
-                    commandText.Contains("NEWID()", StringComparison.InvariantCultureIgnoreCase))
                 // Don't cache null values. Remove this optional setting if it's not necessary.
                 .SkipCachingResults(result =>
                     result.Value == null || (result.Value is EFTableRows rows && rows.RowsCount == 0)));
