@@ -1088,15 +1088,7 @@ namespace Emby.Server.Implementations
                 return GetLocalApiUrl(request.Host.Host, request.Scheme, requestPort);
             }
 
-            // Published server ends with a /
-            if (!string.IsNullOrEmpty(PublishedServerUrl))
-            {
-                // Published server ends with a '/', so we need to remove it.
-                return PublishedServerUrl.Trim('/');
-            }
-
-            string smart = NetManager.GetBindInterface(request, out var port);
-            return GetLocalApiUrl(smart.Trim('/'), request.Scheme, port);
+            return GetSmartApiUrl(request.HttpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback);
         }
 
         /// <inheritdoc/>
