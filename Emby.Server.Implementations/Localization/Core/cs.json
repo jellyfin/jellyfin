@@ -123,5 +123,6 @@
     "TaskOptimizeDatabase": "Optimalizovat databázi",
     "TaskKeyframeExtractorDescription": "Vytahuje klíčové snímky ze souborů videa za účelem vytváření přesnějších seznamů přehrávání HLS. Tento úkol může trvat velmi dlouho.",
     "TaskKeyframeExtractor": "Vytahovač klíčových snímků",
-    "External": "Externí"
+    "External": "Externí",
+    "HearingImpaired": "Sluchově postižení"
 }
