@@ -457,6 +457,8 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             IReadOnlyList<string> programIds,
             CancellationToken cancellationToken)
         {
+            var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
+
             if (programIds.Count == 0)
             {
                 return Array.Empty<ShowImagesDto>();
@@ -478,6 +480,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 Content = new StringContent(str.ToString(), Encoding.UTF8, MediaTypeNames.Application.Json)
             };
+            message.Headers.TryAddWithoutValidation("token", token);
 
             try
             {
