@@ -165,12 +165,12 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
                         const double DesiredAspect = 2.0 / 3;
 
-                        programEntry.PrimaryImage = GetProgramImage(ApiUrl, imagesWithText, DesiredAspect) ??
-                                                    GetProgramImage(ApiUrl, allImages, DesiredAspect);
+                        programEntry.PrimaryImage = GetProgramImage(ApiUrl, imagesWithText, DesiredAspect, token) ??
+                                                    GetProgramImage(ApiUrl, allImages, DesiredAspect, token);
 
                         const double WideAspect = 16.0 / 9;
 
-                        programEntry.ThumbImage = GetProgramImage(ApiUrl, imagesWithText, WideAspect);
+                        programEntry.ThumbImage = GetProgramImage(ApiUrl, imagesWithText, WideAspect, token);
 
                         // Don't supply the same image twice
                         if (string.Equals(programEntry.PrimaryImage, programEntry.ThumbImage, StringComparison.Ordinal))
@@ -178,7 +178,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                             programEntry.ThumbImage = null;
                         }
 
-                        programEntry.BackdropImage = GetProgramImage(ApiUrl, imagesWithoutText, WideAspect);
+                        programEntry.BackdropImage = GetProgramImage(ApiUrl, imagesWithoutText, WideAspect, token);
 
                         // programEntry.bannerImage = GetProgramImage(ApiUrl, data, "Banner", false) ??
                         //    GetProgramImage(ApiUrl, data, "Banner-L1", false) ??
@@ -399,7 +399,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             return info;
         }
 
-        private static string GetProgramImage(string apiUrl, IEnumerable<ImageDataDto> images, double desiredAspect)
+        private static string GetProgramImage(string apiUrl, IEnumerable<ImageDataDto> images, double desiredAspect, string token)
         {
             var match = images
                 .OrderBy(i => Math.Abs(desiredAspect - GetAspectRatio(i)))
@@ -423,7 +423,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
             else
             {
-                return apiUrl + "/image/" + uri;
+                return apiUrl + "/image/" + uri + "?token=" + token;
             }
         }
 
@@ -457,6 +457,8 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             IReadOnlyList<string> programIds,
             CancellationToken cancellationToken)
         {
+            var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
+
             if (programIds.Count == 0)
             {
                 return Array.Empty<ShowImagesDto>();
@@ -478,6 +480,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 Content = new StringContent(str.ToString(), Encoding.UTF8, MediaTypeNames.Application.Json)
             };
+            message.Headers.TryAddWithoutValidation("token", token);
 
             try
             {
