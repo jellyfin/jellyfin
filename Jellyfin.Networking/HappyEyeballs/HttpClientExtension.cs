@@ -1,28 +1,8 @@
-using System.Diagnostics.Metrics;
 using System.IO;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-
-/*
-    Copyright (c) 2021 ppy Pty Ltd <contact@ppy.sh>.
-    Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to deal
-    in the Software without restriction, including without limitation the rights
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-    copies of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditions:
-    The above copyright notice and this permission notice shall be included in
-    all copies or substantial portions of the Software.
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-    THE SOFTWARE.
-*/
 
 namespace Jellyfin.Networking.HappyEyeballs
 {
@@ -33,36 +13,12 @@ namespace Jellyfin.Networking.HappyEyeballs
     /// </summary>
     public static class HttpClientExtension
     {
-        private const int ConnectionEstablishTimeout = 2000;
-
         /// <summary>
-        /// Interlocked doesn't support bool types.
+        /// Gets or sets a value indicating whether the client should use IPv6.
         /// </summary>
-        private static int _useIPv6 = 0;
+        public static bool UseIPv6 { get; set; } = true;
 
-        /// <summary>
-        /// Gets a value indicating whether the initial IPv6 check has been performed (to determine whether v6 is available or not).
-        /// </summary>
-        private static bool _hasResolvedIPv6Availability;
-
-        /// <summary>
-        /// Gets or sets a value indicating whether IPv6 should be preferred. Value may change based on runtime failures.
-        /// </summary>
-        public static bool UseIPv6
-        {
-            get => Interlocked.CompareExchange(ref _useIPv6, 1, 1) == 1;
-            set
-            {
-                if (value)
-                {
-                    Interlocked.CompareExchange(ref _useIPv6, 1, 0);
-                }
-                else
-                {
-                    Interlocked.CompareExchange(ref _useIPv6, 0, 1);
-                }
-            }
-        }
+        // Implementation taken from https://github.com/rmkerr/corefx/blob/SocketsHttpHandler_Connect_HappyEyeballs/src/System.Net.Http/src/System/Net/Http/SocketsHttpHandler/ConnectHelper.cs
 
         /// <summary>
         /// Implements the httpclient callback method.
@@ -72,45 +28,46 @@ namespace Jellyfin.Networking.HappyEyeballs
         /// <returns>The http steam.</returns>
         public static async ValueTask<Stream> OnConnect(SocketsHttpConnectionContext context, CancellationToken cancellationToken)
         {
-            // Until .NET supports an implementation of Happy Eyeballs (https://tools.ietf.org/html/rfc8305#section-2),
-            // let's make IPv4 fallback work in a simple way. This issue is being tracked at https://github.com/dotnet/runtime/issues/26177
-            // and expected to be fixed in .NET 6.
-            if (UseIPv6)
+            if (!UseIPv6)
             {
-                try
-                {
-                    var localToken = cancellationToken;
-
-                    if (!_hasResolvedIPv6Availability)
-                    {
-                        // to make things move fast, use a very low timeout for the initial ipv6 attempt.
-                        using var quickFailCts = new CancellationTokenSource(ConnectionEstablishTimeout);
-                        using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quickFailCts.Token);
-
-                        localToken = linkedTokenSource.Token;
-                    }
-
-                    return await AttemptConnection(AddressFamily.InterNetworkV6, context, localToken).ConfigureAwait(false);
-                }
-#pragma warning disable CA1031 // Do not catch general exception types
-                catch
-#pragma warning restore CA1031 // Do not catch general exception types
-                {
-                    // very naively fallback to ipv4 permanently for this execution based on the response of the first connection attempt.
-                    // Network manager will reset this value in the case of physical network changes / interruptions.
-                    UseIPv6 = false;
-                }
-                finally
-                {
-                    _hasResolvedIPv6Availability = true;
-                }
+                return await AttemptConnection(AddressFamily.InterNetwork, context, cancellationToken).ConfigureAwait(false);
             }
 
-            // fallback to IPv4.
-            return await AttemptConnection(AddressFamily.InterNetwork, context, cancellationToken).ConfigureAwait(false);
+            using var cancelIPv6 = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            var tryConnectAsyncIPv6 = AttemptConnection(AddressFamily.InterNetworkV6, context, cancelIPv6.Token);
+
+            if (await Task.WhenAny(tryConnectAsyncIPv6, Task.Delay(200, cancelIPv6.Token)).ConfigureAwait(false) == tryConnectAsyncIPv6 && tryConnectAsyncIPv6.IsCompletedSuccessfully)
+            {
+                cancelIPv6.Cancel();
+                return tryConnectAsyncIPv6.GetAwaiter().GetResult();
+            }
+
+            using var cancelIPv4 = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            var tryConnectAsyncIPv4 = AttemptConnection(AddressFamily.InterNetwork, context, cancelIPv4.Token);
+
+            if (await Task.WhenAny(tryConnectAsyncIPv6, tryConnectAsyncIPv4).ConfigureAwait(false) == tryConnectAsyncIPv6)
+            {
+                if (tryConnectAsyncIPv6.IsCompletedSuccessfully)
+                {
+                    cancelIPv4.Cancel();
+                    return tryConnectAsyncIPv6.GetAwaiter().GetResult();
+                }
+
+                return tryConnectAsyncIPv4.GetAwaiter().GetResult();
+            }
+            else
+            {
+                if (tryConnectAsyncIPv4.IsCompletedSuccessfully)
+                {
+                    cancelIPv6.Cancel();
+                    return tryConnectAsyncIPv4.GetAwaiter().GetResult();
+                }
+
+                return tryConnectAsyncIPv6.GetAwaiter().GetResult();
+            }
         }
 
-        private static async ValueTask<Stream> AttemptConnection(AddressFamily addressFamily, SocketsHttpConnectionContext context, CancellationToken cancellationToken)
+        private static async Task<Stream> AttemptConnection(AddressFamily addressFamily, SocketsHttpConnectionContext context, CancellationToken cancellationToken)
         {
             // The following socket constructor will create a dual-mode socket on systems where IPV6 is available.
             var socket = new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp)
