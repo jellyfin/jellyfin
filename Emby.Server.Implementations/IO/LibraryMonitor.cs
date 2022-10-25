@@ -79,12 +79,6 @@ namespace Emby.Server.Implementations.IO
             TemporarilyIgnore(path);
         }
 
-        public bool IsPathLocked(string path)
-        {
-            // This method is not used by the core but it used by auto-organize
-            return _tempIgnoredPaths.Keys.Any(i => _fileSystem.AreEqual(i, path) || _fileSystem.ContainsSubPath(i, path));
-        }
-
         public async void ReportFileSystemChangeComplete(string path, bool refreshPath)
         {
             if (string.IsNullOrEmpty(path))
