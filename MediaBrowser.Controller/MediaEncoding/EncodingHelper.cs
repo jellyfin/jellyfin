@@ -1415,7 +1415,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                     param += " -preset 7";
                 }
 
-                param += " -look_ahead 0";
+                // Only h264_qsv has look_ahead option
+                if (string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase))
+                {
+                    param += " -look_ahead 0";
+                }
             }
             else if (string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase) // h264 (h264_nvenc)
                      || string.Equals(videoEncoder, "hevc_nvenc", StringComparison.OrdinalIgnoreCase)) // hevc (hevc_nvenc)
@@ -1453,7 +1457,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         break;
 
                     default:
-                        param += " -preset p4";
+                        param += " -preset p1";
                         break;
                 }
             }
@@ -3403,6 +3407,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                         // INPUT d3d11 surface(vram)
                         // map from d3d11va to qsv.
                         mainFilters.Add("hwmap=derive_device=qsv");
+                    }
+                    else
+                    {
+                        // Insert a qsv scaler to sync the decoder surface,
+                        // msdk will passthrough this internally.
+                        mainFilters.Add("hwmap=derive_device=qsv,scale_qsv");
                     }
                 }
 
