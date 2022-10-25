@@ -101,7 +101,8 @@ namespace Emby.Naming.AudioBook
                         {
                             var extra = ex
                                 .OrderBy(x => x.Container)
-                                .ThenBy(x => x.Path);
+                                .ThenBy(x => x.Path)
+                                .ToList();
 
                             stackFiles = stackFiles.Except(extra).ToList();
                             extras.AddRange(extra);

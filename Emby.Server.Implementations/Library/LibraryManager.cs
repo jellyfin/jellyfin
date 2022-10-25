@@ -615,7 +615,8 @@ namespace Emby.Server.Implementations.Library
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            var dupes = list.Where(subPath => !subPath.EndsWith(":\\", StringComparison.OrdinalIgnoreCase) && list.Any(i => _fileSystem.ContainsSubPath(i, subPath)));
+            var dupes = list.Where(subPath => !subPath.EndsWith(":\\", StringComparison.OrdinalIgnoreCase) && list.Any(i => _fileSystem.ContainsSubPath(i, subPath)))
+                .ToList();
 
             foreach (var dupe in dupes)
             {

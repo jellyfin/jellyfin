@@ -232,7 +232,10 @@ namespace Emby.Server.Implementations.Collections
 
             if (list.Count > 0)
             {
-                collection.LinkedChildren = collection.LinkedChildren.Concat(list).ToArray();
+                LinkedChild[] newChildren = new LinkedChild[collection.LinkedChildren.Length + list.Count];
+                collection.LinkedChildren.CopyTo(newChildren, 0);
+                list.CopyTo(newChildren, collection.LinkedChildren.Length);
+                collection.LinkedChildren = newChildren;
                 collection.UpdateRatingToItems(linkedChildrenList);
 
                 await collection.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
