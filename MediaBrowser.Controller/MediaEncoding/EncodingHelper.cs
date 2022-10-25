@@ -3404,6 +3404,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                         // map from d3d11va to qsv.
                         mainFilters.Add("hwmap=derive_device=qsv");
                     }
+                    else
+                    {
+                        // Insert a qsv scaler to sync the decoder surface,
+                        // msdk will passthrough this internally.
+                        mainFilters.Add("hwmap=derive_device=qsv,scale_qsv");
+                    }
                 }
 
                 // hw deint
