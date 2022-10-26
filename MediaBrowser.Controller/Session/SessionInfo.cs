@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Session;
@@ -17,7 +18,7 @@ namespace MediaBrowser.Controller.Session
     /// <summary>
     /// Class SessionInfo.
     /// </summary>
-    public sealed class SessionInfo : IDisposable
+    public sealed class SessionInfo : IAsyncDisposable, IDisposable
     {
         // 1 second
         private const long ProgressIncrement = 10000000;
@@ -380,8 +381,26 @@ namespace MediaBrowser.Controller.Session
             {
                 if (controller is IDisposable disposable)
                 {
-                    _logger.LogDebug("Disposing session controller {0}", disposable.GetType().Name);
+                    _logger.LogDebug("Disposing session controller synchronously {TypeName}", disposable.GetType().Name);
                     disposable.Dispose();
+                }
+            }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            _disposed = true;
+
+            StopAutomaticProgress();
+
+            var controllers = SessionControllers.ToList();
+
+            foreach (var controller in controllers)
+            {
+                if (controller is IAsyncDisposable disposableAsync)
+                {
+                    _logger.LogDebug("Disposing session controller asynchronously {TypeName}", disposableAsync.GetType().Name);
+                    await disposableAsync.DisposeAsync().ConfigureAwait(false);
                 }
             }
         }

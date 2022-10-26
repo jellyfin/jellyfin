@@ -12,18 +12,18 @@ jobs:
     permissions: read-all
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Setup .NET Core
-        uses: actions/setup-dotnet@v2
+        uses: actions/setup-dotnet@4d4a70f4a5b2a5a5329f13be4ac933f2c9206ac0 # tag=v3
         with:
           dotnet-version: '6.0.x'
       - name: Generate openapi.json
         run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
       - name: Upload openapi.json
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # tag=v3
         with:
           name: openapi-head
           retention-days: 14
@@ -37,17 +37,17 @@ jobs:
     permissions: read-all
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3
         with:
           ref: ${{ github.base_ref }}
       - name: Setup .NET Core
-        uses: actions/setup-dotnet@v2
+        uses: actions/setup-dotnet@4d4a70f4a5b2a5a5329f13be4ac933f2c9206ac0 # tag=v3
         with:
           dotnet-version: '6.0.x'
       - name: Generate openapi.json
         run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
       - name: Upload openapi.json
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # tag=v3
         with:
           name: openapi-base
           retention-days: 14
@@ -63,12 +63,12 @@ jobs:
       - openapi-base
     steps:
       - name: Download openapi-head
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741 # tag=v3
         with:
           name: openapi-head
           path: openapi-head
       - name: Download openapi-base
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741 # tag=v3
         with:
           name: openapi-base
           path: openapi-base
@@ -90,14 +90,14 @@ jobs:
           body="${body//$'\r'/'%0D'}"
           echo ::set-output name=body::$body
       - name: Find difference comment
-        uses: peter-evans/find-comment@v2
+        uses: peter-evans/find-comment@b657a70ff16d17651703a84bee1cb9ad9d2be2ea # tag=v2
         id: find-comment
         with:
           issue-number: ${{ github.event.pull_request.number }}
           direction: last
           body-includes: openapi-diff-workflow-comment
       - name: Reply or edit difference comment (changed)
-        uses: peter-evans/create-or-update-comment@v2
+        uses: peter-evans/create-or-update-comment@2b2c85d0bf1b8a7b4e7e344bd5c71dc4b9196e9f # tag=v2
         if: ${{ steps.read-diff.outputs.body != '' }}
         with:
           issue-number: ${{ github.event.pull_request.number }}
@@ -112,7 +112,7 @@ jobs:
 
             </details>
       - name: Edit difference comment (unchanged)
-        uses: peter-evans/create-or-update-comment@v2
+        uses: peter-evans/create-or-update-comment@2b2c85d0bf1b8a7b4e7e344bd5c71dc4b9196e9f # tag=v2
         if: ${{ steps.read-diff.outputs.body == '' && steps.find-comment.outputs.comment-id != '' }}
         with:
           issue-number: ${{ github.event.pull_request.number }}

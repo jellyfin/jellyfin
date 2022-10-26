@@ -253,7 +253,7 @@
         "versions": [
             {
                 "version": "5.0.0.0",
-                "changelog": "Updated to use NextPVR API v5, no longer compatable with API v4.\n",
+                "changelog": "Updated to use NextPVR API v5, no longer compatible with API v4.\n",
                 "targetAbi": "10.7.0.0",
                 "sourceUrl": "https://repo.jellyfin.org/releases/plugin/nextpvr/nextpvr_5.0.0.0.zip",
                 "checksum": "d70f694d14bf9462ba2b2ebe110068d3",

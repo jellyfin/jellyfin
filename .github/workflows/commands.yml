@@ -16,20 +16,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Notify as seen
-        uses: peter-evans/create-or-update-comment@v2
+        uses: peter-evans/create-or-update-comment@2b2c85d0bf1b8a7b4e7e344bd5c71dc4b9196e9f # tag=v2
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
           comment-id: ${{ github.event.comment.id }}
           reactions: '+1'
 
       - name: Checkout the latest code
-        uses: actions/checkout@v3
+        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
           fetch-depth: 0
 
       - name: Automatic Rebase
-        uses: cirrus-actions/rebase@1.5
+        uses: cirrus-actions/rebase@6e572f08c244e2f04f9beb85a943eb618218714d # tag=1.7
         env:
           GITHUB_TOKEN: ${{ secrets.JF_BOT_TOKEN }}
 
@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Notify as seen
-        uses: peter-evans/create-or-update-comment@v2
+        uses: peter-evans/create-or-update-comment@2b2c85d0bf1b8a7b4e7e344bd5c71dc4b9196e9f # tag=v2
         if: ${{ github.event.comment != null }}
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
@@ -47,14 +47,14 @@ jobs:
           reactions: eyes
 
       - name: Checkout the latest code
-        uses: actions/checkout@v3
+        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
           fetch-depth: 0
 
       - name: Notify as running
         id: comment_running
-        uses: peter-evans/create-or-update-comment@v2
+        uses: peter-evans/create-or-update-comment@2b2c85d0bf1b8a7b4e7e344bd5c71dc4b9196e9f # tag=v2
         if: ${{ github.event.comment != null }}
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
@@ -89,7 +89,7 @@ jobs:
           exit ${retcode}
 
       - name: Notify with result success
-        uses: peter-evans/create-or-update-comment@v2
+        uses: peter-evans/create-or-update-comment@2b2c85d0bf1b8a7b4e7e344bd5c71dc4b9196e9f # tag=v2
         if: ${{ github.event.comment != null && success() }}
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
@@ -104,7 +104,7 @@ jobs:
           reactions: hooray
 
       - name: Notify with result failure
-        uses: peter-evans/create-or-update-comment@v2
+        uses: peter-evans/create-or-update-comment@2b2c85d0bf1b8a7b4e7e344bd5c71dc4b9196e9f # tag=v2
         if: ${{ github.event.comment != null && failure() }}
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}

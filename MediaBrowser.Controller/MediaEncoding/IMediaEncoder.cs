@@ -38,6 +38,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         Version EncoderVersion { get; }
 
         /// <summary>
+        /// Whether p key pausing is supported.
+        /// </summary>
+        /// <value><c>true</c> if p key pausing is supported, <c>false</c> otherwise.</value>
+        bool IsPkeyPauseSupported { get; }
+
+        /// <summary>
         /// Gets a value indicating whether the configured Vaapi device is from AMD(radeonsi/r600 Mesa driver).
         /// </summary>
         /// <value><c>true</c> if the Vaapi device is an AMD(radeonsi/r600 Mesa driver) GPU, <c>false</c> otherwise.</value>
@@ -54,6 +60,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// </summary>
         /// <value><c>true</c> if the Vaapi device is an Intel(legacy i965 driver) GPU, <c>false</c> otherwise.</value>
         bool IsVaapiDeviceInteli965 { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the configured Vaapi device supports vulkan drm format modifier.
+        /// </summary>
+        /// <value><c>true</c> if the Vaapi device supports vulkan drm format modifier, <c>false</c> otherwise.</value>
+        bool IsVaapiDeviceSupportVulkanFmtModifier { get; }
 
         /// <summary>
         /// Whether given encoder codec is supported.
@@ -140,6 +152,13 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="mediaSource">The mediaSource.</param>
         /// <returns>System.String.</returns>
         string GetInputArgument(string inputFile, MediaSourceInfo mediaSource);
+
+        /// <summary>
+        /// Gets the input argument for an external subtitle file.
+        /// </summary>
+        /// <param name="inputFile">The input file.</param>
+        /// <returns>System.String.</returns>
+        string GetExternalSubtitleInputArgument(string inputFile);
 
         /// <summary>
         /// Gets the time parameter.

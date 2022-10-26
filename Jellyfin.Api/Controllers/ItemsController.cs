@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
@@ -63,7 +64,7 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets items based on a query.
         /// </summary>
-        /// <param name="userId">The user id supplied as query parameter.</param>
+        /// <param name="userId">The user id supplied as query parameter; this is required when not using an API key.</param>
         /// <param name="maxOfficialRating">Optional filter by maximum official rating (PG, PG-13, TV-MA, etc).</param>
         /// <param name="hasThemeSong">Optional filter by items with theme songs.</param>
         /// <param name="hasThemeVideo">Optional filter by items with theme videos.</param>
@@ -89,6 +90,11 @@ namespace Jellyfin.Api.Controllers
         /// <param name="hasImdbId">Optional filter by items that have an imdb id or not.</param>
         /// <param name="hasTmdbId">Optional filter by items that have a tmdb id or not.</param>
         /// <param name="hasTvdbId">Optional filter by items that have a tvdb id or not.</param>
+        /// <param name="isMovie">Optional filter for live tv movies.</param>
+        /// <param name="isSeries">Optional filter for live tv series.</param>
+        /// <param name="isNews">Optional filter for live tv news.</param>
+        /// <param name="isKids">Optional filter for live tv kids.</param>
+        /// <param name="isSports">Optional filter for live tv sports.</param>
         /// <param name="excludeItemIds">Optional. If specified, results will be filtered by excluding item ids. This allows multiple, comma delimited.</param>
         /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
@@ -147,14 +153,14 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Items")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetItems(
-            [FromQuery] Guid userId,
+            [FromQuery] Guid? userId,
             [FromQuery] string? maxOfficialRating,
             [FromQuery] bool? hasThemeSong,
             [FromQuery] bool? hasThemeVideo,
             [FromQuery] bool? hasSubtitles,
             [FromQuery] bool? hasSpecialFeature,
             [FromQuery] bool? hasTrailer,
-            [FromQuery] string? adjacentTo,
+            [FromQuery] Guid? adjacentTo,
             [FromQuery] int? parentIndexNumber,
             [FromQuery] bool? hasParentalRating,
             [FromQuery] bool? isHd,
@@ -173,6 +179,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? hasImdbId,
             [FromQuery] bool? hasTmdbId,
             [FromQuery] bool? hasTvdbId,
+            [FromQuery] bool? isMovie,
+            [FromQuery] bool? isSeries,
+            [FromQuery] bool? isNews,
+            [FromQuery] bool? isKids,
+            [FromQuery] bool? isSports,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] excludeItemIds,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
@@ -228,9 +239,20 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool enableTotalRecordCount = true,
             [FromQuery] bool? enableImages = true)
         {
-            var user = userId.Equals(default) ? null : _userManager.GetUserById(userId);
+            var isApiKey = User.GetIsApiKey();
+            // if api key is used (auth.IsApiKey == true), then `user` will be null throughout this method
+            var user = !isApiKey && userId.HasValue && !userId.Value.Equals(default)
+                ? _userManager.GetUserById(userId.Value)
+                : null;
+
+            // beyond this point, we're either using an api key or we have a valid user
+            if (!isApiKey && user is null)
+            {
+                return BadRequest("userId is required");
+            }
+
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             if (includeItemTypes.Length == 1
@@ -260,30 +282,39 @@ namespace Jellyfin.Api.Controllers
                 includeItemTypes = new[] { BaseItemKind.Playlist };
             }
 
-            var enabledChannels = user!.GetPreferenceValues<Guid>(PreferenceKind.EnabledChannels);
+            var enabledChannels = isApiKey
+                ? Array.Empty<Guid>()
+                : user!.GetPreferenceValues<Guid>(PreferenceKind.EnabledChannels);
 
-            bool isInEnabledFolder = Array.IndexOf(user.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders), item.Id) != -1
+            // api keys are always enabled for all folders
+            bool isInEnabledFolder = isApiKey
+                                     || Array.IndexOf(user!.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders), item.Id) != -1
                                      // Assume all folders inside an EnabledChannel are enabled
                                      || Array.IndexOf(enabledChannels, item.Id) != -1
                                      // Assume all items inside an EnabledChannel are enabled
                                      || Array.IndexOf(enabledChannels, item.ChannelId) != -1;
 
-            var collectionFolders = _libraryManager.GetCollectionFolders(item);
-            foreach (var collectionFolder in collectionFolders)
+            if (!isInEnabledFolder)
             {
-                if (user.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders).Contains(collectionFolder.Id))
+                var collectionFolders = _libraryManager.GetCollectionFolders(item);
+                foreach (var collectionFolder in collectionFolders)
                 {
-                    isInEnabledFolder = true;
+                    // api keys never enter this block, so user is never null
+                    if (user!.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders).Contains(collectionFolder.Id))
+                    {
+                        isInEnabledFolder = true;
+                    }
                 }
             }
 
+            // api keys are always enabled for all folders, so user is never null
             if (item is not UserRootFolder
                 && !isInEnabledFolder
-                && !user.HasPermission(PermissionKind.EnableAllFolders)
+                && !user!.HasPermission(PermissionKind.EnableAllFolders)
                 && !user.HasPermission(PermissionKind.EnableAllChannels)
                 && !string.Equals(collectionType, CollectionType.Folders, StringComparison.OrdinalIgnoreCase))
             {
-                _logger.LogWarning("{UserName} is not permitted to access Library {ItemName}.", user.Username, item.Name);
+                _logger.LogWarning("{UserName} is not permitted to access Library {ItemName}", user.Username, item.Name);
                 return Unauthorized($"{user.Username} is not permitted to access Library {item.Name}.");
             }
 
@@ -316,6 +347,11 @@ namespace Jellyfin.Api.Controllers
                     Is3D = is3D,
                     HasTvdbId = hasTvdbId,
                     HasTmdbId = hasTmdbId,
+                    IsMovie = isMovie,
+                    IsSeries = isSeries,
+                    IsNews = isNews,
+                    IsKids = isKids,
+                    IsSports = isSports,
                     HasOverview = hasOverview,
                     HasOfficialRating = hasOfficialRating,
                     HasParentalRating = hasParentalRating,
@@ -515,8 +551,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="hasParentalRating">Optional filter by items that have or do not have a parental rating.</param>
         /// <param name="isHd">Optional filter by items that are HD or not.</param>
         /// <param name="is4K">Optional filter by items that are 4K or not.</param>
-        /// <param name="locationTypes">Optional. If specified, results will be filtered based on LocationType. This allows multiple, comma delimeted.</param>
-        /// <param name="excludeLocationTypes">Optional. If specified, results will be filtered based on the LocationType. This allows multiple, comma delimeted.</param>
+        /// <param name="locationTypes">Optional. If specified, results will be filtered based on LocationType. This allows multiple, comma delimited.</param>
+        /// <param name="excludeLocationTypes">Optional. If specified, results will be filtered based on the LocationType. This allows multiple, comma delimited.</param>
         /// <param name="isMissing">Optional filter by items that are missing episodes or not.</param>
         /// <param name="isUnaired">Optional filter by items that are unaired episodes or not.</param>
         /// <param name="minCommunityRating">Optional filter by minimum community rating.</param>
@@ -529,42 +565,47 @@ namespace Jellyfin.Api.Controllers
         /// <param name="hasImdbId">Optional filter by items that have an imdb id or not.</param>
         /// <param name="hasTmdbId">Optional filter by items that have a tmdb id or not.</param>
         /// <param name="hasTvdbId">Optional filter by items that have a tvdb id or not.</param>
-        /// <param name="excludeItemIds">Optional. If specified, results will be filtered by exxcluding item ids. This allows multiple, comma delimeted.</param>
+        /// <param name="isMovie">Optional filter for live tv movies.</param>
+        /// <param name="isSeries">Optional filter for live tv series.</param>
+        /// <param name="isNews">Optional filter for live tv news.</param>
+        /// <param name="isKids">Optional filter for live tv kids.</param>
+        /// <param name="isSports">Optional filter for live tv sports.</param>
+        /// <param name="excludeItemIds">Optional. If specified, results will be filtered by excluding item ids. This allows multiple, comma delimited.</param>
         /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <param name="recursive">When searching within folders, this determines whether or not the search will be recursive. true/false.</param>
         /// <param name="searchTerm">Optional. Filter based on a search term.</param>
         /// <param name="sortOrder">Sort Order - Ascending,Descending.</param>
         /// <param name="parentId">Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
-        /// <param name="excludeItemTypes">Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimeted.</param>
-        /// <param name="includeItemTypes">Optional. If specified, results will be filtered based on the item type. This allows multiple, comma delimeted.</param>
-        /// <param name="filters">Optional. Specify additional filters to apply. This allows multiple, comma delimeted. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+        /// <param name="excludeItemTypes">Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimited.</param>
+        /// <param name="includeItemTypes">Optional. If specified, results will be filtered based on the item type. This allows multiple, comma delimited.</param>
+        /// <param name="filters">Optional. Specify additional filters to apply. This allows multiple, comma delimited. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes.</param>
         /// <param name="isFavorite">Optional filter by items that are marked as favorite, or not.</param>
         /// <param name="mediaTypes">Optional filter by MediaType. Allows multiple, comma delimited.</param>
         /// <param name="imageTypes">Optional. If specified, results will be filtered based on those containing image types. This allows multiple, comma delimited.</param>
-        /// <param name="sortBy">Optional. Specify one or more sort orders, comma delimeted. Options: Album, AlbumArtist, Artist, Budget, CommunityRating, CriticRating, DateCreated, DatePlayed, PlayCount, PremiereDate, ProductionYear, SortName, Random, Revenue, Runtime.</param>
+        /// <param name="sortBy">Optional. Specify one or more sort orders, comma delimited. Options: Album, AlbumArtist, Artist, Budget, CommunityRating, CriticRating, DateCreated, DatePlayed, PlayCount, PremiereDate, ProductionYear, SortName, Random, Revenue, Runtime.</param>
         /// <param name="isPlayed">Optional filter by items that are played, or not.</param>
-        /// <param name="genres">Optional. If specified, results will be filtered based on genre. This allows multiple, pipe delimeted.</param>
-        /// <param name="officialRatings">Optional. If specified, results will be filtered based on OfficialRating. This allows multiple, pipe delimeted.</param>
-        /// <param name="tags">Optional. If specified, results will be filtered based on tag. This allows multiple, pipe delimeted.</param>
-        /// <param name="years">Optional. If specified, results will be filtered based on production year. This allows multiple, comma delimeted.</param>
+        /// <param name="genres">Optional. If specified, results will be filtered based on genre. This allows multiple, pipe delimited.</param>
+        /// <param name="officialRatings">Optional. If specified, results will be filtered based on OfficialRating. This allows multiple, pipe delimited.</param>
+        /// <param name="tags">Optional. If specified, results will be filtered based on tag. This allows multiple, pipe delimited.</param>
+        /// <param name="years">Optional. If specified, results will be filtered based on production year. This allows multiple, comma delimited.</param>
         /// <param name="enableUserData">Optional, include user data.</param>
         /// <param name="imageTypeLimit">Optional, the max number of images to return, per image type.</param>
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
         /// <param name="person">Optional. If specified, results will be filtered to include only those containing the specified person.</param>
         /// <param name="personIds">Optional. If specified, results will be filtered to include only those containing the specified person id.</param>
         /// <param name="personTypes">Optional. If specified, along with Person, results will be filtered to include only those containing the specified person and PersonType. Allows multiple, comma-delimited.</param>
-        /// <param name="studios">Optional. If specified, results will be filtered based on studio. This allows multiple, pipe delimeted.</param>
-        /// <param name="artists">Optional. If specified, results will be filtered based on artists. This allows multiple, pipe delimeted.</param>
-        /// <param name="excludeArtistIds">Optional. If specified, results will be filtered based on artist id. This allows multiple, pipe delimeted.</param>
+        /// <param name="studios">Optional. If specified, results will be filtered based on studio. This allows multiple, pipe delimited.</param>
+        /// <param name="artists">Optional. If specified, results will be filtered based on artists. This allows multiple, pipe delimited.</param>
+        /// <param name="excludeArtistIds">Optional. If specified, results will be filtered based on artist id. This allows multiple, pipe delimited.</param>
         /// <param name="artistIds">Optional. If specified, results will be filtered to include only those containing the specified artist id.</param>
         /// <param name="albumArtistIds">Optional. If specified, results will be filtered to include only those containing the specified album artist id.</param>
         /// <param name="contributingArtistIds">Optional. If specified, results will be filtered to include only those containing the specified contributing artist id.</param>
-        /// <param name="albums">Optional. If specified, results will be filtered based on album. This allows multiple, pipe delimeted.</param>
-        /// <param name="albumIds">Optional. If specified, results will be filtered based on album id. This allows multiple, pipe delimeted.</param>
+        /// <param name="albums">Optional. If specified, results will be filtered based on album. This allows multiple, pipe delimited.</param>
+        /// <param name="albumIds">Optional. If specified, results will be filtered based on album id. This allows multiple, pipe delimited.</param>
         /// <param name="ids">Optional. If specific items are needed, specify a list of item id's to retrieve. This allows multiple, comma delimited.</param>
-        /// <param name="videoTypes">Optional filter by VideoType (videofile, dvd, bluray, iso). Allows multiple, comma delimeted.</param>
+        /// <param name="videoTypes">Optional filter by VideoType (videofile, dvd, bluray, iso). Allows multiple, comma delimited.</param>
         /// <param name="minOfficialRating">Optional filter by minimum official rating (PG, PG-13, TV-MA, etc).</param>
         /// <param name="isLocked">Optional filter by items that are locked.</param>
         /// <param name="isPlaceHolder">Optional filter by items that are placeholders.</param>
@@ -575,12 +616,12 @@ namespace Jellyfin.Api.Controllers
         /// <param name="maxWidth">Optional. Filter by the maximum width of the item.</param>
         /// <param name="maxHeight">Optional. Filter by the maximum height of the item.</param>
         /// <param name="is3D">Optional filter by items that are 3D, or not.</param>
-        /// <param name="seriesStatus">Optional filter by Series Status. Allows multiple, comma delimeted.</param>
+        /// <param name="seriesStatus">Optional filter by Series Status. Allows multiple, comma delimited.</param>
         /// <param name="nameStartsWithOrGreater">Optional filter by items whose name is sorted equally or greater than a given input string.</param>
         /// <param name="nameStartsWith">Optional filter by items whose name is sorted equally than a given input string.</param>
         /// <param name="nameLessThan">Optional filter by items whose name is equally or lesser than a given input string.</param>
-        /// <param name="studioIds">Optional. If specified, results will be filtered based on studio id. This allows multiple, pipe delimeted.</param>
-        /// <param name="genreIds">Optional. If specified, results will be filtered based on genre id. This allows multiple, pipe delimeted.</param>
+        /// <param name="studioIds">Optional. If specified, results will be filtered based on studio id. This allows multiple, pipe delimited.</param>
+        /// <param name="genreIds">Optional. If specified, results will be filtered based on genre id. This allows multiple, pipe delimited.</param>
         /// <param name="enableTotalRecordCount">Optional. Enable the total record count.</param>
         /// <param name="enableImages">Optional, include image information in output.</param>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the items.</returns>
@@ -594,7 +635,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? hasSubtitles,
             [FromQuery] bool? hasSpecialFeature,
             [FromQuery] bool? hasTrailer,
-            [FromQuery] string? adjacentTo,
+            [FromQuery] Guid? adjacentTo,
             [FromQuery] int? parentIndexNumber,
             [FromQuery] bool? hasParentalRating,
             [FromQuery] bool? isHd,
@@ -613,6 +654,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? hasImdbId,
             [FromQuery] bool? hasTmdbId,
             [FromQuery] bool? hasTvdbId,
+            [FromQuery] bool? isMovie,
+            [FromQuery] bool? isSeries,
+            [FromQuery] bool? isNews,
+            [FromQuery] bool? isKids,
+            [FromQuery] bool? isSports,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] excludeItemIds,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
@@ -695,6 +741,11 @@ namespace Jellyfin.Api.Controllers
                 hasImdbId,
                 hasTmdbId,
                 hasTvdbId,
+                isMovie,
+                isSeries,
+                isNews,
+                isKids,
+                isSports,
                 excludeItemIds,
                 startIndex,
                 limit,
@@ -793,7 +844,7 @@ namespace Jellyfin.Api.Controllers
             var user = _userManager.GetUserById(userId);
             var parentIdGuid = parentId ?? Guid.Empty;
             var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
+                .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             var ancestorIds = Array.Empty<Guid>();

@@ -19,6 +19,7 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Activity;
@@ -94,6 +95,11 @@ namespace Jellyfin.Server
             serviceCollection.AddSingleton<IAuthorizationContext, AuthorizationContext>();
 
             serviceCollection.AddScoped<IAuthenticationManager, AuthenticationManager>();
+
+            foreach (var type in GetExportTypes<ILyricProvider>())
+            {
+                serviceCollection.AddSingleton(typeof(ILyricProvider), type);
+            }
 
             base.RegisterServices(serviceCollection);
         }

@@ -440,6 +440,12 @@ namespace Jellyfin.Server.Extensions
                         .Cast<IOpenApiAny>()
                         .ToArray()
                 });
+
+            // Swashbuckle doesn't use JsonOptions to describe responses, so we need to manually describe it.
+            options.MapType<Version>(() => new OpenApiSchema
+            {
+                Type = "string"
+            });
         }
     }
 }

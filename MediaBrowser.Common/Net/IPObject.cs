@@ -55,17 +55,14 @@ namespace MediaBrowser.Common.Net
         /// <returns>IPAddress.</returns>
         public static (IPAddress Address, byte PrefixLength) NetworkAddressOf(IPAddress address, byte prefixLength)
         {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
+            ArgumentNullException.ThrowIfNull(address);
 
             if (address.IsIPv4MappedToIPv6)
             {
                 address = address.MapToIPv4();
             }
 
-            if (IsLoopback(address))
+            if (IPAddress.IsLoopback(address))
             {
                 return (address, prefixLength);
             }
@@ -103,41 +100,13 @@ namespace MediaBrowser.Common.Net
         }
 
         /// <summary>
-        /// Tests to see if the ip address is a Loopback address.
-        /// </summary>
-        /// <param name="address">Value to test.</param>
-        /// <returns>True if it is.</returns>
-        public static bool IsLoopback(IPAddress address)
-        {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
-
-            if (!address.Equals(IPAddress.None))
-            {
-                if (address.IsIPv4MappedToIPv6)
-                {
-                    address = address.MapToIPv4();
-                }
-
-                return address.Equals(IPAddress.Loopback) || address.Equals(IPAddress.IPv6Loopback);
-            }
-
-            return false;
-        }
-
-        /// <summary>
         /// Tests to see if the ip address is an IP6 address.
         /// </summary>
         /// <param name="address">Value to test.</param>
         /// <returns>True if it is.</returns>
         public static bool IsIP6(IPAddress address)
         {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
+            ArgumentNullException.ThrowIfNull(address);
 
             if (address.IsIPv4MappedToIPv6)
             {
@@ -154,10 +123,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>True if it contains a private address.</returns>
         public static bool IsPrivateAddressRange(IPAddress address)
         {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
+            ArgumentNullException.ThrowIfNull(address);
 
             if (!address.Equals(IPAddress.None))
             {
@@ -204,10 +170,7 @@ namespace MediaBrowser.Common.Net
         /// </remarks>
         public static bool IsIPv6LinkLocal(IPAddress address)
         {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
+            ArgumentNullException.ThrowIfNull(address);
 
             if (address.IsIPv4MappedToIPv6)
             {
@@ -251,10 +214,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>Byte CIDR representing the mask.</returns>
         public static byte MaskToCidr(IPAddress mask)
         {
-            if (mask == null)
-            {
-                throw new ArgumentNullException(nameof(mask));
-            }
+            ArgumentNullException.ThrowIfNull(mask);
 
             byte cidrnet = 0;
             if (!mask.Equals(IPAddress.Any))
@@ -295,7 +255,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>True if it is.</returns>
         public virtual bool IsLoopback()
         {
-            return IsLoopback(Address);
+            return IPAddress.IsLoopback(Address);
         }
 
         /// <summary>

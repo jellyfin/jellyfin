@@ -16,6 +16,7 @@ using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.MediaEncoding.Probing;
 using MediaBrowser.Model.Dlna;
@@ -49,6 +50,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;
+        private readonly IConfiguration _config;
         private readonly string _startupOptionFFmpegPath;
 
         private readonly SemaphoreSlim _thumbnailResourcePool = new SemaphoreSlim(2, 2);
@@ -65,9 +67,21 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private List<string> _filters = new List<string>();
         private IDictionary<int, bool> _filtersWithOption = new Dictionary<int, bool>();
 
+        private bool _isPkeyPauseSupported = false;
+
         private bool _isVaapiDeviceAmd = false;
         private bool _isVaapiDeviceInteliHD = false;
         private bool _isVaapiDeviceInteli965 = false;
+        private bool _isVaapiDeviceSupportVulkanFmtModifier = false;
+
+        private static string[] _vulkanFmtModifierExts = {
+            "VK_KHR_sampler_ycbcr_conversion",
+            "VK_EXT_image_drm_format_modifier",
+            "VK_KHR_external_memory_fd",
+            "VK_EXT_external_memory_dma_buf",
+            "VK_KHR_external_semaphore_fd",
+            "VK_EXT_external_memory_host"
+        };
 
         private Version _ffmpegVersion = null;
         private string _ffmpegPath = string.Empty;
@@ -85,6 +99,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _configurationManager = configurationManager;
             _fileSystem = fileSystem;
             _localization = localization;
+            _config = config;
             _startupOptionFFmpegPath = config.GetValue<string>(Controller.Extensions.ConfigurationExtensions.FfmpegPathKey) ?? string.Empty;
             _jsonSerializerOptions = JsonDefaults.Options;
         }
@@ -97,11 +112,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public Version EncoderVersion => _ffmpegVersion;
 
+        public bool IsPkeyPauseSupported => _isPkeyPauseSupported;
+
         public bool IsVaapiDeviceAmd => _isVaapiDeviceAmd;
 
         public bool IsVaapiDeviceInteliHD => _isVaapiDeviceInteliHD;
 
         public bool IsVaapiDeviceInteli965 => _isVaapiDeviceInteli965;
+
+        public bool IsVaapiDeviceSupportVulkanFmtModifier => _isVaapiDeviceSupportVulkanFmtModifier;
 
         /// <summary>
         /// Run at startup or if the user removes a Custom path from transcode page.
@@ -151,6 +170,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 _threads = EncodingHelper.GetNumberOfThreads(null, options, null);
 
+                _isPkeyPauseSupported = validator.CheckSupportedRuntimeKey("p      pause transcoding");
+
                 // Check the Vaapi device vendor
                 if (OperatingSystem.IsLinux()
                     && SupportsHwaccel("vaapi")
@@ -160,6 +181,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     _isVaapiDeviceAmd = validator.CheckVaapiDeviceByDriverName("Mesa Gallium driver", options.VaapiDevice);
                     _isVaapiDeviceInteliHD = validator.CheckVaapiDeviceByDriverName("Intel iHD driver", options.VaapiDevice);
                     _isVaapiDeviceInteli965 = validator.CheckVaapiDeviceByDriverName("Intel i965 driver", options.VaapiDevice);
+                    _isVaapiDeviceSupportVulkanFmtModifier = validator.CheckVulkanDrmDeviceByExtensionName(options.VaapiDevice, _vulkanFmtModifierExts);
+
                     if (_isVaapiDeviceAmd)
                     {
                         _logger.LogInformation("VAAPI device {RenderNodePath} is AMD GPU", options.VaapiDevice);
@@ -171,6 +194,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     else if (_isVaapiDeviceInteli965)
                     {
                         _logger.LogInformation("VAAPI device {RenderNodePath} is Intel GPU (i965)", options.VaapiDevice);
+                    }
+
+                    if (_isVaapiDeviceSupportVulkanFmtModifier)
+                    {
+                        _logger.LogInformation("VAAPI device {RenderNodePath} supports Vulkan DRM format modifier", options.VaapiDevice);
                     }
                 }
             }
@@ -371,11 +399,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var inputFile = request.MediaSource.Path;
 
             string analyzeDuration = string.Empty;
+            string ffmpegAnalyzeDuration = _config.GetFFmpegAnalyzeDuration() ?? string.Empty;
 
             if (request.MediaSource.AnalyzeDurationMs > 0)
             {
                 analyzeDuration = "-analyzeduration " +
                                   (request.MediaSource.AnalyzeDurationMs * 1000).ToString();
+            }
+            else if (!string.IsNullOrEmpty(ffmpegAnalyzeDuration))
+            {
+                analyzeDuration = "-analyzeduration " + ffmpegAnalyzeDuration;
             }
 
             var forceEnableLogging = request.MediaSource.Protocol != MediaProtocol.File;
@@ -409,6 +442,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             return EncodingUtils.GetInputArgument(prefix, inputFile, mediaSource.Protocol);
+        }
+
+        /// <summary>
+        /// Gets the input argument for an external subtitle file.
+        /// </summary>
+        /// <param name="inputFile">The input file.</param>
+        /// <returns>System.String.</returns>
+        /// <exception cref="ArgumentException">Unrecognized InputType.</exception>
+        public string GetExternalSubtitleInputArgument(string inputFile)
+        {
+            const string Prefix = "file";
+
+            return EncodingUtils.GetInputArgument(Prefix, inputFile, MediaProtocol.File);
         }
 
         /// <summary>
@@ -598,9 +644,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 Video3DFormat.HalfSideBySide => "crop=iw/2:ih:0:0,scale=(iw*2):ih,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1",
                 // fsbs crop width in half,set the display aspect,crop out any black bars we may have made
                 Video3DFormat.FullSideBySide => "crop=iw/2:ih:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1",
-                // htab crop heigh in half,scale to correct size, set the display aspect,crop out any black bars we may have made
+                // htab crop height in half,scale to correct size, set the display aspect,crop out any black bars we may have made
                 Video3DFormat.HalfTopAndBottom => "crop=iw:ih/2:0:0,scale=(iw*2):ih),setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1",
-                // ftab crop heigt in half, set the display aspect,crop out any black bars we may have made
+                // ftab crop height in half, set the display aspect,crop out any black bars we may have made
                 Video3DFormat.FullTopAndBottom => "crop=iw:ih/2:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1",
                 _ => "scale=trunc(iw*sar):ih"
             };
@@ -616,10 +662,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 filters.Add("thumbnail=n=" + (useLargerBatchSize ? "50" : "24"));
             }
 
-            // Use SW tonemap on HDR video stream only when the zscale filter is available.
-            var enableHdrExtraction = string.Equals(videoStream?.VideoRange, "HDR", StringComparison.OrdinalIgnoreCase) && SupportsFilter("zscale");
-            if (enableHdrExtraction)
+            // Use SW tonemap on HDR10/HLG video stream only when the zscale filter is available.
+            var enableHdrExtraction = false;
+
+            if ((string.Equals(videoStream?.ColorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(videoStream?.ColorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
+                && SupportsFilter("zscale"))
             {
+                enableHdrExtraction = true;
+
                 filters.Add("zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0:peak=100,zscale=t=bt709:m=bt709,format=yuv420p");
             }
 

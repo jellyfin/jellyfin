@@ -119,5 +119,8 @@
     "TaskCleanActivityLogDescription": "Verwyder aktiwiteitsaantekeninge ouer as die opgestelde ouderdom.",
     "TaskCleanActivityLog": "Maak Aktiwiteitsaantekeninge Skoon",
     "TaskOptimizeDatabaseDescription": "Komprimeer databasis en verkort vrye ruimte. As hierdie taak uitgevoer word nadat die media versameling geskandeer is of ander veranderings aangebring is wat databasisaanpassings impliseer, kan dit die prestasie verbeter.",
-    "TaskOptimizeDatabase": "Optimaliseer databasis"
+    "TaskOptimizeDatabase": "Optimaliseer databasis",
+    "TaskKeyframeExtractorDescription": "Haal keyframes vanuit video lêers om meer presiese HLS afspeellyste te maak. Dit kan lank duur.",
+    "TaskKeyframeExtractor": "Keyframe Ekstraktor",
+    "External": "Ekstern"
 }

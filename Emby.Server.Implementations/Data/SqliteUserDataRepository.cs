@@ -133,10 +133,7 @@ namespace Emby.Server.Implementations.Data
         /// <inheritdoc />
         public void SaveUserData(long userId, string key, UserItemData userData, CancellationToken cancellationToken)
         {
-            if (userData == null)
-            {
-                throw new ArgumentNullException(nameof(userData));
-            }
+            ArgumentNullException.ThrowIfNull(userData);
 
             if (userId <= 0)
             {
@@ -154,10 +151,7 @@ namespace Emby.Server.Implementations.Data
         /// <inheritdoc />
         public void SaveAllUserData(long userId, UserItemData[] userData, CancellationToken cancellationToken)
         {
-            if (userData == null)
-            {
-                throw new ArgumentNullException(nameof(userData));
-            }
+            ArgumentNullException.ThrowIfNull(userData);
 
             if (userId <= 0)
             {
@@ -304,10 +298,7 @@ namespace Emby.Server.Implementations.Data
 
         public UserItemData GetUserData(long userId, List<string> keys)
         {
-            if (keys == null)
-            {
-                throw new ArgumentNullException(nameof(keys));
-            }
+            ArgumentNullException.ThrowIfNull(keys);
 
             if (keys.Count == 0)
             {

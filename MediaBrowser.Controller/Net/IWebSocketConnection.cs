@@ -6,11 +6,10 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Net;
-using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Controller.Net
 {
-    public interface IWebSocketConnection
+    public interface IWebSocketConnection : IAsyncDisposable, IDisposable
     {
         /// <summary>
         /// Occurs when [closed].

@@ -122,5 +122,6 @@
     "TaskOptimizeDatabase": "Optimizar base de datos",
     "TaskOptimizeDatabaseDescription": "Compacta la base de datos y trunca el espacio libre. Puede mejorar el rendimiento si se realiza esta tarea después de escanear la biblioteca o después de realizar otros cambios que impliquen modificar la base de datos.",
     "TaskKeyframeExtractorDescription": "Extrae los cuadros clave de los archivos de vídeo para crear listas HLS más precisas. Esta tarea puede tardar un buen rato.",
-    "TaskKeyframeExtractor": "Extractor de Cuadros Clave"
+    "TaskKeyframeExtractor": "Extractor de Cuadros Clave",
+    "External": "Externo"
 }

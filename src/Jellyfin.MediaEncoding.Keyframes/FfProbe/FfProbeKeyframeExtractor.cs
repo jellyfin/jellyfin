@@ -11,7 +11,7 @@ namespace Jellyfin.MediaEncoding.Keyframes.FfProbe;
 /// </summary>
 public static class FfProbeKeyframeExtractor
 {
-    private const string DefaultArguments = "-v error -skip_frame nokey -show_entries format=duration -show_entries stream=duration -show_entries packet=pts_time,flags -select_streams v -of csv \"{0}\"";
+    private const string DefaultArguments = "-fflags +genpts -v error -skip_frame nokey -show_entries format=duration -show_entries stream=duration -show_entries packet=pts_time,flags -select_streams v -of csv \"{0}\"";
 
     /// <summary>
     /// Extracts the keyframes using the ffprobe executable at the specified path.
@@ -62,12 +62,17 @@ public static class FfProbeKeyframeExtractor
             var rest = line[(firstComma + 1)..];
             if (lineType.Equals("packet", StringComparison.OrdinalIgnoreCase))
             {
-                if (rest.EndsWith(",K_"))
+                // Split time and flags from the packet line. Example line: packet,7169.079000,K_
+                var secondComma = rest.IndexOf(',');
+                var ptsTime = rest[..secondComma];
+                var flags = rest[(secondComma + 1)..];
+                if (flags.StartsWith("K_"))
                 {
-                    // Trim the flags from the packet line. Example line: packet,7169.079000,K_
-                    var keyframe = double.Parse(rest[..^3], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
-                    // Have to manually convert to ticks to avoid rounding errors as TimeSpan is only precise down to 1 ms when converting double.
-                    keyframes.Add(Convert.ToInt64(keyframe * TimeSpan.TicksPerSecond));
+                    if (double.TryParse(ptsTime, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var keyframe))
+                    {
+                      // Have to manually convert to ticks to avoid rounding errors as TimeSpan is only precise down to 1 ms when converting double.
+                      keyframes.Add(Convert.ToInt64(keyframe * TimeSpan.TicksPerSecond));
+                    }
                 }
             }
             else if (lineType.Equals("stream", StringComparison.OrdinalIgnoreCase))

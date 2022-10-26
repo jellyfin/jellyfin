@@ -12,6 +12,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 
 namespace Emby.Server.Implementations.Library.Resolvers
@@ -91,10 +92,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
 
         internal static bool IsImageFile(string path, IImageProcessor imageProcessor)
         {
-            if (path == null)
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
+            ArgumentNullException.ThrowIfNull(path);
 
             var filename = Path.GetFileNameWithoutExtension(path);
 

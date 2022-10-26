@@ -1,4 +1,3 @@
-﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using Jellyfin.MediaEncoding.Keyframes;
 

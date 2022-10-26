@@ -62,7 +62,7 @@ namespace Jellyfin.Api.Tests.Auth.DefaultAuthorizationPolicy
             }
         }
 
-        private static TheoryData<string, Dictionary<string, string>> GetParts_ValidAuthHeader_Success_Data()
+        public static TheoryData<string, Dictionary<string, string>> GetParts_ValidAuthHeader_Success_Data()
         {
             var data = new TheoryData<string, Dictionary<string, string>>();
 

@@ -65,6 +65,7 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.True(res.VideoStream.IsDefault);
             Assert.False(res.VideoStream.IsExternal);
             Assert.False(res.VideoStream.IsForced);
+            Assert.False(res.VideoStream.IsHearingImpaired);
             Assert.False(res.VideoStream.IsInterlaced);
             Assert.False(res.VideoStream.IsTextSubtitleStream);
             Assert.Equal(13d, res.VideoStream.Level);
@@ -75,6 +76,14 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Equal(1, res.VideoStream.RefFrames);
             Assert.Equal("1/1000", res.VideoStream.TimeBase);
             Assert.Equal(MediaStreamType.Video, res.VideoStream.Type);
+            Assert.Equal(1, res.VideoStream.DvVersionMajor);
+            Assert.Equal(0, res.VideoStream.DvVersionMinor);
+            Assert.Equal(5, res.VideoStream.DvProfile);
+            Assert.Equal(6, res.VideoStream.DvLevel);
+            Assert.Equal(1, res.VideoStream.RpuPresentFlag);
+            Assert.Equal(0, res.VideoStream.ElPresentFlag);
+            Assert.Equal(1, res.VideoStream.BlPresentFlag);
+            Assert.Equal(0, res.VideoStream.DvBlSignalCompatibilityId);
 
             Assert.Empty(res.Chapters);
             Assert.Equal("Just color bars", res.Overview);
@@ -134,16 +143,19 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Equal(MediaStreamType.Subtitle, res.MediaStreams[3].Type);
             Assert.Equal("DVDSUB", res.MediaStreams[3].Codec);
             Assert.Null(res.MediaStreams[3].Title);
+            Assert.False(res.MediaStreams[3].IsHearingImpaired);
 
             Assert.Equal("eng", res.MediaStreams[4].Language);
             Assert.Equal(MediaStreamType.Subtitle, res.MediaStreams[4].Type);
             Assert.Equal("mov_text", res.MediaStreams[4].Codec);
             Assert.Null(res.MediaStreams[4].Title);
+            Assert.True(res.MediaStreams[4].IsHearingImpaired);
 
             Assert.Equal("eng", res.MediaStreams[5].Language);
             Assert.Equal(MediaStreamType.Subtitle, res.MediaStreams[5].Type);
             Assert.Equal("mov_text", res.MediaStreams[5].Codec);
             Assert.Equal("Commentary", res.MediaStreams[5].Title);
+            Assert.False(res.MediaStreams[5].IsHearingImpaired);
         }
 
         [Fact]
