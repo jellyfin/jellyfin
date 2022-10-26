@@ -30,7 +30,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.10" />
-    <PackageReference Include="Mono.Nat" Version="3.0.3" />
+    <PackageReference Include="Mono.Nat" Version="3.0.4" />
     <PackageReference Include="prometheus-net.DotNetRuntime" Version="4.3.0" />
     <PackageReference Include="SQLitePCL.pretty.netstandard" Version="3.1.0" />
     <PackageReference Include="DotNet.Glob" Version="3.1.3" />

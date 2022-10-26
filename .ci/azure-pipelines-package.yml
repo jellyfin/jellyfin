@@ -69,7 +69,7 @@ jobs:
       runOptions: 'inline'
       inline: 'mkdir -p /srv/repository/incoming/azure/$(Build.BuildNumber)/$(BuildConfiguration)'
 
-  - task: CopyFilesOverSSH@0
+  - task: CopyFilesOverSSH@0.212.0
     displayName: 'Upload artifacts to repository server'
     inputs:
       sshEndpoint: repository
@@ -90,7 +90,7 @@ jobs:
     displayName: Set release version (stable)
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
 
-  - task: DownloadPipelineArtifact@2
+  - task: DownloadPipelineArtifact@2.198.0
     displayName: 'Download OpenAPI Spec'
     inputs:
       source: 'current'
@@ -105,7 +105,7 @@ jobs:
       runOptions: 'inline'
       inline: 'mkdir -p /srv/repository/incoming/azure/$(Build.BuildNumber)'
 
-  - task: CopyFilesOverSSH@0
+  - task: CopyFilesOverSSH@0.212.0
     displayName: 'Upload artifacts to repository server'
     inputs:
       sshEndpoint: repository
@@ -137,7 +137,7 @@ jobs:
     displayName: Set release version (stable)
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
 
-  - task: Docker@2
+  - task: Docker@2.211.0
     displayName: 'Push Unstable Image'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
     inputs:
@@ -150,7 +150,7 @@ jobs:
         unstable-$(Build.BuildNumber)-$(BuildConfiguration)
         unstable-$(BuildConfiguration)
 
-  - task: Docker@2
+  - task: Docker@2.211.0
     displayName: 'Push Stable Image'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
     inputs:
@@ -210,7 +210,7 @@ jobs:
       packageType: 'sdk'
       version: '6.0.x'
 
-  - task: DotNetCoreCLI@2
+  - task: DotNetCoreCLI@2.210.0
     displayName: 'Build Stable Nuget packages'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
     inputs:
@@ -225,7 +225,7 @@ jobs:
       custom: 'pack'
       arguments: -o $(Build.ArtifactStagingDirectory) -p:Version=$(JellyfinVersion)
 
-  - task: DotNetCoreCLI@2
+  - task: DotNetCoreCLI@2.210.0
     displayName: 'Build Unstable Nuget packages'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
     inputs:
@@ -256,7 +256,7 @@ jobs:
       publishFeedCredentials: 'NugetOrg'
       allowPackageConflicts: true # This ignores an error if the version already exists
 
-  - task: NuGetAuthenticate@0
+  - task: NuGetAuthenticate@0.203.0
     displayName: 'Authenticate to unstable Nuget feed'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
 

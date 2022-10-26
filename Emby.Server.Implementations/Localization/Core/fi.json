@@ -122,5 +122,6 @@
     "TaskOptimizeDatabase": "Optimoi tietokanta",
     "TaskKeyframeExtractorDescription": "Purkaa videotiedostojen avainkuvat tarkempien HLS-toistolistojen luomiseksi. Tehtävä saattaa kestää huomattavan pitkään.",
     "TaskKeyframeExtractor": "Avainkuvien purkain",
-    "External": "Ulkoinen"
+    "External": "Ulkoinen",
+    "HearingImpaired": "Kuulorajoitteinen"
 }

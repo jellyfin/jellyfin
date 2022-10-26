@@ -123,5 +123,6 @@
     "TaskOptimizeDatabase": "Adatbázis optimalizálása",
     "TaskKeyframeExtractor": "Kulcskockák kibontása",
     "TaskKeyframeExtractorDescription": "Kulcskockákat bont ki a videofájlokból, hogy pontosabb HLS lejátszási listákat hozzon létre. Ez a feladat hosszú ideig tarthat.",
-    "External": "Külső"
+    "External": "Külső",
+    "HearingImpaired": "Hallássérült"
 }
