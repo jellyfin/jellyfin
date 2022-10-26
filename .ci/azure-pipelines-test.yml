@@ -51,7 +51,7 @@ jobs:
           organization: 'jellyfin'
           projectKey: 'jellyfin_jellyfin'
 
-      - task: DotNetCoreCLI@2.210.0
+      - task: DotNetCoreCLI@2
         displayName: 'Run CLI Tests'
         inputs:
           command: "test"

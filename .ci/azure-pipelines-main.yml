@@ -20,7 +20,7 @@ jobs:
         submodules: true
         persistCredentials: true
 
-      - task: DownloadPipelineArtifact@2.198.0
+      - task: DownloadPipelineArtifact@2
         displayName: 'Download Web Branch'
         condition: in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI', 'BuildCompletion')
         inputs:
@@ -31,7 +31,7 @@ jobs:
           pipeline: 'Jellyfin Web'
           runBranch: variables['Build.SourceBranch']
 
-      - task: DownloadPipelineArtifact@2.198.0
+      - task: DownloadPipelineArtifact@2
         displayName: 'Download Web Target'
         condition: eq(variables['Build.Reason'], 'PullRequest')
         inputs:
@@ -42,7 +42,7 @@ jobs:
           pipeline: 'Jellyfin Web'
           runBranch: variables['System.PullRequest.TargetBranch']
 
-      - task: ExtractFiles@1.211.0
+      - task: ExtractFiles@1
         displayName: 'Extract Web Client'
         inputs:
           archiveFilePatterns: '$(Agent.TempDirectory)/*.zip'
@@ -55,7 +55,7 @@ jobs:
           packageType: sdk
           version: ${{ parameters.DotNetSdkVersion }}
 
-      - task: DotNetCoreCLI@2.210.0
+      - task: DotNetCoreCLI@2
         displayName: 'Publish Server'
         inputs:
           command: publish
