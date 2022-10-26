@@ -45,9 +45,15 @@ namespace MediaBrowser.Providers.BoxSets
         }
 
         /// <inheritdoc />
-        protected override void MergeData(MetadataResult<BoxSet> source, MetadataResult<BoxSet> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(
+            MetadataResult<BoxSet> source,
+            MetadataResult<BoxSet> target,
+            MetadataField[] lockedFields,
+            bool replaceData,
+            bool mergeMetadataSettings,
+            string? requestedLanguage)
         {
-            base.MergeData(source, target, lockedFields, replaceData, mergeMetadataSettings);
+            base.MergeData(source, target, lockedFields, replaceData, mergeMetadataSettings, requestedLanguage);
 
             var sourceItem = source.Item;
             var targetItem = target.Item;

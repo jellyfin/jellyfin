@@ -706,7 +706,7 @@ namespace MediaBrowser.Providers.Manager
                             userDataList.AddRange(localItem.UserDataList);
                         }
 
-                        MergeData(localItem, temp, Array.Empty<MetadataField>(), !options.ReplaceAllMetadata, true);
+                        MergeData(localItem, temp, Array.Empty<MetadataField>(), !options.ReplaceAllMetadata, true, id.MetadataLanguage);
                         refreshResult.UpdateType |= ItemUpdateType.MetadataImport;
 
                         // Only one local provider allowed per item
@@ -750,16 +750,16 @@ namespace MediaBrowser.Providers.Manager
                 {
                     if (hasLocalMetadata)
                     {
-                        MergeData(temp, metadata, item.LockedFields, true, true);
+                        MergeData(temp, metadata, item.LockedFields, true, true, id.MetadataLanguage);
                     }
                     else
                     {
                         if (!options.RemoveOldMetadata)
                         {
-                            MergeData(metadata, temp, Array.Empty<MetadataField>(), false, false);
+                            MergeData(metadata, temp, Array.Empty<MetadataField>(), false, false, id.MetadataLanguage);
                         }
 
-                        MergeData(temp, metadata, item.LockedFields, true, false);
+                        MergeData(temp, metadata, item.LockedFields, true, false, id.MetadataLanguage);
                     }
                 }
             }
@@ -835,7 +835,7 @@ namespace MediaBrowser.Providers.Manager
                     {
                         result.Provider = provider.Name;
 
-                        MergeData(result, temp, Array.Empty<MetadataField>(), false, false);
+                        MergeData(result, temp, Array.Empty<MetadataField>(), false, false, id.MetadataLanguage);
                         MergeNewData(temp.Item, id);
 
                         refreshResult.UpdateType |= ItemUpdateType.MetadataDownload;
@@ -903,15 +903,17 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="lockedFields">The fields that are locked and should not be updated.</param>
         /// <param name="replaceData"><c>true</c> if existing data should be replaced.</param>
         /// <param name="mergeMetadataSettings"><c>true</c> if the metadata settings in target should be updated to match source.</param>
+        /// <param name="requestedLanguage">?????.</param>
         /// <exception cref="ArgumentException">Thrown if source or target are null.</exception>
         protected virtual void MergeData(
             MetadataResult<TItemType> source,
             MetadataResult<TItemType> target,
             MetadataField[] lockedFields,
             bool replaceData,
-            bool mergeMetadataSettings)
+            bool mergeMetadataSettings,
+            string requestedLanguage)
         {
-            MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
+            MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings, requestedLanguage);
         }
 
         internal static void MergeBaseItemData(
@@ -919,10 +921,12 @@ namespace MediaBrowser.Providers.Manager
             MetadataResult<TItemType> targetResult,
             MetadataField[] lockedFields,
             bool replaceData,
-            bool mergeMetadataSettings)
+            bool mergeMetadataSettings,
+            string requestedLanguage)
         {
             var source = sourceResult.Item;
             var target = targetResult.Item;
+            var changeLanguage = false;
 
             if (source == null)
             {
@@ -936,13 +940,22 @@ namespace MediaBrowser.Providers.Manager
 
             if (!lockedFields.Contains(MetadataField.Name))
             {
-                if (replaceData || string.IsNullOrEmpty(target.Name))
+                if (targetResult.ResultLanguage != requestedLanguage
+                    && targetResult.ResultLanguage != "en"
+                    && sourceResult.ResultLanguage != requestedLanguage
+                    && sourceResult.ResultLanguage != "en")
                 {
-                    // Safeguard against incoming data having an empty name
-                    if (!string.IsNullOrWhiteSpace(source.Name))
-                    {
-                        target.Name = source.Name;
-                    }
+                    target.Name = "";
+                }
+                else if (replaceData || ReplaceLanguageCheck(
+                             target.Name,
+                             source.Name,
+                             targetResult.ResultLanguage,
+                             sourceResult.ResultLanguage,
+                             requestedLanguage))
+                {
+                    target.Name = source.Name;
+                    changeLanguage = true;
                 }
             }
 
@@ -991,16 +1004,42 @@ namespace MediaBrowser.Providers.Manager
                 target.CustomRating = source.CustomRating;
             }
 
-            if (replaceData || string.IsNullOrEmpty(target.Tagline))
+            if (targetResult.ResultLanguage != requestedLanguage
+                && targetResult.ResultLanguage != "en"
+                && sourceResult.ResultLanguage != requestedLanguage
+                && sourceResult.ResultLanguage != "en")
+            {
+                target.Tagline = "";
+            }
+            else if (replaceData || ReplaceLanguageCheck(
+                         target.Tagline,
+                         source.Tagline,
+                         targetResult.ResultLanguage,
+                         sourceResult.ResultLanguage,
+                         requestedLanguage))
             {
                 target.Tagline = source.Tagline;
+                changeLanguage = true;
             }
 
             if (!lockedFields.Contains(MetadataField.Overview))
             {
-                if (replaceData || string.IsNullOrEmpty(target.Overview))
+                if (targetResult.ResultLanguage != requestedLanguage
+                    && targetResult.ResultLanguage != "en"
+                    && sourceResult.ResultLanguage != requestedLanguage
+                    && sourceResult.ResultLanguage != "en")
+                {
+                    target.Overview = "";
+                }
+                else if (replaceData || ReplaceLanguageCheck(
+                        target.Overview,
+                        source.Overview,
+                        targetResult.ResultLanguage,
+                        sourceResult.ResultLanguage,
+                        requestedLanguage))
                 {
                     target.Overview = source.Overview;
+                    changeLanguage = true;
                 }
             }
 
@@ -1111,6 +1150,11 @@ namespace MediaBrowser.Providers.Manager
                 target.PreferredMetadataCountryCode = source.PreferredMetadataCountryCode;
                 target.PreferredMetadataLanguage = source.PreferredMetadataLanguage;
             }
+
+            if (changeLanguage)
+            {
+                targetResult.ResultLanguage = sourceResult.ResultLanguage;
+            }
         }
 
         private static void MergePeople(List<PersonInfo> source, List<PersonInfo> target)
@@ -1189,6 +1233,16 @@ namespace MediaBrowser.Providers.Manager
                     targetCast.Video3DFormat = sourceCast.Video3DFormat;
                 }
             }
+        }
+
+        private static bool ReplaceLanguageCheck(string targetString, string sourceString, string targetLanguage, string sourceLanguage, string requestedLanguage)
+        {
+            var sourceEnglish = sourceLanguage == "en";
+            var targetHasContent = !string.IsNullOrEmpty(targetString);
+            var sourceHasContent = !string.IsNullOrEmpty(sourceString);
+            var targetIsRequeted = targetLanguage == requestedLanguage;
+            var sourceIsRequested = requestedLanguage is null || sourceLanguage == requestedLanguage;
+            return ((!targetHasContent && sourceIsRequested) || (sourceHasContent && !targetIsRequeted && sourceIsRequested) || (sourceEnglish && !targetHasContent) || (!sourceEnglish && !targetIsRequeted && sourceIsRequested)) && !(targetHasContent && !sourceHasContent && targetLanguage == "en");
         }
     }
 }

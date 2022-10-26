@@ -40,9 +40,15 @@ namespace MediaBrowser.Providers.Movies
         }
 
         /// <inheritdoc />
-        protected override void MergeData(MetadataResult<Movie> source, MetadataResult<Movie> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(
+            MetadataResult<Movie> source,
+            MetadataResult<Movie> target,
+            MetadataField[] lockedFields,
+            bool replaceData,
+            bool mergeMetadataSettings,
+            string? requestedLanguage)
         {
-            base.MergeData(source, target, lockedFields, replaceData, mergeMetadataSettings);
+            base.MergeData(source, target, lockedFields, replaceData, mergeMetadataSettings, requestedLanguage);
 
             var sourceItem = source.Item;
             var targetItem = target.Item;

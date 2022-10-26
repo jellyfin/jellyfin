@@ -112,9 +112,10 @@ namespace MediaBrowser.Providers.Music
             MetadataResult<MusicAlbum> target,
             MetadataField[] lockedFields,
             bool replaceData,
-            bool mergeMetadataSettings)
+            bool mergeMetadataSettings,
+            string? requestedLanguage)
         {
-            base.MergeData(source, target, lockedFields, replaceData, mergeMetadataSettings);
+            base.MergeData(source, target, lockedFields, replaceData, mergeMetadataSettings, requestedLanguage);
 
             var sourceItem = source.Item;
             var targetItem = target.Item;

@@ -55,7 +55,7 @@ namespace Jellyfin.Providers.Tests.Manager
                 }
             };
 
-            MetadataService<Movie, MovieInfo>.MergeBaseItemData(source, target, Array.Empty<MetadataField>(), true, mergeMetadataSettings);
+            MetadataService<Movie, MovieInfo>.MergeBaseItemData(source, target, Array.Empty<MetadataField>(), true, mergeMetadataSettings, "old");
 
             if (mergeMetadataSettings)
             {
@@ -76,12 +76,9 @@ namespace Jellyfin.Providers.Tests.Manager
         }
 
         [Theory]
-        [InlineData("Name", MetadataField.Name, false)]
         [InlineData("OriginalTitle", null, false)]
         [InlineData("OfficialRating", MetadataField.OfficialRating)]
         [InlineData("CustomRating")]
-        [InlineData("Tagline")]
-        [InlineData("Overview", MetadataField.Overview)]
         [InlineData("DisplayOrder", null, false)]
         [InlineData("ForcedSortName", null, false)]
         public void MergeBaseItemData_StringField_ReplacesAppropriately(string propName, MetadataField? lockField = null, bool replacesWithEmpty = true)
@@ -329,7 +326,7 @@ namespace Jellyfin.Providers.Tests.Manager
             };
 
             var lockedFields = lockField == null ? Array.Empty<MetadataField>() : new[] { (MetadataField)lockField };
-            MetadataService<Movie, MovieInfo>.MergeBaseItemData(source, target, lockedFields, replaceData, false);
+            MetadataService<Movie, MovieInfo>.MergeBaseItemData(source, target, lockedFields, replaceData, false, "old");
 
             actualValue = target.People;
             return newValue?.Equals(actualValue) ?? actualValue == null;
@@ -369,10 +366,79 @@ namespace Jellyfin.Providers.Tests.Manager
 
             var lockedFields = lockField == null ? Array.Empty<MetadataField>() : new[] { (MetadataField)lockField };
             // generic type doesn't actually matter to call the static method, just has to be filled in
-            MetadataService<TItemType, TIdType>.MergeBaseItemData(source, target, lockedFields, replaceData, false);
+            MetadataService<TItemType, TIdType>.MergeBaseItemData(source, target, lockedFields, replaceData, false, null);
 
             actualValue = property.GetValue(target.Item);
             return newValue?.Equals(actualValue) ?? actualValue == null;
+        }
+
+        [Theory]
+        [InlineData("de", "German1", "de", "German2", "de", "German1")]
+        [InlineData("de", "German1", "de", "English2", "en", "German1")]
+        [InlineData("de", "English1", "en", "German2", "de", "German2")]
+        [InlineData("de", "English1", "en", "English2", "en", "English1")]
+        [InlineData("de", "German1", "de", "", "de", "German1")]
+        [InlineData("de", "German1", "de", "", "en", "German1")]
+        [InlineData("de", "English1", "en", "", "de", "English1")]
+        [InlineData("de", "English1", "en", "", "en", "English1")]
+        [InlineData("de", "", "de", "German2", "de", "German2")]
+        [InlineData("de", "", "de", "English2", "en", "English2")]
+        [InlineData("de", "", "en", "German2", "de", "German2")]
+        [InlineData("de", "", "en", "English2", "en", "English2")]
+        [InlineData("de", "", "de", "", "de", "")]
+        [InlineData("de", "", "de", "", "en", "")]
+        [InlineData("de", "", "en", "", "de", "")]
+        [InlineData("de", "", "en", "", "en", "")]
+        // check to see that we only use English as a fallback
+        [InlineData("de", "German1", "de", "Italian2", "it", "German1")]
+        [InlineData("de", "Italian1", "it", "German2", "de", "German2")]
+        [InlineData("de", "Italian1", "it", "Italian2", "it", "")]
+        [InlineData("de", "German1", "de", "", "it", "German1")]
+        [InlineData("de", "Italian1", "it", "", "de", "")]
+        [InlineData("de", "Italian1", "it", "", "it", "")]
+        [InlineData("de", "", "de", "Italian2", "it", "")]
+        [InlineData("de", "", "it", "German2", "de", "German2")]
+        [InlineData("de", "", "it", "Italian2", "it", "")]
+        [InlineData("de", "", "de", "", "it", "")]
+        [InlineData("de", "", "it", "", "de", "")]
+        [InlineData("de", "", "it", "", "it", "")]
+        // some checks to see that we don't break purely English setups
+        [InlineData("en", "English1", "en", "English2", "en", "English1")]
+        [InlineData("en", "", "en", "English2", "en", "English2")]
+        public void MergeBaseItemData_StringLanguageFallback_MergesAppropriately(
+            string targetLanguage,
+            string firstOverview,
+            string firstLanguage,
+            string secondOverview,
+            string secondLanguage,
+            string targetOverview)
+        {
+            var firstResult = new MetadataResult<Movie>
+            {
+                ResultLanguage = firstLanguage,
+                Item = new Movie
+                {
+                    Overview = firstOverview,
+                    Tagline = firstOverview,
+                    Name = firstOverview
+                }
+            };
+
+            var secondResult = new MetadataResult<Movie>
+            {
+                ResultLanguage = secondLanguage,
+                Item = new Movie
+                {
+                    Overview = secondOverview,
+                    Tagline = secondOverview,
+                    Name = secondOverview
+                }
+            };
+            MetadataService<Movie, MovieInfo>.MergeBaseItemData(secondResult, firstResult, Array.Empty<MetadataField>(), false, false, targetLanguage);
+
+            Assert.Equal(targetOverview, firstResult.Item.Overview);
+            Assert.Equal(targetOverview, firstResult.Item.Tagline);
+            Assert.Equal(targetOverview, firstResult.Item.Name);
         }
     }
 }
