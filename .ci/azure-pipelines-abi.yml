@@ -35,14 +35,14 @@ jobs:
           packageType: sdk
           version: ${{ parameters.DotNetSdkVersion }}
 
-      - task: DotNetCoreCLI@2.210.0
+      - task: DotNetCoreCLI@2
         displayName: 'Install ABI CompatibilityChecker Tool'
         inputs:
           command: custom
           custom: tool
           arguments: 'update compatibilitychecker -g'
 
-      - task: DownloadPipelineArtifact@2.198.0
+      - task: DownloadPipelineArtifact@2
         displayName: 'Download New Assembly Build Artifact'
         inputs:
           source: 'current'
@@ -50,7 +50,7 @@ jobs:
           path: "$(System.ArtifactsDirectory)/new-artifacts"
           runVersion: "latest"
 
-      - task: CopyFiles@2.211.0
+      - task: CopyFiles@2
         displayName: 'Copy New Assembly Build Artifact'
         inputs:
           sourceFolder: $(System.ArtifactsDirectory)/new-artifacts
@@ -60,7 +60,7 @@ jobs:
           overWrite: true
           flattenFolders: true
 
-      - task: DownloadPipelineArtifact@2.198.0
+      - task: DownloadPipelineArtifact@2
         displayName: 'Download Reference Assembly Build Artifact'
         enabled: false
         inputs:
@@ -72,7 +72,7 @@ jobs:
           runVersion: "latestFromBranch"
           runBranch: "refs/heads/$(System.PullRequest.TargetBranch)"
 
-      - task: CopyFiles@2.211.0
+      - task: CopyFiles@2
         displayName: 'Copy Reference Assembly Build Artifact'
         enabled: false
         inputs:
@@ -83,7 +83,7 @@ jobs:
           overWrite: true
           flattenFolders: true
 
-      - task: DotNetCoreCLI@2.210.0
+      - task: DotNetCoreCLI@2
         displayName: 'Execute ABI Compatibility Check Tool'
         enabled: false
         inputs:
