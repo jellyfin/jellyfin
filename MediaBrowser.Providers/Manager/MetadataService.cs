@@ -897,7 +897,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="lockedFields">The fields that are locked and should not be updated.</param>
         /// <param name="replaceData"><c>true</c> if existing data should be replaced.</param>
         /// <param name="mergeMetadataSettings"><c>true</c> if the metadata settings in target should be updated to match source.</param>
-        /// <param name="requestedLanguage">?????.</param>
+        /// <param name="requestedLanguage">The requested two letter language code for this items metadata.</param>
         /// <exception cref="ArgumentException">Thrown if source or target are null.</exception>
         protected virtual void MergeData(
             MetadataResult<TItemType> source,
