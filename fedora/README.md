@@ -1,12 +1,25 @@
 # Jellyfin RPM
 
 ## Build Fedora Package with docker
-
-Change into this directory `cd rpm-package`
-Run the build script `./build-fedora-rpm.sh`.
+We clone our repository `git clone https://github.com/jellyfin/jellyfin`
+We go in the folder `cd jellyfin`
+Run the build script `./build.sh -t docker -p fedora.amd64 -k`
 Resulting RPM and src.rpm will be in `../../jellyfin-*.rpm`
 
-## ffmpeg
+And for the web part 
+We clone our repository `git clone https://github.com/jellyfin/jellyfin-web`
+Run the build script `./build.sh -t docker -p fedora.amd64 -k`
+Resulting RPM and src.rpm will be in `../../jellyfin-*.rpm`
+
+## Build Fedora Package with native host compilation
+
+Go to the root of jellyfin projet
+Run the build script `./build.sh -t native -p fedora.amd64`.
+Resulting RPM and src.rpm will be in `../../jellyfin-*.rpm`
+
+##  Build dependencies for native host compilation
+
+### ffmpeg dependices for native compilation
 
 The RPM package for Fedora/CentOS requires some additional repositories as ffmpeg is not in the main repositories.
 
@@ -18,7 +31,7 @@ $ sudo dnf install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-re
 $ sudo yum localinstall --nogpgcheck https://download1.rpmfusion.org/free/el/rpmfusion-free-release-7.noarch.rpm
 ```
 
-## Building with dotnet
+## ### dotnet dependices for native compilation
 
 Jellyfin is build with `--self-contained` so no dotnet required for runtime.
 
