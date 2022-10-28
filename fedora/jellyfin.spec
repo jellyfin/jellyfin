@@ -19,8 +19,7 @@ Source12:       jellyfin.env
 Source13:       jellyfin.sudoers
 Source14:       restart.sh
 Source15:       jellyfin.override.conf
-Source16:       jellyfin-firewalld.xml
-Source17:       jellyfin-server-lowports.conf
+Source16:       jellyfin-server-lowports.conf
 
 %{?systemd_requires}
 BuildRequires:  systemd
@@ -83,7 +82,6 @@ ln -srf %{_libdir}/jellyfin/jellyfin %{buildroot}%{_bindir}/jellyfin
 %{__install} -D %{SOURCE12} %{buildroot}%{_sysconfdir}/sysconfig/jellyfin
 
 # system config
-%{__install} -D %{SOURCE16} %{buildroot}%{_prefix}/lib/firewalld/services/jellyfin.xml
 %{__install} -D %{SOURCE13} %{buildroot}%{_sysconfdir}/sudoers.d/jellyfin-sudoers
 %{__install} -D %{SOURCE15} %{buildroot}%{_sysconfdir}/systemd/system/jellyfin.service.d/override.conf
 %{__install} -D %{SOURCE11} %{buildroot}%{_unitdir}/jellyfin.service
@@ -117,7 +115,6 @@ ln -srf %{_libdir}/jellyfin/jellyfin %{buildroot}%{_bindir}/jellyfin
 %config %{_sysconfdir}/sysconfig/jellyfin
 
 # system config
-%{_prefix}/lib/firewalld/services/jellyfin.xml
 %{_unitdir}/jellyfin.service
 %config(noreplace) %attr(600,root,root) %{_sysconfdir}/sudoers.d/jellyfin-sudoers
 %config(noreplace) %{_sysconfdir}/systemd/system/jellyfin.service.d/override.conf
