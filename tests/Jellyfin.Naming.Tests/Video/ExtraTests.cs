@@ -51,8 +51,9 @@ namespace Jellyfin.Naming.Tests.Video
         [InlineData(ExtraType.Interview, "interviews")]
         [InlineData(ExtraType.Scene, "scenes")]
         [InlineData(ExtraType.Sample, "samples")]
-        [InlineData(ExtraType.Clip, "shorts")]
-        [InlineData(ExtraType.Clip, "featurettes")]
+        [InlineData(ExtraType.Short, "shorts")]
+        [InlineData(ExtraType.Featurette, "featurettes")]
+        [InlineData(ExtraType.Clip, "clips")]
         [InlineData(ExtraType.ThemeVideo, "backdrops")]
         [InlineData(ExtraType.Unknown, "extras")]
         public void TestDirectories(ExtraType type, string dirName)
