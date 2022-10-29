@@ -123,5 +123,6 @@
     "TaskOptimizeDatabaseDescription": "Optimiza y libera el espacio libre en la base de datos. Ejecutar esta tarea tras escanear la biblioteca o hacer cambios que impliquen modificaciones en la base de datos puede mejorar el rendimiento.",
     "TaskKeyframeExtractorDescription": "Extrae los fotogramas clave de los archivos de vídeo para crear listas HLS más precisas. Esta tarea puede tardar mucho tiempo.",
     "TaskKeyframeExtractor": "Extractor de Fotogramas Clave",
-    "External": "Externo"
+    "External": "Externo",
+    "HearingImpaired": "Discapacidad Auditiva"
 }
