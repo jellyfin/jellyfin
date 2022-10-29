@@ -205,6 +205,8 @@ namespace MediaBrowser.Controller.Entities
 
         public int? MinIndexNumber { get; set; }
 
+        public int? MinParentIndexNumber { get; set; }
+
         public int? AiredDuringSeason { get; set; }
 
         public double? MinCriticRating { get; set; }
