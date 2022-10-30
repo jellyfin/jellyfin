@@ -58,7 +58,6 @@ jobs:
 
   openapi-diff:
     permissions:
-      issues: write  #  to create or update comment (peter-evans/create-or-update-comment)
       pull-requests: write  #  to create or update comment (peter-evans/create-or-update-comment)
 
     name: OpenAPI - Difference
