@@ -5,6 +5,8 @@ on:
       - master
   pull_request_target:
 
+permissions: {}
+
 jobs:
   openapi-head:
     name: OpenAPI - HEAD
@@ -55,6 +57,10 @@ jobs:
           path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net6.0/openapi.json
 
   openapi-diff:
+    permissions:
+      issues: write  #  to create or update comment (peter-evans/create-or-update-comment)
+      pull-requests: write  #  to create or update comment (peter-evans/create-or-update-comment)
+
     name: OpenAPI - Difference
     if: ${{ github.event_name == 'pull_request_target' }}
     runs-on: ubuntu-latest
