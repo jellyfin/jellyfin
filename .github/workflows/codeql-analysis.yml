@@ -22,7 +22,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3
     - name: Setup .NET Core
-      uses: actions/setup-dotnet@4d4a70f4a5b2a5a5329f13be4ac933f2c9206ac0 # tag=v3
+      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a # tag=v3
       with:
         dotnet-version: '6.0.x'
 
