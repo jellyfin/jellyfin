@@ -408,10 +408,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 }
             }
 
-            if (isEnglishRequested)
-            {
-                item.Overview = result.Plot;
-            }
+            item.Overview = result.Plot;
 
             if (!Plugin.Instance.Configuration.CastAndCrew)
             {
