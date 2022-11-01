@@ -192,7 +192,6 @@ namespace Emby.Server.Implementations.TV
                 AncestorWithPresentationUniqueKey = null,
                 SeriesPresentationUniqueKey = seriesKey,
                 IncludeItemTypes = new[] { BaseItemKind.Episode },
-                OrderBy = new[] { (ItemSortBy.ParentIndexNumber, SortOrder.Descending), (ItemSortBy.IndexNumber, SortOrder.Descending) },
                 IsPlayed = true,
                 Limit = 1,
                 ParentIndexNumberNotEquals = 0,
@@ -203,11 +202,10 @@ namespace Emby.Server.Implementations.TV
                 }
             };
 
-            if (rewatching)
-            {
-                // find last watched by date played, not by newest episode watched
-                lastQuery.OrderBy = new[] { (ItemSortBy.DatePlayed, SortOrder.Descending), (ItemSortBy.ParentIndexNumber, SortOrder.Descending), (ItemSortBy.IndexNumber, SortOrder.Descending) };
-            }
+            // If rewatching is enabled, sort first by date played and then by season and episode numbers
+            lastQuery.OrderBy = rewatching
+                ? new[] { (ItemSortBy.DatePlayed, SortOrder.Descending), (ItemSortBy.ParentIndexNumber, SortOrder.Descending), (ItemSortBy.IndexNumber, SortOrder.Descending) }
+                : new[] { (ItemSortBy.ParentIndexNumber, SortOrder.Descending), (ItemSortBy.IndexNumber, SortOrder.Descending) };
 
             var lastWatchedEpisode = _libraryManager.GetItemList(lastQuery).Cast<Episode>().FirstOrDefault();
 
@@ -223,22 +221,18 @@ namespace Emby.Server.Implementations.TV
                     IsPlayed = rewatching,
                     IsVirtualItem = false,
                     ParentIndexNumberNotEquals = 0,
-                    DtoOptions = dtoOptions,
-                    MinIndexNumber = lastWatchedEpisode?.IndexNumberEnd ?? lastWatchedEpisode?.IndexNumber,
-                    MinParentIndexNumber = lastWatchedEpisode?.ParentIndexNumber
+                    DtoOptions = dtoOptions
                 };
 
-                Episode nextEpisode;
-                if (rewatching)
+                // Locate the next up episode based on the last watched episode's season and episode number
+                var lastWatchedParentIndexNumber = lastWatchedEpisode?.ParentIndexNumber;
+                var lastWatchedIndexNumber = lastWatchedEpisode?.IndexNumberEnd ?? lastWatchedEpisode?.IndexNumber;
+                if (lastWatchedParentIndexNumber.HasValue && lastWatchedIndexNumber.HasValue)
                 {
-                    nextQuery.Limit = 2;
-                    // get watched episode after most recently watched
-                    nextEpisode = _libraryManager.GetItemList(nextQuery).Cast<Episode>().ElementAtOrDefault(1);
+                    nextQuery.MinParentAndIndexNumber = (lastWatchedParentIndexNumber.Value, lastWatchedIndexNumber.Value + 1);
                 }
-                else
-                {
-                    nextEpisode = _libraryManager.GetItemList(nextQuery).Cast<Episode>().FirstOrDefault();
-                }
+
+                var nextEpisode = _libraryManager.GetItemList(nextQuery).Cast<Episode>().FirstOrDefault();
 
                 if (_configurationManager.Configuration.DisplaySpecialsWithinSeasons)
                 {
