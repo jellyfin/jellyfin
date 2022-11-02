@@ -1300,8 +1300,15 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Adds the children to list.
         /// </summary>
-        private void AddChildren(User user, bool includeLinkedChildren, Dictionary<Guid, BaseItem> result, bool recursive, InternalItemsQuery query)
+        private void AddChildren(User user, bool includeLinkedChildren, Dictionary<Guid, BaseItem> result, bool recursive, InternalItemsQuery query, HashSet<Folder> visitedFolders = null)
         {
+            // Prevent infinite recursion of nested folders
+            visitedFolders ??= new HashSet<Folder>();
+            if (!visitedFolders.Add(this))
+            {
+                return;
+            }
+
             // If Query.AlbumFolders is set, then enforce the format as per the db in that it permits sub-folders in music albums.
             IEnumerable<BaseItem> children = null;
             if ((query?.DisplayAlbumFolders ?? false) && (this is MusicAlbum))
@@ -1316,42 +1323,33 @@ namespace MediaBrowser.Controller.Entities
                 children = GetEligibleChildrenForRecursiveChildren(user);
             }
 
-            foreach (var child in children)
-            {
-                bool? isVisibleToUser = null;
-
-                if (query is null || UserViewBuilder.FilterItem(child, query))
-                {
-                    isVisibleToUser = child.IsVisible(user);
-
-                    if (isVisibleToUser.Value)
-                    {
-                        result[child.Id] = child;
-                    }
-                }
-
-                if (isVisibleToUser ?? child.IsVisible(user))
-                {
-                    if (recursive && child.IsFolder)
-                    {
-                        var folder = (Folder)child;
-
-                        folder.AddChildren(user, includeLinkedChildren, result, true, query);
-                    }
-                }
-            }
+            AddChildrenFromCollection(children, user, includeLinkedChildren, result, recursive, query, visitedFolders);
 
             if (includeLinkedChildren)
             {
-                foreach (var child in GetLinkedChildren(user))
+                AddChildrenFromCollection(GetLinkedChildren(user), user, includeLinkedChildren, result, recursive, query, visitedFolders);
+            }
+        }
+
+        private void AddChildrenFromCollection(IEnumerable<BaseItem> children, User user, bool includeLinkedChildren, Dictionary<Guid, BaseItem> result, bool recursive, InternalItemsQuery query, HashSet<Folder> visitedFolders)
+        {
+            foreach (var child in children)
+            {
+                if (!child.IsVisible(user))
                 {
-                    if (query is null || UserViewBuilder.FilterItem(child, query))
-                    {
-                        if (child.IsVisible(user))
-                        {
-                            result[child.Id] = child;
-                        }
-                    }
+                    continue;
+                }
+
+                if (query is null || UserViewBuilder.FilterItem(child, query))
+                {
+                    result[child.Id] = child;
+                }
+
+                if (recursive && child.IsFolder)
+                {
+                    var folder = (Folder)child;
+
+                    folder.AddChildren(user, includeLinkedChildren, result, true, query, visitedFolders);
                 }
             }
         }
