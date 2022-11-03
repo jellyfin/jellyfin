@@ -1,4 +1,4 @@
-FROM fedora:36
+FROM fedora:38
 # Docker build arguments
 ARG SOURCE_DIR=/jellyfin
 ARG ARTIFACT_DIR=/dist
