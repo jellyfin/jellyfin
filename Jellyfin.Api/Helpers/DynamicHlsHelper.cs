@@ -222,9 +222,9 @@ public class DynamicHlsHelper
                     var sdrVideoUrl = ReplaceProfile(playlistUrl, "hevc", string.Join(',', requestedVideoProfiles), "main");
                     sdrVideoUrl += "&AllowVideoStreamCopy=false";
 
-                        var sdrOutputVideoBitrate = _encodingHelper.GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec);
-                        var sdrOutputAudioBitrate = _encodingHelper.GetAudioBitrateParam(state.VideoRequest, state.AudioStream, state.OutputAudioChannels) ?? 0;
-                        var sdrTotalBitrate = sdrOutputAudioBitrate + sdrOutputVideoBitrate;
+                    var sdrOutputVideoBitrate = _encodingHelper.GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec);
+                    var sdrOutputAudioBitrate = _encodingHelper.GetAudioBitrateParam(state.VideoRequest, state.AudioStream, state.OutputAudioChannels) ?? 0;
+                    var sdrTotalBitrate = sdrOutputAudioBitrate + sdrOutputVideoBitrate;
 
                     var sdrPlaylist = AppendPlaylist(builder, state, sdrVideoUrl, sdrTotalBitrate, subtitleGroup);
 

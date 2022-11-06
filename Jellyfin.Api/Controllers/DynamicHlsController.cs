@@ -1685,9 +1685,20 @@ public class DynamicHlsController : BaseJellyfinApiController
 
             audioTranscodeParams += "-acodec " + audioCodec;
 
-            if (state.OutputAudioBitrate.HasValue)
+            var audioBitrate = state.OutputAudioBitrate;
+            var audioChannels = state.OutputAudioChannels;
+
+            if (audioBitrate.HasValue)
             {
-                audioTranscodeParams += " -ab " + state.OutputAudioBitrate.Value.ToString(CultureInfo.InvariantCulture);
+                string vbrParam;
+                if (_encodingOptions.EnableAudioVbr && (vbrParam = _encodingHelper.GetAudioVbrModeParam(audioCodec, audioBitrate.Value / audioChannels ?? 2)) != null)
+                {
+                    audioTranscodeParams += vbrParam;
+                }
+                else
+                {
+                    audioTranscodeParams += " -ab " + audioBitrate.Value.ToString(CultureInfo.InvariantCulture);
+                }
             }
 
             if (state.OutputAudioChannels.HasValue)
@@ -1747,7 +1758,15 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         if (bitrate.HasValue)
         {
-            args += " -ab " + bitrate.Value.ToString(CultureInfo.InvariantCulture);
+            string vbrParam;
+            if (_encodingOptions.EnableAudioVbr && (vbrParam = _encodingHelper.GetAudioVbrModeParam(audioCodec, bitrate.Value / channels ?? 2)) != null)
+            {
+                args += vbrParam;
+            }
+            else
+            {
+                args += " -ab " + bitrate.Value.ToString(CultureInfo.InvariantCulture);
+            }
         }
 
         if (state.OutputAudioSampleRate.HasValue)
