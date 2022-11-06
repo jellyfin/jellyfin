@@ -1693,14 +1693,25 @@ namespace Jellyfin.Api.Controllers
 
                 audioTranscodeParams += "-acodec " + audioCodec;
 
-                if (state.OutputAudioBitrate.HasValue)
+                var audioBitrate = state.OutputAudioBitrate;
+                var audioChannels = state.OutputAudioChannels;
+
+                if (audioBitrate.HasValue)
                 {
-                    audioTranscodeParams += " -ab " + state.OutputAudioBitrate.Value.ToString(CultureInfo.InvariantCulture);
+                    string vbrParam;
+                    if (_encodingOptions.EnableAudioVbr && (vbrParam = _encodingHelper.GetAudioVbrModeParam(state.OutputAudioCodec, audioBitrate.Value / audioChannels ?? 2)) != null)
+                    {
+                        audioTranscodeParams += vbrParam;
+                    }
+                    else
+                    {
+                        audioTranscodeParams += " -ab " + audioBitrate.Value.ToString(CultureInfo.InvariantCulture);
+                    }
                 }
 
-                if (state.OutputAudioChannels.HasValue)
+                if (audioChannels.HasValue)
                 {
-                    audioTranscodeParams += " -ac " + state.OutputAudioChannels.Value.ToString(CultureInfo.InvariantCulture);
+                    audioTranscodeParams += " -ac " + audioChannels.Value.ToString(CultureInfo.InvariantCulture);
                 }
 
                 if (state.OutputAudioSampleRate.HasValue)
@@ -1748,7 +1759,15 @@ namespace Jellyfin.Api.Controllers
 
             if (bitrate.HasValue)
             {
-                args += " -ab " + bitrate.Value.ToString(CultureInfo.InvariantCulture);
+                string vbrParam;
+                if (_encodingOptions.EnableAudioVbr && (vbrParam = _encodingHelper.GetAudioVbrModeParam(state.OutputAudioCodec, bitrate.Value / channels ?? 2)) != null)
+                {
+                    args += vbrParam;
+                }
+                else
+                {
+                    args += " -ab " + bitrate.Value.ToString(CultureInfo.InvariantCulture);
+                }
             }
 
             if (state.OutputAudioSampleRate.HasValue)

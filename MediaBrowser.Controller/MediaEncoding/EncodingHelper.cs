@@ -2094,6 +2094,47 @@ namespace MediaBrowser.Controller.MediaEncoding
             return 128000;
         }
 
+        public string GetAudioVbrModeParam(string encoder, int bitratePerChannel)
+        {
+            if (encoder == "libfdk_aac")
+            {
+                return " -vbr:a " + (bitratePerChannel switch
+                {
+                    < 32000 => "1",
+                    < 48000 => "2",
+                    < 64000 => "3",
+                    < 96000 => "4",
+                    _ => "5"
+                });
+            }
+
+            if (encoder == "libmp3lame")
+            {
+                return " -qscale:a " + (bitratePerChannel switch
+                {
+                    < 48000 => "8",
+                    < 64000 => "6",
+                    < 88000 => "4",
+                    < 112000 => "2",
+                    _ => "0"
+                });
+            }
+
+            if (encoder == "libvorbis")
+            {
+                return " -qscale:a " + (bitratePerChannel switch
+                {
+                    < 40000 => "0",
+                    < 56000 => "2",
+                    < 80000 => "4",
+                    < 112000 => "6",
+                    _ => "8"
+                });
+            }
+
+            return null;
+        }
+
         public string GetAudioFilterParam(EncodingJobInfo state, EncodingOptions encodingOptions)
         {
             var channels = state.OutputAudioChannels;
@@ -5464,7 +5505,15 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (bitrate.HasValue)
             {
-                args += " -ab " + bitrate.Value.ToString(CultureInfo.InvariantCulture);
+                string vbrParam;
+                if (encodingOptions.EnableAudioVbr && (vbrParam = GetAudioVbrModeParam(codec, bitrate.Value / channels ?? 2)) != null)
+                {
+                    args += vbrParam;
+                }
+                else
+                {
+                    args += " -ab " + bitrate.Value.ToString(CultureInfo.InvariantCulture);
+                }
             }
 
             if (state.OutputAudioSampleRate.HasValue)
@@ -5482,13 +5531,22 @@ namespace MediaBrowser.Controller.MediaEncoding
             var audioTranscodeParams = new List<string>();
 
             var bitrate = state.OutputAudioBitrate;
+            var channels = state.OutputAudioChannels;
 
             if (bitrate.HasValue)
             {
-                audioTranscodeParams.Add("-ab " + bitrate.Value.ToString(CultureInfo.InvariantCulture));
+                string vbrParam;
+                if (encodingOptions.EnableAudioVbr && (vbrParam = GetAudioVbrModeParam(state.OutputAudioCodec, bitrate.Value / channels ?? 2)) != null)
+                {
+                    audioTranscodeParams.Add(vbrParam);
+                }
+                else
+                {
+                    audioTranscodeParams.Add("-ab " + bitrate.Value.ToString(CultureInfo.InvariantCulture));
+                }
             }
 
-            if (state.OutputAudioChannels.HasValue)
+            if (channels.HasValue)
             {
                 audioTranscodeParams.Add("-ac " + state.OutputAudioChannels.Value.ToString(CultureInfo.InvariantCulture));
             }
