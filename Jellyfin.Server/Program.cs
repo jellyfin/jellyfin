@@ -607,10 +607,10 @@ namespace Jellyfin.Server
             }
             catch (Exception ex)
             {
-               Log.Logger = new LoggerConfiguration()
-                    .CreateLogger();
+                Log.Logger = new LoggerConfiguration()
+                     .CreateLogger();
 
-               Log.Logger.Fatal(ex, "Failed to create/read logger configuration");
+                Log.Logger.Fatal(ex, "Failed to create/read logger configuration");
             }
         }
 
