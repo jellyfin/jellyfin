@@ -73,7 +73,7 @@ namespace MediaBrowser.Controller.Extensions
         /// </summary>
         /// <param name="configuration">The configuration to read the setting from.</param>
         /// <returns>The FFmpeg probe size option.</returns>
-        public static string GetFFmpegProbeSize(this IConfiguration configuration)
+        public static string? GetFFmpegProbeSize(this IConfiguration configuration)
             => configuration[FfmpegProbeSizeKey];
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace MediaBrowser.Controller.Extensions
         /// </summary>
         /// <param name="configuration">The configuration to read the setting from.</param>
         /// <returns>The FFmpeg analyze duration option.</returns>
-        public static string GetFFmpegAnalyzeDuration(this IConfiguration configuration)
+        public static string? GetFFmpegAnalyzeDuration(this IConfiguration configuration)
             => configuration[FfmpegAnalyzeDurationKey];
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace MediaBrowser.Controller.Extensions
         /// </summary>
         /// <param name="configuration">The configuration to read the setting from.</param>
         /// <returns>The unix socket path.</returns>
-        public static string GetUnixSocketPath(this IConfiguration configuration)
+        public static string? GetUnixSocketPath(this IConfiguration configuration)
             => configuration[UnixSocketPathKey];
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace MediaBrowser.Controller.Extensions
         /// </summary>
         /// <param name="configuration">The configuration to read the setting from.</param>
         /// <returns>The unix socket permissions.</returns>
-        public static string GetUnixSocketPermissions(this IConfiguration configuration)
+        public static string? GetUnixSocketPermissions(this IConfiguration configuration)
             => configuration[UnixSocketPermissionsKey];
     }
 }

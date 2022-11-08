@@ -199,6 +199,11 @@ namespace Emby.Dlna
 
             if (headers.TryGetValue(header.Name, out StringValues value))
             {
+                if (StringValues.IsNullOrEmpty(value))
+                {
+                    return false;
+                }
+
                 switch (header.Match)
                 {
                     case HeaderMatchType.Equals:
@@ -208,7 +213,8 @@ namespace Emby.Dlna
                         // _logger.LogDebug("IsMatch-Substring value: {0} testValue: {1} isMatch: {2}", value, header.Value, isMatch);
                         return isMatch;
                     case HeaderMatchType.Regex:
-                        return Regex.IsMatch(value, header.Value, RegexOptions.IgnoreCase);
+                        // Can't be null, we checked above the switch statement
+                        return Regex.IsMatch(value!, header.Value, RegexOptions.IgnoreCase);
                     default:
                         throw new ArgumentException("Unrecognized HeaderMatchType");
                 }
