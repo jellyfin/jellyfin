@@ -28,6 +28,11 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// The overlay_vaapi_framesync.
         /// </summary>
-        OverlayVaapiFrameSync = 4
+        OverlayVaapiFrameSync = 4,
+
+        /// <summary>
+        /// The overlay_vulkan_framesync.
+        /// </summary>
+        OverlayVulkanFrameSync = 5
     }
 }

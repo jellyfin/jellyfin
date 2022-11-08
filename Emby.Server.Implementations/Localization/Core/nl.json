@@ -123,5 +123,6 @@
     "TaskOptimizeDatabase": "Database optimaliseren",
     "TaskKeyframeExtractorDescription": "Haalt keyframes uit videobestanden om preciezere HLS afspeellijsten te maken. Dit kan lang duren.",
     "TaskKeyframeExtractor": "Keyframe Extractor",
-    "External": "Extern"
+    "External": "Extern",
+    "HearingImpaired": "Slechthorend"
 }

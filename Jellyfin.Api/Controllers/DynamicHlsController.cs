@@ -20,7 +20,6 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.IO;
@@ -46,7 +45,6 @@ namespace Jellyfin.Api.Controllers
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IDlnaManager _dlnaManager;
-        private readonly IAuthorizationContext _authContext;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly IMediaEncoder _mediaEncoder;
@@ -65,7 +63,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="dlnaManager">Instance of the <see cref="IDlnaManager"/> interface.</param>
-        /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
@@ -80,7 +77,6 @@ namespace Jellyfin.Api.Controllers
             ILibraryManager libraryManager,
             IUserManager userManager,
             IDlnaManager dlnaManager,
-            IAuthorizationContext authContext,
             IMediaSourceManager mediaSourceManager,
             IServerConfigurationManager serverConfigurationManager,
             IMediaEncoder mediaEncoder,
@@ -95,7 +91,6 @@ namespace Jellyfin.Api.Controllers
             _libraryManager = libraryManager;
             _userManager = userManager;
             _dlnaManager = dlnaManager;
-            _authContext = authContext;
             _mediaSourceManager = mediaSourceManager;
             _serverConfigurationManager = serverConfigurationManager;
             _mediaEncoder = mediaEncoder;
@@ -121,7 +116,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="deviceProfileId">Optional. The dlna device profile id to utilize.</param>
         /// <param name="playSessionId">The play session id.</param>
         /// <param name="segmentContainer">The segment container.</param>
-        /// <param name="segmentLength">The segment lenght.</param>
+        /// <param name="segmentLength">The segment length.</param>
         /// <param name="minSegments">The minimum number of segments.</param>
         /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
         /// <param name="deviceId">The device id of the client requesting. Used to stop encoding processes when needed.</param>
@@ -285,10 +280,9 @@ namespace Jellyfin.Api.Controllers
             // Due to CTS.Token calling ThrowIfDisposed (https://github.com/dotnet/runtime/issues/29970) we have to "cache" the token
             // since it gets disposed when ffmpeg exits
             var cancellationToken = cancellationTokenSource.Token;
-            using var state = await StreamingHelpers.GetStreamingState(
+            var state = await StreamingHelpers.GetStreamingState(
                     streamingRequest,
-                    Request,
-                    _authContext,
+                    HttpContext,
                     _mediaSourceManager,
                     _userManager,
                     _libraryManager,
@@ -1393,8 +1387,7 @@ namespace Jellyfin.Api.Controllers
         {
             using var state = await StreamingHelpers.GetStreamingState(
                     streamingRequest,
-                    Request,
-                    _authContext,
+                    HttpContext,
                     _mediaSourceManager,
                     _userManager,
                     _libraryManager,
@@ -1414,7 +1407,8 @@ namespace Jellyfin.Api.Controllers
                 state.RunTimeTicks ?? 0,
                 state.Request.SegmentContainer ?? string.Empty,
                 "hls1/main/",
-                Request.QueryString.ToString());
+                Request.QueryString.ToString(),
+                EncodingHelper.IsCopyCodec(state.OutputVideoCodec));
             var playlist = _dynamicHlsPlaylistGenerator.CreateMainPlaylist(request);
 
             return new FileContentResult(Encoding.UTF8.GetBytes(playlist), MimeTypes.GetMimeType("playlist.m3u8"));
@@ -1431,10 +1425,9 @@ namespace Jellyfin.Api.Controllers
             var cancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = cancellationTokenSource.Token;
 
-            using var state = await StreamingHelpers.GetStreamingState(
+            var state = await StreamingHelpers.GetStreamingState(
                     streamingRequest,
-                    Request,
-                    _authContext,
+                    HttpContext,
                     _mediaSourceManager,
                     _userManager,
                     _libraryManager,
@@ -1711,20 +1704,30 @@ namespace Jellyfin.Api.Controllers
                 return audioTranscodeParams;
             }
 
+            // flac and opus are experimental in mp4 muxer
+            var strictArgs = string.Empty;
+
+            if (string.Equals(state.ActualOutputAudioCodec, "flac", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(state.ActualOutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase))
+            {
+                strictArgs = " -strict -2";
+            }
+
             if (EncodingHelper.IsCopyCodec(audioCodec))
             {
                 var videoCodec = _encodingHelper.GetVideoEncoder(state, _encodingOptions);
                 var bitStreamArgs = EncodingHelper.GetAudioBitStreamArguments(state, state.Request.SegmentContainer, state.MediaSource.Container);
+                var copyArgs = "-codec:a:0 copy" + bitStreamArgs + strictArgs;
 
                 if (EncodingHelper.IsCopyCodec(videoCodec) && state.EnableBreakOnNonKeyFrames(videoCodec))
                 {
-                    return "-codec:a:0 copy -strict -2 -copypriorss:a:0 0" + bitStreamArgs;
+                    return copyArgs + " -copypriorss:a:0 0";
                 }
 
-                return "-codec:a:0 copy -strict -2" + bitStreamArgs;
+                return copyArgs;
             }
 
-            var args = "-codec:a:0 " + audioCodec;
+            var args = "-codec:a:0 " + audioCodec + strictArgs;
 
             var channels = state.OutputAudioChannels;
 
@@ -1773,13 +1776,25 @@ namespace Jellyfin.Api.Controllers
 
             var args = "-codec:v:0 " + codec;
 
-            // Prefer hvc1 to hev1.
             if (string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase))
             {
-                args += " -tag:v:0 hvc1";
+                if (EncodingHelper.IsCopyCodec(codec)
+                    && (string.Equals(state.VideoStream.VideoRangeType, "DOVI", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(state.VideoStream.CodecTag, "dovi", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(state.VideoStream.CodecTag, "dvh1", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(state.VideoStream.CodecTag, "dvhe", StringComparison.OrdinalIgnoreCase)))
+                {
+                    // Prefer dvh1 to dvhe
+                    args += " -tag:v:0 dvh1 -strict -2";
+                }
+                else
+                {
+                    // Prefer hvc1 to hev1
+                    args += " -tag:v:0 hvc1";
+                }
             }
 
             // if  (state.EnableMpegtsM2TsMode)
@@ -1809,7 +1824,7 @@ namespace Jellyfin.Api.Controllers
                 // Set the key frame params for video encoding to match the hls segment time.
                 args += _encodingHelper.GetHlsVideoKeyFrameArguments(state, codec, state.SegmentLength, isEventPlaylist, startNumber);
 
-                // Currenly b-frames in libx265 breaks the FMP4-HLS playback on iOS, disable it for now.
+                // Currently b-frames in libx265 breaks the FMP4-HLS playback on iOS, disable it for now.
                 if (string.Equals(codec, "libx265", StringComparison.OrdinalIgnoreCase))
                 {
                     args += " -bf 0";

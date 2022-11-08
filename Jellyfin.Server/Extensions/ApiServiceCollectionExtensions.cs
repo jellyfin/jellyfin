@@ -434,12 +434,22 @@ namespace Jellyfin.Server.Extensions
             options.MapType<TranscodeReason>(() =>
                 new OpenApiSchema
                 {
-                    Type = "string",
-                    Enum = Enum.GetNames<TranscodeReason>()
-                        .Select(e => new OpenApiString(e))
-                        .Cast<IOpenApiAny>()
-                        .ToArray()
+                    Type = "array",
+                    Items = new OpenApiSchema
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Id = nameof(TranscodeReason),
+                            Type = ReferenceType.Schema,
+                        }
+                    }
                 });
+
+            // Swashbuckle doesn't use JsonOptions to describe responses, so we need to manually describe it.
+            options.MapType<Version>(() => new OpenApiSchema
+            {
+                Type = "string"
+            });
         }
     }
 }

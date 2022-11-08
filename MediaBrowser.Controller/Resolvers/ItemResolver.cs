@@ -23,7 +23,7 @@ namespace MediaBrowser.Controller.Resolvers
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns>`0.</returns>
-        public virtual T Resolve(ItemResolveArgs args)
+        protected internal virtual T Resolve(ItemResolveArgs args)
         {
             return null;
         }
@@ -42,7 +42,7 @@ namespace MediaBrowser.Controller.Resolvers
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns>BaseItem.</returns>
-        BaseItem IItemResolver.ResolvePath(ItemResolveArgs args)
+        public BaseItem ResolvePath(ItemResolveArgs args)
         {
             var item = Resolve(args);
 

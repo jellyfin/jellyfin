@@ -329,13 +329,17 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public void CloseIfNeeded(SessionInfo session)
+        public async Task CloseIfNeededAsync(SessionInfo session)
         {
             if (!session.SessionControllers.Any(i => i.IsSessionActive))
             {
                 var key = GetSessionKey(session.Client, session.DeviceId);
 
                 _activeConnections.TryRemove(key, out _);
+                if (!string.IsNullOrEmpty(session.PlayState?.LiveStreamId))
+                {
+                    await _mediaSourceManager.CloseLiveStream(session.PlayState.LiveStreamId).ConfigureAwait(false);
+                }
 
                 OnSessionEnded(session);
             }
@@ -413,6 +417,7 @@ namespace Emby.Server.Implementations.Session
             session.PlayState.IsPaused = info.IsPaused;
             session.PlayState.PositionTicks = info.PositionTicks;
             session.PlayState.MediaSourceId = info.MediaSourceId;
+            session.PlayState.LiveStreamId = info.LiveStreamId;
             session.PlayState.CanSeek = info.CanSeek;
             session.PlayState.IsMuted = info.IsMuted;
             session.PlayState.VolumeLevel = info.VolumeLevel;
@@ -660,10 +665,7 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
-            if (info == null)
-            {
-                throw new ArgumentNullException(nameof(info));
-            }
+            ArgumentNullException.ThrowIfNull(info);
 
             var session = GetSession(info.SessionId);
 
@@ -757,10 +759,7 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
-            if (info == null)
-            {
-                throw new ArgumentNullException(nameof(info));
-            }
+            ArgumentNullException.ThrowIfNull(info);
 
             var session = GetSession(info.SessionId);
 
@@ -769,6 +768,11 @@ namespace Emby.Server.Implementations.Session
                 : GetNowPlayingItem(session, info.ItemId);
 
             await UpdateNowPlayingItem(session, info, libraryItem, !isAutomated).ConfigureAwait(false);
+
+            if (!string.IsNullOrEmpty(session.DeviceId) && info.PlayMethod != PlayMethod.Transcode)
+            {
+                ClearTranscodingInfo(session.DeviceId);
+            }
 
             var users = GetUsers(session);
 
@@ -887,10 +891,7 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
-            if (info == null)
-            {
-                throw new ArgumentNullException(nameof(info));
-            }
+            ArgumentNullException.ThrowIfNull(info);
 
             if (info.PositionTicks.HasValue && info.PositionTicks.Value < 0)
             {
@@ -1232,7 +1233,7 @@ namespace Emby.Server.Implementations.Session
 
             if (item == null)
             {
-                _logger.LogError("A non-existant item Id {0} was passed into TranslateItemForPlayback", id);
+                _logger.LogError("A non-existent item Id {0} was passed into TranslateItemForPlayback", id);
                 return Array.Empty<BaseItem>();
             }
 
@@ -1331,15 +1332,9 @@ namespace Emby.Server.Implementations.Session
 
         private static void AssertCanControl(SessionInfo session, SessionInfo controllingSession)
         {
-            if (session == null)
-            {
-                throw new ArgumentNullException(nameof(session));
-            }
+            ArgumentNullException.ThrowIfNull(session);
 
-            if (controllingSession == null)
-            {
-                throw new ArgumentNullException(nameof(controllingSession));
-            }
+            ArgumentNullException.ThrowIfNull(controllingSession);
         }
 
         /// <summary>
@@ -1678,10 +1673,7 @@ namespace Emby.Server.Implementations.Session
         /// </summary>
         private BaseItemDto GetItemInfo(BaseItem item, MediaSourceInfo mediaSource)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
+            ArgumentNullException.ThrowIfNull(item);
 
             var dtoOptions = _itemInfoDtoOptions;
 
@@ -1792,10 +1784,7 @@ namespace Emby.Server.Implementations.Session
         /// <inheritdoc />
         public Task<SessionInfo> GetSessionByAuthenticationToken(Device info, string deviceId, string remoteEndpoint, string appVersion)
         {
-            if (info == null)
-            {
-                throw new ArgumentNullException(nameof(info));
-            }
+            ArgumentNullException.ThrowIfNull(info);
 
             var user = info.UserId.Equals(default)
                 ? null

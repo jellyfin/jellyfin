@@ -20,6 +20,7 @@ using Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -165,12 +166,12 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
                         const double DesiredAspect = 2.0 / 3;
 
-                        programEntry.PrimaryImage = GetProgramImage(ApiUrl, imagesWithText, DesiredAspect) ??
-                                                    GetProgramImage(ApiUrl, allImages, DesiredAspect);
+                        programEntry.PrimaryImage = GetProgramImage(ApiUrl, imagesWithText, DesiredAspect, token) ??
+                                                    GetProgramImage(ApiUrl, allImages, DesiredAspect, token);
 
                         const double WideAspect = 16.0 / 9;
 
-                        programEntry.ThumbImage = GetProgramImage(ApiUrl, imagesWithText, WideAspect);
+                        programEntry.ThumbImage = GetProgramImage(ApiUrl, imagesWithText, WideAspect, token);
 
                         // Don't supply the same image twice
                         if (string.Equals(programEntry.PrimaryImage, programEntry.ThumbImage, StringComparison.Ordinal))
@@ -178,7 +179,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                             programEntry.ThumbImage = null;
                         }
 
-                        programEntry.BackdropImage = GetProgramImage(ApiUrl, imagesWithoutText, WideAspect);
+                        programEntry.BackdropImage = GetProgramImage(ApiUrl, imagesWithoutText, WideAspect, token);
 
                         // programEntry.bannerImage = GetProgramImage(ApiUrl, data, "Banner", false) ??
                         //    GetProgramImage(ApiUrl, data, "Banner-L1", false) ??
@@ -399,7 +400,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             return info;
         }
 
-        private static string GetProgramImage(string apiUrl, IEnumerable<ImageDataDto> images, double desiredAspect)
+        private static string GetProgramImage(string apiUrl, IEnumerable<ImageDataDto> images, double desiredAspect, string token)
         {
             var match = images
                 .OrderBy(i => Math.Abs(desiredAspect - GetAspectRatio(i)))
@@ -423,7 +424,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
             else
             {
-                return apiUrl + "/image/" + uri;
+                return apiUrl + "/image/" + uri + "?token=" + token;
             }
         }
 
@@ -457,6 +458,8 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             IReadOnlyList<string> programIds,
             CancellationToken cancellationToken)
         {
+            var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
+
             if (programIds.Count == 0)
             {
                 return Array.Empty<ShowImagesDto>();
@@ -478,6 +481,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 Content = new StringContent(str.ToString(), Encoding.UTF8, MediaTypeNames.Application.Json)
             };
+            message.Headers.TryAddWithoutValidation("token", token);
 
             try
             {
@@ -591,13 +595,10 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
             catch (HttpRequestException ex)
             {
-                if (ex.StatusCode.HasValue)
+                if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.BadRequest)
                 {
-                    if ((int)ex.StatusCode.Value == 400)
-                    {
-                        _tokens.Clear();
-                        _lastErrorResponse = DateTime.UtcNow;
-                    }
+                    _tokens.Clear();
+                    _lastErrorResponse = DateTime.UtcNow;
                 }
 
                 throw;
@@ -662,7 +663,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 return root.Token;
             }
 
-            throw new Exception("Could not authenticate with Schedules Direct Error: " + root.Message);
+            throw new AuthenticationException("Could not authenticate with Schedules Direct Error: " + root.Message);
         }
 
         private async Task AddLineupToAccount(ListingsProviderInfo info, CancellationToken cancellationToken)
@@ -697,7 +698,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             if (string.IsNullOrEmpty(token))
             {
-                throw new Exception("token required");
+                throw new ArgumentException("token required");
             }
 
             _logger.LogInformation("Headends on account ");
@@ -768,14 +769,14 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             var listingsId = info.ListingsId;
             if (string.IsNullOrEmpty(listingsId))
             {
-                throw new Exception("ListingsId required");
+                throw new ArgumentException("ListingsId required");
             }
 
             var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
 
             if (string.IsNullOrEmpty(token))
             {
-                throw new Exception("token required");
+                throw new ArgumentException("token required");
             }
 
             using var options = new HttpRequestMessage(HttpMethod.Get, ApiUrl + "/lineups/" + listingsId);

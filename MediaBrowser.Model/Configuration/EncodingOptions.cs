@@ -1,5 +1,3 @@
-using System;
-
 #nullable disable
 #pragma warning disable CS1591
 
@@ -26,6 +24,8 @@ namespace MediaBrowser.Model.Configuration
             TonemappingThreshold = 0.8;
             TonemappingPeak = 100;
             TonemappingParam = 0;
+            VppTonemappingBrightness = 0;
+            VppTonemappingContrast = 1.2;
             H264Crf = 23;
             H265Crf = 28;
             DeinterlaceDoubleRate = false;
@@ -39,7 +39,7 @@ namespace MediaBrowser.Model.Configuration
             EnableHardwareEncoding = true;
             AllowHevcEncoding = false;
             EnableSubtitleExtraction = true;
-            AllowOnDemandMetadataBasedKeyframeExtractionForExtensions = Array.Empty<string>();
+            AllowOnDemandMetadataBasedKeyframeExtractionForExtensions = new[] { "mkv" };
             HardwareDecodingCodecs = new string[] { "h264", "vc1" };
         }
 
@@ -88,6 +88,10 @@ namespace MediaBrowser.Model.Configuration
         public double TonemappingPeak { get; set; }
 
         public double TonemappingParam { get; set; }
+
+        public double VppTonemappingBrightness { get; set; }
+
+        public double VppTonemappingContrast { get; set; }
 
         public int H264Crf { get; set; }
 

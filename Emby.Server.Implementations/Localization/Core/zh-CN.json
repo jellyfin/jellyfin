@@ -1,6 +1,6 @@
 {
     "Albums": "专辑",
-    "AppDeviceValues": "应用: {0}, 设备: {1}",
+    "AppDeviceValues": "应用：{0}，设备：{1}",
     "Application": "应用程序",
     "Artists": "艺术家",
     "AuthenticationSucceededWithUserName": "{0} 认证成功",
@@ -123,5 +123,6 @@
     "TaskOptimizeDatabase": "优化数据库",
     "TaskKeyframeExtractorDescription": "从视频文件中提取关键帧以创建更准确的HLS播放列表。这项任务可能需要很长时间。",
     "TaskKeyframeExtractor": "关键帧提取器",
-    "External": "外部"
+    "External": "外部",
+    "HearingImpaired": "听力障碍"
 }

@@ -22,7 +22,6 @@ using Emby.Drawing;
 using Emby.Naming.Common;
 using Emby.Notifications;
 using Emby.Photos;
-using Emby.Server.Implementations.Archiving;
 using Emby.Server.Implementations.Channels;
 using Emby.Server.Implementations.Collections;
 using Emby.Server.Implementations.Configuration;
@@ -67,6 +66,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Notifications;
@@ -83,6 +83,7 @@ using MediaBrowser.Controller.SyncPlay;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.LocalMetadata.Savers;
 using MediaBrowser.MediaEncoding.BdInfo;
+using MediaBrowser.MediaEncoding.Subtitles;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
@@ -93,6 +94,7 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Providers.Chapters;
+using MediaBrowser.Providers.Lyric;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Plugins.Tmdb;
 using MediaBrowser.Providers.Subtitles;
@@ -111,7 +113,7 @@ namespace Emby.Server.Implementations
     /// <summary>
     /// Class CompositionRoot.
     /// </summary>
-    public abstract class ApplicationHost : IServerApplicationHost, IDisposable
+    public abstract class ApplicationHost : IServerApplicationHost, IAsyncDisposable, IDisposable
     {
         /// <summary>
         /// The environment variable prefixes to log at server startup.
@@ -558,8 +560,6 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IInstallationManager, InstallationManager>();
 
-            serviceCollection.AddSingleton<IZipClient, ZipClient>();
-
             serviceCollection.AddSingleton<IServerApplicationHost>(this);
             serviceCollection.AddSingleton(ApplicationPaths);
 
@@ -597,6 +597,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IMediaSourceManager, MediaSourceManager>();
 
             serviceCollection.AddSingleton<ISubtitleManager, SubtitleManager>();
+            serviceCollection.AddSingleton<ILyricManager, LyricManager>();
 
             serviceCollection.AddSingleton<IProviderManager, ProviderManager>();
 
@@ -629,12 +630,11 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IEncodingManager, MediaEncoder.EncodingManager>();
 
-            serviceCollection.AddScoped<ISessionContext, SessionContext>();
-
             serviceCollection.AddSingleton<IAuthService, AuthService>();
             serviceCollection.AddSingleton<IQuickConnect, QuickConnectManager>();
 
-            serviceCollection.AddSingleton<ISubtitleEncoder, MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder>();
+            serviceCollection.AddSingleton<ISubtitleParser, SubtitleEditParser>();
+            serviceCollection.AddSingleton<ISubtitleEncoder, SubtitleEncoder>();
 
             serviceCollection.AddSingleton<IAttachmentExtractor, MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor>();
 
@@ -1088,15 +1088,7 @@ namespace Emby.Server.Implementations
                 return GetLocalApiUrl(request.Host.Host, request.Scheme, requestPort);
             }
 
-            // Published server ends with a /
-            if (!string.IsNullOrEmpty(PublishedServerUrl))
-            {
-                // Published server ends with a '/', so we need to remove it.
-                return PublishedServerUrl.Trim('/');
-            }
-
-            string smart = NetManager.GetBindInterface(request, out var port);
-            return GetLocalApiUrl(smart.Trim('/'), request.Scheme, port);
+            return GetSmartApiUrl(request.HttpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback);
         }
 
         /// <inheritdoc/>
@@ -1114,13 +1106,13 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc/>
-        public string GetApiUrlForLocalAccess(bool allowHttps = true)
+        public string GetApiUrlForLocalAccess(IPObject hostname = null, bool allowHttps = true)
         {
             // With an empty source, the port will be null
-            string smart = NetManager.GetBindInterface(string.Empty, out _);
+            var smart = NetManager.GetBindInterface(hostname ?? IPHost.None, out _);
             var scheme = !allowHttps ? Uri.UriSchemeHttp : null;
             int? port = !allowHttps ? HttpPort : null;
-            return GetLocalApiUrl(smart.Trim('/'), scheme, port);
+            return GetLocalApiUrl(smart, scheme, port);
         }
 
         /// <inheritdoc/>
@@ -1134,11 +1126,13 @@ namespace Emby.Server.Implementations
 
             // NOTE: If no BaseUrl is set then UriBuilder appends a trailing slash, but if there is no BaseUrl it does
             // not. For consistency, always trim the trailing slash.
+            scheme ??= ListenWithHttps ? Uri.UriSchemeHttps : Uri.UriSchemeHttp;
+            var isHttps = string.Equals(scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase);
             return new UriBuilder
             {
-                Scheme = scheme ?? (ListenWithHttps ? Uri.UriSchemeHttps : Uri.UriSchemeHttp),
+                Scheme = scheme,
                 Host = hostname,
-                Port = port ?? (ListenWithHttps ? HttpsPort : HttpPort),
+                Port = port ?? (isHttps ? HttpsPort : HttpPort),
                 Path = ConfigurationManager.GetNetworkConfiguration().BaseUrl
             }.ToString().TrimEnd('/');
         }
@@ -1229,6 +1223,50 @@ namespace Emby.Server.Implementations
             }
 
             _disposed = true;
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await DisposeAsyncCore().ConfigureAwait(false);
+            Dispose(false);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Used to perform asynchronous cleanup of managed resources or for cascading calls to <see cref="DisposeAsync"/>.
+        /// </summary>
+        /// <returns>A ValueTask.</returns>
+        protected virtual async ValueTask DisposeAsyncCore()
+        {
+            var type = GetType();
+
+            Logger.LogInformation("Disposing {Type}", type.Name);
+
+            foreach (var (part, _) in _disposableParts)
+            {
+                var partType = part.GetType();
+                if (partType == type)
+                {
+                    continue;
+                }
+
+                Logger.LogInformation("Disposing {Type}", partType.Name);
+
+                try
+                {
+                    part.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error disposing {Type}", partType.Name);
+                }
+            }
+
+            // used for closing websockets
+            foreach (var session in _sessionManager.Sessions)
+            {
+                await session.DisposeAsync().ConfigureAwait(false);
+            }
         }
     }
 }

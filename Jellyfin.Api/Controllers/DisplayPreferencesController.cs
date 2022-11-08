@@ -89,12 +89,9 @@ namespace Jellyfin.Api.Controllers
 
             // Load all custom display preferences
             var customDisplayPreferences = _displayPreferencesManager.ListCustomItemDisplayPreferences(displayPreferences.UserId, itemId, displayPreferences.Client);
-            if (customDisplayPreferences != null)
+            foreach (var (key, value) in customDisplayPreferences)
             {
-                foreach (var (key, value) in customDisplayPreferences)
-                {
-                    dto.CustomPrefs.TryAdd(key, value);
-                }
+                dto.CustomPrefs.TryAdd(key, value);
             }
 
             // This will essentially be a noop if no changes have been made, but new prefs must be saved at least.

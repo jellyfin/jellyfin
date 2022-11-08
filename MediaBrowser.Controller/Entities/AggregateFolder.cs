@@ -171,10 +171,7 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="ArgumentNullException">Throws if child is null.</exception>
         public void AddVirtualChild(BaseItem child)
         {
-            if (child == null)
-            {
-                throw new ArgumentNullException(nameof(child));
-            }
+            ArgumentNullException.ThrowIfNull(child);
 
             _virtualChildren.Add(child);
         }

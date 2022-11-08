@@ -129,7 +129,7 @@ namespace MediaBrowser.Controller.Entities
 
         public Guid[] ExcludeItemIds { get; set; }
 
-        public string? AdjacentTo { get; set; }
+        public Guid? AdjacentTo { get; set; }
 
         public string[] PersonTypes { get; set; }
 
@@ -204,6 +204,16 @@ namespace MediaBrowser.Controller.Entities
         public bool? IsSeries { get; set; }
 
         public int? MinIndexNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the minimum ParentIndexNumber and IndexNumber.
+        /// </summary>
+        /// <remarks>
+        /// It produces this where clause:
+        /// <para>(ParentIndexNumber = X and IndexNumber >= Y) or ParentIndexNumber > X.
+        /// </para>
+        /// </remarks>
+        public (int ParentIndexNumber, int IndexNumber)? MinParentAndIndexNumber { get; set; }
 
         public int? AiredDuringSeason { get; set; }
 

@@ -353,10 +353,7 @@ namespace Jellyfin.Networking.Manager
         public string GetBindInterface(IPObject source, out int? port)
         {
             port = null;
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
+            ArgumentNullException.ThrowIfNull(source);
 
             // Do we have a source?
             bool haveSource = !source.Address.Equals(IPAddress.None);
@@ -476,10 +473,7 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public bool IsInLocalNetwork(IPAddress address)
         {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
+            ArgumentNullException.ThrowIfNull(address);
 
             if (address.Equals(IPAddress.None))
             {
@@ -499,10 +493,7 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public bool IsPrivateAddressRange(IPObject address)
         {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
+            ArgumentNullException.ThrowIfNull(address);
 
             // See conversation at https://github.com/jellyfin/jellyfin/pull/3515.
             if (TrustAllIP6Interfaces && address.AddressFamily == AddressFamily.InterNetworkV6)
@@ -944,7 +935,7 @@ namespace Jellyfin.Networking.Manager
                 // Add virtual machine interface names to the list of bind exclusions, so that they are auto-excluded.
                 if (config.IgnoreVirtualInterfaces)
                 {
-                    // each virtual interface name must be pre-pended with the exclusion symbol !
+                    // each virtual interface name must be prepended with the exclusion symbol !
                     var virtualInterfaceNames = config.VirtualInterfaceNames.Split(',').Select(p => "!" + p).ToArray();
                     if (lanAddresses.Length > 0)
                     {

@@ -8,7 +8,7 @@ using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Model.Dlna
 {
-    public class ContentFeatureBuilder
+    public static class ContentFeatureBuilder
     {
         public static string BuildImageHeader(
             DeviceProfile profile,
@@ -128,6 +128,7 @@ namespace MediaBrowser.Model.Dlna
             bool isDirectStream,
             long? runtimeTicks,
             string videoProfile,
+            string videoRangeType,
             double? videoLevel,
             float? videoFramerate,
             int? packetLength,
@@ -156,7 +157,7 @@ namespace MediaBrowser.Model.Dlna
                 flagValue |= DlnaFlags.ByteBasedSeek;
             }
 
-            // Time based seek is curently disabled when streaming. On LG CX3 adding DlnaFlags.TimeBasedSeek and orgPn causes the DLNA playback to fail (format not supported). Further investigations are needed before enabling the remaining code paths.
+            // Time based seek is currently disabled when streaming. On LG CX3 adding DlnaFlags.TimeBasedSeek and orgPn causes the DLNA playback to fail (format not supported). Further investigations are needed before enabling the remaining code paths.
             //  else if (runtimeTicks.HasValue)
             // {
             //     flagValue = flagValue | DlnaFlags.TimeBasedSeek;
@@ -176,6 +177,7 @@ namespace MediaBrowser.Model.Dlna
                 bitDepth,
                 videoBitrate,
                 videoProfile,
+                videoRangeType,
                 videoLevel,
                 videoFramerate,
                 packetLength,

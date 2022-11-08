@@ -38,9 +38,6 @@ RUN apt-get update \
  libssl-dev \
  libfontconfig1 \
  libfreetype6 \
- libomxil-bellagio0 \
- libomxil-bellagio-bin \
- libraspberrypi0 \
  vainfo \
  libva2 \
  locales \
@@ -64,7 +61,7 @@ ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 # Discard objs - may cause failures if exists
 RUN find . -type d -name obj | xargs -r rm -r
 # Build
-RUN dotnet publish Jellyfin.Server --configuration Release --output="/jellyfin" --self-contained --runtime linux-arm "-p:DebugSymbols=false;DebugType=none"
+RUN dotnet publish Jellyfin.Server --configuration Release --output="/jellyfin" --self-contained --runtime linux-arm -p:DebugSymbols=false -p:DebugType=none
 
 FROM app
 
@@ -81,4 +78,4 @@ ENTRYPOINT ["./jellyfin/jellyfin", \
     "--ffmpeg", "/usr/lib/jellyfin-ffmpeg/ffmpeg"]
 
 HEALTHCHECK --interval=30s --timeout=30s --start-period=10s --retries=3 \
-     CMD curl -Lk "${HEALTHCHECK_URL}" || exit 1
+     CMD curl -Lk -fsS "${HEALTHCHECK_URL}" || exit 1

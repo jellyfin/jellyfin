@@ -120,5 +120,8 @@
     "Default": "預設",
     "TaskOptimizeDatabaseDescription": "壓縮數據庫並截斷可用空間。在掃描媒體庫或執行其他數據庫的修改後運行此任務可能會提高性能。",
     "TaskOptimizeDatabase": "最佳化數據庫",
-    "TaskCleanActivityLogDescription": "刪除早於設定時間的日誌記錄。"
+    "TaskCleanActivityLogDescription": "刪除早於設定時間的日誌記錄。",
+    "TaskKeyframeExtractorDescription": "提取關鍵格以創建更準確的HLS播放列表。次指示可能用時很長。",
+    "TaskKeyframeExtractor": "關鍵幀提取器",
+    "External": "外部"
 }

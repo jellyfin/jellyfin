@@ -8,7 +8,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Diacritics.Extensions;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -655,8 +655,6 @@ namespace MediaBrowser.Providers.Manager
             };
             temp.Item.Path = item.Path;
 
-            var userDataList = new List<UserItemData>();
-
             // If replacing all metadata, run internet providers first
             if (options.ReplaceAllMetadata)
             {
@@ -670,7 +668,7 @@ namespace MediaBrowser.Providers.Manager
 
             var hasLocalMetadata = false;
 
-            foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>().ToList())
+            foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>())
             {
                 var providerName = provider.GetType().Name;
                 Logger.LogDebug("Running {Provider} for {Item}", providerName, logName);
@@ -687,6 +685,11 @@ namespace MediaBrowser.Providers.Manager
                         {
                             try
                             {
+                                if (!options.IsReplacingImage(remoteImage.Type))
+                                {
+                                    continue;
+                                }
+
                                 await ProviderManager.SaveImage(item, remoteImage.Url, remoteImage.Type, null, cancellationToken).ConfigureAwait(false);
                                 refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
                             }
@@ -699,11 +702,6 @@ namespace MediaBrowser.Providers.Manager
                         if (imageService.MergeImages(item, localItem.Images))
                         {
                             refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
-                        }
-
-                        if (localItem.UserDataList != null)
-                        {
-                            userDataList.AddRange(localItem.UserDataList);
                         }
 
                         MergeData(localItem, temp, Array.Empty<MetadataField>(), !options.ReplaceAllMetadata, true);
@@ -764,14 +762,10 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            // var isUnidentified = failedProviderCount > 0 && successfulProviderCount == 0;
-
             foreach (var provider in customProviders.Where(i => i is not IPreRefreshProvider))
             {
                 await RunCustomProvider(provider, item, logName, options, refreshResult, cancellationToken).ConfigureAwait(false);
             }
-
-            // ImportUserData(item, userDataList, cancellationToken);
 
             return refreshResult;
         }

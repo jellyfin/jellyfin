@@ -207,7 +207,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="deviceProfileId">Optional. The dlna device profile id to utilize.</param>
         /// <param name="playSessionId">The play session id.</param>
         /// <param name="segmentContainer">The segment container.</param>
-        /// <param name="segmentLength">The segment lenght.</param>
+        /// <param name="segmentLength">The segment length.</param>
         /// <param name="minSegments">The minimum number of segments.</param>
         /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
         /// <param name="deviceId">The device id of the client requesting. Used to stop encoding processes when needed.</param>

@@ -6,9 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions;
@@ -33,20 +33,17 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<XmlTvListingsProvider> _logger;
         private readonly IFileSystem _fileSystem;
-        private readonly IZipClient _zipClient;
 
         public XmlTvListingsProvider(
             IServerConfigurationManager config,
             IHttpClientFactory httpClientFactory,
             ILogger<XmlTvListingsProvider> logger,
-            IFileSystem fileSystem,
-            IZipClient zipClient)
+            IFileSystem fileSystem)
         {
             _config = config;
             _httpClientFactory = httpClientFactory;
             _logger = logger;
             _fileSystem = fileSystem;
-            _zipClient = zipClient;
         }
 
         public string Name => "XmlTV";
@@ -67,105 +64,61 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         {
             _logger.LogInformation("xmltv path: {Path}", info.Path);
 
-            if (!info.Path.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-            {
-                return UnzipIfNeeded(info.Path, info.Path);
-            }
-
             string cacheFilename = info.Id + ".xml";
             string cacheFile = Path.Combine(_config.ApplicationPaths.CachePath, "xmltv", cacheFilename);
+
             if (File.Exists(cacheFile) && File.GetLastWriteTimeUtc(cacheFile) >= DateTime.UtcNow.Subtract(_maxCacheAge))
             {
-                return UnzipIfNeeded(info.Path, cacheFile);
+                return cacheFile;
             }
 
-            File.Delete(cacheFile);
-            _logger.LogInformation("Downloading xmltv listings from {Path}", info.Path);
+            // Must check if file exists as parent directory may not exist.
+            if (File.Exists(cacheFile))
+            {
+                File.Delete(cacheFile);
+            }
+            else
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(cacheFile));
+            }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(cacheFile));
+            if (info.Path.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogInformation("Downloading xmltv listings from {Path}", info.Path);
 
-            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(info.Path, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            await using (var fileStream = new FileStream(cacheFile, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.CopyToBufferSize, FileOptions.Asynchronous))
+                using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(info.Path, cancellationToken).ConfigureAwait(false);
+                await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                return await UnzipIfNeededAndCopy(info.Path, stream, cacheFile, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                await using var stream = AsyncFile.OpenRead(info.Path);
+                return await UnzipIfNeededAndCopy(info.Path, stream, cacheFile, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        private async Task<string> UnzipIfNeededAndCopy(string originalUrl, Stream stream, string file, CancellationToken cancellationToken)
+        {
+            await using var fileStream = new FileStream(file, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+
+            if (Path.GetExtension(originalUrl.AsSpan().LeftPart('?')).Equals(".gz", StringComparison.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    using var reader = new GZipStream(stream, CompressionMode.Decompress);
+                    await reader.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error extracting from gz file {File}", originalUrl);
+                }
+            }
+            else
             {
                 await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
             }
 
-            return UnzipIfNeeded(info.Path, cacheFile);
-        }
-
-        private string UnzipIfNeeded(ReadOnlySpan<char> originalUrl, string file)
-        {
-            ReadOnlySpan<char> ext = Path.GetExtension(originalUrl.LeftPart('?'));
-
-            if (ext.Equals(".gz", StringComparison.OrdinalIgnoreCase))
-            {
-                try
-                {
-                    string tempFolder = ExtractGz(file);
-                    return FindXmlFile(tempFolder);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error extracting from gz file {File}", file);
-                }
-
-                try
-                {
-                    string tempFolder = ExtractFirstFileFromGz(file);
-                    return FindXmlFile(tempFolder);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error extracting from zip file {File}", file);
-                }
-            }
-
             return file;
-        }
-
-        private string ExtractFirstFileFromGz(string file)
-        {
-            using (var stream = File.OpenRead(file))
-            {
-                string tempFolder = GetTempFolderPath(stream);
-                Directory.CreateDirectory(tempFolder);
-
-                _zipClient.ExtractFirstFileFromGz(stream, tempFolder, "data.xml");
-
-                return tempFolder;
-            }
-        }
-
-        private string ExtractGz(string file)
-        {
-            using (var stream = File.OpenRead(file))
-            {
-                string tempFolder = GetTempFolderPath(stream);
-                Directory.CreateDirectory(tempFolder);
-
-                _zipClient.ExtractAllFromGz(stream, tempFolder, true);
-
-                return tempFolder;
-            }
-        }
-
-        private string GetTempFolderPath(Stream stream)
-        {
-#pragma warning disable CA5351
-            using var md5 = MD5.Create();
-#pragma warning restore CA5351
-            var checksum = Convert.ToHexString(md5.ComputeHash(stream));
-            stream.Position = 0;
-            return Path.Combine(_config.ApplicationPaths.TempDirectory, checksum);
-        }
-
-        private string FindXmlFile(string directory)
-        {
-            return _fileSystem.GetFiles(directory, true)
-                .Where(i => string.Equals(i.Extension, ".xml", StringComparison.OrdinalIgnoreCase))
-                .Select(i => i.FullName)
-                .FirstOrDefault();
         }
 
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
@@ -208,16 +161,16 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 IsMovie = program.Categories.Any(c => info.MovieCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
                 IsNews = program.Categories.Any(c => info.NewsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
                 IsSports = program.Categories.Any(c => info.SportsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
-                ImageUrl = program.Icon != null && !string.IsNullOrEmpty(program.Icon.Source) ? program.Icon.Source : null,
-                HasImage = program.Icon != null && !string.IsNullOrEmpty(program.Icon.Source),
-                OfficialRating = program.Rating != null && !string.IsNullOrEmpty(program.Rating.Value) ? program.Rating.Value : null,
+                ImageUrl = string.IsNullOrEmpty(program.Icon?.Source) ? null : program.Icon.Source,
+                HasImage = !string.IsNullOrEmpty(program.Icon?.Source),
+                OfficialRating = string.IsNullOrEmpty(program.Rating?.Value) ? null : program.Rating.Value,
                 CommunityRating = program.StarRating,
-                SeriesId = program.Episode == null ? null : program.Title.GetMD5().ToString("N", CultureInfo.InvariantCulture)
+                SeriesId = program.Episode == null ? null : program.Title?.GetMD5().ToString("N", CultureInfo.InvariantCulture)
             };
 
             if (string.IsNullOrWhiteSpace(program.ProgramId))
             {
-                string uniqueString = (program.Title ?? string.Empty) + (episodeTitle ?? string.Empty) /*+ (p.IceTvEpisodeNumber ?? string.Empty)*/;
+                string uniqueString = (program.Title ?? string.Empty) + (episodeTitle ?? string.Empty);
 
                 if (programInfo.SeasonNumber.HasValue)
                 {

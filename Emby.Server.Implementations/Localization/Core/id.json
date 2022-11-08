@@ -36,7 +36,7 @@
     "Songs": "Lagu",
     "Playlists": "Daftar putar",
     "NotificationOptionPluginUninstalled": "Plugin dihapus",
-    "MusicVideos": "Video musik",
+    "MusicVideos": "Video Musik",
     "VersionNumber": "Versi {0}",
     "ValueSpecialEpisodeName": "Spesial - {0}",
     "ValueHasBeenAddedToLibrary": "{0} telah ditambahkan ke pustaka media Anda",
@@ -122,5 +122,6 @@
     "TaskOptimizeDatabase": "Optimalkan basis data",
     "TaskKeyframeExtractorDescription": "Ekstrak bingkai utama dari file video untuk membuat daftar putar HLS yang lebih tepat. Tugas ini dapat berjalan untuk waktu yang lama.",
     "TaskKeyframeExtractor": "Ekstraktor Bingkai Utama",
-    "External": "Luar"
+    "External": "Luar",
+    "HearingImpaired": "Gangguan Pendengaran"
 }

@@ -5,7 +5,6 @@ namespace MediaBrowser.Model.Configuration
     /// </summary>
     public enum EmbeddedSubtitleOptions
     {
-
         /// <summary>
         /// Allow all embedded subs.
         /// </summary>
@@ -26,5 +25,4 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         AllowNone = 3,
     }
-
 }

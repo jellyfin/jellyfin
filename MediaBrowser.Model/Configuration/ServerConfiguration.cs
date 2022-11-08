@@ -79,7 +79,7 @@ namespace MediaBrowser.Model.Configuration
         /// <summary>
         /// Gets or sets a value indicating whether quick connect is available for use on this server.
         /// </summary>
-        public bool QuickConnectAvailable { get; set; } = false;
+        public bool QuickConnectAvailable { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether [enable case sensitive item ids].

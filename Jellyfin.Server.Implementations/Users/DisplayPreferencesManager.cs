@@ -79,7 +79,7 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc />
-        public void SetCustomItemDisplayPreferences(Guid userId, Guid itemId, string client, Dictionary<string, string> customPreferences)
+        public void SetCustomItemDisplayPreferences(Guid userId, Guid itemId, string client, Dictionary<string, string?> customPreferences)
         {
             var existingPrefs = _dbContext.CustomItemDisplayPreferences
                 .AsQueryable()
