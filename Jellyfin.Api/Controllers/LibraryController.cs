@@ -491,6 +491,12 @@ namespace Jellyfin.Api.Controllers
         {
             var items = _libraryManager.GetUserRootFolder().Children.Concat(_libraryManager.RootFolder.VirtualChildren).OrderBy(i => i.SortName).ToList();
 
+            if (!User.GetIsApiKey() && !User.IsInRole(UserRoles.Administrator))
+            {
+                var user = _userManager.GetUserById(User.GetUserId());
+                items = items.Where(i => i.IsVisible(user)).ToList();
+            }
+
             if (isHidden.HasValue)
             {
                 var val = isHidden.Value;
