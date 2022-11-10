@@ -493,17 +493,11 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Media folders returned.</response>
         /// <returns>List of user media folders.</returns>
         [HttpGet("Library/MediaFolders")]
-        [Authorize(Policy = Policies.DefaultAuthorization)]
+        [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetMediaFolders([FromQuery] bool? isHidden)
         {
             var items = _libraryManager.GetUserRootFolder().Children.Concat(_libraryManager.RootFolder.VirtualChildren).OrderBy(i => i.SortName).ToList();
-
-            if (!ClaimHelpers.GetIsApiKey(User) && !User.IsInRole(UserRoles.Administrator))
-            {
-                var user = _userManager.GetUserById(ClaimHelpers.GetUserId(User)!.Value);
-                items = items.Where(i => i.IsVisible(user)).ToList();
-            }
 
             if (isHidden.HasValue)
             {
