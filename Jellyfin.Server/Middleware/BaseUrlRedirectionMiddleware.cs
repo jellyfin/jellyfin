@@ -65,8 +65,9 @@ namespace Jellyfin.Server.Middleware
                 // Always redirect back to the default path if the base prefix is invalid or missing
                 _logger.LogDebug("Normalizing an URL at {LocalPath}", localPath);
 
-                var uri = new Uri(localPath);
-                var redirectUri = new Uri(baseUrlPrefix + "/" + _configuration[DefaultRedirectKey]);
+                var port = httpContext.Request.Host.Port ?? -1;
+                var uri = new UriBuilder(httpContext.Request.Scheme, httpContext.Request.Host.Host, port, localPath).Uri;
+                var redirectUri = new UriBuilder(httpContext.Request.Scheme, httpContext.Request.Host.Host, port, baseUrlPrefix + "/" + _configuration[DefaultRedirectKey]).Uri;
                 var target = uri.MakeRelativeUri(redirectUri).ToString();
                 _logger.LogDebug("Redirecting to {Target}", target);
 

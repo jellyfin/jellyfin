@@ -123,5 +123,6 @@
     "TaskOptimizeDatabase": "Ottimizza Database",
     "TaskKeyframeExtractor": "Estrattore di Keyframe",
     "TaskKeyframeExtractorDescription": "Estrae i keyframe dai video per creare migliori playlist HLS. Questa procedura potrebbe richiedere molto tempo.",
-    "External": "Esterno"
+    "External": "Esterno",
+    "HearingImpaired": "con problemi di udito"
 }

@@ -32,18 +32,15 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<XmlTvListingsProvider> _logger;
-        private readonly IFileSystem _fileSystem;
 
         public XmlTvListingsProvider(
             IServerConfigurationManager config,
             IHttpClientFactory httpClientFactory,
-            ILogger<XmlTvListingsProvider> logger,
-            IFileSystem fileSystem)
+            ILogger<XmlTvListingsProvider> logger)
         {
             _config = config;
             _httpClientFactory = httpClientFactory;
             _logger = logger;
-            _fileSystem = fileSystem;
         }
 
         public string Name => "XmlTV";
@@ -165,7 +162,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 HasImage = !string.IsNullOrEmpty(program.Icon?.Source),
                 OfficialRating = string.IsNullOrEmpty(program.Rating?.Value) ? null : program.Rating.Value,
                 CommunityRating = program.StarRating,
-                SeriesId = program.Episode == null ? null : program.Title.GetMD5().ToString("N", CultureInfo.InvariantCulture)
+                SeriesId = program.Episode == null ? null : program.Title?.GetMD5().ToString("N", CultureInfo.InvariantCulture)
             };
 
             if (string.IsNullOrWhiteSpace(program.ProgramId))
