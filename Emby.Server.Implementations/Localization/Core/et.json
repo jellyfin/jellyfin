@@ -120,5 +120,8 @@
     "UserPolicyUpdatedWithName": "Kasutaja {0} õigusi värskendati",
     "UserStoppedPlayingItemWithValues": "{0} lõpetas {1} taasesituse seadmes {2}",
     "UserOnlineFromDevice": "{0} on ühendatud seadmest {1}",
-    "External": "Väline"
+    "External": "Väline",
+    "HearingImpaired": "Kuulmispuudega",
+    "TaskKeyframeExtractorDescription": "Eraldab videofailidest võtmekaadreid, et luua täpsemaid HLS-i esitusloendeid. See ülesanne võib kesta pikka aega.",
+    "TaskKeyframeExtractor": "Võtmekaadri ekstraktor"
 }
