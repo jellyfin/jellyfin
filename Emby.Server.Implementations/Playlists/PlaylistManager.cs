@@ -127,7 +127,7 @@ namespace Emby.Server.Implementations.Playlists
 
             var path = Path.GetFullPath(parentFolderDest + Path.DirectorySeparatorChar);
 
-            // var path = Path.Combine(parentFolder.Path, folderName);
+
             path = GetTargetPath(path);
 
             _iLibraryMonitor.ReportFileSystemChangeBeginning(path);
