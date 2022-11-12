@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
@@ -96,6 +97,7 @@ namespace Jellyfin.Api.Controllers
         /// Authorizes a pending quick connect request.
         /// </summary>
         /// <param name="code">Quick connect code to authorize.</param>
+        /// <param name="userId">The user the authorize. Access to the requested user is required.</param>
         /// <response code="200">Quick connect result authorized successfully.</response>
         /// <response code="403">Unknown user id.</response>
         /// <returns>Boolean indicating if the authorization was successful.</returns>
@@ -103,17 +105,19 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult<bool>> AuthorizeQuickConnect([FromQuery, Required] string code)
+        public async Task<ActionResult<bool>> AuthorizeQuickConnect([FromQuery, Required] string code, [FromQuery] Guid? userId = null)
         {
-            var userId = User.GetUserId();
-            if (userId.Equals(default))
+            var currentUserId = User.GetUserId();
+            var actualUserId = userId ?? currentUserId;
+
+            if (actualUserId.Equals(default) || (!userId.Equals(currentUserId) && !User.IsInRole(UserRoles.Administrator)))
             {
-                return StatusCode(StatusCodes.Status403Forbidden, "Unknown user id");
+                return Forbid("Unknown user id");
             }
 
             try
             {
-                return await _quickConnect.AuthorizeRequest(userId, code).ConfigureAwait(false);
+                return await _quickConnect.AuthorizeRequest(actualUserId, code).ConfigureAwait(false);
             }
             catch (AuthenticationException)
             {
