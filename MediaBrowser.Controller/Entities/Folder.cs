@@ -138,7 +138,8 @@ namespace MediaBrowser.Controller.Entities
                     return false;
                 }
 
-                if (this is UserRootFolder)
+                var folder = this;
+                if (folder is UserRootFolder)
                 {
                     return false;
                 }
