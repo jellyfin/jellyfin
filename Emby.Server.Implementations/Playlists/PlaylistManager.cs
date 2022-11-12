@@ -122,7 +122,7 @@ namespace Emby.Server.Implementations.Playlists
 
             var user = _userManager.GetUserById(options.UserId);
 
-            var parentFolderDest = parentFolder.Path.ToString();
+            var parentFolderDest = parentFolder.Path;
             var childFolderDest = Path.GetFullPath(System.IO.Path.Combine(parentFolderDest, folderName));
 
             var path = Path.GetFullPath(parentFolderDest + Path.DirectorySeparatorChar);

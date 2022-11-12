@@ -77,14 +77,23 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ParameterObsolete] string? mediaType,
             [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] CreatePlaylistDto? createPlaylistRequest)
         {
-            if (ids.Count == 0)
+            if (string.IsNullOrEmpty(name))
+            {
+                name = createPlaylistRequest?.Name;
+            }
+            else
+            {
+                name = Request.Query["name"];
+            }
+
+            if (ids?.Count == 0)
             {
                 ids = createPlaylistRequest?.Ids ?? Array.Empty<Guid>();
             }
 
             var result = await _playlistManager.CreatePlaylist(new PlaylistCreationRequest
             {
-                Name = name ?? createPlaylistRequest?.Name,
+                Name = name,
                 ItemIdList = ids,
                 UserId = userId ?? createPlaylistRequest?.UserId ?? default,
                 MediaType = mediaType ?? createPlaylistRequest?.MediaType
