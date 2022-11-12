@@ -106,7 +106,6 @@ namespace Emby.Dlna.Didl
                     writer.WriteAttributeString("xmlns", "dc", null, NsDc);
                     writer.WriteAttributeString("xmlns", "dlna", null, NsDlna);
                     writer.WriteAttributeString("xmlns", "upnp", null, NsUpnp);
-                    // didl.SetAttribute("xmlns:sec", NS_SEC);
 
                     WriteXmlRootAttributes(_profile, writer);
 
