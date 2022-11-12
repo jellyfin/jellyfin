@@ -124,7 +124,7 @@ namespace Emby.Server.Implementations.Plugins
                     Assembly assembly;
                     try
                     {
-                        assembly = Assembly.LoadFrom(file);
+                        assembly = Assembly.Load(file);
 
                         // Load all required types to verify that the plugin will load
                         assembly.GetTypes();
