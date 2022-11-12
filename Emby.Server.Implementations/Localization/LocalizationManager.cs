@@ -435,7 +435,7 @@ namespace Emby.Server.Implementations.Localization
             yield return new LocalizationOption("اُردُو", "ur_PK");
             yield return new LocalizationOption("Tiếng Việt", "vi");
             yield return new LocalizationOption("汉语 (简化字)", "zh-CN");
-            yield return new LocalizationOption("漢語 (繁体字)", "zh-TW");
+            yield return new LocalizationOption("漢語 (繁體字)", "zh-TW");
             yield return new LocalizationOption("廣東話 (香港)", "zh-HK");
         }
     }
