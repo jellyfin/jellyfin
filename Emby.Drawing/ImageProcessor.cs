@@ -235,7 +235,8 @@ namespace Emby.Drawing
                 return ImageFormat.Png;
             }
 
-            foreach (var format in clientSupportedFormats.Where(x => serverFormats.Contains(x)))
+            var format = clientSupportedFormats.FirstOrDefault(x => serverFormats.Contains(x));
+            if (format != null)
             {
                 return format;
             }
