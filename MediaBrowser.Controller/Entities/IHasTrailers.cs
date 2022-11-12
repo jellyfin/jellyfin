@@ -18,8 +18,8 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Gets the local trailers.
         /// </summary>
-        /// <value>The local trailers.</value>
-        IReadOnlyList<BaseItem> LocalTrailers { get; }
+        /// <returns>The local trailers.</returns>
+        IReadOnlyList<BaseItem> GetLocalTrailers();
     }
 
     /// <summary>
@@ -33,6 +33,6 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="item">Media item.</param>
         /// <returns><see cref="IReadOnlyList{Guid}" />.</returns>
         public static int GetTrailerCount(this IHasTrailers item)
-            => item.LocalTrailers.Count + item.RemoteTrailers.Count;
+            => item.GetLocalTrailers().Count + item.RemoteTrailers.Count;
     }
 }

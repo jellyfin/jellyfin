@@ -22,10 +22,12 @@ namespace MediaBrowser.Controller.Entities.TV
     public class Episode : Video, IHasTrailers, IHasLookupInfo<EpisodeInfo>, IHasSeries
     {
         /// <inheritdoc />
-        [JsonIgnore]
-        public IReadOnlyList<BaseItem> LocalTrailers => GetExtras()
+        public IReadOnlyList<BaseItem> GetLocalTrailers()
+        {
+            return GetExtras()
             .Where(extra => extra.ExtraType == Model.Entities.ExtraType.Trailer)
             .ToArray();
+        }
 
         /// <summary>
         /// Gets or sets the season in which it aired.
