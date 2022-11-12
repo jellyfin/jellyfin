@@ -52,7 +52,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Quick connect request successfully created.</response>
         /// <response code="401">Quick connect is not active on this server.</response>
         /// <returns>A <see cref="QuickConnectResult"/> with a secret and code for future use or an error message.</returns>
-        [HttpGet("Initiate")]
+        [HttpPost("Initiate")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<QuickConnectResult>> InitiateQuickConnect()
         {
@@ -66,6 +66,16 @@ namespace Jellyfin.Api.Controllers
                 return Unauthorized("Quick connect is disabled");
             }
         }
+
+        /// <summary>
+        /// Old version of <see cref="InitiateQuickConnect" /> using a GET method.
+        /// Still available to avoid breaking compatibility.
+        /// </summary>
+        /// <returns>The result of <see cref="InitiateQuickConnect" />.</returns>
+        [Obsolete("Use POST request instead")]
+        [HttpGet("Initiate")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public Task<ActionResult<QuickConnectResult>> InitiateQuickConnectLegacy() => InitiateQuickConnect();
 
         /// <summary>
         /// Attempts to retrieve authentication information.
