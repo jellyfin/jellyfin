@@ -175,6 +175,7 @@ namespace Emby.Naming.Common
             AlbumStackingPrefixes = new[]
             {
                 "cd",
+                "digital media",
                 "disc",
                 "disk",
                 "vol",
