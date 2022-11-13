@@ -212,6 +212,15 @@ namespace Emby.Server.Implementations.Library
             };
         }
 
+        private void SetPlayed(UserItemData data)
+        {
+            data.Played = true;
+            if (_config.Configuration.UpdateLastPlayedAndPlayCountOnPlayCompletion)
+            {
+                data.LastPlayedDate = DateTime.UtcNow;
+            }
+        }
+
         /// <inheritdoc />
         public bool UpdatePlayState(BaseItem item, UserItemData data, long? reportedPositionTicks)
         {
@@ -236,7 +245,8 @@ namespace Emby.Server.Implementations.Library
                 {
                     // mark as completed close to the end
                     positionTicks = 0;
-                    data.Played = playedToCompletion = true;
+                    playedToCompletion = true;
+                    SetPlayed(data);
                 }
                 else
                 {
@@ -245,7 +255,8 @@ namespace Emby.Server.Implementations.Library
                     if (durationSeconds < _config.Configuration.MinResumeDurationSeconds)
                     {
                         positionTicks = 0;
-                        data.Played = playedToCompletion = true;
+                        playedToCompletion = true;
+                        SetPlayed(data);
                     }
                 }
             }
@@ -263,14 +274,16 @@ namespace Emby.Server.Implementations.Library
                 {
                     // mark as completed close to the end
                     positionTicks = 0;
-                    data.Played = playedToCompletion = true;
+                    playedToCompletion = true;
+                    SetPlayed(data);
                 }
             }
             else if (!hasRuntime)
             {
                 // If we don't know the runtime we'll just have to assume it was fully played
-                data.Played = playedToCompletion = true;
                 positionTicks = 0;
+                playedToCompletion = true;
+                SetPlayed(data);
             }
 
             if (!item.SupportsPlayedStatus)
