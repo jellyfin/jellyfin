@@ -895,7 +895,7 @@ namespace Emby.Dlna.PlayTo
             return (true, uTrack);
         }
 
-        private XElement ParseResponse(string xml)
+        private static XElement ParseResponse(string xml)
         {
             // Handle different variations sent back by devices.
             try
@@ -1036,7 +1036,7 @@ namespace Emby.Dlna.PlayTo
             return RendererCommands;
         }
 
-        private string NormalizeUrl(string baseUrl, string url)
+        private static string NormalizeUrl(string baseUrl, string url)
         {
             // If it's already a complete url, don't stick anything onto the front of it
             if (url.StartsWith("http", StringComparison.OrdinalIgnoreCase))

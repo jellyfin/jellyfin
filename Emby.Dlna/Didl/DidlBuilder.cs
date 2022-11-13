@@ -1005,12 +1005,9 @@ namespace Emby.Dlna.Didl
             if (!_profile.EnableAlbumArtInDidl)
             {
                 if (string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
+                    || string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase) && !stubType.HasValue)
                 {
-                    if (!stubType.HasValue)
-                    {
-                        return;
-                    }
+                    return;
                 }
             }
 
@@ -1158,12 +1155,7 @@ namespace Emby.Dlna.Didl
             int? width = imageInfo.Width;
             int? height = imageInfo.Height;
 
-            if (width == 0 || height == 0)
-            {
-                width = null;
-                height = null;
-            }
-            else if (width == -1 || height == -1)
+            if (width == 0 || width == -1 || height == 0 || height == -1)
             {
                 width = null;
                 height = null;
