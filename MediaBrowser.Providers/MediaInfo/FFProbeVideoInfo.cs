@@ -666,7 +666,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 return Array.Empty<ChapterInfo>();
             }
 
-            // Limit to 100 chapters just in case there's some incorrect metadata here
+            // Limit the chapters just in case there's some incorrect metadata here
             int chapterCount = (int)Math.Min(runtime / dummyChapterDuration, _config.Configuration.DummyChapterCount);
             var chapters = new ChapterInfo[chapterCount];
 

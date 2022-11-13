@@ -6,6 +6,16 @@ namespace MediaBrowser.Model.Drawing
     public enum ImageResolution
     {
         /// <summary>
+        /// MatchSource.
+        /// </summary>
+        MatchSource,
+
+        /// <summary>
+        /// 144p.
+        /// </summary>
+        P144,
+
+        /// <summary>
         /// 240p.
         /// </summary>
         P240,

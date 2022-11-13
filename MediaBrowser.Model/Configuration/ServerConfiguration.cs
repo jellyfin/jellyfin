@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Updates;
 
@@ -257,6 +258,6 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the chapter image resolution.
         /// </summary>
         /// <value>The chapter image resolution.</value>
-        public string ChapterImageResolution { get; set; } = "Match Source";
+        public ImageResolution ChapterImageResolution { get; set; } = ImageResolution.MatchSource;
     }
 }
