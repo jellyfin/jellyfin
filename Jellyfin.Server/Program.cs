@@ -192,6 +192,17 @@ namespace Jellyfin.Server
 
                 // Re-use the web host service provider in the app host since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = webHost.Services;
+                var jellyfinDb = await appHost.ServiceProvider.GetRequiredService<IDbContextFactory<JellyfinDb>>().CreateDbContextAsync().ConfigureAwait(false);
+                await using (jellyfinDb.ConfigureAwait(false))
+                {
+                    if ((await jellyfinDb.Database.GetPendingMigrationsAsync().ConfigureAwait(false)).Any())
+                    {
+                        _logger.LogInformation("There are pending EFCore migrations in the database. Applying... (This may take a while, do not stop Jellyfin)");
+                        await jellyfinDb.Database.MigrateAsync().ConfigureAwait(false);
+                        _logger.LogInformation("EFCore migrations applied successfully");
+                    }
+                }
+
                 await appHost.InitializeServices().ConfigureAwait(false);
                 Migrations.MigrationRunner.Run(appHost, _loggerFactory);
 
@@ -236,10 +247,13 @@ namespace Jellyfin.Server
                 {
                     _logger.LogInformation("Running query planner optimizations in the database... This might take a while");
                     // Run before disposing the application
-                    using var context = appHost.Resolve<JellyfinDbProvider>().CreateContext();
-                    if (context.Database.IsSqlite())
+                    var context = await appHost.ServiceProvider.GetRequiredService<IDbContextFactory<JellyfinDb>>().CreateDbContextAsync().ConfigureAwait(false);
+                    await using (context.ConfigureAwait(false))
                     {
-                        context.Database.ExecuteSqlRaw("PRAGMA optimize");
+                        if (context.Database.IsSqlite())
+                        {
+                            await context.Database.ExecuteSqlRawAsync("PRAGMA optimize").ConfigureAwait(false);
+                        }
                     }
                 }
 

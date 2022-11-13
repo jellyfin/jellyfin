@@ -19,7 +19,7 @@ namespace Jellyfin.Server.Migrations.Routines
         private const string DbFilename = "activitylog.db";
 
         private readonly ILogger<MigrateActivityLogDb> _logger;
-        private readonly JellyfinDbProvider _provider;
+        private readonly IDbContextFactory<JellyfinDb> _provider;
         private readonly IServerApplicationPaths _paths;
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace Jellyfin.Server.Migrations.Routines
         /// <param name="logger">The logger.</param>
         /// <param name="paths">The server application paths.</param>
         /// <param name="provider">The database provider.</param>
-        public MigrateActivityLogDb(ILogger<MigrateActivityLogDb> logger, IServerApplicationPaths paths, JellyfinDbProvider provider)
+        public MigrateActivityLogDb(ILogger<MigrateActivityLogDb> logger, IServerApplicationPaths paths, IDbContextFactory<JellyfinDb> provider)
         {
             _logger = logger;
             _provider = provider;
@@ -68,7 +68,7 @@ namespace Jellyfin.Server.Migrations.Routines
             {
                 using var userDbConnection = SQLite3.Open(Path.Combine(dataPath, "users.db"), ConnectionFlags.ReadOnly, null);
                 _logger.LogWarning("Migrating the activity database may take a while, do not stop Jellyfin.");
-                using var dbContext = _provider.CreateContext();
+                using var dbContext = _provider.CreateDbContext();
 
                 var queryResult = connection.Query("SELECT * FROM ActivityLog ORDER BY Id");
 

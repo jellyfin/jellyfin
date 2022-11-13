@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
@@ -22,7 +23,7 @@ namespace Jellyfin.Server.Implementations.Devices
     /// </summary>
     public class DeviceManager : IDeviceManager
     {
-        private readonly JellyfinDbProvider _dbProvider;
+        private readonly IDbContextFactory<JellyfinDb> _dbProvider;
         private readonly IUserManager _userManager;
         private readonly ConcurrentDictionary<string, ClientCapabilities> _capabilitiesMap = new();
 
@@ -31,7 +32,7 @@ namespace Jellyfin.Server.Implementations.Devices
         /// </summary>
         /// <param name="dbProvider">The database provider.</param>
         /// <param name="userManager">The user manager.</param>
-        public DeviceManager(JellyfinDbProvider dbProvider, IUserManager userManager)
+        public DeviceManager(IDbContextFactory<JellyfinDb> dbProvider, IUserManager userManager)
         {
             _dbProvider = dbProvider;
             _userManager = userManager;
@@ -49,16 +50,20 @@ namespace Jellyfin.Server.Implementations.Devices
         /// <inheritdoc />
         public async Task UpdateDeviceOptions(string deviceId, string deviceName)
         {
-            await using var dbContext = _dbProvider.CreateContext();
-            var deviceOptions = await dbContext.DeviceOptions.AsQueryable().FirstOrDefaultAsync(dev => dev.DeviceId == deviceId).ConfigureAwait(false);
-            if (deviceOptions == null)
+            DeviceOptions? deviceOptions;
+            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+            await using (dbContext.ConfigureAwait(false))
             {
-                deviceOptions = new DeviceOptions(deviceId);
-                dbContext.DeviceOptions.Add(deviceOptions);
-            }
+                deviceOptions = await dbContext.DeviceOptions.AsQueryable().FirstOrDefaultAsync(dev => dev.DeviceId == deviceId).ConfigureAwait(false);
+                if (deviceOptions == null)
+                {
+                    deviceOptions = new DeviceOptions(deviceId);
+                    dbContext.DeviceOptions.Add(deviceOptions);
+                }
 
-            deviceOptions.CustomName = deviceName;
-            await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                deviceOptions.CustomName = deviceName;
+                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+            }
 
             DeviceOptionsUpdated?.Invoke(this, new GenericEventArgs<Tuple<string, DeviceOptions>>(new Tuple<string, DeviceOptions>(deviceId, deviceOptions)));
         }
@@ -66,22 +71,29 @@ namespace Jellyfin.Server.Implementations.Devices
         /// <inheritdoc />
         public async Task<Device> CreateDevice(Device device)
         {
-            await using var dbContext = _dbProvider.CreateContext();
+            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+            await using (dbContext.ConfigureAwait(false))
+            {
+                dbContext.Devices.Add(device);
 
-            dbContext.Devices.Add(device);
+                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+            }
 
-            await dbContext.SaveChangesAsync().ConfigureAwait(false);
             return device;
         }
 
         /// <inheritdoc />
         public async Task<DeviceOptions> GetDeviceOptions(string deviceId)
         {
-            await using var dbContext = _dbProvider.CreateContext();
-            var deviceOptions = await dbContext.DeviceOptions
-                .AsQueryable()
-                .FirstOrDefaultAsync(d => d.DeviceId == deviceId)
-                .ConfigureAwait(false);
+            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+            DeviceOptions? deviceOptions;
+            await using (dbContext.ConfigureAwait(false))
+            {
+                deviceOptions = await dbContext.DeviceOptions
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(d => d.DeviceId == deviceId)
+                    .ConfigureAwait(false);
+            }
 
             return deviceOptions ?? new DeviceOptions(deviceId);
         }
@@ -97,14 +109,17 @@ namespace Jellyfin.Server.Implementations.Devices
         /// <inheritdoc />
         public async Task<DeviceInfo?> GetDevice(string id)
         {
-            await using var dbContext = _dbProvider.CreateContext();
-            var device = await dbContext.Devices
-                .AsQueryable()
-                .Where(d => d.DeviceId == id)
-                .OrderByDescending(d => d.DateLastActivity)
-                .Include(d => d.User)
-                .FirstOrDefaultAsync()
-                .ConfigureAwait(false);
+            Device? device;
+            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+            await using (dbContext.ConfigureAwait(false))
+            {
+                device = await dbContext.Devices
+                    .Where(d => d.DeviceId == id)
+                    .OrderByDescending(d => d.DateLastActivity)
+                    .Include(d => d.User)
+                    .FirstOrDefaultAsync()
+                    .ConfigureAwait(false);
+            }
 
             var deviceInfo = device == null ? null : ToDeviceInfo(device);
 
@@ -114,41 +129,40 @@ namespace Jellyfin.Server.Implementations.Devices
         /// <inheritdoc />
         public async Task<QueryResult<Device>> GetDevices(DeviceQuery query)
         {
-            await using var dbContext = _dbProvider.CreateContext();
-
-            var devices = dbContext.Devices.AsQueryable();
-
-            if (query.UserId.HasValue)
+            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+            await using (dbContext.ConfigureAwait(false))
             {
-                devices = devices.Where(device => device.UserId.Equals(query.UserId.Value));
+                var devices = dbContext.Devices.AsQueryable();
+
+                if (query.UserId.HasValue)
+                {
+                    devices = devices.Where(device => device.UserId.Equals(query.UserId.Value));
+                }
+
+                if (query.DeviceId != null)
+                {
+                    devices = devices.Where(device => device.DeviceId == query.DeviceId);
+                }
+
+                if (query.AccessToken != null)
+                {
+                    devices = devices.Where(device => device.AccessToken == query.AccessToken);
+                }
+
+                var count = await devices.CountAsync().ConfigureAwait(false);
+
+                if (query.Skip.HasValue)
+                {
+                    devices = devices.Skip(query.Skip.Value);
+                }
+
+                if (query.Limit.HasValue)
+                {
+                    devices = devices.Take(query.Limit.Value);
+                }
+
+                return new QueryResult<Device>(query.Skip, count, await devices.ToListAsync().ConfigureAwait(false));
             }
-
-            if (query.DeviceId != null)
-            {
-                devices = devices.Where(device => device.DeviceId == query.DeviceId);
-            }
-
-            if (query.AccessToken != null)
-            {
-                devices = devices.Where(device => device.AccessToken == query.AccessToken);
-            }
-
-            var count = await devices.CountAsync().ConfigureAwait(false);
-
-            if (query.Skip.HasValue)
-            {
-                devices = devices.Skip(query.Skip.Value);
-            }
-
-            if (query.Limit.HasValue)
-            {
-                devices = devices.Take(query.Limit.Value);
-            }
-
-            return new QueryResult<Device>(
-                query.Skip,
-                count,
-                await devices.ToListAsync().ConfigureAwait(false));
         }
 
         /// <inheritdoc />
@@ -165,37 +179,43 @@ namespace Jellyfin.Server.Implementations.Devices
         /// <inheritdoc />
         public async Task<QueryResult<DeviceInfo>> GetDevicesForUser(Guid? userId, bool? supportsSync)
         {
-            await using var dbContext = _dbProvider.CreateContext();
-            var sessions = dbContext.Devices
-                .Include(d => d.User)
-                .AsQueryable()
-                .OrderByDescending(d => d.DateLastActivity)
-                .ThenBy(d => d.DeviceId)
-                .AsAsyncEnumerable();
-
-            if (supportsSync.HasValue)
+            IAsyncEnumerable<Device> sessions;
+            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+            await using (dbContext.ConfigureAwait(false))
             {
-                sessions = sessions.Where(i => GetCapabilities(i.DeviceId).SupportsSync == supportsSync.Value);
+                sessions = dbContext.Devices
+                    .Include(d => d.User)
+                    .OrderByDescending(d => d.DateLastActivity)
+                    .ThenBy(d => d.DeviceId)
+                    .AsAsyncEnumerable();
+
+                if (supportsSync.HasValue)
+                {
+                    sessions = sessions.Where(i => GetCapabilities(i.DeviceId).SupportsSync == supportsSync.Value);
+                }
+
+                if (userId.HasValue)
+                {
+                    var user = _userManager.GetUserById(userId.Value);
+
+                    sessions = sessions.Where(i => CanAccessDevice(user, i.DeviceId));
+                }
+
+                var array = await sessions.Select(device => ToDeviceInfo(device)).ToArrayAsync().ConfigureAwait(false);
+
+                return new QueryResult<DeviceInfo>(array);
             }
-
-            if (userId.HasValue)
-            {
-                var user = _userManager.GetUserById(userId.Value);
-
-                sessions = sessions.Where(i => CanAccessDevice(user, i.DeviceId));
-            }
-
-            var array = await sessions.Select(device => ToDeviceInfo(device)).ToArrayAsync().ConfigureAwait(false);
-
-            return new QueryResult<DeviceInfo>(array);
         }
 
         /// <inheritdoc />
         public async Task DeleteDevice(Device device)
         {
-            await using var dbContext = _dbProvider.CreateContext();
-            dbContext.Devices.Remove(device);
-            await dbContext.SaveChangesAsync().ConfigureAwait(false);
+            var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+            await using (dbContext.ConfigureAwait(false))
+            {
+                dbContext.Devices.Remove(device);
+                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+            }
         }
 
         /// <inheritdoc />
