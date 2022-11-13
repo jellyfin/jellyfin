@@ -29,10 +29,7 @@ namespace Jellyfin.Drawing.Skia
         /// <returns>The image format.</returns>
         public static SKEncodedImageFormat GetEncodedFormat(string outputPath)
         {
-            if (outputPath == null)
-            {
-                throw new ArgumentNullException(nameof(outputPath));
-            }
+            ArgumentNullException.ThrowIfNull(outputPath);
 
             var ext = Path.GetExtension(outputPath);
 

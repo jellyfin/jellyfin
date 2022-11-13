@@ -234,10 +234,7 @@ namespace Emby.Server.Implementations.Plugins
         /// <returns>Outcome of the operation.</returns>
         public bool RemovePlugin(LocalPlugin plugin)
         {
-            if (plugin == null)
-            {
-                throw new ArgumentNullException(nameof(plugin));
-            }
+            ArgumentNullException.ThrowIfNull(plugin);
 
             if (DeletePlugin(plugin))
             {
@@ -288,10 +285,7 @@ namespace Emby.Server.Implementations.Plugins
         /// <param name="plugin">The <see cref="LocalPlugin"/> of the plug to disable.</param>
         public void EnablePlugin(LocalPlugin plugin)
         {
-            if (plugin == null)
-            {
-                throw new ArgumentNullException(nameof(plugin));
-            }
+            ArgumentNullException.ThrowIfNull(plugin);
 
             if (ChangePluginState(plugin, PluginStatus.Active))
             {
@@ -306,10 +300,7 @@ namespace Emby.Server.Implementations.Plugins
         /// <param name="plugin">The <see cref="LocalPlugin"/> of the plug to disable.</param>
         public void DisablePlugin(LocalPlugin plugin)
         {
-            if (plugin == null)
-            {
-                throw new ArgumentNullException(nameof(plugin));
-            }
+            ArgumentNullException.ThrowIfNull(plugin);
 
             // Update the manifest on disk
             if (ChangePluginState(plugin, PluginStatus.Disabled))
@@ -326,10 +317,7 @@ namespace Emby.Server.Implementations.Plugins
         public void FailPlugin(Assembly assembly)
         {
             // Only save if disabled.
-            if (assembly == null)
-            {
-                throw new ArgumentNullException(nameof(assembly));
-            }
+            ArgumentNullException.ThrowIfNull(assembly);
 
             var plugin = _plugins.FirstOrDefault(p => p.DllFiles.Contains(assembly.Location));
             if (plugin == null)

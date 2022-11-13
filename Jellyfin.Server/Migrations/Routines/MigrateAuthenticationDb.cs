@@ -6,6 +6,7 @@ using Jellyfin.Data.Entities.Security;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
 
@@ -19,7 +20,7 @@ namespace Jellyfin.Server.Migrations.Routines
         private const string DbFilename = "authentication.db";
 
         private readonly ILogger<MigrateAuthenticationDb> _logger;
-        private readonly JellyfinDbProvider _dbProvider;
+        private readonly IDbContextFactory<JellyfinDb> _dbProvider;
         private readonly IServerApplicationPaths _appPaths;
         private readonly IUserManager _userManager;
 
@@ -32,7 +33,7 @@ namespace Jellyfin.Server.Migrations.Routines
         /// <param name="userManager">The user manager.</param>
         public MigrateAuthenticationDb(
             ILogger<MigrateAuthenticationDb> logger,
-            JellyfinDbProvider dbProvider,
+            IDbContextFactory<JellyfinDb> dbProvider,
             IServerApplicationPaths appPaths,
             IUserManager userManager)
         {
@@ -60,7 +61,7 @@ namespace Jellyfin.Server.Migrations.Routines
                 ConnectionFlags.ReadOnly,
                 null))
             {
-                using var dbContext = _dbProvider.CreateContext();
+                using var dbContext = _dbProvider.CreateDbContext();
 
                 var authenticatedDevices = connection.Query("SELECT * FROM Tokens");
 

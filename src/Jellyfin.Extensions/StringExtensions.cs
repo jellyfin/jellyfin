@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -40,7 +39,7 @@ namespace Jellyfin.Extensions
         }
 
         /// <summary>
-        /// Checks wether or not the specified string has diacritics in it.
+        /// Checks whether or not the specified string has diacritics in it.
         /// </summary>
         /// <param name="text">The string to check.</param>
         /// <returns>True if the string has diacritics, false otherwise.</returns>

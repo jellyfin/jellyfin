@@ -75,7 +75,9 @@ namespace MediaBrowser.Controller.Entities
             Model.Entities.ExtraType.DeletedScene,
             Model.Entities.ExtraType.Interview,
             Model.Entities.ExtraType.Sample,
-            Model.Entities.ExtraType.Scene
+            Model.Entities.ExtraType.Scene,
+            Model.Entities.ExtraType.Featurette,
+            Model.Entities.ExtraType.Short
         };
 
         private string _sortName;
@@ -775,36 +777,6 @@ namespace MediaBrowser.Controller.Entities
             return Id.ToString("N", CultureInfo.InvariantCulture);
         }
 
-        private List<Tuple<StringBuilder, bool>> GetSortChunks(string s1)
-        {
-            var list = new List<Tuple<StringBuilder, bool>>();
-
-            int thisMarker = 0;
-
-            while (thisMarker < s1.Length)
-            {
-                char thisCh = s1[thisMarker];
-
-                var thisChunk = new StringBuilder();
-                bool isNumeric = char.IsDigit(thisCh);
-
-                while (thisMarker < s1.Length && char.IsDigit(thisCh) == isNumeric)
-                {
-                    thisChunk.Append(thisCh);
-                    thisMarker++;
-
-                    if (thisMarker < s1.Length)
-                    {
-                        thisCh = s1[thisMarker];
-                    }
-                }
-
-                list.Add(new Tuple<StringBuilder, bool>(thisChunk, isNumeric));
-            }
-
-            return list;
-        }
-
         public virtual bool CanDelete()
         {
             if (SourceType == SourceType.Channel)
@@ -951,27 +923,39 @@ namespace MediaBrowser.Controller.Entities
             return ModifySortChunks(sortable);
         }
 
-        private string ModifySortChunks(string name)
+        internal static string ModifySortChunks(string name)
         {
-            var chunks = GetSortChunks(name);
-
-            var builder = new StringBuilder();
-
-            foreach (var chunk in chunks)
+            void AppendChunk(StringBuilder builder, bool isDigitChunk, ReadOnlySpan<char> chunk)
             {
-                var chunkBuilder = chunk.Item1;
-
-                // This chunk is numeric
-                if (chunk.Item2)
+                if (isDigitChunk && chunk.Length < 10)
                 {
-                    while (chunkBuilder.Length < 10)
-                    {
-                        chunkBuilder.Insert(0, '0');
-                    }
+                    builder.Append('0', 10 - chunk.Length);
                 }
 
-                builder.Append(chunkBuilder);
+                builder.Append(chunk);
             }
+
+            if (name.Length == 0)
+            {
+                return string.Empty;
+            }
+
+            var builder = new StringBuilder(name.Length);
+
+            int chunkStart = 0;
+            bool isDigitChunk = char.IsDigit(name[0]);
+            for (int i = 0; i < name.Length; i++)
+            {
+                var isDigit = char.IsDigit(name[i]);
+                if (isDigit != isDigitChunk)
+                {
+                    AppendChunk(builder, isDigitChunk, name.AsSpan(chunkStart, i - chunkStart));
+                    chunkStart = i;
+                    isDigitChunk = isDigit;
+                }
+            }
+
+            AppendChunk(builder, isDigitChunk, name.AsSpan(chunkStart));
 
             // logger.LogDebug("ModifySortChunks Start: {0} End: {1}", name, builder.ToString());
             return builder.ToString().RemoveDiacritics();
@@ -1101,10 +1085,7 @@ namespace MediaBrowser.Controller.Entities
 
         private MediaSourceInfo GetVersionInfo(bool enablePathSubstitution, BaseItem item, MediaSourceType type)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
+            ArgumentNullException.ThrowIfNull(item);
 
             var protocol = item.PathProtocol;
 
@@ -1544,10 +1525,7 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="ArgumentNullException">If user is null.</exception>
         public bool IsParentalAllowed(User user)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ArgumentNullException.ThrowIfNull(user);
 
             if (!IsVisibleViaTags(user))
             {
@@ -1667,10 +1645,7 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="ArgumentNullException"><paramref name="user" /> is <c>null</c>.</exception>
         public virtual bool IsVisible(User user)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ArgumentNullException.ThrowIfNull(user);
 
             return IsParentalAllowed(user);
         }
@@ -1842,10 +1817,7 @@ namespace MediaBrowser.Controller.Entities
             DateTime? datePlayed,
             bool resetPosition)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ArgumentNullException.ThrowIfNull(user);
 
             var data = UserDataManager.GetUserData(user, this);
 
@@ -1876,10 +1848,7 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="ArgumentNullException">Throws if user is null.</exception>
         public virtual void MarkUnplayed(User user)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ArgumentNullException.ThrowIfNull(user);
 
             var data = UserDataManager.GetUserData(user, this);
 
@@ -2110,10 +2079,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Image index.</returns>
         public int GetImageIndex(ItemImageInfo image)
         {
-            if (image == null)
-            {
-                throw new ArgumentNullException(nameof(image));
-            }
+            ArgumentNullException.ThrowIfNull(image);
 
             if (image.Type == ImageType.Chapter)
             {
@@ -2320,10 +2286,7 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool IsUnplayed(User user)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ArgumentNullException.ThrowIfNull(user);
 
             var userdata = UserDataManager.GetUserData(user, this);
 
@@ -2616,7 +2579,8 @@ namespace MediaBrowser.Controller.Entities
             return ExtraIds
                 .Select(LibraryManager.GetItemById)
                 .Where(i => i != null)
-                .Where(i => i.ExtraType.HasValue && extraTypes.Contains(i.ExtraType.Value));
+                .Where(i => i.ExtraType.HasValue && extraTypes.Contains(i.ExtraType.Value))
+                .OrderBy(i => i.SortName);
         }
 
         public virtual long GetRunTimeTicksForPlayState()

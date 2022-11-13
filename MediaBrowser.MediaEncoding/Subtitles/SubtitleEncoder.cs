@@ -120,10 +120,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         async Task<Stream> ISubtitleEncoder.GetSubtitles(BaseItem item, string mediaSourceId, int subtitleStreamIndex, string outputFormat, long startTimeTicks, long endTimeTicks, bool preserveOriginalTimestamps, CancellationToken cancellationToken)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
+            ArgumentNullException.ThrowIfNull(item);
 
             if (string.IsNullOrWhiteSpace(mediaSourceId))
             {
@@ -746,7 +743,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
         }
 
-        internal readonly struct SubtitleInfo
+        public readonly struct SubtitleInfo
         {
             public SubtitleInfo(string path, MediaProtocol protocol, string format, bool isExternal)
             {

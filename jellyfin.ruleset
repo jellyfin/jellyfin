@@ -5,8 +5,16 @@
     <Rule Id="SA1000" Action="Error" />
     <!-- error on SA1001: Commas should not be preceded by whitespace -->
     <Rule Id="SA1001" Action="Error" />
+    <!-- error on SA1106: Code should not contain empty statements -->
+    <Rule Id="SA1106" Action="Error" />
+    <!-- error on SA1107: Code should not contain multiple statements on one line -->
+    <Rule Id="SA1107" Action="Error" />
+    <!-- error on SA1028: Code should not contain trailing whitespace -->
+    <Rule Id="SA1028" Action="Error" />
     <!-- error on SA1117: The parameters should all be placed on the same line or each parameter should be placed on its own line -->
     <Rule Id="SA1117" Action="Error" />
+    <!-- error on SA1137: Elements should have the same indentation -->
+    <Rule Id="SA1137" Action="Error" />
     <!-- error on SA1142: Refer to tuple fields by name -->
     <Rule Id="SA1142" Action="Error" />
     <!-- error on SA1210: Using directives should be ordered alphabetically by the namespaces -->
@@ -69,6 +77,8 @@
     <Rule Id="CA1307" Action="Error" />
     <!-- error on CA1309: Use ordinal StringComparison -->
     <Rule Id="CA1309" Action="Error" />
+    <!-- error on CA1310: Specify StringComparison for correctness -->
+    <Rule Id="CA1310" Action="Error" />
     <!-- error on CA1725: Parameter names should match base declaration -->
     <Rule Id="CA1725" Action="Error" />
     <!-- error on CA1725: Call async methods when in an async method -->
@@ -84,6 +94,8 @@
     <!-- error on CA2016: Forward the CancellationToken parameter to methods that take one
         or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token -->
     <Rule Id="CA2016" Action="Error" />
+    <!-- error on CA2201: Exception type System.Exception is not sufficiently specific -->
+    <Rule Id="CA2201" Action="Error" />
     <!-- error on CA2215: Dispose methods should call base class dispose -->
     <Rule Id="CA2215" Action="Error" />
     <!-- error on CA2254: Template should be a static expression -->

@@ -30,7 +30,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns>Episode.</returns>
-        public override Episode Resolve(ItemResolveArgs args)
+        protected override Episode Resolve(ItemResolveArgs args)
         {
             var parent = args.Parent;
 

@@ -26,6 +26,8 @@ jobs:
         BuildConfiguration: linux.amd64-musl
       Linux.arm64:
         BuildConfiguration: linux.arm64
+      Linux.musl-linux-arm64:
+        BuildConfiguration: linux.musl-linux-arm64
       Linux.armhf:
         BuildConfiguration: linux.armhf
       Windows.amd64:

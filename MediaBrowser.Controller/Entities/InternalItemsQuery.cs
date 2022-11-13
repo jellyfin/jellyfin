@@ -205,6 +205,16 @@ namespace MediaBrowser.Controller.Entities
 
         public int? MinIndexNumber { get; set; }
 
+        /// <summary>
+        /// Gets or sets the minimum ParentIndexNumber and IndexNumber.
+        /// </summary>
+        /// <remarks>
+        /// It produces this where clause:
+        /// <para>(ParentIndexNumber = X and IndexNumber >= Y) or ParentIndexNumber > X.
+        /// </para>
+        /// </remarks>
+        public (int ParentIndexNumber, int IndexNumber)? MinParentAndIndexNumber { get; set; }
+
         public int? AiredDuringSeason { get; set; }
 
         public double? MinCriticRating { get; set; }

@@ -100,7 +100,7 @@ namespace MediaBrowser.Model.Search
         public BaseItemKind Type { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is folder.
+        /// Gets or sets a value indicating whether this instance is folder.
         /// </summary>
         /// <value><c>true</c> if this instance is folder; otherwise, <c>false</c>.</value>
         public bool? IsFolder { get; set; }

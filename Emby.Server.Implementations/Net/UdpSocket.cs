@@ -35,10 +35,7 @@ namespace Emby.Server.Implementations.Net
 
         public UdpSocket(Socket socket, int localPort, IPAddress ip)
         {
-            if (socket == null)
-            {
-                throw new ArgumentNullException(nameof(socket));
-            }
+            ArgumentNullException.ThrowIfNull(socket);
 
             _socket = socket;
             _localPort = localPort;
@@ -51,10 +48,7 @@ namespace Emby.Server.Implementations.Net
 
         public UdpSocket(Socket socket, IPEndPoint endPoint)
         {
-            if (socket == null)
-            {
-                throw new ArgumentNullException(nameof(socket));
-            }
+            ArgumentNullException.ThrowIfNull(socket);
 
             _socket = socket;
             _socket.Connect(endPoint);
@@ -96,7 +90,7 @@ namespace Emby.Server.Implementations.Net
                 }
                 else
                 {
-                    tcs.TrySetException(new Exception("SocketError: " + e.SocketError));
+                    tcs.TrySetException(new SocketException((int)e.SocketError));
                 }
             }
         }
@@ -114,7 +108,7 @@ namespace Emby.Server.Implementations.Net
                 }
                 else
                 {
-                    tcs.TrySetException(new Exception("SocketError: " + e.SocketError));
+                    tcs.TrySetException(new SocketException((int)e.SocketError));
                 }
             }
         }

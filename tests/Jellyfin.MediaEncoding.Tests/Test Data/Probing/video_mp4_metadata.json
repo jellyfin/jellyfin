@@ -206,7 +206,7 @@
                 "lyrics": 0,
                 "karaoke": 0,
                 "forced": 0,
-                "hearing_impaired": 0,
+                "hearing_impaired": 1,
                 "visual_impaired": 0,
                 "clean_effects": 0,
                 "attached_pic": 0,

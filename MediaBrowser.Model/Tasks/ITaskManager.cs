@@ -22,7 +22,7 @@ namespace MediaBrowser.Model.Tasks
         /// <summary>
         /// Cancels if running and queue.
         /// </summary>
-        /// <typeparam name="T">An implementatin of <see cref="IScheduledTask" />.</typeparam>
+        /// <typeparam name="T">An implementation of <see cref="IScheduledTask" />.</typeparam>
         /// <param name="options">Task options.</param>
         void CancelIfRunningAndQueue<T>(TaskOptions options)
             where T : IScheduledTask;
@@ -30,21 +30,21 @@ namespace MediaBrowser.Model.Tasks
         /// <summary>
         /// Cancels if running and queue.
         /// </summary>
-        /// <typeparam name="T">An implementatin of <see cref="IScheduledTask" />.</typeparam>
+        /// <typeparam name="T">An implementation of <see cref="IScheduledTask" />.</typeparam>
         void CancelIfRunningAndQueue<T>()
             where T : IScheduledTask;
 
         /// <summary>
         /// Cancels if running.
         /// </summary>
-        /// <typeparam name="T">An implementatin of <see cref="IScheduledTask" />.</typeparam>
+        /// <typeparam name="T">An implementation of <see cref="IScheduledTask" />.</typeparam>
         void CancelIfRunning<T>()
             where T : IScheduledTask;
 
         /// <summary>
         /// Queues the scheduled task.
         /// </summary>
-        /// <typeparam name="T">An implementatin of <see cref="IScheduledTask" />.</typeparam>
+        /// <typeparam name="T">An implementation of <see cref="IScheduledTask" />.</typeparam>
         /// <param name="options">Task options.</param>
         void QueueScheduledTask<T>(TaskOptions options)
             where T : IScheduledTask;
@@ -52,7 +52,7 @@ namespace MediaBrowser.Model.Tasks
         /// <summary>
         /// Queues the scheduled task.
         /// </summary>
-        /// <typeparam name="T">An implementatin of <see cref="IScheduledTask" />.</typeparam>
+        /// <typeparam name="T">An implementation of <see cref="IScheduledTask" />.</typeparam>
         void QueueScheduledTask<T>()
             where T : IScheduledTask;
 

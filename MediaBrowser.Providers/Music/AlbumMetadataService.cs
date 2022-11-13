@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,8 +13,19 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Music
 {
+    /// <summary>
+    /// The album metadata service.
+    /// </summary>
     public class AlbumMetadataService : MetadataService<MusicAlbum, AlbumInfo>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AlbumMetadataService"/> class.
+        /// </summary>
+        /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/>.</param>
+        /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
+        /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
+        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+        /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         public AlbumMetadataService(
             IServerConfigurationManager serverConfigurationManager,
             ILogger<AlbumMetadataService> logger,
@@ -61,45 +70,130 @@ namespace MediaBrowser.Providers.Music
 
                 var songs = children.Cast<Audio>().ToArray();
 
-                updateType |= SetAlbumArtistFromSongs(item, songs);
                 updateType |= SetArtistsFromSongs(item, songs);
+                updateType |= SetAlbumArtistFromSongs(item, songs);
+                updateType |= SetAlbumFromSongs(item, songs);
+                updateType |= SetPeople(item);
             }
 
             return updateType;
         }
 
-        private ItemUpdateType SetAlbumArtistFromSongs(MusicAlbum item, IEnumerable<Audio> songs)
+        private ItemUpdateType SetAlbumArtistFromSongs(MusicAlbum item, IReadOnlyList<Audio> songs)
         {
             var updateType = ItemUpdateType.None;
 
-            var artists = songs
+            var albumArtists = songs
                 .SelectMany(i => i.AlbumArtists)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .OrderBy(i => i)
+                .GroupBy(i => i)
+                .OrderByDescending(g => g.Count())
+                .Select(g => g.Key)
                 .ToArray();
 
-            if (!item.AlbumArtists.SequenceEqual(artists, StringComparer.OrdinalIgnoreCase))
+            updateType |= SetProviderIdFromSongs(item, songs, MetadataProvider.MusicBrainzAlbumArtist);
+
+            if (!item.AlbumArtists.SequenceEqual(albumArtists, StringComparer.OrdinalIgnoreCase))
             {
-                item.AlbumArtists = artists;
+                item.AlbumArtists = albumArtists;
                 updateType |= ItemUpdateType.MetadataEdit;
             }
 
             return updateType;
         }
 
-        private ItemUpdateType SetArtistsFromSongs(MusicAlbum item, IEnumerable<Audio> songs)
+        private ItemUpdateType SetArtistsFromSongs(MusicAlbum item, IReadOnlyList<Audio> songs)
         {
             var updateType = ItemUpdateType.None;
 
             var artists = songs
                 .SelectMany(i => i.Artists)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .OrderBy(i => i)
+                .GroupBy(i => i)
+                .OrderByDescending(g => g.Count())
+                .Select(g => g.Key)
                 .ToArray();
 
             if (!item.Artists.SequenceEqual(artists, StringComparer.OrdinalIgnoreCase))
             {
                 item.Artists = artists;
+                updateType |= ItemUpdateType.MetadataEdit;
+            }
+
+            return updateType;
+        }
+
+        private ItemUpdateType SetAlbumFromSongs(MusicAlbum item, IReadOnlyList<Audio> songs)
+        {
+            var updateType = ItemUpdateType.None;
+
+            updateType |= SetProviderIdFromSongs(item, songs, MetadataProvider.MusicBrainzAlbum);
+            updateType |= SetProviderIdFromSongs(item, songs, MetadataProvider.MusicBrainzReleaseGroup);
+
+            return updateType;
+        }
+
+        private ItemUpdateType SetProviderIdFromSongs(BaseItem item, IReadOnlyList<Audio> songs, MetadataProvider provider)
+        {
+            var ids = songs
+                .Select(i => i.GetProviderId(provider))
+                .GroupBy(i => i)
+                .OrderByDescending(g => g.Count())
+                .Select(g => g.Key)
+                .ToArray();
+
+            var id = item.GetProviderId(provider);
+            if (ids.Any())
+            {
+                var firstId = ids[0];
+                if (!string.IsNullOrEmpty(firstId)
+                    && (string.IsNullOrEmpty(id)
+                        || !id.Equals(firstId, StringComparison.OrdinalIgnoreCase)))
+                {
+                    item.SetProviderId(provider, firstId);
+                    return ItemUpdateType.MetadataEdit;
+                }
+            }
+            return ItemUpdateType.None;
+        }
+
+        private void SetProviderId(MusicAlbum sourceItem, MusicAlbum targetItem, MetadataProvider provider)
+        {
+            var source = sourceItem.GetProviderId(provider);
+            var target = targetItem.GetProviderId(provider);
+            if (!string.IsNullOrEmpty(source)
+                && (string.IsNullOrEmpty(target)
+                    || !target.Equals(source, StringComparison.Ordinal)))
+            {
+                targetItem.SetProviderId(provider, source);
+            }
+        }
+
+        private ItemUpdateType SetPeople(MusicAlbum item)
+        {
+            var updateType = ItemUpdateType.None;
+
+            if (item.AlbumArtists.Any() || item.Artists.Any())
+            {
+                var people = new List<PersonInfo>();
+
+                foreach (var albumArtist in item.AlbumArtists)
+                {
+                    PeopleHelper.AddPerson(people, new PersonInfo
+                    {
+                        Name = albumArtist,
+                        Type = "AlbumArtist"
+                    });
+                }
+
+                foreach (var artist in item.Artists)
+                {
+                    PeopleHelper.AddPerson(people, new PersonInfo
+                    {
+                        Name = artist,
+                        Type = "Artist"
+                    });
+                }
+
+                LibraryManager.UpdatePeople(item, people);
                 updateType |= ItemUpdateType.MetadataEdit;
             }
 
@@ -122,6 +216,21 @@ namespace MediaBrowser.Providers.Music
             if (replaceData || targetItem.Artists.Count == 0)
             {
                 targetItem.Artists = sourceItem.Artists;
+            }
+
+            if (replaceData || string.IsNullOrEmpty(targetItem.GetProviderId(MetadataProvider.MusicBrainzAlbumArtist)))
+            {
+                SetProviderId(sourceItem, targetItem, MetadataProvider.MusicBrainzAlbumArtist);
+            }
+
+            if (replaceData || string.IsNullOrEmpty(targetItem.GetProviderId(MetadataProvider.MusicBrainzAlbum)))
+            {
+                SetProviderId(sourceItem, targetItem, MetadataProvider.MusicBrainzAlbum);
+            }
+
+            if (replaceData || string.IsNullOrEmpty(targetItem.GetProviderId(MetadataProvider.MusicBrainzReleaseGroup)))
+            {
+                SetProviderId(sourceItem, targetItem, MetadataProvider.MusicBrainzReleaseGroup);
             }
         }
     }

@@ -8,6 +8,7 @@ namespace MediaBrowser.Model.LiveTv
         public TunerHostInfo()
         {
             AllowHWTranscoding = true;
+            IgnoreDts = true;
         }
 
         public string Id { get; set; }
@@ -31,5 +32,7 @@ namespace MediaBrowser.Model.LiveTv
         public int TunerCount { get; set; }
 
         public string UserAgent { get; set; }
+
+        public bool IgnoreDts { get; set; }
     }
 }

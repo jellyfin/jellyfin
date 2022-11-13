@@ -221,6 +221,8 @@ namespace MediaBrowser.Model.Entities
 
         public string LocalizedExternal { get; set; }
 
+        public string LocalizedHearingImpaired { get; set; }
+
         public string DisplayTitle
         {
             get
@@ -345,6 +347,11 @@ namespace MediaBrowser.Model.Entities
                             attributes.Add(string.IsNullOrEmpty(LocalizedUndefined) ? "Und" : LocalizedUndefined);
                         }
 
+                        if (IsHearingImpaired)
+                        {
+                            attributes.Add(string.IsNullOrEmpty(LocalizedHearingImpaired) ? "Hearing Impaired" : LocalizedHearingImpaired);
+                        }
+
                         if (IsDefault)
                         {
                             attributes.Add(string.IsNullOrEmpty(LocalizedDefault) ? "Default" : LocalizedDefault);
@@ -452,6 +459,12 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value><c>true</c> if this instance is forced; otherwise, <c>false</c>.</value>
         public bool IsForced { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is for the hearing impaired.
+        /// </summary>
+        /// <value><c>true</c> if this instance is for the hearing impaired; otherwise, <c>false</c>.</value>
+        public bool IsHearingImpaired { get; set; }
 
         /// <summary>
         /// Gets or sets the height.
@@ -606,7 +619,7 @@ namespace MediaBrowser.Model.Entities
                 <= 1024 when Height <= 576 => IsInterlaced ? "576i" : "576p",
                 // 1280x720
                 <= 1280 when Height <= 962 => IsInterlaced ? "720i" : "720p",
-                // 2560x1080 (FHD ultra wide 21:9) using 1440px width to accomodate WQHD
+                // 2560x1080 (FHD ultra wide 21:9) using 1440px width to accommodate WQHD
                 <= 2560 when Height <= 1440 => IsInterlaced ? "1080i" : "1080p",
                 // 4K
                 <= 4096 when Height <= 3072 => "4K",

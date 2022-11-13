@@ -61,10 +61,7 @@ namespace Emby.Dlna.PlayTo
 
         private static Argument ArgumentFromXml(XElement container)
         {
-            if (container == null)
-            {
-                throw new ArgumentNullException(nameof(container));
-            }
+            ArgumentNullException.ThrowIfNull(container);
 
             return new Argument
             {

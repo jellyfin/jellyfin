@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.Library.Resolvers.Audio
 {
     /// <summary>
-    /// Class MusicArtistResolver.
+    /// The music artist resolver.
     /// </summary>
     public class MusicArtistResolver : ItemResolver<MusicArtist>
     {
@@ -23,8 +23,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// <summary>
         /// Initializes a new instance of the <see cref="MusicArtistResolver"/> class.
         /// </summary>
-        /// <param name="logger">The logger for the created <see cref="MusicAlbumResolver"/> instances.</param>
-        /// <param name="namingOptions">The naming options.</param>
+        /// <param name="logger">Instance of the <see cref="MusicAlbumResolver"/> interface.</param>
+        /// <param name="namingOptions">The <see cref="NamingOptions"/>.</param>
         public MusicArtistResolver(
             ILogger<MusicAlbumResolver> logger,
             NamingOptions namingOptions)
@@ -40,10 +40,10 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         public override ResolverPriority Priority => ResolverPriority.Second;
 
         /// <summary>
-        /// Resolves the specified args.
+        /// Resolves the specified resolver arguments.
         /// </summary>
-        /// <param name="args">The args.</param>
-        /// <returns>MusicArtist.</returns>
+        /// <param name="args">The resolver arguments.</param>
+        /// <returns>A <see cref="MusicArtist"/>.</returns>
         protected override MusicArtist Resolve(ItemResolveArgs args)
         {
             if (!args.IsDirectory)
@@ -61,7 +61,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
 
             var isMusicMediaFolder = string.Equals(collectionType, CollectionType.Music, StringComparison.OrdinalIgnoreCase);
 
-            // If there's a collection type and it's not music, it can't be a series
+            // If there's a collection type and it's not music, it can't be a music artist
             if (!isMusicMediaFolder)
             {
                 return null;
@@ -82,14 +82,24 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
 
             var albumResolver = new MusicAlbumResolver(_logger, _namingOptions);
 
-            // If we contain an album assume we are an artist folder
             var directories = args.FileSystemChildren.Where(i => i.IsDirectory);
 
             var result = Parallel.ForEach(directories, (fileSystemInfo, state) =>
             {
+                // If we contain a artist subfolder assume we are an artist folder
+                foreach (var subfolder in _namingOptions.ArtistSubfolders)
+                {
+                    if (fileSystemInfo.Name.Equals(subfolder, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Stop once we see an artist subfolder
+                        state.Stop();
+                    }
+                }
+
+                // If we contain a music album assume we are an artist folder
                 if (albumResolver.IsMusicAlbum(fileSystemInfo.FullName, directoryService))
                 {
-                    // stop once we see a music album
+                    // Stop once we see a music album
                     state.Stop();
                 }
             });

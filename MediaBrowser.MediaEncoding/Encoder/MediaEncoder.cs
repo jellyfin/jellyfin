@@ -68,9 +68,21 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private List<string> _filters = new List<string>();
         private IDictionary<int, bool> _filtersWithOption = new Dictionary<int, bool>();
 
+        private bool _isPkeyPauseSupported = false;
+
         private bool _isVaapiDeviceAmd = false;
         private bool _isVaapiDeviceInteliHD = false;
         private bool _isVaapiDeviceInteli965 = false;
+        private bool _isVaapiDeviceSupportVulkanFmtModifier = false;
+
+        private static string[] _vulkanFmtModifierExts = {
+            "VK_KHR_sampler_ycbcr_conversion",
+            "VK_EXT_image_drm_format_modifier",
+            "VK_KHR_external_memory_fd",
+            "VK_EXT_external_memory_dma_buf",
+            "VK_KHR_external_semaphore_fd",
+            "VK_EXT_external_memory_host"
+        };
 
         private Version _ffmpegVersion = null;
         private string _ffmpegPath = string.Empty;
@@ -103,11 +115,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public Version EncoderVersion => _ffmpegVersion;
 
+        public bool IsPkeyPauseSupported => _isPkeyPauseSupported;
+
         public bool IsVaapiDeviceAmd => _isVaapiDeviceAmd;
 
         public bool IsVaapiDeviceInteliHD => _isVaapiDeviceInteliHD;
 
         public bool IsVaapiDeviceInteli965 => _isVaapiDeviceInteli965;
+
+        public bool IsVaapiDeviceSupportVulkanFmtModifier => _isVaapiDeviceSupportVulkanFmtModifier;
 
         /// <summary>
         /// Run at startup or if the user removes a Custom path from transcode page.
@@ -157,6 +173,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 _threads = EncodingHelper.GetNumberOfThreads(null, options, null);
 
+                _isPkeyPauseSupported = validator.CheckSupportedRuntimeKey("p      pause transcoding");
+
                 // Check the Vaapi device vendor
                 if (OperatingSystem.IsLinux()
                     && SupportsHwaccel("vaapi")
@@ -166,6 +184,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     _isVaapiDeviceAmd = validator.CheckVaapiDeviceByDriverName("Mesa Gallium driver", options.VaapiDevice);
                     _isVaapiDeviceInteliHD = validator.CheckVaapiDeviceByDriverName("Intel iHD driver", options.VaapiDevice);
                     _isVaapiDeviceInteli965 = validator.CheckVaapiDeviceByDriverName("Intel i965 driver", options.VaapiDevice);
+                    _isVaapiDeviceSupportVulkanFmtModifier = validator.CheckVulkanDrmDeviceByExtensionName(options.VaapiDevice, _vulkanFmtModifierExts);
+
                     if (_isVaapiDeviceAmd)
                     {
                         _logger.LogInformation("VAAPI device {RenderNodePath} is AMD GPU", options.VaapiDevice);
@@ -177,6 +197,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     else if (_isVaapiDeviceInteli965)
                     {
                         _logger.LogInformation("VAAPI device {RenderNodePath} is Intel GPU (i965)", options.VaapiDevice);
+                    }
+
+                    if (_isVaapiDeviceSupportVulkanFmtModifier)
+                    {
+                        _logger.LogInformation("VAAPI device {RenderNodePath} supports Vulkan DRM format modifier", options.VaapiDevice);
                     }
                 }
             }
@@ -379,14 +404,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
             string analyzeDuration = string.Empty;
             string ffmpegAnalyzeDuration = _config.GetFFmpegAnalyzeDuration() ?? string.Empty;
 
-            if (!string.IsNullOrEmpty(ffmpegAnalyzeDuration))
-            {
-                analyzeDuration = "-analyzeduration " + ffmpegAnalyzeDuration;
-            }
-            else if (request.MediaSource.AnalyzeDurationMs > 0)
+            if (request.MediaSource.AnalyzeDurationMs > 0)
             {
                 analyzeDuration = "-analyzeduration " +
                                   (request.MediaSource.AnalyzeDurationMs * 1000).ToString();
+            }
+            else if (!string.IsNullOrEmpty(ffmpegAnalyzeDuration))
+            {
+                analyzeDuration = "-analyzeduration " + ffmpegAnalyzeDuration;
             }
 
             var forceEnableLogging = request.MediaSource.Protocol != MediaProtocol.File;
@@ -645,9 +670,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 Video3DFormat.HalfSideBySide => "crop=iw/2:ih:0:0,scale=(iw*2):ih,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1",
                 // fsbs crop width in half,set the display aspect,crop out any black bars we may have made
                 Video3DFormat.FullSideBySide => "crop=iw/2:ih:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1",
-                // htab crop heigh in half,scale to correct size, set the display aspect,crop out any black bars we may have made
+                // htab crop height in half,scale to correct size, set the display aspect,crop out any black bars we may have made
                 Video3DFormat.HalfTopAndBottom => "crop=iw:ih/2:0:0,scale=(iw*2):ih),setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1",
-                // ftab crop heigt in half, set the display aspect,crop out any black bars we may have made
+                // ftab crop height in half, set the display aspect,crop out any black bars we may have made
                 Video3DFormat.FullTopAndBottom => "crop=iw:ih/2:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1",
                 _ => "scale=trunc(iw*sar):ih"
             };

@@ -169,7 +169,7 @@ namespace Jellyfin.Api.Models.StreamingDtos
         /// <summary>
         /// Disposes the stream state.
         /// </summary>
-        /// <param name="disposing">Whether the object is currently beeing disposed.</param>
+        /// <param name="disposing">Whether the object is currently being disposed.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)

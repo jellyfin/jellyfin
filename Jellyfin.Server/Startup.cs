@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -8,6 +9,7 @@ using Jellyfin.MediaEncoding.Hls.Extensions;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Implementations;
+using Jellyfin.Server.Implementations.Extensions;
 using Jellyfin.Server.Infrastructure;
 using Jellyfin.Server.Middleware;
 using MediaBrowser.Common.Net;
@@ -64,7 +66,7 @@ namespace Jellyfin.Server
             // TODO remove once this is fixed upstream https://github.com/dotnet/aspnetcore/issues/34371
             services.AddSingleton<IActionResultExecutor<PhysicalFileResult>, SymlinkFollowingPhysicalFileResultExecutor>();
             services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.GetNetworkConfiguration());
-
+            services.AddJellyfinDbContext();
             services.AddJellyfinApiSwagger();
 
             // configure custom legacy authentication
@@ -100,6 +102,22 @@ namespace Jellyfin.Server
                     c.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue($"({_serverApplicationHost.ApplicationUserAgentAddress})"));
                     c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
                     c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
+                })
+                .ConfigurePrimaryHttpMessageHandler(defaultHttpClientHandlerDelegate);
+
+            services.AddHttpClient(NamedClient.Dlna, c =>
+                {
+                    c.DefaultRequestHeaders.UserAgent.ParseAdd(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{0}/{1} UPnP/1.0 {2}/{3}",
+                            MediaBrowser.Common.System.OperatingSystem.Name,
+                            Environment.OSVersion,
+                            _serverApplicationHost.Name,
+                            _serverApplicationHost.ApplicationVersionString));
+
+                    c.DefaultRequestHeaders.Add("CPFN.UPNP.ORG", _serverApplicationHost.FriendlyName); // Required for UPnP DeviceArchitecture v2.0
+                    c.DefaultRequestHeaders.Add("FriendlyName.DLNA.ORG", _serverApplicationHost.FriendlyName); // REVIEW: where does this come from?
                 })
                 .ConfigurePrimaryHttpMessageHandler(defaultHttpClientHandlerDelegate);
 

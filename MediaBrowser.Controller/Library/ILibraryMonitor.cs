@@ -34,12 +34,5 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="path">The path.</param>
         void ReportFileSystemChanged(string path);
-
-        /// <summary>
-        /// Determines whether [is path locked] [the specified path].
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns><c>true</c> if [is path locked] [the specified path]; otherwise, <c>false</c>.</returns>
-        bool IsPathLocked(string path);
     }
 }

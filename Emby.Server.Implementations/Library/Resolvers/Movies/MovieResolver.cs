@@ -80,7 +80,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns>Video.</returns>
-        public override Video Resolve(ItemResolveArgs args)
+        protected override Video Resolve(ItemResolveArgs args)
         {
             var collectionType = args.GetCollectionType();
 
@@ -387,7 +387,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
                 if (!string.IsNullOrEmpty(item.Path))
                 {
-                    // check for imdb id - we use full media path, as we can assume, that this will match in any use case (wither id in parent dir or in file name)
+                    // check for imdb id - we use full media path, as we can assume, that this will match in any use case (either id in parent dir or in file name)
                     var imdbid = item.Path.AsSpan().GetAttributeValue("imdbid");
 
                     if (!string.IsNullOrWhiteSpace(imdbid))

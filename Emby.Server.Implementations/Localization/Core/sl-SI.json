@@ -90,7 +90,7 @@
     "UserStartedPlayingItemWithValues": "{0} predvaja {1} na {2}",
     "UserStoppedPlayingItemWithValues": "{0} je nehal predvajati {1} na {2}",
     "ValueHasBeenAddedToLibrary": "{0} je bil dodan vaši knjižnici",
-    "ValueSpecialEpisodeName": "Bonus - {0}",
+    "ValueSpecialEpisodeName": "Posebna epizoda - {0}",
     "VersionNumber": "Različica {0}",
     "TaskDownloadMissingSubtitles": "Prenesi manjkajoče podnapise",
     "TaskRefreshChannelsDescription": "Osveži podatke spletnih kanalov.",
@@ -122,5 +122,6 @@
     "TaskOptimizeDatabaseDescription": "Stisne bazo podatkov in uredi prazen prostor. Zagon tega opravila po iskanju predstavnosti ali drugih spremembah ki vplivajo na bazo podatkov lahko izboljša hitrost delovanja.",
     "TaskOptimizeDatabase": "Optimiziraj bazo podatkov",
     "TaskKeyframeExtractor": "Ekstraktor ključnih sličic",
-    "External": "Zunanje"
+    "External": "Zunanji",
+    "TaskKeyframeExtractorDescription": "Iz video datoteke Izvleče ključne sličice, da ustvari bolj natančne sezname predvajanja HLS. Proces lahko traja dolgo časa."
 }

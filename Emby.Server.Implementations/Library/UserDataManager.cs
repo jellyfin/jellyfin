@@ -53,15 +53,9 @@ namespace Emby.Server.Implementations.Library
 
         public void SaveUserData(User user, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
         {
-            if (userData == null)
-            {
-                throw new ArgumentNullException(nameof(userData));
-            }
+            ArgumentNullException.ThrowIfNull(userData);
 
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
+            ArgumentNullException.ThrowIfNull(item);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -194,10 +188,7 @@ namespace Emby.Server.Implementations.Library
         /// <exception cref="ArgumentNullException"><paramref name="data"/> is <c>null</c>.</exception>
         private UserItemDataDto GetUserItemDataDto(UserItemData data)
         {
-            if (data == null)
-            {
-                throw new ArgumentNullException(nameof(data));
-            }
+            ArgumentNullException.ThrowIfNull(data);
 
             return new UserItemDataDto
             {

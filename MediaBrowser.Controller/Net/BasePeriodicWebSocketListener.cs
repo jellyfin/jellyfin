@@ -38,10 +38,7 @@ namespace MediaBrowser.Controller.Net
 
         protected BasePeriodicWebSocketListener(ILogger<BasePeriodicWebSocketListener<TReturnDataType, TStateType>> logger)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
+            ArgumentNullException.ThrowIfNull(logger);
 
             Logger = logger;
         }
@@ -77,10 +74,7 @@ namespace MediaBrowser.Controller.Net
         /// <returns>Task.</returns>
         public Task ProcessMessageAsync(WebSocketMessageInfo message)
         {
-            if (message == null)
-            {
-                throw new ArgumentNullException(nameof(message));
-            }
+            ArgumentNullException.ThrowIfNull(message);
 
             if (message.MessageType == StartType)
             {

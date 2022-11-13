@@ -178,7 +178,8 @@ namespace Emby.Server.Implementations.Data
             "RpuPresentFlag",
             "ElPresentFlag",
             "BlPresentFlag",
-            "DvBlSignalCompatibilityId"
+            "DvBlSignalCompatibilityId",
+            "IsHearingImpaired"
         };
 
         private static readonly string _mediaStreamSaveColumnsInsertQuery =
@@ -349,7 +350,8 @@ namespace Emby.Server.Implementations.Data
         public void Initialize(SqliteUserDataRepository userDataRepo, IUserManager userManager)
         {
             const string CreateMediaStreamsTableCommand
-                    = "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, CodecTag TEXT NULL, Comment TEXT NULL, NalLengthSize TEXT NULL, IsAvc BIT NULL, Title TEXT NULL, TimeBase TEXT NULL, CodecTimeBase TEXT NULL, ColorPrimaries TEXT NULL, ColorSpace TEXT NULL, ColorTransfer TEXT NULL, DvVersionMajor INT NULL, DvVersionMinor INT NULL, DvProfile INT NULL, DvLevel INT NULL, RpuPresentFlag INT NULL, ElPresentFlag INT NULL, BlPresentFlag INT NULL, DvBlSignalCompatibilityId INT NULL, PRIMARY KEY (ItemId, StreamIndex))";
+                    = "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, CodecTag TEXT NULL, Comment TEXT NULL, NalLengthSize TEXT NULL, IsAvc BIT NULL, Title TEXT NULL, TimeBase TEXT NULL, CodecTimeBase TEXT NULL, ColorPrimaries TEXT NULL, ColorSpace TEXT NULL, ColorTransfer TEXT NULL, DvVersionMajor INT NULL, DvVersionMinor INT NULL, DvProfile INT NULL, DvLevel INT NULL, RpuPresentFlag INT NULL, ElPresentFlag INT NULL, BlPresentFlag INT NULL, DvBlSignalCompatibilityId INT NULL, IsHearingImpaired BIT NULL, PRIMARY KEY (ItemId, StreamIndex))";
+
             const string CreateMediaAttachmentsTableCommand
                     = "create table if not exists mediaattachments (ItemId GUID, AttachmentIndex INT, Codec TEXT, CodecTag TEXT NULL, Comment TEXT NULL, Filename TEXT NULL, MIMEType TEXT NULL, PRIMARY KEY (ItemId, AttachmentIndex))";
 
@@ -572,6 +574,8 @@ namespace Emby.Server.Implementations.Data
                         AddColumn(db, "MediaStreams", "ElPresentFlag", "INT", existingColumnNames);
                         AddColumn(db, "MediaStreams", "BlPresentFlag", "INT", existingColumnNames);
                         AddColumn(db, "MediaStreams", "DvBlSignalCompatibilityId", "INT", existingColumnNames);
+
+                        AddColumn(db, "MediaStreams", "IsHearingImpaired", "BIT", existingColumnNames);
                     },
                     TransactionMode);
 
@@ -583,10 +587,7 @@ namespace Emby.Server.Implementations.Data
 
         public void SaveImages(BaseItem item)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
+            ArgumentNullException.ThrowIfNull(item);
 
             CheckDisposed();
 
@@ -617,10 +618,7 @@ namespace Emby.Server.Implementations.Data
         /// </exception>
         public void SaveItems(IEnumerable<BaseItem> items, CancellationToken cancellationToken)
         {
-            if (items == null)
-            {
-                throw new ArgumentNullException(nameof(items));
-            }
+            ArgumentNullException.ThrowIfNull(items);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -2085,10 +2083,7 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException(nameof(id));
             }
 
-            if (chapters == null)
-            {
-                throw new ArgumentNullException(nameof(chapters));
-            }
+            ArgumentNullException.ThrowIfNull(chapters);
 
             var idBlob = id.ToByteArray();
 
@@ -2557,10 +2552,7 @@ namespace Emby.Server.Implementations.Data
 
         public int GetCount(InternalItemsQuery query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             CheckDisposed();
 
@@ -2613,10 +2605,7 @@ namespace Emby.Server.Implementations.Data
 
         public List<BaseItem> GetItemList(InternalItemsQuery query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             CheckDisposed();
 
@@ -2794,10 +2783,7 @@ namespace Emby.Server.Implementations.Data
 
         public QueryResult<BaseItem> GetItems(InternalItemsQuery query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             CheckDisposed();
 
@@ -3174,10 +3160,7 @@ namespace Emby.Server.Implementations.Data
 
         public List<Guid> GetItemIdsList(InternalItemsQuery query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             CheckDisposed();
 
@@ -3539,6 +3522,13 @@ namespace Emby.Server.Implementations.Data
             {
                 whereClauses.Add("IndexNumber>=@MinIndexNumber");
                 statement?.TryBind("@MinIndexNumber", query.MinIndexNumber.Value);
+            }
+
+            if (query.MinParentAndIndexNumber.HasValue)
+            {
+                whereClauses.Add("((ParentIndexNumber=@MinParentAndIndexNumberParent and IndexNumber>=@MinParentAndIndexNumberIndex) or ParentIndexNumber>@MinParentAndIndexNumberParent)");
+                statement?.TryBind("@MinParentAndIndexNumberParent", query.MinParentAndIndexNumber.Value.ParentIndexNumber);
+                statement?.TryBind("@MinParentAndIndexNumberIndex", query.MinParentAndIndexNumber.Value.IndexNumber);
             }
 
             if (query.MinDateCreated.HasValue)
@@ -4837,10 +4827,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
         public List<string> GetPeopleNames(InternalPeopleQuery query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             CheckDisposed();
 
@@ -4880,10 +4867,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
         public List<PersonInfo> GetPeople(InternalPeopleQuery query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             CheckDisposed();
 
@@ -4999,10 +4983,7 @@ AND Type = @InternalPersonType)");
                 throw new ArgumentNullException(nameof(itemId));
             }
 
-            if (ancestorIds == null)
-            {
-                throw new ArgumentNullException(nameof(ancestorIds));
-            }
+            ArgumentNullException.ThrowIfNull(ancestorIds);
 
             CheckDisposed();
 
@@ -5175,10 +5156,7 @@ AND Type = @InternalPersonType)");
 
         private QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetItemValues(InternalItemsQuery query, int[] itemValueTypes, string returnType)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             if (!query.Limit.HasValue)
             {
@@ -5531,10 +5509,7 @@ AND Type = @InternalPersonType)");
                 throw new ArgumentNullException(nameof(itemId));
             }
 
-            if (values == null)
-            {
-                throw new ArgumentNullException(nameof(values));
-            }
+            ArgumentNullException.ThrowIfNull(values);
 
             CheckDisposed();
 
@@ -5607,10 +5582,7 @@ AND Type = @InternalPersonType)");
                 throw new ArgumentNullException(nameof(itemId));
             }
 
-            if (people == null)
-            {
-                throw new ArgumentNullException(nameof(people));
-            }
+            ArgumentNullException.ThrowIfNull(people);
 
             CheckDisposed();
 
@@ -5710,10 +5682,7 @@ AND Type = @InternalPersonType)");
         {
             CheckDisposed();
 
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             var cmdText = _mediaStreamSaveColumnsSelectQuery;
 
@@ -5766,10 +5735,7 @@ AND Type = @InternalPersonType)");
                 throw new ArgumentNullException(nameof(id));
             }
 
-            if (streams == null)
-            {
-                throw new ArgumentNullException(nameof(streams));
-            }
+            ArgumentNullException.ThrowIfNull(streams);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -5881,6 +5847,8 @@ AND Type = @InternalPersonType)");
                         statement.TryBind("@ElPresentFlag" + index, stream.ElPresentFlag);
                         statement.TryBind("@BlPresentFlag" + index, stream.BlPresentFlag);
                         statement.TryBind("@DvBlSignalCompatibilityId" + index, stream.DvBlSignalCompatibilityId);
+
+                        statement.TryBind("@IsHearingImpaired" + index, stream.IsHearingImpaired);
                     }
 
                     statement.Reset();
@@ -6092,12 +6060,15 @@ AND Type = @InternalPersonType)");
                 item.DvBlSignalCompatibilityId = dvBlSignalCompatibilityId;
             }
 
+            item.IsHearingImpaired = reader.GetBoolean(43);
+
             if (item.Type == MediaStreamType.Subtitle)
             {
                 item.LocalizedUndefined = _localization.GetLocalizedString("Undefined");
                 item.LocalizedDefault = _localization.GetLocalizedString("Default");
                 item.LocalizedForced = _localization.GetLocalizedString("Forced");
                 item.LocalizedExternal = _localization.GetLocalizedString("External");
+                item.LocalizedHearingImpaired = _localization.GetLocalizedString("HearingImpaired");
             }
 
             return item;
@@ -6107,10 +6078,7 @@ AND Type = @InternalPersonType)");
         {
             CheckDisposed();
 
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             var cmdText = _mediaAttachmentSaveColumnsSelectQuery;
 
@@ -6152,10 +6120,7 @@ AND Type = @InternalPersonType)");
                 throw new ArgumentException("Guid can't be empty.", nameof(id));
             }
 
-            if (attachments == null)
-            {
-                throw new ArgumentNullException(nameof(attachments));
-            }
+            ArgumentNullException.ThrowIfNull(attachments);
 
             cancellationToken.ThrowIfCancellationRequested();
 
