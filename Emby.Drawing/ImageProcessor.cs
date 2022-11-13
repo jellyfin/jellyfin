@@ -236,13 +236,11 @@ namespace Emby.Drawing
             }
 
             var format = clientSupportedFormats.FirstOrDefault(x => serverFormats.Contains(x));
-            if (format != null)
-            {
-                return format;
-            }
+
+            return format;
 
             // We should never actually get here
-            return ImageFormat.Jpg;
+            // return ImageFormat.Jpg;
         }
 
         private string GetMimeType(ImageFormat format, string path)
