@@ -3,7 +3,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Primitives;
 
 namespace MediaBrowser.Common.Net
 {
@@ -320,31 +322,33 @@ namespace MediaBrowser.Common.Net
                     output = "[";
                 }
 
+                StringBuilder bld = new StringBuilder();
+
                 foreach (var i in _addresses)
                 {
                     if (Address.Equals(IPAddress.None) && Address.AddressFamily == AddressFamily.Unspecified)
                     {
-                        output += HostName + ",";
+                        bld.Append(HostName + ",");
                     }
                     else if (i.Equals(IPAddress.Any))
                     {
-                        output += "Any IP4 Address,";
+                        bld.Append("Any IP4 Address,");
                     }
                     else if (Address.Equals(IPAddress.IPv6Any))
                     {
-                        output += "Any IP6 Address,";
+                        bld.Append("Any IP6 Address,");
                     }
                     else if (i.Equals(IPAddress.Broadcast))
                     {
-                        output += "Any Address,";
+                        bld.Append("Any Address,");
                     }
                     else if (i.AddressFamily == AddressFamily.InterNetwork)
                     {
-                        output += $"{i}/32,";
+                        bld.Append(i + "/32,");
                     }
                     else
                     {
-                        output += $"{i}/128,";
+                        bld.Append(i + "/128,");
                     }
                 }
 
