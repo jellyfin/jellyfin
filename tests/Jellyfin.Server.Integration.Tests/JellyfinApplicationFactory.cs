@@ -28,7 +28,7 @@ namespace Jellyfin.Server.Integration.Tests
         static JellyfinApplicationFactory()
         {
             // Perform static initialization that only needs to happen once per test-run
-            Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
+           // Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
             Program.PerformStaticInitialization();
         }
 

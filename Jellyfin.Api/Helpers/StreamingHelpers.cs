@@ -351,7 +351,7 @@ namespace Jellyfin.Api.Helpers
             try
             {
                 // Parses npt times in the format of '10:19:25.7'
-                return TimeSpan.Parse(value).Ticks;
+                return TimeSpan.Parse(value, CultureInfo.CurrentCulture).Ticks;
             }
             catch
             {

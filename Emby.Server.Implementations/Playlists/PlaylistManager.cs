@@ -122,14 +122,21 @@ namespace Emby.Server.Implementations.Playlists
 
             var user = _userManager.GetUserById(options.UserId);
 
-            var path = Path.Combine(parentFolder.Path, folderName);
+            var parentFolderDest = parentFolder.Path;
+            var childFolderDest = Path.GetFullPath(System.IO.Path.Combine(parentFolderDest, folderName));
+
+            var path = Path.GetFullPath(parentFolderDest + Path.DirectorySeparatorChar);
+
             path = GetTargetPath(path);
 
             _iLibraryMonitor.ReportFileSystemChangeBeginning(path);
 
             try
             {
-                Directory.CreateDirectory(path);
+                if (childFolderDest.StartsWith(path, StringComparison.Ordinal))
+                {
+                    Directory.CreateDirectory(path);
+                }
 
                 var playlist = new Playlist
                 {
@@ -175,7 +182,7 @@ namespace Emby.Server.Implementations.Playlists
         {
             while (Directory.Exists(path))
             {
-                path += "1";
+                path = Path.Combine(path, "1");
             }
 
             return path;

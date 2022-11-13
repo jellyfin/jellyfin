@@ -612,15 +612,7 @@ namespace Jellyfin.Server
             catch (Exception ex)
             {
                 Log.Logger = new LoggerConfiguration()
-                    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message:lj}{NewLine}{Exception}")
-                    .WriteTo.Async(x => x.File(
-                        Path.Combine(appPaths.LogDirectoryPath, "log_.log"),
-                        rollingInterval: RollingInterval.Day,
-                        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message}{NewLine}{Exception}",
-                        encoding: Encoding.UTF8))
-                    .Enrich.FromLogContext()
-                    .Enrich.WithThreadId()
-                    .CreateLogger();
+                     .CreateLogger();
 
                 Log.Logger.Fatal(ex, "Failed to create/read logger configuration");
             }
