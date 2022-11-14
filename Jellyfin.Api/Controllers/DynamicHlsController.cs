@@ -1503,17 +1503,10 @@ namespace Jellyfin.Api.Controllers
                         // If the playlist doesn't already exist, startup ffmpeg
                         try
                         {
-                            if (_encodingOptions.EnableThrottling && _encodingOptions.EnableSegmentDeletion)
-                            {
-                                // Delete old HLS files when segment deletion is active since ffmpeg doesn't clean them up by itself
-                                await _transcodingJobHelper.KillTranscodingJobs(streamingRequest.DeviceId, streamingRequest.PlaySessionId, p => true)
+                            // Delete old HLS files when segment deletion is active since ffmpeg doesn't clean them up by itself
+                            var deleteFiles = _encodingOptions.EnableThrottling && _encodingOptions.EnableSegmentDeletion;
+                            await _transcodingJobHelper.KillTranscodingJobs(streamingRequest.DeviceId, streamingRequest.PlaySessionId, _ => deleteFiles)
                                 .ConfigureAwait(false);
-                            }
-                            else
-                            {
-                                await _transcodingJobHelper.KillTranscodingJobs(streamingRequest.DeviceId, streamingRequest.PlaySessionId, p => false)
-                                    .ConfigureAwait(false);
-                            }
 
                             if (currentTranscodingIndex.HasValue)
                             {
