@@ -3,8 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Numerics;
 using System.Threading.Tasks;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Http;
@@ -129,6 +131,15 @@ namespace Jellyfin.Server.Implementations.Security
                 authInfo.IsAuthenticated = true;
                 var updateToken = false;
 
+                // TODO: Remove these checks for IsNullOrWhiteSpace
+                if (string.IsNullOrWhiteSpace(authInfo.Client))
+                {
+                    authInfo.Client = device.AppName;
+                }
+                if (string.IsNullOrWhiteSpace(authInfo.DeviceId))
+                {
+                    authInfo.DeviceId = device.DeviceId;
+                }
                 // Temporary. TODO - allow clients to specify that the token has been shared with a casting device
                 var allowTokenInfoUpdate = !authInfo.Client.Contains("chromecast", StringComparison.OrdinalIgnoreCase);
 
