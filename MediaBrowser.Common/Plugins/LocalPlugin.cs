@@ -7,7 +7,7 @@ namespace MediaBrowser.Common.Plugins
     /// <summary>
     /// Local plugin class.
     /// </summary>
-    public class LocalPlugin : IEquatable<LocalPlugin>
+    public sealed class LocalPlugin : IEquatable<LocalPlugin>
     {
         private readonly bool _supported;
         private Version? _version;
