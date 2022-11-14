@@ -858,7 +858,6 @@ namespace MediaBrowser.Model.Dlna
                     {
                         ApplyTranscodingConditions(playlistItem, i.Conditions, transcodingVideoCodec, true, isFirstAppliedCodecProfile);
                         isFirstAppliedCodecProfile = false;
-                        continue;
                     }
                 }
             }

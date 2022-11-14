@@ -4290,7 +4290,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isSwEncoder = !isVaapiEncoder;
             var isVaInVaOut = isVaapiDecoder && isVaapiEncoder;
             var isi965Driver = _mediaEncoder.IsVaapiDeviceInteli965;
-            var isAmdDriver = _mediaEncoder.IsVaapiDeviceAmd;
 
             var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
             var doDeintHevc = state.DeInterlace("h265", true) || state.DeInterlace("hevc", true);
