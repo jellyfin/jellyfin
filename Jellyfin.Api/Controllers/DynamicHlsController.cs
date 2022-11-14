@@ -1686,7 +1686,7 @@ namespace Jellyfin.Api.Controllers
 
                 _logger.LogDebug("Using throttling and segment deletion, keeping {0} segments", segmentCount);
 
-                return string.Format(CultureInfo.InvariantCulture, "-hls_list_size {0} -segment_wrap {0} -hls_flags delete_segments", segmentCount.ToString(CultureInfo.InvariantCulture));
+                return string.Format(CultureInfo.InvariantCulture, "-hls_list_size {0} -hls_flags delete_segments", segmentCount.ToString(CultureInfo.InvariantCulture));
             }
             else
             {
