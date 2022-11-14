@@ -152,20 +152,15 @@ namespace Emby.Drawing
             ImageOrientation? orientation = null;
             if (item is Photo photo)
             {
-                if (photo.Orientation.HasValue)
+                if (photo.Orientation.HasValue && (photo.Orientation.Value != ImageOrientation.TopLeft))
                 {
-                    if (photo.Orientation.Value != ImageOrientation.TopLeft)
-                    {
-                        autoOrient = true;
-                        orientation = photo.Orientation;
-                    }
-                }
-                else
-                {
-                    // Orientation unknown, so do it
                     autoOrient = true;
                     orientation = photo.Orientation;
                 }
+
+                // Orientation unknown, so do it
+                autoOrient = true;
+                orientation = photo.Orientation;
             }
 
             if (options.HasDefaultOptions(originalImagePath, originalImageSize) && (!autoOrient || !options.RequiresAutoOrientation))
