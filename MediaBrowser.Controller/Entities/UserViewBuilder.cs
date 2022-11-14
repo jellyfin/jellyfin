@@ -124,7 +124,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        private int GetSpecialItemsLimit()
+        private static int GetSpecialItemsLimit()
         {
             return 50;
         }

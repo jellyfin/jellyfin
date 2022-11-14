@@ -183,7 +183,7 @@ namespace Rssdp.Infrastructure
             get { return _SupportPnpRootDevice; }
 
             set
-            {
+            {   
                 _SupportPnpRootDevice = value;
             }
         }
