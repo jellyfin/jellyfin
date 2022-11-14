@@ -228,9 +228,12 @@ namespace Emby.Drawing
                 return ImageFormat.Png;
             }
 
-            foreach (var format in clientSupportedFormats.Where(format => serverFormats.Contains(format)))
+            foreach (var format in clientSupportedFormats)
             {
-                return format;
+                if (serverFormats.Contains(format))
+                {
+                    return format;
+                }
             }
 
             // We should never actually get here
