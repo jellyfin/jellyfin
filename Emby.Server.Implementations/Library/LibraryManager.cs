@@ -937,7 +937,7 @@ namespace Emby.Server.Implementations.Library
             return CreateItemByName<MusicArtist>(MusicArtist.GetPath, name, options);
         }
 
-        private T CreateItemByName<T>(Func<string, string> getPathFn, string name, DtoOptions options)
+        private T CreateItemByName<T>(Func<string, bool, string> getPathFn, string name, DtoOptions options)
             where T : BaseItem, new()
         {
             if (typeof(T) == typeof(MusicArtist))
@@ -958,7 +958,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var path = getPathFn(name);
+            var path = getPathFn(name, true);
             var id = GetItemByNameId<T>(path);
             var item = GetItemById(id) as T;
             if (item == null)
