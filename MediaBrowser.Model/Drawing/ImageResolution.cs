@@ -8,46 +8,46 @@ namespace MediaBrowser.Model.Drawing
         /// <summary>
         /// MatchSource.
         /// </summary>
-        MatchSource,
+        MatchSource = 0,
 
         /// <summary>
         /// 144p.
         /// </summary>
-        P144,
+        P144 = 1,
 
         /// <summary>
         /// 240p.
         /// </summary>
-        P240,
+        P240 = 2,
 
         /// <summary>
         /// 360p.
         /// </summary>
-        P360,
+        P360 = 3,
 
         /// <summary>
         /// 480p.
         /// </summary>
-        P480,
+        P480 = 4,
 
         /// <summary>
         /// 720p.
         /// </summary>
-        P720,
+        P720 = 5,
 
         /// <summary>
         /// 1080p.
         /// </summary>
-        P1080,
+        P1080 = 6,
 
         /// <summary>
         /// 1440p.
         /// </summary>
-        P1440,
+        P1440 = 7,
 
         /// <summary>
         /// 2160p.
         /// </summary>
-        P2160
+        P2160 = 8
     }
 }
