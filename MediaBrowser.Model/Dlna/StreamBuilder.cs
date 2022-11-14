@@ -381,7 +381,6 @@ namespace MediaBrowser.Model.Dlna
                 return (null, null, GetTranscodeReasonsFromDirectPlayProfile(item, null, audioStream, options.Profile.DirectPlayProfiles));
             }
 
-            var playMethods = new List<PlayMethod>();
             TranscodeReason transcodeReasons = 0;
 
             // The profile describes what the device supports
