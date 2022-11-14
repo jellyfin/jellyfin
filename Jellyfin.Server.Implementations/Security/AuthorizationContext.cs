@@ -136,6 +136,7 @@ namespace Jellyfin.Server.Implementations.Security
                 {
                     authInfo.Client = device.AppName;
                 }
+
                 if (string.IsNullOrWhiteSpace(authInfo.DeviceId))
                 {
                     authInfo.DeviceId = device.DeviceId;
