@@ -9,6 +9,7 @@ using Jellyfin.MediaEncoding.Hls.Extensions;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Implementations;
+using Jellyfin.Server.Implementations.Extensions;
 using Jellyfin.Server.Infrastructure;
 using Jellyfin.Server.Middleware;
 using MediaBrowser.Common.Net;
@@ -65,7 +66,7 @@ namespace Jellyfin.Server
             // TODO remove once this is fixed upstream https://github.com/dotnet/aspnetcore/issues/34371
             services.AddSingleton<IActionResultExecutor<PhysicalFileResult>, SymlinkFollowingPhysicalFileResultExecutor>();
             services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.GetNetworkConfiguration());
-
+            services.AddJellyfinDbContext();
             services.AddJellyfinApiSwagger();
 
             // configure custom legacy authentication

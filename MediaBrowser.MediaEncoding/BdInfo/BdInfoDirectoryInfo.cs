@@ -64,14 +64,14 @@ namespace MediaBrowser.MediaEncoding.BdInfo
                 x => new BdInfoFileInfo(x));
         }
 
-        public IFileInfo[] GetFiles(string searchPattern, System.IO.SearchOption searchOption)
+        public IFileInfo[] GetFiles(string searchPattern,  System.IO.SearchOption searchOption)
         {
             return Array.ConvertAll(
                 _fileSystem.GetFiles(
                     _impl.FullName,
                     new[] { searchPattern },
                     false,
-                    (searchOption & System.IO.SearchOption.AllDirectories) == System.IO.SearchOption.AllDirectories).ToArray(),
+                    (searchOption) == System.IO.SearchOption.AllDirectories).ToArray(),
                 x => new BdInfoFileInfo(x));
         }
 

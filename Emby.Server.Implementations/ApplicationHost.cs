@@ -48,6 +48,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.MediaEncoding.Hls.Playlist;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
+using Jellyfin.Server.Implementations;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
@@ -101,6 +102,7 @@ using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.XbmcMetadata.Providers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -652,6 +654,17 @@ namespace Emby.Server.Implementations
         /// <returns>A task representing the service initialization operation.</returns>
         public async Task InitializeServices()
         {
+            var jellyfinDb = await Resolve<IDbContextFactory<JellyfinDb>>().CreateDbContextAsync().ConfigureAwait(false);
+            await using (jellyfinDb.ConfigureAwait(false))
+            {
+                if ((await jellyfinDb.Database.GetPendingMigrationsAsync().ConfigureAwait(false)).Any())
+                {
+                    Logger.LogInformation("There are pending EFCore migrations in the database. Applying... (This may take a while, do not stop Jellyfin)");
+                    await jellyfinDb.Database.MigrateAsync().ConfigureAwait(false);
+                    Logger.LogInformation("EFCore migrations applied successfully");
+                }
+            }
+
             var localizationManager = (LocalizationManager)Resolve<ILocalizationManager>();
             await localizationManager.LoadAll().ConfigureAwait(false);
 

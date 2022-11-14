@@ -230,19 +230,15 @@ namespace MediaBrowser.Model.Dto
 
         public bool? IsSecondaryAudio(MediaStream stream)
         {
-            // Look for the first audio track marked as default
-            foreach (var currentStream in MediaStreams)
+            if (stream.IsExternal)
             {
-                if (currentStream.Type == MediaStreamType.Audio && currentStream.IsDefault)
-                {
-                    return currentStream.Index != stream.Index;
-                }
+                return false;
             }
 
             // Look for the first audio track
             foreach (var currentStream in MediaStreams)
             {
-                if (currentStream.Type == MediaStreamType.Audio)
+                if (currentStream.Type == MediaStreamType.Audio && !currentStream.IsExternal)
                 {
                     return currentStream.Index != stream.Index;
                 }

@@ -149,8 +149,8 @@ namespace Emby.Naming.Video
         /// </summary>
         /// <param name="name">Raw name.</param>
         /// <param name="namingOptions">The naming options.</param>
-        /// <returns>Returns <see cref="CleanDateTimeResult"/> with name and optional year.</returns>
-        public static CleanDateTimeResult CleanDateTime(string name, NamingOptions namingOptions)
+        /// <returns>Returns <see cref="Equals"/> with name and optional year.</returns>
+        public static Equals CleanDateTime(string name, NamingOptions namingOptions)
         {
             return CleanDateTimeParser.Clean(name, namingOptions.CleanDateTimeRegexes);
         }
