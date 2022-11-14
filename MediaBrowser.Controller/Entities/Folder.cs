@@ -308,6 +308,7 @@ namespace MediaBrowser.Controller.Entities
 
         protected override void TriggerOnRefreshComplete()
         {
+            // Just a blank override of a method
         }
 
         /// <summary>
