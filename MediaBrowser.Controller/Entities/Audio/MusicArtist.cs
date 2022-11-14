@@ -69,11 +69,6 @@ namespace MediaBrowser.Controller.Entities.Audio
         [JsonIgnore]
         public override bool SupportsPeople => false;
 
-        public static string GetPath(string name)
-        {
-            return GetPath(name, true);
-        }
-
         public override double GetDefaultPrimaryImageAspectRatio()
         {
             return 1;
@@ -175,7 +170,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             return info;
         }
 
-        public static string GetPath(string name, bool normalizeName)
+        public static string GetPath(string name, bool normalizeName = true)
         {
             // Trim the period at the end because windows will have a hard time with that
             var validName = normalizeName ?
