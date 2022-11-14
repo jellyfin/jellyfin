@@ -36,7 +36,6 @@ namespace Emby.Drawing
         private readonly IFileSystem _fileSystem;
         private readonly IServerApplicationPaths _appPaths;
         private readonly IImageEncoder _imageEncoder;
-        private readonly IMediaEncoder _mediaEncoder;
 
         private bool _disposed;
 
@@ -47,18 +46,15 @@ namespace Emby.Drawing
         /// <param name="appPaths">The server application paths.</param>
         /// <param name="fileSystem">The filesystem.</param>
         /// <param name="imageEncoder">The image encoder.</param>
-        /// <param name="mediaEncoder">The media encoder.</param>
         public ImageProcessor(
             ILogger<ImageProcessor> logger,
             IServerApplicationPaths appPaths,
             IFileSystem fileSystem,
-            IImageEncoder imageEncoder,
-            IMediaEncoder mediaEncoder)
+            IImageEncoder imageEncoder)
         {
             _logger = logger;
             _fileSystem = fileSystem;
             _imageEncoder = imageEncoder;
-            _mediaEncoder = mediaEncoder;
             _appPaths = appPaths;
         }
 

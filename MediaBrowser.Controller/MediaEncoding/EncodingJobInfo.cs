@@ -20,8 +20,32 @@ namespace MediaBrowser.Controller.MediaEncoding
     // For now, a common base class until the API and MediaEncoding classes are unified
     public class EncodingJobInfo
     {
-        public int? OutputAudioBitrate;
-        public int? OutputAudioChannels;
+        private int? outputAudioBitrate;
+        private int? outputAudioChannels;
+
+        public int? OutputAudioBitrate
+        {
+            get
+            {
+                return outputAudioBitrate;
+            }
+            set
+            {
+                outputAudioBitrate = value;
+            }
+        }
+
+        public int? OutputAudioChannels
+        {
+            get
+            {
+                return outputAudioChannels;
+            }
+            set
+            {
+                outputAudioChannels = value;
+            }
+        }
 
         private TranscodeReason? _transcodeReasons = null;
 
