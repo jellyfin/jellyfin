@@ -140,6 +140,7 @@ namespace Jellyfin.Server.Implementations.Security
                 {
                     authInfo.DeviceId = device.DeviceId;
                 }
+
                 // Temporary. TODO - allow clients to specify that the token has been shared with a casting device
                 var allowTokenInfoUpdate = !authInfo.Client.Contains("chromecast", StringComparison.OrdinalIgnoreCase);
 
