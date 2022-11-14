@@ -3,9 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Numerics;
 using System.Threading.Tasks;
 using EFCoreSecondLevelCacheInterceptor;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Http;

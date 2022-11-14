@@ -75,21 +75,18 @@ namespace Emby.Naming.TV
                 }
             }
 
-            if (supportNumericSeasonFolders)
+            if (supportNumericSeasonFolders && int.TryParse(filename, NumberStyles.Integer, CultureInfo.InvariantCulture, out var val))
             {
-                if (int.TryParse(filename, NumberStyles.Integer, CultureInfo.InvariantCulture, out var val))
-                {
                     return (val, true);
-                }
             }
 
             if (filename.StartsWith("s", StringComparison.OrdinalIgnoreCase))
             {
                 var testFilename = filename.AsSpan().Slice(1);
 
-                if (int.TryParse(testFilename, NumberStyles.Integer, CultureInfo.InvariantCulture, out var val))
+                if (int.TryParse(testFilename, NumberStyles.Integer, CultureInfo.InvariantCulture, out var val1))
                 {
-                    return (val, true);
+                    return (val1, true);
                 }
             }
 

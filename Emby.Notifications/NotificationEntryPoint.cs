@@ -41,7 +41,7 @@ namespace Emby.Notifications
 
         private string[] _coreNotificationTypes;
 
-        private bool _disposed = false;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NotificationEntryPoint" /> class.

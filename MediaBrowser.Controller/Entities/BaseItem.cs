@@ -2132,7 +2132,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="images">The images.</param>
         /// <returns><c>true</c> if images were added or updated, <c>false</c> otherwise.</returns>
         /// <exception cref="ArgumentException">Cannot call AddImages with chapter images.</exception>
-        public bool AddImages(ImageType imageType, List<FileSystemMetadata> images)
+        public bool AddImages(ImageType imageType, IReadOnlyCollection<FileSystemMetadata> images)
         {
             if (imageType == ImageType.Chapter)
             {
