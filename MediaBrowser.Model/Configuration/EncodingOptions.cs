@@ -11,7 +11,9 @@ namespace MediaBrowser.Model.Configuration
             DownMixAudioBoost = 2;
             MaxMuxingQueueSize = 2048;
             EnableThrottling = false;
+            EnableSegmentDeletion = false;
             ThrottleDelaySeconds = 180;
+            SegmentKeepSeconds = 200;
             EncodingThreadCount = -1;
             // This is a DRM device that is almost guaranteed to be there on every intel platform,
             // plus it's the default one in ffmpeg if you don't specify anything
@@ -57,7 +59,11 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableThrottling { get; set; }
 
+        public bool EnableSegmentDeletion { get; set; }
+
         public int ThrottleDelaySeconds { get; set; }
+
+        public int SegmentKeepSeconds { get; set; }
 
         public string HardwareAccelerationType { get; set; }
 
