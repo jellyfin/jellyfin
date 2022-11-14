@@ -228,9 +228,11 @@ namespace Emby.Drawing
                 return ImageFormat.Png;
             }
 
-            foreach (var format in clientSupportedFormats.Where(format => serverFormats.Contains(format)))
+            foreach (var format in from format in clientSupportedFormats
+                                   where serverFormats.Contains(format)
+                                   select format)
             {
-                    return format;
+                return format;
             }
 
             // We should never actually get here
@@ -446,6 +448,35 @@ namespace Emby.Drawing
             {
                 return Task.FromResult((originalImagePath, dateModified));
             }
+
+            // TODO _mediaEncoder.ConvertImage is not implemented
+            // if (!_imageEncoder.SupportedInputFormats.Contains(inputFormat))
+            // {
+            //     try
+            //     {
+            //         string filename = (originalImagePath + dateModified.Ticks.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+            //
+            //         string cacheExtension = _mediaEncoder.SupportsEncoder("libwebp") ? ".webp" : ".png";
+            //         var outputPath = Path.Combine(_appPaths.ImageCachePath, "converted-images", filename + cacheExtension);
+            //
+            //         var file = _fileSystem.GetFileInfo(outputPath);
+            //         if (!file.Exists)
+            //         {
+            //             await _mediaEncoder.ConvertImage(originalImagePath, outputPath).ConfigureAwait(false);
+            //             dateModified = _fileSystem.GetLastWriteTimeUtc(outputPath);
+            //         }
+            //         else
+            //         {
+            //             dateModified = file.LastWriteTimeUtc;
+            //         }
+            //
+            //         originalImagePath = outputPath;
+            //     }
+            //     catch (Exception ex)
+            //     {
+            //         _logger.LogError(ex, "Image conversion failed for {Path}", originalImagePath);
+            //     }
+            // }
 
             return Task.FromResult((originalImagePath, dateModified));
         }
