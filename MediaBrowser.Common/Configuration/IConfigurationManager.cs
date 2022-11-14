@@ -41,6 +41,13 @@ namespace MediaBrowser.Common.Configuration
         void SaveConfiguration();
 
         /// <summary>
+        /// Saves the configuration.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="configuration">The configuration.</param>
+        void SaveConfiguration(string key, object configuration);
+
+        /// <summary>
         /// Replaces the configuration.
         /// </summary>
         /// <param name="newConfiguration">The new configuration.</param>
@@ -72,13 +79,6 @@ namespace MediaBrowser.Common.Configuration
         /// <param name="key">The key.</param>
         /// <returns>Type.</returns>
         Type GetConfigurationType(string key);
-
-        /// <summary>
-        /// Saves the configuration.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <param name="configuration">The configuration.</param>
-        void SaveConfiguration(string key, object configuration);
 
         /// <summary>
         /// Adds the parts.

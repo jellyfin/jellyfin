@@ -51,7 +51,6 @@ namespace Jellyfin.Data.Entities
             AccessSchedules = new HashSet<AccessSchedule>();
             DisplayPreferences = new HashSet<DisplayPreferences>();
             ItemDisplayPreferences = new HashSet<ItemDisplayPreferences>();
-            // Groups = new HashSet<Group>();
             Permissions = new HashSet<Permission>();
             Preferences = new HashSet<Preference>();
             // ProviderMappings = new HashSet<ProviderMapping>();

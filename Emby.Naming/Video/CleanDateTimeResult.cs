@@ -3,14 +3,14 @@ namespace Emby.Naming.Video
     /// <summary>
     /// Holder structure for name and year.
     /// </summary>
-    public readonly struct CleanDateTimeResult
+    public readonly struct Equals
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="CleanDateTimeResult"/> struct.
+        /// Initializes a new instance of the <see cref="Equals"/> struct.
         /// </summary>
         /// <param name="name">Name of video.</param>
         /// <param name="year">Year of release.</param>
-        public CleanDateTimeResult(string name, int? year = null)
+        public Equals(string name, int? year = null)
         {
             Name = name;
             Year = year;
