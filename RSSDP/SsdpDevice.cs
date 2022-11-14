@@ -112,7 +112,7 @@ namespace Rssdp
         /// <seealso cref="DeviceType"/>
         /// <seealso cref="DeviceTypeNamespace"/>
         /// <seealso cref="FullDeviceType"/>
-        public int DeviceVersion
+        public int DeviceVersion 
         {
             get
             {

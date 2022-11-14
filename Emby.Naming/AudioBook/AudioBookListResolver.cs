@@ -136,7 +136,7 @@ namespace Emby.Naming.AudioBook
             }
         }
 
-        private AudioBookFileInfo FindMainAudioBookFile(List<AudioBookFileInfo> files, string name)
+        private static AudioBookFileInfo FindMainAudioBookFile(List<AudioBookFileInfo> files, string name)
         {
             var main = files.Find(x => Path.GetFileNameWithoutExtension(x.Path).Equals(name, StringComparison.OrdinalIgnoreCase));
             main ??= files.FirstOrDefault(x => Path.GetFileNameWithoutExtension(x.Path).Equals("audiobook", StringComparison.OrdinalIgnoreCase));

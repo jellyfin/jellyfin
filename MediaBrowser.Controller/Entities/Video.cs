@@ -271,22 +271,10 @@ namespace MediaBrowser.Controller.Entities
                     {
                         list.Insert(0, GetUserDataKey(key));
                     }
-
-                    key = this.GetProviderId(MetadataProvider.Imdb);
-                    if (!string.IsNullOrEmpty(key))
-                    {
-                        list.Insert(0, GetUserDataKey(key));
-                    }
                 }
                 else
                 {
                     var key = this.GetProviderId(MetadataProvider.Imdb);
-                    if (!string.IsNullOrEmpty(key))
-                    {
-                        list.Insert(0, key);
-                    }
-
-                    key = this.GetProviderId(MetadataProvider.Tmdb);
                     if (!string.IsNullOrEmpty(key))
                     {
                         list.Insert(0, key);

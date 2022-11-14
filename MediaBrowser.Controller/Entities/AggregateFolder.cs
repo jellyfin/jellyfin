@@ -29,7 +29,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         private readonly ConcurrentBag<BaseItem> _virtualChildren = new ConcurrentBag<BaseItem>();
         private bool _requiresRefresh;
-        private Guid[] _childrenIds = null;
+        private Guid[] _childrenIds ;
 
         public AggregateFolder()
         {

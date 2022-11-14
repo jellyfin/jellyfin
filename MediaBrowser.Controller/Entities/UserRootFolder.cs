@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.Entities
     public class UserRootFolder : Folder
     {
         private readonly object _childIdsLock = new object();
-        private List<Guid> _childrenIds = null;
+        private List<Guid> _childrenIds;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserRootFolder"/> class.
