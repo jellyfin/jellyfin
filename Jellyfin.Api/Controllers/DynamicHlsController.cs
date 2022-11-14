@@ -1503,8 +1503,17 @@ namespace Jellyfin.Api.Controllers
                         // If the playlist doesn't already exist, startup ffmpeg
                         try
                         {
-                            await _transcodingJobHelper.KillTranscodingJobs(streamingRequest.DeviceId, streamingRequest.PlaySessionId, p => false)
+                            if (_encodingOptions.EnableThrottling && _encodingOptions.EnableSegmentDeletion)
+                            {
+                                // Delete old HLS files when segment deletion is active since ffmpeg doesn't clean them up by itself
+                                await _transcodingJobHelper.KillTranscodingJobs(streamingRequest.DeviceId, streamingRequest.PlaySessionId, p => true)
                                 .ConfigureAwait(false);
+                            }
+                            else
+                            {
+                                await _transcodingJobHelper.KillTranscodingJobs(streamingRequest.DeviceId, streamingRequest.PlaySessionId, p => false)
+                                    .ConfigureAwait(false);
+                            }
 
                             if (currentTranscodingIndex.HasValue)
                             {
@@ -1639,9 +1648,11 @@ namespace Jellyfin.Api.Controllers
                     Path.GetFileNameWithoutExtension(outputPath));
             }
 
+            var hlsArguments = GetHlsArguments(isEventPlaylist, state.SegmentLength);
+
             return string.Format(
                 CultureInfo.InvariantCulture,
-                "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -max_muxing_queue_size {6} -f hls -max_delay 5000000 -hls_time {7} -hls_segment_type {8} -start_number {9}{10} -hls_segment_filename \"{12}\" -hls_playlist_type {11} -hls_list_size 0 -y \"{13}\"",
+                "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -max_muxing_queue_size {6} -f hls -max_delay 5000000 -hls_time {7} -hls_segment_type {8} -start_number {9}{10} -hls_segment_filename \"{11}\" {12} -y \"{13}\"",
                 inputModifier,
                 _encodingHelper.GetInputArgument(state, _encodingOptions, segmentContainer),
                 threads,
@@ -1653,9 +1664,36 @@ namespace Jellyfin.Api.Controllers
                 segmentFormat,
                 startNumber.ToString(CultureInfo.InvariantCulture),
                 baseUrlParam,
-                isEventPlaylist ? "event" : "vod",
                 outputTsArg,
+                hlsArguments,
                 outputPath).Trim();
+        }
+
+        /// <summary>
+        /// Gets the HLS arguments for transcoding.
+        /// </summary>
+        /// <returns>The command line arguments for HLS transcoding.</returns>
+        private string GetHlsArguments(bool isEventPlaylist, int segmentLength)
+        {
+            var enableThrottling = _encodingOptions.EnableThrottling;
+            var enableSegmentDeletion = _encodingOptions.EnableSegmentDeletion;
+
+            // Only enable segment deletion when throttling is enabled
+            if (enableThrottling && enableSegmentDeletion)
+            {
+                // Store enough segments for configured seconds of playback; this needs to be above throttling settings
+                var segmentCount = _encodingOptions.SegmentKeepSeconds / segmentLength;
+
+                _logger.LogDebug("Using throttling and segment deletion, keeping {0} segments", segmentCount);
+
+                return string.Format(CultureInfo.InvariantCulture, "-hls_list_size {0} -segment_wrap {0} -hls_flags delete_segments", segmentCount.ToString(CultureInfo.InvariantCulture));
+            }
+            else
+            {
+                _logger.LogDebug("Using normal playback, is event playlist? {0}", isEventPlaylist);
+
+                return string.Format(CultureInfo.InvariantCulture, "-hls_playlist_type {0} -hls_list_size 0", isEventPlaylist ? "event" : "vod");
+            }
         }
 
         /// <summary>
