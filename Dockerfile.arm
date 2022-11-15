@@ -1,0 +1,81 @@
+# DESIGNED FOR BUILDING ON ARM ONLY
+#####################################
+# Requires binfm_misc registration
+# https://github.com/multiarch/qemu-user-static#binfmt_misc-register
+ARG DOTNET_VERSION=6.0
+
+
+FROM node:lts-alpine as web-builder
+ARG JELLYFIN_WEB_VERSION=master
+RUN apk add curl git zlib zlib-dev autoconf g++ make libpng-dev gifsicle alpine-sdk automake libtool make gcc musl-dev nasm python3 \
+ && curl -L https://github.com/jellyfin/jellyfin-web/archive/${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
+ && cd jellyfin-web-* \
+ && npm ci --no-audit --unsafe-perm \
+ && mv dist /dist
+
+FROM multiarch/qemu-user-static:x86_64-arm as qemu
+FROM arm32v7/debian:stable-slim as app
+
+# https://askubuntu.com/questions/972516/debian-frontend-environment-variable
+ARG DEBIAN_FRONTEND="noninteractive"
+# http://stackoverflow.com/questions/48162574/ddg#49462622
+ARG APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn
+# https://github.com/NVIDIA/nvidia-docker/wiki/Installation-(Native-GPU-Support)
+ENV NVIDIA_DRIVER_CAPABILITIES="compute,video,utility"
+
+COPY --from=qemu /usr/bin/qemu-arm-static /usr/bin
+
+# curl: setup & healthcheck
+RUN apt-get update \
+ && apt-get install --no-install-recommends --no-install-suggests -y ca-certificates gnupg curl && \
+ curl -ks https://repo.jellyfin.org/debian/jellyfin_team.gpg.key | apt-key add - && \
+ curl -ks https://keyserver.ubuntu.com/pks/lookup?op=get\&search=0x6587ffd6536b8826e88a62547876ae518cbcf2f2 | apt-key add - && \
+ echo 'deb [arch=armhf] https://repo.jellyfin.org/debian buster main' > /etc/apt/sources.list.d/jellyfin.list && \
+ echo "deb http://ppa.launchpad.net/ubuntu-raspi2/ppa/ubuntu bionic main">> /etc/apt/sources.list.d/raspbins.list && \
+ apt-get update && \
+ apt-get install --no-install-recommends --no-install-suggests -y \
+ jellyfin-ffmpeg \
+ libssl-dev \
+ libfontconfig1 \
+ libfreetype6 \
+ vainfo \
+ libva2 \
+ locales \
+ && apt-get remove gnupg -y \
+ && apt-get clean autoclean -y \
+ && apt-get autoremove -y \
+ && rm -rf /var/lib/apt/lists/* \
+ && mkdir -p /cache /config /media \
+ && chmod 777 /cache /config /media \
+ && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && locale-gen
+
+# ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+ENV LC_ALL en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+
+FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION} as builder
+WORKDIR /repo
+COPY . .
+ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
+# Discard objs - may cause failures if exists
+RUN find . -type d -name obj | xargs -r rm -r
+# Build
+RUN dotnet publish Jellyfin.Server --configuration Release --output="/jellyfin" --self-contained --runtime linux-arm -p:DebugSymbols=false -p:DebugType=none
+
+FROM app
+
+ENV HEALTHCHECK_URL=http://localhost:8096/health
+
+COPY --from=builder /jellyfin /jellyfin
+COPY --from=web-builder /dist /jellyfin/jellyfin-web
+
+EXPOSE 8096
+VOLUME /cache /config
+ENTRYPOINT ["./jellyfin/jellyfin", \
+    "--datadir", "/config", \
+    "--cachedir", "/cache", \
+    "--ffmpeg", "/usr/lib/jellyfin-ffmpeg/ffmpeg"]
+
+HEALTHCHECK --interval=30s --timeout=30s --start-period=10s --retries=3 \
+     CMD curl -Lk -fsS "${HEALTHCHECK_URL}" || exit 1

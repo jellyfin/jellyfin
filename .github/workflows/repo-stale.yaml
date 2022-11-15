@@ -1,0 +1,27 @@
+name: Issue Stale Check
+
+on:
+  schedule:
+    - cron: '30 1 * * *'
+  workflow_dispatch:
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    if: ${{ contains(github.repository, 'jellyfin/') }}
+    steps:
+      - uses: actions/stale@5ebf00ea0e4c1561e9b43a292ed34424fb1d4578 # tag=v6
+        with:
+          repo-token: ${{ secrets.JF_BOT_TOKEN }}
+          days-before-stale: 120
+          days-before-pr-stale: -1
+          days-before-close: 21
+          days-before-pr-close: -1
+          exempt-issue-labels: regression,security,roadmap,future,feature,enhancement,confirmed
+          stale-issue-label: stale
+          stale-issue-message: |-
+            This issue has gone 120 days without comment. To avoid abandoned issues, it will be closed in 21 days if there are no new comments.
+            
+            If you're the original submitter of this issue, please comment confirming if this issue still affects you in the latest release or master branch, or close the issue if it has been fixed. If you're another user also affected by this bug, please comment confirming so. Either action will remove the stale label.
+            
+            This bot exists to prevent issues from becoming stale and forgotten. Jellyfin is always moving forward, and bugs are often fixed as side effects of other changes. We therefore ask that bug report authors remain vigilant about their issues to ensure they are closed if fixed, or re-confirmed - perhaps with fresh logs or reproduction examples - regularly. If you have any questions you can reach us on [Matrix or Social Media](https://docs.jellyfin.org/general/getting-help.html).

@@ -1,0 +1,15 @@
+/* logo */
+.topbar-wrapper img[alt="Swagger UI"], .topbar-wrapper span {
+    visibility: collapse;
+}
+
+.topbar-wrapper .link:after {
+    content: url(../banner-dark.svg);
+    display: block;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    max-width: 100%;
+    max-height: 100%;
+    width: 150px;
+}
+/* end logo */

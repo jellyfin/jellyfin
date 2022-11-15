@@ -1,0 +1,17 @@
+{
+    "folders": [
+        {
+            "path": "."
+        }
+    ],
+    "settings": {
+        "files.eol": "\n",
+        "editor.renderWhitespace": "boundary",
+        "files.exclude": {
+            "**/bin": true,
+            "**/jellyfin-web": true,
+            "**/obj": true
+        },
+        "formatFiles.excludePattern": "**/node_modules,**/.vscode,**/dist/**,**/.chrome,ThirdParty,RSSDP,Mono.Nat,unRaid,debian"
+    }
+}

@@ -1,0 +1,39 @@
+FROM mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim
+# Docker build arguments
+ARG SOURCE_DIR=/jellyfin
+ARG ARTIFACT_DIR=/dist
+# Docker run environment
+ENV SOURCE_DIR=/jellyfin
+ENV ARTIFACT_DIR=/dist
+ENV DEB_BUILD_OPTIONS=noddebs
+ENV ARCH=amd64
+ENV IS_DOCKER=YES
+
+# Prepare Debian build environment
+RUN apt-get update -yqq \
+  && apt-get install -yqq --no-install-recommends \
+    debhelper gnupg devscripts build-essential mmv
+
+# Prepare the cross-toolchain
+RUN dpkg --add-architecture arm64 \
+  && apt-get update -yqq \
+  && apt-get install -yqq --no-install-recommends cross-gcc-dev \
+  && TARGET_LIST="arm64" cross-gcc-gensource 9 \
+  && cd cross-gcc-packages-amd64/cross-gcc-9-arm64 \
+  && apt-get install -yqq --no-install-recommends \
+    gcc-9-source libstdc++-9-dev-arm64-cross \
+    binutils-aarch64-linux-gnu bison flex libtool \
+    gdb sharutils netbase libmpc-dev libmpfr-dev libgmp-dev \
+    systemtap-sdt-dev autogen expect chrpath zlib1g-dev zip \
+    libc6-dev:arm64 linux-libc-dev:arm64 libgcc1:arm64 \
+    libcurl4-openssl-dev:arm64 libfontconfig1-dev:arm64 \
+    libfreetype6-dev:arm64 libssl-dev:arm64 liblttng-ust0:arm64 libstdc++-9-dev:arm64
+
+# Link to build script
+RUN ln -sf ${SOURCE_DIR}/deployment/build.debian.arm64 /build.sh
+
+VOLUME ${SOURCE_DIR}/
+
+VOLUME ${ARTIFACT_DIR}/
+
+ENTRYPOINT ["/build.sh"]

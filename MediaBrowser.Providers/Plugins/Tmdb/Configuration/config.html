@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TMDb</title>
+</head>
+<body>
+    <div data-role="page" class="page type-interior pluginConfigurationPage configPage" data-require="emby-input,emby-button,emby-checkbox">
+        <div data-role="content">
+            <div class="content-primary">
+                <form class="configForm">
+                    <label class="checkboxContainer">
+                        <input is="emby-checkbox" type="checkbox" id="includeAdult" />
+                        <span>Include adult content in search results.</span>
+                    </label>
+                    <label class="checkboxContainer">
+                        <input is="emby-checkbox" type="checkbox" id="excludeTagsSeries" />
+                        <span>Exclude tags/keywords from metadata fetched for series.</span>
+                    </label>
+                    <label class="checkboxContainer">
+                        <input is="emby-checkbox" type="checkbox" id="excludeTagsMovies" />
+                        <span>Exclude tags/keywords from metadata fetched for movies.</span>
+                    </label>
+                    <label class="checkboxContainer">
+                        <input is="emby-checkbox" type="checkbox" id="importSeasonName" />
+                        <span>Import season name from metadata fetched for series.</span>
+                    </label>
+                    <div class="inputContainer">
+                        <input is="emby-input" type="number" id="maxCastMembers" pattern="[0-9]*" required min="0" max="1000" label="Max Cast Members" />
+                        <div class="fieldDescription">The maximum number of cast members to fetch for an item.</div>
+                    </div>
+                    <div class="verticalSection verticalSection-extrabottompadding">
+                        <h2>Image Scaling</h2>
+                        <div class="selectContainer">
+                            <select is="emby-select" id="selectPosterSize" label="Poster"></select>
+                        </div>
+                        <div class="selectContainer">
+                            <select is="emby-select" id="selectBackdropSize" label="Backdrop"></select>
+                        </div>
+                        <div class="selectContainer">
+                            <select is="emby-select" id="selectLogoSize" label="Logo"></select>
+                        </div>
+                        <div class="selectContainer">
+                            <select is="emby-select" id="selectProfileSize" label="Profile"></select>
+                        </div>
+                        <div class="selectContainer">
+                            <select is="emby-select" id="selectStillSize" label="Still"></select>
+                        </div>
+                    </div>
+                    <div>
+                        <button is="emby-button" type="submit" class="raised button-submit block"><span>Save</span></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <script type="text/javascript">
+            var PluginConfig = {
+                pluginId: "b8715ed1-6c47-4528-9ad3-f72deb539cd4"
+            };
+
+            document.querySelector('.configPage')
+                .addEventListener('pageshow', function () {
+                    Dashboard.showLoadingMsg();
+
+                    var clientConfig, pluginConfig;
+                    var configureImageScaling = function() {
+                        if (clientConfig === null || pluginConfig === null) {
+                            return;
+                        }
+
+                        var sizeOptionsGenerator = function (size) {
+                            return '<option value="' + size + '">' + size + '</option>';
+                        }
+
+                        var selPosterSize = document.querySelector('#selectPosterSize');
+                        selPosterSize.innerHTML = clientConfig.PosterSizes.map(sizeOptionsGenerator);
+                        selPosterSize.value = pluginConfig.PosterSize;
+
+                        var selBackdropSize = document.querySelector('#selectBackdropSize');
+                        selBackdropSize.innerHTML = clientConfig.BackdropSizes.map(sizeOptionsGenerator);
+                        selBackdropSize.value = pluginConfig.BackdropSize;
+
+                        var selLogoSize = document.querySelector('#selectLogoSize');
+                        selLogoSize.innerHTML = clientConfig.LogoSizes.map(sizeOptionsGenerator);
+                        selLogoSize.value = pluginConfig.LogoSize;
+
+                        var selProfileSize = document.querySelector('#selectProfileSize');
+                        selProfileSize.innerHTML = clientConfig.ProfileSizes.map(sizeOptionsGenerator);
+                        selProfileSize.value = pluginConfig.ProfileSize;
+
+                        var selStillSize = document.querySelector('#selectStillSize');
+                        selStillSize.innerHTML = clientConfig.StillSizes.map(sizeOptionsGenerator);
+                        selStillSize.value = pluginConfig.StillSize;
+
+                        Dashboard.hideLoadingMsg();
+                    }
+
+                    const request = {
+                        url: ApiClient.getUrl('tmdb/ClientConfiguration'),
+                        dataType: 'json',
+                        type: 'GET',
+                        headers: { accept: 'application/json' }
+                    }
+                    ApiClient.fetch(request).then(function (config) {
+                        clientConfig = config;
+                        configureImageScaling();
+                    });
+
+                    ApiClient.getPluginConfiguration(PluginConfig.pluginId).then(function (config) {
+                        document.querySelector('#includeAdult').checked = config.IncludeAdult;
+                        document.querySelector('#excludeTagsSeries').checked = config.ExcludeTagsSeries;
+                        document.querySelector('#excludeTagsMovies').checked = config.ExcludeTagsMovies;
+                        document.querySelector('#importSeasonName').checked = config.ImportSeasonName;
+
+                        var maxCastMembers = document.querySelector('#maxCastMembers');
+                        maxCastMembers.value = config.MaxCastMembers;
+                        maxCastMembers.dispatchEvent(new Event('change', {
+                            bubbles: true,
+                            cancelable: false
+                        }));
+
+                        pluginConfig = config;
+                        configureImageScaling();
+                    });
+                });
+
+
+            document.querySelector('.configForm')
+                .addEventListener('submit', function (e) {
+                    Dashboard.showLoadingMsg();
+
+                    ApiClient.getPluginConfiguration(PluginConfig.pluginId).then(function (config) {
+                        config.IncludeAdult = document.querySelector('#includeAdult').checked;
+                        config.ExcludeTagsSeries = document.querySelector('#excludeTagsSeries').checked;
+                        config.ExcludeTagsMovies = document.querySelector('#excludeTagsMovies').checked;
+                        config.ImportSeasonName = document.querySelector('#importSeasonName').checked;
+                        config.MaxCastMembers = document.querySelector('#maxCastMembers').value;
+                        config.PosterSize = document.querySelector('#selectPosterSize').value;
+                        config.BackdropSize = document.querySelector('#selectBackdropSize').value;
+                        config.LogoSize = document.querySelector('#selectLogoSize').value;
+                        config.ProfileSize = document.querySelector('#selectProfileSize').value;
+                        config.StillSize = document.querySelector('#selectStillSize').value;
+                        ApiClient.updatePluginConfiguration(PluginConfig.pluginId, config).then(Dashboard.processPluginConfigurationUpdateResult);
+                    });
+
+                    e.preventDefault();
+                    return false;
+                });
+        </script>
+    </div>
+</body>
+</html>

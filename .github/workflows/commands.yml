@@ -1,0 +1,119 @@
+name: Commands
+on:
+  issue_comment:
+    types:
+      - created
+      - edited
+  pull_request_target:
+    types:
+      - labeled
+      - synchronize
+
+jobs:
+  rebase:
+    name: Rebase
+    if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '@jellyfin-bot rebase') && github.event.comment.author_association == 'MEMBER'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify as seen
+        uses: peter-evans/create-or-update-comment@5adcb0bb0f9fb3f95ef05400558bdb3f329ee808 # tag=v2
+        with:
+          token: ${{ secrets.JF_BOT_TOKEN }}
+          comment-id: ${{ github.event.comment.id }}
+          reactions: '+1'
+
+      - name: Checkout the latest code
+        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3
+        with:
+          token: ${{ secrets.JF_BOT_TOKEN }}
+          fetch-depth: 0
+
+      - name: Automatic Rebase
+        uses: cirrus-actions/rebase@6e572f08c244e2f04f9beb85a943eb618218714d # tag=1.7
+        env:
+          GITHUB_TOKEN: ${{ secrets.JF_BOT_TOKEN }}
+
+  check-backport:
+    name: Check Backport
+    if: ${{ ( github.event.issue.pull_request && contains(github.event.comment.body, '@jellyfin-bot check backport') ) || github.event.label.name == 'stable backport' || contains(github.event.pull_request.labels.*.name, 'stable backport' ) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify as seen
+        uses: peter-evans/create-or-update-comment@5adcb0bb0f9fb3f95ef05400558bdb3f329ee808 # tag=v2
+        if: ${{ github.event.comment != null }}
+        with:
+          token: ${{ secrets.JF_BOT_TOKEN }}
+          comment-id: ${{ github.event.comment.id }}
+          reactions: eyes
+
+      - name: Checkout the latest code
+        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3
+        with:
+          token: ${{ secrets.JF_BOT_TOKEN }}
+          fetch-depth: 0
+
+      - name: Notify as running
+        id: comment_running
+        uses: peter-evans/create-or-update-comment@5adcb0bb0f9fb3f95ef05400558bdb3f329ee808 # tag=v2
+        if: ${{ github.event.comment != null }}
+        with:
+          token: ${{ secrets.JF_BOT_TOKEN }}
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            Running backport tests...
+
+      - name: Perform test backport
+        id: run_tests
+        run: |
+          set +o errexit
+          git config --global user.name "Jellyfin Bot"
+          git config --global user.email "team@jellyfin.org"
+          CURRENT_BRANCH="origin/${GITHUB_HEAD_REF}"
+          git checkout master
+          git merge --no-ff ${CURRENT_BRANCH}
+          MERGE_COMMIT_HASH=$( git log -q -1 | head -1 | awk '{ print $2 }' )
+          git fetch --all
+          CURRENT_STABLE=$( git branch -r | grep 'origin/release' | sort -rV | head -1 | awk -F '/' '{ print $NF }' )
+          stable_branch="Current stable release branch: ${CURRENT_STABLE}"
+          echo ${stable_branch}
+          echo ::set-output name=branch::${stable_branch}
+          git checkout -t origin/${CURRENT_STABLE} -b ${CURRENT_STABLE}
+          git cherry-pick -sx -m1 ${MERGE_COMMIT_HASH} &>output.txt
+          retcode=$?
+          cat output.txt | grep -v 'hint:'
+          output="$( grep -v 'hint:'  output.txt )"
+          output="${output//'%'/'%25'}"
+          output="${output//$'\n'/'%0A'}"
+          output="${output//$'\r'/'%0D'}" 
+          echo ::set-output name=output::$output
+          exit ${retcode}
+
+      - name: Notify with result success
+        uses: peter-evans/create-or-update-comment@5adcb0bb0f9fb3f95ef05400558bdb3f329ee808 # tag=v2
+        if: ${{ github.event.comment != null && success() }}
+        with:
+          token: ${{ secrets.JF_BOT_TOKEN }}
+          comment-id: ${{ steps.comment_running.outputs.comment-id }}
+          body: |
+            ${{ steps.run_tests.outputs.branch }}
+            Output from `git cherry-pick`:
+
+            ---
+
+            ${{ steps.run_tests.outputs.output }}
+          reactions: hooray
+
+      - name: Notify with result failure
+        uses: peter-evans/create-or-update-comment@5adcb0bb0f9fb3f95ef05400558bdb3f329ee808 # tag=v2
+        if: ${{ github.event.comment != null && failure() }}
+        with:
+          token: ${{ secrets.JF_BOT_TOKEN }}
+          comment-id: ${{ steps.comment_running.outputs.comment-id }}
+          body: |
+            ${{ steps.run_tests.outputs.branch }}
+            Output from `git cherry-pick`:
+
+            ---
+
+            ${{ steps.run_tests.outputs.output }}
+          reactions: confused

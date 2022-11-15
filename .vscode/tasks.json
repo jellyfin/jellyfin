@@ -1,0 +1,30 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/Jellyfin.Server/Jellyfin.Server.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "api tests",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "test",
+                "${workspaceFolder}/tests/Jellyfin.Api.Tests/Jellyfin.Api.Tests.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        }
+    ],
+    "options": {
+        "env": {
+            "DOTNET_CLI_TELEMETRY_OPTOUT": "1"
+        }
+    }
+}

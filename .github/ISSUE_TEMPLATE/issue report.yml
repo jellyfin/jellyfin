@@ -1,0 +1,107 @@
+name: Issue Report
+description: File an issue report
+title: "[Issue]: "
+labels: [bug, triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Please provide as much detail as necessary, most questions may not be applicable to you. If you need real-time help, join us on [Matrix](https://matrix.to/#/#jellyfin-troubleshooting:matrix.org) or [Discord](https://discord.gg/zHBxVSXdBV).
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Please describe your bug
+      description: Also tell us, what did you expect to happen?
+      placeholder: |
+        The more information that you are able to provide, the better. Did you do anything before this happened? Did you upgrade or change anything? Any screenshots or logs you can provide will be helpful.
+
+        This is my issue.
+
+        Steps to Reproduce
+          1. In this environment...
+          2. With this config...
+          3. Run '...'
+          4. See error...
+    validations:
+      required: true
+  - type: dropdown
+    id: version
+    attributes:
+      label: Jellyfin Version
+      description: What version of Jellyfin are you running?
+      options:
+        - 10.8.0
+        - 10.7.7
+        - 10.7.z
+        - 10.6.4
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: version-other
+    attributes:
+      label: "if other:"
+      placeholder: Other
+  - type: textarea
+    attributes:
+      label: Environment
+      description: |
+        Examples:
+        - **OS**: [e.g. Debian, Windows]
+        - **Virtualization**: [e.g. Docker, KVM, LXC]
+        - **Clients**: [Browser, Android, Fire Stick, etc.]
+        - **Browser**: [e.g. Firefox 91, Chrome 93, Safari 13]
+        - **FFmpeg Version**: [e.g. 4.3.2-Jellyfin]
+        - **Playback**: [Direct Play, Remux, Direct Stream, Transcode]
+        - **Hardware Acceleration**: [e.g. none, VAAPI, NVENC, etc.]
+        - **Installed Plugins**: [e.g. none, Fanart, Anime, etc.]
+        - **Reverse Proxy**: [e.g. none, nginx, apache, etc.]
+        - **Base URL**: [e.g. none, yes: /example]
+        - **Networking**: [e.g. Host, Bridge/NAT]
+        - **Storage**: [e.g. local, NFS, cloud]
+      value: |
+        - OS:
+        - Virtualization:
+        - Clients:
+        - Browser:
+        - FFmpeg Version:
+        - Playback Method:
+        - Hardware Acceleration:
+        - Plugins:
+        - Reverse Proxy:
+        - Base URL:
+        - Networking:
+        - Storage:
+      render: markdown
+  - type: textarea
+    id: logs
+    attributes:
+      label: Jellyfin logs
+      description: Please copy and paste any relevant log output. This can be found in Dashboard > Logs.
+      placeholder: For playback issues, browser/client and FFmpeg logs may be more useful.
+      render: shell
+  - type: textarea
+    id: ffmpeg-logs
+    attributes:
+      label: FFmpeg logs
+      description: Please copy and paste any relevant log output. This can be found in Dashboard > Logs.
+      placeholder: It's important to include the specific codec details. If no FFmpeg logs appear, the file was Direct Played and did not use FFmpeg.
+      render: shell
+  - type: textarea
+    id: browserlogs
+    attributes:
+      label: Please attach any browser or client logs here
+      placeholder: Access browser logs by using the F12 to bring up the console. Screenshots are typically easier to read than raw logs. For clients such as Android or iOS, please see our documentation.
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Please attach any screenshots here
+      placeholder: Images can be pasted directly into the textbox and will be hosted by github.
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://jellyfin.org/docs/general/community-standards.html#code-of-conduct)
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true

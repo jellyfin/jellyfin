@@ -1,0 +1,42 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": ".NET Core Launch (console)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/Jellyfin.Server/bin/Debug/net6.0/jellyfin.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/Jellyfin.Server",
+            "console": "internalConsole",
+            "stopAtEntry": false,
+            "internalConsoleOptions": "openOnSessionStart",
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "Overriding address\\(es\\) \\'(https?:\\S+)\\'",
+            }
+        },
+        {
+            "name": ".NET Core Launch (nowebclient)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/Jellyfin.Server/bin/Debug/net6.0/jellyfin.dll",
+            "args": ["--nowebclient"],
+            "cwd": "${workspaceFolder}/Jellyfin.Server",
+            "console": "internalConsole",
+            "stopAtEntry": false,
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "name": ".NET Core Attach",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command:pickProcess}"
+        }
+    ],
+    "env": {
+        "DOTNET_CLI_TELEMETRY_OPTOUT": "1"
+    }
+}

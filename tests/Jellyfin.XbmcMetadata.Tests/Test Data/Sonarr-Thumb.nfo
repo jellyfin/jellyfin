@@ -1,0 +1,34 @@
+<episodedetails>
+  <title>Sometimes a Genius's Every Action Is at the Mercy of X</title>
+  <season>1</season>
+  <episode>8</episode>
+  <aired>2019-05-26</aired>
+  <plot>After Nariyuki wins a smartphone in a lottery, he can't wait to use it for apps like the dictionary, schedule managing, and the like. He also learns that studying in the bathtub is effective and quickly puts the method into practice.</plot>
+  <uniqueid type="sonarr" default="true">4289</uniqueid>
+  <thumb>https://artworks.thetvdb.com/banners/episodes/359095/7081317.jpg</thumb>
+  <watched>false</watched>
+  <fileinfo>
+    <streamdetails>
+      <video>
+        <aspect>1.77777779</aspect>
+        <bitrate>2208901</bitrate>
+        <codec>x265</codec>
+        <framerate>23.976</framerate>
+        <height>1080</height>
+        <scantype></scantype>
+        <width>1920</width>
+        <duration>23.683416666666666</duration>
+        <durationinseconds>1421</durationinseconds>
+      </video>
+      <audio>
+        <bitrate>1468567</bitrate>
+        <channels>2</channels>
+        <codec>FLAC</codec>
+        <language>Japanese / Japanese</language>
+      </audio>
+      <subtitle>
+        <language>English</language>
+      </subtitle>
+    </streamdetails>
+  </fileinfo>
+</episodedetails>

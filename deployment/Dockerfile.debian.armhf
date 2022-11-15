@@ -1,0 +1,40 @@
+FROM mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim
+# Docker build arguments
+ARG SOURCE_DIR=/jellyfin
+ARG ARTIFACT_DIR=/dist
+# Docker run environment
+ENV SOURCE_DIR=/jellyfin
+ENV ARTIFACT_DIR=/dist
+ENV DEB_BUILD_OPTIONS=noddebs
+ENV ARCH=amd64
+ENV IS_DOCKER=YES
+
+# Prepare Debian build environment
+RUN apt-get update -yqq \
+  && apt-get install -yqq --no-install-recommends \
+    debhelper gnupg devscripts build-essential mmv
+
+# Prepare the cross-toolchain
+RUN dpkg --add-architecture armhf \
+  && apt-get update -yqq \
+  && apt-get install -yqq --no-install-recommends cross-gcc-dev \
+  && TARGET_LIST="armhf" cross-gcc-gensource 9 \
+  && cd cross-gcc-packages-amd64/cross-gcc-9-armhf \
+  && apt-get install -yqq --no-install-recommends\
+    gcc-9-source libstdc++-9-dev-armhf-cross \
+    binutils-aarch64-linux-gnu bison flex libtool gdb \
+    sharutils netbase libmpc-dev libmpfr-dev libgmp-dev \
+    systemtap-sdt-dev autogen expect chrpath zlib1g-dev \
+    zip binutils-arm-linux-gnueabihf libc6-dev:armhf \
+    linux-libc-dev:armhf libgcc1:armhf libcurl4-openssl-dev:armhf \
+    libfontconfig1-dev:armhf libfreetype6-dev:armhf libssl-dev:armhf \
+    liblttng-ust0:armhf libstdc++-9-dev:armhf
+
+# Link to build script
+RUN ln -sf ${SOURCE_DIR}/deployment/build.debian.armhf /build.sh
+
+VOLUME ${SOURCE_DIR}/
+
+VOLUME ${ARTIFACT_DIR}/
+
+ENTRYPOINT ["/build.sh"]

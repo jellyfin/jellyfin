@@ -1,0 +1,11 @@
+.git
+.dockerignore
+Dockerfile
+Dockerfile.arm
+Dockerfile.arm64
+CONTRIBUTORS.md
+README.md
+deployment/*/dist
+deployment/*/pkg-dist
+deployment/collect-dist/
+ci/

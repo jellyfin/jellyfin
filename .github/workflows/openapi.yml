@@ -1,0 +1,124 @@
+name: OpenAPI
+on:
+  push:
+    branches:
+      - master
+  pull_request_target:
+
+jobs:
+  openapi-head:
+    name: OpenAPI - HEAD
+    runs-on: ubuntu-latest
+    permissions: read-all
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a # tag=v3
+        with:
+          dotnet-version: '6.0.x'
+      - name: Generate openapi.json
+        run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
+      - name: Upload openapi.json
+        uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb # tag=v3
+        with:
+          name: openapi-head
+          retention-days: 14
+          if-no-files-found: error
+          path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net6.0/openapi.json
+
+  openapi-base:
+    name: OpenAPI - BASE
+    if: ${{ github.base_ref != '' }}
+    runs-on: ubuntu-latest
+    permissions: read-all
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3
+        with:
+          ref: ${{ github.base_ref }}
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a # tag=v3
+        with:
+          dotnet-version: '6.0.x'
+      - name: Generate openapi.json
+        run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
+      - name: Upload openapi.json
+        uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb # tag=v3
+        with:
+          name: openapi-base
+          retention-days: 14
+          if-no-files-found: error
+          path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net6.0/openapi.json
+
+  openapi-diff:
+    name: OpenAPI - Difference
+    if: ${{ github.event_name == 'pull_request_target' }}
+    runs-on: ubuntu-latest
+    needs:
+      - openapi-head
+      - openapi-base
+    steps:
+      - name: Download openapi-head
+        uses: actions/download-artifact@9782bd6a9848b53b110e712e20e42d89988822b7 # tag=v3
+        with:
+          name: openapi-head
+          path: openapi-head
+      - name: Download openapi-base
+        uses: actions/download-artifact@9782bd6a9848b53b110e712e20e42d89988822b7 # tag=v3
+        with:
+          name: openapi-base
+          path: openapi-base
+      - name: Workaround openapi-diff issue
+        run: |
+          sed -i 's/"allOf"/"oneOf"/g' openapi-head/openapi.json
+          sed -i 's/"allOf"/"oneOf"/g' openapi-base/openapi.json
+      - name: Calculate OpenAPI difference
+        uses: docker://openapitools/openapi-diff
+        continue-on-error: true
+        with:
+          args: --fail-on-changed --markdown openapi-changes.md openapi-base/openapi.json openapi-head/openapi.json
+      - id: read-diff
+        name: Read openapi-diff output
+        run: |
+          body=$(cat openapi-changes.md)
+          body="${body//'%'/'%25'}"
+          body="${body//$'\n'/'%0A'}"
+          body="${body//$'\r'/'%0D'}"
+          echo ::set-output name=body::$body
+      - name: Find difference comment
+        uses: peter-evans/find-comment@b657a70ff16d17651703a84bee1cb9ad9d2be2ea # tag=v2
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          direction: last
+          body-includes: openapi-diff-workflow-comment
+      - name: Reply or edit difference comment (changed)
+        uses: peter-evans/create-or-update-comment@5adcb0bb0f9fb3f95ef05400558bdb3f329ee808 # tag=v2
+        if: ${{ steps.read-diff.outputs.body != '' }}
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          edit-mode: replace
+          body: |
+            <!--openapi-diff-workflow-comment-->
+            <details>
+            <summary>Changes in OpenAPI specification found. Expand to see details.</summary>
+
+            ${{ steps.read-diff.outputs.body }}
+
+            </details>
+      - name: Edit difference comment (unchanged)
+        uses: peter-evans/create-or-update-comment@5adcb0bb0f9fb3f95ef05400558bdb3f329ee808 # tag=v2
+        if: ${{ steps.read-diff.outputs.body == '' && steps.find-comment.outputs.comment-id != '' }}
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          edit-mode: replace
+          body: |
+            <!--openapi-diff-workflow-comment-->
+
+            No changes to OpenAPI specification found. See history of this comment for previous changes.

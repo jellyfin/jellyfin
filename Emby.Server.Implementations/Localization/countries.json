@@ -1,0 +1,836 @@
+[
+    {
+        "DisplayName": "Afghanistan",
+        "Name": "AF",
+        "ThreeLetterISORegionName": "AFG",
+        "TwoLetterISORegionName": "AF"
+    },
+    {
+        "DisplayName": "Albania",
+        "Name": "AL",
+        "ThreeLetterISORegionName": "ALB",
+        "TwoLetterISORegionName": "AL"
+    },
+    {
+        "DisplayName": "Algeria",
+        "Name": "DZ",
+        "ThreeLetterISORegionName": "DZA",
+        "TwoLetterISORegionName": "DZ"
+    },
+    {
+        "DisplayName": "Argentina",
+        "Name": "AR",
+        "ThreeLetterISORegionName": "ARG",
+        "TwoLetterISORegionName": "AR"
+    },
+    {
+        "DisplayName": "Armenia",
+        "Name": "AM",
+        "ThreeLetterISORegionName": "ARM",
+        "TwoLetterISORegionName": "AM"
+    },
+    {
+        "DisplayName": "Australia",
+        "Name": "AU",
+        "ThreeLetterISORegionName": "AUS",
+        "TwoLetterISORegionName": "AU"
+    },
+    {
+        "DisplayName": "Austria",
+        "Name": "AT",
+        "ThreeLetterISORegionName": "AUT",
+        "TwoLetterISORegionName": "AT"
+    },
+    {
+        "DisplayName": "Azerbaijan",
+        "Name": "AZ",
+        "ThreeLetterISORegionName": "AZE",
+        "TwoLetterISORegionName": "AZ"
+    },
+    {
+        "DisplayName": "Bahrain",
+        "Name": "BH",
+        "ThreeLetterISORegionName": "BHR",
+        "TwoLetterISORegionName": "BH"
+    },
+    {
+        "DisplayName": "Bangladesh",
+        "Name": "BD",
+        "ThreeLetterISORegionName": "BGD",
+        "TwoLetterISORegionName": "BD"
+    },
+    {
+        "DisplayName": "Belarus",
+        "Name": "BY",
+        "ThreeLetterISORegionName": "BLR",
+        "TwoLetterISORegionName": "BY"
+    },
+    {
+        "DisplayName": "Belgium",
+        "Name": "BE",
+        "ThreeLetterISORegionName": "BEL",
+        "TwoLetterISORegionName": "BE"
+    },
+    {
+        "DisplayName": "Belize",
+        "Name": "BZ",
+        "ThreeLetterISORegionName": "BLZ",
+        "TwoLetterISORegionName": "BZ"
+    },
+    {
+        "DisplayName": "Bolivarian Republic of Venezuela",
+        "Name": "VE",
+        "ThreeLetterISORegionName": "VEN",
+        "TwoLetterISORegionName": "VE"
+    },
+    {
+        "DisplayName": "Bolivia",
+        "Name": "BO",
+        "ThreeLetterISORegionName": "BOL",
+        "TwoLetterISORegionName": "BO"
+    },
+    {
+        "DisplayName": "Bosnia and Herzegovina",
+        "Name": "BA",
+        "ThreeLetterISORegionName": "BIH",
+        "TwoLetterISORegionName": "BA"
+    },
+    {
+        "DisplayName": "Botswana",
+        "Name": "BW",
+        "ThreeLetterISORegionName": "BWA",
+        "TwoLetterISORegionName": "BW"
+    },
+    {
+        "DisplayName": "Brazil",
+        "Name": "BR",
+        "ThreeLetterISORegionName": "BRA",
+        "TwoLetterISORegionName": "BR"
+    },
+    {
+        "DisplayName": "Brunei Darussalam",
+        "Name": "BN",
+        "ThreeLetterISORegionName": "BRN",
+        "TwoLetterISORegionName": "BN"
+    },
+    {
+        "DisplayName": "Bulgaria",
+        "Name": "BG",
+        "ThreeLetterISORegionName": "BGR",
+        "TwoLetterISORegionName": "BG"
+    },
+    {
+        "DisplayName": "Cambodia",
+        "Name": "KH",
+        "ThreeLetterISORegionName": "KHM",
+        "TwoLetterISORegionName": "KH"
+    },
+    {
+        "DisplayName": "Cameroon",
+        "Name": "CM",
+        "ThreeLetterISORegionName": "CMR",
+        "TwoLetterISORegionName": "CM"
+    },
+    {
+        "DisplayName": "Canada",
+        "Name": "CA",
+        "ThreeLetterISORegionName": "CAN",
+        "TwoLetterISORegionName": "CA"
+    },
+    {
+        "DisplayName": "Caribbean",
+        "Name": "029",
+        "ThreeLetterISORegionName": "029",
+        "TwoLetterISORegionName": "029"
+    },
+    {
+        "DisplayName": "Chile",
+        "Name": "CL",
+        "ThreeLetterISORegionName": "CHL",
+        "TwoLetterISORegionName": "CL"
+    },
+    {
+        "DisplayName": "Colombia",
+        "Name": "CO",
+        "ThreeLetterISORegionName": "COL",
+        "TwoLetterISORegionName": "CO"
+    },
+    {
+        "DisplayName": "Congo [DRC]",
+        "Name": "CD",
+        "ThreeLetterISORegionName": "COD",
+        "TwoLetterISORegionName": "CD"
+    },
+    {
+        "DisplayName": "Costa Rica",
+        "Name": "CR",
+        "ThreeLetterISORegionName": "CRI",
+        "TwoLetterISORegionName": "CR"
+    },
+    {
+        "DisplayName": "Croatia",
+        "Name": "HR",
+        "ThreeLetterISORegionName": "HRV",
+        "TwoLetterISORegionName": "HR"
+    },
+    {
+        "DisplayName": "Czech Republic",
+        "Name": "CZ",
+        "ThreeLetterISORegionName": "CZE",
+        "TwoLetterISORegionName": "CZ"
+    },
+    {
+        "DisplayName": "Denmark",
+        "Name": "DK",
+        "ThreeLetterISORegionName": "DNK",
+        "TwoLetterISORegionName": "DK"
+    },
+    {
+        "DisplayName": "Dominican Republic",
+        "Name": "DO",
+        "ThreeLetterISORegionName": "DOM",
+        "TwoLetterISORegionName": "DO"
+    },
+    {
+        "DisplayName": "Ecuador",
+        "Name": "EC",
+        "ThreeLetterISORegionName": "ECU",
+        "TwoLetterISORegionName": "EC"
+    },
+    {
+        "DisplayName": "Egypt",
+        "Name": "EG",
+        "ThreeLetterISORegionName": "EGY",
+        "TwoLetterISORegionName": "EG"
+    },
+    {
+        "DisplayName": "El Salvador",
+        "Name": "SV",
+        "ThreeLetterISORegionName": "SLV",
+        "TwoLetterISORegionName": "SV"
+    },
+    {
+        "DisplayName": "Eritrea",
+        "Name": "ER",
+        "ThreeLetterISORegionName": "ERI",
+        "TwoLetterISORegionName": "ER"
+    },
+    {
+        "DisplayName": "Estonia",
+        "Name": "EE",
+        "ThreeLetterISORegionName": "EST",
+        "TwoLetterISORegionName": "EE"
+    },
+    {
+        "DisplayName": "Ethiopia",
+        "Name": "ET",
+        "ThreeLetterISORegionName": "ETH",
+        "TwoLetterISORegionName": "ET"
+    },
+    {
+        "DisplayName": "Faroe Islands",
+        "Name": "FO",
+        "ThreeLetterISORegionName": "FRO",
+        "TwoLetterISORegionName": "FO"
+    },
+    {
+        "DisplayName": "Finland",
+        "Name": "FI",
+        "ThreeLetterISORegionName": "FIN",
+        "TwoLetterISORegionName": "FI"
+    },
+    {
+        "DisplayName": "France",
+        "Name": "FR",
+        "ThreeLetterISORegionName": "FRA",
+        "TwoLetterISORegionName": "FR"
+    },
+    {
+        "DisplayName": "Georgia",
+        "Name": "GE",
+        "ThreeLetterISORegionName": "GEO",
+        "TwoLetterISORegionName": "GE"
+    },
+    {
+        "DisplayName": "Germany",
+        "Name": "DE",
+        "ThreeLetterISORegionName": "DEU",
+        "TwoLetterISORegionName": "DE"
+    },
+    {
+        "DisplayName": "Greece",
+        "Name": "GR",
+        "ThreeLetterISORegionName": "GRC",
+        "TwoLetterISORegionName": "GR"
+    },
+    {
+        "DisplayName": "Greenland",
+        "Name": "GL",
+        "ThreeLetterISORegionName": "GRL",
+        "TwoLetterISORegionName": "GL"
+    },
+    {
+        "DisplayName": "Guatemala",
+        "Name": "GT",
+        "ThreeLetterISORegionName": "GTM",
+        "TwoLetterISORegionName": "GT"
+    },
+    {
+        "DisplayName": "Haiti",
+        "Name": "HT",
+        "ThreeLetterISORegionName": "HTI",
+        "TwoLetterISORegionName": "HT"
+    },
+    {
+        "DisplayName": "Honduras",
+        "Name": "HN",
+        "ThreeLetterISORegionName": "HND",
+        "TwoLetterISORegionName": "HN"
+    },
+    {
+        "DisplayName": "Hong Kong S.A.R.",
+        "Name": "HK",
+        "ThreeLetterISORegionName": "HKG",
+        "TwoLetterISORegionName": "HK"
+    },
+    {
+        "DisplayName": "Hungary",
+        "Name": "HU",
+        "ThreeLetterISORegionName": "HUN",
+        "TwoLetterISORegionName": "HU"
+    },
+    {
+        "DisplayName": "Iceland",
+        "Name": "IS",
+        "ThreeLetterISORegionName": "ISL",
+        "TwoLetterISORegionName": "IS"
+    },
+    {
+        "DisplayName": "India",
+        "Name": "IN",
+        "ThreeLetterISORegionName": "IND",
+        "TwoLetterISORegionName": "IN"
+    },
+    {
+        "DisplayName": "Indonesia",
+        "Name": "ID",
+        "ThreeLetterISORegionName": "IDN",
+        "TwoLetterISORegionName": "ID"
+    },
+    {
+        "DisplayName": "Iran",
+        "Name": "IR",
+        "ThreeLetterISORegionName": "IRN",
+        "TwoLetterISORegionName": "IR"
+    },
+    {
+        "DisplayName": "Iraq",
+        "Name": "IQ",
+        "ThreeLetterISORegionName": "IRQ",
+        "TwoLetterISORegionName": "IQ"
+    },
+    {
+        "DisplayName": "Ireland",
+        "Name": "IE",
+        "ThreeLetterISORegionName": "IRL",
+        "TwoLetterISORegionName": "IE"
+    },
+    {
+        "DisplayName": "Islamic Republic of Pakistan",
+        "Name": "PK",
+        "ThreeLetterISORegionName": "PAK",
+        "TwoLetterISORegionName": "PK"
+    },
+    {
+        "DisplayName": "Israel",
+        "Name": "IL",
+        "ThreeLetterISORegionName": "ISR",
+        "TwoLetterISORegionName": "IL"
+    },
+    {
+        "DisplayName": "Italy",
+        "Name": "IT",
+        "ThreeLetterISORegionName": "ITA",
+        "TwoLetterISORegionName": "IT"
+    },
+    {
+        "DisplayName": "Ivory Coast",
+        "Name": "CI",
+        "ThreeLetterISORegionName": "CIV",
+        "TwoLetterISORegionName": "CI"
+    },
+    {
+        "DisplayName": "Jamaica",
+        "Name": "JM",
+        "ThreeLetterISORegionName": "JAM",
+        "TwoLetterISORegionName": "JM"
+    },
+    {
+        "DisplayName": "Japan",
+        "Name": "JP",
+        "ThreeLetterISORegionName": "JPN",
+        "TwoLetterISORegionName": "JP"
+    },
+    {
+        "DisplayName": "Jordan",
+        "Name": "JO",
+        "ThreeLetterISORegionName": "JOR",
+        "TwoLetterISORegionName": "JO"
+    },
+    {
+        "DisplayName": "Kazakhstan",
+        "Name": "KZ",
+        "ThreeLetterISORegionName": "KAZ",
+        "TwoLetterISORegionName": "KZ"
+    },
+    {
+        "DisplayName": "Kenya",
+        "Name": "KE",
+        "ThreeLetterISORegionName": "KEN",
+        "TwoLetterISORegionName": "KE"
+    },
+    {
+        "DisplayName": "Korea",
+        "Name": "KR",
+        "ThreeLetterISORegionName": "KOR",
+        "TwoLetterISORegionName": "KR"
+    },
+    {
+        "DisplayName": "Kuwait",
+        "Name": "KW",
+        "ThreeLetterISORegionName": "KWT",
+        "TwoLetterISORegionName": "KW"
+    },
+    {
+        "DisplayName": "Kyrgyzstan",
+        "Name": "KG",
+        "ThreeLetterISORegionName": "KGZ",
+        "TwoLetterISORegionName": "KG"
+    },
+    {
+        "DisplayName": "Lao P.D.R.",
+        "Name": "LA",
+        "ThreeLetterISORegionName": "LAO",
+        "TwoLetterISORegionName": "LA"
+    },
+    {
+        "DisplayName": "Latin America",
+        "Name": "419",
+        "ThreeLetterISORegionName": "419",
+        "TwoLetterISORegionName": "419"
+    },
+    {
+        "DisplayName": "Latvia",
+        "Name": "LV",
+        "ThreeLetterISORegionName": "LVA",
+        "TwoLetterISORegionName": "LV"
+    },
+    {
+        "DisplayName": "Lebanon",
+        "Name": "LB",
+        "ThreeLetterISORegionName": "LBN",
+        "TwoLetterISORegionName": "LB"
+    },
+    {
+        "DisplayName": "Libya",
+        "Name": "LY",
+        "ThreeLetterISORegionName": "LBY",
+        "TwoLetterISORegionName": "LY"
+    },
+    {
+        "DisplayName": "Liechtenstein",
+        "Name": "LI",
+        "ThreeLetterISORegionName": "LIE",
+        "TwoLetterISORegionName": "LI"
+    },
+    {
+        "DisplayName": "Lithuania",
+        "Name": "LT",
+        "ThreeLetterISORegionName": "LTU",
+        "TwoLetterISORegionName": "LT"
+    },
+    {
+        "DisplayName": "Luxembourg",
+        "Name": "LU",
+        "ThreeLetterISORegionName": "LUX",
+        "TwoLetterISORegionName": "LU"
+    },
+    {
+        "DisplayName": "Macao S.A.R.",
+        "Name": "MO",
+        "ThreeLetterISORegionName": "MAC",
+        "TwoLetterISORegionName": "MO"
+    },
+    {
+        "DisplayName": "Macedonia (FYROM)",
+        "Name": "MK",
+        "ThreeLetterISORegionName": "MKD",
+        "TwoLetterISORegionName": "MK"
+    },
+    {
+        "DisplayName": "Malaysia",
+        "Name": "MY",
+        "ThreeLetterISORegionName": "MYS",
+        "TwoLetterISORegionName": "MY"
+    },
+    {
+        "DisplayName": "Maldives",
+        "Name": "MV",
+        "ThreeLetterISORegionName": "MDV",
+        "TwoLetterISORegionName": "MV"
+    },
+    {
+        "DisplayName": "Mali",
+        "Name": "ML",
+        "ThreeLetterISORegionName": "MLI",
+        "TwoLetterISORegionName": "ML"
+    },
+    {
+        "DisplayName": "Malta",
+        "Name": "MT",
+        "ThreeLetterISORegionName": "MLT",
+        "TwoLetterISORegionName": "MT"
+    },
+    {
+        "DisplayName": "Mexico",
+        "Name": "MX",
+        "ThreeLetterISORegionName": "MEX",
+        "TwoLetterISORegionName": "MX"
+    },
+    {
+        "DisplayName": "Mongolia",
+        "Name": "MN",
+        "ThreeLetterISORegionName": "MNG",
+        "TwoLetterISORegionName": "MN"
+    },
+    {
+        "DisplayName": "Montenegro",
+        "Name": "ME",
+        "ThreeLetterISORegionName": "MNE",
+        "TwoLetterISORegionName": "ME"
+    },
+    {
+        "DisplayName": "Morocco",
+        "Name": "MA",
+        "ThreeLetterISORegionName": "MAR",
+        "TwoLetterISORegionName": "MA"
+    },
+    {
+        "DisplayName": "Nepal",
+        "Name": "NP",
+        "ThreeLetterISORegionName": "NPL",
+        "TwoLetterISORegionName": "NP"
+    },
+    {
+        "DisplayName": "Netherlands",
+        "Name": "NL",
+        "ThreeLetterISORegionName": "NLD",
+        "TwoLetterISORegionName": "NL"
+    },
+    {
+        "DisplayName": "New Zealand",
+        "Name": "NZ",
+        "ThreeLetterISORegionName": "NZL",
+        "TwoLetterISORegionName": "NZ"
+    },
+    {
+        "DisplayName": "Nicaragua",
+        "Name": "NI",
+        "ThreeLetterISORegionName": "NIC",
+        "TwoLetterISORegionName": "NI"
+    },
+    {
+        "DisplayName": "Nigeria",
+        "Name": "NG",
+        "ThreeLetterISORegionName": "NGA",
+        "TwoLetterISORegionName": "NG"
+    },
+    {
+        "DisplayName": "Norway",
+        "Name": "NO",
+        "ThreeLetterISORegionName": "NOR",
+        "TwoLetterISORegionName": "NO"
+    },
+    {
+        "DisplayName": "Oman",
+        "Name": "OM",
+        "ThreeLetterISORegionName": "OMN",
+        "TwoLetterISORegionName": "OM"
+    },
+    {
+        "DisplayName": "Palestine",
+        "Name": "PS",
+        "ThreeLetterISORegionName": "PSE",
+        "TwoLetterISORegionName": "PS"
+    },
+    {
+        "DisplayName": "Panama",
+        "Name": "PA",
+        "ThreeLetterISORegionName": "PAN",
+        "TwoLetterISORegionName": "PA"
+    },
+    {
+        "DisplayName": "Paraguay",
+        "Name": "PY",
+        "ThreeLetterISORegionName": "PRY",
+        "TwoLetterISORegionName": "PY"
+    },
+    {
+        "DisplayName": "People's Republic of China",
+        "Name": "CN",
+        "ThreeLetterISORegionName": "CHN",
+        "TwoLetterISORegionName": "CN"
+    },
+    {
+        "DisplayName": "Peru",
+        "Name": "PE",
+        "ThreeLetterISORegionName": "PER",
+        "TwoLetterISORegionName": "PE"
+    },
+    {
+        "DisplayName": "Philippines",
+        "Name": "PH",
+        "ThreeLetterISORegionName": "PHL",
+        "TwoLetterISORegionName": "PH"
+    },
+    {
+        "DisplayName": "Poland",
+        "Name": "PL",
+        "ThreeLetterISORegionName": "POL",
+        "TwoLetterISORegionName": "PL"
+    },
+    {
+        "DisplayName": "Portugal",
+        "Name": "PT",
+        "ThreeLetterISORegionName": "PRT",
+        "TwoLetterISORegionName": "PT"
+    },
+    {
+        "DisplayName": "Principality of Monaco",
+        "Name": "MC",
+        "ThreeLetterISORegionName": "MCO",
+        "TwoLetterISORegionName": "MC"
+    },
+    {
+        "DisplayName": "Puerto Rico",
+        "Name": "PR",
+        "ThreeLetterISORegionName": "PRI",
+        "TwoLetterISORegionName": "PR"
+    },
+    {
+        "DisplayName": "Qatar",
+        "Name": "QA",
+        "ThreeLetterISORegionName": "QAT",
+        "TwoLetterISORegionName": "QA"
+    },
+    {
+        "DisplayName": "Republica Moldova",
+        "Name": "MD",
+        "ThreeLetterISORegionName": "MDA",
+        "TwoLetterISORegionName": "MD"
+    },
+    {
+        "DisplayName": "Réunion",
+        "Name": "RE",
+        "ThreeLetterISORegionName": "REU",
+        "TwoLetterISORegionName": "RE"
+    },
+    {
+        "DisplayName": "Romania",
+        "Name": "RO",
+        "ThreeLetterISORegionName": "ROU",
+        "TwoLetterISORegionName": "RO"
+    },
+    {
+        "DisplayName": "Russia",
+        "Name": "RU",
+        "ThreeLetterISORegionName": "RUS",
+        "TwoLetterISORegionName": "RU"
+    },
+    {
+        "DisplayName": "Rwanda",
+        "Name": "RW",
+        "ThreeLetterISORegionName": "RWA",
+        "TwoLetterISORegionName": "RW"
+    },
+    {
+        "DisplayName": "Saudi Arabia",
+        "Name": "SA",
+        "ThreeLetterISORegionName": "SAU",
+        "TwoLetterISORegionName": "SA"
+    },
+    {
+        "DisplayName": "Senegal",
+        "Name": "SN",
+        "ThreeLetterISORegionName": "SEN",
+        "TwoLetterISORegionName": "SN"
+    },
+    {
+        "DisplayName": "Serbia",
+        "Name": "RS",
+        "ThreeLetterISORegionName": "SRB",
+        "TwoLetterISORegionName": "RS"
+    },
+    {
+        "DisplayName": "Serbia and Montenegro (Former)",
+        "Name": "CS",
+        "ThreeLetterISORegionName": "SCG",
+        "TwoLetterISORegionName": "CS"
+    },
+    {
+        "DisplayName": "Singapore",
+        "Name": "SG",
+        "ThreeLetterISORegionName": "SGP",
+        "TwoLetterISORegionName": "SG"
+    },
+    {
+        "DisplayName": "Slovakia",
+        "Name": "SK",
+        "ThreeLetterISORegionName": "SVK",
+        "TwoLetterISORegionName": "SK"
+    },
+    {
+        "DisplayName": "Slovenia",
+        "Name": "SI",
+        "ThreeLetterISORegionName": "SVN",
+        "TwoLetterISORegionName": "SI"
+    },
+    {
+        "DisplayName": "Soomaaliya",
+        "Name": "SO",
+        "ThreeLetterISORegionName": "SOM",
+        "TwoLetterISORegionName": "SO"
+    },
+    {
+        "DisplayName": "South Africa",
+        "Name": "ZA",
+        "ThreeLetterISORegionName": "ZAF",
+        "TwoLetterISORegionName": "ZA"
+    },
+    {
+        "DisplayName": "Spain",
+        "Name": "ES",
+        "ThreeLetterISORegionName": "ESP",
+        "TwoLetterISORegionName": "ES"
+    },
+    {
+        "DisplayName": "Sri Lanka",
+        "Name": "LK",
+        "ThreeLetterISORegionName": "LKA",
+        "TwoLetterISORegionName": "LK"
+    },
+    {
+        "DisplayName": "Sweden",
+        "Name": "SE",
+        "ThreeLetterISORegionName": "SWE",
+        "TwoLetterISORegionName": "SE"
+    },
+    {
+        "DisplayName": "Switzerland",
+        "Name": "CH",
+        "ThreeLetterISORegionName": "CHE",
+        "TwoLetterISORegionName": "CH"
+    },
+    {
+        "DisplayName": "Syria",
+        "Name": "SY",
+        "ThreeLetterISORegionName": "SYR",
+        "TwoLetterISORegionName": "SY"
+    },
+    {
+        "DisplayName": "Taiwan",
+        "Name": "TW",
+        "ThreeLetterISORegionName": "TWN",
+        "TwoLetterISORegionName": "TW"
+    },
+    {
+        "DisplayName": "Tajikistan",
+        "Name": "TJ",
+        "ThreeLetterISORegionName": "TAJ",
+        "TwoLetterISORegionName": "TJ"
+    },
+    {
+        "DisplayName": "Thailand",
+        "Name": "TH",
+        "ThreeLetterISORegionName": "THA",
+        "TwoLetterISORegionName": "TH"
+    },
+    {
+        "DisplayName": "Trinidad and Tobago",
+        "Name": "TT",
+        "ThreeLetterISORegionName": "TTO",
+        "TwoLetterISORegionName": "TT"
+    },
+    {
+        "DisplayName": "Tunisia",
+        "Name": "TN",
+        "ThreeLetterISORegionName": "TUN",
+        "TwoLetterISORegionName": "TN"
+    },
+    {
+        "DisplayName": "Turkey",
+        "Name": "TR",
+        "ThreeLetterISORegionName": "TUR",
+        "TwoLetterISORegionName": "TR"
+    },
+    {
+        "DisplayName": "Turkmenistan",
+        "Name": "TM",
+        "ThreeLetterISORegionName": "TKM",
+        "TwoLetterISORegionName": "TM"
+    },
+    {
+        "DisplayName": "U.A.E.",
+        "Name": "AE",
+        "ThreeLetterISORegionName": "ARE",
+        "TwoLetterISORegionName": "AE"
+    },
+    {
+        "DisplayName": "Ukraine",
+        "Name": "UA",
+        "ThreeLetterISORegionName": "UKR",
+        "TwoLetterISORegionName": "UA"
+    },
+    {
+        "DisplayName": "United Kingdom",
+        "Name": "GB",
+        "ThreeLetterISORegionName": "GBR",
+        "TwoLetterISORegionName": "GB"
+    },
+    {
+        "DisplayName": "United States",
+        "Name": "US",
+        "ThreeLetterISORegionName": "USA",
+        "TwoLetterISORegionName": "US"
+    },
+    {
+        "DisplayName": "Uruguay",
+        "Name": "UY",
+        "ThreeLetterISORegionName": "URY",
+        "TwoLetterISORegionName": "UY"
+    },
+    {
+        "DisplayName": "Uzbekistan",
+        "Name": "UZ",
+        "ThreeLetterISORegionName": "UZB",
+        "TwoLetterISORegionName": "UZ"
+    },
+    {
+        "DisplayName": "Vietnam",
+        "Name": "VN",
+        "ThreeLetterISORegionName": "VNM",
+        "TwoLetterISORegionName": "VN"
+    },
+    {
+        "DisplayName": "Yemen",
+        "Name": "YE",
+        "ThreeLetterISORegionName": "YEM",
+        "TwoLetterISORegionName": "YE"
+    },
+    {
+        "DisplayName": "Zimbabwe",
+        "Name": "ZW",
+        "ThreeLetterISORegionName": "ZWE",
+        "TwoLetterISORegionName": "ZW"
+    }
+]

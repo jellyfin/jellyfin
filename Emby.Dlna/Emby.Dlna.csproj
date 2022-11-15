@@ -1,0 +1,86 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- ProjectGuid is only included as a requirement for SonarQube analysis -->
+  <PropertyGroup>
+    <ProjectGuid>{805844AB-E92F-45E6-9D99-4F6D48D129A5}</ProjectGuid>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\SharedVersion.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
+    <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
+    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
+    <ProjectReference Include="..\RSSDP\RSSDP.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <!-- Code Analyzers-->
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="SerilogAnalyzer" Version="0.15.0" PrivateAssets="All" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435" PrivateAssets="All" />
+    <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Images\logo120.jpg" />
+    <EmbeddedResource Include="Images\logo120.png" />
+    <EmbeddedResource Include="Images\logo240.jpg" />
+    <EmbeddedResource Include="Images\logo240.png" />
+    <EmbeddedResource Include="Images\logo48.jpg" />
+    <EmbeddedResource Include="Images\logo48.png" />
+    <EmbeddedResource Include="Images\people48.jpg" />
+    <EmbeddedResource Include="Images\people48.png" />
+    <EmbeddedResource Include="Images\people480.jpg" />
+    <EmbeddedResource Include="Images\people480.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Profiles\Xml\Default.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Denon AVR.xml" />
+    <EmbeddedResource Include="Profiles\Xml\DirecTV HD-DVR.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Dish Hopper-Joey.xml" />
+    <EmbeddedResource Include="Profiles\Xml\foobar2000.xml" />
+    <EmbeddedResource Include="Profiles\Xml\LG Smart TV.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Linksys DMA2100.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Marantz.xml" />
+    <EmbeddedResource Include="Profiles\Xml\MediaMonkey.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Panasonic Viera.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Popcorn Hour.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Samsung Smart TV.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Blu-ray Player 2013.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Blu-ray Player 2014.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Blu-ray Player 2015.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Blu-ray Player 2016.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Blu-ray Player.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282010%29.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282011%29.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282012%29.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282013%29.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282014%29.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony PlayStation 3.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony PlayStation 4.xml" />
+    <EmbeddedResource Include="Profiles\Xml\WDTV Live.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Xbox One.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
+  </ItemGroup>
+
+</Project>
