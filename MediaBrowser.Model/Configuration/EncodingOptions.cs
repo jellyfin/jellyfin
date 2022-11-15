@@ -13,7 +13,7 @@ namespace MediaBrowser.Model.Configuration
             EnableThrottling = false;
             EnableSegmentDeletion = false;
             ThrottleDelaySeconds = 180;
-            SegmentKeepSeconds = 200;
+            SegmentKeepSeconds = 360;
             EncodingThreadCount = -1;
             // This is a DRM device that is almost guaranteed to be there on every intel platform,
             // plus it's the default one in ffmpeg if you don't specify anything
