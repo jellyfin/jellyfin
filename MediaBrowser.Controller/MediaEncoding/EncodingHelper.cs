@@ -1272,22 +1272,11 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             var args = string.Empty;
             var gopArg = string.Empty;
-            var keyFrameArg = string.Empty;
-            if (isEventPlaylist)
-            {
-                keyFrameArg = string.Format(
-                    CultureInfo.InvariantCulture,
-                    " -force_key_frames:0 \"expr:gte(t,n_forced*{0})\"",
-                    segmentLength);
-            }
-            else if (startNumber.HasValue)
-            {
-                keyFrameArg = string.Format(
-                    CultureInfo.InvariantCulture,
-                    " -force_key_frames:0 \"expr:gte(t,{0}+n_forced*{1})\"",
-                    startNumber.Value * segmentLength,
-                    segmentLength);
-            }
+
+            var keyFrameArg = string.Format(
+                CultureInfo.InvariantCulture,
+                " -force_key_frames:0 \"expr:gte(t,n_forced*{0})\"",
+                segmentLength);
 
             var framerate = state.VideoStream?.RealFrameRate;
             if (framerate.HasValue)
