@@ -2322,7 +2322,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
             }
 
-            SearchForDuplicateShowIds(enabledTimersForSeries);
+            SearchForDuplicateShowIds(enabledTimersForSeries.Distinct().ToList());
 
             if (deleteInvalidTimers)
             {
