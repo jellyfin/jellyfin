@@ -27,12 +27,9 @@ namespace Emby.Naming.TV
             string seriesName = Path.GetFileName(path);
 
             SeriesPathParserResult result = SeriesPathParser.Parse(options, path);
-            if (result.Success)
+            if (result.Success && !string.IsNullOrEmpty(result.SeriesName))
             {
-                if (!string.IsNullOrEmpty(result.SeriesName))
-                {
-                    seriesName = result.SeriesName;
-                }
+                seriesName = result.SeriesName;
             }
 
             if (!string.IsNullOrEmpty(seriesName))

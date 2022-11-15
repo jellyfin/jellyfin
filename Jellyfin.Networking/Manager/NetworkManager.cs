@@ -1165,8 +1165,8 @@ namespace Jellyfin.Networking.Manager
             // Check for user override.
             foreach (var addr in _publishedServerUrls)
             {
-                // Remaining. Match anything.
-                if (addr.Key.Address.Equals(IPAddress.Broadcast))
+                // Remaining. Match anything. and  Match ip address.
+                if (addr.Key.Address.Equals(IPAddress.Broadcast) || addr.Key.Contains(source))
                 {
                     bindPreference = addr.Value;
                     break;
@@ -1174,12 +1174,6 @@ namespace Jellyfin.Networking.Manager
                 else if ((addr.Key.Address.Equals(IPAddress.Any) || addr.Key.Address.Equals(IPAddress.IPv6Any)) && isInExternalSubnet)
                 {
                     // External.
-                    bindPreference = addr.Value;
-                    break;
-                }
-                else if (addr.Key.Contains(source))
-                {
-                    // Match ip address.
                     bindPreference = addr.Value;
                     break;
                 }

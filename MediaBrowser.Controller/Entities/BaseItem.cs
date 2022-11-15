@@ -426,7 +426,9 @@ namespace MediaBrowser.Controller.Entities
                     return Array.Empty<string>();
                 }
 
-                return new[] { Path };
+                var original = new[] { Path };
+
+                return (string[])original.Clone();
             }
         }
 

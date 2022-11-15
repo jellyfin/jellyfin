@@ -115,6 +115,11 @@ namespace Emby.Drawing
         /// <inheritdoc />
         public async Task<(string Path, string? MimeType, DateTime DateModified)> ProcessImage(ImageProcessingOptions options)
         {
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             ItemImageInfo originalImage = options.Image;
             BaseItem item = options.Item;
 
