@@ -34,7 +34,7 @@ namespace Jellyfin.Networking.Manager
 
         private readonly IConfigurationManager _configurationManager;
 
-        private readonly SemaphoreSlim _networkEvent;
+        private readonly object _networkEventLock;
 
         /// <summary>
         /// Holds the published server URLs and the IPs to use them on.
@@ -86,7 +86,7 @@ namespace Jellyfin.Networking.Manager
             _interfaces = new List<IPData>();
             _macAddresses = new List<PhysicalAddress>();
             _publishedServerUrls = new Dictionary<IPData, string>();
-            _networkEvent = new SemaphoreSlim(1, 1);
+            _networkEventLock = new object();
             _remoteAddressFilter = new List<IPNetwork>();
 
             UpdateSettings(_configurationManager.GetNetworkConfiguration());
@@ -162,16 +162,15 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         private void HandleNetworkChange()
         {
-            _networkEvent.Wait();
-            if (!_eventfire)
-            {
-                _logger.LogDebug("Network Address Change Event.");
-                // As network events tend to fire one after the other only fire once every second.
-                _eventfire = true;
-                OnNetworkChange();
+            lock(_networkEventLock){
+                if (!_eventfire)
+                {
+                    _logger.LogDebug("Network Address Change Event.");
+                    // As network events tend to fire one after the other only fire once every second.
+                    _eventfire = true;
+                    OnNetworkChange();
+                }
             }
-
-            _networkEvent.Release();
         }
 
         /// <summary>
@@ -546,7 +545,6 @@ namespace Jellyfin.Networking.Manager
                     _configurationManager.NamedConfigurationUpdated -= ConfigurationUpdated;
                     NetworkChange.NetworkAddressChanged -= OnNetworkAddressChanged;
                     NetworkChange.NetworkAvailabilityChanged -= OnNetworkAvailabilityChanged;
-                    _networkEvent.Dispose();
                 }
 
                 _disposed = true;
