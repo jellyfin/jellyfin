@@ -294,7 +294,7 @@ namespace Jellyfin.Api.Controllers
         {
             var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
 
-            ArgumentNullException.ThrowIfNull(command, "Request body may not be null");
+            ArgumentNullException.ThrowIfNull(command);
 
             command.ControllingUserId = currentSession.UserId;
 
