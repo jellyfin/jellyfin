@@ -193,7 +193,7 @@ namespace Jellyfin.Api.Controllers
                     new InternalItemsQuery(user)
                     {
                         Person = name,
-                        // Account for duplicates by imdb id, since the database doesn't support this yet
+                        // Account for duplicates by IMDb id, since the database doesn't support this yet
                         Limit = itemLimit + 2,
                         PersonTypes = new[] { PersonType.Director },
                         IncludeItemTypes = itemTypes.ToArray(),
@@ -232,15 +232,15 @@ namespace Jellyfin.Api.Controllers
             foreach (var name in names)
             {
                 var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
-                    {
-                        Person = name,
-                        // Account for duplicates by imdb id, since the database doesn't support this yet
-                        Limit = itemLimit + 2,
-                        IncludeItemTypes = itemTypes.ToArray(),
-                        IsMovie = true,
-                        EnableGroupByMetadataKey = true,
-                        DtoOptions = dtoOptions
-                    }).GroupBy(i => i.GetProviderId(MediaBrowser.Model.Entities.MetadataProvider.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
+                {
+                    Person = name,
+                    // Account for duplicates by IMDb id, since the database doesn't support this yet
+                    Limit = itemLimit + 2,
+                    IncludeItemTypes = itemTypes.ToArray(),
+                    IsMovie = true,
+                    EnableGroupByMetadataKey = true,
+                    DtoOptions = dtoOptions
+                }).GroupBy(i => i.GetProviderId(MediaBrowser.Model.Entities.MetadataProvider.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
                     .Select(x => x.First())
                     .Take(itemLimit)
                     .ToList();

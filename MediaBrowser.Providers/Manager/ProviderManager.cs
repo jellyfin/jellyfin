@@ -183,7 +183,7 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            // thetvdb will sometimes serve a rubbish 404 html page with a 200 OK code, because reasons...
+            // TVDb will sometimes serve a rubbish 404 html page with a 200 OK code, because reasons...
             if (contentType.Equals(MediaTypeNames.Text.Html, StringComparison.OrdinalIgnoreCase))
             {
                 throw new HttpRequestException("Invalid image received.", null, HttpStatusCode.NotFound);
