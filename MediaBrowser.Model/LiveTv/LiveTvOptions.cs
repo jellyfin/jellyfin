@@ -40,5 +40,9 @@ namespace MediaBrowser.Model.LiveTv
         public string RecordingPostProcessor { get; set; }
 
         public string RecordingPostProcessorArguments { get; set; }
+
+        public bool SaveRecordingNFO { get; set; } = true;
+
+        public bool SaveRecordingImages { get; set; } = true;
     }
 }
