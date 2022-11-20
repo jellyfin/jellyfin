@@ -123,5 +123,6 @@
     "TaskCleanActivityLogDescription": "刪除早於設定時間的日誌記錄。",
     "TaskKeyframeExtractorDescription": "提取關鍵格以創建更準確的HLS播放列表。次指示可能用時很長。",
     "TaskKeyframeExtractor": "關鍵幀提取器",
-    "External": "外部"
+    "External": "外部",
+    "HearingImpaired": "聽力障礙"
 }
