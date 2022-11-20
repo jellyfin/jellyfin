@@ -5238,19 +5238,22 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         private void ShiftVideoCodecsIfNeeded(List<string> videoCodecs, EncodingOptions encodingOptions)
         {
-            // Shift hevc/h265 to the end of list if hevc encoding is not allowed.
-            if (encodingOptions.AllowHevcEncoding)
-            {
-                return;
-            }
-
             // No need to shift if there is only one supported video codec.
             if (videoCodecs.Count < 2)
             {
                 return;
             }
 
-            var shiftVideoCodecs = new[] { "hevc", "h265" };
+            // Lower the priority of the vpx encoders by default.
+            var shiftVideoCodecs = new[] { "vpx", "vp8", "vp9" };
+
+            // Shift hevc to the end of list if hevc encoding is not allowed.
+            if (!encodingOptions.AllowHevcEncoding)
+            {
+                Array.Resize(ref shiftVideoCodecs, shiftVideoCodecs.Length + 1);
+                shiftVideoCodecs[^1] = "hevc";
+            }
+
             if (videoCodecs.All(i => shiftVideoCodecs.Contains(i, StringComparison.OrdinalIgnoreCase)))
             {
                 return;
