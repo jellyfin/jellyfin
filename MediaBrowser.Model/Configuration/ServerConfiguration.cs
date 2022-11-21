@@ -259,5 +259,11 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The chapter image resolution.</value>
         public ImageResolution ChapterImageResolution { get; set; } = ImageResolution.MatchSource;
+
+        /// <summary>
+        /// Gets or sets the limit for parallel image encoding.
+        /// </summary>
+        /// <value>The limit for parallel image encoding.</value>
+        public int ParallelImageEncodingLimit { get; set; } = 0;
     }
 }

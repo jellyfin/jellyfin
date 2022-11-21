@@ -5,10 +5,12 @@ using System.IO;
 using System.Linq;
 using System.Net.Mime;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.MediaEncoding;
@@ -38,6 +40,8 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
     private readonly IImageEncoder _imageEncoder;
     private readonly IMediaEncoder _mediaEncoder;
 
+    private readonly SemaphoreSlim _parallelEncodingLimit;
+
     private bool _disposed;
 
     /// <summary>
@@ -48,18 +52,28 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
     /// <param name="fileSystem">The filesystem.</param>
     /// <param name="imageEncoder">The image encoder.</param>
     /// <param name="mediaEncoder">The media encoder.</param>
+    /// <param name="config">The configuration.</param>
     public ImageProcessor(
         ILogger<ImageProcessor> logger,
         IServerApplicationPaths appPaths,
         IFileSystem fileSystem,
         IImageEncoder imageEncoder,
-        IMediaEncoder mediaEncoder)
+        IMediaEncoder mediaEncoder,
+        IServerConfigurationManager config)
     {
         _logger = logger;
         _fileSystem = fileSystem;
         _imageEncoder = imageEncoder;
         _mediaEncoder = mediaEncoder;
         _appPaths = appPaths;
+
+        var semaphoreCount = config.Configuration.ParallelImageEncodingLimit;
+        if (semaphoreCount < 1)
+        {
+            semaphoreCount = 2 * Environment.ProcessorCount;
+        }
+
+        _parallelEncodingLimit = new(semaphoreCount, semaphoreCount);
     }
 
     private string ResizedImageCachePath => Path.Combine(_appPaths.ImageCachePath, "resized-images");
@@ -199,7 +213,18 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
         {
             if (!File.Exists(cacheFilePath))
             {
-                string resultPath = _imageEncoder.EncodeImage(originalImagePath, dateModified, cacheFilePath, autoOrient, orientation, quality, options, outputFormat);
+                // Limit number of parallel (more precisely: concurrent) image encodings to prevent a high memory usage
+                await _parallelEncodingLimit.WaitAsync().ConfigureAwait(false);
+
+                string resultPath;
+                try
+                {
+                    resultPath = _imageEncoder.EncodeImage(originalImagePath, dateModified, cacheFilePath, autoOrient, orientation, quality, options, outputFormat);
+                }
+                finally
+                {
+                    _parallelEncodingLimit.Release();
+                }
 
                 if (string.Equals(resultPath, originalImagePath, StringComparison.OrdinalIgnoreCase))
                 {
@@ -562,6 +587,8 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
         {
             disposable.Dispose();
         }
+
+        _parallelEncodingLimit?.Dispose();
 
         _disposed = true;
     }
