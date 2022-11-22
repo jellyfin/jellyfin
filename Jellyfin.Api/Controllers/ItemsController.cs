@@ -270,30 +270,13 @@ namespace Jellyfin.Api.Controllers
                 includeItemTypes = new[] { BaseItemKind.Playlist };
             }
 
-            var enabledChannels = user!.GetPreferenceValues<Guid>(PreferenceKind.EnabledChannels);
-
-            bool isInEnabledFolder = Array.IndexOf(user.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders), item.Id) != -1
-                                     // Assume all folders inside an EnabledChannel are enabled
-                                     || Array.IndexOf(enabledChannels, item.Id) != -1
-                                     // Assume all items inside an EnabledChannel are enabled
-                                     || Array.IndexOf(enabledChannels, item.ChannelId) != -1;
-
-            var collectionFolders = _libraryManager.GetCollectionFolders(item);
-            foreach (var collectionFolder in collectionFolders)
-            {
-                if (user.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders).Contains(collectionFolder.Id))
-                {
-                    isInEnabledFolder = true;
-                }
-            }
-
             if (item is not UserRootFolder
-                && !isInEnabledFolder
-                && !user.HasPermission(PermissionKind.EnableAllFolders)
-                && !user.HasPermission(PermissionKind.EnableAllChannels)
-                && !string.Equals(collectionType, CollectionType.Folders, StringComparison.OrdinalIgnoreCase))
+                // api keys can always access all folders
+                && !ClaimHelpers.GetIsApiKey(User)
+                // check the item is visible for the user
+                && !item.IsVisible(user))
             {
-                _logger.LogWarning("{UserName} is not permitted to access Library {ItemName}.", user.Username, item.Name);
+                _logger.LogWarning("{UserName} is not permitted to access Library {ItemName}", user!.Username, item.Name);
                 return Unauthorized($"{user.Username} is not permitted to access Library {item.Name}.");
             }
 

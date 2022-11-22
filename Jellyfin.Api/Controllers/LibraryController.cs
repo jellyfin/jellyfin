@@ -492,7 +492,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Media folders returned.</response>
         /// <returns>List of user media folders.</returns>
         [HttpGet("Library/MediaFolders")]
-        [Authorize(Policy = Policies.DefaultAuthorization)]
+        [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetMediaFolders([FromQuery] bool? isHidden)
         {
