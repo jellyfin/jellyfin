@@ -2195,8 +2195,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             // sort showings by HD channels first, then by startDate, record earliest showing possible
             foreach (var timer in timers.OrderByDescending(t => _liveTvManager.GetLiveTvChannel(t, this).IsHD).ThenBy(t => t.StartDate).Skip(1))
             {
-                // TODO: Get smarter, prefer HD, etc
-
                 timer.Status = RecordingStatus.Cancelled;
                 _timerProvider.Update(timer);
             }
