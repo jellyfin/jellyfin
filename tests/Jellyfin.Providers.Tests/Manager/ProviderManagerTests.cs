@@ -30,7 +30,7 @@ namespace Jellyfin.Providers.Tests.Manager
     {
         private static readonly ILogger<ProviderManager> _logger = new NullLogger<ProviderManager>();
 
-        private static TheoryData<Mock<IMetadataService>[], int> RefreshSingleItemOrderData()
+        public static TheoryData<Mock<IMetadataService>[], int> RefreshSingleItemOrderData()
             => new()
             {
                 // no order set, uses provided order
@@ -74,7 +74,7 @@ namespace Jellyfin.Providers.Tests.Manager
 
         [Theory]
         [MemberData(nameof(RefreshSingleItemOrderData))]
-        public void RefreshSingleItem_ServiceOrdering_FollowsPriority(Mock<IMetadataService>[] servicesList, int expectedIndex)
+        public async Task RefreshSingleItem_ServiceOrdering_FollowsPriority(Mock<IMetadataService>[] servicesList, int expectedIndex)
         {
             var item = new Movie();
 
@@ -82,9 +82,9 @@ namespace Jellyfin.Providers.Tests.Manager
             AddParts(providerManager, metadataServices: servicesList.Select(s => s.Object).ToArray());
 
             var refreshOptions = new MetadataRefreshOptions(Mock.Of<IDirectoryService>(MockBehavior.Strict));
-            var actual = providerManager.RefreshSingleItem(item, refreshOptions, CancellationToken.None);
+            var actual = await providerManager.RefreshSingleItem(item, refreshOptions, CancellationToken.None).ConfigureAwait(false);
 
-            Assert.Equal(ItemUpdateType.MetadataDownload, actual.Result);
+            Assert.Equal(ItemUpdateType.MetadataDownload, actual);
             for (var i = 0; i < servicesList.Length; i++)
             {
                 var times = i == expectedIndex ? Times.Once() : Times.Never();
@@ -95,7 +95,7 @@ namespace Jellyfin.Providers.Tests.Manager
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void RefreshSingleItem_RefreshMetadata_WhenServiceFound(bool serviceFound)
+        public async Task RefreshSingleItem_RefreshMetadata_WhenServiceFound(bool serviceFound)
         {
             var item = new Movie();
 
@@ -105,13 +105,13 @@ namespace Jellyfin.Providers.Tests.Manager
             AddParts(providerManager, metadataServices: servicesList.Select(s => s.Object).ToArray());
 
             var refreshOptions = new MetadataRefreshOptions(Mock.Of<IDirectoryService>(MockBehavior.Strict));
-            var actual = providerManager.RefreshSingleItem(item, refreshOptions, CancellationToken.None);
+            var actual = await providerManager.RefreshSingleItem(item, refreshOptions, CancellationToken.None).ConfigureAwait(false);
 
             var expectedResult = serviceFound ? ItemUpdateType.MetadataDownload : ItemUpdateType.None;
-            Assert.Equal(expectedResult, actual.Result);
+            Assert.Equal(expectedResult, actual);
         }
 
-        private static TheoryData<int, int[]?, int[]?, int?[]?, int[]> GetImageProvidersOrderData()
+        public static TheoryData<int, int[]?, int[]?, int?[]?, int[]> GetImageProvidersOrderData()
             => new()
             {
                 { 3, null, null, null, new[] { 0, 1, 2 } }, // no order options set
@@ -236,7 +236,7 @@ namespace Jellyfin.Providers.Tests.Manager
             Assert.Equal(expected ? 1 : 0, actualProviders.Length);
         }
 
-        private static TheoryData<string[], int[]?, int[]?, int[]?, int[]?, int?[]?, int[]> GetMetadataProvidersOrderData()
+        public static TheoryData<string[], int[]?, int[]?, int[]?, int[]?, int?[]?, int[]> GetMetadataProvidersOrderData()
         {
             var l = nameof(ILocalMetadataProvider);
             var r = nameof(IRemoteMetadataProvider);
