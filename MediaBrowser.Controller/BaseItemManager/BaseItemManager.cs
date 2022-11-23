@@ -35,7 +35,7 @@ namespace MediaBrowser.Controller.BaseItemManager
         public SemaphoreSlim MetadataRefreshThrottler { get; private set; }
 
         /// <inheritdoc />
-        public bool IsMetadataFetcherEnabled(BaseItem baseItem, LibraryOptions libraryOptions, string name)
+        public bool IsMetadataFetcherEnabled(BaseItem baseItem, TypeOptions? libraryTypeOptions, string name)
         {
             if (baseItem is Channel)
             {
@@ -49,10 +49,9 @@ namespace MediaBrowser.Controller.BaseItemManager
                 return !baseItem.EnableMediaSourceDisplay;
             }
 
-            var typeOptions = libraryOptions.GetTypeOptions(baseItem.GetType().Name);
-            if (typeOptions != null)
+            if (libraryTypeOptions != null)
             {
-                return typeOptions.MetadataFetchers.Contains(name.AsSpan(), StringComparison.OrdinalIgnoreCase);
+                return libraryTypeOptions.MetadataFetchers.Contains(name.AsSpan(), StringComparison.OrdinalIgnoreCase);
             }
 
             var itemConfig = _serverConfigurationManager.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, baseItem.GetType().Name, StringComparison.OrdinalIgnoreCase));
@@ -61,7 +60,7 @@ namespace MediaBrowser.Controller.BaseItemManager
         }
 
         /// <inheritdoc />
-        public bool IsImageFetcherEnabled(BaseItem baseItem, LibraryOptions libraryOptions, string name)
+        public bool IsImageFetcherEnabled(BaseItem baseItem, TypeOptions? libraryTypeOptions, string name)
         {
             if (baseItem is Channel)
             {
@@ -75,10 +74,9 @@ namespace MediaBrowser.Controller.BaseItemManager
                 return !baseItem.EnableMediaSourceDisplay;
             }
 
-            var typeOptions = libraryOptions.GetTypeOptions(baseItem.GetType().Name);
-            if (typeOptions != null)
+            if (libraryTypeOptions != null)
             {
-                return typeOptions.ImageFetchers.Contains(name.AsSpan(), StringComparison.OrdinalIgnoreCase);
+                return libraryTypeOptions.ImageFetchers.Contains(name.AsSpan(), StringComparison.OrdinalIgnoreCase);
             }
 
             var itemConfig = _serverConfigurationManager.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, baseItem.GetType().Name, StringComparison.OrdinalIgnoreCase));
