@@ -126,7 +126,7 @@ namespace MediaBrowser.Model.Querying
         ProductionLocations,
 
         /// <summary>
-        /// Imdb, tmdb, etc.
+        /// The ids from IMDb, TMDb, etc.
         /// </summary>
         ProviderIds,
 
