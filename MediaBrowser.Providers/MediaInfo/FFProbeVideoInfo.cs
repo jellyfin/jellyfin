@@ -34,7 +34,7 @@ namespace MediaBrowser.Providers.MediaInfo
 {
     public class FFProbeVideoInfo
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<FFProbeVideoInfo> _logger;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IItemRepository _itemRepo;
         private readonly IBlurayExaminer _blurayExaminer;
@@ -51,7 +51,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly long _dummyChapterDuration = TimeSpan.FromMinutes(5).Ticks;
 
         public FFProbeVideoInfo(
-            ILogger logger,
+            ILogger<FFProbeVideoInfo> logger,
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
             IItemRepository itemRepo,

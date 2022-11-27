@@ -25,7 +25,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
     /// </summary>
     public class ChapterImagesTask : IScheduledTask
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<ChapterImagesTask> _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IItemRepository _itemRepo;
         private readonly IApplicationPaths _appPaths;
