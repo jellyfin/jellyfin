@@ -5,7 +5,7 @@
     "Artists": "Artistes",
     "AuthenticationSucceededWithUserName": "{0} authentifié avec succès",
     "Books": "Livres",
-    "CameraImageUploadedFrom": "Une nouvelle image de caméra a été téléchargée depuis {0}",
+    "CameraImageUploadedFrom": "Une nouvelle photo a été téléversée depuis {0}",
     "Channels": "Chaînes",
     "ChapterNameValue": "Chapitre {0}",
     "Collections": "Collections",
@@ -123,5 +123,6 @@
     "TaskOptimizeDatabase": "Optimiser la base de données",
     "TaskKeyframeExtractorDescription": "Extrait les images clés des fichiers vidéo pour créer des listes de lecture HLS plus précises. Cette tâche peut durer très longtemps.",
     "TaskKeyframeExtractor": "Extracteur d'image clé",
-    "External": "Externe"
+    "External": "Externe",
+    "HearingImpaired": "Malentendants"
 }

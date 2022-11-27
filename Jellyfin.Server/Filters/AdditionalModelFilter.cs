@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Jellyfin.Extensions;
 using Jellyfin.Server.Migrations;
 using MediaBrowser.Common.Plugins;
@@ -8,6 +9,7 @@ using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.SyncPlay;
+using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -56,6 +58,15 @@ namespace Jellyfin.Server.Filters
 
                 context.SchemaGenerator.GenerateSchema(configuration.ConfigurationType, context.SchemaRepository);
             }
+
+            context.SchemaRepository.AddDefinition(nameof(TranscodeReason), new OpenApiSchema
+            {
+                Type = "string",
+                Enum = Enum.GetNames<TranscodeReason>()
+                    .Select(e => new OpenApiString(e))
+                    .Cast<IOpenApiAny>()
+                    .ToArray()
+            });
         }
     }
 }

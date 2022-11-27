@@ -123,5 +123,6 @@
     "TaskOptimizeDatabase": "优化数据库",
     "TaskKeyframeExtractorDescription": "从视频文件中提取关键帧以创建更准确的HLS播放列表。这项任务可能需要很长时间。",
     "TaskKeyframeExtractor": "关键帧提取器",
-    "External": "外部"
+    "External": "外部",
+    "HearingImpaired": "听力障碍"
 }

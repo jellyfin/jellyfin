@@ -116,5 +116,12 @@
     "CameraImageUploadedFrom": "{0}-tik kamera irudi berri bat igo da",
     "AuthenticationSucceededWithUserName": "{0} ongi autentifikatu da",
     "Application": "Aplikazioa",
-    "AppDeviceValues": "App: {0}, Gailua: {1}"
+    "AppDeviceValues": "App: {0}, Gailua: {1}",
+    "HearingImpaired": "Entzunaldia aldatua",
+    "ProviderValue": "Hornitzailea: {0}",
+    "TaskKeyframeExtractorDescription": "Bideo fitxategietako fotograma gakoak ateratzen ditu HLS erreprodukzio-zerrenda zehatzagoak sortzeko. Zeregin honek denbora asko iraun dezake.",
+    "HeaderRecordingGroups": "Grabaketa taldeak",
+    "Inherit": "Oinordetu",
+    "TaskOptimizeDatabaseDescription": "Datu-basea trinkotu eta bertatik espazioa askatzen du. Liburutegia eskaneatu ondoren edo datu-basean aldaketak egin ondoren ataza hau exekutatzeak errendimendua hobetu lezake.",
+    "TaskKeyframeExtractor": "Fotograma gakoen erauzgailua"
 }

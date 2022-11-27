@@ -1,7 +1,5 @@
 #nullable disable
 
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -23,12 +21,21 @@ using TMDbLib.Objects.TvShows;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 {
+    /// <summary>
+    /// TV series provider powered by TheMovieDb.
+    /// </summary>
     public class TmdbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasOrder
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILibraryManager _libraryManager;
         private readonly TmdbClientManager _tmdbClientManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TmdbSeriesProvider"/> class.
+        /// </summary>
+        /// <param name="libraryManager">The <see cref="ILibraryManager"/>.</param>
+        /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
+        /// <param name="tmdbClientManager">The <see cref="TmdbClientManager"/>.</param>
         public TmdbSeriesProvider(
             ILibraryManager libraryManager,
             IHttpClientFactory httpClientFactory,
@@ -39,11 +46,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             _tmdbClientManager = tmdbClientManager;
         }
 
+        /// <inheritdoc />
         public string Name => TmdbUtils.ProviderName;
 
-        // After TheTVDB
+        /// <inheritdoc />
         public int Order => 1;
 
+        /// <inheritdoc />
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
         {
             if (searchInfo.TryGetProviderId(MetadataProvider.Tmdb, out var tmdbId))
@@ -159,6 +168,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             return remoteResult;
         }
 
+        /// <inheritdoc />
         public async Task<MetadataResult<Series>> GetMetadata(SeriesInfo info, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<Series>
@@ -383,6 +393,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             }
         }
 
+        /// <inheritdoc />
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);

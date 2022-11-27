@@ -47,7 +47,7 @@
     "HeaderFavoriteEpisodes": "Episodios Favoritos",
     "HeaderFavoriteArtists": "Artistas Favoritos",
     "HeaderFavoriteAlbums": "Álbunes Favoritos",
-    "HeaderContinueWatching": "Seguir mirando",
+    "HeaderContinueWatching": "Seguir vendo",
     "HeaderAlbumArtists": "Artistas do Album",
     "Genres": "Xéneros",
     "Forced": "Forzado",
@@ -119,5 +119,9 @@
     "UserOnlineFromDevice": "{0} está en liña desde {1}",
     "UserOfflineFromDevice": "{0} desconectouse desde {1}",
     "TaskOptimizeDatabaseDescription": "Compacta e libera o espazo libre da base de datos. Executar esta tarefa logo de realizar mudanzas que impliquen modificacións da base de datos ou despois de escanear a biblioteca pode traer mellorías de desempeño.",
-    "TaskOptimizeDatabase": "Optimizar base de datos"
+    "TaskOptimizeDatabase": "Optimizar base de datos",
+    "TaskKeyframeExtractorDescription": "Extrae fragmentos do vídeo para crear listas de reprodución HLS máis precisas. Podería levarlle bastante tempo.",
+    "External": "Externo",
+    "HearingImpaired": "Problemas de audición",
+    "TaskKeyframeExtractor": "Extractor de fragmentos"
 }

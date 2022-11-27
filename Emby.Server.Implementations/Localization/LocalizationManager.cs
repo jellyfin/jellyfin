@@ -386,6 +386,7 @@ namespace Emby.Server.Implementations.Localization
             yield return new LocalizationOption("Español (Dominicana)", "es_DO");
             yield return new LocalizationOption("Español (México)", "es-MX");
             yield return new LocalizationOption("Eesti", "et");
+            yield return new LocalizationOption("Basque", "eu");
             yield return new LocalizationOption("فارسی", "fa");
             yield return new LocalizationOption("Suomi", "fi");
             yield return new LocalizationOption("Filipino", "fil");
@@ -433,8 +434,8 @@ namespace Emby.Server.Implementations.Localization
             yield return new LocalizationOption("Українська", "uk");
             yield return new LocalizationOption("اُردُو", "ur_PK");
             yield return new LocalizationOption("Tiếng Việt", "vi");
-            yield return new LocalizationOption("汉语 (简化字)", "zh-CN");
-            yield return new LocalizationOption("漢語 (繁体字)", "zh-TW");
+            yield return new LocalizationOption("汉语 (简体字)", "zh-CN");
+            yield return new LocalizationOption("漢語 (繁體字)", "zh-TW");
             yield return new LocalizationOption("廣東話 (香港)", "zh-HK");
         }
     }

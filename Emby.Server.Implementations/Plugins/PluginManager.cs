@@ -715,6 +715,7 @@ namespace Emby.Server.Implementations.Plugins
             {
                 // This value is memory only - so that the web will show restart required.
                 plugin.Manifest.Status = PluginStatus.Restart;
+                plugin.Manifest.AutoUpdate = false;
                 return;
             }
 
@@ -729,6 +730,7 @@ namespace Emby.Server.Implementations.Plugins
 
             // This value is memory only - so that the web will show restart required.
             plugin.Manifest.Status = PluginStatus.Restart;
+            plugin.Manifest.AutoUpdate = false;
         }
     }
 }

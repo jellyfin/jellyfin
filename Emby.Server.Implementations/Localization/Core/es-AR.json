@@ -123,5 +123,6 @@
     "TaskOptimizeDatabase": "Optimización de base de datos",
     "External": "Externo",
     "TaskKeyframeExtractorDescription": "Extrae Fotogramas Clave de los archivos de vídeo para crear Listas de Reprodución HLS más precisas. Esta tarea puede durar mucho tiempo.",
-    "TaskKeyframeExtractor": "Extractor de Fotogramas Clave"
+    "TaskKeyframeExtractor": "Extractor de Fotogramas Clave",
+    "HearingImpaired": "Personas con discapacidad auditiva"
 }

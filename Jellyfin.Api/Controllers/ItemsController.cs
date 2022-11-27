@@ -87,9 +87,9 @@ namespace Jellyfin.Api.Controllers
         /// <param name="minDateLastSavedForUser">Optional. The minimum last saved date for the current user. Format = ISO.</param>
         /// <param name="maxPremiereDate">Optional. The maximum premiere date. Format = ISO.</param>
         /// <param name="hasOverview">Optional filter by items that have an overview or not.</param>
-        /// <param name="hasImdbId">Optional filter by items that have an imdb id or not.</param>
-        /// <param name="hasTmdbId">Optional filter by items that have a tmdb id or not.</param>
-        /// <param name="hasTvdbId">Optional filter by items that have a tvdb id or not.</param>
+        /// <param name="hasImdbId">Optional filter by items that have an IMDb id or not.</param>
+        /// <param name="hasTmdbId">Optional filter by items that have a TMDb id or not.</param>
+        /// <param name="hasTvdbId">Optional filter by items that have a TVDb id or not.</param>
         /// <param name="isMovie">Optional filter for live tv movies.</param>
         /// <param name="isSeries">Optional filter for live tv series.</param>
         /// <param name="isNews">Optional filter for live tv news.</param>
@@ -100,7 +100,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <param name="recursive">When searching within folders, this determines whether or not the search will be recursive. true/false.</param>
         /// <param name="searchTerm">Optional. Filter based on a search term.</param>
-        /// <param name="sortOrder">Sort Order - Ascending,Descending.</param>
+        /// <param name="sortOrder">Sort Order - Ascending, Descending.</param>
         /// <param name="parentId">Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
         /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
         /// <param name="excludeItemTypes">Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimited.</param>
@@ -282,39 +282,13 @@ namespace Jellyfin.Api.Controllers
                 includeItemTypes = new[] { BaseItemKind.Playlist };
             }
 
-            var enabledChannels = isApiKey
-                ? Array.Empty<Guid>()
-                : user!.GetPreferenceValues<Guid>(PreferenceKind.EnabledChannels);
-
-            // api keys are always enabled for all folders
-            bool isInEnabledFolder = isApiKey
-                                     || Array.IndexOf(user!.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders), item.Id) != -1
-                                     // Assume all folders inside an EnabledChannel are enabled
-                                     || Array.IndexOf(enabledChannels, item.Id) != -1
-                                     // Assume all items inside an EnabledChannel are enabled
-                                     || Array.IndexOf(enabledChannels, item.ChannelId) != -1;
-
-            if (!isInEnabledFolder)
-            {
-                var collectionFolders = _libraryManager.GetCollectionFolders(item);
-                foreach (var collectionFolder in collectionFolders)
-                {
-                    // api keys never enter this block, so user is never null
-                    if (user!.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders).Contains(collectionFolder.Id))
-                    {
-                        isInEnabledFolder = true;
-                    }
-                }
-            }
-
-            // api keys are always enabled for all folders, so user is never null
             if (item is not UserRootFolder
-                && !isInEnabledFolder
-                && !user!.HasPermission(PermissionKind.EnableAllFolders)
-                && !user.HasPermission(PermissionKind.EnableAllChannels)
-                && !string.Equals(collectionType, CollectionType.Folders, StringComparison.OrdinalIgnoreCase))
+                // api keys can always access all folders
+                && !isApiKey
+                // check the item is visible for the user
+                && !item.IsVisible(user))
             {
-                _logger.LogWarning("{UserName} is not permitted to access Library {ItemName}", user.Username, item.Name);
+                _logger.LogWarning("{UserName} is not permitted to access Library {ItemName}", user!.Username, item.Name);
                 return Unauthorized($"{user.Username} is not permitted to access Library {item.Name}.");
             }
 
@@ -562,9 +536,9 @@ namespace Jellyfin.Api.Controllers
         /// <param name="minDateLastSavedForUser">Optional. The minimum last saved date for the current user. Format = ISO.</param>
         /// <param name="maxPremiereDate">Optional. The maximum premiere date. Format = ISO.</param>
         /// <param name="hasOverview">Optional filter by items that have an overview or not.</param>
-        /// <param name="hasImdbId">Optional filter by items that have an imdb id or not.</param>
-        /// <param name="hasTmdbId">Optional filter by items that have a tmdb id or not.</param>
-        /// <param name="hasTvdbId">Optional filter by items that have a tvdb id or not.</param>
+        /// <param name="hasImdbId">Optional filter by items that have an IMDb id or not.</param>
+        /// <param name="hasTmdbId">Optional filter by items that have a TMDb id or not.</param>
+        /// <param name="hasTvdbId">Optional filter by items that have a TVDb id or not.</param>
         /// <param name="isMovie">Optional filter for live tv movies.</param>
         /// <param name="isSeries">Optional filter for live tv series.</param>
         /// <param name="isNews">Optional filter for live tv news.</param>
@@ -575,7 +549,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <param name="recursive">When searching within folders, this determines whether or not the search will be recursive. true/false.</param>
         /// <param name="searchTerm">Optional. Filter based on a search term.</param>
-        /// <param name="sortOrder">Sort Order - Ascending,Descending.</param>
+        /// <param name="sortOrder">Sort Order - Ascending, Descending.</param>
         /// <param name="parentId">Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
         /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
         /// <param name="excludeItemTypes">Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimited.</param>

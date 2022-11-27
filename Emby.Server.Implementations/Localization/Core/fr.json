@@ -123,5 +123,6 @@
     "TaskOptimizeDatabase": "Optimiser la base de données",
     "TaskKeyframeExtractorDescription": "Extrait les images clés des fichiers vidéo pour créer des listes de lecture HLS plus précises. Cette tâche peut durer très longtemps.",
     "TaskKeyframeExtractor": "Extracteur d'image clé",
-    "External": "Externe"
+    "External": "Externe",
+    "HearingImpaired": "Malentendants"
 }

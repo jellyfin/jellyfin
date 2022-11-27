@@ -88,8 +88,7 @@ namespace Emby.Notifications
             string description,
             CancellationToken cancellationToken)
         {
-            users = users.Where(i => IsEnabledForUser(service, i))
-                .ToList();
+            users = users.Where(i => IsEnabledForUser(service, i));
 
             var tasks = users.Select(i => SendNotification(request, service, title, description, i, cancellationToken));
 

@@ -2192,16 +2192,15 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private void HandleDuplicateShowIds(List<TimerInfo> timers)
         {
-            foreach (var timer in timers.Skip(1))
+            // sort showings by HD channels first, then by startDate, record earliest showing possible
+            foreach (var timer in timers.OrderByDescending(t => _liveTvManager.GetLiveTvChannel(t, this).IsHD).ThenBy(t => t.StartDate).Skip(1))
             {
-                // TODO: Get smarter, prefer HD, etc
-
                 timer.Status = RecordingStatus.Cancelled;
                 _timerProvider.Update(timer);
             }
         }
 
-        private void SearchForDuplicateShowIds(List<TimerInfo> timers)
+        private void SearchForDuplicateShowIds(IEnumerable<TimerInfo> timers)
         {
             var groups = timers.ToLookup(i => i.ShowId ?? string.Empty).ToList();
 
@@ -2282,39 +2281,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                     if (updateTimerSettings)
                     {
-                        // Only update if not currently active - test both new timer and existing in case Id's are different
-                        // Id's could be different if the timer was created manually prior to series timer creation
-                        if (!_activeRecordings.TryGetValue(timer.Id, out _) && !_activeRecordings.TryGetValue(existingTimer.Id, out _))
-                        {
-                            UpdateExistingTimerWithNewMetadata(existingTimer, timer);
-
-                            // Needed by ShouldCancelTimerForSeriesTimer
-                            timer.IsManual = existingTimer.IsManual;
-
-                            if (ShouldCancelTimerForSeriesTimer(seriesTimer, timer))
-                            {
-                                existingTimer.Status = RecordingStatus.Cancelled;
-                            }
-                            else if (!existingTimer.IsManual)
-                            {
-                                existingTimer.Status = RecordingStatus.New;
-                            }
-
-                            if (existingTimer.Status != RecordingStatus.Cancelled)
-                            {
-                                enabledTimersForSeries.Add(existingTimer);
-                            }
-
-                            existingTimer.KeepUntil = seriesTimer.KeepUntil;
-                            existingTimer.IsPostPaddingRequired = seriesTimer.IsPostPaddingRequired;
-                            existingTimer.IsPrePaddingRequired = seriesTimer.IsPrePaddingRequired;
-                            existingTimer.PostPaddingSeconds = seriesTimer.PostPaddingSeconds;
-                            existingTimer.PrePaddingSeconds = seriesTimer.PrePaddingSeconds;
-                            existingTimer.Priority = seriesTimer.Priority;
-                            existingTimer.SeriesTimerId = seriesTimer.Id;
-
-                            _timerProvider.Update(existingTimer);
-                        }
+                        existingTimer.KeepUntil = seriesTimer.KeepUntil;
+                        existingTimer.IsPostPaddingRequired = seriesTimer.IsPostPaddingRequired;
+                        existingTimer.IsPrePaddingRequired = seriesTimer.IsPrePaddingRequired;
+                        existingTimer.PostPaddingSeconds = seriesTimer.PostPaddingSeconds;
+                        existingTimer.PrePaddingSeconds = seriesTimer.PrePaddingSeconds;
+                        existingTimer.Priority = seriesTimer.Priority;
+                        existingTimer.SeriesTimerId = seriesTimer.Id;
                     }
 
                     existingTimer.SeriesTimerId = seriesTimer.Id;

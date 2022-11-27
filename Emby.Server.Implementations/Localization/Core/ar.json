@@ -97,7 +97,7 @@
     "TasksChannelsCategory": "قنوات الإنترنت",
     "TasksLibraryCategory": "مكتبة",
     "TasksMaintenanceCategory": "صيانة",
-    "TaskRefreshLibraryDescription": "يفصح مكتبة الوسائط الخاصة بك بحثًا عن ملفات جديدة، ومن ثم يتحدث البيانات الوصفية.",
+    "TaskRefreshLibraryDescription": "يفحص مكتبة الوسائط الخاصة بك باحثا عن ملفات جديدة، ومن ثم يتحدث البيانات الوصفية.",
     "TaskRefreshLibrary": "افحص مكتبة الوسائط",
     "TaskRefreshChapterImagesDescription": "يُنشئ صور مصغرة لمقاطع الفيديو التي تحتوي على فصول.",
     "TaskRefreshChapterImages": "استخراج صور الفصل",

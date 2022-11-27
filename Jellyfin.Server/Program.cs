@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -192,6 +193,7 @@ namespace Jellyfin.Server
 
                 // Re-use the web host service provider in the app host since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = webHost.Services;
+
                 await appHost.InitializeServices().ConfigureAwait(false);
                 Migrations.MigrationRunner.Run(appHost, _loggerFactory);
 
@@ -236,10 +238,13 @@ namespace Jellyfin.Server
                 {
                     _logger.LogInformation("Running query planner optimizations in the database... This might take a while");
                     // Run before disposing the application
-                    using var context = appHost.Resolve<JellyfinDbProvider>().CreateContext();
-                    if (context.Database.IsSqlite())
+                    var context = await appHost.ServiceProvider.GetRequiredService<IDbContextFactory<JellyfinDb>>().CreateDbContextAsync().ConfigureAwait(false);
+                    await using (context.ConfigureAwait(false))
                     {
-                        context.Database.ExecuteSqlRaw("PRAGMA optimize");
+                        if (context.Database.IsSqlite())
+                        {
+                            await context.Database.ExecuteSqlRawAsync("PRAGMA optimize").ConfigureAwait(false);
+                        }
                     }
                 }
 
@@ -608,11 +613,14 @@ namespace Jellyfin.Server
             catch (Exception ex)
             {
                 Log.Logger = new LoggerConfiguration()
-                    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message:lj}{NewLine}{Exception}")
+                    .WriteTo.Console(
+                        outputTemplate: "[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message:lj}{NewLine}{Exception}",
+                        formatProvider: CultureInfo.InvariantCulture)
                     .WriteTo.Async(x => x.File(
                         Path.Combine(appPaths.LogDirectoryPath, "log_.log"),
                         rollingInterval: RollingInterval.Day,
                         outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message}{NewLine}{Exception}",
+                        formatProvider: CultureInfo.InvariantCulture,
                         encoding: Encoding.UTF8))
                     .Enrich.FromLogContext()
                     .Enrich.WithThreadId()
