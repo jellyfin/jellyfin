@@ -86,11 +86,12 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool recursive = true,
             [FromQuery] bool? enableImages = true)
         {
+            userId = RequestHelpers.GetUserId(User, userId);
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
-            User? user = userId is null || userId.Value.Equals(default)
+            User? user = userId.Value.Equals(default)
                 ? null
                 : _userManager.GetUserById(userId.Value);
             BaseItem parentItem = _libraryManager.GetParentItem(parentId, userId);
@@ -172,6 +173,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<BaseItemDto> GetYear([FromRoute, Required] int year, [FromQuery] Guid? userId)
         {
+            userId = RequestHelpers.GetUserId(User, userId);
             var item = _libraryManager.GetYear(year);
             if (item == null)
             {
@@ -181,7 +183,7 @@ namespace Jellyfin.Api.Controllers
             var dtoOptions = new DtoOptions()
                 .AddClientFields(User);
 
-            if (userId.HasValue && !userId.Value.Equals(default))
+            if (!userId.Value.Equals(default))
             {
                 var user = _userManager.GetUserById(userId.Value);
                 return _dtoService.GetBaseItemDto(item, dtoOptions, user);

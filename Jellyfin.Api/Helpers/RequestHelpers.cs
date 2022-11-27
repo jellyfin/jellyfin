@@ -56,6 +56,38 @@ namespace Jellyfin.Api.Helpers
         }
 
         /// <summary>
+        /// Checks if the user can access a user.
+        /// </summary>
+        /// <param name="claimsPrincipal">The <see cref="ClaimsPrincipal"/> for the current request.</param>
+        /// <param name="userId">The user id.</param>
+        /// <returns>A <see cref="bool"/> whether the user can update the entry.</returns>
+        internal static Guid GetUserId(ClaimsPrincipal claimsPrincipal, Guid? userId)
+        {
+            var authenticatedUserId = claimsPrincipal.GetUserId();
+
+            // UserId not provided, fall back to authenticated user id.
+            if (userId is null || userId.Value.Equals(default))
+            {
+                return authenticatedUserId;
+            }
+
+            // Api key can always access requested user id.
+            if (claimsPrincipal.GetIsApiKey())
+            {
+                return userId.Value;
+            }
+
+            // User must be administrator to access another user.
+            var isAdministrator = claimsPrincipal.IsInRole(UserRoles.Administrator);
+            if (!userId.Value.Equals(authenticatedUserId) && !isAdministrator)
+            {
+                return authenticatedUserId;
+            }
+
+            return userId.Value;
+        }
+
+        /// <summary>
         /// Checks if the user can update an entry.
         /// </summary>
         /// <param name="userManager">An instance of the <see cref="IUserManager"/> interface.</param>

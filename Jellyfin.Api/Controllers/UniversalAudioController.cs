@@ -107,11 +107,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool enableRedirection = true)
         {
             var deviceProfile = GetDeviceProfile(container, transcodingContainer, audioCodec, transcodingProtocol, breakOnNonKeyFrames, transcodingAudioChannels, maxAudioSampleRate, maxAudioBitDepth, maxAudioChannels);
-
-            if (!userId.HasValue || userId.Value.Equals(default))
-            {
-                userId = User.GetUserId();
-            }
+            userId = RequestHelpers.GetUserId(User, userId);
 
             _logger.LogInformation("GetPostedPlaybackInfo profile: {@Profile}", deviceProfile);
 

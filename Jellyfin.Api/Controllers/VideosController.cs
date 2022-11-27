@@ -105,12 +105,13 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetAdditionalPart([FromRoute, Required] Guid itemId, [FromQuery] Guid? userId)
         {
-            var user = userId is null || userId.Value.Equals(default)
+            userId = RequestHelpers.GetUserId(User, userId);
+            var user = userId.Value.Equals(default)
                 ? null
                 : _userManager.GetUserById(userId.Value);
 
             var item = itemId.Equals(default)
-                ? (userId is null || userId.Value.Equals(default)
+                ? (userId.Value.Equals(default)
                     ? _libraryManager.RootFolder
                     : _libraryManager.GetUserRootFolder())
                 : _libraryManager.GetItemById(itemId);

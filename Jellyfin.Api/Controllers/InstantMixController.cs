@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Dto;
@@ -75,7 +76,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var item = _libraryManager.GetItemById(id);
-            var user = userId is null || userId.Value.Equals(default)
+            userId = RequestHelpers.GetUserId(User, userId);
+            var user = userId.Value.Equals(default)
                 ? null
                 : _userManager.GetUserById(userId.Value);
             var dtoOptions = new DtoOptions { Fields = fields }
@@ -111,7 +113,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var album = _libraryManager.GetItemById(id);
-            var user = userId is null || userId.Value.Equals(default)
+            userId = RequestHelpers.GetUserId(User, userId);
+            var user = userId.Value.Equals(default)
                 ? null
                 : _userManager.GetUserById(userId.Value);
             var dtoOptions = new DtoOptions { Fields = fields }
@@ -147,7 +150,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var playlist = (Playlist)_libraryManager.GetItemById(id);
-            var user = userId is null || userId.Value.Equals(default)
+            userId = RequestHelpers.GetUserId(User, userId);
+            var user = userId.Value.Equals(default)
                 ? null
                 : _userManager.GetUserById(userId.Value);
             var dtoOptions = new DtoOptions { Fields = fields }
@@ -182,7 +186,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageTypeLimit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
-            var user = userId is null || userId.Value.Equals(default)
+            userId = RequestHelpers.GetUserId(User, userId);
+            var user = userId.Value.Equals(default)
                 ? null
                 : _userManager.GetUserById(userId.Value);
             var dtoOptions = new DtoOptions { Fields = fields }
@@ -218,7 +223,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var item = _libraryManager.GetItemById(id);
-            var user = userId is null || userId.Value.Equals(default)
+            userId = RequestHelpers.GetUserId(User, userId);
+            var user = userId.Value.Equals(default)
                 ? null
                 : _userManager.GetUserById(userId.Value);
             var dtoOptions = new DtoOptions { Fields = fields }
@@ -254,7 +260,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var item = _libraryManager.GetItemById(id);
-            var user = userId is null || userId.Value.Equals(default)
+            userId = RequestHelpers.GetUserId(User, userId);
+            var user = userId.Value.Equals(default)
                 ? null
                 : _userManager.GetUserById(userId.Value);
             var dtoOptions = new DtoOptions { Fields = fields }
@@ -327,7 +334,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var item = _libraryManager.GetItemById(id);
-            var user = userId is null || userId.Value.Equals(default)
+            userId = RequestHelpers.GetUserId(User, userId);
+            var user = userId.Value.Equals(default)
                 ? null
                 : _userManager.GetUserById(userId.Value);
             var dtoOptions = new DtoOptions { Fields = fields }

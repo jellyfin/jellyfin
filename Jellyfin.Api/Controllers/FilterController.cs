@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
@@ -52,7 +53,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes)
         {
-            var user = userId is null || userId.Value.Equals(default)
+            userId = RequestHelpers.GetUserId(User, userId);
+            var user = userId.Value.Equals(default)
                 ? null
                 : _userManager.GetUserById(userId.Value);
 
@@ -144,7 +146,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? isSeries,
             [FromQuery] bool? recursive)
         {
-            var user = userId is null || userId.Value.Equals(default)
+            userId = RequestHelpers.GetUserId(User, userId);
+            var user = userId.Value.Equals(default)
                 ? null
                 : _userManager.GetUserById(userId.Value);
 

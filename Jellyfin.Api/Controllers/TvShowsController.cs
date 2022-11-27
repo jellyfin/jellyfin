@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
@@ -88,6 +89,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool disableFirstEpisode = false,
             [FromQuery] bool enableRewatching = false)
         {
+            userId = RequestHelpers.GetUserId(User, userId);
             var options = new DtoOptions { Fields = fields }
                 .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
@@ -99,7 +101,7 @@ namespace Jellyfin.Api.Controllers
                     ParentId = parentId,
                     SeriesId = seriesId,
                     StartIndex = startIndex,
-                    UserId = userId ?? Guid.Empty,
+                    UserId = userId.Value,
                     EnableTotalRecordCount = enableTotalRecordCount,
                     DisableFirstEpisode = disableFirstEpisode,
                     NextUpDateCutoff = nextUpDateCutoff ?? DateTime.MinValue,
@@ -107,7 +109,7 @@ namespace Jellyfin.Api.Controllers
                 },
                 options);
 
-            var user = userId is null || userId.Value.Equals(default)
+            var user = userId.Value.Equals(default)
                 ? null
                 : _userManager.GetUserById(userId.Value);
 
@@ -145,7 +147,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] bool? enableUserData)
         {
-            var user = userId is null || userId.Value.Equals(default)
+            userId = RequestHelpers.GetUserId(User, userId);
+            var user = userId.Value.Equals(default)
                 ? null
                 : _userManager.GetUserById(userId.Value);
 
@@ -216,7 +219,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableUserData,
             [FromQuery] string? sortBy)
         {
-            var user = userId is null || userId.Value.Equals(default)
+            userId = RequestHelpers.GetUserId(User, userId);
+            var user = userId.Value.Equals(default)
                 ? null
                 : _userManager.GetUserById(userId.Value);
 
@@ -332,7 +336,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] bool? enableUserData)
         {
-            var user = userId is null || userId.Value.Equals(default)
+            userId = RequestHelpers.GetUserId(User, userId);
+            var user = userId.Value.Equals(default)
                 ? null
                 : _userManager.GetUserById(userId.Value);
 

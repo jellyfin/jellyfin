@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Dto;
@@ -78,11 +79,12 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] Guid? userId,
             [FromQuery] bool? enableImages = true)
         {
+            userId = RequestHelpers.GetUserId(User, userId);
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
-            User? user = userId is null || userId.Value.Equals(default)
+            User? user = userId.Value.Equals(default)
                 ? null
                 : _userManager.GetUserById(userId.Value);
 
@@ -118,6 +120,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<BaseItemDto> GetPerson([FromRoute, Required] string name, [FromQuery] Guid? userId)
         {
+            userId = RequestHelpers.GetUserId(User, userId);
             var dtoOptions = new DtoOptions()
                 .AddClientFields(User);
 
@@ -127,7 +130,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            if (userId.HasValue && !userId.Value.Equals(default))
+            if (!userId.Value.Equals(default))
             {
                 var user = _userManager.GetUserById(userId.Value);
                 return _dtoService.GetBaseItemDto(item, dtoOptions, user);

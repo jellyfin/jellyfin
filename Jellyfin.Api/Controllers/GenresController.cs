@@ -91,11 +91,12 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableImages = true,
             [FromQuery] bool enableTotalRecordCount = true)
         {
+            userId = RequestHelpers.GetUserId(User, userId);
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(User)
                 .AddAdditionalDtoOptions(enableImages, false, imageTypeLimit, enableImageTypes);
 
-            User? user = userId is null || userId.Value.Equals(default)
+            User? user = userId.Value.Equals(default)
                 ? null
                 : _userManager.GetUserById(userId.Value);
 
@@ -156,6 +157,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<BaseItemDto> GetGenre([FromRoute, Required] string genreName, [FromQuery] Guid? userId)
         {
+            userId = RequestHelpers.GetUserId(User, userId);
             var dtoOptions = new DtoOptions()
                 .AddClientFields(User);
 
@@ -171,7 +173,7 @@ namespace Jellyfin.Api.Controllers
 
             item ??= new Genre();
 
-            if (userId is null || userId.Value.Equals(default))
+            if (userId.Value.Equals(default))
             {
                 return _dtoService.GetBaseItemDto(item, dtoOptions);
             }
