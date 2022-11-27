@@ -7,6 +7,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
 using Nikse.SubtitleEdit.Core.Common;
+using Nikse.SubtitleEdit.Core.SubtitleFormats;
 using SubtitleFormat = Nikse.SubtitleEdit.Core.SubtitleFormats.SubtitleFormat;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
@@ -95,7 +96,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             foreach (var type in assembly.GetTypes())
             {
-                if (!type.IsSubclassOf(typeof(SubtitleFormat)) || type.IsAbstract)
+                if (!type.IsSubclassOf(typeof(SubtitleFormat))
+                    || type.IsAbstract
+                    // MPlayer2 attempts to load configuration.. so skip.
+                    || type == typeof(MPlayer2))
                 {
                     continue;
                 }
