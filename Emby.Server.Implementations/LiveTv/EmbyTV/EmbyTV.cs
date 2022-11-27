@@ -1814,7 +1814,9 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     program.AddGenre("News");
                 }
 
-                if (GetConfiguration().SaveRecordingNFO)
+                var config = GetConfiguration();
+
+                if (config.SaveRecordingNFO)
                 {
                     if (timer.IsProgramSeries)
                     {
@@ -1831,7 +1833,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     }
                 }
 
-                if (GetConfiguration().SaveRecordingImages)
+                if (config.SaveRecordingImages)
                 {
                     await SaveRecordingImages(recordingPath, program).ConfigureAwait(false);
                 }
