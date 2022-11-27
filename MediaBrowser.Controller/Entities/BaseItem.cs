@@ -554,7 +554,7 @@ namespace MediaBrowser.Controller.Entities
         public string OfficialRating { get; set; }
 
         [JsonIgnore]
-        public int InheritedParentalRatingValue { get; set; }
+        public int? InheritedParentalRatingValue { get; set; }
 
         /// <summary>
         /// Gets or sets the critic rating.
@@ -2517,7 +2517,7 @@ namespace MediaBrowser.Controller.Entities
 
             var item = this;
 
-            var inheritedParentalRatingValue = item.GetInheritedParentalRatingValue() ?? 0;
+            var inheritedParentalRatingValue = item.GetInheritedParentalRatingValue() ?? null;
             if (inheritedParentalRatingValue != item.InheritedParentalRatingValue)
             {
                 item.InheritedParentalRatingValue = inheritedParentalRatingValue;
