@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using Emby.Server.Implementations;
@@ -28,7 +29,9 @@ namespace Jellyfin.Server.Integration.Tests
         static JellyfinApplicationFactory()
         {
             // Perform static initialization that only needs to happen once per test-run
-            Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
+                .CreateLogger();
             Program.PerformStaticInitialization();
         }
 
