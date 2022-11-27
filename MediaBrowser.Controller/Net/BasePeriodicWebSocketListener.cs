@@ -227,9 +227,10 @@ namespace MediaBrowser.Controller.Net
                 connection.Item2.Cancel();
                 connection.Item2.Dispose();
             }
-            catch (ObjectDisposedException)
+            catch (ObjectDisposedException ex)
             {
                 // TODO Investigate and properly fix.
+                Logger.LogError(ex, "Object Disposed");
             }
 
             lock (_activeConnections)
