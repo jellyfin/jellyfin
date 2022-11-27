@@ -2456,6 +2456,8 @@ namespace Emby.Server.Implementations.Data
                 builder.Append('(');
 
                 builder.Append("((CleanName like @SearchTermStartsWith or (OriginalTitle not null and OriginalTitle like @SearchTermStartsWith)) * 10)");
+                builder.Append("+ ((CleanName = @SearchTermStartsWith COLLATE NOCASE or (OriginalTitle not null and OriginalTitle = @SearchTermStartsWith COLLATE NOCASE)) * 10)");
+
 
                 if (query.SearchTerm.Length > 1)
                 {
@@ -3152,6 +3154,11 @@ namespace Emby.Server.Implementations.Data
             if (string.Equals(name, ItemSortBy.SimilarityScore, StringComparison.OrdinalIgnoreCase))
             {
                 return ItemSortBy.SimilarityScore;
+            }
+
+            if (string.Equals(name, ItemSortBy.SearchScore, StringComparison.OrdinalIgnoreCase))
+            {
+                return ItemSortBy.SearchScore;
             }
 
             // Unknown SortBy, just sort by the SortName.

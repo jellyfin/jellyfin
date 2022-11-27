@@ -154,5 +154,10 @@ namespace MediaBrowser.Model.Querying
         /// The similarity score.
         /// </summary>
         public const string SimilarityScore = "SimilarityScore";
+
+        /// <summary>
+        /// The search score.
+        /// </summary>
+        public const string SearchScore = "SearchScore";
     }
 }
