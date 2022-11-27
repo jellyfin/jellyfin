@@ -199,7 +199,7 @@ namespace Jellyfin.Api.Helpers
             {
                 // Provide a workaround for the case issue between flac and fLaC.
                 var flacWaPlaylist = ApplyFlacCaseWorkaround(state, basicPlaylist.ToString());
-                if (!String.IsNullOrEmpty(flacWaPlaylist))
+                if (!string.IsNullOrEmpty(flacWaPlaylist))
                 {
                     builder.Append(flacWaPlaylist);
                 }
@@ -226,7 +226,7 @@ namespace Jellyfin.Api.Helpers
 
                         // Provide a workaround for the case issue between flac and fLaC.
                         flacWaPlaylist = ApplyFlacCaseWorkaround(state, sdrPlaylist.ToString());
-                        if (!String.IsNullOrEmpty(flacWaPlaylist))
+                        if (!string.IsNullOrEmpty(flacWaPlaylist))
                         {
                             builder.Append(flacWaPlaylist);
                         }
@@ -262,7 +262,7 @@ namespace Jellyfin.Api.Helpers
 
                     // Provide a workaround for the case issue between flac and fLaC.
                     flacWaPlaylist = ApplyFlacCaseWorkaround(state, newPlaylist);
-                    if (!String.IsNullOrEmpty(flacWaPlaylist))
+                    if (!string.IsNullOrEmpty(flacWaPlaylist))
                     {
                         builder.Append(flacWaPlaylist);
                     }
