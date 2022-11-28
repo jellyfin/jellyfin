@@ -4020,34 +4020,116 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add(clause);
             }
 
-            if (query.MinParentalRating.HasValue)
+            var ratingClause = "(";
+            if (query.HasParentalRating.HasValue && query.HasParentalRating.Value)
             {
-                whereClauses.Add("InheritedParentalRatingValue>=@MinParentalRating");
-                if (statement is not null)
+                ratingClause += "InheritedParentalRatingValue not null";
+                if (query.MinParentalRating.HasValue)
+                {
+                    ratingClause += " AND InheritedParentalRatingValue >= @MinParentalRating";
+                    if (statement is not null)
+                    {
+                        statement.TryBind("@MinParentalRating", query.MinParentalRating.Value);
+                    }
+                }
+
+                if (query.MaxParentalRating.HasValue)
+                {
+                    ratingClause += " AND InheritedParentalRatingValue <= @MaxParentalRating";
+                    if (statement is not null)
+                    {
+                        statement.TryBind("@MaxParentalRating", query.MaxParentalRating.Value);
+                    }
+                }
+            }
+            else if (query.BlockUnratedItems.Length > 0)
+            {
+                var paramName = "@UnratedType";
+                var index = 0;
+                string blockedUnratedItems = string.Join(',', query.BlockUnratedItems.Select(_ => paramName + index++));
+                ratingClause += "(InheritedParentalRatingValue is null AND UnratedType not in (" + blockedUnratedItems + "))";
+
+                if (statement != null)
+                {
+                    for (var ind = 0; ind < query.BlockUnratedItems.Length; ind++)
+                    {
+                        statement.TryBind(paramName + ind, query.BlockUnratedItems[ind].ToString());
+                    }
+                }
+
+                if (query.MinParentalRating.HasValue || query.MaxParentalRating.HasValue)
+                {
+                    ratingClause += " OR (";
+                }
+
+                if (query.MinParentalRating.HasValue)
+                {
+                    ratingClause += "InheritedParentalRatingValue >= @MinParentalRating";
+                    if (statement != null)
+                    {
+                        statement.TryBind("@MinParentalRating", query.MinParentalRating.Value);
+                    }
+                }
+
+                if (query.MaxParentalRating.HasValue)
+                {
+                    if (query.MinParentalRating.HasValue)
+                    {
+                        ratingClause += " AND ";
+                    }
+
+                    ratingClause += "InheritedParentalRatingValue <= @MaxParentalRating";
+                    if (statement != null)
+                    {
+                        statement.TryBind("@MaxParentalRating", query.MaxParentalRating.Value);
+                    }
+                }
+
+                if (query.MinParentalRating.HasValue || query.MaxParentalRating.HasValue)
+                {
+                    ratingClause += ")";
+                }
+
+                if (!(query.MinParentalRating.HasValue || query.MaxParentalRating.HasValue))
+                {
+                    ratingClause += " OR InheritedParentalRatingValue not null";
+                }
+            }
+            else if (query.MinParentalRating.HasValue)
+            {
+                ratingClause += "InheritedParentalRatingValue is null OR (InheritedParentalRatingValue >= @MinParentalRating";
+                if (statement != null)
                 {
                     statement.TryBind("@MinParentalRating", query.MinParentalRating.Value);
                 }
-            }
 
-            if (query.MaxParentalRating.HasValue)
+                if (query.MaxParentalRating.HasValue)
+                {
+                    ratingClause += " AND InheritedParentalRatingValue <= @MaxParentalRating";
+                    if (statement != null)
+                    {
+                        statement.TryBind("@MaxParentalRating", query.MaxParentalRating.Value);
+                    }
+                }
+
+                ratingClause += ")";
+            }
+            else if (query.MaxParentalRating.HasValue)
             {
-                whereClauses.Add("InheritedParentalRatingValue<=@MaxParentalRating");
-                if (statement is not null)
+                ratingClause += "InheritedParentalRatingValue is null OR InheritedParentalRatingValue <= @MaxParentalRating";
+                if (statement != null)
                 {
                     statement.TryBind("@MaxParentalRating", query.MaxParentalRating.Value);
                 }
             }
-
-            if (query.HasParentalRating.HasValue)
+            else if (query.HasParentalRating.HasValue && !query.HasParentalRating.Value)
             {
-                if (query.HasParentalRating.Value)
-                {
-                    whereClauses.Add("InheritedParentalRatingValue > 0");
-                }
-                else
-                {
-                    whereClauses.Add("InheritedParentalRatingValue = 0");
-                }
+                ratingClause += "InheritedParentalRatingValue is null";
+            }
+
+            if (!string.Equals(ratingClause, "(", StringComparison.OrdinalIgnoreCase))
+            {
+                whereClauses.Add(ratingClause + ")");
             }
 
             if (query.HasOfficialRating.HasValue)
@@ -4312,7 +4394,7 @@ namespace Emby.Server.Implementations.Data
                     }
 
                     // TODO this seems to be an idea for a better schema where ProviderIds are their own table
-                    //      buut this is not implemented
+                    //      but this is not implemented
                     // hasProviderIds.Add("(COALESCE((select value from ProviderIds where ItemId=Guid and Name = '" + pair.Key + "'), '') <> " + paramName + ")");
 
                     // TODO this is a really BAD way to do it since the pair:
@@ -4438,25 +4520,6 @@ namespace Emby.Server.Implementations.Data
                 {
                     statement.TryBind("@SeriesPresentationUniqueKey", query.SeriesPresentationUniqueKey);
                 }
-            }
-
-            if (query.BlockUnratedItems.Length == 1)
-            {
-                whereClauses.Add("(InheritedParentalRatingValue > 0 or UnratedType <> @UnratedType)");
-                if (statement is not null)
-                {
-                    statement.TryBind("@UnratedType", query.BlockUnratedItems[0].ToString());
-                }
-            }
-
-            if (query.BlockUnratedItems.Length > 1)
-            {
-                var inClause = string.Join(',', query.BlockUnratedItems.Select(i => "'" + i.ToString() + "'"));
-                whereClauses.Add(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "(InheritedParentalRatingValue > 0 or UnratedType not in ({0}))",
-                        inClause));
             }
 
             if (query.ExcludeInheritedTags.Length > 0)

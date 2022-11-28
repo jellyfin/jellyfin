@@ -147,7 +147,7 @@ public class ItemUpdateController : BaseJellyfinApiController
 
         var info = new MetadataEditorInfo
         {
-            ParentalRatingOptions = _localizationManager.GetParentalRatings().ToArray(),
+            ParentalRatingOptions = _localizationManager.GetParentalRatings().ToList(),
             ExternalIdInfos = _providerManager.GetExternalIdInfos(item).ToArray(),
             Countries = _localizationManager.GetCountries().ToArray(),
             Cultures = _localizationManager.GetCultures().ToArray()
