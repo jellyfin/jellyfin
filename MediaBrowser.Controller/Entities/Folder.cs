@@ -56,6 +56,9 @@ namespace MediaBrowser.Controller.Entities
         public DateTime? DateLastMediaAdded { get; set; }
 
         [JsonIgnore]
+        public bool? DoCheckStability { get; set; }
+
+        [JsonIgnore]
         public override bool SupportsThemeMedia => true;
 
         [JsonIgnore]
@@ -328,7 +331,10 @@ namespace MediaBrowser.Controller.Entities
 
             try
             {
-                await ValidateChildrenInternal2(progress, recursive, refreshChildMetadata, refreshOptions, directoryService, cancellationToken).ConfigureAwait(false);
+                if (LibraryManager.IsFolderStable(this, directoryService))
+                {
+                    await ValidateChildrenInternal2(progress, recursive, refreshChildMetadata, refreshOptions, directoryService, cancellationToken).ConfigureAwait(false);
+                }
             }
             finally
             {

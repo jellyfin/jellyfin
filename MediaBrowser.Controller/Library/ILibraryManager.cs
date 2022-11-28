@@ -578,5 +578,7 @@ namespace MediaBrowser.Controller.Library
         /// This exists so plugins can trigger a library scan.
         /// </remarks>
         void QueueLibraryScan();
+
+        bool IsFolderStable(Folder folder, IDirectoryService directoryService = null);
     }
 }

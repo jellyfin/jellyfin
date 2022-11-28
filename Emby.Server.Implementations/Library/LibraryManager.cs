@@ -3157,5 +3157,27 @@ namespace Emby.Server.Implementations.Library
 
             CollectionFolder.SaveLibraryOptions(virtualFolderPath, libraryOptions);
         }
+
+        public bool IsFolderStable(Folder folder, IDirectoryService directoryService = null)
+        {
+            ArgumentNullException.ThrowIfNull(folder);
+
+            directoryService ??= new DirectoryService(_fileSystem);
+
+            FileSystemMetadata[] files = FileData.GetFilteredFileSystemEntries(directoryService, folder.Path, _fileSystem, _appHost, _logger, new ItemResolveArgs(_configurationManager.ApplicationPaths, directoryService), flattenFolderDepth: 0, resolveShortcuts: true);
+            bool hasStabilityCheck = files.Any(file => file.Name.Equals(".jellycheck", StringComparison.OrdinalIgnoreCase));
+
+            if ((folder.DoCheckStability ?? false) && !hasStabilityCheck)
+            {
+                return false;
+            }
+            else if (!(folder.DoCheckStability ?? false) && hasStabilityCheck)
+            {
+                folder.DoCheckStability = true;
+                folder.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None);
+            }
+
+            return true;
+        }
     }
 }

@@ -96,6 +96,11 @@ namespace MediaBrowser.Model.Querying
         public const string IsFolder = "IsFolder";
 
         /// <summary>
+        /// The DoCheckStability boolean.
+        /// </summary>
+        public const string DoCheckStability = "DoCheckStability";
+
+        /// <summary>
         /// The IsUnplayed boolean.
         /// </summary>
         public const string IsUnplayed = "IsUnplayed";
