@@ -87,12 +87,10 @@ namespace Emby.Server.Implementations.Localization
                         var name = parts[0];
                         dict.Add(name, new ParentalRating(name, value));
                     }
-#if DEBUG
                     else
                     {
                         _logger.LogWarning("Malformed line in ratings file for country {CountryCode}", countryCode);
                     }
-#endif
                 }
 
                 _allParentalRatings[countryCode] = dict;
@@ -185,7 +183,56 @@ namespace Emby.Server.Implementations.Localization
 
         /// <inheritdoc />
         public IEnumerable<ParentalRating> GetParentalRatings()
-            => GetParentalRatingsDictionary().Values;
+        {
+            var ratings = GetParentalRatingsDictionary().Values.ToList();
+
+            // Add common ratings to ensure them being available for selection.
+            // Based on the US rating system due to it being the main source of rating in the metadata providers
+            // Minimum rating possible
+            if (!ratings.Any(x => x.Value == 0))
+            {
+                ratings.Add(new ParentalRating("Approved", 0));
+            }
+
+            // Matches PG (this has differnet age restrictions depending on country)
+            if (!ratings.Any(x => x.Value == 10))
+            {
+                ratings.Add(new ParentalRating("10", 10));
+            }
+
+            // Matches PG-13
+            if (!ratings.Any(x => x.Value == 13))
+            {
+                ratings.Add(new ParentalRating("13", 13));
+            }
+
+            // Matches TV-14
+            if (!ratings.Any(x => x.Value == 14))
+            {
+                ratings.Add(new ParentalRating("14", 14));
+            }
+
+            // Catchall if max rating of country is less than 21
+            // Using 21 instead of 18 to be sure to allow access to all rated content except adult and banned
+            if (!ratings.Any(x => x.Value >= 21))
+            {
+                ratings.Add(new ParentalRating("21", 21));
+            }
+
+            // A lot of countries don't excplicitly have a seperate rating for adult content
+            if (!ratings.Any(x => x.Value == 1000))
+            {
+                ratings.Add(new ParentalRating("XXX", 1000));
+            }
+
+            // A lot of countries don't excplicitly have a seperate rating for banned content
+            if (!ratings.Any(x => x.Value == 1001))
+            {
+                ratings.Add(new ParentalRating("Banned", 1001));
+            }
+
+            return ratings.OrderBy(r => r.Value);
+        }
 
         /// <summary>
         /// Gets the parental ratings dictionary.
@@ -207,15 +254,15 @@ namespace Emby.Server.Implementations.Localization
         }
 
         /// <summary>
-        /// Gets the ratings.
+        /// Gets the ratings for a country.
         /// </summary>
         /// <param name="countryCode">The country code.</param>
         /// <returns>The ratings.</returns>
         private Dictionary<string, ParentalRating>? GetRatings(string countryCode)
         {
-            _allParentalRatings.TryGetValue(countryCode, out var value);
+            _allParentalRatings.TryGetValue(countryCode, out var countryValue);
 
-            return value;
+            return countryValue;
         }
 
         /// <inheritdoc />

@@ -12,7 +12,7 @@ namespace MediaBrowser.Model.Entities
         {
         }
 
-        public ParentalRating(string name, int value)
+        public ParentalRating(string name, int? value)
         {
             Name = name;
             Value = value;
@@ -28,6 +28,6 @@ namespace MediaBrowser.Model.Entities
         /// Gets or sets the value.
         /// </summary>
         /// <value>The value.</value>
-        public int Value { get; set; }
+        public int? Value { get; set; }
     }
 }
