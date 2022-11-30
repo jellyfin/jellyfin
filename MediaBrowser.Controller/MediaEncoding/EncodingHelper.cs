@@ -977,7 +977,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // Disable auto inserted SW scaler for HW decoders in case of changed resolution.
             var isSwDecoder = string.IsNullOrEmpty(GetHardwareVideoDecoder(state, options));
-            if (!isSwDecoder)
+            if (!isSwDecoder && _mediaEncoder.EncoderVersion >= new Version(4, 4))
             {
                 arg.Append(" -autoscale 0");
             }
