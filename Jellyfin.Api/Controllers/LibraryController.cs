@@ -637,22 +637,10 @@ namespace Jellyfin.Api.Controllers
                 await LogDownloadAsync(item, user).ConfigureAwait(false);
             }
 
-            var path = item.Path;
+            // Quotes are valid in linux. They'll possibly cause issues here.
+            var filename = Path.GetFileName(item.Path)?.Replace("\"", string.Empty, StringComparison.Ordinal);
 
-            // Quotes are valid in linux. They'll possibly cause issues here
-            var filename = (Path.GetFileName(path) ?? string.Empty).Replace("\"", string.Empty, StringComparison.Ordinal);
-            if (!string.IsNullOrWhiteSpace(filename))
-            {
-                // Kestrel doesn't support non-ASCII characters in headers
-                if (Regex.IsMatch(filename, @"[^\p{IsBasicLatin}]"))
-                {
-                    // Manually encoding non-ASCII characters, following https://tools.ietf.org/html/rfc5987#section-3.2.2
-                    filename = WebUtility.UrlEncode(filename);
-                }
-            }
-
-            // TODO determine non-ASCII validity.
-            return PhysicalFile(path, MimeTypes.GetMimeType(path), filename, true);
+            return PhysicalFile(item.Path, MimeTypes.GetMimeType(item.Path), filename, true);
         }
 
         /// <summary>
