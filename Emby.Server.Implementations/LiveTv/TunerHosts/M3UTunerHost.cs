@@ -30,12 +30,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {
     public class M3UTunerHost : BaseTunerHost, ITunerHost, IConfigurableTunerHost
     {
-        private static readonly string[] _disallowedSharedStreamExtensions =
+        private static readonly string[] _disallowedMimeTypes =
         {
-            ".mkv",
-            ".mp4",
-            ".m3u8",
-            ".mpd"
+            "video/x-matroska",
+            "video/mp4",
+            "application/vnd.apple.mpegurl",
+            "application/mpegurl",
+            "application/x-mpegurl",
+            "video/vnd.mpeg.dash.mpd"
         };
 
         private readonly IHttpClientFactory _httpClientFactory;
@@ -118,9 +120,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             if (mediaSource.Protocol == MediaProtocol.Http && !mediaSource.RequiresLooping)
             {
-                var extension = Path.GetExtension(mediaSource.Path) ?? string.Empty;
+                using var message = new HttpRequestMessage(HttpMethod.Head, mediaSource.Path);
+                using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                    .SendAsync(message, cancellationToken)
+                    .ConfigureAwait(false);
 
-                if (!_disallowedSharedStreamExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
+                if (!_disallowedMimeTypes.Contains(response.Content.Headers.ContentType?.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
                     return new SharedHttpStream(mediaSource, tunerHost, streamId, FileSystem, _httpClientFactory, Logger, Config, _appHost, _streamHelper);
                 }
