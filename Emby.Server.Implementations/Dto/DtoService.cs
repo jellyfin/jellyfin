@@ -83,13 +83,14 @@ namespace Emby.Server.Implementations.Dto
         /// <inheritdoc />
         public IReadOnlyList<BaseItemDto> GetBaseItemDtos(IReadOnlyList<BaseItem> items, DtoOptions options, User user = null, BaseItem owner = null)
         {
-            var returnItems = new BaseItemDto[items.Count];
+            var accessibleItems = user is null ? items : items.Where(x => x.IsVisible(user)).ToList();
+            var returnItems = new BaseItemDto[accessibleItems.Count];
             var programTuples = new List<(BaseItem, BaseItemDto)>();
             var channelTuples = new List<(BaseItemDto, LiveTvChannel)>();
 
-            for (int index = 0; index < items.Count; index++)
+            for (int index = 0; index < accessibleItems.Count; index++)
             {
-                var item = items[index];
+                var item = accessibleItems[index];
                 var dto = GetBaseItemDtoInternal(item, options, user, owner);
 
                 if (item is LiveTvChannel tvChannel)
