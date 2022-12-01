@@ -13,6 +13,7 @@ using MediaBrowser.Providers.Music;
 using MetaBrainz.MusicBrainz;
 using MetaBrainz.MusicBrainz.Interfaces.Entities;
 using MetaBrainz.MusicBrainz.Interfaces.Searches;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Plugins.MusicBrainz;
 
@@ -21,16 +22,36 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz;
 /// </summary>
 public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, AlbumInfo>, IHasOrder, IDisposable
 {
+    private readonly ILogger _logger;
     private readonly Query _musicBrainzQuery;
+    private readonly string _musicBrainzDefaultUri = "https://musicbrainz.org";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MusicBrainzAlbumProvider"/> class.
     /// </summary>
-    public MusicBrainzAlbumProvider()
+    /// <param name="logger">The logger.</param>
+    public MusicBrainzAlbumProvider(ILogger<MusicBrainzAlbumProvider> logger)
     {
+        _logger = logger;
+
         MusicBrainz.Plugin.Instance!.ConfigurationChanged += (_, _) =>
             {
-                Query.DefaultServer = MusicBrainz.Plugin.Instance.Configuration.Server;
+                if (Uri.TryCreate(MusicBrainz.Plugin.Instance.Configuration.Server, UriKind.Absolute, out var server))
+                {
+                    Query.DefaultServer = server.Host;
+                    Query.DefaultPort = server.Port;
+                    Query.DefaultUrlScheme = server.Scheme;
+                }
+                else
+                {
+                    // Fallback to official server
+                    _logger.LogWarning("Invalid MusicBrainz server specified, falling back to official server");
+                    var defaultServer = new Uri(_musicBrainzDefaultUri);
+                    Query.DefaultServer = defaultServer.Host;
+                    Query.DefaultPort = defaultServer.Port;
+                    Query.DefaultUrlScheme = defaultServer.Scheme;
+                }
+
                 Query.DelayBetweenRequests = MusicBrainz.Plugin.Instance.Configuration.RateLimit;
             };
 
