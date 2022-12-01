@@ -67,6 +67,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 || contentType.Contains("text/", StringComparison.OrdinalIgnoreCase))
             {
                 // Close the stream without any sharing features
+                Logger.LogInformation("Stream {Url} closed without sharing, response has content type {ContentType} and result code {ResultCode}-{ResultVerb}", url, contentType, (int)response.StatusCode, response.StatusCode);
                 response.Dispose();
                 return;
             }
