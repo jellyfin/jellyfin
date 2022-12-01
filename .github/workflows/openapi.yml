@@ -90,7 +90,7 @@ jobs:
           body="${body//$'\r'/'%0D'}"
           echo ::set-output name=body::$body
       - name: Find difference comment
-        uses: peter-evans/find-comment@b657a70ff16d17651703a84bee1cb9ad9d2be2ea # tag=v2
+        uses: peter-evans/find-comment@f4499a714d59013c74a08789b48abe4b704364a0 # v2
         id: find-comment
         with:
           issue-number: ${{ github.event.pull_request.number }}
