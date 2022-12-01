@@ -125,6 +125,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     .SendAsync(message, cancellationToken)
                     .ConfigureAwait(false);
 
+                response.EnsureSuccessStatusCode();
+
                 if (!_disallowedMimeTypes.Contains(response.Content.Headers.ContentType?.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
                     return new SharedHttpStream(mediaSource, tunerHost, streamId, FileSystem, _httpClientFactory, Logger, Config, _appHost, _streamHelper);
