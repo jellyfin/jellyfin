@@ -42,7 +42,7 @@ namespace Jellyfin.Drawing.Skia
             // ask the font manager for a font with that character
             paint.Typeface = SKFontManager.Default.MatchCharacter(emojiChar);
 
-            canvas.DrawText(Text, (float)x - 20, OffsetFromTopRightCorner + 12, paint);
+            canvas.DrawText(Text, (float)x - 12, OffsetFromTopRightCorner + 12, paint);
         }
     }
 }

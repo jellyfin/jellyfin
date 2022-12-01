@@ -15,8 +15,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="$(SolutionDir)/BannedSymbols.txt" />
-    <AdditionalFiles Include="$(SolutionDir)/stylecop.json" />
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)/BannedSymbols.txt" />
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)/stylecop.json" />
   </ItemGroup>
 
 </Project>
