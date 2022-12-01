@@ -11,6 +11,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
@@ -71,17 +72,11 @@ namespace Jellyfin.Api.Helpers
                 return authenticatedUserId;
             }
 
-            // Api key can always access requested user id.
-            if (claimsPrincipal.GetIsApiKey())
-            {
-                return userId.Value;
-            }
-
             // User must be administrator to access another user.
             var isAdministrator = claimsPrincipal.IsInRole(UserRoles.Administrator);
             if (!userId.Value.Equals(authenticatedUserId) && !isAdministrator)
             {
-                return authenticatedUserId;
+                throw new SecurityException("Forbidden");
             }
 
             return userId.Value;

@@ -5,6 +5,7 @@ using System.Security.Claims;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Controller.Net;
 using Xunit;
 
 namespace Jellyfin.Api.Tests.Helpers
@@ -29,24 +30,6 @@ namespace Jellyfin.Api.Tests.Helpers
                 new Claim(InternalClaimTypes.UserId, authUserId.Value.ToString("N", CultureInfo.InvariantCulture)),
                 new Claim(InternalClaimTypes.IsApiKey, bool.FalseString),
                 new Claim(ClaimTypes.Role, UserRoles.Administrator)
-            };
-
-            var identity = new ClaimsIdentity(claims, string.Empty);
-            var principal = new ClaimsPrincipal(identity);
-
-            var userId = RequestHelpers.GetUserId(principal, requestUserId);
-
-            Assert.Equal(requestUserId, userId);
-        }
-
-        [Fact]
-        public static void GetUserId_IsApiKey()
-        {
-            Guid? requestUserId = Guid.NewGuid();
-
-            var claims = new[]
-            {
-                new Claim(InternalClaimTypes.IsApiKey, bool.TrueString)
             };
 
             var identity = new ClaimsIdentity(claims, string.Empty);
@@ -109,9 +92,7 @@ namespace Jellyfin.Api.Tests.Helpers
             var identity = new ClaimsIdentity(claims, string.Empty);
             var principal = new ClaimsPrincipal(identity);
 
-            var userId = RequestHelpers.GetUserId(principal, requestUserId);
-
-            Assert.Equal(authUserId, userId);
+            Assert.Throws<SecurityException>(() => RequestHelpers.GetUserId(principal, requestUserId));
         }
 
         public static TheoryData<IReadOnlyList<string>, IReadOnlyList<SortOrder>, (string, SortOrder)[]> GetOrderBy_Success_TestData()
