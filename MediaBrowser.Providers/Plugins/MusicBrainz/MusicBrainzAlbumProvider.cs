@@ -22,7 +22,7 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz;
 /// </summary>
 public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, AlbumInfo>, IHasOrder, IDisposable
 {
-    private readonly ILogger _logger;
+    private readonly ILogger<MusicBrainzAlbumProvider> _logger;
     private readonly Query _musicBrainzQuery;
     private readonly string _musicBrainzDefaultUri = "https://musicbrainz.org";
 
