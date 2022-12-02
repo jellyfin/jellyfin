@@ -16,6 +16,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 {
@@ -24,15 +25,10 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
     /// </summary>
     public class ChapterImagesTask : IScheduledTask
     {
-        /// <summary>
-        /// The _library manager.
-        /// </summary>
+        private readonly ILogger<ChapterImagesTask> _logger;
         private readonly ILibraryManager _libraryManager;
-
         private readonly IItemRepository _itemRepo;
-
         private readonly IApplicationPaths _appPaths;
-
         private readonly IEncodingManager _encodingManager;
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;
@@ -40,6 +36,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// <summary>
         /// Initializes a new instance of the <see cref="ChapterImagesTask" /> class.
         /// </summary>
+        /// <param name="logger">The logger.</param>.
         /// <param name="libraryManager">The library manager.</param>.
         /// <param name="itemRepo">The item repository.</param>
         /// <param name="appPaths">The application paths.</param>
@@ -47,6 +44,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// <param name="fileSystem">The filesystem.</param>
         /// <param name="localization">The localization manager.</param>
         public ChapterImagesTask(
+            ILogger<ChapterImagesTask> logger,
             ILibraryManager libraryManager,
             IItemRepository itemRepo,
             IApplicationPaths appPaths,
@@ -54,6 +52,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             IFileSystem fileSystem,
             ILocalizationManager localization)
         {
+            _logger = logger;
             _libraryManager = libraryManager;
             _itemRepo = itemRepo;
             _appPaths = appPaths;
@@ -167,9 +166,10 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 
                     progress.Report(100 * percent);
                 }
-                catch (ObjectDisposedException)
+                catch (ObjectDisposedException ex)
                 {
                     // TODO Investigate and properly fix.
+                    _logger.LogError(ex, "Object Disposed");
                     break;
                 }
             }

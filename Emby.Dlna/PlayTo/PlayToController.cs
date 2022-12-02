@@ -338,7 +338,6 @@ namespace Emby.Dlna.PlayTo
                 SubtitleStreamIndex = info.SubtitleStreamIndex,
                 VolumeLevel = _device.Volume,
 
-                // TODO
                 CanSeek = true,
 
                 PlayMethod = info.IsDirectStream ? PlayMethod.DirectStream : PlayMethod.Transcode

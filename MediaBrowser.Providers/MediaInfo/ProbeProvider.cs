@@ -83,7 +83,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _audioResolver = new AudioResolver(loggerFactory.CreateLogger<AudioResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
             _subtitleResolver = new SubtitleResolver(loggerFactory.CreateLogger<SubtitleResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
             _videoProber = new FFProbeVideoInfo(
-                _logger,
+                loggerFactory.CreateLogger<FFProbeVideoInfo>(),
                 mediaSourceManager,
                 mediaEncoder,
                 itemRepo,

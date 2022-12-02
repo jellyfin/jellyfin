@@ -34,7 +34,7 @@ namespace MediaBrowser.Providers.MediaInfo
 {
     public class FFProbeVideoInfo
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<FFProbeVideoInfo> _logger;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IItemRepository _itemRepo;
         private readonly IBlurayExaminer _blurayExaminer;
@@ -48,10 +48,8 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly SubtitleResolver _subtitleResolver;
         private readonly IMediaSourceManager _mediaSourceManager;
 
-        private readonly long _dummyChapterDuration = TimeSpan.FromMinutes(5).Ticks;
-
         public FFProbeVideoInfo(
-            ILogger logger,
+            ILogger<FFProbeVideoInfo> logger,
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
             IItemRepository itemRepo,
@@ -651,6 +649,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private ChapterInfo[] CreateDummyChapters(Video video)
         {
             var runtime = video.RunTimeTicks ?? 0;
+            long dummyChapterDuration = TimeSpan.FromSeconds(_config.Configuration.DummyChapterDuration).Ticks;
 
             if (runtime < 0)
             {
@@ -662,13 +661,13 @@ namespace MediaBrowser.Providers.MediaInfo
                         runtime));
             }
 
-            if (runtime < _dummyChapterDuration)
+            if (runtime < dummyChapterDuration)
             {
                 return Array.Empty<ChapterInfo>();
             }
 
-            // Limit to 100 chapters just in case there's some incorrect metadata here
-            int chapterCount = (int)Math.Min(runtime / _dummyChapterDuration, 100);
+            // Limit the chapters just in case there's some incorrect metadata here
+            int chapterCount = (int)Math.Min(runtime / dummyChapterDuration, _config.Configuration.DummyChapterCount);
             var chapters = new ChapterInfo[chapterCount];
 
             long currentChapterTicks = 0;
@@ -679,7 +678,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     StartPositionTicks = currentChapterTicks
                 };
 
-                currentChapterTicks += _dummyChapterDuration;
+                currentChapterTicks += dummyChapterDuration;
             }
 
             return chapters;

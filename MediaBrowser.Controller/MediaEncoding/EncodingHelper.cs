@@ -977,7 +977,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // Disable auto inserted SW scaler for HW decoders in case of changed resolution.
             var isSwDecoder = string.IsNullOrEmpty(GetHardwareVideoDecoder(state, options));
-            if (!isSwDecoder)
+            if (!isSwDecoder && _mediaEncoder.EncoderVersion >= new Version(4, 4))
             {
                 arg.Append(" -autoscale 0");
             }
@@ -1176,24 +1176,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 ":fontsdir='{0}'",
                 _mediaEncoder.EscapeSubtitleFilterPath(fontPath));
 
-            // TODO
-            // var fallbackFontPath = Path.Combine(_appPaths.ProgramDataPath, "fonts", "DroidSansFallback.ttf");
-            // string fallbackFontParam = string.Empty;
-
-            // if (!File.Exists(fallbackFontPath))
-            // {
-            //     _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(fallbackFontPath));
-            //     using (var stream = _assemblyInfo.GetManifestResourceStream(GetType(), GetType().Namespace + ".DroidSansFallback.ttf"))
-            //     {
-            //         using (var fileStream = new FileStream(fallbackFontPath, FileMode.Create, FileAccess.Write, FileShare.Read))
-            //         {
-            //             stream.CopyTo(fileStream);
-            //         }
-            //     }
-            // }
-
-            // fallbackFontParam = string.Format(CultureInfo.InvariantCulture, ":force_style='FontName=Droid Sans Fallback':fontsdir='{0}'", _mediaEncoder.EscapeSubtitleFilterPath(_fileSystem.GetDirectoryName(fallbackFontPath)));
-
             if (state.SubtitleStream.IsExternal)
             {
                 var charsetParam = string.Empty;
@@ -1221,7 +1203,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                     alphaParam,
                     sub2videoParam,
                     fontParam,
-                    // fallbackFontParam,
                     setPtsParam);
             }
 
@@ -5588,7 +5569,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && state.BaseRequest.Context == EncodingContext.Streaming)
             {
                 // Comparison: https://github.com/jansmolders86/mediacenterjs/blob/master/lib/transcoding/desktop.js
-                format = " -f mp4 -movflags frag_keyframe+empty_moov";
+                format = " -f mp4 -movflags frag_keyframe+empty_moov+delay_moov";
             }
 
             var threads = GetNumberOfThreads(state, encodingOptions, videoCodec);
