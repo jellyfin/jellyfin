@@ -3164,8 +3164,16 @@ namespace Emby.Server.Implementations.Library
 
             directoryService ??= new DirectoryService(_fileSystem);
 
-            FileSystemMetadata[] files = FileData.GetFilteredFileSystemEntries(directoryService, folder.Path, _fileSystem, _appHost, _logger, new ItemResolveArgs(_configurationManager.ApplicationPaths, directoryService), flattenFolderDepth: 0, resolveShortcuts: true);
-            bool hasStabilityCheck = files.Any(file => file.Name.Equals(".jellycheck", StringComparison.OrdinalIgnoreCase));
+            bool hasStabilityCheck = false;
+            try
+            {
+                FileSystemMetadata[] files = FileData.GetFilteredFileSystemEntries(directoryService, folder.Path, _fileSystem, _appHost, _logger, new ItemResolveArgs(_configurationManager.ApplicationPaths, directoryService), flattenFolderDepth: 0, resolveShortcuts: true);
+                hasStabilityCheck = files.Any(file => file.Name.Equals(".jellycheck", StringComparison.OrdinalIgnoreCase));
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Information, "Could not access path: \"{0}\"; {1}", folder.Path, ex.Message);
+            }
 
             if ((folder.DoCheckStability ?? false) && !hasStabilityCheck)
             {

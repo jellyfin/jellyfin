@@ -1733,11 +1733,13 @@ namespace Emby.Server.Implementations.Data
 
             if (item is Folder folder)
             {
-                if (reader.TryGetBoolean(index++, out bool doCheckStability))
+                if (reader.TryGetBoolean(index, out bool doCheckStability))
                 {
                     folder.DoCheckStability = doCheckStability;
                 }
             }
+
+            index++;
 
             if (hasTrailerTypes)
             {
