@@ -9,6 +9,7 @@ on:
       - labeled
       - synchronize
 
+permissions: {}
 jobs:
   rebase:
     name: Rebase
@@ -34,6 +35,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.JF_BOT_TOKEN }}
 
   check-backport:
+    permissions:
+      contents: read
+
     name: Check Backport
     if: ${{ ( github.event.issue.pull_request && contains(github.event.comment.body, '@jellyfin-bot check backport') ) || github.event.label.name == 'stable backport' || contains(github.event.pull_request.labels.*.name, 'stable backport' ) }}
     runs-on: ubuntu-latest
