@@ -274,7 +274,7 @@ namespace Jellyfin.Api.Controllers
             };
 
             playbackProgressInfo.PlayMethod = ValidatePlayMethod(playbackProgressInfo.PlayMethod, playbackProgressInfo.PlaySessionId);
-            playbackProgressInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);;
+            playbackProgressInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
             await _sessionManager.OnPlaybackProgress(playbackProgressInfo).ConfigureAwait(false);
             return NoContent();
         }
@@ -319,7 +319,7 @@ namespace Jellyfin.Api.Controllers
                 await _transcodingJobHelper.KillTranscodingJobs(User.GetDeviceId()!, playbackStopInfo.PlaySessionId, s => true).ConfigureAwait(false);
             }
 
-            playbackStopInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);;
+            playbackStopInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
             await _sessionManager.OnPlaybackStopped(playbackStopInfo).ConfigureAwait(false);
             return NoContent();
         }

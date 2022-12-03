@@ -10,6 +10,7 @@ using Jellyfin.Server.Implementations;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
 
@@ -24,7 +25,7 @@ namespace Jellyfin.Server.Migrations.Routines
 
         private readonly ILogger<MigrateDisplayPreferencesDb> _logger;
         private readonly IServerApplicationPaths _paths;
-        private readonly JellyfinDbProvider _provider;
+        private readonly IDbContextFactory<JellyfinDb> _provider;
         private readonly JsonSerializerOptions _jsonOptions;
         private readonly IUserManager _userManager;
 
@@ -38,7 +39,7 @@ namespace Jellyfin.Server.Migrations.Routines
         public MigrateDisplayPreferencesDb(
             ILogger<MigrateDisplayPreferencesDb> logger,
             IServerApplicationPaths paths,
-            JellyfinDbProvider provider,
+            IDbContextFactory<JellyfinDb> provider,
             IUserManager userManager)
         {
             _logger = logger;
@@ -84,7 +85,7 @@ namespace Jellyfin.Server.Migrations.Routines
             var dbFilePath = Path.Combine(_paths.DataPath, DbFilename);
             using (var connection = SQLite3.Open(dbFilePath, ConnectionFlags.ReadOnly, null))
             {
-                using var dbContext = _provider.CreateContext();
+                using var dbContext = _provider.CreateDbContext();
 
                 var results = connection.Query("SELECT * FROM userdisplaypreferences");
                 foreach (var result in results)

@@ -123,5 +123,6 @@
     "TaskOptimizeDatabaseDescription": "Komprimerer database og frigjør plass. Denne prosessen kan forbedre ytelsen etter skanning av bibliotek eller andre handlinger som fører til databaseendringer.",
     "TaskKeyframeExtractorDescription": "Trekker ut nøkkelbilder fra videofiler for å skape mere nøyaktige HLS-spillelister. Denne oppgaven kan ta lang tid.",
     "TaskKeyframeExtractor": "Nøkkelbilde-uttrekker",
-    "External": "Ekstern"
+    "External": "Ekstern",
+    "HearingImpaired": "Hørselshemmet"
 }

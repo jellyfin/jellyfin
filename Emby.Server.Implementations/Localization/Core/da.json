@@ -123,5 +123,6 @@
     "TaskOptimizeDatabase": "Optimér database",
     "TaskKeyframeExtractorDescription": "Udtrækker billeder fra videofiler for at lave mere præcise HLS playlister. Denne opgave kan godt tage lang tid.",
     "TaskKeyframeExtractor": "Billedramme udtrækker",
-    "External": "Ekstern"
+    "External": "Ekstern",
+    "HearingImpaired": "Hørehæmmet"
 }

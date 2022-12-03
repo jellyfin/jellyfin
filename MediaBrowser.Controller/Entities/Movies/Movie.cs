@@ -33,9 +33,9 @@ namespace MediaBrowser.Controller.Entities.Movies
             .ToArray();
 
         /// <summary>
-        /// Gets or sets the name of the TMDB collection.
+        /// Gets or sets the name of the TMDb collection.
         /// </summary>
-        /// <value>The name of the TMDB collection.</value>
+        /// <value>The name of the TMDb collection.</value>
         public string TmdbCollectionName { get; set; }
 
         [JsonIgnore]

@@ -120,6 +120,7 @@ namespace MediaBrowser.Providers.MediaInfo
                                 mediaStream.Index = startIndex++;
                                 mediaStream.IsDefault = pathInfo.IsDefault || mediaStream.IsDefault;
                                 mediaStream.IsForced = pathInfo.IsForced || mediaStream.IsForced;
+                                mediaStream.IsHearingImpaired = pathInfo.IsHearingImpaired || mediaStream.IsHearingImpaired;
 
                                 mediaStreams.Add(MergeMetadata(mediaStream, pathInfo));
                             }
@@ -174,12 +175,12 @@ namespace MediaBrowser.Providers.MediaInfo
                 return Array.Empty<ExternalPathParserResult>();
             }
 
-            var files = directoryService.GetFilePaths(folder, clearCache).ToList();
+            var files = directoryService.GetFilePaths(folder, clearCache, true).ToList();
             files.Remove(video.Path);
             var internalMetadataPath = video.GetInternalMetadataPath();
             if (_fileSystem.DirectoryExists(internalMetadataPath))
             {
-                files.AddRange(directoryService.GetFilePaths(internalMetadataPath, clearCache));
+                files.AddRange(directoryService.GetFilePaths(internalMetadataPath, clearCache, true));
             }
 
             if (!files.Any())

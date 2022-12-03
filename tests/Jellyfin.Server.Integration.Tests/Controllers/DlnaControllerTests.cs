@@ -34,8 +34,8 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
 
-            using var getResponse = await client.GetAsync("/Dlna/Profiles/" + NonExistentProfile).ConfigureAwait(false);
-            Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
+            using var response = await client.GetAsync("/Dlna/Profiles/" + NonExistentProfile).ConfigureAwait(false);
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
         [Fact]
@@ -45,8 +45,8 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
 
-            using var getResponse = await client.DeleteAsync("/Dlna/Profiles/" + NonExistentProfile).ConfigureAwait(false);
-            Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
+            using var response = await client.DeleteAsync("/Dlna/Profiles/" + NonExistentProfile).ConfigureAwait(false);
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
         [Fact]
@@ -61,8 +61,8 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
                 Name = "ThisProfileDoesNotExist"
             };
 
-            using var getResponse = await client.PostAsJsonAsync("/Dlna/Profiles/" + NonExistentProfile, deviceProfile, _jsonOptions).ConfigureAwait(false);
-            Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
+            using var response = await client.PostAsJsonAsync("/Dlna/Profiles/" + NonExistentProfile, deviceProfile, _jsonOptions).ConfigureAwait(false);
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
         [Fact]
@@ -77,8 +77,8 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
                 Name = "ThisProfileIsNew"
             };
 
-            using var getResponse = await client.PostAsJsonAsync("/Dlna/Profiles", deviceProfile, _jsonOptions).ConfigureAwait(false);
-            Assert.Equal(HttpStatusCode.NoContent, getResponse.StatusCode);
+            using var response = await client.PostAsJsonAsync("/Dlna/Profiles", deviceProfile, _jsonOptions).ConfigureAwait(false);
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         }
 
         [Fact]
@@ -115,20 +115,46 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
                 Id = _newDeviceProfileId
             };
 
-            using var getResponse = await client.PostAsJsonAsync("/Dlna/Profiles", updatedProfile, _jsonOptions).ConfigureAwait(false);
-            Assert.Equal(HttpStatusCode.NoContent, getResponse.StatusCode);
+            using var postResponse = await client.PostAsJsonAsync("/Dlna/Profiles/" + _newDeviceProfileId, updatedProfile, _jsonOptions).ConfigureAwait(false);
+            Assert.Equal(HttpStatusCode.NoContent, postResponse.StatusCode);
+
+            // Verify that the profile got updated
+            using var response = await client.GetAsync("/Dlna/ProfileInfos").ConfigureAwait(false);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(MediaTypeNames.Application.Json, response.Content.Headers.ContentType?.MediaType);
+            Assert.Equal(Encoding.UTF8.BodyName, response.Content.Headers.ContentType?.CharSet);
+
+            var profiles = await JsonSerializer.DeserializeAsync<DeviceProfileInfo[]>(
+                await response.Content.ReadAsStreamAsync().ConfigureAwait(false),
+                _jsonOptions).ConfigureAwait(false);
+
+            Assert.Null(profiles?.FirstOrDefault(x => string.Equals(x.Name, "ThisProfileIsNew", StringComparison.Ordinal)));
+            var newProfile = profiles?.FirstOrDefault(x => string.Equals(x.Name, "ThisProfileIsUpdated", StringComparison.Ordinal));
+            Assert.NotNull(newProfile);
+            _newDeviceProfileId = newProfile!.Id;
         }
 
         [Fact]
-        [Priority(4)]
+        [Priority(5)]
         public async Task DeleteProfile_Valid_NoContent()
         {
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
 
-            using var getResponse = await client.DeleteAsync("/Dlna/Profiles/" + _newDeviceProfileId).ConfigureAwait(false);
-            Console.WriteLine(await getResponse.Content.ReadAsStringAsync().ConfigureAwait(false));
-            Assert.Equal(HttpStatusCode.NoContent, getResponse.StatusCode);
+            using var deleteResponse = await client.DeleteAsync("/Dlna/Profiles/" + _newDeviceProfileId).ConfigureAwait(false);
+            Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
+
+            // Verify that the profile got deleted
+            using var response = await client.GetAsync("/Dlna/ProfileInfos").ConfigureAwait(false);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(MediaTypeNames.Application.Json, response.Content.Headers.ContentType?.MediaType);
+            Assert.Equal(Encoding.UTF8.BodyName, response.Content.Headers.ContentType?.CharSet);
+
+            var profiles = await JsonSerializer.DeserializeAsync<DeviceProfileInfo[]>(
+                await response.Content.ReadAsStreamAsync().ConfigureAwait(false),
+                _jsonOptions).ConfigureAwait(false);
+
+            Assert.Null(profiles?.FirstOrDefault(x => string.Equals(x.Name, "ThisProfileIsUpdated", StringComparison.Ordinal)));
         }
     }
 }

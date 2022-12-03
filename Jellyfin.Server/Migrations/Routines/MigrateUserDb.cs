@@ -11,6 +11,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -26,7 +27,7 @@ namespace Jellyfin.Server.Migrations.Routines
 
         private readonly ILogger<MigrateUserDb> _logger;
         private readonly IServerApplicationPaths _paths;
-        private readonly JellyfinDbProvider _provider;
+        private readonly IDbContextFactory<JellyfinDb> _provider;
         private readonly IXmlSerializer _xmlSerializer;
 
         /// <summary>
@@ -39,7 +40,7 @@ namespace Jellyfin.Server.Migrations.Routines
         public MigrateUserDb(
             ILogger<MigrateUserDb> logger,
             IServerApplicationPaths paths,
-            JellyfinDbProvider provider,
+            IDbContextFactory<JellyfinDb> provider,
             IXmlSerializer xmlSerializer)
         {
             _logger = logger;
@@ -65,7 +66,7 @@ namespace Jellyfin.Server.Migrations.Routines
 
             using (var connection = SQLite3.Open(Path.Combine(dataPath, DbFilename), ConnectionFlags.ReadOnly, null))
             {
-                var dbContext = _provider.CreateContext();
+                var dbContext = _provider.CreateDbContext();
 
                 var queryResult = connection.Query("SELECT * FROM LocalUsersv2");
 

@@ -8,15 +8,16 @@ using System.Linq;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 
 namespace Emby.Server.Implementations.Library.Resolvers.Books
 {
-    public class BookResolver : MediaBrowser.Controller.Resolvers.ItemResolver<Book>
+    public class BookResolver : ItemResolver<Book>
     {
         private readonly string[] _validExtensions = { ".azw", ".azw3", ".cb7", ".cbr", ".cbt", ".cbz", ".epub", ".mobi", ".pdf" };
 
-        public override Book Resolve(ItemResolveArgs args)
+        protected override Book Resolve(ItemResolveArgs args)
         {
             var collectionType = args.GetCollectionType();
 

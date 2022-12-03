@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
 using Emby.Drawing;
 using Emby.Server.Implementations;
@@ -19,6 +18,7 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Activity;
@@ -70,19 +70,13 @@ namespace Jellyfin.Server
                 Logger.LogWarning("Skia not available. Will fallback to {ImageEncoder}.", nameof(NullImageEncoder));
             }
 
-            serviceCollection.AddDbContextPool<JellyfinDb>(
-                 options => options
-                    .UseLoggerFactory(LoggerFactory)
-                    .UseSqlite($"Filename={Path.Combine(ApplicationPaths.DataPath, "jellyfin.db")}"));
-
             serviceCollection.AddEventServices();
             serviceCollection.AddSingleton<IBaseItemManager, BaseItemManager>();
             serviceCollection.AddSingleton<IEventManager, EventManager>();
-            serviceCollection.AddSingleton<JellyfinDbProvider>();
 
             serviceCollection.AddSingleton<IActivityManager, ActivityManager>();
             serviceCollection.AddSingleton<IUserManager, UserManager>();
-            serviceCollection.AddSingleton<IDisplayPreferencesManager, DisplayPreferencesManager>();
+            serviceCollection.AddScoped<IDisplayPreferencesManager, DisplayPreferencesManager>();
             serviceCollection.AddSingleton<IDeviceManager, DeviceManager>();
 
             // TODO search the assemblies instead of adding them manually?
@@ -94,6 +88,11 @@ namespace Jellyfin.Server
             serviceCollection.AddSingleton<IAuthorizationContext, AuthorizationContext>();
 
             serviceCollection.AddScoped<IAuthenticationManager, AuthenticationManager>();
+
+            foreach (var type in GetExportTypes<ILyricProvider>())
+            {
+                serviceCollection.AddSingleton(typeof(ILyricProvider), type);
+            }
 
             base.RegisterServices(serviceCollection);
         }

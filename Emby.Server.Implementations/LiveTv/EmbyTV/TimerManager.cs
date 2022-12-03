@@ -122,11 +122,28 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (_timers.TryAdd(item.Id, timer))
             {
-                Logger.LogInformation(
-                    "Creating recording timer for {Id}, {Name}. Timer will fire in {Minutes} minutes",
+                if (item.IsSeries)
+                {
+                    Logger.LogInformation(
+                    "Creating recording timer for {Id}, {Name} {SeasonNumber}x{EpisodeNumber:D2} on channel {ChannelId}. Timer will fire in {Minutes} minutes at {StartDate}",
                     item.Id,
                     item.Name,
-                    dueTime.TotalMinutes.ToString(CultureInfo.InvariantCulture));
+                    item.SeasonNumber,
+                    item.EpisodeNumber,
+                    item.ChannelId,
+                    dueTime.TotalMinutes.ToString(CultureInfo.InvariantCulture),
+                    item.StartDate);
+                }
+                else
+                {
+                    Logger.LogInformation(
+                    "Creating recording timer for {Id}, {Name} on channel {ChannelId}. Timer will fire in {Minutes} minutes at {StartDate}",
+                    item.Id,
+                    item.Name,
+                    item.ChannelId,
+                    dueTime.TotalMinutes.ToString(CultureInfo.InvariantCulture),
+                    item.StartDate);
+                }
             }
             else
             {

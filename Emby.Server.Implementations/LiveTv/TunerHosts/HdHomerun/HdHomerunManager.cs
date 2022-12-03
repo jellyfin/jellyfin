@@ -67,7 +67,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                 int receivedBytes = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
 
-                return VerifyReturnValueOfGetSet(buffer.AsSpan(receivedBytes), "none");
+                return VerifyReturnValueOfGetSet(buffer.AsSpan(0, receivedBytes), "none");
             }
             finally
             {

@@ -665,11 +665,7 @@ namespace Emby.Server.Implementations.Library
                     if (result?.Items.Count > 0)
                     {
                         var items = result.Items;
-                        foreach (var item in items)
-                        {
-                            ResolverHelper.SetInitialItemValues(item, parent, this, directoryService);
-                        }
-
+                        items.RemoveAll(item => !ResolverHelper.SetInitialItemValues(item, parent, this, directoryService));
                         items.AddRange(ResolveFileList(result.ExtraFiles, directoryService, parent, collectionType, resolvers, libraryOptions));
                         return items;
                     }
@@ -2594,9 +2590,9 @@ namespace Emby.Server.Implementations.Library
                 {
                     /*
                     Anime series don't generally have a season in their file name, however,
-                    tvdb needs a season to correctly get the metadata.
+                    TVDb needs a season to correctly get the metadata.
                     Hence, a null season needs to be filled with something. */
-                    // FIXME perhaps this would be better for tvdb parser to ask for season 1 if no season is specified
+                    // FIXME perhaps this would be better for TVDb parser to ask for season 1 if no season is specified
                     episode.ParentIndexNumber = 1;
                 }
 

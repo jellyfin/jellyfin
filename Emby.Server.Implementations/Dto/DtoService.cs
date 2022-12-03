@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
@@ -18,6 +19,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
@@ -50,6 +52,8 @@ namespace Emby.Server.Implementations.Dto
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly Lazy<ILiveTvManager> _livetvManagerFactory;
 
+        private readonly ILyricManager _lyricManager;
+
         public DtoService(
             ILogger<DtoService> logger,
             ILibraryManager libraryManager,
@@ -59,7 +63,8 @@ namespace Emby.Server.Implementations.Dto
             IProviderManager providerManager,
             IApplicationHost appHost,
             IMediaSourceManager mediaSourceManager,
-            Lazy<ILiveTvManager> livetvManagerFactory)
+            Lazy<ILiveTvManager> livetvManagerFactory,
+            ILyricManager lyricManager)
         {
             _logger = logger;
             _libraryManager = libraryManager;
@@ -70,6 +75,7 @@ namespace Emby.Server.Implementations.Dto
             _appHost = appHost;
             _mediaSourceManager = mediaSourceManager;
             _livetvManagerFactory = livetvManagerFactory;
+            _lyricManager = lyricManager;
         }
 
         private ILiveTvManager LivetvManager => _livetvManagerFactory.Value;
@@ -138,6 +144,10 @@ namespace Emby.Server.Implementations.Dto
             else if (item is LiveTvProgram)
             {
                 LivetvManager.AddInfoToProgramDto(new[] { (item, dto) }, options.Fields, user).GetAwaiter().GetResult();
+            }
+            else if (item is Audio)
+            {
+                dto.HasLyrics = _lyricManager.HasLyricFile(item);
             }
 
             if (item is IItemByName itemByName

@@ -127,8 +127,7 @@ namespace Emby.Dlna.Eventing
         public Task TriggerEvent(string notificationType, IDictionary<string, string> stateVariables)
         {
             var subs = _subscriptions.Values
-                .Where(i => !i.IsExpired && string.Equals(notificationType, i.NotificationType, StringComparison.OrdinalIgnoreCase))
-                .ToList();
+                .Where(i => !i.IsExpired && string.Equals(notificationType, i.NotificationType, StringComparison.OrdinalIgnoreCase));
 
             var tasks = subs.Select(i => TriggerEvent(i, stateVariables));
 

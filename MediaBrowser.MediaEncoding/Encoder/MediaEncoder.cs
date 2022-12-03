@@ -51,6 +51,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;
         private readonly IConfiguration _config;
+        private readonly IServerConfigurationManager _serverConfig;
         private readonly string _startupOptionFFmpegPath;
 
         private readonly SemaphoreSlim _thumbnailResourcePool = new SemaphoreSlim(2, 2);
@@ -72,6 +73,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private bool _isVaapiDeviceAmd = false;
         private bool _isVaapiDeviceInteliHD = false;
         private bool _isVaapiDeviceInteli965 = false;
+        private bool _isVaapiDeviceSupportVulkanFmtModifier = false;
+
+        private static string[] _vulkanFmtModifierExts = {
+            "VK_KHR_sampler_ycbcr_conversion",
+            "VK_EXT_image_drm_format_modifier",
+            "VK_KHR_external_memory_fd",
+            "VK_EXT_external_memory_dma_buf",
+            "VK_KHR_external_semaphore_fd",
+            "VK_EXT_external_memory_host"
+        };
 
         private Version _ffmpegVersion = null;
         private string _ffmpegPath = string.Empty;
@@ -83,13 +94,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
             IServerConfigurationManager configurationManager,
             IFileSystem fileSystem,
             ILocalizationManager localization,
-            IConfiguration config)
+            IConfiguration config,
+            IServerConfigurationManager serverConfig)
         {
             _logger = logger;
             _configurationManager = configurationManager;
             _fileSystem = fileSystem;
             _localization = localization;
             _config = config;
+            _serverConfig = serverConfig;
             _startupOptionFFmpegPath = config.GetValue<string>(Controller.Extensions.ConfigurationExtensions.FfmpegPathKey) ?? string.Empty;
             _jsonSerializerOptions = JsonDefaults.Options;
         }
@@ -109,6 +122,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public bool IsVaapiDeviceInteliHD => _isVaapiDeviceInteliHD;
 
         public bool IsVaapiDeviceInteli965 => _isVaapiDeviceInteli965;
+
+        public bool IsVaapiDeviceSupportVulkanFmtModifier => _isVaapiDeviceSupportVulkanFmtModifier;
 
         /// <summary>
         /// Run at startup or if the user removes a Custom path from transcode page.
@@ -169,6 +184,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     _isVaapiDeviceAmd = validator.CheckVaapiDeviceByDriverName("Mesa Gallium driver", options.VaapiDevice);
                     _isVaapiDeviceInteliHD = validator.CheckVaapiDeviceByDriverName("Intel iHD driver", options.VaapiDevice);
                     _isVaapiDeviceInteli965 = validator.CheckVaapiDeviceByDriverName("Intel i965 driver", options.VaapiDevice);
+                    _isVaapiDeviceSupportVulkanFmtModifier = validator.CheckVulkanDrmDeviceByExtensionName(options.VaapiDevice, _vulkanFmtModifierExts);
+
                     if (_isVaapiDeviceAmd)
                     {
                         _logger.LogInformation("VAAPI device {RenderNodePath} is AMD GPU", options.VaapiDevice);
@@ -180,6 +197,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     else if (_isVaapiDeviceInteli965)
                     {
                         _logger.LogInformation("VAAPI device {RenderNodePath} is Intel GPU (i965)", options.VaapiDevice);
+                    }
+
+                    if (_isVaapiDeviceSupportVulkanFmtModifier)
+                    {
+                        _logger.LogInformation("VAAPI device {RenderNodePath} supports Vulkan DRM format modifier", options.VaapiDevice);
                     }
                 }
             }
@@ -587,6 +609,32 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, targetFormat, cancellationToken).ConfigureAwait(false);
         }
 
+        private string GetImageResolutionParameter()
+        {
+            string imageResolutionParameter;
+
+            imageResolutionParameter = _serverConfig.Configuration.ChapterImageResolution switch
+            {
+                ImageResolution.P144 => "256x144",
+                ImageResolution.P240 => "426x240",
+                ImageResolution.P360 => "640x360",
+                ImageResolution.P480 => "854x480",
+                ImageResolution.P720 => "1280x720",
+                ImageResolution.P1080 => "1920x1080",
+                ImageResolution.P1440 => "2560x1440",
+                ImageResolution.P2160 => "3840x2160",
+                _ => string.Empty
+            };
+
+            if (!string.IsNullOrEmpty(imageResolutionParameter))
+            {
+                imageResolutionParameter = " -s " + imageResolutionParameter;
+            }
+
+            return imageResolutionParameter;
+        }
+
+
         private async Task<string> ExtractImageInternal(string inputPath, string container, MediaStream videoStream, int? imageStreamIndex, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, ImageFormat? targetFormat, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(inputPath))
@@ -657,7 +705,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var vf = string.Join(',', filters);
             var mapArg = imageStreamIndex.HasValue ? (" -map 0:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
-            var args = string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads {4} -v quiet -vframes 1 -vf {2} -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, _threads);
+            var args = string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads {4} -v quiet -vframes 1 -vf {2}{5} -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, _threads, GetImageResolutionParameter());
 
             if (offset.HasValue)
             {

@@ -1,7 +1,5 @@
 #nullable disable
 
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -23,7 +21,7 @@ using TMDbLib.Objects.Search;
 namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 {
     /// <summary>
-    /// Class MovieDbProvider.
+    /// Movie provider powered by TMDb.
     /// </summary>
     public class TmdbMovieProvider : IRemoteMetadataProvider<Movie, MovieInfo>, IHasOrder
     {
@@ -31,6 +29,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         private readonly ILibraryManager _libraryManager;
         private readonly TmdbClientManager _tmdbClientManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TmdbMovieProvider"/> class.
+        /// </summary>
+        /// <param name="libraryManager">The <see cref="ILibraryManager"/>.</param>
+        /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
+        /// <param name="tmdbClientManager">The <see cref="TmdbClientManager"/>.</param>
         public TmdbMovieProvider(
             ILibraryManager libraryManager,
             TmdbClientManager tmdbClientManager,
@@ -41,11 +45,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             _httpClientFactory = httpClientFactory;
         }
 
-        public string Name => TmdbUtils.ProviderName;
-
         /// <inheritdoc />
         public int Order => 1;
 
+        /// <inheritdoc />
+        public string Name => TmdbUtils.ProviderName;
+
+        /// <inheritdoc />
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(MovieInfo searchInfo, CancellationToken cancellationToken)
         {
             if (searchInfo.TryGetProviderId(MetadataProvider.Tmdb, out var id))
@@ -133,6 +139,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             return remoteSearchResults;
         }
 
+        /// <inheritdoc />
         public async Task<MetadataResult<Movie>> GetMetadata(MovieInfo info, CancellationToken cancellationToken)
         {
             var tmdbId = info.GetProviderId(MetadataProvider.Tmdb);
@@ -144,7 +151,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 // Caller provides the filename with extension stripped and NOT the parsed filename
                 var parsedName = _libraryManager.ParseName(info.Name);
                 var cleanedName = TmdbUtils.CleanName(parsedName.Name);
-                var searchResults = await _tmdbClientManager.SearchMovieAsync(cleanedName,  info.Year ?? parsedName.Year ?? 0, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                var searchResults = await _tmdbClientManager.SearchMovieAsync(cleanedName, info.Year ?? parsedName.Year ?? 0, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
 
                 if (searchResults.Count > 0)
                 {
