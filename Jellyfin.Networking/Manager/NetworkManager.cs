@@ -162,7 +162,8 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         private void HandleNetworkChange()
         {
-            lock(_networkEventLock){
+            lock (_networkEventLock)
+            {
                 if (!_eventfire)
                 {
                     _logger.LogDebug("Network Address Change Event.");
