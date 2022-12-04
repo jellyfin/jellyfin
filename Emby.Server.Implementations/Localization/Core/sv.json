@@ -123,5 +123,6 @@
     "TaskOptimizeDatabaseDescription": "Komprimerar databasen och trunkerar ledigt utrymme. Prestandan kan förbättras genom att köra denna aktivitet efter att du har skannat biblioteket eller gjort andra förändringar som indikerar att databasen har modifierats.",
     "TaskKeyframeExtractorDescription": "Exporterar nyckelbildrutor från videofiler för att skapa mer exakta HLS-spellistor. Denna rutin kan ta lång tid.",
     "TaskKeyframeExtractor": "Extraktor för nyckelbildrutor",
-    "External": "Extern"
+    "External": "Extern",
+    "HearingImpaired": "Hörselskadad"
 }
