@@ -66,16 +66,16 @@ namespace MediaBrowser.Model.Dlna
             }
 
             var streams = new List<StreamInfo>();
-            foreach (MediaSourceInfo i in mediaSources)
+            foreach (var mediaSourceInfo in mediaSources)
             {
-                StreamInfo streamInfo = GetOptimalAudioStream(i, options);
+                StreamInfo streamInfo = GetOptimalAudioStream(mediaSourceInfo, options);
                 if (streamInfo is not null)
                 {
                     streams.Add(streamInfo);
                 }
             }
 
-            foreach (StreamInfo stream in streams)
+            foreach (var stream in streams)
             {
                 stream.DeviceId = options.DeviceId;
                 stream.DeviceProfileId = options.Profile.Id;
@@ -139,13 +139,13 @@ namespace MediaBrowser.Model.Dlna
             }
 
             TranscodingProfile transcodingProfile = null;
-            foreach (TranscodingProfile i in options.Profile.TranscodingProfiles)
+            foreach (var tcProfile in options.Profile.TranscodingProfiles)
             {
-                if (i.Type == playlistItem.MediaType
-                    && i.Context == options.Context
-                    && _transcoderSupport.CanEncodeToAudioCodec(i.AudioCodec ?? i.Container))
+                if (tcProfile.Type == playlistItem.MediaType
+                    && tcProfile.Context == options.Context
+                    && _transcoderSupport.CanEncodeToAudioCodec(transcodingProfile.AudioCodec ?? tcProfile.Container))
                 {
-                    transcodingProfile = i;
+                    transcodingProfile = tcProfile;
                     break;
                 }
             }
@@ -167,10 +167,10 @@ namespace MediaBrowser.Model.Dlna
 
                 var configuredBitrate = options.GetMaxBitrate(true);
 
-                long transcodingBitrate = options.AudioTranscodingBitrate ??
-                    (options.Context == EncodingContext.Streaming ? options.Profile.MusicStreamingTranscodingBitrate : null) ??
-                    configuredBitrate ??
-                    128000;
+                long transcodingBitrate = options.AudioTranscodingBitrate
+                    ?? (options.Context == EncodingContext.Streaming ? options.Profile.MusicStreamingTranscodingBitrate : null)
+                    ?? configuredBitrate
+                    ?? 128000;
 
                 if (configuredBitrate.HasValue)
                 {
@@ -195,26 +195,26 @@ namespace MediaBrowser.Model.Dlna
             ValidateMediaOptions(options, true);
 
             var mediaSources = new List<MediaSourceInfo>();
-            foreach (MediaSourceInfo i in options.MediaSources)
+            foreach (var mediaSourceInfo in options.MediaSources)
             {
                 if (string.IsNullOrEmpty(options.MediaSourceId) ||
-                    string.Equals(i.Id, options.MediaSourceId, StringComparison.OrdinalIgnoreCase))
+                    string.Equals(mediaSourceInfo.Id, options.MediaSourceId, StringComparison.OrdinalIgnoreCase))
                 {
-                    mediaSources.Add(i);
+                    mediaSources.Add(mediaSourceInfo);
                 }
             }
 
             var streams = new List<StreamInfo>();
-            foreach (MediaSourceInfo i in mediaSources)
+            foreach (var mediaSourceInfo in mediaSources)
             {
-                var streamInfo = BuildVideoItem(i, options);
+                var streamInfo = BuildVideoItem(mediaSourceInfo, options);
                 if (streamInfo is not null)
                 {
                     streams.Add(streamInfo);
                 }
             }
 
-            foreach (StreamInfo stream in streams)
+            foreach (var stream in streams)
             {
                 stream.DeviceId = options.DeviceId;
                 stream.DeviceProfileId = options.Profile.Id;
