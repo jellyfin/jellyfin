@@ -1477,6 +1477,13 @@ namespace MediaBrowser.Model.Dlna
 
         private bool IsBitrateLimitExceeded(MediaSourceInfo item, long maxBitrate)
         {
+            // Don't restrict by bitrate if coming from an external domain
+            if (item.IsRemote)
+            {
+                return false;
+            }
+
+
             long requestedMaxBitrate = maxBitrate > 0 ? maxBitrate : 1000000;
 
             // If we don't know the bitrate, then force a transcode if requested max bitrate is under 40 mbps
