@@ -1,11 +1,13 @@
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.MediaInfoDtos;
 using MediaBrowser.Common.Extensions;
@@ -13,6 +15,7 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -224,6 +227,31 @@ namespace Jellyfin.Api.Controllers
                     info.MediaSources = new[] { openStreamResult.MediaSource };
                 }
             }
+
+            var dropList = new List<String>();
+            foreach (var subtitleProfile in profile.SubtitleProfiles)
+                {
+                    if (subtitleProfile.Method == SubtitleDeliveryMethod.Drop)
+                    {
+                        dropList.Add(subtitleProfile.Format.ToLower());
+                    }
+                }
+            foreach (var mediaSource in info.MediaSources)
+                {
+                    var undropped = new List<MediaStream>();
+                    foreach (MediaStream stream in mediaSource.MediaStreams)
+                    {
+                        if (!dropList.Contains(stream.Codec.ToLower()))
+                        {
+                            undropped.Add(stream);
+                        }
+                        else
+                        {
+                            _logger.LogDebug("Dropping subtitle with format: {@Format}", stream.Codec.ToLower());
+                        }
+                    }
+                    mediaSource.MediaStreams = undropped.ToArray();
+                }
 
             return info;
         }
