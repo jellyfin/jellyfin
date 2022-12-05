@@ -104,7 +104,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult GetFile([FromRoute, Required] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -154,7 +154,7 @@ namespace Jellyfin.Api.Controllers
                     : _libraryManager.GetUserRootFolder())
                 : _libraryManager.GetItemById(itemId);
 
-            if (item == null)
+            if (item is null)
             {
                 return NotFound("Item not found.");
             }
@@ -171,7 +171,7 @@ namespace Jellyfin.Api.Controllers
                 }
 
                 var parent = item.GetParent();
-                if (parent == null)
+                if (parent is null)
                 {
                     break;
                 }
@@ -220,7 +220,7 @@ namespace Jellyfin.Api.Controllers
                     : _libraryManager.GetUserRootFolder())
                 : _libraryManager.GetItemById(itemId);
 
-            if (item == null)
+            if (item is null)
             {
                 return NotFound("Item not found.");
             }
@@ -237,7 +237,7 @@ namespace Jellyfin.Api.Controllers
                 }
 
                 var parent = item.GetParent();
-                if (parent == null)
+                if (parent is null)
                 {
                     break;
                 }
@@ -435,7 +435,7 @@ namespace Jellyfin.Api.Controllers
         {
             var item = _libraryManager.GetItemById(itemId);
 
-            if (item == null)
+            if (item is null)
             {
                 return NotFound("Item not found");
             }
@@ -610,7 +610,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> GetDownload([FromRoute, Required] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }

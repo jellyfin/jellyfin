@@ -80,7 +80,7 @@ namespace Emby.Server.Implementations.IO
                     return;
                 }
 
-                if (_timer == null)
+                if (_timer is null)
                 {
                     _timer = new Timer(OnTimerCallback, null, TimeSpan.FromSeconds(_configurationManager.Configuration.LibraryMonitorDelay), TimeSpan.FromMilliseconds(-1));
                 }
@@ -178,7 +178,7 @@ namespace Emby.Server.Implementations.IO
         {
             BaseItem? item = null;
 
-            while (item == null && !string.IsNullOrEmpty(path))
+            while (item is null && !string.IsNullOrEmpty(path))
             {
                 item = _libraryManager.FindByPath(path, null);
 
@@ -192,7 +192,7 @@ namespace Emby.Server.Implementations.IO
                 {
                     item = item.GetOwner() ?? item.GetParent();
 
-                    if (item == null)
+                    if (item is null)
                     {
                         break;
                     }

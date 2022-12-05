@@ -472,7 +472,7 @@ namespace Jellyfin.Model.Tests
                     }
                 }
             }
-            else if (playMethod == null)
+            else if (playMethod is null)
             {
                 Assert.Null(val.SubProtocol);
                 Assert.Equal("stream", uri.Filename);

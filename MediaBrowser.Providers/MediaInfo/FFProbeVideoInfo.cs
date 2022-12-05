@@ -195,7 +195,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 //    .Replace("matroska", "mkv", StringComparison.OrdinalIgnoreCase);
 
                 // For DVDs this may not always be accurate, so don't set the runtime if the item already has one
-                var needToSetRuntime = video.VideoType != VideoType.Dvd || video.RunTimeTicks == null || video.RunTimeTicks.Value == 0;
+                var needToSetRuntime = video.VideoType != VideoType.Dvd || video.RunTimeTicks is null || video.RunTimeTicks.Value == 0;
 
                 if (needToSetRuntime)
                 {
@@ -572,7 +572,7 @@ namespace MediaBrowser.Providers.MediaInfo
             bool requirePerfectMatch;
             bool enabled;
 
-            if (libraryOptions.SubtitleDownloadLanguages == null)
+            if (libraryOptions.SubtitleDownloadLanguages is null)
             {
                 subtitleDownloadLanguages = subtitleOptions.DownloadLanguages;
                 skipIfEmbeddedSubtitlesPresent = subtitleOptions.SkipIfEmbeddedSubtitlesPresent;

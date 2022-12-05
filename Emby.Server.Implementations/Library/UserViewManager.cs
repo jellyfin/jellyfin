@@ -47,7 +47,7 @@ namespace Emby.Server.Implementations.Library
         {
             var user = _userManager.GetUserById(query.UserId);
 
-            if (user == null)
+            if (user is null)
             {
                 throw new ArgumentException("User Id specified in the query does not exist.", nameof(query));
             }
@@ -208,7 +208,7 @@ namespace Emby.Server.Implementations.Library
                 // Only grab the index container for media
                 var container = item.IsFolder || !request.GroupItems ? null : item.LatestItemsIndexContainer;
 
-                if (container == null)
+                if (container is null)
                 {
                     list.Add(new Tuple<BaseItem, List<BaseItem>>(null, new List<BaseItem> { item }));
                 }

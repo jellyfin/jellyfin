@@ -62,7 +62,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             var seriesTmdbId = Convert.ToInt32(series?.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
 
-            if (seriesTmdbId <= 0 || season?.IndexNumber == null)
+            if (seriesTmdbId <= 0 || season?.IndexNumber is null)
             {
                 return Enumerable.Empty<RemoteImageInfo>();
             }
@@ -75,7 +75,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 .ConfigureAwait(false);
 
             var posters = seasonResult?.Images?.Posters;
-            if (posters == null)
+            if (posters is null)
             {
                 return Enumerable.Empty<RemoteImageInfo>();
             }

@@ -85,7 +85,7 @@ namespace Jellyfin.Api.Helpers
             TranscodingJobType transcodingJobType,
             StreamingRequestDto streamingRequest)
         {
-            if (_httpContextAccessor.HttpContext == null)
+            if (_httpContextAccessor.HttpContext is null)
             {
                 throw new ResourceNotFoundException(nameof(_httpContextAccessor.HttpContext));
             }
@@ -116,7 +116,7 @@ namespace Jellyfin.Api.Helpers
                 StreamingHelpers.AddDlnaHeaders(state, _httpContextAccessor.HttpContext.Response.Headers, true, streamingRequest.StartTimeTicks, _httpContextAccessor.HttpContext.Request, _dlnaManager);
 
                 var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfo(streamingRequest.LiveStreamId);
-                if (liveStreamInfo == null)
+                if (liveStreamInfo is null)
                 {
                     throw new FileNotFoundException();
                 }

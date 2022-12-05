@@ -191,7 +191,7 @@ namespace Emby.Dlna.Didl
 
         private void AddVideoResource(XmlWriter writer, BaseItem video, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
-            if (streamInfo == null)
+            if (streamInfo is null)
             {
                 var sources = _mediaSourceManager.GetStaticMediaSources(video, true, _user);
 
@@ -263,7 +263,7 @@ namespace Emby.Dlna.Didl
                 .FirstOrDefault(i => string.Equals(info.Format, i.Format, StringComparison.OrdinalIgnoreCase)
                                     && i.Method == SubtitleDeliveryMethod.External);
 
-            if (subtitleProfile == null)
+            if (subtitleProfile is null)
             {
                 return false;
             }
@@ -392,7 +392,7 @@ namespace Emby.Dlna.Didl
 
             var filename = url.Substring(0, url.IndexOf('?', StringComparison.Ordinal));
 
-            var mimeType = mediaProfile == null || string.IsNullOrEmpty(mediaProfile.MimeType)
+            var mimeType = mediaProfile is null || string.IsNullOrEmpty(mediaProfile.MimeType)
                ? MimeTypes.GetMimeType(filename)
                : mediaProfile.MimeType;
 
@@ -533,7 +533,7 @@ namespace Emby.Dlna.Didl
         {
             writer.WriteStartElement(string.Empty, "res", NsDidl);
 
-            if (streamInfo == null)
+            if (streamInfo is null)
             {
                 var sources = _mediaSourceManager.GetStaticMediaSources(audio, true, _user);
 
@@ -598,7 +598,7 @@ namespace Emby.Dlna.Didl
 
             var filename = url.Substring(0, url.IndexOf('?', StringComparison.Ordinal));
 
-            var mimeType = mediaProfile == null || string.IsNullOrEmpty(mediaProfile.MimeType)
+            var mimeType = mediaProfile is null || string.IsNullOrEmpty(mediaProfile.MimeType)
                 ? MimeTypes.GetMimeType(filename)
                 : mediaProfile.MimeType;
 
@@ -695,7 +695,7 @@ namespace Emby.Dlna.Didl
             }
 
             // Not a samsung device
-            if (secAttribute == null)
+            if (secAttribute is null)
             {
                 return;
             }
@@ -909,7 +909,7 @@ namespace Emby.Dlna.Didl
                     AddValue(writer, "dc", "creator", artist, NsDc);
 
                     // If it doesn't support album artists (musicvideo), then tag as both
-                    if (hasAlbumArtists == null)
+                    if (hasAlbumArtists is null)
                     {
                         AddAlbumArtist(writer, artist);
                     }
@@ -973,7 +973,7 @@ namespace Emby.Dlna.Didl
         {
             ImageDownloadInfo imageInfo = GetImageInfo(item);
 
-            if (imageInfo == null)
+            if (imageInfo is null)
             {
                 return;
             }
@@ -1036,7 +1036,7 @@ namespace Emby.Dlna.Didl
         {
             var imageInfo = GetImageInfo(item);
 
-            if (imageInfo == null)
+            if (imageInfo is null)
             {
                 return;
             }
@@ -1116,7 +1116,7 @@ namespace Emby.Dlna.Didl
 
         private BaseItem GetFirstParentWithImageBelowUserRoot(BaseItem item)
         {
-            if (item == null)
+            if (item is null)
             {
                 return null;
             }

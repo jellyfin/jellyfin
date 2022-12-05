@@ -390,7 +390,7 @@ namespace Jellyfin.Api.Helpers
             var result = await _mediaSourceManager.OpenLiveStream(request, CancellationToken.None).ConfigureAwait(false);
 
             var profile = request.DeviceProfile;
-            if (profile == null)
+            if (profile is null)
             {
                 var clientCapabilities = _deviceManager.GetCapabilities(httpContext.User.GetDeviceId());
                 if (clientCapabilities != null)

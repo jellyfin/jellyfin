@@ -162,7 +162,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     && imageFileNames.Any(name => stream.Comment.Contains(name, StringComparison.OrdinalIgnoreCase)));
 
             // Primary type only: default to first image if none found by label
-            if (imageStream == null)
+            if (imageStream is null)
             {
                 if (type == ImageType.Primary)
                 {

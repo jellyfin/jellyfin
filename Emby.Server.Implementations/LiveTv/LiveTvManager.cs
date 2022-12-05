@@ -434,7 +434,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var item = _libraryManager.GetItemById(id) as LiveTvChannel;
 
-            if (item == null)
+            if (item is null)
             {
                 item = new LiveTvChannel
                 {
@@ -948,7 +948,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var channel = _libraryManager.GetItemById(program.ChannelId);
 
-            if (channel == null)
+            if (channel is null)
             {
                 return score;
             }
@@ -1314,7 +1314,7 @@ namespace Emby.Server.Implementations.LiveTv
 
         private QueryResult<BaseItem> GetEmbyRecordings(RecordingQuery query, DtoOptions dtoOptions, User user)
         {
-            if (user == null)
+            if (user is null)
             {
                 return new QueryResult<BaseItem>();
             }
@@ -1702,7 +1702,7 @@ namespace Emby.Server.Implementations.LiveTv
         {
             var timer = await GetTimer(id, CancellationToken.None).ConfigureAwait(false);
 
-            if (timer == null)
+            if (timer is null)
             {
                 throw new ResourceNotFoundException(string.Format(CultureInfo.InvariantCulture, "Timer with Id {0} not found", id));
             }
@@ -1721,7 +1721,7 @@ namespace Emby.Server.Implementations.LiveTv
         {
             var timer = await GetSeriesTimer(id, CancellationToken.None).ConfigureAwait(false);
 
-            if (timer == null)
+            if (timer is null)
             {
                 throw new ResourceNotFoundException(string.Format(CultureInfo.InvariantCulture, "SeriesTimer with Id {0} not found", id));
             }
@@ -1834,7 +1834,7 @@ namespace Emby.Server.Implementations.LiveTv
                     {
                         var internalChannelId = _tvDtoService.GetInternalChannelId(i.Item2.Name, i.Item1.ChannelId);
                         var channel = _libraryManager.GetItemById(internalChannelId);
-                        channelName = channel == null ? null : channel.Name;
+                        channelName = channel is null ? null : channel.Name;
                     }
 
                     return _tvDtoService.GetSeriesTimerInfoDto(i.Item1, i.Item2, channelName);
@@ -2147,7 +2147,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var service = _services.FirstOrDefault(i => string.Equals(i.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture), parts[0], StringComparison.OrdinalIgnoreCase));
 
-            if (service == null)
+            if (service is null)
             {
                 throw new ArgumentException("Service not found.");
             }
@@ -2178,7 +2178,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var provider = _tunerHosts.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
 
-            if (provider == null)
+            if (provider is null)
             {
                 throw new ResourceNotFoundException();
             }
@@ -2222,7 +2222,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
 
-            if (provider == null)
+            if (provider is null)
             {
                 throw new ResourceNotFoundException(
                     string.Format(
@@ -2334,7 +2334,7 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 var provider = _listingProviders.FirstOrDefault(i => string.Equals(providerType, i.Type, StringComparison.OrdinalIgnoreCase));
 
-                if (provider == null)
+                if (provider is null)
                 {
                     throw new ResourceNotFoundException();
                 }
@@ -2347,7 +2347,7 @@ namespace Emby.Server.Implementations.LiveTv
 
                 var provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
 
-                if (provider == null)
+                if (provider is null)
                 {
                     throw new ResourceNotFoundException();
                 }

@@ -96,7 +96,7 @@ namespace Jellyfin.Api.Controllers
         {
             var item = _libraryManager.GetItemById(itemId);
 
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }

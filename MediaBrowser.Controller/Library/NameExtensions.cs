@@ -15,7 +15,7 @@ namespace MediaBrowser.Controller.Library
 
         private static string RemoveDiacritics(string? name)
         {
-            if (name == null)
+            if (name is null)
             {
                 return string.Empty;
             }

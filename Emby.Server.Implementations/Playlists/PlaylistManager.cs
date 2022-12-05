@@ -70,7 +70,7 @@ namespace Emby.Server.Implementations.Playlists
 
             var folderName = _fileSystem.GetValidFilename(name);
             var parentFolder = GetPlaylistsFolder(Guid.Empty);
-            if (parentFolder == null)
+            if (parentFolder is null)
             {
                 throw new ArgumentException(nameof(parentFolder));
             }
@@ -81,7 +81,7 @@ namespace Emby.Server.Implementations.Playlists
                 {
                     var item = _libraryManager.GetItemById(itemId);
 
-                    if (item == null)
+                    if (item is null)
                     {
                         throw new ArgumentException("No item exists with the supplied Id");
                     }

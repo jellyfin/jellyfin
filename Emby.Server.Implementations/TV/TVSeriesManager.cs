@@ -37,7 +37,7 @@ namespace Emby.Server.Implementations.TV
         {
             var user = _userManager.GetUserById(query.UserId);
 
-            if (user == null)
+            if (user is null)
             {
                 throw new ArgumentException("User not found");
             }
@@ -86,7 +86,7 @@ namespace Emby.Server.Implementations.TV
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            if (user == null)
+            if (user is null)
             {
                 throw new ArgumentException("User not found");
             }

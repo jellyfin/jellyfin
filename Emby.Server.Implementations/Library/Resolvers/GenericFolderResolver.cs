@@ -22,7 +22,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
         {
             base.SetInitialItemValues(item, args);
 
-            item.IsRoot = args.Parent == null;
+            item.IsRoot = args.Parent is null;
         }
     }
 }

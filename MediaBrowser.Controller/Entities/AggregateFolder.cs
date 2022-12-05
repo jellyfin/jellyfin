@@ -67,7 +67,7 @@ namespace MediaBrowser.Controller.Entities
         {
             lock (_childIdsLock)
             {
-                if (_childrenIds == null || _childrenIds.Length == 0)
+                if (_childrenIds is null || _childrenIds.Length == 0)
                 {
                     var list = base.LoadChildren();
                     _childrenIds = list.Select(i => i.Id).ToArray();

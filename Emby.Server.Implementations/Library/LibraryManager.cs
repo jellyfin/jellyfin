@@ -176,7 +176,7 @@ namespace Emby.Server.Implementations.Library
         {
             get
             {
-                if (_rootFolder == null)
+                if (_rootFolder is null)
                 {
                     lock (_rootFolderSyncLock)
                     {
@@ -656,7 +656,7 @@ namespace Emby.Server.Implementations.Library
 
             if (parent != null)
             {
-                var multiItemResolvers = resolvers == null ? MultiItemResolvers : resolvers.OfType<IMultiItemResolver>().ToArray();
+                var multiItemResolvers = resolvers is null ? MultiItemResolvers : resolvers.OfType<IMultiItemResolver>().ToArray();
 
                 foreach (var resolver in multiItemResolvers)
                 {
@@ -770,11 +770,11 @@ namespace Emby.Server.Implementations.Library
 
         public Folder GetUserRootFolder()
         {
-            if (_userRootFolder == null)
+            if (_userRootFolder is null)
             {
                 lock (_userRootFolderSyncLock)
                 {
-                    if (_userRootFolder == null)
+                    if (_userRootFolder is null)
                     {
                         var userRootPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
 
@@ -792,7 +792,7 @@ namespace Emby.Server.Implementations.Library
                             _logger.LogError(ex, "Error creating UserRootFolder {Path}", newItemId);
                         }
 
-                        if (tmpItem == null)
+                        if (tmpItem is null)
                         {
                             _logger.LogDebug("Creating new userRootFolder with DeepCopy");
                             tmpItem = ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(userRootPath))).DeepCopy<Folder, UserRootFolder>();
@@ -961,7 +961,7 @@ namespace Emby.Server.Implementations.Library
             var path = getPathFn(name);
             var id = GetItemByNameId<T>(path);
             var item = GetItemById(id) as T;
-            if (item == null)
+            if (item is null)
             {
                 item = new T
                 {
@@ -1627,7 +1627,7 @@ namespace Emby.Server.Implementations.Library
                 // Get an existing item by Id
                 video = GetItemById(info.ItemId.Value) as Video;
 
-                if (video == null)
+                if (video is null)
                 {
                     _logger.LogError("Unable to locate item with Id {ID}.", info.ItemId.Value);
                 }
@@ -1639,7 +1639,7 @@ namespace Emby.Server.Implementations.Library
                     // Try to resolve the path into a video
                     video = ResolvePath(_fileSystem.GetFileSystemInfo(info.Path)) as Video;
 
-                    if (video == null)
+                    if (video is null)
                     {
                         _logger.LogError("Intro resolver returned null for {Path}.", info.Path);
                     }
@@ -1711,7 +1711,7 @@ namespace Emby.Server.Implementations.Library
             foreach (var (name, sortOrder) in orderBy)
             {
                 var comparer = GetComparer(name, user);
-                if (comparer == null)
+                if (comparer is null)
                 {
                     continue;
                 }
@@ -2010,7 +2010,7 @@ namespace Emby.Server.Implementations.Library
             {
                 var parent = item.GetParent();
 
-                if (parent == null || parent is AggregateFolder)
+                if (parent is null || parent is AggregateFolder)
                 {
                     break;
                 }
@@ -2018,7 +2018,7 @@ namespace Emby.Server.Implementations.Library
                 item = parent;
             }
 
-            if (item == null)
+            if (item is null)
             {
                 return new List<Folder>();
             }
@@ -2032,7 +2032,7 @@ namespace Emby.Server.Implementations.Library
             {
                 var parent = item.GetParent();
 
-                if (parent == null || parent is AggregateFolder)
+                if (parent is null || parent is AggregateFolder)
                 {
                     break;
                 }
@@ -2040,7 +2040,7 @@ namespace Emby.Server.Implementations.Library
                 item = parent;
             }
 
-            if (item == null)
+            if (item is null)
             {
                 return new List<Folder>();
             }
@@ -2064,7 +2064,7 @@ namespace Emby.Server.Implementations.Library
                     .Find(folder => folder is CollectionFolder) as CollectionFolder;
             }
 
-            return collectionFolder == null ? new LibraryOptions() : collectionFolder.GetLibraryOptions();
+            return collectionFolder is null ? new LibraryOptions() : collectionFolder.GetLibraryOptions();
         }
 
         public string GetContentType(BaseItem item)
@@ -2129,7 +2129,7 @@ namespace Emby.Server.Implementations.Library
 
         private string GetTopFolderContentType(BaseItem item)
         {
-            if (item == null)
+            if (item is null)
             {
                 return null;
             }
@@ -2137,7 +2137,7 @@ namespace Emby.Server.Implementations.Library
             while (!item.ParentId.Equals(default))
             {
                 var parent = item.GetParent();
-                if (parent == null || parent is AggregateFolder)
+                if (parent is null || parent is AggregateFolder)
                 {
                     break;
                 }
@@ -2177,7 +2177,7 @@ namespace Emby.Server.Implementations.Library
 
             var refresh = false;
 
-            if (item == null || !string.Equals(item.Path, path, StringComparison.OrdinalIgnoreCase))
+            if (item is null || !string.Equals(item.Path, path, StringComparison.OrdinalIgnoreCase))
             {
                 Directory.CreateDirectory(path);
 
@@ -2225,7 +2225,7 @@ namespace Emby.Server.Implementations.Library
 
             var isNew = false;
 
-            if (item == null)
+            if (item is null)
             {
                 Directory.CreateDirectory(path);
 
@@ -2289,7 +2289,7 @@ namespace Emby.Server.Implementations.Library
 
             var isNew = false;
 
-            if (item == null)
+            if (item is null)
             {
                 Directory.CreateDirectory(path);
 
@@ -2362,7 +2362,7 @@ namespace Emby.Server.Implementations.Library
 
             var isNew = false;
 
-            if (item == null)
+            if (item is null)
             {
                 Directory.CreateDirectory(path);
 
@@ -2459,7 +2459,7 @@ namespace Emby.Server.Implementations.Library
                 episodeInfo = resolver.Resolve(episode.Path, isFolder, null, null, isAbsoluteNaming);
                 // Resolve from parent folder if it's not the Season folder
                 var parent = episode.GetParent();
-                if (episodeInfo == null && parent.GetType() == typeof(Folder))
+                if (episodeInfo is null && parent.GetType() == typeof(Folder))
                 {
                     episodeInfo = resolver.Resolve(parent.Path, true, null, null, isAbsoluteNaming);
                     if (episodeInfo != null)
@@ -2620,7 +2620,7 @@ namespace Emby.Server.Implementations.Library
         public IEnumerable<BaseItem> FindExtras(BaseItem owner, IReadOnlyList<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
             var ownerVideoInfo = VideoResolver.Resolve(owner.Path, owner.IsFolder, _namingOptions);
-            if (ownerVideoInfo == null)
+            if (ownerVideoInfo is null)
             {
                 yield break;
             }
@@ -2754,7 +2754,7 @@ namespace Emby.Server.Implementations.Library
                 }
             })
             .Where(i => i != null)
-            .Where(i => query.User == null ?
+            .Where(i => query.User is null ?
                 true :
                 i.IsVisible(query.User))
             .ToList();

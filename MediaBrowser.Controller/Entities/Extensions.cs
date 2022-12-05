@@ -26,7 +26,7 @@ namespace MediaBrowser.Controller.Entities
 
             var current = item.RemoteTrailers.FirstOrDefault(i => string.Equals(i.Url, url, StringComparison.OrdinalIgnoreCase));
 
-            if (current == null)
+            if (current is null)
             {
                 var mediaUrl = new MediaUrl
                 {

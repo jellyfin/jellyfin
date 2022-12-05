@@ -103,7 +103,7 @@ namespace MediaBrowser.Common.Plugins
             get
             {
                 // Lazy load
-                if (_configuration == null)
+                if (_configuration is null)
                 {
                     lock (_configurationSyncLock)
                     {

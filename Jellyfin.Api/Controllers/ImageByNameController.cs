@@ -77,7 +77,7 @@ namespace Jellyfin.Api.Controllers
                 .Select(i => Path.GetFullPath(Path.Combine(_applicationPaths.GeneralPath, name, filename + i)))
                 .FirstOrDefault(System.IO.File.Exists);
 
-            if (path == null)
+            if (path is null)
             {
                 return NotFound();
             }

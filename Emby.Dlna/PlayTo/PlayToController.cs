@@ -164,7 +164,7 @@ namespace Emby.Dlna.PlayTo
                 }
 
                 streamInfo = StreamParams.ParseFromUrl(e.NewMediaInfo.Url, _libraryManager, _mediaSourceManager);
-                if (streamInfo.Item == null)
+                if (streamInfo.Item is null)
                 {
                     return;
                 }
@@ -199,7 +199,7 @@ namespace Emby.Dlna.PlayTo
             {
                 var streamInfo = StreamParams.ParseFromUrl(e.MediaInfo.Url, _libraryManager, _mediaSourceManager);
 
-                if (streamInfo.Item == null)
+                if (streamInfo.Item is null)
                 {
                     return;
                 }
@@ -210,7 +210,7 @@ namespace Emby.Dlna.PlayTo
 
                 var mediaSource = await streamInfo.GetMediaSource(CancellationToken.None).ConfigureAwait(false);
 
-                var duration = mediaSource == null
+                var duration = mediaSource is null
                     ? _device.Duration?.Ticks
                     : mediaSource.RunTimeTicks;
 
@@ -865,7 +865,7 @@ namespace Emby.Dlna.PlayTo
                 throw new ObjectDisposedException(GetType().Name);
             }
 
-            if (_device == null)
+            if (_device is null)
             {
                 return Task.CompletedTask;
             }

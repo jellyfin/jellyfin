@@ -174,7 +174,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 string.Equals(displayOrder, "tv", StringComparison.Ordinal) ? TvGroupType.TV :
                 null;
 
-            if (groupType == null)
+            if (groupType is null)
             {
                 return null;
             }
@@ -190,7 +190,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             var series = await GetSeriesAsync(tvShowId, language, imageLanguages, cancellationToken).ConfigureAwait(false);
             var episodeGroupId = series?.EpisodeGroups.Results.Find(g => g.Type == groupType)?.Id;
 
-            if (episodeGroupId == null)
+            if (episodeGroupId is null)
             {
                 return null;
             }

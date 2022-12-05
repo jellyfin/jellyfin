@@ -41,7 +41,7 @@ namespace Jellyfin.Server.Implementations.Users
         // This is the version that we need to use for local users. Because reasons.
         public Task<ProviderAuthenticationResult> Authenticate(string username, string password, User resolvedUser)
         {
-            if (resolvedUser == null)
+            if (resolvedUser is null)
             {
                 throw new AuthenticationException("Specified user does not exist.");
             }
@@ -58,7 +58,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             // Handle the case when the stored password is null, but the user tried to login with a password
-            if (resolvedUser.Password == null)
+            if (resolvedUser.Password is null)
             {
                 throw new AuthenticationException("Invalid username or password");
             }

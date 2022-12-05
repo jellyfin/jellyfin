@@ -328,11 +328,11 @@ namespace Jellyfin.Providers.Tests.Manager
                 People = oldValue
             };
 
-            var lockedFields = lockField == null ? Array.Empty<MetadataField>() : new[] { (MetadataField)lockField };
+            var lockedFields = lockField is null ? Array.Empty<MetadataField>() : new[] { (MetadataField)lockField };
             MetadataService<Movie, MovieInfo>.MergeBaseItemData(source, target, lockedFields, replaceData, false);
 
             actualValue = target.People;
-            return newValue?.Equals(actualValue) ?? actualValue == null;
+            return newValue?.Equals(actualValue) ?? actualValue is null;
         }
 
         /// <summary>
@@ -367,12 +367,12 @@ namespace Jellyfin.Providers.Tests.Manager
             };
             property.SetValue(target.Item, oldValue);
 
-            var lockedFields = lockField == null ? Array.Empty<MetadataField>() : new[] { (MetadataField)lockField };
+            var lockedFields = lockField is null ? Array.Empty<MetadataField>() : new[] { (MetadataField)lockField };
             // generic type doesn't actually matter to call the static method, just has to be filled in
             MetadataService<TItemType, TIdType>.MergeBaseItemData(source, target, lockedFields, replaceData, false);
 
             actualValue = property.GetValue(target.Item);
-            return newValue?.Equals(actualValue) ?? actualValue == null;
+            return newValue?.Equals(actualValue) ?? actualValue is null;
         }
     }
 }

@@ -85,7 +85,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <exception cref="ArgumentException"><c>metadataFile</c> is <c>null</c> or empty.</exception>
         public void Fetch(MetadataResult<T> item, string metadataFile, CancellationToken cancellationToken)
         {
-            if (item.Item == null)
+            if (item.Item is null)
             {
                 throw new ArgumentException("Item can't be null.", nameof(item));
             }
@@ -880,7 +880,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 var fileSystemMetadata = _directoryService.GetFile(val);
                 // non existing file returns null
-                if (fileSystemMetadata == null || !fileSystemMetadata.Exists)
+                if (fileSystemMetadata is null || !fileSystemMetadata.Exists)
                 {
                     Logger.LogWarning("Artwork file {Path} specified in nfo file for {ItemName} does not exist.", uri, itemResult.Item.Name);
                     return;

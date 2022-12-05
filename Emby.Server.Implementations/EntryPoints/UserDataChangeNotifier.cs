@@ -51,7 +51,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
             lock (_syncLock)
             {
-                if (_updateTimer == null)
+                if (_updateTimer is null)
                 {
                     _updateTimer = new Timer(
                         UpdateTimerCallback,

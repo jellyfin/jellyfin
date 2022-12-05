@@ -90,7 +90,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 .GetMovieAsync(movieTmdbId, null, null, cancellationToken)
                 .ConfigureAwait(false);
 
-            if (movie?.Images == null)
+            if (movie?.Images is null)
             {
                 return Enumerable.Empty<RemoteImageInfo>();
             }

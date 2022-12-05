@@ -198,7 +198,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             var user = _userManager.GetUserById(userId);
-            if (user?.ProfileImage == null)
+            if (user?.ProfileImage is null)
             {
                 return NoContent();
             }
@@ -242,7 +242,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             var user = _userManager.GetUserById(userId);
-            if (user?.ProfileImage == null)
+            if (user?.ProfileImage is null)
             {
                 return NoContent();
             }
@@ -279,7 +279,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageIndex)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -307,7 +307,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute] int imageIndex)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -335,7 +335,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] ImageType imageType)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -371,7 +371,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute] int imageIndex)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -407,7 +407,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, Required] int newIndex)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -430,7 +430,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult<IEnumerable<ImageInfo>>> GetItemImageInfos([FromRoute, Required] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -537,7 +537,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageIndex)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -620,7 +620,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? foregroundLayer)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -703,7 +703,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] int imageIndex)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -786,7 +786,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] int imageIndex)
         {
             var item = _libraryManager.GetArtist(name);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -869,7 +869,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageIndex)
         {
             var item = _libraryManager.GetGenre(name);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -952,7 +952,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? foregroundLayer)
         {
             var item = _libraryManager.GetGenre(name);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -1035,7 +1035,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageIndex)
         {
             var item = _libraryManager.GetMusicGenre(name);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -1118,7 +1118,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? foregroundLayer)
         {
             var item = _libraryManager.GetMusicGenre(name);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -1201,7 +1201,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageIndex)
         {
             var item = _libraryManager.GetPerson(name);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -1284,7 +1284,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? foregroundLayer)
         {
             var item = _libraryManager.GetPerson(name);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -1367,7 +1367,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageIndex)
         {
             var item = _libraryManager.GetStudio(name);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -1450,7 +1450,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? foregroundLayer)
         {
             var item = _libraryManager.GetStudio(name);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -1533,7 +1533,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageIndex)
         {
             var user = _userManager.GetUserById(userId);
-            if (user?.ProfileImage == null)
+            if (user?.ProfileImage is null)
             {
                 return NotFound();
             }
@@ -1634,7 +1634,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? foregroundLayer)
         {
             var user = _userManager.GetUserById(userId);
-            if (user?.ProfileImage == null)
+            if (user?.ProfileImage is null)
             {
                 return NotFound();
             }
@@ -1944,10 +1944,10 @@ namespace Jellyfin.Api.Controllers
                 unplayedCount = null;
             }
 
-            if (imageInfo == null)
+            if (imageInfo is null)
             {
                 imageInfo = item?.GetImageInfo(imageType, imageIndex ?? 0);
-                if (imageInfo == null)
+                if (imageInfo is null)
                 {
                     return NotFound(string.Format(NumberFormatInfo.InvariantInfo, "{0} does not have an image of type {1}", item?.Name, imageType));
                 }

@@ -89,7 +89,7 @@ namespace MediaBrowser.Controller.Entities
                 }
 
                 var v = sourceProp.GetValue(source);
-                if (v == null)
+                if (v is null)
                 {
                     continue;
                 }

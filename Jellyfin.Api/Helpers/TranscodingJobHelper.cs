@@ -829,7 +829,7 @@ namespace Jellyfin.Api.Helpers
             {
                 var job = _activeTranscodingJobs.FirstOrDefault(j => j.Type == type && string.Equals(j.Path, path, StringComparison.OrdinalIgnoreCase));
 
-                if (job == null)
+                if (job is null)
                 {
                     return null;
                 }

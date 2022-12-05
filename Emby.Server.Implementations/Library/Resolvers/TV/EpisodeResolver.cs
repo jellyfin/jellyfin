@@ -34,7 +34,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         {
             var parent = args.Parent;
 
-            if (parent == null)
+            if (parent is null)
             {
                 return null;
             }
@@ -53,7 +53,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 var episode = ResolveVideo<Episode>(args, false);
 
                 // Ignore extras
-                if (episode == null || episode.ExtraType != null)
+                if (episode is null || episode.ExtraType != null)
                 {
                     return null;
                 }
@@ -73,7 +73,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 }
 
                 // Assume season 1 if there's no season folder and a season number could not be determined
-                if (season == null && !episode.ParentIndexNumber.HasValue && (episode.IndexNumber.HasValue || episode.PremiereDate.HasValue))
+                if (season is null && !episode.ParentIndexNumber.HasValue && (episode.IndexNumber.HasValue || episode.PremiereDate.HasValue))
                 {
                     episode.ParentIndexNumber = 1;
                 }

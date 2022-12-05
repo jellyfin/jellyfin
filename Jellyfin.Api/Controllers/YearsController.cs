@@ -173,7 +173,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<BaseItemDto> GetYear([FromRoute, Required] int year, [FromQuery] Guid? userId)
         {
             var item = _libraryManager.GetYear(year);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }

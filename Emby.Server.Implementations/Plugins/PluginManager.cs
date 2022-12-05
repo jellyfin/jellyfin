@@ -174,7 +174,7 @@ namespace Emby.Server.Implementations.Plugins
             foreach (var pluginServiceRegistrator in _appHost.GetExportTypes<IPluginServiceRegistrator>())
             {
                 var plugin = GetPluginByAssembly(pluginServiceRegistrator.Assembly);
-                if (plugin == null)
+                if (plugin is null)
                 {
                     _logger.LogError("Unable to find plugin in assembly {Assembly}", pluginServiceRegistrator.Assembly.FullName);
                     continue;
@@ -263,7 +263,7 @@ namespace Emby.Server.Implementations.Plugins
         {
             LocalPlugin? plugin;
 
-            if (version == null)
+            if (version is null)
             {
                 // If no version is given, return the current instance.
                 var plugins = _plugins.Where(p => p.Id.Equals(id)).ToList();
@@ -320,7 +320,7 @@ namespace Emby.Server.Implementations.Plugins
             ArgumentNullException.ThrowIfNull(assembly);
 
             var plugin = _plugins.FirstOrDefault(p => p.DllFiles.Contains(assembly.Location));
-            if (plugin == null)
+            if (plugin is null)
             {
                 // A plugin's assembly didn't cause this issue, so ignore it.
                 return;
@@ -442,7 +442,7 @@ namespace Emby.Server.Implementations.Plugins
                 _logger.LogDebug("Creating instance of {Type}", type);
                 // _appHost.ServiceProvider is already assigned when we create the plugins
                 var instance = (IPlugin)ActivatorUtilities.CreateInstance(_appHost.ServiceProvider!, type);
-                if (plugin == null)
+                if (plugin is null)
                 {
                     // Create a dummy record for the providers.
                     // TODO: remove this code once all provided have been released as separate plugins.
@@ -711,7 +711,7 @@ namespace Emby.Server.Implementations.Plugins
                     && p.IsEnabledAndSupported
                     && p.Version != plugin.Version);
 
-            if (previousVersion == null)
+            if (previousVersion is null)
             {
                 // This value is memory only - so that the web will show restart required.
                 plugin.Manifest.Status = PluginStatus.Restart;

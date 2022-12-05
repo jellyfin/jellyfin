@@ -135,7 +135,7 @@ namespace MediaBrowser.Providers.Manager
             var service = _metadataServices.FirstOrDefault(current => current.CanRefreshPrimary(type));
             service ??= _metadataServices.FirstOrDefault(current => current.CanRefresh(item));
 
-            if (service == null)
+            if (service is null)
             {
                 _logger.LogError("Unable to find a metadata service for item of type {TypeName}", item.GetType().Name);
                 return Task.FromResult(ItemUpdateType.None);
@@ -660,7 +660,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (!includeDisabled)
                 {
-                    if (libraryOptions.MetadataSavers == null)
+                    if (libraryOptions.MetadataSavers is null)
                     {
                         if (options.DisabledMetadataSavers.Contains(saver.Name, StringComparison.OrdinalIgnoreCase))
                         {
@@ -725,7 +725,7 @@ namespace MediaBrowser.Providers.Manager
         {
             LibraryOptions libraryOptions;
 
-            if (referenceItem == null)
+            if (referenceItem is null)
             {
                 // Give it a dummy path just so that it looks like a file system item
                 var dummy = new TItemType
@@ -776,7 +776,7 @@ namespace MediaBrowser.Providers.Manager
                     {
                         var existingMatch = resultList.FirstOrDefault(i => i.ProviderIds.Any(p => string.Equals(result.GetProviderId(p.Key), p.Value, StringComparison.OrdinalIgnoreCase)));
 
-                        if (existingMatch == null)
+                        if (existingMatch is null)
                         {
                             resultList.Add(result);
                         }
@@ -831,7 +831,7 @@ namespace MediaBrowser.Providers.Manager
         {
             var provider = _metadataProviders.OfType<IRemoteSearchProvider>().FirstOrDefault(i => string.Equals(i.Name, providerName, StringComparison.OrdinalIgnoreCase));
 
-            if (provider == null)
+            if (provider is null)
             {
                 throw new ArgumentException("Search provider not found.");
             }
@@ -1002,7 +1002,7 @@ namespace MediaBrowser.Providers.Manager
                 try
                 {
                     var item = libraryManager.GetItemById(refreshItem.Item1);
-                    if (item == null)
+                    if (item is null)
                     {
                         continue;
                     }

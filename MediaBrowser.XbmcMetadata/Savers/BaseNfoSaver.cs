@@ -855,7 +855,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             var user = userManager.GetUserById(Guid.Parse(userId));
 
-            if (user == null)
+            if (user is null)
             {
                 return;
             }

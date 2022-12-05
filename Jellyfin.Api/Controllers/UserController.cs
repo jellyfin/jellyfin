@@ -124,7 +124,7 @@ namespace Jellyfin.Api.Controllers
         {
             var user = _userManager.GetUserById(userId);
 
-            if (user == null)
+            if (user is null)
             {
                 return NotFound("User not found");
             }
@@ -173,7 +173,7 @@ namespace Jellyfin.Api.Controllers
         {
             var user = _userManager.GetUserById(userId);
 
-            if (user == null)
+            if (user is null)
             {
                 return NotFound("User not found");
             }
@@ -272,7 +272,7 @@ namespace Jellyfin.Api.Controllers
 
             var user = _userManager.GetUserById(userId);
 
-            if (user == null)
+            if (user is null)
             {
                 return NotFound("User not found");
             }
@@ -292,7 +292,7 @@ namespace Jellyfin.Api.Controllers
                         HttpContext.GetNormalizedRemoteIp().ToString(),
                         false).ConfigureAwait(false);
 
-                    if (success == null)
+                    if (success is null)
                     {
                         return StatusCode(StatusCodes.Status403Forbidden, "Invalid user or password entered.");
                     }
@@ -333,7 +333,7 @@ namespace Jellyfin.Api.Controllers
 
             var user = _userManager.GetUserById(userId);
 
-            if (user == null)
+            if (user is null)
             {
                 return NotFound("User not found");
             }
@@ -544,7 +544,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             var user = _userManager.GetUserById(userId);
-            if (user == null)
+            if (user is null)
             {
                 return BadRequest();
             }

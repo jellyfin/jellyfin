@@ -71,7 +71,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult EnablePlugin([FromRoute, Required] Guid pluginId, [FromRoute, Required] Version version)
         {
             var plugin = _pluginManager.GetPlugin(pluginId, version);
-            if (plugin == null)
+            if (plugin is null)
             {
                 return NotFound();
             }
@@ -95,7 +95,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult DisablePlugin([FromRoute, Required] Guid pluginId, [FromRoute, Required] Version version)
         {
             var plugin = _pluginManager.GetPlugin(pluginId, version);
-            if (plugin == null)
+            if (plugin is null)
             {
                 return NotFound();
             }
@@ -119,7 +119,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult UninstallPluginByVersion([FromRoute, Required] Guid pluginId, [FromRoute, Required] Version version)
         {
             var plugin = _pluginManager.GetPlugin(pluginId, version);
-            if (plugin == null)
+            if (plugin is null)
             {
                 return NotFound();
             }
@@ -146,7 +146,7 @@ namespace Jellyfin.Api.Controllers
             var plugins = _pluginManager.Plugins.Where(p => p.Id.Equals(pluginId));
 
             // Select the un-instanced one first.
-            var plugin = plugins.FirstOrDefault(p => p.Instance == null) ?? plugins.OrderBy(p => p.Manifest.Status).FirstOrDefault();
+            var plugin = plugins.FirstOrDefault(p => p.Instance is null) ?? plugins.OrderBy(p => p.Manifest.Status).FirstOrDefault();
 
             if (plugin != null)
             {
@@ -225,13 +225,13 @@ namespace Jellyfin.Api.Controllers
         public ActionResult GetPluginImage([FromRoute, Required] Guid pluginId, [FromRoute, Required] Version version)
         {
             var plugin = _pluginManager.GetPlugin(pluginId, version);
-            if (plugin == null)
+            if (plugin is null)
             {
                 return NotFound();
             }
 
             var imagePath = Path.Combine(plugin.Path, plugin.Manifest.ImagePath ?? string.Empty);
-            if (plugin.Manifest.ImagePath == null || !System.IO.File.Exists(imagePath))
+            if (plugin.Manifest.ImagePath is null || !System.IO.File.Exists(imagePath))
             {
                 return NotFound();
             }

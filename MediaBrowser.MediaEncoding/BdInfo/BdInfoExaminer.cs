@@ -48,7 +48,7 @@ namespace MediaBrowser.MediaEncoding.BdInfo
                 MediaStreams = Array.Empty<MediaStream>()
             };
 
-            if (playlist == null)
+            if (playlist is null)
             {
                 return outputStream;
             }

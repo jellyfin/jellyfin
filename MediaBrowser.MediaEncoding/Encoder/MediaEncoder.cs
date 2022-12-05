@@ -531,7 +531,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     throw;
                 }
 
-                if (result == null || (result.Streams == null && result.Format == null))
+                if (result is null || (result.Streams is null && result.Format is null))
                 {
                     throw new FfmpegException("ffprobe failed - streams and format are both null.");
                 }

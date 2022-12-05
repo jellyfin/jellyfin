@@ -75,7 +75,7 @@ namespace Emby.Naming.AudioBook
 
             foreach (var group in groupedBy)
             {
-                if (group.Key.ChapterNumber == null && group.Key.PartNumber == null)
+                if (group.Key.ChapterNumber is null && group.Key.PartNumber is null)
                 {
                     if (group.Count() > 1 || haveChaptersOrPages)
                     {

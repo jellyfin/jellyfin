@@ -220,7 +220,7 @@ namespace Jellyfin.Api.Models.PlaybackDtos
 
             lock (_timerLock)
             {
-                if (KillTimer == null)
+                if (KillTimer is null)
                 {
                     Logger.LogDebug("Starting kill timer at {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
                     KillTimer = new Timer(new TimerCallback(callback), this, intervalMs, Timeout.Infinite);

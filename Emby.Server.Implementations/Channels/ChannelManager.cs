@@ -129,7 +129,7 @@ namespace Emby.Server.Implementations.Channels
         public Task DeleteItem(BaseItem item)
         {
             var internalChannel = _libraryManager.GetItemById(item.ChannelId);
-            if (internalChannel == null)
+            if (internalChannel is null)
             {
                 throw new ArgumentException(nameof(item.ChannelId));
             }
@@ -253,7 +253,7 @@ namespace Emby.Server.Implementations.Channels
             if (query.StartIndex.HasValue || query.Limit.HasValue)
             {
                 int startIndex = query.StartIndex ?? 0;
-                int count = query.Limit == null ? totalCount - startIndex : Math.Min(query.Limit.Value, totalCount - startIndex);
+                int count = query.Limit is null ? totalCount - startIndex : Math.Min(query.Limit.Value, totalCount - startIndex);
                 all = all.GetRange(startIndex, count);
             }
 
@@ -355,7 +355,7 @@ namespace Emby.Server.Implementations.Channels
         {
             var path = Path.Combine(item.GetInternalMetadataPath(), "channelmediasourceinfos.json");
 
-            if (mediaSources == null || mediaSources.Count == 0)
+            if (mediaSources is null || mediaSources.Count == 0)
             {
                 try
                 {
@@ -447,7 +447,7 @@ namespace Emby.Server.Implementations.Channels
 
             var item = _libraryManager.GetItemById(id) as Channel;
 
-            if (item == null)
+            if (item is null)
             {
                 item = new Channel
                 {
@@ -861,7 +861,7 @@ namespace Emby.Server.Implementations.Channels
 
                 var result = await channel.GetChannelItems(query, cancellationToken).ConfigureAwait(false);
 
-                if (result == null)
+                if (result is null)
                 {
                     throw new InvalidOperationException("Channel returned a null result from GetChannelItems");
                 }
@@ -955,7 +955,7 @@ namespace Emby.Server.Implementations.Channels
                 _logger.LogError(ex, "Error retrieving channel item from database");
             }
 
-            if (item == null)
+            if (item is null)
             {
                 item = new T();
                 isNew = true;
@@ -1193,7 +1193,7 @@ namespace Emby.Server.Implementations.Channels
             var result = GetAllChannels()
                 .FirstOrDefault(i => GetInternalChannelId(i.Name).Equals(channel.ChannelId) || string.Equals(i.Name, channel.Name, StringComparison.OrdinalIgnoreCase));
 
-            if (result == null)
+            if (result is null)
             {
                 throw new ResourceNotFoundException("No channel provider found for channel " + channel.Name);
             }
@@ -1206,7 +1206,7 @@ namespace Emby.Server.Implementations.Channels
             var result = GetAllChannels()
                 .FirstOrDefault(i => internalChannelId.Equals(GetInternalChannelId(i.Name)));
 
-            if (result == null)
+            if (result is null)
             {
                 throw new ResourceNotFoundException("No channel provider found for channel id " + internalChannelId);
             }

@@ -107,7 +107,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 .GetEpisodeAsync(seriesTmdbId, seasonNumber.Value, episodeNumber.Value, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
                 .ConfigureAwait(false);
 
-            if (episodeResult == null)
+            if (episodeResult is null)
             {
                 return metadataResult;
             }

@@ -71,7 +71,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> UpdateItem([FromRoute, Required] Guid itemId, [FromBody, Required] BaseItemDto request)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -198,7 +198,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult UpdateItemContentType([FromRoute, Required] Guid itemId, [FromQuery] string? contentType)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }

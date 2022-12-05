@@ -202,7 +202,7 @@ namespace Emby.Server.Implementations.Session
         {
             lock (_keepAliveLock)
             {
-                if (_keepAliveCancellationToken == null)
+                if (_keepAliveCancellationToken is null)
                 {
                     _keepAliveCancellationToken = new CancellationTokenSource();
                     // Start KeepAlive watcher

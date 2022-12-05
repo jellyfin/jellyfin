@@ -677,7 +677,7 @@ namespace Jellyfin.Server
             {
                 var xdgRuntimeDir = Environment.GetEnvironmentVariable("XDG_RUNTIME_DIR");
                 var socketFile = "jellyfin.sock";
-                if (xdgRuntimeDir == null)
+                if (xdgRuntimeDir is null)
                 {
                     // Fall back to config dir
                     socketPath = Path.Join(appPaths.ConfigurationDirectoryPath, socketFile);

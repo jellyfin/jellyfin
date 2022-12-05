@@ -167,7 +167,7 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            return playlistPath == null
+            return playlistPath is null
                 ? NotFound("Hls segment not found.")
                 : GetFileResult(file, playlistPath);
         }

@@ -150,7 +150,7 @@ namespace Emby.Server.Implementations.LiveTv
                 dto.ProgramId = GetInternalProgramId(info.ProgramId).ToString("N", CultureInfo.InvariantCulture);
             }
 
-            dto.DayPattern = info.Days == null ? null : GetDayPattern(info.Days.ToArray());
+            dto.DayPattern = info.Days is null ? null : GetDayPattern(info.Days.ToArray());
 
             FillImages(dto, info.Name, info.SeriesId);
 
@@ -228,7 +228,7 @@ namespace Emby.Server.Implementations.LiveTv
                     }
                 }
 
-                if (dto.ParentBackdropImageTags == null || dto.ParentBackdropImageTags.Length == 0)
+                if (dto.ParentBackdropImageTags is null || dto.ParentBackdropImageTags.Length == 0)
                 {
                     image = program.GetImageInfo(ImageType.Backdrop, 0);
                     if (image != null)
@@ -305,7 +305,7 @@ namespace Emby.Server.Implementations.LiveTv
                 DtoOptions = new DtoOptions(false)
             }).FirstOrDefault();
 
-            if (program == null)
+            if (program is null)
             {
                 program = _libraryManager.GetItemList(new InternalItemsQuery
                 {
@@ -334,7 +334,7 @@ namespace Emby.Server.Implementations.LiveTv
                     }
                 }
 
-                if (dto.ParentBackdropImageTags == null || dto.ParentBackdropImageTags.Length == 0)
+                if (dto.ParentBackdropImageTags is null || dto.ParentBackdropImageTags.Length == 0)
                 {
                     image = program.GetImageInfo(ImageType.Backdrop, 0);
                     if (image != null)

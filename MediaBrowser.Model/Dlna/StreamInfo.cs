@@ -215,7 +215,7 @@ namespace MediaBrowser.Model.Dlna
                 var stream = TargetVideoStream;
                 return MaxFramerate.HasValue && !IsDirectStream
                     ? MaxFramerate
-                    : stream == null ? null : stream.AverageFrameRate ?? stream.RealFrameRate;
+                    : stream is null ? null : stream.AverageFrameRate ?? stream.RealFrameRate;
             }
         }
 
@@ -460,7 +460,7 @@ namespace MediaBrowser.Model.Dlna
 
                 return !IsDirectStream
                     ? defaultValue
-                    : MediaSource == null ? defaultValue : MediaSource.Timestamp ?? TransportStreamTimestamp.None;
+                    : MediaSource is null ? defaultValue : MediaSource.Timestamp ?? TransportStreamTimestamp.None;
             }
         }
 

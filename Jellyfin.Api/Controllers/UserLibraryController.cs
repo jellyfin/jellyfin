@@ -402,7 +402,7 @@ namespace Jellyfin.Api.Controllers
         {
             var user = _userManager.GetUserById(userId);
 
-            if (user == null)
+            if (user is null)
             {
                 return NotFound();
             }
@@ -411,7 +411,7 @@ namespace Jellyfin.Api.Controllers
                 ? _libraryManager.GetUserRootFolder()
                 : _libraryManager.GetItemById(itemId);
 
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }

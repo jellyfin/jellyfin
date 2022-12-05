@@ -80,7 +80,7 @@ namespace MediaBrowser.Providers.TV
                 targetItem.Status = sourceItem.Status;
             }
 
-            if (replaceData || targetItem.AirDays == null || targetItem.AirDays.Length == 0)
+            if (replaceData || targetItem.AirDays is null || targetItem.AirDays.Length == 0)
             {
                 targetItem.AirDays = sourceItem.AirDays;
             }
@@ -201,7 +201,7 @@ namespace MediaBrowser.Providers.TV
                 var seasonNumber = episode.ParentIndexNumber >= 0 ? episode.ParentIndexNumber : null;
                 var existingSeason = seasons.FirstOrDefault(i => i.IndexNumber == seasonNumber);
 
-                if (existingSeason == null)
+                if (existingSeason is null)
                 {
                     var season = await CreateSeasonAsync(series, seasonNumber, cancellationToken).ConfigureAwait(false);
                     seasons.Add(season);

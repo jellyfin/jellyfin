@@ -40,7 +40,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (!_transcodeReasons.HasValue)
                 {
-                    if (BaseRequest.TranscodeReasons == null)
+                    if (BaseRequest.TranscodeReasons is null)
                     {
                         _transcodeReasons = 0;
                         return 0;
@@ -305,7 +305,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (BaseRequest.Static
                     || EncodingHelper.IsCopyCodec(OutputVideoCodec))
                 {
-                    return VideoStream == null ? null : (VideoStream.AverageFrameRate ?? VideoStream.RealFrameRate);
+                    return VideoStream is null ? null : (VideoStream.AverageFrameRate ?? VideoStream.RealFrameRate);
                 }
 
                 return BaseRequest.MaxFramerate ?? BaseRequest.Framerate;
@@ -419,7 +419,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                if (VideoStream == null)
+                if (VideoStream is null)
                 {
                     return null;
                 }
@@ -437,7 +437,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                if (AudioStream == null)
+                if (AudioStream is null)
                 {
                     return null;
                 }

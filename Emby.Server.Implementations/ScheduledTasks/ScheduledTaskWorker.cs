@@ -128,7 +128,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
                 lock (_lastExecutionResultSyncLock)
                 {
-                    if (_lastExecutionResult == null && !_readFromFile)
+                    if (_lastExecutionResult is null && !_readFromFile)
                     {
                         if (File.Exists(path))
                         {

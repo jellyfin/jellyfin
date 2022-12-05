@@ -60,7 +60,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            if (mediaInfo == null)
+            if (mediaInfo is null)
             {
                 if (addProbeDelay)
                 {
@@ -130,7 +130,7 @@ namespace Emby.Server.Implementations.Library
 
             var audioStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
 
-            if (audioStream == null || audioStream.Index == -1)
+            if (audioStream is null || audioStream.Index == -1)
             {
                 mediaSource.DefaultAudioStreamIndex = null;
             }

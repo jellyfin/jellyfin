@@ -121,7 +121,7 @@ namespace Jellyfin.Api.Controllers
             var profile = playbackInfoDto?.DeviceProfile;
             _logger.LogDebug("GetPostedPlaybackInfo profile: {@Profile}", profile);
 
-            if (profile == null)
+            if (profile is null)
             {
                 var caps = _deviceManager.GetCapabilities(User.GetDeviceId());
                 if (caps != null)

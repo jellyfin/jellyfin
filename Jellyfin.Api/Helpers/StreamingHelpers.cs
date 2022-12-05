@@ -76,7 +76,7 @@ namespace Jellyfin.Api.Helpers
             }
 
             streamingRequest.StreamOptions = ParseStreamOptions(httpRequest.Query);
-            if (httpRequest.Path.Value == null)
+            if (httpRequest.Path.Value is null)
             {
                 throw new ResourceNotFoundException(nameof(httpRequest.Path));
             }
@@ -142,7 +142,7 @@ namespace Jellyfin.Api.Helpers
                     mediaSource = currentJob.MediaSource;
                 }
 
-                if (mediaSource == null)
+                if (mediaSource is null)
                 {
                     var mediaSources = await mediaSourceManager.GetPlaybackMediaSources(libraryManager.GetItemById(streamingRequest.Id), null, false, false, cancellationToken).ConfigureAwait(false);
 
@@ -150,7 +150,7 @@ namespace Jellyfin.Api.Helpers
                         ? mediaSources[0]
                         : mediaSources.Find(i => string.Equals(i.Id, streamingRequest.MediaSourceId, StringComparison.Ordinal));
 
-                    if (mediaSource == null && Guid.Parse(streamingRequest.MediaSourceId).Equals(streamingRequest.Id))
+                    if (mediaSource is null && Guid.Parse(streamingRequest.MediaSourceId).Equals(streamingRequest.Id))
                     {
                         mediaSource = mediaSources[0];
                     }
@@ -510,16 +510,16 @@ namespace Jellyfin.Api.Helpers
             {
                 state.DeviceProfile = dlnaManager.GetProfile(deviceProfileId);
 
-                if (state.DeviceProfile == null)
+                if (state.DeviceProfile is null)
                 {
                     var caps = deviceManager.GetCapabilities(deviceProfileId);
-                    state.DeviceProfile = caps == null ? dlnaManager.GetProfile(request.Headers) : caps.DeviceProfile;
+                    state.DeviceProfile = caps is null ? dlnaManager.GetProfile(request.Headers) : caps.DeviceProfile;
                 }
             }
 
             var profile = state.DeviceProfile;
 
-            if (profile == null)
+            if (profile is null)
             {
                 // Don't use settings from the default profile.
                 // Only use a specific profile if it was requested.

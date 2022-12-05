@@ -51,7 +51,7 @@ namespace MediaBrowser.LocalMetadata
 
             var file = GetXmlFile(info, directoryService);
 
-            if (file == null)
+            if (file is null)
             {
                 return Task.FromResult(result);
             }
@@ -98,7 +98,7 @@ namespace MediaBrowser.LocalMetadata
         {
             var file = GetXmlFile(new ItemInfo(item), directoryService);
 
-            if (file == null)
+            if (file is null)
             {
                 return false;
             }

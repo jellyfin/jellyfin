@@ -93,7 +93,7 @@ namespace MediaBrowser.Model.Notifications
         {
             NotificationOption opt = GetOptions(notificationType);
 
-            return opt == null
+            return opt is null
                    || !opt.DisabledServices.Contains(service, StringComparison.OrdinalIgnoreCase);
         }
 

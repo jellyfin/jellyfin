@@ -453,7 +453,7 @@ namespace MediaBrowser.LocalMetadata.Images
         {
             var image = GetImage(files, name, prefix);
 
-            if (image == null)
+            if (image is null)
             {
                 return false;
             }

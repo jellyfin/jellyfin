@@ -39,6 +39,6 @@ namespace MediaBrowser.Controller.Entities
         public string BlurHash { get; set; }
 
         [JsonIgnore]
-        public bool IsLocalFile => Path == null || !Path.StartsWith("http", StringComparison.OrdinalIgnoreCase);
+        public bool IsLocalFile => Path is null || !Path.StartsWith("http", StringComparison.OrdinalIgnoreCase);
     }
 }

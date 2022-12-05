@@ -295,7 +295,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
 
                 var program = GetProgramInfoFromCache(timer);
-                if (program == null)
+                if (program is null)
                 {
                     OnTimerOutOfDate(timer);
                     continue;
@@ -642,7 +642,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 programInfo = GetProgramInfoFromCache(info);
             }
 
-            if (programInfo == null)
+            if (programInfo is null)
             {
                 _logger.LogInformation("Unable to find program with Id {0}. Will search using start date", info.ProgramId);
                 programInfo = GetProgramInfoFromCache(info.ChannelId, info.StartDate);
@@ -744,7 +744,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             var existingTimer = _timerProvider.GetTimer(updatedTimer.Id);
 
-            if (existingTimer == null)
+            if (existingTimer is null)
             {
                 throw new ResourceNotFoundException();
             }
@@ -912,7 +912,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 var epgChannel = await GetEpgChannelFromTunerChannel(provider.Item1, provider.Item2, channel, cancellationToken).ConfigureAwait(false);
 
-                if (epgChannel == null)
+                if (epgChannel is null)
                 {
                     _logger.LogDebug("EPG channel not found for tuner channel {0}-{1} from {2}-{3}", channel.Number, channel.Name, provider.Item1.Name, provider.Item2.ListingsId ?? string.Empty);
                     continue;
@@ -945,7 +945,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     var provider = _liveTvManager.ListingProviders.FirstOrDefault(l => string.Equals(l.Type, i.Type, StringComparison.OrdinalIgnoreCase));
 
-                    return provider == null ? null : new Tuple<IListingsProvider, ListingsProviderInfo>(provider, i);
+                    return provider is null ? null : new Tuple<IListingsProvider, ListingsProviderInfo>(provider, i);
                 })
                 .Where(i => i != null)
                 .ToList();
@@ -1232,7 +1232,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 programInfo = GetProgramInfoFromCache(timer);
             }
 
-            if (programInfo == null)
+            if (programInfo is null)
             {
                 _logger.LogInformation("Unable to find program with Id {0}. Will search using start date", timer.ProgramId);
                 programInfo = GetProgramInfoFromCache(timer.ChannelId, timer.StartDate);
@@ -1437,7 +1437,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             var parentPath = Path.GetDirectoryName(path);
 
-            while (item == null && !string.IsNullOrEmpty(path))
+            while (item is null && !string.IsNullOrEmpty(path))
             {
                 item = _libraryManager.FindByPath(path, null);
 
@@ -1474,7 +1474,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var seriesTimerId = timer.SeriesTimerId;
             var seriesTimer = _seriesTimerProvider.GetAll().FirstOrDefault(i => string.Equals(i.Id, seriesTimerId, StringComparison.OrdinalIgnoreCase));
 
-            if (seriesTimer == null || seriesTimer.KeepUpTo <= 0)
+            if (seriesTimer is null || seriesTimer.KeepUpTo <= 0)
             {
                 return;
             }
@@ -1695,7 +1695,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 _ => null
             };
 
-            if (imageSaveFilenameWithoutExtension == null)
+            if (imageSaveFilenameWithoutExtension is null)
             {
                 return;
             }
@@ -1782,7 +1782,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }).FirstOrDefault() as LiveTvProgram;
 
                 // dummy this up
-                if (program == null)
+                if (program is null)
                 {
                     program = new LiveTvProgram
                     {
@@ -2240,7 +2240,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                         ? null
                         : _timerProvider.GetTimerByProgramId(timer.ProgramId));
 
-                if (existingTimer == null)
+                if (existingTimer is null)
                 {
                     if (ShouldCancelTimerForSeriesTimer(seriesTimer, timer))
                     {

@@ -162,7 +162,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 HasImage = !string.IsNullOrEmpty(program.Icon?.Source),
                 OfficialRating = string.IsNullOrEmpty(program.Rating?.Value) ? null : program.Rating.Value,
                 CommunityRating = program.StarRating,
-                SeriesId = program.Episode == null ? null : program.Title?.GetMD5().ToString("N", CultureInfo.InvariantCulture)
+                SeriesId = program.Episode is null ? null : program.Title?.GetMD5().ToString("N", CultureInfo.InvariantCulture)
             };
 
             if (string.IsNullOrWhiteSpace(program.ProgramId))

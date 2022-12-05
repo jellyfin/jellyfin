@@ -191,7 +191,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
             lock (_libraryChangedSyncLock)
             {
-                if (LibraryUpdateTimer == null)
+                if (LibraryUpdateTimer is null)
                 {
                     LibraryUpdateTimer = new Timer(
                         LibraryUpdateTimerCallback,
@@ -227,7 +227,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
             lock (_libraryChangedSyncLock)
             {
-                if (LibraryUpdateTimer == null)
+                if (LibraryUpdateTimer is null)
                 {
                     LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration, Timeout.Infinite);
                 }
@@ -254,7 +254,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
             lock (_libraryChangedSyncLock)
             {
-                if (LibraryUpdateTimer == null)
+                if (LibraryUpdateTimer is null)
                 {
                     LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration, Timeout.Infinite);
                 }

@@ -67,7 +67,7 @@ namespace Jellyfin.Api.Auth
 
             // Ensure userId links to a valid user.
             var user = _userManager.GetUserById(userId);
-            if (user == null)
+            if (user is null)
             {
                 return false;
             }

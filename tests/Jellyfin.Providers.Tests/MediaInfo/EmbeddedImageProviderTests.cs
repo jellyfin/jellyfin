@@ -80,7 +80,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
 
             var actual = await embeddedImageProvider.GetImage(input, type, CancellationToken.None);
             Assert.NotNull(actual);
-            if (expectedFormat == null)
+            if (expectedFormat is null)
             {
                 Assert.False(actual.HasImage);
             }
@@ -131,7 +131,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
 
             var actual = await embeddedImageProvider.GetImage(input, type, CancellationToken.None);
             Assert.NotNull(actual);
-            if (expectedFormat == null)
+            if (expectedFormat is null)
             {
                 Assert.False(actual.HasImage);
             }

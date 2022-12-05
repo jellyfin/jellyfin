@@ -247,7 +247,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (profile != null)
             {
-                var playProfiles = playProfile == null ? profile.DirectPlayProfiles : new[] { playProfile };
+                var playProfiles = playProfile is null ? profile.DirectPlayProfiles : new[] { playProfile };
                 foreach (var format in formats)
                 {
                     foreach (var directPlayProfile in playProfiles)
@@ -370,7 +370,7 @@ namespace MediaBrowser.Model.Dlna
             var directPlayProfile = options.Profile.DirectPlayProfiles
                 .FirstOrDefault(x => x.Type == DlnaProfileType.Audio && IsAudioDirectPlaySupported(x, item, audioStream));
 
-            if (directPlayProfile == null)
+            if (directPlayProfile is null)
             {
                 _logger.LogDebug(
                     "Profile: {0}, No audio direct play profiles found for {1} with codec {2}",
@@ -422,7 +422,7 @@ namespace MediaBrowser.Model.Dlna
 
         private static TranscodeReason GetTranscodeReasonsFromDirectPlayProfile(MediaSourceInfo item, MediaStream videoStream, MediaStream audioStream, IEnumerable<DirectPlayProfile> directPlayProfiles)
         {
-            var mediaType = videoStream == null ? DlnaProfileType.Audio : DlnaProfileType.Video;
+            var mediaType = videoStream is null ? DlnaProfileType.Audio : DlnaProfileType.Video;
 
             var containerSupported = false;
             var audioSupported = false;
@@ -436,9 +436,9 @@ namespace MediaBrowser.Model.Dlna
                 {
                     containerSupported = true;
 
-                    videoSupported = videoStream == null || profile.SupportsVideoCodec(videoStream.Codec);
+                    videoSupported = videoStream is null || profile.SupportsVideoCodec(videoStream.Codec);
 
-                    audioSupported = audioStream == null || profile.SupportsAudioCodec(audioStream.Codec);
+                    audioSupported = audioStream is null || profile.SupportsAudioCodec(audioStream.Codec);
 
                     if (videoSupported && audioSupported)
                     {
@@ -586,7 +586,7 @@ namespace MediaBrowser.Model.Dlna
             }
 
             // Collect candidate audio streams
-            ICollection<MediaStream> candidateAudioStreams = audioStream == null ? Array.Empty<MediaStream>() : new[] { audioStream };
+            ICollection<MediaStream> candidateAudioStreams = audioStream is null ? Array.Empty<MediaStream>() : new[] { audioStream };
             if (!options.AudioStreamIndex.HasValue || options.AudioStreamIndex < 0)
             {
                 if (audioStream?.IsDefault == true)
@@ -729,8 +729,8 @@ namespace MediaBrowser.Model.Dlna
             if (options.AllowVideoStreamCopy)
             {
                 // prefer direct copy profile
-                float videoFramerate = videoStream == null ? 0 : videoStream.AverageFrameRate ?? videoStream.AverageFrameRate ?? 0;
-                TransportStreamTimestamp? timestamp = videoStream == null ? TransportStreamTimestamp.None : item.Timestamp;
+                float videoFramerate = videoStream is null ? 0 : videoStream.AverageFrameRate ?? videoStream.AverageFrameRate ?? 0;
+                TransportStreamTimestamp? timestamp = videoStream is null ? TransportStreamTimestamp.None : item.Timestamp;
                 int? numAudioStreams = item.GetStreamCount(MediaStreamType.Audio);
                 int? numVideoStreams = item.GetStreamCount(MediaStreamType.Video);
 
@@ -832,13 +832,13 @@ namespace MediaBrowser.Model.Dlna
             double? videoLevel = videoStream?.Level;
             string videoProfile = videoStream?.Profile;
             string videoRangeType = videoStream?.VideoRangeType;
-            float videoFramerate = videoStream == null ? 0 : videoStream.AverageFrameRate ?? videoStream.AverageFrameRate ?? 0;
+            float videoFramerate = videoStream is null ? 0 : videoStream.AverageFrameRate ?? videoStream.AverageFrameRate ?? 0;
             bool? isAnamorphic = videoStream?.IsAnamorphic;
             bool? isInterlaced = videoStream?.IsInterlaced;
             string videoCodecTag = videoStream?.CodecTag;
             bool? isAvc = videoStream?.IsAVC;
 
-            TransportStreamTimestamp? timestamp = videoStream == null ? TransportStreamTimestamp.None : item.Timestamp;
+            TransportStreamTimestamp? timestamp = videoStream is null ? TransportStreamTimestamp.None : item.Timestamp;
             int? packetLength = videoStream?.PacketLength;
             int? refFrames = videoStream?.RefFrames;
 
@@ -870,12 +870,12 @@ namespace MediaBrowser.Model.Dlna
             int audioBitrate = GetAudioBitrate(options.GetMaxBitrate(false) ?? 0, playlistItem.TargetAudioCodec, audioStream, playlistItem);
             playlistItem.AudioBitrate = Math.Min(playlistItem.AudioBitrate ?? audioBitrate, audioBitrate);
 
-            bool? isSecondaryAudio = audioStream == null ? null : item.IsSecondaryAudio(audioStream);
-            int? inputAudioBitrate = audioStream == null ? null : audioStream.BitRate;
-            int? audioChannels = audioStream == null ? null : audioStream.Channels;
-            string audioProfile = audioStream == null ? null : audioStream.Profile;
-            int? inputAudioSampleRate = audioStream == null ? null : audioStream.SampleRate;
-            int? inputAudioBitDepth = audioStream == null ? null : audioStream.BitDepth;
+            bool? isSecondaryAudio = audioStream is null ? null : item.IsSecondaryAudio(audioStream);
+            int? inputAudioBitrate = audioStream is null ? null : audioStream.BitRate;
+            int? audioChannels = audioStream is null ? null : audioStream.Channels;
+            string audioProfile = audioStream is null ? null : audioStream.Profile;
+            int? inputAudioSampleRate = audioStream is null ? null : audioStream.SampleRate;
+            int? inputAudioBitDepth = audioStream is null ? null : audioStream.BitDepth;
 
             var appliedAudioConditions = options.Profile.CodecProfiles
                 .Where(i => i.Type == CodecType.VideoAudio &&
@@ -965,7 +965,7 @@ namespace MediaBrowser.Model.Dlna
             int defaultBitrate;
             int encoderAudioBitrateLimit = int.MaxValue;
 
-            if (audioStream == null)
+            if (audioStream is null)
             {
                 defaultBitrate = 192000;
             }
@@ -1080,13 +1080,13 @@ namespace MediaBrowser.Model.Dlna
             double? videoLevel = videoStream?.Level;
             string videoProfile = videoStream?.Profile;
             string videoRangeType = videoStream?.VideoRangeType;
-            float videoFramerate = videoStream == null ? 0 : videoStream.AverageFrameRate ?? videoStream.AverageFrameRate ?? 0;
+            float videoFramerate = videoStream is null ? 0 : videoStream.AverageFrameRate ?? videoStream.AverageFrameRate ?? 0;
             bool? isAnamorphic = videoStream?.IsAnamorphic;
             bool? isInterlaced = videoStream?.IsInterlaced;
             string videoCodecTag = videoStream?.CodecTag;
             bool? isAvc = videoStream?.IsAVC;
 
-            TransportStreamTimestamp? timestamp = videoStream == null ? TransportStreamTimestamp.None : mediaSource.Timestamp;
+            TransportStreamTimestamp? timestamp = videoStream is null ? TransportStreamTimestamp.None : mediaSource.Timestamp;
             int? packetLength = videoStream?.PacketLength;
             int? refFrames = videoStream?.RefFrames;
 
@@ -1177,7 +1177,7 @@ namespace MediaBrowser.Model.Dlna
                     if (candidateAudioStreams.Any())
                     {
                         selectedAudioStream = candidateAudioStreams.FirstOrDefault(audioStream => directPlayProfile.SupportsAudioCodec(audioStream.Codec));
-                        if (selectedAudioStream == null)
+                        if (selectedAudioStream is null)
                         {
                             directPlayProfileReasons |= TranscodeReason.AudioCodecNotSupported;
                         }
@@ -1501,12 +1501,12 @@ namespace MediaBrowser.Model.Dlna
                 throw new ArgumentException("DeviceId is required");
             }
 
-            if (options.Profile == null)
+            if (options.Profile is null)
             {
                 throw new ArgumentException("Profile is required");
             }
 
-            if (options.MediaSources == null)
+            if (options.MediaSources is null)
             {
                 throw new ArgumentException("MediaSources is required");
             }

@@ -136,7 +136,7 @@ namespace MediaBrowser.Controller.Entities.TV
         public string FindSeriesSortName()
         {
             var series = Series;
-            return series == null ? SeriesName : series.SortName;
+            return series is null ? SeriesName : series.SortName;
         }
 
         public override double GetDefaultPrimaryImageAspectRatio()
@@ -181,14 +181,14 @@ namespace MediaBrowser.Controller.Entities.TV
         public string FindSeriesPresentationUniqueKey()
         {
             var series = Series;
-            return series == null ? null : series.PresentationUniqueKey;
+            return series is null ? null : series.PresentationUniqueKey;
         }
 
         public string FindSeasonName()
         {
             var season = Season;
 
-            if (season == null)
+            if (season is null)
             {
                 if (ParentIndexNumber.HasValue)
                 {
@@ -204,7 +204,7 @@ namespace MediaBrowser.Controller.Entities.TV
         public string FindSeriesName()
         {
             var series = Series;
-            return series == null ? SeriesName : series.Name;
+            return series is null ? SeriesName : series.Name;
         }
 
         public Guid FindSeasonId()
@@ -212,7 +212,7 @@ namespace MediaBrowser.Controller.Entities.TV
             var season = FindParent<Season>();
 
             // Episodes directly in series folder
-            if (season == null)
+            if (season is null)
             {
                 var series = Series;
 
@@ -226,7 +226,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 }
             }
 
-            return season == null ? Guid.Empty : season.Id;
+            return season is null ? Guid.Empty : season.Id;
         }
 
         /// <summary>
@@ -262,7 +262,7 @@ namespace MediaBrowser.Controller.Entities.TV
         public Guid FindSeriesId()
         {
             var series = FindParent<Series>();
-            return series == null ? Guid.Empty : series.Id;
+            return series is null ? Guid.Empty : series.Id;
         }
 
         public override IEnumerable<Guid> GetAncestorIds()

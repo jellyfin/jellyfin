@@ -139,7 +139,7 @@ namespace MediaBrowser.Controller.LiveTv
                 Path = Path,
                 RunTimeTicks = RunTimeTicks,
                 Type = MediaSourceType.Placeholder,
-                IsInfiniteStream = RunTimeTicks == null
+                IsInfiniteStream = RunTimeTicks is null
             };
 
             list.Add(info);

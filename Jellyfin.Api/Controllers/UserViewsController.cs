@@ -117,7 +117,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<IEnumerable<SpecialViewOptionDto>> GetGroupingOptions([FromRoute, Required] Guid userId)
         {
             var user = _userManager.GetUserById(userId);
-            if (user == null)
+            if (user is null)
             {
                 return NotFound();
             }

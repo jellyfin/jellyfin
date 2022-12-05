@@ -691,7 +691,7 @@ namespace Emby.Server.Implementations.Data
 
         private string GetPathToSave(string path)
         {
-            if (path == null)
+            if (path is null)
             {
                 return null;
             }
@@ -890,7 +890,7 @@ namespace Emby.Server.Implementations.Data
 
             saveItemStatement.TryBind("@UnratedType", item.GetBlockUnratedType().ToString());
 
-            if (topParent == null)
+            if (topParent is null)
             {
                 saveItemStatement.TryBindNull("@TopParentId");
             }
@@ -1414,7 +1414,7 @@ namespace Emby.Server.Implementations.Data
 
             var type = _typeMapper.GetType(typeString);
 
-            if (type == null)
+            if (type is null)
             {
                 return null;
             }
@@ -1433,7 +1433,7 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            if (item == null)
+            if (item is null)
             {
                 try
                 {
@@ -1444,7 +1444,7 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            if (item == null)
+            if (item is null)
             {
                 return null;
             }
@@ -2151,7 +2151,7 @@ namespace Emby.Server.Implementations.Data
 
         private static bool EnableJoinUserData(InternalItemsQuery query)
         {
-            if (query.User == null)
+            if (query.User is null)
             {
                 return false;
             }
@@ -2497,7 +2497,7 @@ namespace Emby.Server.Implementations.Data
         {
             var item = query.SimilarTo;
 
-            if (item == null)
+            if (item is null)
             {
                 return;
             }
@@ -4522,7 +4522,7 @@ namespace Emby.Server.Implementations.Data
             if (query.ExcludeInheritedTags.Length > 0)
             {
                 var paramName = "@ExcludeInheritedTags";
-                if (statement == null)
+                if (statement is null)
                 {
                     int index = 0;
                     string excludedTags = string.Join(',', query.ExcludeInheritedTags.Select(_ => paramName + index++));
@@ -4732,7 +4732,7 @@ namespace Emby.Server.Implementations.Data
                 return false;
             }
 
-            if (query.User == null)
+            if (query.User is null)
             {
                 return false;
             }

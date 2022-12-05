@@ -199,7 +199,7 @@ namespace Emby.Dlna.Main
         {
             try
             {
-                if (_communicationsServer == null)
+                if (_communicationsServer is null)
                 {
                     var enableMultiSocketBinding = OperatingSystem.IsWindows() ||
                                                    OperatingSystem.IsLinux();

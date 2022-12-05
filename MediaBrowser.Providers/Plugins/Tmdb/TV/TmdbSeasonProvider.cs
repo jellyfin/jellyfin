@@ -55,7 +55,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 .GetSeasonAsync(Convert.ToInt32(seriesTmdbId, CultureInfo.InvariantCulture), seasonNumber.Value, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
                 .ConfigureAwait(false);
 
-            if (seasonResult == null)
+            if (seasonResult is null)
             {
                 return result;
             }

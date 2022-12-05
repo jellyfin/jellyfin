@@ -316,7 +316,7 @@ namespace MediaBrowser.Controller.Entities
         {
             set
             {
-                if (value == null)
+                if (value is null)
                 {
                     ParentId = Guid.Empty;
                     ParentType = null;

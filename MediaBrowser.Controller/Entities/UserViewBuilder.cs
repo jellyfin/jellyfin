@@ -559,7 +559,7 @@ namespace MediaBrowser.Controller.Entities
                 var val = query.Is3D.Value;
                 var video = item as Video;
 
-                if (video == null || val != video.Video3DFormat.HasValue)
+                if (video is null || val != video.Video3DFormat.HasValue)
                 {
                     return false;
                 }
@@ -689,7 +689,7 @@ namespace MediaBrowser.Controller.Entities
 
                 var video = item as Video;
 
-                if (video == null || val != video.HasSubtitles)
+                if (video is null || val != video.HasSubtitles)
                 {
                     return false;
                 }
@@ -776,7 +776,7 @@ namespace MediaBrowser.Controller.Entities
             if (query.VideoTypes.Length > 0)
             {
                 var video = item as Video;
-                if (video == null || !query.VideoTypes.Contains(video.VideoType))
+                if (video is null || !query.VideoTypes.Contains(video.VideoType))
                 {
                     return false;
                 }
@@ -913,7 +913,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var episode = item as Episode;
 
-                if (episode == null)
+                if (episode is null)
                 {
                     return false;
                 }
@@ -929,7 +929,7 @@ namespace MediaBrowser.Controller.Entities
 
         private IEnumerable<BaseItem> GetMediaFolders(User user)
         {
-            if (user == null)
+            if (user is null)
             {
                 return _libraryManager.RootFolder
                     .Children
@@ -945,7 +945,7 @@ namespace MediaBrowser.Controller.Entities
 
         private BaseItem[] GetMediaFolders(User user, IEnumerable<string> viewTypes)
         {
-            if (user == null)
+            if (user is null)
             {
                 return GetMediaFolders(null)
                     .Where(i =>
@@ -967,7 +967,7 @@ namespace MediaBrowser.Controller.Entities
 
         private BaseItem[] GetMediaFolders(Folder parent, User user, IEnumerable<string> viewTypes)
         {
-            if (parent == null || parent is UserView)
+            if (parent is null || parent is UserView)
             {
                 return GetMediaFolders(user, viewTypes);
             }

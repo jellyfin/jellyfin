@@ -235,14 +235,14 @@ namespace Emby.Server.Implementations.Dto
 
             if (options.ContainsField(ItemFields.CanDelete))
             {
-                dto.CanDelete = user == null
+                dto.CanDelete = user is null
                     ? item.CanDelete()
                     : item.CanDelete(user);
             }
 
             if (options.ContainsField(ItemFields.CanDownload))
             {
-                dto.CanDownload = user == null
+                dto.CanDownload = user is null
                     ? item.CanDownload()
                     : item.CanDownload(user);
             }
@@ -571,7 +571,7 @@ namespace Emby.Server.Implementations.Dto
                         return null;
                     }
                 }).Where(i => i != null)
-                .Where(i => user == null ?
+                .Where(i => user is null ?
                     true :
                     i.IsVisible(user))
                 .GroupBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
@@ -1143,7 +1143,7 @@ namespace Emby.Server.Implementations.Dto
                     if (episodeSeries != null)
                     {
                         dto.SeriesPrimaryImageTag = GetTagAndFillBlurhash(dto, episodeSeries, ImageType.Primary);
-                        if (dto.ImageTags == null || !dto.ImageTags.ContainsKey(ImageType.Primary))
+                        if (dto.ImageTags is null || !dto.ImageTags.ContainsKey(ImageType.Primary))
                         {
                             AttachPrimaryImageAspectRatio(dto, episodeSeries);
                         }
@@ -1193,7 +1193,7 @@ namespace Emby.Server.Implementations.Dto
                     if (series != null)
                     {
                         dto.SeriesPrimaryImageTag = GetTagAndFillBlurhash(dto, series, ImageType.Primary);
-                        if (dto.ImageTags == null || !dto.ImageTags.ContainsKey(ImageType.Primary))
+                        if (dto.ImageTags is null || !dto.ImageTags.ContainsKey(ImageType.Primary))
                         {
                             AttachPrimaryImageAspectRatio(dto, series);
                         }
@@ -1276,7 +1276,7 @@ namespace Emby.Server.Implementations.Dto
 
             var parent = currentItem.DisplayParent ?? currentItem.GetOwner() ?? currentItem.GetParent();
 
-            if (parent == null && originalItem is not UserRootFolder && originalItem is not UserView && originalItem is not AggregateFolder && originalItem is not ICollectionFolder && originalItem is not Channel)
+            if (parent is null && originalItem is not UserRootFolder && originalItem is not UserView && originalItem is not AggregateFolder && originalItem is not ICollectionFolder && originalItem is not Channel)
             {
                 parent = _libraryManager.GetCollectionFolders(originalItem).FirstOrDefault();
             }
@@ -1315,7 +1315,7 @@ namespace Emby.Server.Implementations.Dto
                 || parent is Series)
             {
                 parent ??= isFirst ? GetImageDisplayParent(item, item) ?? owner : parent;
-                if (parent == null)
+                if (parent is null)
                 {
                     break;
                 }
@@ -1403,7 +1403,7 @@ namespace Emby.Server.Implementations.Dto
         {
             var imageInfo = item.GetImageInfo(ImageType.Primary, 0);
 
-            if (imageInfo == null)
+            if (imageInfo is null)
             {
                 return null;
             }

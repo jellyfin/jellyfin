@@ -27,7 +27,7 @@ public static class ServiceCollectionExtensions
                 .UseCacheKeyPrefix("EF_")
                 // Don't cache null values. Remove this optional setting if it's not necessary.
                 .SkipCachingResults(result =>
-                    result.Value == null || (result.Value is EFTableRows rows && rows.RowsCount == 0)));
+                    result.Value is null || (result.Value is EFTableRows rows && rows.RowsCount == 0)));
 
         serviceCollection.AddPooledDbContextFactory<JellyfinDb>((serviceProvider, opt) =>
         {

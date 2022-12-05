@@ -918,12 +918,12 @@ namespace MediaBrowser.Providers.Manager
             var source = sourceResult.Item;
             var target = targetResult.Item;
 
-            if (source == null)
+            if (source is null)
             {
                 throw new ArgumentException("Item cannot be null.", nameof(sourceResult));
             }
 
-            if (target == null)
+            if (target is null)
             {
                 throw new ArgumentException("Item cannot be null.", nameof(targetResult));
             }
@@ -1005,7 +1005,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (!lockedFields.Contains(MetadataField.Cast))
             {
-                if (replaceData || targetResult.People == null || targetResult.People.Count == 0)
+                if (replaceData || targetResult.People is null || targetResult.People.Count == 0)
                 {
                     targetResult.People = sourceResult.People;
                 }
@@ -1178,7 +1178,7 @@ namespace MediaBrowser.Providers.Manager
         {
             if (source is Video sourceCast && target is Video targetCast)
             {
-                if (replaceData || targetCast.Video3DFormat == null)
+                if (replaceData || targetCast.Video3DFormat is null)
                 {
                     targetCast.Video3DFormat = sourceCast.Video3DFormat;
                 }

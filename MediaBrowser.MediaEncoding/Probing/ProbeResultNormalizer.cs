@@ -156,7 +156,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             else
             {
                 var artist = tags.GetFirstNotNullNorWhiteSpaceValue("artist");
-                info.Artists = artist == null
+                info.Artists = artist is null
                     ? Array.Empty<string>()
                     : SplitDistinctArtists(artist, _nameDelimiters, true).ToArray();
             }
@@ -989,7 +989,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <returns>System.String.</returns>
         private string GetDictionaryValue(IReadOnlyDictionary<string, string> tags, string key)
         {
-            if (tags == null)
+            if (tags is null)
             {
                 return null;
             }
@@ -1121,7 +1121,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         {
             // Get the first info stream
             var stream = result.Streams?.FirstOrDefault(s => string.Equals(s.CodecType, "audio", StringComparison.OrdinalIgnoreCase));
-            if (stream == null)
+            if (stream is null)
             {
                 return;
             }
@@ -1144,7 +1144,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private int? GetBPSFromTags(MediaStreamInfo streamInfo)
         {
-            if (streamInfo?.Tags == null)
+            if (streamInfo?.Tags is null)
             {
                 return null;
             }
@@ -1161,7 +1161,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private double? GetRuntimeSecondsFromTags(MediaStreamInfo streamInfo)
         {
-            if (streamInfo?.Tags == null)
+            if (streamInfo?.Tags is null)
             {
                 return null;
             }
@@ -1177,7 +1177,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private long? GetNumberOfBytesFromTags(MediaStreamInfo streamInfo)
         {
-            if (streamInfo?.Tags == null)
+            if (streamInfo?.Tags is null)
             {
                 return null;
             }
@@ -1195,7 +1195,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private void SetSize(InternalMediaInfoResult data, MediaInfo info)
         {
-            if (data.Format == null)
+            if (data.Format is null)
             {
                 return;
             }
@@ -1510,7 +1510,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         {
             var tags = data.Format?.Tags;
 
-            if (tags == null)
+            if (tags is null)
             {
                 return;
             }

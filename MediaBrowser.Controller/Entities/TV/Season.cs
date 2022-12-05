@@ -93,7 +93,7 @@ namespace MediaBrowser.Controller.Entities.TV
         public string FindSeriesSortName()
         {
             var series = Series;
-            return series == null ? SeriesName : series.SortName;
+            return series is null ? SeriesName : series.SortName;
         }
 
         public override List<string> GetUserDataKeys()
@@ -149,7 +149,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
         protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
         {
-            if (query.User == null)
+            if (query.User is null)
             {
                 return base.GetItemsInternal(query);
             }
@@ -208,13 +208,13 @@ namespace MediaBrowser.Controller.Entities.TV
         public string FindSeriesPresentationUniqueKey()
         {
             var series = Series;
-            return series == null ? null : series.PresentationUniqueKey;
+            return series is null ? null : series.PresentationUniqueKey;
         }
 
         public string FindSeriesName()
         {
             var series = Series;
-            return series == null ? SeriesName : series.Name;
+            return series is null ? SeriesName : series.Name;
         }
 
         public Guid FindSeriesId()

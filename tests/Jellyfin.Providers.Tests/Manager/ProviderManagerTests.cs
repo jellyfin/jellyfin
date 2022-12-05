@@ -430,7 +430,7 @@ namespace Jellyfin.Providers.Tests.Manager
                     .Returns((int)order);
             }
 
-            var provider = hasOrder == null
+            var provider = hasOrder is null
                 ? new Mock<TProviderType>(MockBehavior.Strict)
                 : hasOrder.As<TProviderType>();
             provider.Setup(p => p.Name)
@@ -473,12 +473,12 @@ namespace Jellyfin.Providers.Tests.Manager
             Mock<IHasOrder>? hasOrder = null;
             if (order != null)
             {
-                hasOrder = forcedProvider == null ? new Mock<IHasOrder>() : forcedProvider.As<IHasOrder>();
+                hasOrder = forcedProvider is null ? new Mock<IHasOrder>() : forcedProvider.As<IHasOrder>();
                 hasOrder.Setup(i => i.Order)
                     .Returns((int)order);
             }
 
-            var provider = hasOrder == null
+            var provider = hasOrder is null
                 ? new Mock<TProviderType>(MockBehavior.Strict)
                 : hasOrder.As<TProviderType>();
             provider.Setup(p => p.Name)

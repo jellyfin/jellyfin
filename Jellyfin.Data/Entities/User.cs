@@ -373,7 +373,7 @@ namespace Jellyfin.Data.Entities
         public void SetPermission(PermissionKind kind, bool value)
         {
             var currentPermission = Permissions.FirstOrDefault(p => p.Kind == kind);
-            if (currentPermission == null)
+            if (currentPermission is null)
             {
                 Permissions.Add(new Permission(kind, value));
             }
@@ -442,7 +442,7 @@ namespace Jellyfin.Data.Entities
         {
             var value = string.Join(Delimiter, values);
             var currentPreference = Preferences.FirstOrDefault(p => p.Kind == preference);
-            if (currentPreference == null)
+            if (currentPreference is null)
             {
                 Preferences.Add(new Preference(preference, value));
             }
@@ -462,7 +462,7 @@ namespace Jellyfin.Data.Entities
         {
             var value = string.Join(Delimiter, values);
             var currentPreference = Preferences.FirstOrDefault(p => p.Kind == preference);
-            if (currentPreference == null)
+            if (currentPreference is null)
             {
                 Preferences.Add(new Preference(preference, value));
             }

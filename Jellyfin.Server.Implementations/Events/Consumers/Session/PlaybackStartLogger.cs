@@ -38,7 +38,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
         /// <inheritdoc />
         public async Task OnEvent(PlaybackStartEventArgs eventArgs)
         {
-            if (eventArgs.MediaInfo == null)
+            if (eventArgs.MediaInfo is null)
             {
                 _logger.LogWarning("PlaybackStart reported with null media info.");
                 return;

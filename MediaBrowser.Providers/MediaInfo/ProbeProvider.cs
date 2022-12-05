@@ -108,7 +108,7 @@ namespace MediaBrowser.Providers.MediaInfo
         public bool HasChanged(BaseItem item, IDirectoryService directoryService)
         {
             var video = item as Video;
-            if (video == null || video.VideoType == VideoType.VideoFile || video.VideoType == VideoType.Iso)
+            if (video is null || video.VideoType == VideoType.VideoFile || video.VideoType == VideoType.Iso)
             {
                 var path = item.Path;
 

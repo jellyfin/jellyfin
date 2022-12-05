@@ -302,7 +302,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var hdHomerunChannelInfo = channels.FirstOrDefault() as HdHomerunChannelInfo;
 
-            if (hdHomerunChannelInfo == null || hdHomerunChannelInfo.IsLegacyTuner)
+            if (hdHomerunChannelInfo is null || hdHomerunChannelInfo.IsLegacyTuner)
             {
                 return await GetTunerInfosUdp(info, cancellationToken).ConfigureAwait(false);
             }

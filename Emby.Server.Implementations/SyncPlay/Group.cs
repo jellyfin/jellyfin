@@ -197,7 +197,7 @@ namespace Emby.Server.Implementations.SyncPlay
         private bool HasAccessToQueue(User user, IReadOnlyList<Guid> queue)
         {
             // Check if queue is empty.
-            if (queue == null || queue.Count == 0)
+            if (queue is null || queue.Count == 0)
             {
                 return true;
             }
@@ -217,7 +217,7 @@ namespace Emby.Server.Implementations.SyncPlay
         private bool AllUsersHaveAccessToQueue(IReadOnlyList<Guid> queue)
         {
             // Check if queue is empty.
-            if (queue == null || queue.Count == 0)
+            if (queue is null || queue.Count == 0)
             {
                 return true;
             }

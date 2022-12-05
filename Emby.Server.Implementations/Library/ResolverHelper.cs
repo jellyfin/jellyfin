@@ -43,7 +43,7 @@ namespace Emby.Server.Implementations.Library
 
             // Make sure DateCreated and DateModified have values
             var fileInfo = directoryService.GetFile(item.Path);
-            if (fileInfo == null)
+            if (fileInfo is null)
             {
                 return false;
             }

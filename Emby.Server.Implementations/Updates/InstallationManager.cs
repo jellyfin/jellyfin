@@ -102,7 +102,7 @@ namespace Emby.Server.Implementations.Updates
                 PackageInfo[]? packages = await _httpClientFactory.CreateClient(NamedClient.Default)
                         .GetFromJsonAsync<PackageInfo[]>(new Uri(manifest), _jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
 
-                if (packages == null)
+                if (packages is null)
                 {
                     return Array.Empty<PackageInfo>();
                 }
@@ -251,7 +251,7 @@ namespace Emby.Server.Implementations.Updates
             var package = FilterPackages(availablePackages, name, id, specificVersion).FirstOrDefault();
 
             // Package not found in repository
-            if (package == null)
+            if (package is null)
             {
                 yield break;
             }
@@ -370,7 +370,7 @@ namespace Emby.Server.Implementations.Updates
         /// <param name="plugin">The <see cref="LocalPlugin"/> to uninstall.</param>
         public void UninstallPlugin(LocalPlugin plugin)
         {
-            if (plugin == null)
+            if (plugin is null)
             {
                 return;
             }
@@ -565,7 +565,7 @@ namespace Emby.Server.Implementations.Updates
                   ?? _pluginManager.Plugins.FirstOrDefault(p => p.Name.Equals(package.Name, StringComparison.OrdinalIgnoreCase) && p.Version.Equals(package.Version));
 
             await PerformPackageInstallation(package, plugin?.Manifest.Status ?? PluginStatus.Active, cancellationToken).ConfigureAwait(false);
-            _logger.LogInformation("Plugin {Action}: {PluginName} {PluginVersion}", plugin == null ? "installed" : "updated", package.Name, package.Version);
+            _logger.LogInformation("Plugin {Action}: {PluginName} {PluginVersion}", plugin is null ? "installed" : "updated", package.Name, package.Version);
 
             return plugin != null;
         }

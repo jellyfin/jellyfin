@@ -117,7 +117,7 @@ namespace Jellyfin.Api.Helpers
             TranscodingJobType transcodingJobType,
             CancellationTokenSource cancellationTokenSource)
         {
-            if (_httpContextAccessor.HttpContext == null)
+            if (_httpContextAccessor.HttpContext is null)
             {
                 throw new ResourceNotFoundException(nameof(_httpContextAccessor.HttpContext));
             }
@@ -271,7 +271,7 @@ namespace Jellyfin.Api.Helpers
 
             if (EnableAdaptiveBitrateStreaming(state, isLiveStream, enableAdaptiveBitrateStreaming, _httpContextAccessor.HttpContext.GetNormalizedRemoteIp()))
             {
-                var requestedVideoBitrate = state.VideoRequest == null ? 0 : state.VideoRequest.VideoBitRate ?? 0;
+                var requestedVideoBitrate = state.VideoRequest is null ? 0 : state.VideoRequest.VideoBitRate ?? 0;
 
                 // By default, vary by just 200k
                 var variation = GetBitrateVariation(totalBitrate);
@@ -483,7 +483,7 @@ namespace Jellyfin.Api.Helpers
                 return;
             }
 
-            var selectedIndex = state.SubtitleStream == null || state.SubtitleDeliveryMethod != SubtitleDeliveryMethod.Hls ? (int?)null : state.SubtitleStream.Index;
+            var selectedIndex = state.SubtitleStream is null || state.SubtitleDeliveryMethod != SubtitleDeliveryMethod.Hls ? (int?)null : state.SubtitleStream.Index;
             const string Format = "#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID=\"subs\",NAME=\"{0}\",DEFAULT={1},FORCED={2},AUTOSELECT=YES,URI=\"{3}\",LANGUAGE=\"{4}\"";
 
             foreach (var stream in subtitles)

@@ -266,7 +266,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 DtoOptions = options
             };
 
-            if (user == null || !user.DisplayMissingEpisodes)
+            if (user is null || !user.DisplayMissingEpisodes)
             {
                 query.IsMissing = false;
             }
@@ -384,7 +384,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public List<BaseItem> GetSeasonEpisodes(Season parentSeason, User user, IEnumerable<BaseItem> allSeriesEpisodes, DtoOptions options)
         {
-            if (allSeriesEpisodes == null)
+            if (allSeriesEpisodes is null)
             {
                 return GetSeasonEpisodes(parentSeason, user, options);
             }

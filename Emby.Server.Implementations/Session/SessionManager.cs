@@ -377,11 +377,11 @@ namespace Emby.Server.Implementations.Session
                 info.MediaSourceId = info.ItemId.ToString("N", CultureInfo.InvariantCulture);
             }
 
-            if (!info.ItemId.Equals(default) && info.Item == null && libraryItem != null)
+            if (!info.ItemId.Equals(default) && info.Item is null && libraryItem != null)
             {
                 var current = session.NowPlayingItem;
 
-                if (current == null || !info.ItemId.Equals(current.Id))
+                if (current is null || !info.ItemId.Equals(current.Id))
                 {
                     var runtimeTicks = libraryItem.RunTimeTicks;
 
@@ -495,7 +495,7 @@ namespace Emby.Server.Implementations.Session
 
             sessionInfo.UserId = user?.Id ?? Guid.Empty;
             sessionInfo.UserName = user?.Username;
-            sessionInfo.UserPrimaryImageTag = user?.ProfileImage == null ? null : GetImageCacheTag(user);
+            sessionInfo.UserPrimaryImageTag = user?.ProfileImage is null ? null : GetImageCacheTag(user);
             sessionInfo.RemoteEndPoint = remoteEndPoint;
             sessionInfo.Client = appName;
 
@@ -506,7 +506,7 @@ namespace Emby.Server.Implementations.Session
 
             sessionInfo.ApplicationVersion = appVersion;
 
-            if (user == null)
+            if (user is null)
             {
                 sessionInfo.AdditionalUsers = Array.Empty<SessionUserInfo>();
             }
@@ -536,7 +536,7 @@ namespace Emby.Server.Implementations.Session
 
             sessionInfo.UserId = user?.Id ?? Guid.Empty;
             sessionInfo.UserName = username;
-            sessionInfo.UserPrimaryImageTag = user?.ProfileImage == null ? null : GetImageCacheTag(user);
+            sessionInfo.UserPrimaryImageTag = user?.ProfileImage is null ? null : GetImageCacheTag(user);
             sessionInfo.RemoteEndPoint = remoteEndPoint;
 
             if (string.IsNullOrEmpty(deviceName))
@@ -570,7 +570,7 @@ namespace Emby.Server.Implementations.Session
 
             var user = _userManager.GetUserById(session.UserId);
 
-            if (user == null)
+            if (user is null)
             {
                 throw new InvalidOperationException("User not found");
             }
@@ -618,7 +618,7 @@ namespace Emby.Server.Implementations.Session
                         await OnPlaybackStopped(new PlaybackStopInfo
                         {
                             Item = session.NowPlayingItem,
-                            ItemId = session.NowPlayingItem == null ? Guid.Empty : session.NowPlayingItem.Id,
+                            ItemId = session.NowPlayingItem is null ? Guid.Empty : session.NowPlayingItem.Id,
                             SessionId = session.Id,
                             MediaSourceId = session.PlayState?.MediaSourceId,
                             PositionTicks = session.PlayState?.PositionTicks
@@ -912,11 +912,11 @@ namespace Emby.Server.Implementations.Session
                 info.MediaSourceId = info.ItemId.ToString("N", CultureInfo.InvariantCulture);
             }
 
-            if (!info.ItemId.Equals(default) && info.Item == null && libraryItem != null)
+            if (!info.ItemId.Equals(default) && info.Item is null && libraryItem != null)
             {
                 var current = session.NowPlayingItem;
 
-                if (current == null || !info.ItemId.Equals(current.Id))
+                if (current is null || !info.ItemId.Equals(current.Id))
                 {
                     MediaSourceInfo mediaSource = null;
 
@@ -1037,7 +1037,7 @@ namespace Emby.Server.Implementations.Session
         private SessionInfo GetSession(string sessionId, bool throwOnMissing = true)
         {
             var session = Sessions.FirstOrDefault(i => string.Equals(i.Id, sessionId, StringComparison.Ordinal));
-            if (session == null && throwOnMissing)
+            if (session is null && throwOnMissing)
             {
                 throw new ResourceNotFoundException(
                     string.Format(CultureInfo.InvariantCulture, "Session {0} not found.", sessionId));
@@ -1051,7 +1051,7 @@ namespace Emby.Server.Implementations.Session
             // Accept either device id or session id
             var session = Sessions.FirstOrDefault(i => string.Equals(i.Id, sessionId, StringComparison.Ordinal));
 
-            if (session == null)
+            if (session is null)
             {
                 throw new ResourceNotFoundException(
                     string.Format(CultureInfo.InvariantCulture, "Session {0} not found.", sessionId));
@@ -1231,7 +1231,7 @@ namespace Emby.Server.Implementations.Session
         {
             var item = _libraryManager.GetItemById(id);
 
-            if (item == null)
+            if (item is null)
             {
                 _logger.LogError("A non-existent item Id {0} was passed into TranslateItemForPlayback", id);
                 return Array.Empty<BaseItem>();
@@ -1284,7 +1284,7 @@ namespace Emby.Server.Implementations.Session
         {
             var item = _libraryManager.GetItemById(id);
 
-            if (item == null)
+            if (item is null)
             {
                 _logger.LogError("A non-existent item Id {0} was passed into TranslateItemForInstantMix", id);
                 return new List<BaseItem>();
@@ -1480,7 +1480,7 @@ namespace Emby.Server.Implementations.Session
                     true).ConfigureAwait(false);
             }
 
-            if (user == null)
+            if (user is null)
             {
                 AuthenticationFailed?.Invoke(this, new GenericEventArgs<AuthenticationRequest>(request));
                 throw new AuthenticationException("Invalid username or password entered.");
@@ -1541,7 +1541,7 @@ namespace Emby.Server.Implementations.Session
 
             foreach (var auth in allExistingForDevice)
             {
-                if (existing == null || !string.Equals(auth.AccessToken, existing.AccessToken, StringComparison.Ordinal))
+                if (existing is null || !string.Equals(auth.AccessToken, existing.AccessToken, StringComparison.Ordinal))
                 {
                     try
                     {
@@ -1677,7 +1677,7 @@ namespace Emby.Server.Implementations.Session
 
             var dtoOptions = _itemInfoDtoOptions;
 
-            if (_itemInfoDtoOptions == null)
+            if (_itemInfoDtoOptions is null)
             {
                 dtoOptions = new DtoOptions
                 {

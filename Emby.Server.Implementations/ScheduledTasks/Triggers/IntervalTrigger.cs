@@ -50,7 +50,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Triggers
 
             DateTime triggerDate;
 
-            if (lastResult == null)
+            if (lastResult is null)
             {
                 // Task has never been completed before
                 triggerDate = DateTime.UtcNow.AddHours(1);

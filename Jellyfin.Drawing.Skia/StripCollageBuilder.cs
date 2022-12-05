@@ -97,7 +97,7 @@ namespace Jellyfin.Drawing.Skia
             canvas.Clear(SKColors.Black);
 
             using var backdrop = SkiaHelper.GetNextValidImage(_skiaEncoder, paths, 0, out _);
-            if (backdrop == null)
+            if (backdrop is null)
             {
                 return bitmap;
             }
@@ -164,7 +164,7 @@ namespace Jellyfin.Drawing.Skia
                     using var currentBitmap = SkiaHelper.GetNextValidImage(_skiaEncoder, paths, imageIndex, out int newIndex);
                     imageIndex = newIndex;
 
-                    if (currentBitmap == null)
+                    if (currentBitmap is null)
                     {
                         continue;
                     }

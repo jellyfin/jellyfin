@@ -329,14 +329,14 @@ namespace Emby.Server.Implementations.Localization
         {
             await using var stream = _assembly.GetManifestResourceStream(resourcePath);
             // If a Culture doesn't have a translation the stream will be null and it defaults to en-us further up the chain
-            if (stream == null)
+            if (stream is null)
             {
                 _logger.LogError("Missing translation/culture resource: {ResourcePath}", resourcePath);
                 return;
             }
 
             var dict = await JsonSerializer.DeserializeAsync<Dictionary<string, string>>(stream, _jsonOptions).ConfigureAwait(false);
-            if (dict == null)
+            if (dict is null)
             {
                 throw new InvalidOperationException($"Resource contains invalid data: '{stream}'");
             }

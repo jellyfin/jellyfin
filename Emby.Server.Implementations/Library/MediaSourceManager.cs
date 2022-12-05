@@ -383,7 +383,7 @@ namespace Emby.Server.Implementations.Library
             var preferredSubs = NormalizeLanguage(user.SubtitleLanguagePreference);
 
             var defaultAudioIndex = source.DefaultAudioStreamIndex;
-            var audioLangage = defaultAudioIndex == null
+            var audioLangage = defaultAudioIndex is null
                 ? null
                 : source.MediaStreams.Where(i => i.Type == MediaStreamType.Audio && i.Index == defaultAudioIndex).Select(i => i.Language).FirstOrDefault();
 
@@ -417,13 +417,13 @@ namespace Emby.Server.Implementations.Library
         public void SetDefaultAudioAndSubtitleStreamIndexes(BaseItem item, MediaSourceInfo source, User user)
         {
             // Item would only be null if the app didn't supply ItemId as part of the live stream open request
-            var mediaType = item == null ? MediaType.Video : item.MediaType;
+            var mediaType = item is null ? MediaType.Video : item.MediaType;
 
             if (string.Equals(mediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
             {
-                var userData = item == null ? new UserItemData() : _userDataManager.GetUserData(user, item);
+                var userData = item is null ? new UserItemData() : _userDataManager.GetUserData(user, item);
 
-                var allowRememberingSelection = item == null || item.EnableRememberingTrackSelections;
+                var allowRememberingSelection = item is null || item.EnableRememberingTrackSelections;
 
                 SetDefaultAudioStreamIndex(source, userData, user, allowRememberingSelection);
                 SetDefaultSubtitleStreamIndex(source, userData, user, allowRememberingSelection);
@@ -543,7 +543,7 @@ namespace Emby.Server.Implementations.Library
 
             var audioStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
 
-            if (audioStream == null || audioStream.Index == -1)
+            if (audioStream is null || audioStream.Index == -1)
             {
                 mediaSource.DefaultAudioStreamIndex = null;
             }
@@ -638,7 +638,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            if (mediaInfo == null)
+            if (mediaInfo is null)
             {
                 if (addProbeDelay)
                 {
@@ -713,7 +713,7 @@ namespace Emby.Server.Implementations.Library
 
             var audioStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
 
-            if (audioStream == null || audioStream.Index == -1)
+            if (audioStream is null || audioStream.Index == -1)
             {
                 mediaSource.DefaultAudioStreamIndex = null;
             }

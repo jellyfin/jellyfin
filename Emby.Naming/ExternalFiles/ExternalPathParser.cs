@@ -94,7 +94,7 @@ namespace Emby.Naming.ExternalFiles
                     // Try to translate to three character code
                     var culture = _localizationManager.FindLanguageInfo(currentSliceWithoutSeparator);
 
-                    if (culture != null && pathInfo.Language == null)
+                    if (culture != null && pathInfo.Language is null)
                     {
                         pathInfo.Language = culture.ThreeLetterISOLanguageName;
                         extraString = extraString.Replace(currentSlice, string.Empty, StringComparison.OrdinalIgnoreCase);

@@ -162,7 +162,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         private bool IsHwTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
         {
-            if (state.VideoStream == null
+            if (state.VideoStream is null
                 || !options.EnableTonemapping
                 || GetVideoColorBitDepth(state) != 10)
             {
@@ -189,7 +189,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         private bool IsVulkanHwTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
         {
-            if (state.VideoStream == null)
+            if (state.VideoStream is null)
             {
                 return false;
             }
@@ -202,7 +202,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         private bool IsVaapiVppTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
         {
-            if (state.VideoStream == null
+            if (state.VideoStream is null
                 || !options.EnableVppTonemapping
                 || GetVideoColorBitDepth(state) != 10)
             {
@@ -1066,7 +1066,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string GetVideoBitrateParam(EncodingJobInfo state, string videoCodec)
         {
-            if (state.OutputVideoBitrate == null)
+            if (state.OutputVideoBitrate is null)
             {
                 return string.Empty;
             }
@@ -2076,7 +2076,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public int? GetAudioBitrateParam(int? audioBitRate, string audioCodec, MediaStream audioStream)
         {
-            if (audioStream == null)
+            if (audioStream is null)
             {
                 return null;
             }
@@ -2167,7 +2167,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <returns>System.Nullable{System.Int32}.</returns>
         public int? GetNumAudioChannelsParam(EncodingJobInfo state, MediaStream audioStream, string outputAudioCodec)
         {
-            if (audioStream == null)
+            if (audioStream is null)
             {
                 return null;
             }
@@ -2320,7 +2320,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // If we don't have known media info
             // If input is video, use -sn to drop subtitles
             // Otherwise just return empty
-            if (state.VideoStream == null && state.AudioStream == null)
+            if (state.VideoStream is null && state.AudioStream is null)
             {
                 return state.IsInputVideo ? "-sn" : string.Empty;
             }
@@ -2385,7 +2385,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             var subtitleMethod = state.SubtitleDeliveryMethod;
-            if (state.SubtitleStream == null || subtitleMethod == SubtitleDeliveryMethod.Hls)
+            if (state.SubtitleStream is null || subtitleMethod == SubtitleDeliveryMethod.Hls)
             {
                 args += " -map -0:s";
             }
@@ -2731,7 +2731,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // default
-            if (filter == null)
+            if (filter is null)
             {
                 if (requestedHeight > 0)
                 {
@@ -4440,7 +4440,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             string outputVideoCodec)
         {
             var videoStream = state.VideoStream;
-            if (videoStream == null)
+            if (videoStream is null)
             {
                 return string.Empty;
             }
@@ -4623,7 +4623,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             var videoStream = state.VideoStream;
             var mediaSource = state.MediaSource;
-            if (videoStream == null || mediaSource == null)
+            if (videoStream is null || mediaSource is null)
             {
                 return null;
             }
@@ -5469,7 +5469,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return;
             }
 
-            var inputChannels = audioStream == null ? 6 : audioStream.Channels ?? 6;
+            var inputChannels = audioStream is null ? 6 : audioStream.Channels ?? 6;
             if (inputChannels >= 6)
             {
                 return;
@@ -5521,7 +5521,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         private void NormalizeSubtitleEmbed(EncodingJobInfo state)
         {
-            if (state.SubtitleStream == null || state.SubtitleDeliveryMethod != SubtitleDeliveryMethod.Embed)
+            if (state.SubtitleStream is null || state.SubtitleDeliveryMethod != SubtitleDeliveryMethod.Embed)
             {
                 return;
             }
@@ -5536,7 +5536,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string GetSubtitleEmbedArguments(EncodingJobInfo state)
         {
-            if (state.SubtitleStream == null || state.SubtitleDeliveryMethod != SubtitleDeliveryMethod.Embed)
+            if (state.SubtitleStream is null || state.SubtitleDeliveryMethod != SubtitleDeliveryMethod.Embed)
             {
                 return string.Empty;
             }
@@ -5694,7 +5694,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         public string GetProgressiveVideoAudioArguments(EncodingJobInfo state, EncodingOptions encodingOptions)
         {
             // If the video doesn't have an audio stream, return a default.
-            if (state.AudioStream == null && state.VideoStream != null)
+            if (state.AudioStream is null && state.VideoStream != null)
             {
                 return string.Empty;
             }

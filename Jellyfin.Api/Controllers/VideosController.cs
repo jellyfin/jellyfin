@@ -149,7 +149,7 @@ namespace Jellyfin.Api.Controllers
         {
             var video = (Video)_libraryManager.GetItemById(itemId);
 
-            if (video == null)
+            if (video is null)
             {
                 return NotFound("The video either does not exist or the id does not belong to a video.");
             }
@@ -199,7 +199,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             var primaryVersion = items.FirstOrDefault(i => i.MediaSourceCount > 1 && string.IsNullOrEmpty(i.PrimaryVersionId));
-            if (primaryVersion == null)
+            if (primaryVersion is null)
             {
                 primaryVersion = items
                     .OrderBy(i =>
@@ -444,7 +444,7 @@ namespace Jellyfin.Api.Controllers
                 StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, state.Request.StartTimeTicks, Request, _dlnaManager);
 
                 var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfo(streamingRequest.LiveStreamId);
-                if (liveStreamInfo == null)
+                if (liveStreamInfo is null)
                 {
                     return NotFound();
                 }

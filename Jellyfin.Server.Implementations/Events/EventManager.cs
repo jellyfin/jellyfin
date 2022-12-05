@@ -44,7 +44,7 @@ namespace Jellyfin.Server.Implementations.Events
             where T : EventArgs
         {
             using var scope = _appHost.ServiceProvider?.CreateScope();
-            if (scope == null)
+            if (scope is null)
             {
                 return;
             }

@@ -40,7 +40,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
         {
             var item = eventArgs.MediaInfo;
 
-            if (item == null)
+            if (item is null)
             {
                 _logger.LogWarning("PlaybackStopped reported with null media info.");
                 return;
@@ -60,7 +60,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
             var user = eventArgs.Users[0];
 
             var notificationType = GetPlaybackStoppedNotificationType(item.MediaType);
-            if (notificationType == null)
+            if (notificationType is null)
             {
                 return;
             }

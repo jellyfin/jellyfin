@@ -111,7 +111,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             using var response = await Send(options, true, info, cancellationToken).ConfigureAwait(false);
             await using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var dailySchedules = await JsonSerializer.DeserializeAsync<IReadOnlyList<DayDto>>(responseStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-            if (dailySchedules == null)
+            if (dailySchedules is null)
             {
                 return Array.Empty<ProgramInfo>();
             }
@@ -127,7 +127,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             using var innerResponse = await Send(programRequestOptions, true, info, cancellationToken).ConfigureAwait(false);
             await using var innerResponseStream = await innerResponse.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var programDetails = await JsonSerializer.DeserializeAsync<IReadOnlyList<ProgramDetailsDto>>(innerResponseStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-            if (programDetails == null)
+            if (programDetails is null)
             {
                 return Array.Empty<ProgramInfo>();
             }
@@ -228,7 +228,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
         private ProgramInfo GetProgram(string channelId, ProgramDto programInfo, ProgramDetailsDto details)
         {
-            if (programInfo.AirDateTime == null)
+            if (programInfo.AirDateTime is null)
             {
                 return null;
             }
@@ -283,7 +283,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 EpisodeTitle = episodeTitle,
                 Audio = audioType,
                 // IsNew = programInfo.@new ?? false,
-                IsRepeat = programInfo.New == null,
+                IsRepeat = programInfo.New is null,
                 IsSeries = string.Equals(details.EntityType, "episode", StringComparison.OrdinalIgnoreCase),
                 ImageUrl = details.PrimaryImage,
                 ThumbImageUrl = details.ThumbImage,
@@ -407,7 +407,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 .ThenByDescending(i => GetSizeOrder(i))
                 .FirstOrDefault();
 
-            if (match == null)
+            if (match is null)
             {
                 return null;
             }
@@ -785,7 +785,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             using var httpResponse = await Send(options, true, info, cancellationToken).ConfigureAwait(false);
             await using var stream = await httpResponse.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var root = await JsonSerializer.DeserializeAsync<ChannelDto>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-            if (root == null)
+            if (root is null)
             {
                 return new List<ChannelInfo>();
             }

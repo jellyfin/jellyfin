@@ -76,7 +76,7 @@ namespace Jellyfin.Api.Controllers
             var task = _taskManager.ScheduledTasks.FirstOrDefault(i =>
                 string.Equals(i.Id, taskId, StringComparison.OrdinalIgnoreCase));
 
-            if (task == null)
+            if (task is null)
             {
                 return NotFound();
             }
@@ -99,7 +99,7 @@ namespace Jellyfin.Api.Controllers
             var task = _taskManager.ScheduledTasks.FirstOrDefault(o =>
                 o.Id.Equals(taskId, StringComparison.OrdinalIgnoreCase));
 
-            if (task == null)
+            if (task is null)
             {
                 return NotFound();
             }
@@ -123,7 +123,7 @@ namespace Jellyfin.Api.Controllers
             var task = _taskManager.ScheduledTasks.FirstOrDefault(o =>
                 o.Id.Equals(taskId, StringComparison.OrdinalIgnoreCase));
 
-            if (task == null)
+            if (task is null)
             {
                 return NotFound();
             }
@@ -149,7 +149,7 @@ namespace Jellyfin.Api.Controllers
         {
             var task = _taskManager.ScheduledTasks.FirstOrDefault(o =>
                 o.Id.Equals(taskId, StringComparison.OrdinalIgnoreCase));
-            if (task == null)
+            if (task is null)
             {
                 return NotFound();
             }

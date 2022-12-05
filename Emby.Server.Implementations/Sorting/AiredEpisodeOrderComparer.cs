@@ -31,9 +31,9 @@ namespace Emby.Server.Implementations.Sorting
             var episode1 = x as Episode;
             var episode2 = y as Episode;
 
-            if (episode1 == null)
+            if (episode1 is null)
             {
-                if (episode2 == null)
+                if (episode2 is null)
                 {
                     return 0;
                 }
@@ -41,7 +41,7 @@ namespace Emby.Server.Implementations.Sorting
                 return 1;
             }
 
-            if (episode2 == null)
+            if (episode2 is null)
             {
                 return -1;
             }

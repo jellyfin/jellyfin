@@ -703,7 +703,7 @@ namespace MediaBrowser.Controller.Entities
                 IEnumerable<BaseItem> items;
                 Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
 
-                if (query.User == null)
+                if (query.User is null)
                 {
                     items = GetRecursiveChildren(filter);
                 }
@@ -961,7 +961,7 @@ namespace MediaBrowser.Controller.Entities
 
             IEnumerable<BaseItem> items;
 
-            if (query.User == null)
+            if (query.User is null)
             {
                 items = Children.Where(filter);
             }
@@ -1311,7 +1311,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // If there are not sub-folders, proceed as normal.
-            if (children == null)
+            if (children is null)
             {
                 children = GetEligibleChildrenForRecursiveChildren(user);
             }
@@ -1320,7 +1320,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 bool? isVisibleToUser = null;
 
-                if (query == null || UserViewBuilder.FilterItem(child, query))
+                if (query is null || UserViewBuilder.FilterItem(child, query))
                 {
                     isVisibleToUser = child.IsVisible(user);
 
@@ -1345,7 +1345,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 foreach (var child in GetLinkedChildren(user))
                 {
-                    if (query == null || UserViewBuilder.FilterItem(child, query))
+                    if (query is null || UserViewBuilder.FilterItem(child, query))
                     {
                         if (child.IsVisible(user))
                         {
@@ -1402,7 +1402,7 @@ namespace MediaBrowser.Controller.Entities
         {
             foreach (var child in Children)
             {
-                if (filter == null || filter(child))
+                if (filter is null || filter(child))
                 {
                     result[child.Id] = child;
                 }
@@ -1420,7 +1420,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 foreach (var child in GetLinkedChildren())
                 {
-                    if (filter == null || filter(child))
+                    if (filter is null || filter(child))
                     {
                         result[child.Id] = child;
                     }
@@ -1478,7 +1478,7 @@ namespace MediaBrowser.Controller.Entities
 
         public List<BaseItem> GetLinkedChildren(User user)
         {
-            if (!FilterLinkedChildrenPerUser || user == null)
+            if (!FilterLinkedChildrenPerUser || user is null)
             {
                 return GetLinkedChildren();
             }
@@ -1504,7 +1504,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var child = GetLinkedChild(i);
 
-                if (child == null)
+                if (child is null)
                 {
                     continue;
                 }

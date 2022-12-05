@@ -51,7 +51,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
             {
                 var collection = await _tmdbClientManager.GetCollectionAsync(tmdbId, language, TmdbUtils.GetImageLanguagesParam(language), cancellationToken).ConfigureAwait(false);
 
-                if (collection == null)
+                if (collection is null)
                 {
                     return Enumerable.Empty<RemoteSearchResult>();
                 }

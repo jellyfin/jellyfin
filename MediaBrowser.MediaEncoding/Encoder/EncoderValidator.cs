@@ -190,7 +190,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             _logger.LogInformation("Found ffmpeg version {Version}", version != null ? version.ToString() : "unknown");
 
-            if (version == null)
+            if (version is null)
             {
                 if (MaxVersion != null) // Version is unknown
                 {

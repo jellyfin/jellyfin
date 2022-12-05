@@ -68,7 +68,7 @@ namespace Emby.Notifications
 
             var users = GetUserIds(request, options)
                 .Select(i => _userManager.GetUserById(i))
-                .Where(i => relatedItem == null || relatedItem.IsVisibleStandalone(i))
+                .Where(i => relatedItem is null || relatedItem.IsVisibleStandalone(i))
                 .ToArray();
 
             var title = request.Name;

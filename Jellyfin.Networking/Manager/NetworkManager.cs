@@ -232,7 +232,7 @@ namespace Jellyfin.Networking.Manager
         public Collection<IPObject> CreateIPCollection(string[] values, bool negated = false)
         {
             Collection<IPObject> col = new Collection<IPObject>();
-            if (values == null)
+            if (values is null)
             {
                 return col;
             }
@@ -515,7 +515,7 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public Collection<IPObject> GetFilteredLANSubnets(Collection<IPObject>? filter = null)
         {
-            if (filter == null)
+            if (filter is null)
             {
                 return _lanSubnets.Exclude(_excludedSubnets, true).AsNetworks();
             }
@@ -880,7 +880,7 @@ namespace Jellyfin.Networking.Manager
             {
                 _publishedServerUrls.Clear();
                 string[] overrides = config.PublishedServerUriBySubnet;
-                if (overrides == null)
+                if (overrides is null)
                 {
                     return;
                 }
@@ -1235,12 +1235,12 @@ namespace Jellyfin.Networking.Manager
                     // Find all external bind addresses. Store the default gateway, but check to see if there is a better match first.
                     foreach (var addr in addresses.OrderBy(p => p.Tag))
                     {
-                        if (defaultGateway == null && !IsInLocalNetwork(addr))
+                        if (defaultGateway is null && !IsInLocalNetwork(addr))
                         {
                             defaultGateway = addr.Address;
                         }
 
-                        if (bindAddress == null && addr.Contains(source))
+                        if (bindAddress is null && addr.Contains(source))
                         {
                             bindAddress = addr.Address;
                         }

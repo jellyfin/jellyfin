@@ -436,7 +436,7 @@ namespace Emby.Drawing
         /// <inheritdoc />
         public string? GetImageCacheTag(User user)
         {
-            if (user.ProfileImage == null)
+            if (user.ProfileImage is null)
             {
                 return null;
             }

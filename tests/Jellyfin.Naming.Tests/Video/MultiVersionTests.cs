@@ -25,7 +25,7 @@ namespace Jellyfin.Naming.Tests.Video
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions).ToList();
 
-            Assert.Single(result.Where(v => v.ExtraType == null));
+            Assert.Single(result.Where(v => v.ExtraType is null));
             Assert.Single(result.Where(v => v.ExtraType != null));
         }
 
@@ -44,7 +44,7 @@ namespace Jellyfin.Naming.Tests.Video
                 files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions).ToList();
 
-            Assert.Single(result.Where(v => v.ExtraType == null));
+            Assert.Single(result.Where(v => v.ExtraType is null));
             Assert.Single(result.Where(v => v.ExtraType != null));
             Assert.Equal(2, result[0].AlternateVersions.Count);
         }

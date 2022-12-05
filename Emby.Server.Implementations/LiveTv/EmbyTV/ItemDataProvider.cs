@@ -49,7 +49,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     var bytes = File.ReadAllBytes(_dataPath);
                     _items = JsonSerializer.Deserialize<T[]>(bytes, _jsonOptions);
-                    if (_items == null)
+                    if (_items is null)
                     {
                         Logger.LogError("Error deserializing {Path}, data was null", _dataPath);
                         _items = Array.Empty<T>();

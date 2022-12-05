@@ -401,7 +401,7 @@ namespace Jellyfin.Server.Implementations.Users
             var authenticationProvider = authResult.AuthenticationProvider;
             var success = authResult.Success;
 
-            if (user == null)
+            if (user is null)
             {
                 string updatedUsername = authResult.Username;
 
@@ -434,7 +434,7 @@ namespace Jellyfin.Server.Implementations.Users
                 }
             }
 
-            if (user == null)
+            if (user is null)
             {
                 _logger.LogInformation(
                     "Authentication request for {UserName} has been denied (IP: {IP}).",
@@ -708,7 +708,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task ClearProfileImageAsync(User user)
         {
-            if (user.ProfileImage == null)
+            if (user.ProfileImage is null)
             {
                 return;
             }

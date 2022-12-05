@@ -1482,7 +1482,7 @@ namespace Jellyfin.Api.Controllers
                         startTranscoding = true;
                         segmentId = 0;
                     }
-                    else if (currentTranscodingIndex == null)
+                    else if (currentTranscodingIndex is null)
                     {
                         _logger.LogDebug("Starting transcoding because currentTranscodingIndex=null");
                         startTranscoding = true;
@@ -1665,7 +1665,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>The command line arguments for audio transcoding.</returns>
         private string GetAudioArguments(StreamState state)
         {
-            if (state.AudioStream == null)
+            if (state.AudioStream is null)
             {
                 return string.Empty;
             }
@@ -1762,7 +1762,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>The command line arguments for video transcoding.</returns>
         private string GetVideoArguments(StreamState state, int startNumber, bool isEventPlaylist)
         {
-            if (state.VideoStream == null)
+            if (state.VideoStream is null)
             {
                 return string.Empty;
             }
@@ -1969,14 +1969,14 @@ namespace Jellyfin.Api.Controllers
         {
             var job = _transcodingJobHelper.GetTranscodingJob(playlist, TranscodingJobType);
 
-            if (job == null || job.HasExited)
+            if (job is null || job.HasExited)
             {
                 return null;
             }
 
             var file = GetLastTranscodingFile(playlist, segmentExtension, _fileSystem);
 
-            if (file == null)
+            if (file is null)
             {
                 return null;
             }
