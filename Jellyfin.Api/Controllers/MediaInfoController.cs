@@ -228,31 +228,19 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            var dropList = new List<String>();
+            var dropList = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
             foreach (var subtitleProfile in profile.SubtitleProfiles)
+            {
+                if (subtitleProfile.Method == SubtitleDeliveryMethod.Drop)
                 {
-                    if (subtitleProfile.Method == SubtitleDeliveryMethod.Drop)
-                    {
-                        dropList.Add(subtitleProfile.Format.ToLower());
-                    }
+                    dropList.Add(subtitleProfile.Format);
+                    _logger.LogDebug("Dropping subtitle with format: {SubtitleFormat}", subtitleProfile.Format);
                 }
+            }
             foreach (var mediaSource in info.MediaSources)
-                {
-                    var undropped = new List<MediaStream>();
-                    foreach (MediaStream stream in mediaSource.MediaStreams)
-                    {
-                        if (!dropList.Contains(stream.Codec.ToLower()))
-                        {
-                            undropped.Add(stream);
-                        }
-                        else
-                        {
-                            _logger.LogDebug("Dropping subtitle with format: {@Format}", stream.Codec.ToLower());
-                        }
-                    }
-                    mediaSource.MediaStreams = undropped.ToArray();
-                }
-
+            {
+                mediaSource.MediaStreams = mediaSource.MediaStreams.Where(m => !dropList.Contains(m.Codec)).ToArray();
+            }
             return info;
         }
 
