@@ -881,7 +881,7 @@ namespace MediaBrowser.Providers.Manager
                         i.UrlFormatString,
                         value)
                 };
-            }).Where(i => i != null)
+            }).Where(i => i is not null)
                 .Concat(item.GetRelatedUrls())!; // We just filtered out all the nulls
         }
 
@@ -1071,7 +1071,7 @@ namespace MediaBrowser.Providers.Manager
 
             var musicArtists = albums
                 .Select(i => i.MusicArtist)
-                .Where(i => i != null);
+                .Where(i => i is not null);
 
             var musicArtistRefreshTasks = musicArtists.Select(i => i.ValidateChildren(new SimpleProgress<double>(), options, true, cancellationToken));
 

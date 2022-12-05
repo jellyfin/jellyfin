@@ -130,7 +130,7 @@ namespace MediaBrowser.Controller.Library
         {
             var parent = Parent;
 
-            if (parent != null)
+            if (parent is not null)
             {
                 var item = parent as T;
 
@@ -148,7 +148,7 @@ namespace MediaBrowser.Controller.Library
                     }
                 }
 
-                return item != null;
+                return item is not null;
             }
 
             return false;
@@ -287,14 +287,14 @@ namespace MediaBrowser.Controller.Library
         /// <returns><c>true</c> if the arguments are the same, <c>false</c> otherwise.</returns>
         protected bool Equals(ItemResolveArgs args)
         {
-            if (args != null)
+            if (args is not null)
             {
                 if (args.Path is null && Path is null)
                 {
                     return true;
                 }
 
-                return args.Path != null && BaseItem.FileSystem.AreEqual(args.Path, Path);
+                return args.Path is not null && BaseItem.FileSystem.AreEqual(args.Path, Path);
             }
 
             return false;

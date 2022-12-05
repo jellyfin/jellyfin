@@ -251,7 +251,7 @@ namespace Emby.Server.Implementations.SyncPlay
             GroupName = request.GroupName;
             AddSession(session);
 
-            var sessionIsPlayingAnItem = session.FullNowPlayingItem != null;
+            var sessionIsPlayingAnItem = session.FullNowPlayingItem is not null;
 
             RestartCurrentItem();
 

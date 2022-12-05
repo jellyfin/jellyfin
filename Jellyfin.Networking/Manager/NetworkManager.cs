@@ -161,7 +161,7 @@ namespace Jellyfin.Networking.Manager
         public static Collection<IPObject> CreateCollection(IEnumerable<IPObject>? source = null)
         {
             var result = new Collection<IPObject>();
-            if (source != null)
+            if (source is not null)
             {
                 foreach (var item in source)
                 {
@@ -225,7 +225,7 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public bool IsExcluded(EndPoint ip)
         {
-            return ip != null && IsExcluded(((IPEndPoint)ip).Address);
+            return ip is not null && IsExcluded(((IPEndPoint)ip).Address);
         }
 
         /// <inheritdoc/>
@@ -335,7 +335,7 @@ namespace Jellyfin.Networking.Manager
         {
             string result;
 
-            if (source != null && IPHost.TryParse(source.Host.Host, out IPHost host))
+            if (source is not null && IPHost.TryParse(source.Host.Host, out IPHost host))
             {
                 result = GetBindInterface(host, out port);
                 port ??= source.Host.Port;
@@ -538,7 +538,7 @@ namespace Jellyfin.Networking.Manager
                 return false;
             }
 
-            if (_interfaceNames != null && _interfaceNames.TryGetValue(token.ToLower(CultureInfo.InvariantCulture), out int index))
+            if (_interfaceNames is not null && _interfaceNames.TryGetValue(token.ToLower(CultureInfo.InvariantCulture), out int index))
             {
                 result = new Collection<IPObject>();
 
@@ -718,7 +718,7 @@ namespace Jellyfin.Networking.Manager
 
             // Is it the name of an interface (windows) eg, Wireless LAN adapter Wireless Network Connection 1.
             // Null check required here for automated testing.
-            if (_interfaceNames != null && token.Length > 1)
+            if (_interfaceNames is not null && token.Length > 1)
             {
                 bool partial = token[^1] == '*';
                 if (partial)
@@ -737,7 +737,7 @@ namespace Jellyfin.Networking.Manager
                 }
             }
 
-            return index != null;
+            return index is not null;
         }
 
         /// <summary>
@@ -903,7 +903,7 @@ namespace Jellyfin.Networking.Manager
                         {
                             _publishedServerUrls[new IPNetAddress(IPAddress.Any)] = replacement;
                         }
-                        else if (TryParseInterface(parts[0], out Collection<IPObject>? addresses) && addresses != null)
+                        else if (TryParseInterface(parts[0], out Collection<IPObject>? addresses) && addresses is not null)
                         {
                             foreach (IPNetAddress na in addresses)
                             {
@@ -1052,7 +1052,7 @@ namespace Jellyfin.Networking.Manager
                             PhysicalAddress mac = adapter.GetPhysicalAddress();
 
                             // populate mac list
-                            if (adapter.NetworkInterfaceType != NetworkInterfaceType.Loopback && mac != null && mac != PhysicalAddress.None)
+                            if (adapter.NetworkInterfaceType != NetworkInterfaceType.Loopback && mac is not null && mac != PhysicalAddress.None)
                             {
                                 _macAddresses.Add(mac);
                             }
@@ -1245,7 +1245,7 @@ namespace Jellyfin.Networking.Manager
                             bindAddress = addr.Address;
                         }
 
-                        if (defaultGateway != null && bindAddress != null)
+                        if (defaultGateway is not null && bindAddress is not null)
                         {
                             break;
                         }
@@ -1260,14 +1260,14 @@ namespace Jellyfin.Networking.Manager
                         .FirstOrDefault()?.Address;
                 }
 
-                if (bindAddress != null)
+                if (bindAddress is not null)
                 {
                     result = FormatIP6String(bindAddress);
                     _logger.LogDebug("{Source}: GetBindInterface: Has source, found a match bind interface subnets. {Result}", source, result);
                     return true;
                 }
 
-                if (isInExternalSubnet && defaultGateway != null)
+                if (isInExternalSubnet && defaultGateway is not null)
                 {
                     result = FormatIP6String(defaultGateway);
                     _logger.LogDebug("{Source}: GetBindInterface: Using first user defined external interface. {Result}", source, result);

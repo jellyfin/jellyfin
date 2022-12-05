@@ -152,7 +152,7 @@ namespace Jellyfin.Api.Controllers
             var result = new QueryResult<BaseItemDto>(
                 startIndex,
                 ibnItemsArray.Count,
-                dtos.Where(i => i != null).ToArray());
+                dtos.Where(i => i is not null).ToArray());
             return result;
         }
 

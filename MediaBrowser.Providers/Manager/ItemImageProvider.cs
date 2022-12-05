@@ -73,7 +73,7 @@ namespace MediaBrowser.Providers.Manager
             for (var i = 0; i < _singularImages.Length; i++)
             {
                 var currentImage = item.GetImageInfo(_singularImages[i], 0);
-                if (currentImage != null)
+                if (currentImage is not null)
                 {
                     singular.Add(currentImage);
                 }
@@ -395,7 +395,7 @@ namespace MediaBrowser.Providers.Manager
                 var type = _singularImages[i];
                 var image = GetFirstLocalImageInfoByType(images, type);
 
-                if (image != null)
+                if (image is not null)
                 {
                     var currentImage = item.GetImageInfo(type, 0);
 

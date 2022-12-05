@@ -257,7 +257,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                 var baseItem = item;
 
-                if (baseItem != null)
+                if (baseItem is not null)
                 {
                     AddCommonNodes(baseItem, writer, LibraryManager, UserManager, UserDataManager, ConfigurationManager);
                 }
@@ -748,7 +748,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writtenProviderIds.Add(MetadataProvider.TvRage.ToString());
             }
 
-            if (item.ProviderIds != null)
+            if (item.ProviderIds is not null)
             {
                 foreach (var providerKey in item.ProviderIds.Keys)
                 {
@@ -832,7 +832,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             var image = item.GetImageInfo(ImageType.Primary, 0);
 
-            if (image != null)
+            if (image is not null)
             {
                 writer.WriteElementString("poster", GetImagePathToSave(image, libraryManager));
             }
@@ -947,7 +947,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     var personEntity = libraryManager.GetPerson(person.Name);
                     var image = personEntity.GetImageInfo(ImageType.Primary, 0);
 
-                    if (image != null)
+                    if (image is not null)
                     {
                         writer.WriteElementString(
                             "thumb",

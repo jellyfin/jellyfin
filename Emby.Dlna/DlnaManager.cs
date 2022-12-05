@@ -105,7 +105,7 @@ namespace Emby.Dlna
             ArgumentNullException.ThrowIfNull(deviceInfo);
 
             var profile = GetProfiles()
-                .FirstOrDefault(i => i.Identification != null && IsMatch(deviceInfo, i.Identification));
+                .FirstOrDefault(i => i.Identification is not null && IsMatch(deviceInfo, i.Identification));
 
             if (profile is null)
             {
@@ -171,7 +171,7 @@ namespace Emby.Dlna
         {
             ArgumentNullException.ThrowIfNull(headers);
 
-            var profile = GetProfiles().FirstOrDefault(i => i.Identification != null && IsMatch(headers, i.Identification));
+            var profile = GetProfiles().FirstOrDefault(i => i.Identification is not null && IsMatch(headers, i.Identification));
             if (profile is null)
             {
                 _logger.LogDebug("No matching device profile found. {@Headers}", headers);
@@ -224,7 +224,7 @@ namespace Emby.Dlna
                 return _fileSystem.GetFilePaths(path)
                     .Where(i => string.Equals(Path.GetExtension(i), ".xml", StringComparison.OrdinalIgnoreCase))
                     .Select(i => ParseProfileFile(i, type))
-                    .Where(i => i != null)
+                    .Where(i => i is not null)
                     .ToList()!; // We just filtered out all the nulls
             }
             catch (IOException)

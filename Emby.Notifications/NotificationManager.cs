@@ -113,7 +113,7 @@ namespace Emby.Notifications
                 }
             }
 
-            if (options != null && !string.IsNullOrEmpty(request.NotificationType))
+            if (options is not null && !string.IsNullOrEmpty(request.NotificationType))
             {
                 var config = GetConfiguration();
 

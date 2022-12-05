@@ -151,7 +151,7 @@ namespace Jellyfin.Api.Helpers
                 {
                     _stream.Dispose();
 
-                    if (_job != null)
+                    if (_job is not null)
                     {
                         _transcodingJobHelper?.OnTranscodeEndRequest(_job);
                     }
@@ -166,7 +166,7 @@ namespace Jellyfin.Api.Helpers
 
         private void UpdateBytesWritten(int totalBytesRead)
         {
-            if (_job != null)
+            if (_job is not null)
             {
                 _job.BytesDownloaded += totalBytesRead;
             }

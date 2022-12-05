@@ -157,7 +157,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _configurationManager.SaveConfiguration("encoding", options);
 
             // Only if mpeg path is set, try and set path to probe
-            if (_ffmpegPath != null)
+            if (_ffmpegPath is not null)
             {
                 // Determine a probe path from the mpeg path
                 _ffprobePath = Regex.Replace(_ffmpegPath, @"[^\/\\]+?(\.[^\/\\\n.]+)?$", @"ffprobe$1");
@@ -536,7 +536,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     throw new FfmpegException("ffprobe failed - streams and format are both null.");
                 }
 
-                if (result.Streams != null)
+                if (result.Streams is not null)
                 {
                     // Normalize aspect ratio if invalid
                     foreach (var stream in result.Streams)
@@ -660,7 +660,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var filters = new List<string>();
 
             // deinterlace using bwdif algorithm for video stream.
-            if (videoStream != null && videoStream.IsInterlaced)
+            if (videoStream is not null && videoStream.IsInterlaced)
             {
                 filters.Add("bwdif=0:-1:0");
             }
@@ -1017,7 +1017,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 if (!_disposed)
                 {
-                    if (Process != null)
+                    if (Process is not null)
                     {
                         Process.Exited -= OnProcessExited;
                         DisposeProcess(Process);

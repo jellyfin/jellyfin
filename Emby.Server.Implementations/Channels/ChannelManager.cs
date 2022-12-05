@@ -227,7 +227,7 @@ namespace Emby.Server.Implementations.Channels
                     .ToList();
             }
 
-            if (user != null)
+            if (user is not null)
             {
                 channels = channels.Where(i =>
                 {
@@ -739,7 +739,7 @@ namespace Emby.Server.Implementations.Channels
             query.GroupByPresentationUniqueKey = false;
 
             // null if came from cache
-            if (itemsResult != null)
+            if (itemsResult is not null)
             {
                 var items = itemsResult.Items;
                 var itemsLen = items.Count;
@@ -761,7 +761,7 @@ namespace Emby.Server.Implementations.Channels
                 foreach (var deadId in deadIds)
                 {
                     var deadItem = _libraryManager.GetItemById(deadId);
-                    if (deadItem != null)
+                    if (deadItem is not null)
                     {
                         _libraryManager.DeleteItem(
                             deadItem,
@@ -813,7 +813,7 @@ namespace Emby.Server.Implementations.Channels
                 {
                     await using FileStream jsonStream = AsyncFile.OpenRead(cachePath);
                     var cachedResult = await JsonSerializer.DeserializeAsync<ChannelItemResult>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-                    if (cachedResult != null)
+                    if (cachedResult is not null)
                     {
                         return null;
                     }
@@ -836,7 +836,7 @@ namespace Emby.Server.Implementations.Channels
                     {
                         await using FileStream jsonStream = AsyncFile.OpenRead(cachePath);
                         var cachedResult = await JsonSerializer.DeserializeAsync<ChannelItemResult>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-                        if (cachedResult != null)
+                        if (cachedResult is not null)
                         {
                             return null;
                         }
@@ -1156,7 +1156,7 @@ namespace Emby.Server.Implementations.Channels
             {
                 _libraryManager.CreateItem(item, parentFolder);
 
-                if (info.People != null && info.People.Count > 0)
+                if (info.People is not null && info.People.Count > 0)
                 {
                     _libraryManager.UpdatePeople(item, info.People);
                 }

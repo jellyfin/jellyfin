@@ -47,7 +47,7 @@ namespace MediaBrowser.Common.Plugins
             var assemblyFilePath = assembly.Location;
 
             var dataFolderPath = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(assemblyFilePath));
-            if (Version != null && !Directory.Exists(dataFolderPath))
+            if (Version is not null && !Directory.Exists(dataFolderPath))
             {
                 // Try again with the version number appended to the folder name.
                 dataFolderPath += "_" + Version.ToString();

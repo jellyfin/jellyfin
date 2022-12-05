@@ -286,7 +286,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task ChangeEasyPassword(User user, string newPassword, string? newPasswordSha1)
         {
-            if (newPassword != null)
+            if (newPassword is not null)
             {
                 newPasswordSha1 = _cryptoProvider.CreatePasswordHash(newPassword).ToString();
             }
@@ -317,7 +317,7 @@ namespace Jellyfin.Server.Implementations.Users
                 EnableAutoLogin = user.EnableAutoLogin,
                 LastLoginDate = user.LastLoginDate,
                 LastActivityDate = user.LastActivityDate,
-                PrimaryImageTag = user.ProfileImage != null ? _imageProcessor.GetImageCacheTag(user) : null,
+                PrimaryImageTag = user.ProfileImage is not null ? _imageProcessor.GetImageCacheTag(user) : null,
                 Configuration = new UserConfiguration
                 {
                     SubtitleMode = user.SubtitleMode,
@@ -406,7 +406,7 @@ namespace Jellyfin.Server.Implementations.Users
                 string updatedUsername = authResult.Username;
 
                 if (success
-                    && authenticationProvider != null
+                    && authenticationProvider is not null
                     && authenticationProvider is not DefaultAuthenticationProvider)
                 {
                     // Trust the username returned by the authentication provider
@@ -416,18 +416,18 @@ namespace Jellyfin.Server.Implementations.Users
                     // the authentication provider might have created it
                     user = Users.FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
 
-                    if (authenticationProvider is IHasNewUserPolicy hasNewUserPolicy && user != null)
+                    if (authenticationProvider is IHasNewUserPolicy hasNewUserPolicy && user is not null)
                     {
                         await UpdatePolicyAsync(user.Id, hasNewUserPolicy.GetNewUserPolicy()).ConfigureAwait(false);
                     }
                 }
             }
 
-            if (success && user != null && authenticationProvider != null)
+            if (success && user is not null && authenticationProvider is not null)
             {
                 var providerId = authenticationProvider.GetType().FullName;
 
-                if (providerId != null && !string.Equals(providerId, user.AuthenticationProviderId, StringComparison.OrdinalIgnoreCase))
+                if (providerId is not null && !string.Equals(providerId, user.AuthenticationProviderId, StringComparison.OrdinalIgnoreCase))
                 {
                     user.AuthenticationProviderId = providerId;
                     await UpdateUserAsync(user).ConfigureAwait(false);
@@ -501,7 +501,7 @@ namespace Jellyfin.Server.Implementations.Users
         {
             var user = string.IsNullOrWhiteSpace(enteredUsername) ? null : GetUserByName(enteredUsername);
 
-            if (user != null && isInNetwork)
+            if (user is not null && isInNetwork)
             {
                 var passwordResetProvider = GetPasswordResetProvider(user);
                 var result = await passwordResetProvider

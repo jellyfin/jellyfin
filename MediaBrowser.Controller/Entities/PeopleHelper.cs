@@ -41,7 +41,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var existing = people.FirstOrDefault(p => p.Name.Equals(person.Name, StringComparison.OrdinalIgnoreCase) && p.Type.Equals(PersonType.Actor, StringComparison.OrdinalIgnoreCase));
 
-                if (existing != null)
+                if (existing is not null)
                 {
                     existing.Type = PersonType.GuestStar;
                     MergeExisting(existing, person);

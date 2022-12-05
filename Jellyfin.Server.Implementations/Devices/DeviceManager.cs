@@ -139,12 +139,12 @@ namespace Jellyfin.Server.Implementations.Devices
                     devices = devices.Where(device => device.UserId.Equals(query.UserId.Value));
                 }
 
-                if (query.DeviceId != null)
+                if (query.DeviceId is not null)
                 {
                     devices = devices.Where(device => device.DeviceId == query.DeviceId);
                 }
 
-                if (query.AccessToken != null)
+                if (query.AccessToken is not null)
                 {
                     devices = devices.Where(device => device.AccessToken == query.AccessToken);
                 }

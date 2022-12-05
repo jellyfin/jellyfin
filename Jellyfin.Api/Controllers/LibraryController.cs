@@ -449,9 +449,9 @@ namespace Jellyfin.Api.Controllers
             var dtoOptions = new DtoOptions().AddClientFields(User);
             BaseItem? parent = item.GetParent();
 
-            while (parent != null)
+            while (parent is not null)
             {
-                if (user != null)
+                if (user is not null)
                 {
                     parent = TranslateParentItem(parent, user);
                 }
@@ -617,7 +617,7 @@ namespace Jellyfin.Api.Controllers
 
             var user = _userManager.GetUserById(User.GetUserId());
 
-            if (user != null)
+            if (user is not null)
             {
                 if (!item.CanDownload(user))
                 {
@@ -632,7 +632,7 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            if (user != null)
+            if (user is not null)
             {
                 await LogDownloadAsync(item, user).ConfigureAwait(false);
             }
@@ -686,8 +686,8 @@ namespace Jellyfin.Api.Controllers
                 .AddClientFields(User);
 
             var program = item as IHasProgramAttributes;
-            bool? isMovie = item is Movie || (program != null && program.IsMovie) || item is Trailer;
-            bool? isSeries = item is Series || (program != null && program.IsSeries);
+            bool? isMovie = item is Movie || (program is not null && program.IsMovie) || item is Trailer;
+            bool? isSeries = item is Series || (program is not null && program.IsSeries);
 
             var includeItemTypes = new List<BaseItemKind>();
             if (isMovie.Value)

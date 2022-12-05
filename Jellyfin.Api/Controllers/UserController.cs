@@ -477,7 +477,7 @@ namespace Jellyfin.Api.Controllers
             var newUser = await _userManager.CreateUserAsync(request.Name).ConfigureAwait(false);
 
             // no need to authenticate password for new user
-            if (request.Password != null)
+            if (request.Password is not null)
             {
                 await _userManager.ChangePassword(newUser, request.Password).ConfigureAwait(false);
             }

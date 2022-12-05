@@ -131,7 +131,7 @@ namespace Emby.Server.Implementations.AppBase
             {
                 _configuration = value;
 
-                _configurationLoaded = value != null;
+                _configurationLoaded = value is not null;
             }
         }
 

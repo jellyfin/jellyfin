@@ -34,7 +34,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public Task Record(IDirectStreamProvider? directStreamProvider, MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
-            if (directStreamProvider != null)
+            if (directStreamProvider is not null)
             {
                 return RecordFromDirectStreamProvider(directStreamProvider, targetFile, duration, onStarted, cancellationToken);
             }

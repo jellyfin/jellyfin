@@ -46,7 +46,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var user = query.User;
 
-            // if (query.IncludeItemTypes != null &&
+            // if (query.IncludeItemTypes is not null &&
             //    query.IncludeItemTypes.Length == 1 &&
             //    string.Equals(query.IncludeItemTypes[0], "Playlist", StringComparison.OrdinalIgnoreCase))
             // {
@@ -263,7 +263,7 @@ namespace MediaBrowser.Controller.Entities
                         return null;
                     }
                 })
-                .Where(i => i != null)
+                .Where(i => i is not null)
                 .Select(i => GetUserViewWithName(SpecialFolder.MovieGenre, i.SortName, parent));
 
             return GetResult(genres, query);
@@ -391,7 +391,7 @@ namespace MediaBrowser.Controller.Entities
                         return null;
                     }
                 })
-                .Where(i => i != null)
+                .Where(i => i is not null)
                 .Select(i => GetUserViewWithName(SpecialFolder.TvGenre, i.SortName, parent));
 
             return GetResult(genres, query);
@@ -791,7 +791,7 @@ namespace MediaBrowser.Controller.Entities
             if (query.StudioIds.Length > 0 && !query.StudioIds.Any(id =>
             {
                 var studioItem = libraryManager.GetItemById(id);
-                return studioItem != null && item.Studios.Contains(studioItem.Name, StringComparison.OrdinalIgnoreCase);
+                return studioItem is not null && item.Studios.Contains(studioItem.Name, StringComparison.OrdinalIgnoreCase);
             }))
             {
                 return false;
@@ -801,7 +801,7 @@ namespace MediaBrowser.Controller.Entities
             if (query.GenreIds.Count > 0 && !query.GenreIds.Any(id =>
             {
                 var genreItem = libraryManager.GetItemById(id);
-                return genreItem != null && item.Genres.Contains(genreItem.Name, StringComparison.OrdinalIgnoreCase);
+                return genreItem is not null && item.Genres.Contains(genreItem.Name, StringComparison.OrdinalIgnoreCase);
             }))
             {
                 return false;
@@ -952,7 +952,7 @@ namespace MediaBrowser.Controller.Entities
                     {
                         var folder = i as ICollectionFolder;
 
-                        return folder != null && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+                        return folder is not null && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparison.OrdinalIgnoreCase);
                     }).ToArray();
             }
 
@@ -961,7 +961,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     var folder = i as ICollectionFolder;
 
-                    return folder != null && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+                    return folder is not null && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparison.OrdinalIgnoreCase);
                 }).ToArray();
         }
 

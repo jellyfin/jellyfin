@@ -182,7 +182,7 @@ namespace Emby.Server.Implementations.Library
                     source.SupportsDirectStream = SupportsDirectStream(source.Path, source.Protocol);
                 }
 
-                if (user != null)
+                if (user is not null)
                 {
                     SetDefaultAudioAndSubtitleStreamIndexes(item, source, user);
 
@@ -248,7 +248,7 @@ namespace Emby.Server.Implementations.Library
 
             if (protocol == MediaProtocol.Http)
             {
-                if (path != null)
+                if (path is not null)
                 {
                     if (path.Contains(".m3u", StringComparison.OrdinalIgnoreCase))
                     {
@@ -328,7 +328,7 @@ namespace Emby.Server.Implementations.Library
 
             var sources = hasMediaSources.GetMediaSources(enablePathSubstitution);
 
-            if (user != null)
+            if (user is not null)
             {
                 foreach (var source in sources)
                 {
@@ -357,7 +357,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             var culture = _localizationManager.FindLanguageInfo(language);
-            if (culture != null)
+            if (culture is not null)
             {
                 return culture.ThreeLetterISOLanguageNames;
             }
@@ -432,7 +432,7 @@ namespace Emby.Server.Implementations.Library
             {
                 var audio = source.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
 
-                if (audio != null)
+                if (audio is not null)
                 {
                     source.DefaultAudioStreamIndex = audio.Index;
                 }
@@ -553,7 +553,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             var videoStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
-            if (videoStream != null)
+            if (videoStream is not null)
             {
                 if (!videoStream.BitRate.HasValue)
                 {
@@ -661,7 +661,7 @@ namespace Emby.Server.Implementations.Library
                 },
                     cancellationToken).ConfigureAwait(false);
 
-                if (cacheFilePath != null)
+                if (cacheFilePath is not null)
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
                     await using FileStream createStream = File.Create(cacheFilePath);
@@ -723,7 +723,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
-            if (videoStream != null)
+            if (videoStream is not null)
             {
                 if (!videoStream.BitRate.HasValue)
                 {

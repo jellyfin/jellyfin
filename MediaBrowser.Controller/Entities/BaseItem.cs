@@ -658,7 +658,7 @@ namespace MediaBrowser.Controller.Entities
                 }
 
                 var parent = DisplayParent;
-                if (parent != null)
+                if (parent is not null)
                 {
                     return parent.OfficialRatingForComparison;
                 }
@@ -679,7 +679,7 @@ namespace MediaBrowser.Controller.Entities
                 }
 
                 var parent = DisplayParent;
-                if (parent != null)
+                if (parent is not null)
                 {
                     return parent.CustomRatingForComparison;
                 }
@@ -976,7 +976,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var parent = GetParent();
 
-            while (parent != null)
+            while (parent is not null)
             {
                 yield return parent;
 
@@ -1114,7 +1114,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             var video = item as Video;
-            if (video != null)
+            if (video is not null)
             {
                 info.IsoType = video.IsoType;
                 info.VideoType = video.VideoType;
@@ -1153,7 +1153,7 @@ namespace MediaBrowser.Controller.Entities
                 info.SupportsDirectStream = MediaSourceManager.SupportsDirectStream(info.Path, info.Protocol);
             }
 
-            if (video != null && video.VideoType != VideoType.VideoFile)
+            if (video is not null && video.VideoType != VideoType.VideoFile)
             {
                 info.SupportsDirectStream = false;
             }
@@ -1692,7 +1692,7 @@ namespace MediaBrowser.Controller.Entities
 
                 var itemById = LibraryManager.GetItemById(info.ItemId.Value);
 
-                if (itemById != null)
+                if (itemById is not null)
                 {
                     return itemById;
                 }
@@ -2060,7 +2060,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var artist = FindParent<MusicArtist>();
 
-                if (artist != null)
+                if (artist is not null)
                 {
                     return artist.GetImages(imageType).ElementAtOrDefault(imageIndex);
                 }
@@ -2274,14 +2274,14 @@ namespace MediaBrowser.Controller.Entities
         {
             var userdata = UserDataManager.GetUserData(user, this);
 
-            return userdata != null && userdata.Played;
+            return userdata is not null && userdata.Played;
         }
 
         public bool IsFavoriteOrLiked(User user)
         {
             var userdata = UserDataManager.GetUserData(user, this);
 
-            return userdata != null && (userdata.IsFavorite || (userdata.Likes ?? false));
+            return userdata is not null && (userdata.IsFavorite || (userdata.Likes ?? false));
         }
 
         public virtual bool IsUnplayed(User user)
@@ -2565,7 +2565,7 @@ namespace MediaBrowser.Controller.Entities
         {
             return ExtraIds
                 .Select(LibraryManager.GetItemById)
-                .Where(i => i != null)
+                .Where(i => i is not null)
                 .OrderBy(i => i.SortName);
         }
 
@@ -2578,7 +2578,7 @@ namespace MediaBrowser.Controller.Entities
         {
             return ExtraIds
                 .Select(LibraryManager.GetItemById)
-                .Where(i => i != null)
+                .Where(i => i is not null)
                 .Where(i => i.ExtraType.HasValue && extraTypes.Contains(i.ExtraType.Value))
                 .OrderBy(i => i.SortName);
         }

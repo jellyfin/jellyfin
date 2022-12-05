@@ -149,7 +149,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 item.SetProviderId(MetadataProvider.TvRage, externalIds.TvrageId);
             }
 
-            if (episodeResult.Videos?.Results != null)
+            if (episodeResult.Videos?.Results is not null)
             {
                 foreach (var video in episodeResult.Videos.Results)
                 {
@@ -162,7 +162,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             var credits = episodeResult.Credits;
 
-            if (credits?.Cast != null)
+            if (credits?.Cast is not null)
             {
                 foreach (var actor in credits.Cast.OrderBy(a => a.Order).Take(Plugin.Instance.Configuration.MaxCastMembers))
                 {
@@ -176,7 +176,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 }
             }
 
-            if (credits?.GuestStars != null)
+            if (credits?.GuestStars is not null)
             {
                 foreach (var guest in credits.GuestStars.OrderBy(a => a.Order).Take(Plugin.Instance.Configuration.MaxCastMembers))
                 {
@@ -191,7 +191,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             }
 
             // and the rest from crew
-            if (credits?.Crew != null)
+            if (credits?.Crew is not null)
             {
                 foreach (var person in credits.Crew)
                 {

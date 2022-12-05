@@ -234,7 +234,7 @@ namespace Jellyfin.Server
             finally
             {
                 // Don't throw additional exception if startup failed.
-                if (appHost.ServiceProvider != null)
+                if (appHost.ServiceProvider is not null)
                 {
                     _logger.LogInformation("Running query planner optimizations in the database... This might take a while");
                     // Run before disposing the application
@@ -407,7 +407,7 @@ namespace Jellyfin.Server
 
                 if (string.IsNullOrEmpty(configDir))
                 {
-                    if (options.DataDir != null
+                    if (options.DataDir is not null
                         || Directory.Exists(Path.Combine(dataDir, "config"))
                         || OperatingSystem.IsWindows())
                     {
@@ -582,7 +582,7 @@ namespace Jellyfin.Server
         {
             // Use the swagger API page as the default redirect path if not hosting the web client
             var inMemoryDefaultConfig = ConfigurationOptions.DefaultConfiguration;
-            if (startupConfig != null && !startupConfig.HostWebClient())
+            if (startupConfig is not null && !startupConfig.HostWebClient())
             {
                 inMemoryDefaultConfig[DefaultRedirectKey] = "api-docs/swagger";
             }
@@ -642,7 +642,7 @@ namespace Jellyfin.Server
             }
 
             string commandLineArgsString;
-            if (options.RestartArgs != null)
+            if (options.RestartArgs is not null)
             {
                 commandLineArgsString = options.RestartArgs;
             }

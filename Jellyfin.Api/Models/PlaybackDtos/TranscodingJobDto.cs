@@ -189,7 +189,7 @@ namespace Jellyfin.Api.Models.PlaybackDtos
         {
             lock (_timerLock)
             {
-                if (KillTimer != null)
+                if (KillTimer is not null)
                 {
                     KillTimer.Dispose();
                     KillTimer = null;
@@ -245,7 +245,7 @@ namespace Jellyfin.Api.Models.PlaybackDtos
 
             lock (_timerLock)
             {
-                if (KillTimer != null)
+                if (KillTimer is not null)
                 {
                     var intervalMs = PingTimeout;
 

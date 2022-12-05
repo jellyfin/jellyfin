@@ -109,7 +109,7 @@ namespace Emby.Naming.Video
             for (var i = 0; i < videos.Count; i++)
             {
                 var video = videos[i];
-                if (video.ExtraType != null)
+                if (video.ExtraType is not null)
                 {
                     continue;
                 }

@@ -188,7 +188,7 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
             // TODO: Actually try to match the release. Simply taking the first result is stupid.
             var releaseGroup = await _musicBrainzQuery.LookupReleaseGroupAsync(new Guid(releaseGroupId), Include.None, null, cancellationToken).ConfigureAwait(false);
             var release = releaseGroup.Releases?.Count > 0 ? releaseGroup.Releases[0] : null;
-            if (release != null)
+            if (release is not null)
             {
                 releaseId = release.Id.ToString();
                 result.HasMetadata = true;
@@ -214,7 +214,7 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
                 releaseResult = releaseSearchResults.Results.Count > 0 ? releaseSearchResults.Results[0].Item : null;
             }
 
-            if (releaseResult != null)
+            if (releaseResult is not null)
             {
                 releaseId = releaseResult.Id.ToString();
 

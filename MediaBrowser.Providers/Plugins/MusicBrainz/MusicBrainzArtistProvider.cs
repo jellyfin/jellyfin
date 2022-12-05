@@ -133,7 +133,7 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
 
             var singleResult = searchResults.FirstOrDefault();
 
-            if (singleResult != null)
+            if (singleResult is not null)
             {
                 musicBrainzId = singleResult.GetProviderId(MetadataProvider.MusicBrainzArtist);
                 result.Item.Overview = singleResult.Overview;

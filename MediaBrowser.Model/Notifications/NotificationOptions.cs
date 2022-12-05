@@ -86,7 +86,7 @@ namespace MediaBrowser.Model.Notifications
         {
             NotificationOption opt = GetOptions(type);
 
-            return opt != null && opt.Enabled;
+            return opt is not null && opt.Enabled;
         }
 
         public bool IsServiceEnabled(string service, string notificationType)
@@ -101,7 +101,7 @@ namespace MediaBrowser.Model.Notifications
         {
             NotificationOption opt = GetOptions(type);
 
-            return opt != null
+            return opt is not null
                    && opt.Enabled
                    && !opt.DisabledMonitorUsers.Contains(userId.ToString("N"), StringComparison.OrdinalIgnoreCase);
         }
@@ -110,7 +110,7 @@ namespace MediaBrowser.Model.Notifications
         {
             NotificationOption opt = GetOptions(type);
 
-            if (opt != null && opt.Enabled)
+            if (opt is not null && opt.Enabled)
             {
                 if (opt.SendToUserMode == SendToUserType.All)
                 {

@@ -153,7 +153,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                     continue;
                 }
 
-                if (images != null)
+                if (images is not null)
                 {
                     var imageIndex = images.FindIndex(i => i.ProgramId == schedule.ProgramId[..10]);
                     if (imageIndex > -1)
@@ -266,7 +266,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
 
             string episodeTitle = null;
-            if (details.EpisodeTitle150 != null)
+            if (details.EpisodeTitle150 is not null)
             {
                 episodeTitle = details.EpisodeTitle150;
             }
@@ -315,13 +315,13 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             info.ShowId = showId;
 
-            if (programInfo.VideoProperties != null)
+            if (programInfo.VideoProperties is not null)
             {
                 info.IsHD = programInfo.VideoProperties.Contains("hdtv", StringComparison.OrdinalIgnoreCase);
                 info.Is3D = programInfo.VideoProperties.Contains("3d", StringComparison.OrdinalIgnoreCase);
             }
 
-            if (details.ContentRating != null && details.ContentRating.Count > 0)
+            if (details.ContentRating is not null && details.ContentRating.Count > 0)
             {
                 info.OfficialRating = details.ContentRating[0].Code.Replace("TV", "TV-", StringComparison.Ordinal)
                     .Replace("--", "-", StringComparison.Ordinal);
@@ -333,13 +333,13 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 }
             }
 
-            if (details.Descriptions != null)
+            if (details.Descriptions is not null)
             {
-                if (details.Descriptions.Description1000 != null && details.Descriptions.Description1000.Count > 0)
+                if (details.Descriptions.Description1000 is not null && details.Descriptions.Description1000.Count > 0)
                 {
                     info.Overview = details.Descriptions.Description1000[0].Description;
                 }
-                else if (details.Descriptions.Description100 != null && details.Descriptions.Description100.Count > 0)
+                else if (details.Descriptions.Description100 is not null && details.Descriptions.Description100.Count > 0)
                 {
                     info.Overview = details.Descriptions.Description100[0].Description;
                 }
@@ -351,12 +351,12 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
                 info.SeriesProviderIds[MetadataProvider.Zap2It.ToString()] = info.SeriesId;
 
-                if (details.Metadata != null)
+                if (details.Metadata is not null)
                 {
                     foreach (var metadataProgram in details.Metadata)
                     {
                         var gracenote = metadataProgram.Gracenote;
-                        if (gracenote != null)
+                        if (gracenote is not null)
                         {
                             info.SeasonNumber = gracenote.Season;
 
@@ -371,13 +371,13 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 }
             }
 
-            if (details.OriginalAirDate != null)
+            if (details.OriginalAirDate is not null)
             {
                 info.OriginalAirDate = details.OriginalAirDate;
                 info.ProductionYear = info.OriginalAirDate.Value.Year;
             }
 
-            if (details.Movie != null)
+            if (details.Movie is not null)
             {
                 if (!string.IsNullOrEmpty(details.Movie.Year)
                     && int.TryParse(details.Movie.Year, out int year))
@@ -386,7 +386,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 }
             }
 
-            if (details.Genres != null)
+            if (details.Genres is not null)
             {
                 info.Genres = details.Genres.Where(g => !string.IsNullOrWhiteSpace(g)).ToList();
                 info.IsNews = details.Genres.Contains("news", StringComparison.OrdinalIgnoreCase);
@@ -518,7 +518,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
                 var root = await JsonSerializer.DeserializeAsync<IReadOnlyList<HeadendsDto>>(response, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
-                if (root != null)
+                if (root is not null)
                 {
                     foreach (HeadendsDto headend in root)
                     {
@@ -814,7 +814,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                     Name = string.IsNullOrWhiteSpace(station.Name) ? channelNumber : station.Name
                 };
 
-                if (station.Logo != null)
+                if (station.Logo is not null)
                 {
                     channelInfo.ImageUrl = station.Logo.Url;
                 }

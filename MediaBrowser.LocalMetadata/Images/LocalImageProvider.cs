@@ -94,7 +94,7 @@ namespace MediaBrowser.LocalMetadata.Images
             {
                 var season = item as Season;
                 var series = season?.Series;
-                if (series != null && series.IsFileProtocol)
+                if (series is not null && series.IsFileProtocol)
                 {
                     return true;
                 }
@@ -334,7 +334,7 @@ namespace MediaBrowser.LocalMetadata.Images
             var extraFanartFolder = files
                 .FirstOrDefault(i => string.Equals(i.Name, "extrafanart", StringComparison.OrdinalIgnoreCase));
 
-            if (extraFanartFolder != null)
+            if (extraFanartFolder is not null)
             {
                 PopulateBackdropsFromExtraFanart(extraFanartFolder.FullName, images);
             }

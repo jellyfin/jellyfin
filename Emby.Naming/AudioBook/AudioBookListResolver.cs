@@ -69,7 +69,7 @@ namespace Emby.Naming.AudioBook
             extras = new List<AudioBookFileInfo>();
             alternativeVersions = new List<AudioBookFileInfo>();
 
-            var haveChaptersOrPages = stackFiles.Any(x => x.ChapterNumber != null || x.PartNumber != null);
+            var haveChaptersOrPages = stackFiles.Any(x => x.ChapterNumber is not null || x.PartNumber is not null);
             var groupedBy = stackFiles.GroupBy(file => new { file.ChapterNumber, file.PartNumber });
             var nameWithReplacedDots = nameParserResult.Name.Replace(' ', '.');
 

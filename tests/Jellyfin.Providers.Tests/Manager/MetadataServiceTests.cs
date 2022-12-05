@@ -91,7 +91,7 @@ namespace Jellyfin.Providers.Tests.Manager
 
             // Use type Series to hit DisplayOrder
             Assert.False(TestMergeBaseItemData<Series, SeriesInfo>(propName, oldValue, newValue, null, false, out _));
-            if (lockField != null)
+            if (lockField is not null)
             {
                 Assert.False(TestMergeBaseItemData<Series, SeriesInfo>(propName, oldValue, newValue, lockField, true, out _));
                 Assert.False(TestMergeBaseItemData<Series, SeriesInfo>(propName, null, newValue, lockField, false, out _));
@@ -120,7 +120,7 @@ namespace Jellyfin.Providers.Tests.Manager
 
             // Use type Audio to hit AlbumArtists
             Assert.False(TestMergeBaseItemData<Audio, SongInfo>(propName, oldValue, newValue, null, false, out _));
-            if (lockField != null)
+            if (lockField is not null)
             {
                 Assert.False(TestMergeBaseItemData<Audio, SongInfo>(propName, oldValue, newValue, lockField, true, out _));
                 Assert.False(TestMergeBaseItemData<Audio, SongInfo>(propName, Array.Empty<string>(), newValue, lockField, false, out _));

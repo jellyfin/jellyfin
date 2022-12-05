@@ -147,7 +147,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                if (VideoStream != null && VideoStream.Width.HasValue && VideoStream.Height.HasValue)
+                if (VideoStream is not null && VideoStream.Width.HasValue && VideoStream.Height.HasValue)
                 {
                     var size = new ImageDimensions(VideoStream.Width.Value, VideoStream.Height.Value);
 
@@ -174,7 +174,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                if (VideoStream != null && VideoStream.Width.HasValue && VideoStream.Height.HasValue)
+                if (VideoStream is not null && VideoStream.Width.HasValue && VideoStream.Height.HasValue)
                 {
                     var size = new ImageDimensions(VideoStream.Width.Value, VideoStream.Height.Value);
 
@@ -204,7 +204,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (BaseRequest.Static
                     || EncodingHelper.IsCopyCodec(OutputAudioCodec))
                 {
-                    if (AudioStream != null)
+                    if (AudioStream is not null)
                     {
                         return AudioStream.SampleRate;
                     }
@@ -227,7 +227,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (BaseRequest.Static
                     || EncodingHelper.IsCopyCodec(OutputAudioCodec))
                 {
-                    if (AudioStream != null)
+                    if (AudioStream is not null)
                     {
                         return AudioStream.BitDepth;
                     }
@@ -556,7 +556,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         public bool DeInterlace(string videoCodec, bool forceDeinterlaceIfSourceIsInterlaced)
         {
             var videoStream = VideoStream;
-            var isInputInterlaced = videoStream != null && videoStream.IsInterlaced;
+            var isInputInterlaced = videoStream is not null && videoStream.IsInterlaced;
 
             if (!isInputInterlaced)
             {

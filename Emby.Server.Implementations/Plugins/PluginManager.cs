@@ -268,7 +268,7 @@ namespace Emby.Server.Implementations.Plugins
                 // If no version is given, return the current instance.
                 var plugins = _plugins.Where(p => p.Id.Equals(id)).ToList();
 
-                plugin = plugins.FirstOrDefault(p => p.Instance != null) ?? plugins.OrderByDescending(p => p.Version).FirstOrDefault();
+                plugin = plugins.FirstOrDefault(p => p.Instance is not null) ?? plugins.OrderByDescending(p => p.Version).FirstOrDefault();
             }
             else
             {
@@ -500,7 +500,7 @@ namespace Emby.Server.Implementations.Plugins
 #pragma warning restore CA1031 // Do not catch general exception types
             {
                 _logger.LogError(ex, "Error creating {Type}", type.FullName);
-                if (plugin != null)
+                if (plugin is not null)
                 {
                     if (ChangePluginState(plugin, PluginStatus.Malfunctioned))
                     {
@@ -523,7 +523,7 @@ namespace Emby.Server.Implementations.Plugins
 
             var predecessor = _plugins.OrderByDescending(p => p.Version)
                 .FirstOrDefault(p => p.Id.Equals(plugin.Id) && p.IsEnabledAndSupported && p.Version != plugin.Version);
-            if (predecessor != null)
+            if (predecessor is not null)
             {
                 return;
             }
@@ -577,7 +577,7 @@ namespace Emby.Server.Implementations.Plugins
                     _logger.LogError(ex, "Error deserializing {Json}.", Encoding.UTF8.GetString(data!));
                 }
 
-                if (manifest != null)
+                if (manifest is not null)
                 {
                     if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
                     {

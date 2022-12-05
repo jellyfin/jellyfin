@@ -36,7 +36,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         [MemberNotNull(nameof(_items))]
         private void EnsureLoaded()
         {
-            if (_items != null)
+            if (_items is not null)
             {
                 return;
             }

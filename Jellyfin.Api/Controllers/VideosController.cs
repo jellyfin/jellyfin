@@ -439,7 +439,7 @@ namespace Jellyfin.Api.Controllers
                     cancellationTokenSource.Token)
                 .ConfigureAwait(false);
 
-            if (@static.HasValue && @static.Value && state.DirectStreamProvider != null)
+            if (@static.HasValue && @static.Value && state.DirectStreamProvider is not null)
             {
                 StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, state.Request.StartTimeTicks, Request, _dlnaManager);
 
@@ -472,7 +472,7 @@ namespace Jellyfin.Api.Controllers
             var outputPathExists = System.IO.File.Exists(outputPath);
 
             var transcodingJob = _transcodingJobHelper.GetTranscodingJob(outputPath, TranscodingJobType.Progressive);
-            var isTranscodeCached = outputPathExists && transcodingJob != null;
+            var isTranscodeCached = outputPathExists && transcodingJob is not null;
 
             StreamingHelpers.AddDlnaHeaders(state, Response.Headers, (@static.HasValue && @static.Value) || isTranscodeCached, state.Request.StartTimeTicks, Request, _dlnaManager);
 

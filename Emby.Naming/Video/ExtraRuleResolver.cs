@@ -76,7 +76,7 @@ namespace Emby.Naming.Video
                     }
                 }
 
-                if (result.ExtraType != null)
+                if (result.ExtraType is not null)
                 {
                     return result;
                 }

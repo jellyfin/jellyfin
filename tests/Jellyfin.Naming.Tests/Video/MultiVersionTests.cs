@@ -26,7 +26,7 @@ namespace Jellyfin.Naming.Tests.Video
                 _namingOptions).ToList();
 
             Assert.Single(result.Where(v => v.ExtraType is null));
-            Assert.Single(result.Where(v => v.ExtraType != null));
+            Assert.Single(result.Where(v => v.ExtraType is not null));
         }
 
         [Fact]
@@ -45,7 +45,7 @@ namespace Jellyfin.Naming.Tests.Video
                 _namingOptions).ToList();
 
             Assert.Single(result.Where(v => v.ExtraType is null));
-            Assert.Single(result.Where(v => v.ExtraType != null));
+            Assert.Single(result.Where(v => v.ExtraType is not null));
             Assert.Equal(2, result[0].AlternateVersions.Count);
         }
 

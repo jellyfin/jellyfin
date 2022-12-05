@@ -419,7 +419,7 @@ namespace Jellyfin.Data.Entities
                 try
                 {
                     var parsedValue = converter.ConvertFromString(stringValues[i].Trim());
-                    if (parsedValue != null)
+                    if (parsedValue is not null)
                     {
                         parsedValues[convertedCount++] = (T)parsedValue;
                     }

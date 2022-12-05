@@ -543,7 +543,7 @@ namespace Emby.Dlna.PlayTo
                             currentObject = await GetMediaInfo(avCommands, cancellationToken).ConfigureAwait(false);
                         }
 
-                        if (currentObject != null)
+                        if (currentObject is not null)
                         {
                             UpdateMediaInfo(currentObject, transportState.Value);
                         }
@@ -585,7 +585,7 @@ namespace Emby.Dlna.PlayTo
                 if (_connectFailureCount >= 3)
                 {
                     var action = OnDeviceUnavailable;
-                    if (action != null)
+                    if (action is not null)
                     {
                         _logger.LogDebug("Disposing device due to loss of connection");
                         action();
@@ -631,7 +631,7 @@ namespace Emby.Dlna.PlayTo
                 return;
             }
 
-            var volume = result.Document.Descendants(UPnpNamespaces.RenderingControl + "GetVolumeResponse").Select(i => i.Element("CurrentVolume")).FirstOrDefault(i => i != null);
+            var volume = result.Document.Descendants(UPnpNamespaces.RenderingControl + "GetVolumeResponse").Select(i => i.Element("CurrentVolume")).FirstOrDefault(i => i is not null);
             var volumeValue = volume?.Value;
 
             if (string.IsNullOrWhiteSpace(volumeValue))
@@ -683,7 +683,7 @@ namespace Emby.Dlna.PlayTo
 
             var valueNode = result.Document.Descendants(UPnpNamespaces.RenderingControl + "GetMuteResponse")
                                             .Select(i => i.Element("CurrentMute"))
-                                            .FirstOrDefault(i => i != null);
+                                            .FirstOrDefault(i => i is not null);
 
             IsMuted = string.Equals(valueNode?.Value, "1", StringComparison.OrdinalIgnoreCase);
         }
@@ -715,11 +715,11 @@ namespace Emby.Dlna.PlayTo
             }
 
             var transportState =
-                result.Document.Descendants(UPnpNamespaces.AvTransport + "GetTransportInfoResponse").Select(i => i.Element("CurrentTransportState")).FirstOrDefault(i => i != null);
+                result.Document.Descendants(UPnpNamespaces.AvTransport + "GetTransportInfoResponse").Select(i => i.Element("CurrentTransportState")).FirstOrDefault(i => i is not null);
 
             var transportStateValue = transportState?.Value;
 
-            if (transportStateValue != null
+            if (transportStateValue is not null
                 && Enum.TryParse(transportStateValue, true, out TransportState state))
             {
                 return state;
@@ -832,10 +832,10 @@ namespace Emby.Dlna.PlayTo
                 return (false, null);
             }
 
-            var trackUriElem = result.Document.Descendants(UPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("TrackURI")).FirstOrDefault(i => i != null);
+            var trackUriElem = result.Document.Descendants(UPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("TrackURI")).FirstOrDefault(i => i is not null);
             var trackUri = trackUriElem?.Value;
 
-            var durationElem = result.Document.Descendants(UPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("TrackDuration")).FirstOrDefault(i => i != null);
+            var durationElem = result.Document.Descendants(UPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("TrackDuration")).FirstOrDefault(i => i is not null);
             var duration = durationElem?.Value;
 
             if (!string.IsNullOrWhiteSpace(duration)
@@ -848,7 +848,7 @@ namespace Emby.Dlna.PlayTo
                 Duration = null;
             }
 
-            var positionElem = result.Document.Descendants(UPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("RelTime")).FirstOrDefault(i => i != null);
+            var positionElem = result.Document.Descendants(UPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("RelTime")).FirstOrDefault(i => i is not null);
             var position = positionElem?.Value;
 
             if (!string.IsNullOrWhiteSpace(position) && !string.Equals(position, "NOT_IMPLEMENTED", StringComparison.OrdinalIgnoreCase))
@@ -959,11 +959,11 @@ namespace Emby.Dlna.PlayTo
 
             var resElement = container.Element(UPnpNamespaces.Res);
 
-            if (resElement != null)
+            if (resElement is not null)
             {
                 var info = resElement.Attribute(UPnpNamespaces.ProtocolInfo);
 
-                if (info != null && !string.IsNullOrWhiteSpace(info.Value))
+                if (info is not null && !string.IsNullOrWhiteSpace(info.Value))
                 {
                     return info.Value.Split(':');
                 }
@@ -974,7 +974,7 @@ namespace Emby.Dlna.PlayTo
 
         private async Task<TransportCommands> GetAVProtocolAsync(CancellationToken cancellationToken)
         {
-            if (AvCommands != null)
+            if (AvCommands is not null)
             {
                 return AvCommands;
             }
@@ -1006,7 +1006,7 @@ namespace Emby.Dlna.PlayTo
 
         private async Task<TransportCommands> GetRenderingProtocolAsync(CancellationToken cancellationToken)
         {
-            if (RendererCommands != null)
+            if (RendererCommands is not null)
             {
                 return RendererCommands;
             }
@@ -1070,13 +1070,13 @@ namespace Emby.Dlna.PlayTo
             var friendlyNames = new List<string>();
 
             var name = document.Descendants(UPnpNamespaces.Ud.GetName("friendlyName")).FirstOrDefault();
-            if (name != null && !string.IsNullOrWhiteSpace(name.Value))
+            if (name is not null && !string.IsNullOrWhiteSpace(name.Value))
             {
                 friendlyNames.Add(name.Value);
             }
 
             var room = document.Descendants(UPnpNamespaces.Ud.GetName("roomName")).FirstOrDefault();
-            if (room != null && !string.IsNullOrWhiteSpace(room.Value))
+            if (room is not null && !string.IsNullOrWhiteSpace(room.Value))
             {
                 friendlyNames.Add(room.Value);
             }
@@ -1088,61 +1088,61 @@ namespace Emby.Dlna.PlayTo
             };
 
             var model = document.Descendants(UPnpNamespaces.Ud.GetName("modelName")).FirstOrDefault();
-            if (model != null)
+            if (model is not null)
             {
                 deviceProperties.ModelName = model.Value;
             }
 
             var modelNumber = document.Descendants(UPnpNamespaces.Ud.GetName("modelNumber")).FirstOrDefault();
-            if (modelNumber != null)
+            if (modelNumber is not null)
             {
                 deviceProperties.ModelNumber = modelNumber.Value;
             }
 
             var uuid = document.Descendants(UPnpNamespaces.Ud.GetName("UDN")).FirstOrDefault();
-            if (uuid != null)
+            if (uuid is not null)
             {
                 deviceProperties.UUID = uuid.Value;
             }
 
             var manufacturer = document.Descendants(UPnpNamespaces.Ud.GetName("manufacturer")).FirstOrDefault();
-            if (manufacturer != null)
+            if (manufacturer is not null)
             {
                 deviceProperties.Manufacturer = manufacturer.Value;
             }
 
             var manufacturerUrl = document.Descendants(UPnpNamespaces.Ud.GetName("manufacturerURL")).FirstOrDefault();
-            if (manufacturerUrl != null)
+            if (manufacturerUrl is not null)
             {
                 deviceProperties.ManufacturerUrl = manufacturerUrl.Value;
             }
 
             var presentationUrl = document.Descendants(UPnpNamespaces.Ud.GetName("presentationURL")).FirstOrDefault();
-            if (presentationUrl != null)
+            if (presentationUrl is not null)
             {
                 deviceProperties.PresentationUrl = presentationUrl.Value;
             }
 
             var modelUrl = document.Descendants(UPnpNamespaces.Ud.GetName("modelURL")).FirstOrDefault();
-            if (modelUrl != null)
+            if (modelUrl is not null)
             {
                 deviceProperties.ModelUrl = modelUrl.Value;
             }
 
             var serialNumber = document.Descendants(UPnpNamespaces.Ud.GetName("serialNumber")).FirstOrDefault();
-            if (serialNumber != null)
+            if (serialNumber is not null)
             {
                 deviceProperties.SerialNumber = serialNumber.Value;
             }
 
             var modelDescription = document.Descendants(UPnpNamespaces.Ud.GetName("modelDescription")).FirstOrDefault();
-            if (modelDescription != null)
+            if (modelDescription is not null)
             {
                 deviceProperties.ModelDescription = modelDescription.Value;
             }
 
             var icon = document.Descendants(UPnpNamespaces.Ud.GetName("icon")).FirstOrDefault();
-            if (icon != null)
+            if (icon is not null)
             {
                 deviceProperties.Icon = CreateIcon(icon);
             }
@@ -1164,7 +1164,7 @@ namespace Emby.Dlna.PlayTo
                 {
                     var service = Create(element);
 
-                    if (service != null)
+                    if (service is not null)
                     {
                         deviceProperties.Services.Add(service);
                     }
@@ -1214,7 +1214,7 @@ namespace Emby.Dlna.PlayTo
 
             if (mediaInfo is null)
             {
-                if (previousMediaInfo != null)
+                if (previousMediaInfo is not null)
                 {
                     OnPlaybackStop(previousMediaInfo);
                 }

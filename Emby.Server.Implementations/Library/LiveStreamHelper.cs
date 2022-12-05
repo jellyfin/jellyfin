@@ -81,7 +81,7 @@ namespace Emby.Server.Implementations.Library
                     },
                     cancellationToken).ConfigureAwait(false);
 
-                if (cacheFilePath != null)
+                if (cacheFilePath is not null)
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
                     await using FileStream createStream = AsyncFile.OpenWrite(cacheFilePath);
@@ -140,7 +140,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
-            if (videoStream != null)
+            if (videoStream is not null)
             {
                 if (!videoStream.BitRate.HasValue)
                 {

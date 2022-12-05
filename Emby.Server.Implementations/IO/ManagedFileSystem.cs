@@ -149,7 +149,7 @@ namespace Emby.Server.Implementations.IO
             var extension = Path.GetExtension(shortcutPath);
             var handler = _shortcutHandlers.Find(i => string.Equals(extension, i.Extension, StringComparison.OrdinalIgnoreCase));
 
-            if (handler != null)
+            if (handler is not null)
             {
                 handler.Create(shortcutPath, target);
             }
@@ -621,14 +621,14 @@ namespace Emby.Server.Implementations.IO
 
             // On linux and osx the search pattern is case sensitive
             // If we're OK with case-sensitivity, and we're only filtering for one extension, then use the native method
-            if ((enableCaseSensitiveExtensions || _isEnvironmentCaseInsensitive) && extensions != null && extensions.Count == 1)
+            if ((enableCaseSensitiveExtensions || _isEnvironmentCaseInsensitive) && extensions is not null && extensions.Count == 1)
             {
                 return ToMetadata(new DirectoryInfo(path).EnumerateFiles("*" + extensions[0], enumerationOptions));
             }
 
             var files = new DirectoryInfo(path).EnumerateFiles("*", enumerationOptions);
 
-            if (extensions != null && extensions.Count > 0)
+            if (extensions is not null && extensions.Count > 0)
             {
                 files = files.Where(i =>
                 {
@@ -678,14 +678,14 @@ namespace Emby.Server.Implementations.IO
 
             // On linux and osx the search pattern is case sensitive
             // If we're OK with case-sensitivity, and we're only filtering for one extension, then use the native method
-            if ((enableCaseSensitiveExtensions || _isEnvironmentCaseInsensitive) && extensions != null && extensions.Length == 1)
+            if ((enableCaseSensitiveExtensions || _isEnvironmentCaseInsensitive) && extensions is not null && extensions.Length == 1)
             {
                 return Directory.EnumerateFiles(path, "*" + extensions[0], enumerationOptions);
             }
 
             var files = Directory.EnumerateFiles(path, "*", enumerationOptions);
 
-            if (extensions != null && extensions.Length > 0)
+            if (extensions is not null && extensions.Length > 0)
             {
                 files = files.Where(i =>
                 {

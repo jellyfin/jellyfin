@@ -100,7 +100,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Triggers
         {
             DisposeTimer();
 
-            if (Triggered != null)
+            if (Triggered is not null)
             {
                 _lastStartDate = DateTime.UtcNow;
                 Triggered(this, EventArgs.Empty);

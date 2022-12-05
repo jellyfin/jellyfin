@@ -19,7 +19,7 @@ namespace Emby.Server.Implementations.Library
             {
                 var defaultStream = sortedStreams.FirstOrDefault(i => i.IsDefault);
 
-                if (defaultStream != null)
+                if (defaultStream is not null)
                 {
                     return defaultStream.Index;
                 }

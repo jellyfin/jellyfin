@@ -35,7 +35,7 @@ namespace Emby.Dlna.Eventing
         public EventSubscriptionResponse RenewEventSubscription(string subscriptionId, string notificationType, string requestedTimeoutString, string callbackUrl)
         {
             var subscription = GetSubscription(subscriptionId, false);
-            if (subscription != null)
+            if (subscription is not null)
             {
                 subscription.TimeoutSeconds = ParseTimeout(requestedTimeoutString) ?? 300;
                 int timeoutSeconds = subscription.TimeoutSeconds;

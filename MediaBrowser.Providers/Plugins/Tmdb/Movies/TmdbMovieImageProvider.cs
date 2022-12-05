@@ -74,7 +74,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 }
 
                 var movieResult = await _tmdbClientManager.FindByExternalIdAsync(movieImdbId, FindExternalSource.Imdb, language, cancellationToken).ConfigureAwait(false);
-                if (movieResult?.MovieResults != null && movieResult.MovieResults.Count > 0)
+                if (movieResult?.MovieResults is not null && movieResult.MovieResults.Count > 0)
                 {
                     movieTmdbId = movieResult.MovieResults[0].Id;
                 }

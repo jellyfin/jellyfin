@@ -211,7 +211,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             get
             {
-                if (CurrentCancellationTokenSource != null)
+                if (CurrentCancellationTokenSource is not null)
                 {
                     return CurrentCancellationTokenSource.IsCancellationRequested
                                ? TaskState.Cancelling
@@ -240,7 +240,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 ArgumentNullException.ThrowIfNull(value);
 
                 // Cleanup current triggers
-                if (_triggers != null)
+                if (_triggers is not null)
                 {
                     DisposeTriggers();
                 }
@@ -269,7 +269,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 ArgumentNullException.ThrowIfNull(value);
 
                 // This null check is not great, but is needed to handle bad user input, or user mucking with the config file incorrectly
-                var triggerList = value.Where(i => i != null).ToArray();
+                var triggerList = value.Where(i => i is not null).ToArray();
 
                 SaveTriggers(triggerList);
 
@@ -369,7 +369,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         private async Task ExecuteInternal(TaskOptions options)
         {
             // Cancel the current execution, if any
-            if (CurrentCancellationTokenSource != null)
+            if (CurrentCancellationTokenSource is not null)
             {
                 throw new InvalidOperationException("Cannot execute a Task that is already running");
             }
@@ -391,7 +391,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             try
             {
-                if (options != null && options.MaxRuntimeTicks.HasValue)
+                if (options is not null && options.MaxRuntimeTicks.HasValue)
                 {
                     CurrentCancellationTokenSource.CancelAfter(TimeSpan.FromTicks(options.MaxRuntimeTicks.Value));
                 }
@@ -507,7 +507,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         private Tuple<TaskTriggerInfo, ITaskTrigger>[] LoadTriggers()
         {
             // This null check is not great, but is needed to handle bad user input, or user mucking with the config file incorrectly
-            var settings = LoadTriggerSettings().Where(i => i != null).ToArray();
+            var settings = LoadTriggerSettings().Where(i => i is not null).ToArray();
 
             return settings.Select(i => new Tuple<TaskTriggerInfo, ITaskTrigger>(i, GetTrigger(i))).ToArray();
         }
@@ -583,7 +583,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             result.Key = ScheduledTask.Key;
 
-            if (ex != null)
+            if (ex is not null)
             {
                 result.ErrorMessage = ex.Message;
                 result.LongErrorMessage = ex.StackTrace;
@@ -617,7 +617,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 var startTime = CurrentExecutionStartTime;
 
                 var token = CurrentCancellationTokenSource;
-                if (token != null)
+                if (token is not null)
                 {
                     try
                     {
@@ -631,7 +631,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 }
 
                 var task = _currentTask;
-                if (task != null)
+                if (task is not null)
                 {
                     try
                     {
@@ -653,7 +653,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                     }
                 }
 
-                if (token != null)
+                if (token is not null)
                 {
                     try
                     {

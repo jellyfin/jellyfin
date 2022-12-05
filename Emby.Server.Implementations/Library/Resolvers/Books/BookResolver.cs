@@ -34,7 +34,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
 
             var extension = Path.GetExtension(args.Path);
 
-            if (extension != null && _validExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
+            if (extension is not null && _validExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
             {
                 // It's a book
                 return new Book

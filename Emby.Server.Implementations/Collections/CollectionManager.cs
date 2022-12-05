@@ -81,7 +81,7 @@ namespace Emby.Server.Implementations.Collections
         internal async Task<Folder?> EnsureLibraryFolder(string path, bool createIfNeeded)
         {
             var existingFolder = FindFolders(path).FirstOrDefault();
-            if (existingFolder != null)
+            if (existingFolder is not null)
             {
                 return existingFolder;
             }
@@ -265,7 +265,7 @@ namespace Emby.Server.Implementations.Collections
             {
                 var childItem = _libraryManager.GetItemById(guidId);
 
-                var child = collection.LinkedChildren.FirstOrDefault(i => (i.ItemId.HasValue && i.ItemId.Value.Equals(guidId)) || (childItem != null && string.Equals(childItem.Path, i.Path, StringComparison.OrdinalIgnoreCase)));
+                var child = collection.LinkedChildren.FirstOrDefault(i => (i.ItemId.HasValue && i.ItemId.Value.Equals(guidId)) || (childItem is not null && string.Equals(childItem.Path, i.Path, StringComparison.OrdinalIgnoreCase)));
 
                 if (child is null)
                 {
@@ -275,7 +275,7 @@ namespace Emby.Server.Implementations.Collections
 
                 list.Add(child);
 
-                if (childItem != null)
+                if (childItem is not null)
                 {
                     itemList.Add(childItem);
                 }

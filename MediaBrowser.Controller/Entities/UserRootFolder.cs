@@ -63,7 +63,7 @@ namespace MediaBrowser.Controller.Entities
                     return list;
                 }
 
-                return _childrenIds.Select(LibraryManager.GetItemById).Where(i => i != null).ToList();
+                return _childrenIds.Select(LibraryManager.GetItemById).Where(i => i is not null).ToList();
             }
         }
 

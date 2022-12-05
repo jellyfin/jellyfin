@@ -292,7 +292,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>Equality result.</returns>
         public virtual bool Equals(IPAddress ip)
         {
-            if (ip != null)
+            if (ip is not null)
             {
                 if (ip.IsIPv4MappedToIPv6)
                 {
@@ -312,7 +312,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>Equality result.</returns>
         public virtual bool Equals(IPObject? other)
         {
-            if (other != null)
+            if (other is not null)
             {
                 return !Address.Equals(IPAddress.None) && Address.Equals(other.Address);
             }

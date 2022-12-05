@@ -540,10 +540,10 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             public float? GetRottenTomatoScore()
             {
-                if (Ratings != null)
+                if (Ratings is not null)
                 {
                     var rating = Ratings.FirstOrDefault(i => string.Equals(i.Source, "Rotten Tomatoes", StringComparison.OrdinalIgnoreCase));
-                    if (rating?.Value != null)
+                    if (rating?.Value is not null)
                     {
                         var value = rating.Value.TrimEnd('%');
                         if (float.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var score))

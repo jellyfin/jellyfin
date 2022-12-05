@@ -108,7 +108,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     var series = season.Series;
 
-                    if (series != null && series.SupportsLocalMetadata && series.IsSaveLocalMetadataEnabled())
+                    if (series is not null && series.SupportsLocalMetadata && series.IsSaveLocalMetadataEnabled())
                     {
                         saveLocally = true;
                     }
@@ -144,7 +144,7 @@ namespace MediaBrowser.Providers.Manager
             }
 
             var currentImage = GetCurrentImage(item, type, index);
-            var currentImageIsLocalFile = currentImage != null && currentImage.IsLocalFile;
+            var currentImageIsLocalFile = currentImage is not null && currentImage.IsLocalFile;
             var currentImagePath = currentImage?.Path;
 
             var savedPaths = new List<string>();
@@ -374,7 +374,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (type == ImageType.Thumb && saveLocally)
             {
-                if (season != null && season.IndexNumber.HasValue)
+                if (season is not null && season.IndexNumber.HasValue)
                 {
                     var seriesFolder = season.SeriesPath;
 
@@ -397,7 +397,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (type == ImageType.Banner && saveLocally)
             {
-                if (season != null && season.IndexNumber.HasValue)
+                if (season is not null && season.IndexNumber.HasValue)
                 {
                     var seriesFolder = season.SeriesPath;
 
@@ -533,7 +533,7 @@ namespace MediaBrowser.Providers.Manager
                         return new[] { GetSavePathForItemInMixedFolder(item, type, "fanart", extension) };
                     }
 
-                    if (season != null && season.IndexNumber.HasValue)
+                    if (season is not null && season.IndexNumber.HasValue)
                     {
                         var seriesFolder = season.SeriesPath;
 
@@ -576,7 +576,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (type == ImageType.Primary)
             {
-                if (season != null && season.IndexNumber.HasValue)
+                if (season is not null && season.IndexNumber.HasValue)
                 {
                     var seriesFolder = season.SeriesPath;
 

@@ -178,7 +178,7 @@ namespace Jellyfin.Api.Controllers
 
             Response.OnCompleted(() =>
             {
-                if (transcodingJob != null)
+                if (transcodingJob is not null)
                 {
                     _transcodingJobHelper.OnTranscodeEndRequest(transcodingJob);
                 }

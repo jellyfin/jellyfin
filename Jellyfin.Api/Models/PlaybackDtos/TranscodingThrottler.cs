@@ -210,7 +210,7 @@ namespace Jellyfin.Api.Models.PlaybackDtos
 
         private void DisposeTimer()
         {
-            if (_timer != null)
+            if (_timer is not null)
             {
                 _timer.Dispose();
                 _timer = null;

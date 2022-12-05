@@ -155,7 +155,7 @@ namespace MediaBrowser.Controller.Entities.TV
             var list = base.GetUserDataKeys();
 
             var series = Series;
-            if (series != null && ParentIndexNumber.HasValue && IndexNumber.HasValue)
+            if (series is not null && ParentIndexNumber.HasValue && IndexNumber.HasValue)
             {
                 var seriesUserDataKeys = series.GetUserDataKeys();
                 var take = seriesUserDataKeys.Count;
@@ -216,7 +216,7 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 var series = Series;
 
-                if (series != null && ParentIndexNumber.HasValue)
+                if (series is not null && ParentIndexNumber.HasValue)
                 {
                     var findNumber = ParentIndexNumber.Value;
 
@@ -235,8 +235,8 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <returns>System.String.</returns>
         protected override string CreateSortName()
         {
-            return (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("000 - ", CultureInfo.InvariantCulture) : string.Empty)
-                    + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ", CultureInfo.InvariantCulture) : string.Empty) + Name;
+            return (ParentIndexNumber is not null ? ParentIndexNumber.Value.ToString("000 - ", CultureInfo.InvariantCulture) : string.Empty)
+                    + (IndexNumber is not null ? IndexNumber.Value.ToString("0000 - ", CultureInfo.InvariantCulture) : string.Empty) + Name;
         }
 
         /// <summary>
@@ -302,7 +302,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
             var series = Series;
 
-            if (series != null)
+            if (series is not null)
             {
                 id.SeriesProviderIds = series.ProviderIds;
                 id.SeriesDisplayOrder = series.DisplayOrder;

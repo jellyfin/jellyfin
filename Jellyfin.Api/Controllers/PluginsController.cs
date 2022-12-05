@@ -148,7 +148,7 @@ namespace Jellyfin.Api.Controllers
             // Select the un-instanced one first.
             var plugin = plugins.FirstOrDefault(p => p.Instance is null) ?? plugins.OrderBy(p => p.Manifest.Status).FirstOrDefault();
 
-            if (plugin != null)
+            if (plugin is not null)
             {
                 _installationManager.UninstallPlugin(plugin);
                 return NoContent();
@@ -202,7 +202,7 @@ namespace Jellyfin.Api.Controllers
             var configuration = (BasePluginConfiguration?)await JsonSerializer.DeserializeAsync(Request.Body, configPlugin.ConfigurationType, _serializerOptions)
                 .ConfigureAwait(false);
 
-            if (configuration != null)
+            if (configuration is not null)
             {
                 configPlugin.UpdateConfiguration(configuration);
             }
@@ -254,7 +254,7 @@ namespace Jellyfin.Api.Controllers
         {
             var plugin = _pluginManager.GetPlugin(pluginId);
 
-            if (plugin != null)
+            if (plugin is not null)
             {
                 return plugin.Manifest;
             }

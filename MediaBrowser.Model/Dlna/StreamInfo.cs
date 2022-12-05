@@ -521,7 +521,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 var videoStream = TargetVideoStream;
 
-                if (videoStream != null && videoStream.Width.HasValue && videoStream.Height.HasValue)
+                if (videoStream is not null && videoStream.Width.HasValue && videoStream.Height.HasValue)
                 {
                     ImageDimensions size = new ImageDimensions(videoStream.Width.Value, videoStream.Height.Value);
 
@@ -540,7 +540,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 var videoStream = TargetVideoStream;
 
-                if (videoStream != null && videoStream.Width.HasValue && videoStream.Height.HasValue)
+                if (videoStream is not null && videoStream.Width.HasValue && videoStream.Height.HasValue)
                 {
                     ImageDimensions size = new ImageDimensions(videoStream.Width.Value, videoStream.Height.Value);
 

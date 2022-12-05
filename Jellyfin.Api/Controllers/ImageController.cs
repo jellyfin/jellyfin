@@ -110,7 +110,7 @@ namespace Jellyfin.Api.Controllers
             // Handle image/png; charset=utf-8
             var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
             var userDataPath = Path.Combine(_serverConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, user.Username);
-            if (user.ProfileImage != null)
+            if (user.ProfileImage is not null)
             {
                 await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
             }
@@ -157,7 +157,7 @@ namespace Jellyfin.Api.Controllers
             // Handle image/png; charset=utf-8
             var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
             var userDataPath = Path.Combine(_serverConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, user.Username);
-            if (user.ProfileImage != null)
+            if (user.ProfileImage is not null)
             {
                 await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
             }
@@ -452,7 +452,7 @@ namespace Jellyfin.Api.Controllers
                 {
                     var info = GetImageInfo(item, image, null);
 
-                    if (info != null)
+                    if (info is not null)
                     {
                         list.Add(info);
                     }
@@ -470,7 +470,7 @@ namespace Jellyfin.Api.Controllers
                 {
                     var info = GetImageInfo(item, image, index);
 
-                    if (info != null)
+                    if (info is not null)
                     {
                         list.Add(info);
                     }
@@ -1968,7 +1968,7 @@ namespace Jellyfin.Api.Controllers
                 { "realTimeInfo.dlna.org", "DLNA.ORG_TLAG=*" }
             };
 
-            if (!imageInfo.IsLocalFile && item != null)
+            if (!imageInfo.IsLocalFile && item is not null)
             {
                 imageInfo = await _libraryManager.ConvertImageToLocal(item, imageInfo, imageIndex ?? 0).ConfigureAwait(false);
             }

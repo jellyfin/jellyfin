@@ -55,7 +55,7 @@ namespace MediaBrowser.Controller.Entities
         public InternalItemsQuery(User? user)
             : this()
         {
-            if (user != null)
+            if (user is not null)
             {
                 SetUser(user);
             }

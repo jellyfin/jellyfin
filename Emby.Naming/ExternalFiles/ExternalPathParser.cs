@@ -94,12 +94,12 @@ namespace Emby.Naming.ExternalFiles
                     // Try to translate to three character code
                     var culture = _localizationManager.FindLanguageInfo(currentSliceWithoutSeparator);
 
-                    if (culture != null && pathInfo.Language is null)
+                    if (culture is not null && pathInfo.Language is null)
                     {
                         pathInfo.Language = culture.ThreeLetterISOLanguageName;
                         extraString = extraString.Replace(currentSlice, string.Empty, StringComparison.OrdinalIgnoreCase);
                     }
-                    else if (culture != null && pathInfo.Language == "hin")
+                    else if (culture is not null && pathInfo.Language == "hin")
                     {
                         // Hindi language code "hi" collides with a hearing impaired flag - use as Hindi only if no other language is set
                         pathInfo.IsHearingImpaired = true;

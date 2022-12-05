@@ -306,7 +306,7 @@ namespace Jellyfin.Api.Controllers
                 var item = i.Item2[0];
                 var childCount = 0;
 
-                if (i.Item1 != null && (i.Item2.Count > 1 || i.Item1 is MusicAlbum))
+                if (i.Item1 is not null && (i.Item2.Count > 1 || i.Item1 is MusicAlbum))
                 {
                     item = i.Item1;
                     childCount = i.Item2.Count;

@@ -146,7 +146,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     var id = itemOfType.GetLookupInfo();
 
-                    if (refreshOptions.SearchResult != null)
+                    if (refreshOptions.SearchResult is not null)
                     {
                         ApplySearchResult(id, refreshOptions.SearchResult);
                     }
@@ -190,7 +190,7 @@ namespace MediaBrowser.Providers.Manager
                 if (item.IsFileProtocol)
                 {
                     var file = TryGetFile(item.Path, refreshOptions.DirectoryService);
-                    if (file != null)
+                    if (file is not null)
                     {
                         item.DateModified = file.LastWriteTimeUtc;
                     }
@@ -243,7 +243,7 @@ namespace MediaBrowser.Providers.Manager
 
         protected async Task SaveItemAsync(MetadataResult<TItemType> result, ItemUpdateType reason, CancellationToken cancellationToken)
         {
-            if (result.Item.SupportsPeople && result.People != null)
+            if (result.Item.SupportsPeople && result.People is not null)
             {
                 var baseItem = result.Item;
 
@@ -815,7 +815,7 @@ namespace MediaBrowser.Providers.Manager
                 var providerName = provider.GetType().Name;
                 Logger.LogDebug("Running {Provider} for {Item}", providerName, logName);
 
-                if (id != null && !tmpDataMerged)
+                if (id is not null && !tmpDataMerged)
                 {
                     MergeNewData(temp.Item, id);
                     tmpDataMerged = true;
@@ -1009,7 +1009,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     targetResult.People = sourceResult.People;
                 }
-                else if (targetResult.People != null && sourceResult.People != null)
+                else if (targetResult.People is not null && sourceResult.People is not null)
                 {
                     MergePeople(sourceResult.People, targetResult.People);
                 }
@@ -1114,7 +1114,7 @@ namespace MediaBrowser.Providers.Manager
                 var normalizedName = person.Name.RemoveDiacritics();
                 var personInSource = source.FirstOrDefault(i => string.Equals(i.Name.RemoveDiacritics(), normalizedName, StringComparison.OrdinalIgnoreCase));
 
-                if (personInSource != null)
+                if (personInSource is not null)
                 {
                     foreach (var providerId in personInSource.ProviderIds)
                     {

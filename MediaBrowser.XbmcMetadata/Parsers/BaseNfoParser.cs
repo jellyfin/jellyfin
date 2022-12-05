@@ -373,7 +373,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var val = reader.ReadElementContentAsBoolean();
 
-                        if (userData != null)
+                        if (userData is not null)
                         {
                             userData.Played = val;
                         }
@@ -384,7 +384,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 case "playcount":
                     {
                         var val = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(val) && userData != null)
+                        if (!string.IsNullOrWhiteSpace(val) && userData is not null)
                         {
                             if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var count))
                             {
@@ -398,7 +398,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 case "lastplayed":
                     {
                         var val = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(val) && userData != null)
+                        if (!string.IsNullOrWhiteSpace(val) && userData is not null)
                         {
                             if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var added))
                             {
@@ -633,7 +633,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         var val = reader.ReadElementContentAsString();
 
                         var hasDisplayOrder = item as IHasDisplayOrder;
-                        if (hasDisplayOrder != null)
+                        if (hasDisplayOrder is not null)
                         {
                             if (!string.IsNullOrWhiteSpace(val))
                             {
@@ -1018,7 +1018,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                                 var video = item as Video;
 
-                                if (video != null)
+                                if (video is not null)
                                 {
                                     if (string.Equals("HSBS", val, StringComparison.OrdinalIgnoreCase))
                                     {
@@ -1198,7 +1198,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                 if (float.TryParse(val, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var ratingValue))
                                 {
                                     // if ratingName contains tomato --> assume critic rating
-                                    if (ratingName != null &&
+                                    if (ratingName is not null &&
                                         ratingName.Contains("tomato", StringComparison.OrdinalIgnoreCase) &&
                                         !ratingName.Contains("audience", StringComparison.OrdinalIgnoreCase))
                                     {

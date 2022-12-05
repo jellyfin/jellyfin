@@ -503,7 +503,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             {
                 var modelInfo = await GetModelInfo(tuner, false, cancellationToken).ConfigureAwait(false);
 
-                if (modelInfo != null && modelInfo.SupportsTranscoding)
+                if (modelInfo is not null && modelInfo.SupportsTranscoding)
                 {
                     if (tuner.AllowHWTranscoding)
                     {
@@ -560,7 +560,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var mediaSource = GetMediaSource(tunerHost, hdhrId, channel, profile);
 
-            if (hdhomerunChannel != null && hdhomerunChannel.IsLegacyTuner)
+            if (hdhomerunChannel is not null && hdhomerunChannel.IsLegacyTuner)
             {
                 return new HdHomerunUdpStream(
                     mediaSource,
@@ -674,7 +674,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                             var info = await TryGetTunerHostInfo(deviceAddress, cancellationToken).ConfigureAwait(false);
 
-                            if (info != null)
+                            if (info is not null)
                             {
                                 list.Add(info);
                             }

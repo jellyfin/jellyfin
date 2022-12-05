@@ -153,7 +153,7 @@ namespace Emby.Dlna.Didl
             writer.WriteAttributeString("restricted", "1");
             writer.WriteAttributeString("id", clientId);
 
-            if (context != null)
+            if (context is not null)
             {
                 writer.WriteAttributeString("parentID", GetClientId(context, contextStubType));
             }
@@ -652,7 +652,7 @@ namespace Emby.Dlna.Didl
             {
                 writer.WriteAttributeString("id", clientId);
 
-                if (context != null)
+                if (context is not null)
                 {
                     writer.WriteAttributeString("parentID", GetClientId(context, null));
                 }
@@ -701,7 +701,7 @@ namespace Emby.Dlna.Didl
             }
 
             var userdata = _userDataManager.GetUserData(user, item);
-            var playbackPositionTicks = (streamInfo != null && streamInfo.StartPositionTicks > 0) ? streamInfo.StartPositionTicks : userdata.PlaybackPositionTicks;
+            var playbackPositionTicks = (streamInfo is not null && streamInfo.StartPositionTicks > 0) ? streamInfo.StartPositionTicks : userdata.PlaybackPositionTicks;
 
             if (playbackPositionTicks > 0)
             {
@@ -916,7 +916,7 @@ namespace Emby.Dlna.Didl
                 }
             }
 
-            if (hasAlbumArtists != null)
+            if (hasAlbumArtists is not null)
             {
                 foreach (var albumArtist in hasAlbumArtists.AlbumArtists)
                 {
@@ -1093,7 +1093,7 @@ namespace Emby.Dlna.Didl
             if (item is Audio audioItem)
             {
                 var album = audioItem.AlbumEntity;
-                return album != null && album.HasImage(ImageType.Primary)
+                return album is not null && album.HasImage(ImageType.Primary)
                     ? GetImageInfo(album, ImageType.Primary)
                     : null;
             }
@@ -1106,7 +1106,7 @@ namespace Emby.Dlna.Didl
 
             // For other item types check parents, but be aware that image retrieved from a parent may be not suitable for this media item.
             var parentWithImage = GetFirstParentWithImageBelowUserRoot(item);
-            if (parentWithImage != null)
+            if (parentWithImage is not null)
             {
                 return GetImageInfo(parentWithImage, ImageType.Primary);
             }

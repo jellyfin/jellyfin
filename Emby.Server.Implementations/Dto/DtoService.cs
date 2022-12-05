@@ -213,7 +213,7 @@ namespace Emby.Server.Implementations.Dto
                 dto.DisplayPreferencesId = item.DisplayPreferencesId.ToString("N", CultureInfo.InvariantCulture);
             }
 
-            if (user != null)
+            if (user is not null)
             {
                 AttachUserSpecificInfo(dto, item, user, options);
             }
@@ -254,7 +254,7 @@ namespace Emby.Server.Implementations.Dto
 
             var liveTvManager = LivetvManager;
             var activeRecording = liveTvManager.GetActiveRecordingInfo(item.Path);
-            if (activeRecording != null)
+            if (activeRecording is not null)
             {
                 dto.Type = BaseItemKind.Recording;
                 dto.CanDownload = false;
@@ -317,7 +317,7 @@ namespace Emby.Server.Implementations.Dto
         {
             var dto = GetBaseItemDtoInternal(item, options, user);
 
-            if (taggedItems != null && options.ContainsField(ItemFields.ItemCounts))
+            if (taggedItems is not null && options.ContainsField(ItemFields.ItemCounts))
             {
                 SetItemByNameInfo(item, dto, taggedItems);
             }
@@ -417,7 +417,7 @@ namespace Emby.Server.Implementations.Dto
 
             if (options.ContainsField(ItemFields.BasicSyncInfo))
             {
-                var userCanSync = user != null && user.HasPermission(PermissionKind.EnableContentDownloading);
+                var userCanSync = user is not null && user.HasPermission(PermissionKind.EnableContentDownloading);
                 if (userCanSync && item.SupportsExternalTransfer)
                 {
                     dto.SupportsSync = true;
@@ -460,7 +460,7 @@ namespace Emby.Server.Implementations.Dto
 
             var album = item.AlbumEntity;
 
-            if (album != null)
+            if (album is not null)
             {
                 dto.Album = album.Name;
                 dto.AlbumId = album.Id;
@@ -491,7 +491,7 @@ namespace Emby.Server.Implementations.Dto
         {
             return images
                 .Select(p => GetImageCacheTag(item, p))
-                .Where(i => i != null)
+                .Where(i => i is not null)
                 .ToArray();
         }
 
@@ -570,7 +570,7 @@ namespace Emby.Server.Implementations.Dto
                         _logger.LogError(ex, "Error getting person {Name}", c);
                         return null;
                     }
-                }).Where(i => i != null)
+                }).Where(i => i is not null)
                 .Where(i => user is null ?
                     true :
                     i.IsVisible(user))
@@ -593,13 +593,13 @@ namespace Emby.Server.Implementations.Dto
                 {
                     baseItemPerson.PrimaryImageTag = GetTagAndFillBlurhash(dto, entity, ImageType.Primary);
                     baseItemPerson.Id = entity.Id;
-                    if (dto.ImageBlurHashes != null)
+                    if (dto.ImageBlurHashes is not null)
                     {
                         // Only add BlurHash for the person's image.
                         baseItemPerson.ImageBlurHashes = new Dictionary<ImageType, Dictionary<string, string>>();
                         foreach (var (imageType, blurHash) in dto.ImageBlurHashes)
                         {
-                            if (blurHash != null)
+                            if (blurHash is not null)
                             {
                                 baseItemPerson.ImageBlurHashes[imageType] = new Dictionary<string, string>();
                                 foreach (var (imageId, blurHashValue) in blurHash)
@@ -662,7 +662,7 @@ namespace Emby.Server.Implementations.Dto
         private string GetTagAndFillBlurhash(BaseItemDto dto, BaseItem item, ImageType imageType, int imageIndex = 0)
         {
             var image = item.GetImageInfo(imageType, imageIndex);
-            if (image != null)
+            if (image is not null)
             {
                 return GetTagAndFillBlurhash(dto, item, image);
             }
@@ -782,7 +782,7 @@ namespace Emby.Server.Implementations.Dto
                     {
                         var tag = GetTagAndFillBlurhash(dto, item, image);
 
-                        if (tag != null)
+                        if (tag is not null)
                         {
                             dto.ImageTags[image.Type] = tag;
                         }
@@ -917,7 +917,7 @@ namespace Emby.Server.Implementations.Dto
 
                 var albumParent = audio.AlbumEntity;
 
-                if (albumParent != null)
+                if (albumParent is not null)
                 {
                     dto.AlbumId = albumParent.Id;
                     dto.AlbumPrimaryImageTag = GetTagAndFillBlurhash(dto, albumParent, ImageType.Primary);
@@ -967,7 +967,7 @@ namespace Emby.Server.Implementations.Dto
                         {
                             EnableImages = false
                         });
-                        if (artist != null)
+                        if (artist is not null)
                         {
                             return new NameGuidPair
                             {
@@ -977,7 +977,7 @@ namespace Emby.Server.Implementations.Dto
                         }
 
                         return null;
-                    }).Where(i => i != null).ToArray();
+                    }).Where(i => i is not null).ToArray();
             }
 
             if (item is IHasAlbumArtist hasAlbumArtist)
@@ -1016,7 +1016,7 @@ namespace Emby.Server.Implementations.Dto
                         {
                             EnableImages = false
                         });
-                        if (artist != null)
+                        if (artist is not null)
                         {
                             return new NameGuidPair
                             {
@@ -1026,7 +1026,7 @@ namespace Emby.Server.Implementations.Dto
                         }
 
                         return null;
-                    }).Where(i => i != null).ToArray();
+                    }).Where(i => i is not null).ToArray();
             }
 
             // Add video info
@@ -1073,7 +1073,7 @@ namespace Emby.Server.Implementations.Dto
                 {
                     MediaStream[] mediaStreams;
 
-                    if (dto.MediaSources != null && dto.MediaSources.Length > 0)
+                    if (dto.MediaSources is not null && dto.MediaSources.Length > 0)
                     {
                         if (item.SourceType == SourceType.Channel)
                         {
@@ -1140,7 +1140,7 @@ namespace Emby.Server.Implementations.Dto
                 // if (options.ContainsField(ItemFields.SeriesPrimaryImage))
                 {
                     episodeSeries ??= episode.Series;
-                    if (episodeSeries != null)
+                    if (episodeSeries is not null)
                     {
                         dto.SeriesPrimaryImageTag = GetTagAndFillBlurhash(dto, episodeSeries, ImageType.Primary);
                         if (dto.ImageTags is null || !dto.ImageTags.ContainsKey(ImageType.Primary))
@@ -1153,7 +1153,7 @@ namespace Emby.Server.Implementations.Dto
                 if (options.ContainsField(ItemFields.SeriesStudio))
                 {
                     episodeSeries ??= episode.Series;
-                    if (episodeSeries != null)
+                    if (episodeSeries is not null)
                     {
                         dto.SeriesStudio = episodeSeries.Studios.FirstOrDefault();
                     }
@@ -1179,7 +1179,7 @@ namespace Emby.Server.Implementations.Dto
                 if (options.ContainsField(ItemFields.SeriesStudio))
                 {
                     series ??= season.Series;
-                    if (series != null)
+                    if (series is not null)
                     {
                         dto.SeriesStudio = series.Studios.FirstOrDefault();
                     }
@@ -1190,7 +1190,7 @@ namespace Emby.Server.Implementations.Dto
                 // if (options.ContainsField(ItemFields.SeriesPrimaryImage))
                 {
                     series ??= season.Series;
-                    if (series != null)
+                    if (series is not null)
                     {
                         dto.SeriesPrimaryImageTag = GetTagAndFillBlurhash(dto, series, ImageType.Primary);
                         if (dto.ImageTags is null || !dto.ImageTags.ContainsKey(ImageType.Primary))
@@ -1256,7 +1256,7 @@ namespace Emby.Server.Implementations.Dto
             if (item.SourceType == SourceType.Channel)
             {
                 var channel = _libraryManager.GetItemById(item.ChannelId);
-                if (channel != null)
+                if (channel is not null)
                 {
                     dto.ChannelName = channel.Name;
                 }
@@ -1268,7 +1268,7 @@ namespace Emby.Server.Implementations.Dto
             if (currentItem is MusicAlbum musicAlbum)
             {
                 var artist = musicAlbum.GetMusicArtist(new DtoOptions(false));
-                if (artist != null)
+                if (artist is not null)
                 {
                     return artist;
                 }
@@ -1309,9 +1309,9 @@ namespace Emby.Server.Implementations.Dto
 
             var imageTags = dto.ImageTags;
 
-            while ((!(imageTags != null && imageTags.ContainsKey(ImageType.Logo)) && logoLimit > 0)
-                || (!(imageTags != null && imageTags.ContainsKey(ImageType.Art)) && artLimit > 0)
-                || (!(imageTags != null && imageTags.ContainsKey(ImageType.Thumb)) && thumbLimit > 0)
+            while ((!(imageTags is not null && imageTags.ContainsKey(ImageType.Logo)) && logoLimit > 0)
+                || (!(imageTags is not null && imageTags.ContainsKey(ImageType.Art)) && artLimit > 0)
+                || (!(imageTags is not null && imageTags.ContainsKey(ImageType.Thumb)) && thumbLimit > 0)
                 || parent is Series)
             {
                 parent ??= isFirst ? GetImageDisplayParent(item, item) ?? owner : parent;
@@ -1322,40 +1322,40 @@ namespace Emby.Server.Implementations.Dto
 
                 var allImages = parent.ImageInfos;
 
-                if (logoLimit > 0 && !(imageTags != null && imageTags.ContainsKey(ImageType.Logo)) && dto.ParentLogoItemId is null)
+                if (logoLimit > 0 && !(imageTags is not null && imageTags.ContainsKey(ImageType.Logo)) && dto.ParentLogoItemId is null)
                 {
                     var image = allImages.FirstOrDefault(i => i.Type == ImageType.Logo);
 
-                    if (image != null)
+                    if (image is not null)
                     {
                         dto.ParentLogoItemId = parent.Id;
                         dto.ParentLogoImageTag = GetTagAndFillBlurhash(dto, parent, image);
                     }
                 }
 
-                if (artLimit > 0 && !(imageTags != null && imageTags.ContainsKey(ImageType.Art)) && dto.ParentArtItemId is null)
+                if (artLimit > 0 && !(imageTags is not null && imageTags.ContainsKey(ImageType.Art)) && dto.ParentArtItemId is null)
                 {
                     var image = allImages.FirstOrDefault(i => i.Type == ImageType.Art);
 
-                    if (image != null)
+                    if (image is not null)
                     {
                         dto.ParentArtItemId = parent.Id;
                         dto.ParentArtImageTag = GetTagAndFillBlurhash(dto, parent, image);
                     }
                 }
 
-                if (thumbLimit > 0 && !(imageTags != null && imageTags.ContainsKey(ImageType.Thumb)) && (dto.ParentThumbItemId is null || parent is Series) && parent is not ICollectionFolder && parent is not UserView)
+                if (thumbLimit > 0 && !(imageTags is not null && imageTags.ContainsKey(ImageType.Thumb)) && (dto.ParentThumbItemId is null || parent is Series) && parent is not ICollectionFolder && parent is not UserView)
                 {
                     var image = allImages.FirstOrDefault(i => i.Type == ImageType.Thumb);
 
-                    if (image != null)
+                    if (image is not null)
                     {
                         dto.ParentThumbItemId = parent.Id;
                         dto.ParentThumbImageTag = GetTagAndFillBlurhash(dto, parent, image);
                     }
                 }
 
-                if (backdropLimit > 0 && !((dto.BackdropImageTags != null && dto.BackdropImageTags.Length > 0) || (dto.ParentBackdropImageTags != null && dto.ParentBackdropImageTags.Length > 0)))
+                if (backdropLimit > 0 && !((dto.BackdropImageTags is not null && dto.BackdropImageTags.Length > 0) || (dto.ParentBackdropImageTags is not null && dto.ParentBackdropImageTags.Length > 0)))
                 {
                     var images = allImages.Where(i => i.Type == ImageType.Backdrop).Take(backdropLimit).ToList();
 

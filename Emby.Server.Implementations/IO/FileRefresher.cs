@@ -138,7 +138,7 @@ namespace Emby.Server.Implementations.IO
             IEnumerable<BaseItem> itemsToRefresh = paths
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(GetAffectedBaseItem)
-                .Where(item => item != null)
+                .Where(item => item is not null)
                 .GroupBy(x => x!.Id) // Removed null values in the previous .Where()
                 .Select(x => x.First())!;
 
@@ -185,7 +185,7 @@ namespace Emby.Server.Implementations.IO
                 path = System.IO.Path.GetDirectoryName(path) ?? string.Empty;
             }
 
-            if (item != null)
+            if (item is not null)
             {
                 // If the item has been deleted find the first valid parent that still exists
                 while (!Directory.Exists(item.Path) && !File.Exists(item.Path))
@@ -206,7 +206,7 @@ namespace Emby.Server.Implementations.IO
         {
             lock (_timerLock)
             {
-                if (_timer != null)
+                if (_timer is not null)
                 {
                     _timer.Dispose();
                     _timer = null;

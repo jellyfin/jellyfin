@@ -64,7 +64,7 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 var series = Series;
 
-                if (series != null)
+                if (series is not null)
                 {
                     return series.Path;
                 }
@@ -101,7 +101,7 @@ namespace MediaBrowser.Controller.Entities.TV
             var list = base.GetUserDataKeys();
 
             var series = Series;
-            if (series != null)
+            if (series is not null)
             {
                 var newList = series.GetUserDataKeys();
                 var suffix = (IndexNumber ?? 0).ToString("000", CultureInfo.InvariantCulture);
@@ -129,7 +129,7 @@ namespace MediaBrowser.Controller.Entities.TV
             if (IndexNumber.HasValue)
             {
                 var series = Series;
-                if (series != null)
+                if (series is not null)
                 {
                     return series.PresentationUniqueKey + "-" + (IndexNumber ?? 0).ToString("000", CultureInfo.InvariantCulture);
                 }
@@ -144,7 +144,7 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <returns>System.String.</returns>
         protected override string CreateSortName()
         {
-            return IndexNumber != null ? IndexNumber.Value.ToString("0000", CultureInfo.InvariantCulture) : Name;
+            return IndexNumber is not null ? IndexNumber.Value.ToString("0000", CultureInfo.InvariantCulture) : Name;
         }
 
         protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
@@ -233,7 +233,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
             var series = Series;
 
-            if (series != null)
+            if (series is not null)
             {
                 id.SeriesProviderIds = series.ProviderIds;
             }

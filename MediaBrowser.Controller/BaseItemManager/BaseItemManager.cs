@@ -49,7 +49,7 @@ namespace MediaBrowser.Controller.BaseItemManager
                 return !baseItem.EnableMediaSourceDisplay;
             }
 
-            if (libraryTypeOptions != null)
+            if (libraryTypeOptions is not null)
             {
                 return libraryTypeOptions.MetadataFetchers.Contains(name.AsSpan(), StringComparison.OrdinalIgnoreCase);
             }
@@ -74,7 +74,7 @@ namespace MediaBrowser.Controller.BaseItemManager
                 return !baseItem.EnableMediaSourceDisplay;
             }
 
-            if (libraryTypeOptions != null)
+            if (libraryTypeOptions is not null)
             {
                 return libraryTypeOptions.ImageFetchers.Contains(name.AsSpan(), StringComparison.OrdinalIgnoreCase);
             }

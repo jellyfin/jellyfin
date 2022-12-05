@@ -49,7 +49,7 @@ namespace Emby.Photos
             if (item.IsFileProtocol)
             {
                 var file = directoryService.GetFile(item.Path);
-                return file != null && file.LastWriteTimeUtc != item.DateModified;
+                return file is not null && file.LastWriteTimeUtc != item.DateModified;
             }
 
             return false;
@@ -70,20 +70,20 @@ namespace Emby.Photos
                         if (file.GetTag(TagTypes.TiffIFD) is IFDTag tag)
                         {
                             var structure = tag.Structure;
-                            if (structure != null
+                            if (structure is not null
                                 && structure.GetEntry(0, (ushort)IFDEntryTag.ExifIFD) is SubIFDEntry exif)
                             {
                                 var exifStructure = exif.Structure;
-                                if (exifStructure != null)
+                                if (exifStructure is not null)
                                 {
                                     var entry = exifStructure.GetEntry(0, (ushort)ExifEntryTag.ApertureValue) as RationalIFDEntry;
-                                    if (entry != null)
+                                    if (entry is not null)
                                     {
                                         item.Aperture = (double)entry.Value.Numerator / entry.Value.Denominator;
                                     }
 
                                     entry = exifStructure.GetEntry(0, (ushort)ExifEntryTag.ShutterSpeedValue) as RationalIFDEntry;
-                                    if (entry != null)
+                                    if (entry is not null)
                                     {
                                         item.ShutterSpeed = (double)entry.Value.Numerator / entry.Value.Denominator;
                                     }

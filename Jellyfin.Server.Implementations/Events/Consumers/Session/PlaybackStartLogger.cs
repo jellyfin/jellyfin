@@ -44,7 +44,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
                 return;
             }
 
-            if (eventArgs.Item != null && eventArgs.Item.IsThemeMedia)
+            if (eventArgs.Item is not null && eventArgs.Item.IsThemeMedia)
             {
                 // Don't report theme song or local trailer playback
                 return;
@@ -78,7 +78,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
                 name = item.SeriesName + " - " + name;
             }
 
-            if (item.Artists != null && item.Artists.Count > 0)
+            if (item.Artists is not null && item.Artists.Count > 0)
             {
                 name = item.Artists[0] + " - " + name;
             }

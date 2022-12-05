@@ -446,7 +446,7 @@ namespace Emby.Server.Implementations.LiveTv
                 isNew = true;
             }
 
-            if (channelInfo.Tags != null)
+            if (channelInfo.Tags is not null)
             {
                 if (!channelInfo.Tags.SequenceEqual(item.Tags, StringComparer.OrdinalIgnoreCase))
                 {
@@ -836,7 +836,7 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 var seriesTimers = await GetSeriesTimersInternal(new SeriesTimerQuery(), cancellationToken).ConfigureAwait(false);
                 var seriesTimer = seriesTimers.Items.FirstOrDefault(i => string.Equals(_tvDtoService.GetInternalSeriesTimerId(i.Id).ToString("N", CultureInfo.InvariantCulture), query.SeriesTimerId, StringComparison.OrdinalIgnoreCase));
-                if (seriesTimer != null)
+                if (seriesTimer is not null)
                 {
                     internalQuery.ExternalSeriesId = seriesTimer.SeriesId;
 
@@ -989,7 +989,7 @@ namespace Emby.Server.Implementations.LiveTv
                 var timer = timerList.FirstOrDefault(i => string.Equals(i.ProgramId, externalProgramId, StringComparison.OrdinalIgnoreCase));
                 var foundSeriesTimer = false;
 
-                if (timer != null)
+                if (timer is not null)
                 {
                     if (timer.Status != RecordingStatus.Cancelled && timer.Status != RecordingStatus.Error)
                     {
@@ -1016,7 +1016,7 @@ namespace Emby.Server.Implementations.LiveTv
 
                 var seriesTimer = seriesTimerList.FirstOrDefault(i => string.Equals(i.SeriesId, externalSeriesId, StringComparison.OrdinalIgnoreCase));
 
-                if (seriesTimer != null)
+                if (seriesTimer is not null)
                 {
                     program.SeriesTimerId = _tvDtoService.GetInternalSeriesTimerId(seriesTimer.Id)
                         .ToString("N", CultureInfo.InvariantCulture);
@@ -1086,7 +1086,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var coreService = _services.OfType<EmbyTV.EmbyTV>().FirstOrDefault();
 
-            if (coreService != null)
+            if (coreService is not null)
             {
                 await coreService.RefreshSeriesTimers(cancellationToken).ConfigureAwait(false);
                 await coreService.RefreshTimers(cancellationToken).ConfigureAwait(false);
@@ -1280,7 +1280,7 @@ namespace Emby.Server.Implementations.LiveTv
                 {
                     var item = _libraryManager.GetItemById(itemId);
 
-                    if (item != null)
+                    if (item is not null)
                     {
                         _libraryManager.DeleteItem(
                             item,
@@ -1377,7 +1377,7 @@ namespace Emby.Server.Implementations.LiveTv
                 limit = null;
 
                 // var allActivePaths = EmbyTV.EmbyTV.Current.GetAllActiveRecordings().Select(i => i.Path).ToArray();
-                // var items = allActivePaths.Select(i => _libraryManager.FindByPath(i, false)).Where(i => i != null).ToArray();
+                // var items = allActivePaths.Select(i => _libraryManager.FindByPath(i, false)).Where(i => i is not null).ToArray();
 
                 // return new QueryResult<BaseItem>
                 // {
@@ -1517,7 +1517,7 @@ namespace Emby.Server.Implementations.LiveTv
                 dto.CompletionPercentage = pct;
             }
 
-            if (channel != null)
+            if (channel is not null)
             {
                 dto.ChannelName = channel.Name;
 
@@ -1887,7 +1887,7 @@ namespace Emby.Server.Implementations.LiveTv
                 {
                     var currentProgram = programs.FirstOrDefault(i => channel.Id.Equals(i.ChannelId));
 
-                    if (currentProgram != null)
+                    if (currentProgram is not null)
                     {
                         currentProgramsList.Add(currentProgram);
                     }
@@ -1913,7 +1913,7 @@ namespace Emby.Server.Implementations.LiveTv
             ILiveTvService service = null;
             ProgramInfo programInfo = null;
 
-            if (program != null)
+            if (program is not null)
             {
                 service = GetService(program);
 
@@ -2317,7 +2317,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var providerChannel = EmbyTV.EmbyTV.Current.GetEpgChannelFromTunerChannel(mappings, tunerChannel, providerChannels);
 
-            if (providerChannel != null)
+            if (providerChannel is not null)
             {
                 result.ProviderChannelName = providerChannel.Name;
                 result.ProviderChannelId = providerChannel.Id;
@@ -2390,7 +2390,7 @@ namespace Emby.Server.Implementations.LiveTv
                 .SelectMany(i => i.Locations)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(i => _libraryManager.FindByPath(i, true))
-                .Where(i => i != null && i.IsVisibleStandalone(user))
+                .Where(i => i is not null && i.IsVisibleStandalone(user))
                 .SelectMany(i => _libraryManager.GetCollectionFolders(i))
                 .GroupBy(x => x.Id)
                 .Select(x => x.First())

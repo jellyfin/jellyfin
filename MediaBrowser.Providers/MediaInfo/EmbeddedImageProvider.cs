@@ -138,7 +138,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 .FirstOrDefault(attachment => !string.IsNullOrEmpty(attachment.FileName)
                     && imageFileNames.Any(name => attachment.FileName.Contains(name, StringComparison.OrdinalIgnoreCase)));
 
-            if (attachmentStream != null)
+            if (attachmentStream is not null)
             {
                 return await ExtractAttachment(item, attachmentStream, mediaSource, cancellationToken);
             }

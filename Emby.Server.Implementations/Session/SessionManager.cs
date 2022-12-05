@@ -200,7 +200,7 @@ namespace Emby.Server.Implementations.Session
             {
                 var capabilities = _deviceManager.GetCapabilities(info.DeviceId);
 
-                if (capabilities != null)
+                if (capabilities is not null)
                 {
                     ReportCapabilities(info, capabilities, false);
                 }
@@ -238,7 +238,7 @@ namespace Emby.Server.Implementations.Session
         public void UpdateDeviceName(string sessionId, string reportedDeviceName)
         {
             var session = GetSession(sessionId);
-            if (session != null)
+            if (session is not null)
             {
                 session.DeviceName = reportedDeviceName;
             }
@@ -284,7 +284,7 @@ namespace Emby.Server.Implementations.Session
             var lastActivityDate = session.LastActivityDate;
             session.LastActivityDate = activityDate;
 
-            if (user != null)
+            if (user is not null)
             {
                 var userLastActivityDate = user.LastActivityDate ?? DateTime.MinValue;
 
@@ -351,7 +351,7 @@ namespace Emby.Server.Implementations.Session
             CheckDisposed();
             var session = GetSession(sessionId, false);
 
-            if (session != null)
+            if (session is not null)
             {
                 var key = GetSessionKey(session.Client, session.DeviceId);
 
@@ -377,7 +377,7 @@ namespace Emby.Server.Implementations.Session
                 info.MediaSourceId = info.ItemId.ToString("N", CultureInfo.InvariantCulture);
             }
 
-            if (!info.ItemId.Equals(default) && info.Item is null && libraryItem != null)
+            if (!info.ItemId.Equals(default) && info.Item is null && libraryItem is not null)
             {
                 var current = session.NowPlayingItem;
 
@@ -390,7 +390,7 @@ namespace Emby.Server.Implementations.Session
                     {
                         mediaSource = await GetMediaSource(libraryItem, info.MediaSourceId, info.LiveStreamId).ConfigureAwait(false);
 
-                        if (mediaSource != null)
+                        if (mediaSource is not null)
                         {
                             runtimeTicks = mediaSource.RunTimeTicks;
                         }
@@ -579,7 +579,7 @@ namespace Emby.Server.Implementations.Session
 
             users.AddRange(session.AdditionalUsers
                 .Select(i => _userManager.GetUserById(i.UserId))
-                .Where(i => i != null));
+                .Where(i => i is not null));
 
             return users;
         }
@@ -591,7 +591,7 @@ namespace Emby.Server.Implementations.Session
 
         private void StopIdleCheckTimer()
         {
-            if (_idleTimer != null)
+            if (_idleTimer is not null)
             {
                 _idleTimer.Dispose();
                 _idleTimer = null;
@@ -600,7 +600,7 @@ namespace Emby.Server.Implementations.Session
 
         private async void CheckForIdlePlayback(object state)
         {
-            var playingSessions = Sessions.Where(i => i.NowPlayingItem != null)
+            var playingSessions = Sessions.Where(i => i.NowPlayingItem is not null)
                 .ToList();
 
             if (playingSessions.Count > 0)
@@ -630,7 +630,7 @@ namespace Emby.Server.Implementations.Session
                     }
                 }
 
-                playingSessions = Sessions.Where(i => i.NowPlayingItem != null)
+                playingSessions = Sessions.Where(i => i.NowPlayingItem is not null)
                     .ToList();
             }
 
@@ -643,7 +643,7 @@ namespace Emby.Server.Implementations.Session
         private BaseItem GetNowPlayingItem(SessionInfo session, Guid itemId)
         {
             var item = session.FullNowPlayingItem;
-            if (item != null && item.Id.Equals(itemId))
+            if (item is not null && item.Id.Equals(itemId))
             {
                 return item;
             }
@@ -684,7 +684,7 @@ namespace Emby.Server.Implementations.Session
 
             var users = GetUsers(session);
 
-            if (libraryItem != null)
+            if (libraryItem is not null)
             {
                 foreach (var user in users)
                 {
@@ -777,7 +777,7 @@ namespace Emby.Server.Implementations.Session
             var users = GetUsers(session);
 
             // only update saved user data on actual check-ins, not automated ones
-            if (libraryItem != null && !isAutomated)
+            if (libraryItem is not null && !isAutomated)
             {
                 foreach (var user in users)
                 {
@@ -912,7 +912,7 @@ namespace Emby.Server.Implementations.Session
                 info.MediaSourceId = info.ItemId.ToString("N", CultureInfo.InvariantCulture);
             }
 
-            if (!info.ItemId.Equals(default) && info.Item is null && libraryItem != null)
+            if (!info.ItemId.Equals(default) && info.Item is null && libraryItem is not null)
             {
                 var current = session.NowPlayingItem;
 
@@ -933,7 +933,7 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
-            if (info.Item != null)
+            if (info.Item is not null)
             {
                 var msString = info.PositionTicks.HasValue ? (info.PositionTicks.Value / 10000).ToString(CultureInfo.InvariantCulture) : "unknown";
 
@@ -945,7 +945,7 @@ namespace Emby.Server.Implementations.Session
                     msString);
             }
 
-            if (info.NowPlayingQueue != null)
+            if (info.NowPlayingQueue is not null)
             {
                 session.NowPlayingQueue = info.NowPlayingQueue;
             }
@@ -957,7 +957,7 @@ namespace Emby.Server.Implementations.Session
             var users = GetUsers(session);
             var playedToCompletion = false;
 
-            if (libraryItem != null)
+            if (libraryItem is not null)
             {
                 foreach (var user in users)
                 {
@@ -1164,7 +1164,7 @@ namespace Emby.Server.Implementations.Session
 
             command.ItemIds = items.Select(i => i.Id).ToArray();
 
-            if (user != null)
+            if (user is not null)
             {
                 if (items.Any(i => i.GetPlayAccess(user) != PlayAccess.Full))
                 {
@@ -1173,13 +1173,13 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
-            if (user != null
+            if (user is not null
                 && command.ItemIds.Length == 1
                 && user.EnableNextEpisodeAutoPlay
                 && _libraryManager.GetItemById(command.ItemIds[0]) is Episode episode)
             {
                 var series = episode.Series;
-                if (series != null)
+                if (series is not null)
                 {
                     var episodes = series.GetEpisodes(
                             user,
@@ -1429,7 +1429,7 @@ namespace Emby.Server.Implementations.Session
 
             var user = session.AdditionalUsers.FirstOrDefault(i => i.UserId.Equals(userId));
 
-            if (user != null)
+            if (user is not null)
             {
                 var list = session.AdditionalUsers.ToList();
                 list.Remove(user);
@@ -1554,7 +1554,7 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
-            if (existing != null)
+            if (existing is not null)
             {
                 _logger.LogInformation("Reissuing access token: {Token}", existing.AccessToken);
                 return existing.AccessToken;
@@ -1720,7 +1720,7 @@ namespace Emby.Server.Implementations.Session
 
             var info = _dtoService.GetBaseItemDto(item, dtoOptions);
 
-            if (mediaSource != null)
+            if (mediaSource is not null)
             {
                 info.MediaStreams = mediaSource.MediaStreams.ToArray();
             }
@@ -1761,7 +1761,7 @@ namespace Emby.Server.Implementations.Session
             var session = Sessions.FirstOrDefault(i =>
                 string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase));
 
-            if (session != null)
+            if (session is not null)
             {
                 session.TranscodingInfo = info;
             }

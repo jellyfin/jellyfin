@@ -274,7 +274,7 @@ namespace Jellyfin.Drawing.Skia
             {
                 var bitmap = Decode(path, true, orientation, out var origin);
 
-                if (bitmap != null && origin != SKEncodedOrigin.TopLeft)
+                if (bitmap is not null && origin != SKEncodedOrigin.TopLeft)
                 {
                     using (bitmap)
                     {

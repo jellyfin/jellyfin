@@ -357,7 +357,7 @@ namespace MediaBrowser.Controller.Session
         {
             lock (_progressLock)
             {
-                if (_progressTimer != null)
+                if (_progressTimer is not null)
                 {
                     _progressTimer.Dispose();
                     _progressTimer = null;

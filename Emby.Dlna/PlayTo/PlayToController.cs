@@ -84,7 +84,7 @@ namespace Emby.Dlna.PlayTo
             _mediaEncoder = mediaEncoder;
         }
 
-        public bool IsSessionActive => !_disposed && _device != null;
+        public bool IsSessionActive => !_disposed && _device is not null;
 
         public bool SupportsMediaControl => IsSessionActive;
 
@@ -156,7 +156,7 @@ namespace Emby.Dlna.PlayTo
             try
             {
                 var streamInfo = StreamParams.ParseFromUrl(e.OldMediaInfo.Url, _libraryManager, _mediaSourceManager);
-                if (streamInfo.Item != null)
+                if (streamInfo.Item is not null)
                 {
                     var positionTicks = GetProgressPositionTicks(streamInfo);
 
@@ -268,7 +268,7 @@ namespace Emby.Dlna.PlayTo
             {
                 var info = StreamParams.ParseFromUrl(e.MediaInfo.Url, _libraryManager, _mediaSourceManager);
 
-                if (info.Item != null)
+                if (info.Item is not null)
                 {
                     var progress = GetProgressInfo(info);
 
@@ -299,7 +299,7 @@ namespace Emby.Dlna.PlayTo
 
                 var info = StreamParams.ParseFromUrl(mediaUrl, _libraryManager, _mediaSourceManager);
 
-                if (info.Item != null)
+                if (info.Item is not null)
                 {
                     var progress = GetProgressInfo(info);
 
@@ -441,11 +441,11 @@ namespace Emby.Dlna.PlayTo
         {
             var media = _device.CurrentMediaInfo;
 
-            if (media != null)
+            if (media is not null)
             {
                 var info = StreamParams.ParseFromUrl(media.Url, _libraryManager, _mediaSourceManager);
 
-                if (info.Item != null && !EnableClientSideSeek(info))
+                if (info.Item is not null && !EnableClientSideSeek(info))
                 {
                     var user = _session.UserId.Equals(default)
                         ? null
@@ -760,11 +760,11 @@ namespace Emby.Dlna.PlayTo
         {
             var media = _device.CurrentMediaInfo;
 
-            if (media != null)
+            if (media is not null)
             {
                 var info = StreamParams.ParseFromUrl(media.Url, _libraryManager, _mediaSourceManager);
 
-                if (info.Item != null)
+                if (info.Item is not null)
                 {
                     var newPosition = GetProgressPositionTicks(info) ?? 0;
 
@@ -791,11 +791,11 @@ namespace Emby.Dlna.PlayTo
         {
             var media = _device.CurrentMediaInfo;
 
-            if (media != null)
+            if (media is not null)
             {
                 var info = StreamParams.ParseFromUrl(media.Url, _libraryManager, _mediaSourceManager);
 
-                if (info.Item != null)
+                if (info.Item is not null)
                 {
                     var newPosition = GetProgressPositionTicks(info) ?? 0;
 
@@ -916,7 +916,7 @@ namespace Emby.Dlna.PlayTo
 
             public async Task<MediaSourceInfo> GetMediaSource(CancellationToken cancellationToken)
             {
-                if (_mediaSource != null)
+                if (_mediaSource is not null)
                 {
                     return _mediaSource;
                 }
@@ -926,7 +926,7 @@ namespace Emby.Dlna.PlayTo
                     return null;
                 }
 
-                if (_mediaSourceManager != null)
+                if (_mediaSourceManager is not null)
                 {
                     _mediaSource = await _mediaSourceManager.GetMediaSource(Item, MediaSourceId, LiveStreamId, false, cancellationToken).ConfigureAwait(false);
                 }

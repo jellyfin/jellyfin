@@ -72,7 +72,7 @@ namespace Emby.Server.Implementations.Library
                     continue;
                 }
 
-                if (collectionFolder != null && UserView.IsEligibleForGrouping(folder) && user.IsFolderGrouped(folder.Id))
+                if (collectionFolder is not null && UserView.IsEligibleForGrouping(folder) && user.IsFolderGrouped(folder.Id))
                 {
                     groupedFolders.Add(collectionFolder);
                     continue;
@@ -214,9 +214,9 @@ namespace Emby.Server.Implementations.Library
                 }
                 else
                 {
-                    var current = list.FirstOrDefault(i => i.Item1 != null && i.Item1.Id.Equals(container.Id));
+                    var current = list.FirstOrDefault(i => i.Item1 is not null && i.Item1.Id.Equals(container.Id));
 
-                    if (current != null)
+                    if (current is not null)
                     {
                         current.Item2.Add(item);
                     }

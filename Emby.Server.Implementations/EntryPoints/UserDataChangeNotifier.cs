@@ -75,11 +75,11 @@ namespace Emby.Server.Implementations.EntryPoints
                 var baseItem = e.Item;
 
                 // Go up one level for indicators
-                if (baseItem != null)
+                if (baseItem is not null)
                 {
                     var parent = baseItem.GetOwner() ?? baseItem.GetParent();
 
-                    if (parent != null)
+                    if (parent is not null)
                     {
                         keys.Add(parent);
                     }
@@ -97,7 +97,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
                 SendNotifications(changes, CancellationToken.None).GetAwaiter().GetResult();
 
-                if (_updateTimer != null)
+                if (_updateTimer is not null)
                 {
                     _updateTimer.Dispose();
                     _updateTimer = null;
@@ -145,7 +145,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
         public void Dispose()
         {
-            if (_updateTimer != null)
+            if (_updateTimer is not null)
             {
                 _updateTimer.Dispose();
                 _updateTimer = null;

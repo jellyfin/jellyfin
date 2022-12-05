@@ -45,7 +45,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         {
             var result = ResolveMultipleInternal(parent, files, collectionType);
 
-            if (result != null)
+            if (result is not null)
             {
                 foreach (var item in result.Items)
                 {
@@ -126,7 +126,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                     item = new AudioBook();
                 }
 
-                if (item != null)
+                if (item is not null)
                 {
                     item.IsShortcut = string.Equals(extension, ".strm", StringComparison.OrdinalIgnoreCase);
 
@@ -183,7 +183,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 Items = items
             };
 
-            var isInMixedFolder = resolverResult.Count > 1 || (parent != null && parent.IsTopParent);
+            var isInMixedFolder = resolverResult.Count > 1 || (parent is not null && parent.IsTopParent);
 
             foreach (var resolvedItem in resolverResult)
             {

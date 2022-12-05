@@ -94,7 +94,7 @@ namespace Emby.Server.Implementations.Session
         public async Task ProcessWebSocketConnectedAsync(IWebSocketConnection connection, HttpContext httpContext)
         {
             var session = await GetSession(httpContext, connection.RemoteEndPoint?.ToString()).ConfigureAwait(false);
-            if (session != null)
+            if (session is not null)
             {
                 EnsureController(session, connection);
                 await KeepAliveWebSocket(connection).ConfigureAwait(false);
@@ -221,7 +221,7 @@ namespace Emby.Server.Implementations.Session
         {
             lock (_keepAliveLock)
             {
-                if (_keepAliveCancellationToken != null)
+                if (_keepAliveCancellationToken is not null)
                 {
                     _keepAliveCancellationToken.Cancel();
                     _keepAliveCancellationToken.Dispose();

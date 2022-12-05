@@ -323,7 +323,7 @@ namespace Jellyfin.Model.Tests
             var val = builder.BuildVideoItem(options);
             Assert.NotNull(val);
 
-            if (playMethod != null)
+            if (playMethod is not null)
             {
                 Assert.Equal(playMethod, val.PlayMethod);
             }
@@ -490,7 +490,7 @@ namespace Jellyfin.Model.Tests
             using (var stream = File.OpenRead(path))
             {
                 var value = await JsonSerializer.DeserializeAsync<T>(stream, JsonDefaults.Options);
-                if (value != null)
+                if (value is not null)
                 {
                     return value;
                 }
