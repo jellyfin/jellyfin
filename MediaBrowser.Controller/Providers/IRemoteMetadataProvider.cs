@@ -16,6 +16,8 @@ namespace MediaBrowser.Controller.Providers
     /// <summary>
     /// Interface IRemoteMetadataProvider.
     /// </summary>
+    /// <typeparam name="TItemType">The type of <see cref="BaseItem" />.</typeparam>
+    /// <typeparam name="TLookupInfoType">The type of <see cref="ItemLookupInfo" />.</typeparam>
     public interface IRemoteMetadataProvider<TItemType, in TLookupInfoType> : IMetadataProvider<TItemType>, IRemoteMetadataProvider, IRemoteSearchProvider<TLookupInfoType>
         where TItemType : BaseItem, IHasLookupInfo<TLookupInfoType>
         where TLookupInfoType : ItemLookupInfo, new()
@@ -32,6 +34,7 @@ namespace MediaBrowser.Controller.Providers
     /// <summary>
     /// Interface IRemoteMetadataProvider.
     /// </summary>
+    /// <typeparam name="TLookupInfoType">The type of <see cref="ItemLookupInfo" />.</typeparam>
     public interface IRemoteSearchProvider<in TLookupInfoType> : IRemoteSearchProvider
         where TLookupInfoType : ItemLookupInfo
     {
