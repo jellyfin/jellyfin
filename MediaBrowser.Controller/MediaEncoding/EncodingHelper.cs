@@ -2814,7 +2814,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     algorithm = "bt.2390";
                 }
-
                 else if (string.Equals(options.TonemappingAlgorithm, "none", StringComparison.OrdinalIgnoreCase))
                 {
                     algorithm = "clip";

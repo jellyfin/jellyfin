@@ -243,7 +243,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 Id = c.Id,
                 Name = c.DisplayName,
-                ImageUrl = c.Icon != null && !string.IsNullOrEmpty(c.Icon.Source) ? c.Icon.Source : null,
+                ImageUrl = string.IsNullOrEmpty(c.Icon.Source) ? null : c.Icon.Source,
                 Number = string.IsNullOrWhiteSpace(c.Number) ? c.Id : c.Number
             }).ToList();
         }

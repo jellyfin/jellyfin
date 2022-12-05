@@ -152,6 +152,7 @@ namespace MediaBrowser.Providers.Music
                     return ItemUpdateType.MetadataEdit;
                 }
             }
+
             return ItemUpdateType.None;
         }
 
