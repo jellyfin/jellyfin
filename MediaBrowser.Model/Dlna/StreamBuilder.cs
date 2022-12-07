@@ -1483,7 +1483,6 @@ namespace MediaBrowser.Model.Dlna
                 return false;
             }
 
-
             long requestedMaxBitrate = maxBitrate > 0 ? maxBitrate : 1000000;
 
             // If we don't know the bitrate, then force a transcode if requested max bitrate is under 40 mbps
@@ -1501,7 +1500,7 @@ namespace MediaBrowser.Model.Dlna
             return false;
         }
 
-        private static void ValidateMediaOptions(MediaOptions options, Boolean IsMediaSource)
+        private static void ValidateMediaOptions(MediaOptions options, bool isMediaSource)
         {
             if (options.ItemId.Equals(default))
             {
@@ -1518,7 +1517,7 @@ namespace MediaBrowser.Model.Dlna
                 throw new ArgumentException("MediaSources is required");
             }
 
-            if (IsMediaSource)
+            if (isMediaSource)
             {
                 if (options.AudioStreamIndex.HasValue && string.IsNullOrEmpty(options.MediaSourceId))
                 {

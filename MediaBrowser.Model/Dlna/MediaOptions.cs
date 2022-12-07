@@ -11,7 +11,7 @@ namespace MediaBrowser.Model.Dlna
     public class MediaOptions
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="MediaOptions"/> class.
+        /// Initializes a new instance of the <see cref="MediaOptions"/> class.
         /// </summary>
         public MediaOptions()
         {
@@ -22,32 +22,32 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Gets or sets a boolean to allow/forbid direct playback.
+        /// Gets or sets a value indicating whether direct playback is allowed.
         /// </summary>
         public bool EnableDirectPlay { get; set; }
 
         /// <summary>
-        /// Gets or sets a boolean to allow/forbid direct streaming.
+        /// Gets or sets a value indicating whether direct streaming is allowed.
         /// </summary>
         public bool EnableDirectStream { get; set; }
 
         /// <summary>
-        /// Gets or sets a boolean to force direct playback.
+        /// Gets or sets a value indicating whether direct playback is forced.
         /// </summary>
         public bool ForceDirectPlay { get; set; }
 
         /// <summary>
-        /// Gets or sets a boolean to force direct streaming.
+        /// Gets or sets a value indicating whether direct streaming is forced.
         /// </summary>
         public bool ForceDirectStream { get; set; }
 
         /// <summary>
-        /// Gets or sets a boolean to allow/forbid audio stream copy.
+        /// Gets or sets a value indicating whether audio stream copy is allowed.
         /// </summary>
         public bool AllowAudioStreamCopy { get; set; }
 
         /// <summary>
-        /// Gets or sets a boolean to allow/forbid video stream copy.
+        /// Gets or sets a value indicating whether video stream copy is allowed.
         /// </summary>
         public bool AllowVideoStreamCopy { get; set; }
 
@@ -64,7 +64,6 @@ namespace MediaBrowser.Model.Dlna
         /// <summary>
         /// Gets or sets the device profile.
         /// </summary>
-
         public DeviceProfile Profile { get; set; }
 
         /// <summary>
