@@ -274,7 +274,7 @@ namespace Jellyfin.Api.Controllers
         private ActionResult GetIconInternal(string fileName)
         {
             var icon = _dlnaManager.GetIcon(fileName);
-            if (icon == null)
+            if (icon is null)
             {
                 return NotFound();
             }

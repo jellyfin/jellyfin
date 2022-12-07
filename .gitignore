@@ -273,7 +273,6 @@ BenchmarkDotNet.Artifacts
 # Ignore web artifacts from native builds
 web/
 web-src.*
-MediaBrowser.WebDashboard/jellyfin-web
 apiclient/generated
 
 # Omnisharp crash logs

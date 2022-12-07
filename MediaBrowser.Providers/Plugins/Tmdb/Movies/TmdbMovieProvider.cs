@@ -72,7 +72,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     Overview = movie.Overview
                 };
 
-                if (movie.ReleaseDate != null)
+                if (movie.ReleaseDate is not null)
                 {
                     var releaseDate = movie.ReleaseDate.Value.ToUniversalTime();
                     remoteResult.PremiereDate = releaseDate;
@@ -177,7 +177,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 .GetMovieAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
                 .ConfigureAwait(false);
 
-            if (movieResult == null)
+            if (movieResult is null)
             {
                 return new MetadataResult<Movie>();
             }
@@ -199,7 +199,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             movie.SetProviderId(MetadataProvider.Tmdb, tmdbId);
             movie.SetProviderId(MetadataProvider.Imdb, movieResult.ImdbId);
-            if (movieResult.BelongsToCollection != null)
+            if (movieResult.BelongsToCollection is not null)
             {
                 movie.SetProviderId(MetadataProvider.TmdbCollection, movieResult.BelongsToCollection.Id.ToString(CultureInfo.InvariantCulture));
                 movie.CollectionName = movieResult.BelongsToCollection.Name;
@@ -207,18 +207,18 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             movie.CommunityRating = Convert.ToSingle(movieResult.VoteAverage);
 
-            if (movieResult.Releases?.Countries != null)
+            if (movieResult.Releases?.Countries is not null)
             {
                 var releases = movieResult.Releases.Countries.Where(i => !string.IsNullOrWhiteSpace(i.Certification)).ToList();
 
                 var ourRelease = releases.FirstOrDefault(c => string.Equals(c.Iso_3166_1, info.MetadataCountryCode, StringComparison.OrdinalIgnoreCase));
                 var usRelease = releases.FirstOrDefault(c => string.Equals(c.Iso_3166_1, "US", StringComparison.OrdinalIgnoreCase));
 
-                if (ourRelease != null)
+                if (ourRelease is not null)
                 {
                     movie.OfficialRating = TmdbUtils.BuildParentalRating(ourRelease.Iso_3166_1, ourRelease.Certification);
                 }
-                else if (usRelease != null)
+                else if (usRelease is not null)
                 {
                     movie.OfficialRating = usRelease.Certification;
                 }
@@ -227,7 +227,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             movie.PremiereDate = movieResult.ReleaseDate;
             movie.ProductionYear = movieResult.ReleaseDate?.Year;
 
-            if (movieResult.ProductionCompanies != null)
+            if (movieResult.ProductionCompanies is not null)
             {
                 movie.SetStudios(movieResult.ProductionCompanies.Select(c => c.Name));
             }
@@ -239,7 +239,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 movie.AddGenre(genre);
             }
 
-            if (movieResult.Keywords?.Keywords != null)
+            if (movieResult.Keywords?.Keywords is not null)
             {
                 for (var i = 0; i < movieResult.Keywords.Keywords.Count; i++)
                 {
@@ -247,7 +247,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 }
             }
 
-            if (movieResult.Credits?.Cast != null)
+            if (movieResult.Credits?.Cast is not null)
             {
                 foreach (var actor in movieResult.Credits.Cast.OrderBy(a => a.Order).Take(Plugin.Instance.Configuration.MaxCastMembers))
                 {
@@ -273,7 +273,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 }
             }
 
-            if (movieResult.Credits?.Crew != null)
+            if (movieResult.Credits?.Crew is not null)
             {
                 var keepTypes = new[]
                 {
@@ -314,7 +314,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 }
             }
 
-            if (movieResult.Videos?.Results != null)
+            if (movieResult.Videos?.Results is not null)
             {
                 var trailers = new List<MediaUrl>();
                 for (var i = 0; i < movieResult.Videos.Results.Count; i++)

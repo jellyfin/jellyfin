@@ -215,7 +215,7 @@ namespace MediaBrowser.Model.Dlna
                 var stream = TargetVideoStream;
                 return MaxFramerate.HasValue && !IsDirectStream
                     ? MaxFramerate
-                    : stream == null ? null : stream.AverageFrameRate ?? stream.RealFrameRate;
+                    : stream is null ? null : stream.AverageFrameRate ?? stream.RealFrameRate;
             }
         }
 
@@ -460,7 +460,7 @@ namespace MediaBrowser.Model.Dlna
 
                 return !IsDirectStream
                     ? defaultValue
-                    : MediaSource == null ? defaultValue : MediaSource.Timestamp ?? TransportStreamTimestamp.None;
+                    : MediaSource is null ? defaultValue : MediaSource.Timestamp ?? TransportStreamTimestamp.None;
             }
         }
 
@@ -521,7 +521,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 var videoStream = TargetVideoStream;
 
-                if (videoStream != null && videoStream.Width.HasValue && videoStream.Height.HasValue)
+                if (videoStream is not null && videoStream.Width.HasValue && videoStream.Height.HasValue)
                 {
                     ImageDimensions size = new ImageDimensions(videoStream.Width.Value, videoStream.Height.Value);
 
@@ -540,7 +540,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 var videoStream = TargetVideoStream;
 
-                if (videoStream != null && videoStream.Width.HasValue && videoStream.Height.HasValue)
+                if (videoStream is not null && videoStream.Width.HasValue && videoStream.Height.HasValue)
                 {
                     ImageDimensions size = new ImageDimensions(videoStream.Width.Value, videoStream.Height.Value);
 
@@ -620,10 +620,7 @@ namespace MediaBrowser.Model.Dlna
 
         public string ToUrl(string baseUrl, string accessToken)
         {
-            if (string.IsNullOrEmpty(baseUrl))
-            {
-                throw new ArgumentNullException(nameof(baseUrl));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(baseUrl);
 
             var list = new List<string>();
             foreach (NameValuePair pair in BuildParams(this, accessToken))
@@ -664,10 +661,7 @@ namespace MediaBrowser.Model.Dlna
 
         private string GetUrl(string baseUrl, string queryString)
         {
-            if (string.IsNullOrEmpty(baseUrl))
-            {
-                throw new ArgumentNullException(nameof(baseUrl));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(baseUrl);
 
             string extension = string.IsNullOrEmpty(Container) ? string.Empty : "." + Container;
 

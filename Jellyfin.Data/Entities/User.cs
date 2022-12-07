@@ -29,20 +29,9 @@ namespace Jellyfin.Data.Entities
         /// <param name="passwordResetProviderId">The Id of the user's password reset provider.</param>
         public User(string username, string authenticationProviderId, string passwordResetProviderId)
         {
-            if (string.IsNullOrEmpty(username))
-            {
-                throw new ArgumentNullException(nameof(username));
-            }
-
-            if (string.IsNullOrEmpty(authenticationProviderId))
-            {
-                throw new ArgumentNullException(nameof(authenticationProviderId));
-            }
-
-            if (string.IsNullOrEmpty(passwordResetProviderId))
-            {
-                throw new ArgumentNullException(nameof(passwordResetProviderId));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(username);
+            ArgumentException.ThrowIfNullOrEmpty(authenticationProviderId);
+            ArgumentException.ThrowIfNullOrEmpty(passwordResetProviderId);
 
             Username = username;
             AuthenticationProviderId = authenticationProviderId;
@@ -373,7 +362,7 @@ namespace Jellyfin.Data.Entities
         public void SetPermission(PermissionKind kind, bool value)
         {
             var currentPermission = Permissions.FirstOrDefault(p => p.Kind == kind);
-            if (currentPermission == null)
+            if (currentPermission is null)
             {
                 Permissions.Add(new Permission(kind, value));
             }
@@ -419,7 +408,7 @@ namespace Jellyfin.Data.Entities
                 try
                 {
                     var parsedValue = converter.ConvertFromString(stringValues[i].Trim());
-                    if (parsedValue != null)
+                    if (parsedValue is not null)
                     {
                         parsedValues[convertedCount++] = (T)parsedValue;
                     }
@@ -442,7 +431,7 @@ namespace Jellyfin.Data.Entities
         {
             var value = string.Join(Delimiter, values);
             var currentPreference = Preferences.FirstOrDefault(p => p.Kind == preference);
-            if (currentPreference == null)
+            if (currentPreference is null)
             {
                 Preferences.Add(new Preference(preference, value));
             }
@@ -462,7 +451,7 @@ namespace Jellyfin.Data.Entities
         {
             var value = string.Join(Delimiter, values);
             var currentPreference = Preferences.FirstOrDefault(p => p.Kind == preference);
-            if (currentPreference == null)
+            if (currentPreference is null)
             {
                 Preferences.Add(new Preference(preference, value));
             }

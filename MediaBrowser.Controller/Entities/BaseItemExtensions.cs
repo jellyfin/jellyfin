@@ -89,13 +89,13 @@ namespace MediaBrowser.Controller.Entities
                 }
 
                 var v = sourceProp.GetValue(source);
-                if (v == null)
+                if (v is null)
                 {
                     continue;
                 }
 
                 var p = destProps.Find(x => x.Name == sourceProp.Name);
-                if (p != null)
+                if (p is not null)
                 {
                     p.SetValue(dest, v);
                 }

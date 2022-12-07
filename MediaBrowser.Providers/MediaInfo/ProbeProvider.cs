@@ -108,14 +108,14 @@ namespace MediaBrowser.Providers.MediaInfo
         public bool HasChanged(BaseItem item, IDirectoryService directoryService)
         {
             var video = item as Video;
-            if (video == null || video.VideoType == VideoType.VideoFile || video.VideoType == VideoType.Iso)
+            if (video is null || video.VideoType == VideoType.VideoFile || video.VideoType == VideoType.Iso)
             {
                 var path = item.Path;
 
                 if (!string.IsNullOrWhiteSpace(path) && item.IsFileProtocol)
                 {
                     var file = directoryService.GetFile(path);
-                    if (file != null && file.LastWriteTimeUtc != item.DateModified)
+                    if (file is not null && file.LastWriteTimeUtc != item.DateModified)
                     {
                         _logger.LogDebug("Refreshing {ItemPath} due to date modified timestamp change.", path);
                         return true;
@@ -123,7 +123,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if (item.SupportsLocalMetadata && video != null && !video.IsPlaceHolder
+            if (item.SupportsLocalMetadata && video is not null && !video.IsPlaceHolder
                 && !video.SubtitleFiles.SequenceEqual(
                     _subtitleResolver.GetExternalFiles(video, directoryService, false)
                     .Select(info => info.Path).ToList(),
@@ -133,7 +133,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 return true;
             }
 
-            if (item.SupportsLocalMetadata && video != null && !video.IsPlaceHolder
+            if (item.SupportsLocalMetadata && video is not null && !video.IsPlaceHolder
                 && !video.AudioFiles.SequenceEqual(
                     _audioResolver.GetExternalFiles(video, directoryService, false)
                     .Select(info => info.Path).ToList(),

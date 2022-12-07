@@ -76,7 +76,7 @@ namespace Emby.Naming.TV
                 }
             }
 
-            if (result != null && fillExtendedInfo)
+            if (result is not null && fillExtendedInfo)
             {
                 FillAdditional(path, result);
 

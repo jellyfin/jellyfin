@@ -18,7 +18,7 @@ namespace MediaBrowser.Controller.Drawing
         {
             var imageInfo = item.GetImageInfo(imageType, imageIndex);
 
-            if (imageInfo == null)
+            if (imageInfo is null)
             {
                 return null;
             }

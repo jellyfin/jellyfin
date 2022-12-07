@@ -423,14 +423,14 @@ namespace Jellyfin.Providers.Tests.Manager
             where TProviderType : class, IImageProvider
         {
             Mock<IHasOrder>? hasOrder = null;
-            if (order != null)
+            if (order is not null)
             {
                 hasOrder = new Mock<IHasOrder>(MockBehavior.Strict);
                 hasOrder.Setup(i => i.Order)
                     .Returns((int)order);
             }
 
-            var provider = hasOrder == null
+            var provider = hasOrder is null
                 ? new Mock<TProviderType>(MockBehavior.Strict)
                 : hasOrder.As<TProviderType>();
             provider.Setup(p => p.Name)
@@ -471,14 +471,14 @@ namespace Jellyfin.Providers.Tests.Manager
             }
 
             Mock<IHasOrder>? hasOrder = null;
-            if (order != null)
+            if (order is not null)
             {
-                hasOrder = forcedProvider == null ? new Mock<IHasOrder>() : forcedProvider.As<IHasOrder>();
+                hasOrder = forcedProvider is null ? new Mock<IHasOrder>() : forcedProvider.As<IHasOrder>();
                 hasOrder.Setup(i => i.Order)
                     .Returns((int)order);
             }
 
-            var provider = hasOrder == null
+            var provider = hasOrder is null
                 ? new Mock<TProviderType>(MockBehavior.Strict)
                 : hasOrder.As<TProviderType>();
             provider.Setup(p => p.Name)
@@ -499,7 +499,7 @@ namespace Jellyfin.Providers.Tests.Manager
             };
 
             // only create type options if populating it with something
-            if (imageFetcherOrder != null || metadataFetcherOrder != null)
+            if (imageFetcherOrder is not null || metadataFetcherOrder is not null)
             {
                 imageFetcherOrder ??= Array.Empty<string>();
                 metadataFetcherOrder ??= Array.Empty<string>();
@@ -527,7 +527,7 @@ namespace Jellyfin.Providers.Tests.Manager
             var serverConfiguration = new ServerConfiguration();
 
             // only create type options if populating it with something
-            if (imageFetcherOrder != null || localMetadataReaderOrder != null || metadataFetcherOrder != null)
+            if (imageFetcherOrder is not null || localMetadataReaderOrder is not null || metadataFetcherOrder is not null)
             {
                 imageFetcherOrder ??= Array.Empty<string>();
                 localMetadataReaderOrder ??= Array.Empty<string>();

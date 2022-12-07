@@ -127,7 +127,7 @@ namespace Jellyfin.Api.Helpers
                 // Since we're going to be setting properties on MediaSourceInfos that come out of _mediaSourceManager, we should clone it
                 // Should we move this directly into MediaSourceManager?
                 var mediaSourcesClone = JsonSerializer.Deserialize<MediaSourceInfo[]>(JsonSerializer.SerializeToUtf8Bytes(mediaSources));
-                if (mediaSourcesClone != null)
+                if (mediaSourcesClone is not null)
                 {
                     result.MediaSources = mediaSourcesClone;
                 }
@@ -247,7 +247,7 @@ namespace Jellyfin.Api.Helpers
                 ? streamBuilder.BuildAudioItem(options)
                 : streamBuilder.BuildVideoItem(options);
 
-            if (streamInfo != null)
+            if (streamInfo is not null)
             {
                 streamInfo.PlaySessionId = playSessionId;
                 streamInfo.StartPositionTicks = startTimeTicks;
@@ -262,7 +262,7 @@ namespace Jellyfin.Api.Helpers
 
                 mediaSource.SupportsTranscoding =
                     streamInfo.PlayMethod == PlayMethod.DirectStream
-                    || mediaSource.TranscodingContainer != null
+                    || mediaSource.TranscodingContainer is not null
                     || profile.TranscodingProfiles.Any(i => i.Type == streamInfo.MediaType && i.Context == options.Context);
 
                 if (item is Audio)
@@ -390,16 +390,16 @@ namespace Jellyfin.Api.Helpers
             var result = await _mediaSourceManager.OpenLiveStream(request, CancellationToken.None).ConfigureAwait(false);
 
             var profile = request.DeviceProfile;
-            if (profile == null)
+            if (profile is null)
             {
                 var clientCapabilities = _deviceManager.GetCapabilities(httpContext.User.GetDeviceId());
-                if (clientCapabilities != null)
+                if (clientCapabilities is not null)
                 {
                     profile = clientCapabilities.DeviceProfile;
                 }
             }
 
-            if (profile != null)
+            if (profile is not null)
             {
                 var item = _libraryManager.GetItemById(request.ItemId);
 
@@ -431,7 +431,7 @@ namespace Jellyfin.Api.Helpers
                 }
             }
 
-            // here was a check if (result.MediaSource != null) but Rider said it will never be null
+            // here was a check if (result.MediaSource is not null) but Rider said it will never be null
             NormalizeMediaSourceContainer(result.MediaSource, profile!, DlnaProfileType.Video);
 
             return result;

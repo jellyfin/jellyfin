@@ -81,7 +81,7 @@ namespace Emby.Server.Implementations.Collections
         internal async Task<Folder?> EnsureLibraryFolder(string path, bool createIfNeeded)
         {
             var existingFolder = FindFolders(path).FirstOrDefault();
-            if (existingFolder != null)
+            if (existingFolder is not null)
             {
                 return existingFolder;
             }
@@ -121,7 +121,7 @@ namespace Emby.Server.Implementations.Collections
         {
             var folder = GetCollectionsFolder(false).GetAwaiter().GetResult();
 
-            return folder == null
+            return folder is null
                 ? Enumerable.Empty<BoxSet>()
                 : folder.GetChildren(user, true).OfType<BoxSet>();
         }
@@ -138,7 +138,7 @@ namespace Emby.Server.Implementations.Collections
 
             var parentFolder = await GetCollectionsFolder(true).ConfigureAwait(false);
 
-            if (parentFolder == null)
+            if (parentFolder is null)
             {
                 throw new ArgumentException(nameof(parentFolder));
             }
@@ -216,7 +216,7 @@ namespace Emby.Server.Implementations.Collections
             {
                 var item = _libraryManager.GetItemById(id);
 
-                if (item == null)
+                if (item is null)
                 {
                     throw new ArgumentException("No item exists with the supplied Id");
                 }
@@ -265,9 +265,9 @@ namespace Emby.Server.Implementations.Collections
             {
                 var childItem = _libraryManager.GetItemById(guidId);
 
-                var child = collection.LinkedChildren.FirstOrDefault(i => (i.ItemId.HasValue && i.ItemId.Value.Equals(guidId)) || (childItem != null && string.Equals(childItem.Path, i.Path, StringComparison.OrdinalIgnoreCase)));
+                var child = collection.LinkedChildren.FirstOrDefault(i => (i.ItemId.HasValue && i.ItemId.Value.Equals(guidId)) || (childItem is not null && string.Equals(childItem.Path, i.Path, StringComparison.OrdinalIgnoreCase)));
 
-                if (child == null)
+                if (child is null)
                 {
                     _logger.LogWarning("No collection title exists with the supplied Id");
                     continue;
@@ -275,7 +275,7 @@ namespace Emby.Server.Implementations.Collections
 
                 list.Add(child);
 
-                if (childItem != null)
+                if (childItem is not null)
                 {
                     itemList.Add(childItem);
                 }

@@ -64,7 +64,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult<DeviceInfo>> GetDeviceInfo([FromQuery, Required] string id)
         {
             var deviceInfo = await _deviceManager.GetDevice(id).ConfigureAwait(false);
-            if (deviceInfo == null)
+            if (deviceInfo is null)
             {
                 return NotFound();
             }
@@ -85,7 +85,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult<DeviceOptions>> GetDeviceOptions([FromQuery, Required] string id)
         {
             var deviceInfo = await _deviceManager.GetDeviceOptions(id).ConfigureAwait(false);
-            if (deviceInfo == null)
+            if (deviceInfo is null)
             {
                 return NotFound();
             }
@@ -123,7 +123,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> DeleteDevice([FromQuery, Required] string id)
         {
             var existingDevice = await _deviceManager.GetDevice(id).ConfigureAwait(false);
-            if (existingDevice == null)
+            if (existingDevice is null)
             {
                 return NotFound();
             }

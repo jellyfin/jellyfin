@@ -32,7 +32,7 @@ namespace MediaBrowser.Controller.Providers
             SearchResult = copy.SearchResult;
             RemoveOldMetadata = copy.RemoveOldMetadata;
 
-            if (copy.RefreshPaths != null && copy.RefreshPaths.Length > 0)
+            if (copy.RefreshPaths is not null && copy.RefreshPaths.Length > 0)
             {
                 RefreshPaths ??= Array.Empty<string>();
 
@@ -58,7 +58,7 @@ namespace MediaBrowser.Controller.Providers
 
         public bool RefreshItem(BaseItem item)
         {
-            if (RefreshPaths != null && RefreshPaths.Length > 0)
+            if (RefreshPaths is not null && RefreshPaths.Length > 0)
             {
                 return RefreshPaths.Contains(item.Path ?? string.Empty, StringComparison.OrdinalIgnoreCase);
             }

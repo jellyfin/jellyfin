@@ -28,6 +28,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Jellyfin.Api.Controllers
@@ -110,7 +111,7 @@ namespace Jellyfin.Api.Controllers
             // Handle image/png; charset=utf-8
             var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
             var userDataPath = Path.Combine(_serverConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, user.Username);
-            if (user.ProfileImage != null)
+            if (user.ProfileImage is not null)
             {
                 await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
             }
@@ -157,7 +158,7 @@ namespace Jellyfin.Api.Controllers
             // Handle image/png; charset=utf-8
             var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
             var userDataPath = Path.Combine(_serverConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, user.Username);
-            if (user.ProfileImage != null)
+            if (user.ProfileImage is not null)
             {
                 await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
             }
@@ -198,7 +199,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             var user = _userManager.GetUserById(userId);
-            if (user?.ProfileImage == null)
+            if (user?.ProfileImage is null)
             {
                 return NoContent();
             }
@@ -242,7 +243,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             var user = _userManager.GetUserById(userId);
-            if (user?.ProfileImage == null)
+            if (user?.ProfileImage is null)
             {
                 return NoContent();
             }
@@ -279,7 +280,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageIndex)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -307,7 +308,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute] int imageIndex)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -335,7 +336,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] ImageType imageType)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -371,7 +372,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute] int imageIndex)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -407,7 +408,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, Required] int newIndex)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -430,7 +431,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult<IEnumerable<ImageInfo>>> GetItemImageInfos([FromRoute, Required] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -452,7 +453,7 @@ namespace Jellyfin.Api.Controllers
                 {
                     var info = GetImageInfo(item, image, null);
 
-                    if (info != null)
+                    if (info is not null)
                     {
                         list.Add(info);
                     }
@@ -470,7 +471,7 @@ namespace Jellyfin.Api.Controllers
                 {
                     var info = GetImageInfo(item, image, index);
 
-                    if (info != null)
+                    if (info is not null)
                     {
                         list.Add(info);
                     }
@@ -537,7 +538,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageIndex)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -620,7 +621,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? foregroundLayer)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -703,7 +704,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] int imageIndex)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -786,7 +787,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] int imageIndex)
         {
             var item = _libraryManager.GetArtist(name);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -869,7 +870,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageIndex)
         {
             var item = _libraryManager.GetGenre(name);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -952,7 +953,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? foregroundLayer)
         {
             var item = _libraryManager.GetGenre(name);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -1035,7 +1036,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageIndex)
         {
             var item = _libraryManager.GetMusicGenre(name);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -1118,7 +1119,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? foregroundLayer)
         {
             var item = _libraryManager.GetMusicGenre(name);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -1201,7 +1202,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageIndex)
         {
             var item = _libraryManager.GetPerson(name);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -1284,7 +1285,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? foregroundLayer)
         {
             var item = _libraryManager.GetPerson(name);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -1367,7 +1368,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageIndex)
         {
             var item = _libraryManager.GetStudio(name);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -1450,7 +1451,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? foregroundLayer)
         {
             var item = _libraryManager.GetStudio(name);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -1533,7 +1534,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageIndex)
         {
             var user = _userManager.GetUserById(userId);
-            if (user?.ProfileImage == null)
+            if (user?.ProfileImage is null)
             {
                 return NotFound();
             }
@@ -1634,7 +1635,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? foregroundLayer)
         {
             var user = _userManager.GetUserById(userId);
-            if (user?.ProfileImage == null)
+            if (user?.ProfileImage is null)
             {
                 return NotFound();
             }
@@ -1944,10 +1945,10 @@ namespace Jellyfin.Api.Controllers
                 unplayedCount = null;
             }
 
-            if (imageInfo == null)
+            if (imageInfo is null)
             {
                 imageInfo = item?.GetImageInfo(imageType, imageIndex ?? 0);
-                if (imageInfo == null)
+                if (imageInfo is null)
                 {
                     return NotFound(string.Format(NumberFormatInfo.InvariantInfo, "{0} does not have an image of type {1}", item?.Name, imageType));
                 }
@@ -1968,7 +1969,7 @@ namespace Jellyfin.Api.Controllers
                 { "realTimeInfo.dlna.org", "DLNA.ORG_TLAG=*" }
             };
 
-            if (!imageInfo.IsLocalFile && item != null)
+            if (!imageInfo.IsLocalFile && item is not null)
             {
                 imageInfo = await _libraryManager.ConvertImageToLocal(item, imageInfo, imageIndex ?? 0).ConfigureAwait(false);
             }
@@ -2026,8 +2027,13 @@ namespace Jellyfin.Api.Controllers
             }
 
             var acceptParam = Request.Query[HeaderNames.Accept];
+            if (StringValues.IsNullOrEmpty(acceptParam))
+            {
+                return Array.Empty<ImageFormat>();
+            }
 
-            var supportsWebP = SupportsFormat(supportedFormats, acceptParam, ImageFormat.Webp, false);
+            // Can't be null, checked above
+            var supportsWebP = SupportsFormat(supportedFormats, acceptParam!, ImageFormat.Webp, false);
 
             if (!supportsWebP)
             {
@@ -2049,7 +2055,8 @@ namespace Jellyfin.Api.Controllers
             formats.Add(ImageFormat.Jpg);
             formats.Add(ImageFormat.Png);
 
-            if (SupportsFormat(supportedFormats, acceptParam, ImageFormat.Gif, true))
+            // Can't be null, checked above
+            if (SupportsFormat(supportedFormats, acceptParam!, ImageFormat.Gif, true))
             {
                 formats.Add(ImageFormat.Gif);
             }

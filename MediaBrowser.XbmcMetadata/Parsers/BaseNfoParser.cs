@@ -85,15 +85,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <exception cref="ArgumentException"><c>metadataFile</c> is <c>null</c> or empty.</exception>
         public void Fetch(MetadataResult<T> item, string metadataFile, CancellationToken cancellationToken)
         {
-            if (item.Item == null)
+            if (item.Item is null)
             {
                 throw new ArgumentException("Item can't be null.", nameof(item));
             }
 
-            if (string.IsNullOrEmpty(metadataFile))
-            {
-                throw new ArgumentException("The metadata filepath was empty.", nameof(metadataFile));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(metadataFile);
 
             _validProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -373,7 +370,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var val = reader.ReadElementContentAsBoolean();
 
-                        if (userData != null)
+                        if (userData is not null)
                         {
                             userData.Played = val;
                         }
@@ -384,7 +381,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 case "playcount":
                     {
                         var val = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(val) && userData != null)
+                        if (!string.IsNullOrWhiteSpace(val) && userData is not null)
                         {
                             if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var count))
                             {
@@ -398,7 +395,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 case "lastplayed":
                     {
                         var val = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(val) && userData != null)
+                        if (!string.IsNullOrWhiteSpace(val) && userData is not null)
                         {
                             if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var added))
                             {
@@ -633,7 +630,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         var val = reader.ReadElementContentAsString();
 
                         var hasDisplayOrder = item as IHasDisplayOrder;
-                        if (hasDisplayOrder != null)
+                        if (hasDisplayOrder is not null)
                         {
                             if (!string.IsNullOrWhiteSpace(val))
                             {
@@ -880,7 +877,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 var fileSystemMetadata = _directoryService.GetFile(val);
                 // non existing file returns null
-                if (fileSystemMetadata == null || !fileSystemMetadata.Exists)
+                if (fileSystemMetadata is null || !fileSystemMetadata.Exists)
                 {
                     Logger.LogWarning("Artwork file {Path} specified in nfo file for {ItemName} does not exist.", uri, itemResult.Item.Name);
                     return;
@@ -1018,7 +1015,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                                 var video = item as Video;
 
-                                if (video != null)
+                                if (video is not null)
                                 {
                                     if (string.Equals("HSBS", val, StringComparison.OrdinalIgnoreCase))
                                     {
@@ -1198,7 +1195,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                 if (float.TryParse(val, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var ratingValue))
                                 {
                                     // if ratingName contains tomato --> assume critic rating
-                                    if (ratingName != null &&
+                                    if (ratingName is not null &&
                                         ratingName.Contains("tomato", StringComparison.OrdinalIgnoreCase) &&
                                         !ratingName.Contains("audience", StringComparison.OrdinalIgnoreCase))
                                     {

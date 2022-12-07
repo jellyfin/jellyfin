@@ -82,7 +82,7 @@ namespace Jellyfin.Api.Controllers
         {
             var libraryOptions = libraryOptionsDto?.LibraryOptions ?? new LibraryOptions();
 
-            if (paths != null && paths.Length > 0)
+            if (paths is not null && paths.Length > 0)
             {
                 libraryOptions.PathInfos = paths.Select(i => new MediaPathInfo(i)).ToArray();
             }

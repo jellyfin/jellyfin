@@ -196,7 +196,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Gets a value indicating whether this instance can self restart.
         /// </summary>
-        public bool CanSelfRestart => _startupOptions.RestartPath != null;
+        public bool CanSelfRestart => _startupOptions.RestartPath is not null;
 
         public bool CoreStartupHasCompleted { get; private set; }
 
@@ -311,7 +311,7 @@ namespace Emby.Server.Implementations
         public X509Certificate2 Certificate { get; private set; }
 
         /// <inheritdoc/>
-        public bool ListenWithHttps => Certificate != null && ConfigurationManager.GetNetworkConfiguration().EnableHttps;
+        public bool ListenWithHttps => Certificate is not null && ConfigurationManager.GetNetworkConfiguration().EnableHttps;
 
         public string FriendlyName =>
             string.IsNullOrEmpty(ConfigurationManager.Configuration.ServerName)
@@ -403,7 +403,7 @@ namespace Emby.Server.Implementations
             // Convert to list so this isn't executed for each iteration
             var parts = GetExportTypes<T>()
                 .Select(CreateInstanceSafe)
-                .Where(i => i != null)
+                .Where(i => i is not null)
                 .Cast<T>()
                 .ToList();
 
@@ -424,7 +424,7 @@ namespace Emby.Server.Implementations
             // Convert to list so this isn't executed for each iteration
             var parts = GetExportTypes<T>()
                 .Select(i => defaultFunc(i))
-                .Where(i => i != null)
+                .Where(i => i is not null)
                 .Cast<T>()
                 .ToList();
 

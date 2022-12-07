@@ -34,7 +34,7 @@ namespace Jellyfin.Server.Implementations.Users
                 .FirstOrDefault(pref =>
                     pref.UserId.Equals(userId) && string.Equals(pref.Client, client) && pref.ItemId.Equals(itemId));
 
-            if (prefs == null)
+            if (prefs is null)
             {
                 prefs = new DisplayPreferences(userId, itemId, client);
                 _dbContext.DisplayPreferences.Add(prefs);
@@ -49,7 +49,7 @@ namespace Jellyfin.Server.Implementations.Users
             var prefs = _dbContext.ItemDisplayPreferences
                 .FirstOrDefault(pref => pref.UserId.Equals(userId) && pref.ItemId.Equals(itemId) && string.Equals(pref.Client, client));
 
-            if (prefs == null)
+            if (prefs is null)
             {
                 prefs = new ItemDisplayPreferences(userId, Guid.Empty, client);
                 _dbContext.ItemDisplayPreferences.Add(prefs);

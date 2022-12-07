@@ -66,7 +66,7 @@ namespace MediaBrowser.Providers.BoxSets
             var libraryFolderIds = item.GetLibraryFolderIds();
 
             var itemLibraryFolderIds = item.LibraryFolderIds;
-            if (itemLibraryFolderIds == null || !libraryFolderIds.SequenceEqual(itemLibraryFolderIds))
+            if (itemLibraryFolderIds is null || !libraryFolderIds.SequenceEqual(itemLibraryFolderIds))
             {
                 item.LibraryFolderIds = libraryFolderIds;
                 updatedType |= ItemUpdateType.MetadataImport;

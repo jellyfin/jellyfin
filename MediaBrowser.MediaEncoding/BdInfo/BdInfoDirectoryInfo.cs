@@ -34,7 +34,7 @@ namespace MediaBrowser.MediaEncoding.BdInfo
             get
             {
                 var parentFolder = System.IO.Path.GetDirectoryName(_impl.FullName);
-                if (parentFolder != null)
+                if (parentFolder is not null)
                 {
                     return new BdInfoDirectoryInfo(_fileSystem, parentFolder);
                 }

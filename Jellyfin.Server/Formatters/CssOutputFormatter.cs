@@ -30,7 +30,7 @@ namespace Jellyfin.Server.Formatters
         public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
         {
             var stringResponse = context.Object?.ToString();
-            return stringResponse == null ? Task.CompletedTask : context.HttpContext.Response.WriteAsync(stringResponse);
+            return stringResponse is null ? Task.CompletedTask : context.HttpContext.Response.WriteAsync(stringResponse);
         }
     }
 }

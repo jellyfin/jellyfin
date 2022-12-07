@@ -447,7 +447,7 @@ namespace Jellyfin.Api.Controllers
                         {
                             return null;
                         }
-                    }).Where(i => i != null).Select(i => i!.Id).ToArray();
+                    }).Where(i => i is not null).Select(i => i!.Id).ToArray();
                 }
 
                 // ExcludeArtistIds
@@ -483,7 +483,7 @@ namespace Jellyfin.Api.Controllers
                         {
                             return null;
                         }
-                    }).Where(i => i != null).Select(i => i!.Id).ToArray();
+                    }).Where(i => i is not null).Select(i => i!.Id).ToArray();
                 }
 
                 // Apply default sorting if none requested
@@ -837,7 +837,7 @@ namespace Jellyfin.Api.Controllers
             if (excludeActiveSessions)
             {
                 excludeItemIds = _sessionManager.Sessions
-                    .Where(s => s.UserId.Equals(userId) && s.NowPlayingItem != null)
+                    .Where(s => s.UserId.Equals(userId) && s.NowPlayingItem is not null)
                     .Select(s => s.NowPlayingItem.Id)
                     .ToArray();
             }

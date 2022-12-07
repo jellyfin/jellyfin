@@ -37,7 +37,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             using (var socket = _tcpClient)
             {
-                if (socket != null)
+                if (socket is not null)
                 {
                     _tcpClient = null;
 

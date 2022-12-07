@@ -45,7 +45,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         {
             var result = ResolveMultipleInternal(parent, files, collectionType);
 
-            if (result != null)
+            if (result is not null)
             {
                 foreach (var item in result.Items)
                 {
@@ -116,7 +116,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
 
                 // Use regular audio type for mixed libraries, owned items and music
                 if (isMixedCollectionType ||
-                    args.Parent == null ||
+                    args.Parent is null ||
                     isMusicCollectionType)
                 {
                     item = new MediaBrowser.Controller.Entities.Audio.Audio();
@@ -126,7 +126,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                     item = new AudioBook();
                 }
 
-                if (item != null)
+                if (item is not null)
                 {
                     item.IsShortcut = string.Equals(extension, ".strm", StringComparison.OrdinalIgnoreCase);
 
@@ -144,7 +144,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             // TODO: Allow GetMultiDiscMovie in here
             var result = ResolveMultipleAudio(args.Parent, args.GetActualFileSystemChildren(), parseName);
 
-            if (result == null || result.Items.Count != 1 || result.Items[0] is not AudioBook item)
+            if (result is null || result.Items.Count != 1 || result.Items[0] is not AudioBook item)
             {
                 return null;
             }
@@ -183,7 +183,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 Items = items
             };
 
-            var isInMixedFolder = resolverResult.Count > 1 || (parent != null && parent.IsTopParent);
+            var isInMixedFolder = resolverResult.Count > 1 || (parent is not null && parent.IsTopParent);
 
             foreach (var resolvedItem in resolverResult)
             {

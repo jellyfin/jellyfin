@@ -76,7 +76,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult GetDashboardConfigurationPage([FromQuery] string? name)
         {
             var altPage = GetPluginPages().FirstOrDefault(p => string.Equals(p.Item1.Name, name, StringComparison.OrdinalIgnoreCase));
-            if (altPage == null)
+            if (altPage is null)
             {
                 return NotFound();
             }
@@ -84,7 +84,7 @@ namespace Jellyfin.Api.Controllers
             IPlugin plugin = altPage.Item2;
             string resourcePath = altPage.Item1.EmbeddedResourcePath;
             Stream? stream = plugin.GetType().Assembly.GetManifestResourceStream(resourcePath);
-            if (stream == null)
+            if (stream is null)
             {
                 _logger.LogError("Failed to get resource {Resource} from plugin {Plugin}", resourcePath, plugin.Name);
                 return NotFound();

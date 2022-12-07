@@ -65,7 +65,7 @@ namespace Jellyfin.Server.Implementations.Security
                     .FirstOrDefaultAsync()
                     .ConfigureAwait(false);
 
-                if (key == null)
+                if (key is null)
                 {
                     return;
                 }

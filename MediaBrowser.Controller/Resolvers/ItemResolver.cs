@@ -46,7 +46,7 @@ namespace MediaBrowser.Controller.Resolvers
         {
             var item = Resolve(args);
 
-            if (item != null)
+            if (item is not null)
             {
                 SetInitialItemValues(item, args);
             }

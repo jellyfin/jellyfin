@@ -52,7 +52,7 @@ namespace Emby.Server.Implementations.Images
                 if (i is Episode episode)
                 {
                     var series = episode.Series;
-                    if (series != null)
+                    if (series is not null)
                     {
                         return series;
                     }
@@ -63,7 +63,7 @@ namespace Emby.Server.Implementations.Images
                 if (i is Season season)
                 {
                     var series = season.Series;
-                    if (series != null)
+                    if (series is not null)
                     {
                         return series;
                     }
@@ -74,7 +74,7 @@ namespace Emby.Server.Implementations.Images
                 if (i is Audio audio)
                 {
                     var album = audio.AlbumEntity;
-                    if (album != null && album.HasImage(ImageType.Primary))
+                    if (album is not null && album.HasImage(ImageType.Primary))
                     {
                         return album;
                     }

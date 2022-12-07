@@ -76,7 +76,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 {
                     if (args.ContainsFileSystemEntryByName("tvshow.nfo"))
                     {
-                        if (args.Parent != null && args.Parent.IsRoot)
+                        if (args.Parent is not null && args.Parent.IsRoot)
                         {
                             // For now, return null, but if we want to allow this in the future then add some additional checks to guard against a misplaced tvshow.nfo
                             return null;
@@ -89,7 +89,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                         };
                     }
 
-                    if (args.Parent != null && args.Parent.IsRoot)
+                    if (args.Parent is not null && args.Parent.IsRoot)
                     {
                         return null;
                     }
@@ -138,7 +138,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                         var episodeResolver = new Naming.TV.EpisodeResolver(namingOptions);
 
                         var episodeInfo = episodeResolver.Resolve(fullName, false, true, false, fillExtendedInfo: false);
-                        if (episodeInfo != null && episodeInfo.EpisodeNumber.HasValue)
+                        if (episodeInfo is not null && episodeInfo.EpisodeNumber.HasValue)
                         {
                             return true;
                         }

@@ -174,12 +174,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     var result = CharsetDetector.DetectFromStream(stream).Detected;
                     stream.Position = 0;
 
-                    if (result != null)
+                    if (result is not null)
                     {
                         _logger.LogDebug("charset {CharSet} detected for {Path}", result.EncodingName, fileInfo.Path);
 
                         using var reader = new StreamReader(stream, result.Encoding);
-                        var text = await reader.ReadToEndAsync().ConfigureAwait(false);
+                        var text = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
 
                         return new MemoryStream(Encoding.UTF8.GetBytes(text));
                     }
@@ -249,15 +249,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         private bool TryGetWriter(string format, [NotNullWhen(true)] out ISubtitleWriter? value)
         {
+            ArgumentException.ThrowIfNullOrEmpty(format);
+
             if (string.Equals(format, SubtitleFormat.ASS, StringComparison.OrdinalIgnoreCase))
             {
                 value = new AssWriter();
                 return true;
-            }
-
-            if (string.IsNullOrEmpty(format))
-            {
-                throw new ArgumentNullException(nameof(format));
             }
 
             if (string.Equals(format, "json", StringComparison.OrdinalIgnoreCase))
@@ -355,15 +352,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private async Task ConvertTextSubtitleToSrtInternal(MediaStream subtitleStream, MediaSourceInfo mediaSource, string outputPath, CancellationToken cancellationToken)
         {
             var inputPath = subtitleStream.Path;
-            if (string.IsNullOrEmpty(inputPath))
-            {
-                throw new ArgumentNullException(nameof(inputPath));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(inputPath);
 
-            if (string.IsNullOrEmpty(outputPath))
-            {
-                throw new ArgumentNullException(nameof(outputPath));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(outputPath);
 
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath)));
 
@@ -522,15 +513,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             string outputPath,
             CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(inputPath))
-            {
-                throw new ArgumentNullException(nameof(inputPath));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(inputPath);
 
-            if (string.IsNullOrEmpty(outputPath))
-            {
-                throw new ArgumentNullException(nameof(outputPath));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(outputPath);
 
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath)));
 
@@ -650,7 +635,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 encoding = reader.CurrentEncoding;
 
-                text = await reader.ReadToEndAsync().ConfigureAwait(false);
+                text = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
             }
 
             var newText = text.Replace(",Arial,", ",Arial Unicode MS,", StringComparison.Ordinal);

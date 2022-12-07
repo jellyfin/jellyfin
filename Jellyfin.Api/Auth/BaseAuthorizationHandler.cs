@@ -67,7 +67,7 @@ namespace Jellyfin.Api.Auth
 
             // Ensure userId links to a valid user.
             var user = _userManager.GetUserById(userId);
-            if (user == null)
+            if (user is null)
             {
                 return false;
             }
@@ -78,7 +78,7 @@ namespace Jellyfin.Api.Auth
                 return false;
             }
 
-            var isInLocalNetwork = _httpContextAccessor.HttpContext != null
+            var isInLocalNetwork = _httpContextAccessor.HttpContext is not null
                 && _networkManager.IsInLocalNetwork(_httpContextAccessor.HttpContext.GetNormalizedRemoteIp());
 
             // User cannot access remotely and user is remote

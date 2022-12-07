@@ -5,6 +5,7 @@ on:
     - cron: '30 1 * * *'
   workflow_dispatch:
 
+permissions: {}
 jobs:
   stale:
     runs-on: ubuntu-latest

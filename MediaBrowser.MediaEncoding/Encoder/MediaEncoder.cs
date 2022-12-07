@@ -75,7 +75,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private bool _isVaapiDeviceInteli965 = false;
         private bool _isVaapiDeviceSupportVulkanFmtModifier = false;
 
-        private static string[] _vulkanFmtModifierExts = {
+        private static string[] _vulkanFmtModifierExts =
+        {
             "VK_KHR_sampler_ycbcr_conversion",
             "VK_EXT_image_drm_format_modifier",
             "VK_KHR_external_memory_fd",
@@ -156,7 +157,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _configurationManager.SaveConfiguration("encoding", options);
 
             // Only if mpeg path is set, try and set path to probe
-            if (_ffmpegPath != null)
+            if (_ffmpegPath is not null)
             {
                 // Determine a probe path from the mpeg path
                 _ffprobePath = Regex.Replace(_ffmpegPath, @"[^\/\\]+?(\.[^\/\\\n.]+)?$", @"ffprobe$1");
@@ -530,12 +531,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     throw;
                 }
 
-                if (result == null || (result.Streams == null && result.Format == null))
+                if (result is null || (result.Streams is null && result.Format is null))
                 {
                     throw new FfmpegException("ffprobe failed - streams and format are both null.");
                 }
 
-                if (result.Streams != null)
+                if (result.Streams is not null)
                 {
                     // Normalize aspect ratio if invalid
                     foreach (var stream in result.Streams)
@@ -634,13 +635,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return imageResolutionParameter;
         }
 
-
         private async Task<string> ExtractImageInternal(string inputPath, string container, MediaStream videoStream, int? imageStreamIndex, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, ImageFormat? targetFormat, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(inputPath))
-            {
-                throw new ArgumentNullException(nameof(inputPath));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(inputPath);
 
             var outputExtension = targetFormat switch
             {
@@ -660,7 +657,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var filters = new List<string>();
 
             // deinterlace using bwdif algorithm for video stream.
-            if (videoStream != null && videoStream.IsInterlaced)
+            if (videoStream is not null && videoStream.IsInterlaced)
             {
                 filters.Add("bwdif=0:-1:0");
             }
@@ -1017,7 +1014,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 if (!_disposed)
                 {
-                    if (Process != null)
+                    if (Process is not null)
                     {
                         Process.Exited -= OnProcessExited;
                         DisposeProcess(Process);

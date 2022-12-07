@@ -151,7 +151,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
                         previouslyFailedImages.Add(key);
 
                         var parentPath = Path.GetDirectoryName(failHistoryPath);
-                        if (parentPath != null)
+                        if (parentPath is not null)
                         {
                             Directory.CreateDirectory(parentPath);
                         }

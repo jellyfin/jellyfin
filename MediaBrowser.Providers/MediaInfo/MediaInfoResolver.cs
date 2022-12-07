@@ -199,7 +199,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     var externalPathInfo = _externalPathParser.ParseFile(file, fileNameWithoutExtension[prefix.Length..].ToString());
 
-                    if (externalPathInfo != null)
+                    if (externalPathInfo is not null)
                     {
                         externalPathInfos.Add(externalPathInfo);
                     }

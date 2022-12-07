@@ -57,7 +57,7 @@ namespace Emby.Server.Implementations.Sorting
         {
             var userdata = UserDataRepository.GetUserData(User, x);
 
-            return userdata == null ? 0 : userdata.PlayCount;
+            return userdata is null ? 0 : userdata.PlayCount;
         }
     }
 }

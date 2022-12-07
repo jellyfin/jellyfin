@@ -90,7 +90,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             var imdbId = searchInfo.GetProviderId(MetadataProvider.Imdb);
 
             var urlQuery = new StringBuilder("plot=full&r=json");
-            if (episodeSearchInfo != null)
+            if (episodeSearchInfo is not null)
             {
                 episodeSearchInfo.SeriesProviderIds.TryGetValue(MetadataProvider.Imdb.ToString(), out imdbId);
                 if (searchInfo.IndexNumber.HasValue)
@@ -142,7 +142,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             if (isSearch)
             {
                 var searchResultList = await JsonSerializer.DeserializeAsync<SearchResultList>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-                if (searchResultList?.Search != null)
+                if (searchResultList?.Search is not null)
                 {
                     var resultCount = searchResultList.Search.Count;
                     var result = new RemoteSearchResult[resultCount];

@@ -14,7 +14,7 @@ namespace Jellyfin.Api.ModelBinders
         public IModelBinder? GetBinder(ModelBinderProviderContext context)
         {
             var nullableType = Nullable.GetUnderlyingType(context.Metadata.ModelType);
-            if (nullableType == null || !nullableType.IsEnum)
+            if (nullableType is null || !nullableType.IsEnum)
             {
                 // Type isn't nullable or isn't an enum.
                 return null;

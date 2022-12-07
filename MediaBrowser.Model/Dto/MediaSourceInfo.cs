@@ -134,7 +134,7 @@ namespace MediaBrowser.Model.Dto
 
         public void InferTotalBitrate(bool force = false)
         {
-            if (MediaStreams == null)
+            if (MediaStreams is null)
             {
                 return;
             }

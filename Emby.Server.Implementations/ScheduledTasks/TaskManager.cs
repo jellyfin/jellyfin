@@ -94,7 +94,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             var scheduledTask = ScheduledTasks.FirstOrDefault(t => t.ScheduledTask.GetType() == typeof(T));
 
-            if (scheduledTask == null)
+            if (scheduledTask is null)
             {
                 _logger.LogError("Unable to find scheduled task of type {0} in QueueScheduledTask.", typeof(T).Name);
             }
@@ -126,7 +126,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             var scheduledTask = ScheduledTasks.FirstOrDefault(t => t.ScheduledTask.GetType() == typeof(T));
 
-            if (scheduledTask == null)
+            if (scheduledTask is null)
             {
                 _logger.LogError("Unable to find scheduled task of type {0} in Execute.", typeof(T).Name);
             }
@@ -155,7 +155,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             var scheduledTask = ScheduledTasks.FirstOrDefault(t => t.ScheduledTask.GetType() == task.GetType());
 
-            if (scheduledTask == null)
+            if (scheduledTask is null)
             {
                 _logger.LogError("Unable to find scheduled task of type {0} in QueueScheduledTask.", task.GetType().Name);
             }

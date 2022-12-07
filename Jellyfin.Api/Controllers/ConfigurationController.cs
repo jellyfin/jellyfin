@@ -96,7 +96,7 @@ namespace Jellyfin.Api.Controllers
             var configurationType = _configurationManager.GetConfigurationType(key);
             var deserializedConfiguration = configuration.Deserialize(configurationType, _serializerOptions);
 
-            if (deserializedConfiguration == null)
+            if (deserializedConfiguration is null)
             {
                 throw new ArgumentException("Body doesn't contain a valid configuration");
             }

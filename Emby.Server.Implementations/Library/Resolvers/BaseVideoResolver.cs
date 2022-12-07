@@ -79,7 +79,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                         videoType = VideoType.Dvd;
                     }
 
-                    if (videoType == null)
+                    if (videoType is null)
                     {
                         continue;
                     }
@@ -93,7 +93,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                 videoInfo = VideoResolver.Resolve(args.Path, false, NamingOptions, parseName);
             }
 
-            if (videoInfo == null || (!videoInfo.IsStub && !VideoResolver.IsVideoFile(args.Path, NamingOptions)))
+            if (videoInfo is null || (!videoInfo.IsStub && !VideoResolver.IsVideoFile(args.Path, NamingOptions)))
             {
                 return null;
             }

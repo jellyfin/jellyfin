@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// <inheritdoc />
         [JsonIgnore]
         public IReadOnlyList<Guid> SpecialFeatureIds => GetExtras()
-            .Where(extra => extra.ExtraType != null && extra is Video)
+            .Where(extra => extra.ExtraType is not null && extra is Video)
             .Select(extra => extra.Id)
             .ToArray();
 

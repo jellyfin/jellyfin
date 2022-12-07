@@ -33,7 +33,7 @@ namespace Emby.Naming.AudioBook
                 var match = new Regex(expression, RegexOptions.IgnoreCase).Match(name);
                 if (match.Success)
                 {
-                    if (result.Name == null)
+                    if (result.Name is null)
                     {
                         var value = match.Groups["name"];
                         if (value.Success)

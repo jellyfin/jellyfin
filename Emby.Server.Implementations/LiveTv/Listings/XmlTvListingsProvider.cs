@@ -151,9 +151,9 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 Overview = program.Description,
                 ProductionYear = program.CopyrightDate?.Year,
                 SeasonNumber = program.Episode?.Series,
-                IsSeries = program.Episode != null,
+                IsSeries = program.Episode is not null,
                 IsRepeat = program.IsPreviouslyShown && !program.IsNew,
-                IsPremiere = program.Premiere != null,
+                IsPremiere = program.Premiere is not null,
                 IsKids = program.Categories.Any(c => info.KidsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
                 IsMovie = program.Categories.Any(c => info.MovieCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
                 IsNews = program.Categories.Any(c => info.NewsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
@@ -162,7 +162,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 HasImage = !string.IsNullOrEmpty(program.Icon?.Source),
                 OfficialRating = string.IsNullOrEmpty(program.Rating?.Value) ? null : program.Rating.Value,
                 CommunityRating = program.StarRating,
-                SeriesId = program.Episode == null ? null : program.Title?.GetMD5().ToString("N", CultureInfo.InvariantCulture)
+                SeriesId = program.Episode is null ? null : program.Title?.GetMD5().ToString("N", CultureInfo.InvariantCulture)
             };
 
             if (string.IsNullOrWhiteSpace(program.ProgramId))
@@ -243,7 +243,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 Id = c.Id,
                 Name = c.DisplayName,
-                ImageUrl = c.Icon != null && !string.IsNullOrEmpty(c.Icon.Source) ? c.Icon.Source : null,
+                ImageUrl = string.IsNullOrEmpty(c.Icon.Source) ? null : c.Icon.Source,
                 Number = string.IsNullOrWhiteSpace(c.Number) ? c.Id : c.Number
             }).ToList();
         }

@@ -219,10 +219,7 @@ namespace Emby.Server.Implementations.Localization
         /// <inheritdoc />
         public int? GetRatingLevel(string rating)
         {
-            if (string.IsNullOrEmpty(rating))
-            {
-                throw new ArgumentNullException(nameof(rating));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(rating);
 
             if (_unratedValues.Contains(rating.AsSpan(), StringComparison.OrdinalIgnoreCase))
             {
@@ -295,10 +292,7 @@ namespace Emby.Server.Implementations.Localization
 
         private Dictionary<string, string> GetLocalizationDictionary(string culture)
         {
-            if (string.IsNullOrEmpty(culture))
-            {
-                throw new ArgumentNullException(nameof(culture));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(culture);
 
             const string Prefix = "Core";
 
@@ -310,10 +304,7 @@ namespace Emby.Server.Implementations.Localization
 
         private async Task<Dictionary<string, string>> GetDictionary(string prefix, string culture, string baseFilename)
         {
-            if (string.IsNullOrEmpty(culture))
-            {
-                throw new ArgumentNullException(nameof(culture));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(culture);
 
             var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -329,14 +320,14 @@ namespace Emby.Server.Implementations.Localization
         {
             await using var stream = _assembly.GetManifestResourceStream(resourcePath);
             // If a Culture doesn't have a translation the stream will be null and it defaults to en-us further up the chain
-            if (stream == null)
+            if (stream is null)
             {
                 _logger.LogError("Missing translation/culture resource: {ResourcePath}", resourcePath);
                 return;
             }
 
             var dict = await JsonSerializer.DeserializeAsync<Dictionary<string, string>>(stream, _jsonOptions).ConfigureAwait(false);
-            if (dict == null)
+            if (dict is null)
             {
                 throw new InvalidOperationException($"Resource contains invalid data: '{stream}'");
             }

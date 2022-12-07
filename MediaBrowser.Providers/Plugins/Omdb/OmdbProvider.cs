@@ -141,7 +141,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             var seasonResult = await GetSeasonRootObject(seriesImdbId, seasonNumber, cancellationToken).ConfigureAwait(false);
 
-            if (seasonResult?.Episodes == null)
+            if (seasonResult?.Episodes is null)
             {
                 return false;
             }
@@ -161,7 +161,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
 
             // finally, search by numbers
-            if (result == null)
+            if (result is null)
             {
                 foreach (var episode in seasonResult.Episodes)
                 {
@@ -173,7 +173,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 }
             }
 
-            if (result == null)
+            if (result is null)
             {
                 return false;
             }
@@ -365,10 +365,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         internal string GetDataFilePath(string imdbId)
         {
-            if (string.IsNullOrEmpty(imdbId))
-            {
-                throw new ArgumentNullException(nameof(imdbId));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(imdbId);
 
             var dataPath = Path.Combine(_configurationManager.ApplicationPaths.CachePath, "omdb");
 
@@ -379,10 +376,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         internal string GetSeasonFilePath(string imdbId, int seasonId)
         {
-            if (string.IsNullOrEmpty(imdbId))
-            {
-                throw new ArgumentNullException(nameof(imdbId));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(imdbId);
 
             var dataPath = Path.Combine(_configurationManager.ApplicationPaths.CachePath, "omdb");
 
@@ -540,10 +534,10 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             public float? GetRottenTomatoScore()
             {
-                if (Ratings != null)
+                if (Ratings is not null)
                 {
                     var rating = Ratings.FirstOrDefault(i => string.Equals(i.Source, "Rotten Tomatoes", StringComparison.OrdinalIgnoreCase));
-                    if (rating?.Value != null)
+                    if (rating?.Value is not null)
                     {
                         var value = rating.Value.TrimEnd('%');
                         if (float.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var score))

@@ -182,7 +182,7 @@ namespace Emby.Server.Implementations.Library
                     source.SupportsDirectStream = SupportsDirectStream(source.Path, source.Protocol);
                 }
 
-                if (user != null)
+                if (user is not null)
                 {
                     SetDefaultAudioAndSubtitleStreamIndexes(item, source, user);
 
@@ -248,7 +248,7 @@ namespace Emby.Server.Implementations.Library
 
             if (protocol == MediaProtocol.Http)
             {
-                if (path != null)
+                if (path is not null)
                 {
                     if (path.Contains(".m3u", StringComparison.OrdinalIgnoreCase))
                     {
@@ -328,7 +328,7 @@ namespace Emby.Server.Implementations.Library
 
             var sources = hasMediaSources.GetMediaSources(enablePathSubstitution);
 
-            if (user != null)
+            if (user is not null)
             {
                 foreach (var source in sources)
                 {
@@ -357,7 +357,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             var culture = _localizationManager.FindLanguageInfo(language);
-            if (culture != null)
+            if (culture is not null)
             {
                 return culture.ThreeLetterISOLanguageNames;
             }
@@ -383,7 +383,7 @@ namespace Emby.Server.Implementations.Library
             var preferredSubs = NormalizeLanguage(user.SubtitleLanguagePreference);
 
             var defaultAudioIndex = source.DefaultAudioStreamIndex;
-            var audioLangage = defaultAudioIndex == null
+            var audioLangage = defaultAudioIndex is null
                 ? null
                 : source.MediaStreams.Where(i => i.Type == MediaStreamType.Audio && i.Index == defaultAudioIndex).Select(i => i.Language).FirstOrDefault();
 
@@ -417,13 +417,13 @@ namespace Emby.Server.Implementations.Library
         public void SetDefaultAudioAndSubtitleStreamIndexes(BaseItem item, MediaSourceInfo source, User user)
         {
             // Item would only be null if the app didn't supply ItemId as part of the live stream open request
-            var mediaType = item == null ? MediaType.Video : item.MediaType;
+            var mediaType = item is null ? MediaType.Video : item.MediaType;
 
             if (string.Equals(mediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
             {
-                var userData = item == null ? new UserItemData() : _userDataManager.GetUserData(user, item);
+                var userData = item is null ? new UserItemData() : _userDataManager.GetUserData(user, item);
 
-                var allowRememberingSelection = item == null || item.EnableRememberingTrackSelections;
+                var allowRememberingSelection = item is null || item.EnableRememberingTrackSelections;
 
                 SetDefaultAudioStreamIndex(source, userData, user, allowRememberingSelection);
                 SetDefaultSubtitleStreamIndex(source, userData, user, allowRememberingSelection);
@@ -432,7 +432,7 @@ namespace Emby.Server.Implementations.Library
             {
                 var audio = source.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
 
-                if (audio != null)
+                if (audio is not null)
                 {
                     source.DefaultAudioStreamIndex = audio.Index;
                 }
@@ -543,7 +543,7 @@ namespace Emby.Server.Implementations.Library
 
             var audioStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
 
-            if (audioStream == null || audioStream.Index == -1)
+            if (audioStream is null || audioStream.Index == -1)
             {
                 mediaSource.DefaultAudioStreamIndex = null;
             }
@@ -553,7 +553,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             var videoStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
-            if (videoStream != null)
+            if (videoStream is not null)
             {
                 if (!videoStream.BitRate.HasValue)
                 {
@@ -638,7 +638,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            if (mediaInfo == null)
+            if (mediaInfo is null)
             {
                 if (addProbeDelay)
                 {
@@ -661,7 +661,7 @@ namespace Emby.Server.Implementations.Library
                 },
                     cancellationToken).ConfigureAwait(false);
 
-                if (cacheFilePath != null)
+                if (cacheFilePath is not null)
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
                     await using FileStream createStream = File.Create(cacheFilePath);
@@ -713,7 +713,7 @@ namespace Emby.Server.Implementations.Library
 
             var audioStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
 
-            if (audioStream == null || audioStream.Index == -1)
+            if (audioStream is null || audioStream.Index == -1)
             {
                 mediaSource.DefaultAudioStreamIndex = null;
             }
@@ -723,7 +723,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
-            if (videoStream != null)
+            if (videoStream is not null)
             {
                 if (!videoStream.BitRate.HasValue)
                 {
@@ -762,10 +762,7 @@ namespace Emby.Server.Implementations.Library
 
         public Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetLiveStreamWithDirectStreamProvider(string id, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(id))
-            {
-                throw new ArgumentNullException(nameof(id));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(id);
 
             // TODO probably shouldn't throw here but it is kept for "backwards compatibility"
             var info = GetLiveStreamInfo(id) ?? throw new ResourceNotFoundException();
@@ -774,10 +771,7 @@ namespace Emby.Server.Implementations.Library
 
         public ILiveStream GetLiveStreamInfo(string id)
         {
-            if (string.IsNullOrEmpty(id))
-            {
-                throw new ArgumentNullException(nameof(id));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(id);
 
             if (_openStreams.TryGetValue(id, out ILiveStream info))
             {
@@ -801,10 +795,7 @@ namespace Emby.Server.Implementations.Library
 
         public async Task CloseLiveStream(string id)
         {
-            if (string.IsNullOrEmpty(id))
-            {
-                throw new ArgumentNullException(nameof(id));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(id);
 
             await _liveStreamSemaphore.WaitAsync().ConfigureAwait(false);
 
@@ -835,10 +826,7 @@ namespace Emby.Server.Implementations.Library
 
         private (IMediaSourceProvider MediaSourceProvider, string KeyId) GetProvider(string key)
         {
-            if (string.IsNullOrEmpty(key))
-            {
-                throw new ArgumentException("Key can't be empty.", nameof(key));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(key);
 
             var keys = key.Split(LiveStreamIdDelimeter, 2);
 

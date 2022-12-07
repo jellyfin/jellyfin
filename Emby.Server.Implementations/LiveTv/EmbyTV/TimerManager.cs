@@ -74,10 +74,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public override void Add(TimerInfo item)
         {
-            if (string.IsNullOrEmpty(item.Id))
-            {
-                throw new ArgumentException("TimerInfo.Id cannot be null or empty.");
-            }
+            ArgumentException.ThrowIfNullOrEmpty(item.Id);
 
             base.Add(item);
             AddOrUpdateSystemTimer(item);
@@ -165,7 +162,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var timerId = (string?)state ?? throw new ArgumentNullException(nameof(state));
 
             var timer = GetAll().FirstOrDefault(i => string.Equals(i.Id, timerId, StringComparison.OrdinalIgnoreCase));
-            if (timer != null)
+            if (timer is not null)
             {
                 TimerFired?.Invoke(this, new GenericEventArgs<TimerInfo>(timer));
             }

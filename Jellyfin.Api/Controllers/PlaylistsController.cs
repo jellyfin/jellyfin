@@ -176,7 +176,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
             var playlist = (Playlist)_libraryManager.GetItemById(playlistId);
-            if (playlist == null)
+            if (playlist is null)
             {
                 return NotFound();
             }

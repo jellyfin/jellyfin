@@ -1048,7 +1048,7 @@ namespace Emby.Dlna.ContentDirectory
                     ParentId = parent?.Id ?? Guid.Empty,
                     GroupItems = true
                 },
-                query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null).ToArray();
+                query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i is not null).ToArray();
 
             return ToResult(query.StartIndex, items);
         }

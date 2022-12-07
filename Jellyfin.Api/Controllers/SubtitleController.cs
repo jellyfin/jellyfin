@@ -96,7 +96,7 @@ namespace Jellyfin.Api.Controllers
         {
             var item = _libraryManager.GetItemById(itemId);
 
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -522,7 +522,7 @@ namespace Jellyfin.Api.Controllers
                     .First(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));
                 var fileSize = fontFile?.Length;
 
-                if (fontFile != null && fileSize != null && fileSize > 0)
+                if (fontFile is not null && fileSize is not null && fileSize > 0)
                 {
                     _logger.LogDebug("Fallback font size is {FileSize} Bytes", fileSize);
                     return PhysicalFile(fontFile.FullName, MimeTypes.GetMimeType(fontFile.FullName));
