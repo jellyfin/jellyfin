@@ -28,6 +28,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Jellyfin.Api.Controllers
@@ -2026,8 +2027,13 @@ namespace Jellyfin.Api.Controllers
             }
 
             var acceptParam = Request.Query[HeaderNames.Accept];
+            if (StringValues.IsNullOrEmpty(acceptParam))
+            {
+                return Array.Empty<ImageFormat>();
+            }
 
-            var supportsWebP = SupportsFormat(supportedFormats, acceptParam, ImageFormat.Webp, false);
+            // Can't be null, checked above
+            var supportsWebP = SupportsFormat(supportedFormats, acceptParam!, ImageFormat.Webp, false);
 
             if (!supportsWebP)
             {
@@ -2049,7 +2055,8 @@ namespace Jellyfin.Api.Controllers
             formats.Add(ImageFormat.Jpg);
             formats.Add(ImageFormat.Png);
 
-            if (SupportsFormat(supportedFormats, acceptParam, ImageFormat.Gif, true))
+            // Can't be null, checked above
+            if (SupportsFormat(supportedFormats, acceptParam!, ImageFormat.Gif, true))
             {
                 formats.Add(ImageFormat.Gif);
             }

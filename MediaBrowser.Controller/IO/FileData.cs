@@ -35,10 +35,7 @@ namespace MediaBrowser.Controller.IO
             int flattenFolderDepth = 0,
             bool resolveShortcuts = true)
         {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(path);
 
             ArgumentNullException.ThrowIfNull(args);
 

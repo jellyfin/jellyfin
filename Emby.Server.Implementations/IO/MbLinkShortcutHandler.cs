@@ -19,10 +19,7 @@ namespace Emby.Server.Implementations.IO
 
         public string? Resolve(string shortcutPath)
         {
-            if (string.IsNullOrEmpty(shortcutPath))
-            {
-                throw new ArgumentException("Shortcut path is empty or null.", nameof(shortcutPath));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(shortcutPath);
 
             if (string.Equals(Path.GetExtension(shortcutPath), ".mblink", StringComparison.OrdinalIgnoreCase))
             {
@@ -36,15 +33,8 @@ namespace Emby.Server.Implementations.IO
 
         public void Create(string shortcutPath, string targetPath)
         {
-            if (string.IsNullOrEmpty(shortcutPath))
-            {
-                throw new ArgumentNullException(nameof(shortcutPath));
-            }
-
-            if (string.IsNullOrEmpty(targetPath))
-            {
-                throw new ArgumentNullException(nameof(targetPath));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(shortcutPath);
+            ArgumentException.ThrowIfNullOrEmpty(targetPath);
 
             File.WriteAllText(shortcutPath, targetPath);
         }

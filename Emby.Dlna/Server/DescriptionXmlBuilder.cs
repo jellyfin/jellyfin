@@ -22,15 +22,8 @@ namespace Emby.Dlna.Server
 
         public DescriptionXmlBuilder(DeviceProfile profile, string serverUdn, string serverAddress, string serverName, string serverId)
         {
-            if (string.IsNullOrEmpty(serverUdn))
-            {
-                throw new ArgumentNullException(nameof(serverUdn));
-            }
-
-            if (string.IsNullOrEmpty(serverAddress))
-            {
-                throw new ArgumentNullException(nameof(serverAddress));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(serverUdn);
+            ArgumentException.ThrowIfNullOrEmpty(serverAddress);
 
             _profile = profile;
             _serverUdn = serverUdn;

@@ -918,15 +918,8 @@ namespace MediaBrowser.Providers.Manager
             var source = sourceResult.Item;
             var target = targetResult.Item;
 
-            if (source is null)
-            {
-                throw new ArgumentException("Item cannot be null.", nameof(sourceResult));
-            }
-
-            if (target is null)
-            {
-                throw new ArgumentException("Item cannot be null.", nameof(targetResult));
-            }
+            ArgumentNullException.ThrowIfNull(sourceResult);
+            ArgumentNullException.ThrowIfNull(targetResult);
 
             if (!lockedFields.Contains(MetadataField.Name))
             {

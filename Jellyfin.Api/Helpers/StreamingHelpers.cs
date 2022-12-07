@@ -364,9 +364,9 @@ namespace Jellyfin.Api.Helpers
         /// </summary>
         /// <param name="queryString">The query string.</param>
         /// <returns>A <see cref="Dictionary{String,String}"/> containing the stream options.</returns>
-        private static Dictionary<string, string> ParseStreamOptions(IQueryCollection queryString)
+        private static Dictionary<string, string?> ParseStreamOptions(IQueryCollection queryString)
         {
-            Dictionary<string, string> streamOptions = new Dictionary<string, string>();
+            Dictionary<string, string?> streamOptions = new Dictionary<string, string?>();
             foreach (var param in queryString)
             {
                 if (char.IsLower(param.Key[0]))

@@ -2,11 +2,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": ".NET Core Launch (console)",
+            "name": ".NET Launch (console)",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/Jellyfin.Server/bin/Debug/net6.0/jellyfin.dll",
+            "program": "${workspaceFolder}/Jellyfin.Server/bin/Debug/net7.0/jellyfin.dll",
             "args": [],
             "cwd": "${workspaceFolder}/Jellyfin.Server",
             "console": "internalConsole",
@@ -18,11 +18,11 @@
             }
         },
         {
-            "name": ".NET Core Launch (nowebclient)",
+            "name": ".NET Launch (nowebclient)",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/Jellyfin.Server/bin/Debug/net6.0/jellyfin.dll",
+            "program": "${workspaceFolder}/Jellyfin.Server/bin/Debug/net7.0/jellyfin.dll",
             "args": ["--nowebclient"],
             "cwd": "${workspaceFolder}/Jellyfin.Server",
             "console": "internalConsole",
@@ -30,7 +30,7 @@
             "internalConsoleOptions": "openOnSessionStart"
         },
         {
-            "name": ".NET Core Attach",
+            "name": ".NET Attach",
             "type": "coreclr",
             "request": "attach",
             "processId": "${command:pickProcess}"

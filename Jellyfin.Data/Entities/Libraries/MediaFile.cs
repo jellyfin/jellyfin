@@ -19,10 +19,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <param name="kind">The file kind.</param>
         public MediaFile(string path, MediaFileKind kind)
         {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(path);
 
             Path = path;
             Kind = kind;

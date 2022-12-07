@@ -40,10 +40,7 @@ namespace Emby.Server.Implementations.IO
 
         private void AddAffectedPath(string path)
         {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(path);
 
             if (!_affectedPaths.Contains(path, StringComparer.Ordinal))
             {
@@ -53,10 +50,7 @@ namespace Emby.Server.Implementations.IO
 
         public void AddPath(string path)
         {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(path);
 
             lock (_timerLock)
             {

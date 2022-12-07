@@ -131,10 +131,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         public async Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(string channelId, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(channelId))
-            {
-                throw new ArgumentNullException(nameof(channelId));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(channelId);
 
             if (IsValidChannelId(channelId))
             {
@@ -166,10 +163,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         public async Task<ILiveStream> GetChannelStream(string channelId, string streamId, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(channelId))
-            {
-                throw new ArgumentNullException(nameof(channelId));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(channelId);
 
             if (!IsValidChannelId(channelId))
             {
@@ -223,10 +217,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         protected virtual bool IsValidChannelId(string channelId)
         {
-            if (string.IsNullOrEmpty(channelId))
-            {
-                throw new ArgumentNullException(nameof(channelId));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(channelId);
 
             return channelId.StartsWith(ChannelIdPrefix, StringComparison.OrdinalIgnoreCase);
         }

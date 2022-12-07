@@ -222,11 +222,7 @@ namespace Jellyfin.Server.Implementations.Devices
         public bool CanAccessDevice(User user, string deviceId)
         {
             ArgumentNullException.ThrowIfNull(user);
-
-            if (string.IsNullOrEmpty(deviceId))
-            {
-                throw new ArgumentNullException(nameof(deviceId));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(deviceId);
 
             if (user.HasPermission(PermissionKind.EnableAllDevices) || user.HasPermission(PermissionKind.IsAdministrator))
             {

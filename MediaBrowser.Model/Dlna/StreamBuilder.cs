@@ -1496,10 +1496,7 @@ namespace MediaBrowser.Model.Dlna
                 throw new ArgumentException("ItemId is required");
             }
 
-            if (string.IsNullOrEmpty(options.DeviceId))
-            {
-                throw new ArgumentException("DeviceId is required");
-            }
+            ArgumentException.ThrowIfNullOrEmpty(options.DeviceId);
 
             if (options.Profile is null)
             {

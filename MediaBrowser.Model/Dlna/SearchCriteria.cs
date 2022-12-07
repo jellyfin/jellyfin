@@ -9,10 +9,7 @@ namespace MediaBrowser.Model.Dlna
     {
         public SearchCriteria(string search)
         {
-            if (search.Length == 0)
-            {
-                throw new ArgumentException("String can't be empty.", nameof(search));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(search);
 
             SearchType = SearchType.Unknown;
 

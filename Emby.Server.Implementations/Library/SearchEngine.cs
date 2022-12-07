@@ -73,10 +73,7 @@ namespace Emby.Server.Implementations.Library
         {
             var searchTerm = query.SearchTerm;
 
-            if (string.IsNullOrEmpty(searchTerm))
-            {
-                throw new ArgumentException("SearchTerm can't be empty.", nameof(query));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(searchTerm);
 
             searchTerm = searchTerm.Trim().RemoveDiacritics();
 

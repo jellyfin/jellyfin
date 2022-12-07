@@ -936,10 +936,7 @@ namespace Emby.Dlna.PlayTo
 
             private static Guid GetItemId(string url)
             {
-                if (string.IsNullOrEmpty(url))
-                {
-                    throw new ArgumentNullException(nameof(url));
-                }
+                ArgumentException.ThrowIfNullOrEmpty(url);
 
                 var parts = url.Split('/');
 
@@ -962,10 +959,7 @@ namespace Emby.Dlna.PlayTo
 
             public static StreamParams ParseFromUrl(string url, ILibraryManager libraryManager, IMediaSourceManager mediaSourceManager)
             {
-                if (string.IsNullOrEmpty(url))
-                {
-                    throw new ArgumentNullException(nameof(url));
-                }
+                ArgumentException.ThrowIfNullOrEmpty(url);
 
                 var request = new StreamParams
                 {

@@ -17,12 +17,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="url">Trailer URL.</param>
         public static void AddTrailerUrl(this BaseItem item, string url)
         {
-            ArgumentNullException.ThrowIfNull(url);
-
-            if (url.Length == 0)
-            {
-                throw new ArgumentException("String can't be empty", nameof(url));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(url);
 
             var current = item.RemoteTrailers.FirstOrDefault(i => string.Equals(i.Url, url, StringComparison.OrdinalIgnoreCase));
 

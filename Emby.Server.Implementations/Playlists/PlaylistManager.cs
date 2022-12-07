@@ -502,15 +502,8 @@ namespace Emby.Server.Implementations.Playlists
 
         private static string MakeRelativePath(string folderPath, string fileAbsolutePath)
         {
-            if (string.IsNullOrEmpty(folderPath))
-            {
-                throw new ArgumentException("Folder path was null or empty.", nameof(folderPath));
-            }
-
-            if (string.IsNullOrEmpty(fileAbsolutePath))
-            {
-                throw new ArgumentException("File absolute path was null or empty.", nameof(fileAbsolutePath));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(folderPath);
+            ArgumentException.ThrowIfNullOrEmpty(fileAbsolutePath);
 
             if (!folderPath.EndsWith(Path.DirectorySeparatorChar))
             {

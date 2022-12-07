@@ -620,10 +620,7 @@ namespace MediaBrowser.Model.Dlna
 
         public string ToUrl(string baseUrl, string accessToken)
         {
-            if (string.IsNullOrEmpty(baseUrl))
-            {
-                throw new ArgumentNullException(nameof(baseUrl));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(baseUrl);
 
             var list = new List<string>();
             foreach (NameValuePair pair in BuildParams(this, accessToken))
@@ -664,10 +661,7 @@ namespace MediaBrowser.Model.Dlna
 
         private string GetUrl(string baseUrl, string queryString)
         {
-            if (string.IsNullOrEmpty(baseUrl))
-            {
-                throw new ArgumentNullException(nameof(baseUrl));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(baseUrl);
 
             string extension = string.IsNullOrEmpty(Container) ? string.Empty : "." + Container;
 

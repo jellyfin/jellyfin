@@ -210,10 +210,7 @@ namespace Emby.Server.Implementations.Plugins
         /// <param name="folder">Folder of the plugin.</param>
         public void ImportPluginFrom(string folder)
         {
-            if (string.IsNullOrEmpty(folder))
-            {
-                throw new ArgumentNullException(nameof(folder));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(folder);
 
             // Load the plugin.
             var plugin = LoadManifest(folder);

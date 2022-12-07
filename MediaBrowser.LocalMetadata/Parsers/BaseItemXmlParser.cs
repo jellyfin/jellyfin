@@ -54,11 +54,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
         public void Fetch(MetadataResult<T> item, string metadataFile, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(item);
-
-            if (string.IsNullOrEmpty(metadataFile))
-            {
-                throw new ArgumentException("The metadata file was empty or null.", nameof(metadataFile));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(metadataFile);
 
             var settings = new XmlReaderSettings
             {
