@@ -415,8 +415,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 analyzeDuration = "-analyzeduration " + ffmpegAnalyzeDuration;
             }
 
-            var forceEnableLogging = request.MediaSource.Protocol != MediaProtocol.File;
-
             return GetMediaInfoInternal(
                 GetInputArgument(inputFile, request.MediaSource),
                 request.MediaSource.Path,
@@ -425,7 +423,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 analyzeDuration,
                 request.MediaType == DlnaProfileType.Audio,
                 request.MediaSource.VideoType,
-                forceEnableLogging,
                 cancellationToken);
         }
 
@@ -473,7 +470,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             string probeSizeArgument,
             bool isAudio,
             VideoType? videoType,
-            bool forceEnableLogging,
             CancellationToken cancellationToken)
         {
             var args = extractChapters
@@ -488,7 +484,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     CreateNoWindow = true,
                     UseShellExecute = false,
 
-                    // Must consume both or ffmpeg may hang due to deadlocks. See comments below.
+                    // Must consume both or ffmpeg may hang due to deadlocks.
                     RedirectStandardOutput = true,
 
                     FileName = _ffprobePath,
@@ -500,21 +496,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 EnableRaisingEvents = true
             };
 
-            if (forceEnableLogging)
-            {
-                _logger.LogInformation("{ProcessFileName} {ProcessArgs}", process.StartInfo.FileName, process.StartInfo.Arguments);
-            }
-            else
-            {
-                _logger.LogDebug("{ProcessFileName} {ProcessArgs}", process.StartInfo.FileName, process.StartInfo.Arguments);
-            }
+            _logger.LogInformation("Starting {ProcessFileName} with args {ProcessArgs}", _ffprobePath, args);
 
             using (var processWrapper = new ProcessWrapper(process, this))
             {
                 await using var memoryStream = new MemoryStream();
-                _logger.LogDebug("Starting ffprobe with args {Args}", args);
                 StartProcess(processWrapper);
-                await process.StandardOutput.BaseStream.CopyToAsync(memoryStream, cancellationToken: cancellationToken);
+                await process.StandardOutput.BaseStream.CopyToAsync(memoryStream, cancellationToken);
                 memoryStream.Seek(0, SeekOrigin.Begin);
                 InternalMediaInfoResult result;
                 try
@@ -522,7 +510,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     result = await JsonSerializer.DeserializeAsync<InternalMediaInfoResult>(
                                         memoryStream,
                                         _jsonSerializerOptions,
-                                        cancellationToken: cancellationToken).ConfigureAwait(false);
+                                        cancellationToken).ConfigureAwait(false);
                 }
                 catch
                 {
