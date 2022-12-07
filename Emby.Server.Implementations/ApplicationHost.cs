@@ -1094,7 +1094,7 @@ namespace Emby.Server.Implementations
             {
                 int? requestPort = request.Host.Port;
                 if (requestPort == null
-                || (requestPort == 80  && string.Equals(request.Scheme, "http", StringComparison.OrdinalIgnoreCase))
+                || (requestPort == 80 && string.Equals(request.Scheme, "http", StringComparison.OrdinalIgnoreCase))
                 || (requestPort == 443 && string.Equals(request.Scheme, "https", StringComparison.OrdinalIgnoreCase)))
                 {
                     requestPort = -1;

@@ -1,10 +1,10 @@
-using Microsoft.AspNetCore.HttpOverrides;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace MediaBrowser.Common.Net
 {
@@ -131,7 +131,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>URI safe conversion of the address.</returns>
         public static string FormatIpString(IPAddress? address)
         {
-            if (address == null)
+            if (address is null)
             {
                 return string.Empty;
             }
@@ -163,7 +163,7 @@ namespace MediaBrowser.Common.Net
         {
             result = new List<IPNetwork>();
 
-            if (values == null || values.Length == 0)
+            if (values is null || values.Length == 0)
             {
                 return false;
             }
@@ -182,7 +182,7 @@ namespace MediaBrowser.Common.Net
                     _ = IPAddress.TryParse(v[0][0..], out address);
                 }
 
-                if (address != IPAddress.None && address != null)
+                if (address != IPAddress.None && address is not null)
                 {
                     if (v.Length > 1 && int.TryParse(v[1], out var netmask))
                     {
@@ -240,7 +240,7 @@ namespace MediaBrowser.Common.Net
                 _ = IPAddress.TryParse(v[0][0..], out address);
             }
 
-            if (address != IPAddress.None && address != null)
+            if (address != IPAddress.None && address is not null)
             {
                 if (v.Length > 1 && int.TryParse(v[1], out var netmask))
                 {

@@ -207,7 +207,7 @@ namespace Jellyfin.Networking.Tests
             // Check to see if dns resolution is working. If not, skip test.
             _ = NetworkExtensions.TryParseHost(source, out var host);
 
-            if (resultObj != null && host.Length > 0)
+            if (resultObj is not null && host.Length > 0)
             {
                 result = resultObj.First().Address.ToString();
                 var intf = nm.GetBindInterface(source, out _);
@@ -265,7 +265,7 @@ namespace Jellyfin.Networking.Tests
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
-            if (nm.TryParseInterface(result, out List<IPData>? resultObj) && resultObj != null)
+            if (nm.TryParseInterface(result, out List<IPData>? resultObj) && resultObj is not null)
             {
                 // Parse out IPAddresses so we can do a string comparison (ignore subnet masks).
                 result = resultObj.First().Address.ToString();
