@@ -73,7 +73,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 .GetSeriesAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), null, null, cancellationToken)
                 .ConfigureAwait(false);
 
-            if (series?.Images == null)
+            if (series?.Images is null)
             {
                 return Enumerable.Empty<RemoteImageInfo>();
             }

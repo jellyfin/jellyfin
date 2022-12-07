@@ -353,7 +353,7 @@ namespace Jellyfin.Api.Controllers
             if (method == PlayMethod.Transcode)
             {
                 var job = string.IsNullOrWhiteSpace(playSessionId) ? null : _transcodingJobHelper.GetTranscodingJob(playSessionId);
-                if (job == null)
+                if (job is null)
                 {
                     return PlayMethod.DirectPlay;
                 }

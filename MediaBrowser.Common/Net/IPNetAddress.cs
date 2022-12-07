@@ -214,7 +214,7 @@ namespace MediaBrowser.Common.Net
         /// <inheritdoc/>
         public override bool Equals(IPAddress ip)
         {
-            if (ip != null && !ip.Equals(IPAddress.None) && !Address.Equals(IPAddress.None))
+            if (ip is not null && !ip.Equals(IPAddress.None) && !Address.Equals(IPAddress.None))
             {
                 return ip.Equals(Address);
             }

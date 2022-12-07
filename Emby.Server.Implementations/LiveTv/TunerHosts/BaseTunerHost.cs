@@ -147,7 +147,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                         var channels = await GetChannels(host, true, cancellationToken).ConfigureAwait(false);
                         var channelInfo = channels.FirstOrDefault(i => string.Equals(i.Id, channelId, StringComparison.OrdinalIgnoreCase));
 
-                        if (channelInfo != null)
+                        if (channelInfo is not null)
                         {
                             return await GetChannelStreamMediaSources(host, channelInfo, cancellationToken).ConfigureAwait(false);
                         }
@@ -187,7 +187,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     var channels = await GetChannels(host, true, cancellationToken).ConfigureAwait(false);
                     var channelInfo = channels.FirstOrDefault(i => string.Equals(i.Id, channelId, StringComparison.OrdinalIgnoreCase));
 
-                    if (channelInfo != null)
+                    if (channelInfo is not null)
                     {
                         hostsWithChannel.Add(new Tuple<TunerHostInfo, ChannelInfo>(host, channelInfo));
                     }

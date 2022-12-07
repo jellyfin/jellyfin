@@ -85,7 +85,7 @@ namespace Jellyfin.Drawing.Skia
                             break;
                     }
 
-                    if (currentImage == null)
+                    if (currentImage is null)
                     {
                         throw new ArgumentException("Not enough valid pictures provided to create a splashscreen!");
                     }

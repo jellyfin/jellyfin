@@ -105,9 +105,9 @@ namespace Emby.Dlna
             ArgumentNullException.ThrowIfNull(deviceInfo);
 
             var profile = GetProfiles()
-                .FirstOrDefault(i => i.Identification != null && IsMatch(deviceInfo, i.Identification));
+                .FirstOrDefault(i => i.Identification is not null && IsMatch(deviceInfo, i.Identification));
 
-            if (profile == null)
+            if (profile is null)
             {
                 _logger.LogInformation("No matching device profile found. The default will need to be used. \n{@Profile}", deviceInfo);
             }
@@ -171,8 +171,8 @@ namespace Emby.Dlna
         {
             ArgumentNullException.ThrowIfNull(headers);
 
-            var profile = GetProfiles().FirstOrDefault(i => i.Identification != null && IsMatch(headers, i.Identification));
-            if (profile == null)
+            var profile = GetProfiles().FirstOrDefault(i => i.Identification is not null && IsMatch(headers, i.Identification));
+            if (profile is null)
             {
                 _logger.LogDebug("No matching device profile found. {@Headers}", headers);
             }
@@ -224,7 +224,7 @@ namespace Emby.Dlna
                 return _fileSystem.GetFilePaths(path)
                     .Where(i => string.Equals(Path.GetExtension(i), ".xml", StringComparison.OrdinalIgnoreCase))
                     .Select(i => ParseProfileFile(i, type))
-                    .Where(i => i != null)
+                    .Where(i => i is not null)
                     .ToList()!; // We just filtered out all the nulls
             }
             catch (IOException)
@@ -272,7 +272,7 @@ namespace Emby.Dlna
 
             var info = GetProfileInfosInternal().FirstOrDefault(i => string.Equals(i.Info.Id, id, StringComparison.OrdinalIgnoreCase));
 
-            if (info == null)
+            if (info is null)
             {
                 return null;
             }
@@ -470,7 +470,7 @@ namespace Emby.Dlna
 
             var resource = GetType().Namespace + ".Images." + filename.ToLowerInvariant();
             var stream = _assembly.GetManifestResourceStream(resource);
-            if (stream == null)
+            if (stream is null)
             {
                 return null;
             }

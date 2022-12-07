@@ -55,7 +55,7 @@ namespace Jellyfin.Server.Implementations.Devices
             await using (dbContext.ConfigureAwait(false))
             {
                 deviceOptions = await dbContext.DeviceOptions.AsQueryable().FirstOrDefaultAsync(dev => dev.DeviceId == deviceId).ConfigureAwait(false);
-                if (deviceOptions == null)
+                if (deviceOptions is null)
                 {
                     deviceOptions = new DeviceOptions(deviceId);
                     dbContext.DeviceOptions.Add(deviceOptions);
@@ -121,7 +121,7 @@ namespace Jellyfin.Server.Implementations.Devices
                     .ConfigureAwait(false);
             }
 
-            var deviceInfo = device == null ? null : ToDeviceInfo(device);
+            var deviceInfo = device is null ? null : ToDeviceInfo(device);
 
             return deviceInfo;
         }
@@ -139,12 +139,12 @@ namespace Jellyfin.Server.Implementations.Devices
                     devices = devices.Where(device => device.UserId.Equals(query.UserId.Value));
                 }
 
-                if (query.DeviceId != null)
+                if (query.DeviceId is not null)
                 {
                     devices = devices.Where(device => device.DeviceId == query.DeviceId);
                 }
 
-                if (query.AccessToken != null)
+                if (query.AccessToken is not null)
                 {
                     devices = devices.Where(device => device.AccessToken == query.AccessToken);
                 }

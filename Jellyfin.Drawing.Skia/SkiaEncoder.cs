@@ -250,7 +250,7 @@ namespace Jellyfin.Drawing.Skia
 
             var resultBitmap = SKBitmap.Decode(NormalizePath(path));
 
-            if (resultBitmap == null)
+            if (resultBitmap is null)
             {
                 return Decode(path, true, orientation, out origin);
             }
@@ -274,7 +274,7 @@ namespace Jellyfin.Drawing.Skia
             {
                 var bitmap = Decode(path, true, orientation, out var origin);
 
-                if (bitmap != null && origin != SKEncodedOrigin.TopLeft)
+                if (bitmap is not null && origin != SKEncodedOrigin.TopLeft)
                 {
                     using (bitmap)
                     {
@@ -414,7 +414,7 @@ namespace Jellyfin.Drawing.Skia
             var hasIndicator = options.AddPlayedIndicator || options.UnplayedCount.HasValue || !options.PercentPlayed.Equals(0);
 
             using var bitmap = GetBitmap(inputPath, autoOrient, orientation);
-            if (bitmap == null)
+            if (bitmap is null)
             {
                 throw new InvalidDataException($"Skia unable to read image {inputPath}");
             }

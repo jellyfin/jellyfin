@@ -73,7 +73,7 @@ namespace Emby.Server.Implementations.Session
                 .OrderByDescending(i => i.LastActivityDate)
                 .FirstOrDefault();
 
-            if (socket == null)
+            if (socket is null)
             {
                 return Task.CompletedTask;
             }

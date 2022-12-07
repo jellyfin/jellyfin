@@ -77,7 +77,7 @@ namespace MediaBrowser.Model.Dlna
                 return MaxBitrate;
             }
 
-            if (Profile == null)
+            if (Profile is null)
             {
                 return null;
             }

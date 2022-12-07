@@ -72,7 +72,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
             // TODO use image languages if All Languages isn't toggled, but there's currently no way to get that value in here
             var collection = await _tmdbClientManager.GetCollectionAsync(tmdbId, null, null, cancellationToken).ConfigureAwait(false);
 
-            if (collection?.Images == null)
+            if (collection?.Images is null)
             {
                 return Enumerable.Empty<RemoteImageInfo>();
             }

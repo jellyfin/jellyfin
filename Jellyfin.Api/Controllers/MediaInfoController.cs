@@ -121,10 +121,10 @@ namespace Jellyfin.Api.Controllers
             var profile = playbackInfoDto?.DeviceProfile;
             _logger.LogDebug("GetPostedPlaybackInfo profile: {@Profile}", profile);
 
-            if (profile == null)
+            if (profile is null)
             {
                 var caps = _deviceManager.GetCapabilities(User.GetDeviceId());
-                if (caps != null)
+                if (caps is not null)
                 {
                     profile = caps.DeviceProfile;
                 }
@@ -154,12 +154,12 @@ namespace Jellyfin.Api.Controllers
                     liveStreamId)
                 .ConfigureAwait(false);
 
-            if (info.ErrorCode != null)
+            if (info.ErrorCode is not null)
             {
                 return info;
             }
 
-            if (profile != null)
+            if (profile is not null)
             {
                 // set device specific data
                 var item = _libraryManager.GetItemById(itemId);
@@ -194,7 +194,7 @@ namespace Jellyfin.Api.Controllers
             {
                 var mediaSource = string.IsNullOrWhiteSpace(mediaSourceId) ? info.MediaSources[0] : info.MediaSources.FirstOrDefault(i => string.Equals(i.Id, mediaSourceId, StringComparison.Ordinal));
 
-                if (mediaSource != null && mediaSource.RequiresOpening && string.IsNullOrWhiteSpace(mediaSource.LiveStreamId))
+                if (mediaSource is not null && mediaSource.RequiresOpening && string.IsNullOrWhiteSpace(mediaSource.LiveStreamId))
                 {
                     var openStreamResult = await _mediaInfoHelper.OpenMediaSource(
                         HttpContext,

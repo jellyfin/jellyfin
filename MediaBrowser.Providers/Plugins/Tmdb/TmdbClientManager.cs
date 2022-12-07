@@ -73,7 +73,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 extraMethods,
                 cancellationToken).ConfigureAwait(false);
 
-            if (movie != null)
+            if (movie is not null)
             {
                 _memoryCache.Set(key, movie, TimeSpan.FromHours(CacheDurationInHours));
             }
@@ -106,7 +106,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 CollectionMethods.Images,
                 cancellationToken).ConfigureAwait(false);
 
-            if (collection != null)
+            if (collection is not null)
             {
                 _memoryCache.Set(key, collection, TimeSpan.FromHours(CacheDurationInHours));
             }
@@ -145,7 +145,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 extraMethods: extraMethods,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            if (series != null)
+            if (series is not null)
             {
                 _memoryCache.Set(key, series, TimeSpan.FromHours(CacheDurationInHours));
             }
@@ -174,7 +174,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 string.Equals(displayOrder, "tv", StringComparison.Ordinal) ? TvGroupType.TV :
                 null;
 
-            if (groupType == null)
+            if (groupType is null)
             {
                 return null;
             }
@@ -190,7 +190,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             var series = await GetSeriesAsync(tvShowId, language, imageLanguages, cancellationToken).ConfigureAwait(false);
             var episodeGroupId = series?.EpisodeGroups.Results.Find(g => g.Type == groupType)?.Id;
 
-            if (episodeGroupId == null)
+            if (episodeGroupId is null)
             {
                 return null;
             }
@@ -200,7 +200,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 language: TmdbUtils.NormalizeLanguage(language),
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            if (group != null)
+            if (group is not null)
             {
                 _memoryCache.Set(key, group, TimeSpan.FromHours(CacheDurationInHours));
             }
@@ -235,7 +235,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 extraMethods: TvSeasonMethods.Credits | TvSeasonMethods.Images | TvSeasonMethods.ExternalIds | TvSeasonMethods.Videos,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            if (season != null)
+            if (season is not null)
             {
                 _memoryCache.Set(key, season, TimeSpan.FromHours(CacheDurationInHours));
             }
@@ -265,12 +265,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
             var group = await GetSeriesGroupAsync(tvShowId, displayOrder, language, imageLanguages, cancellationToken).ConfigureAwait(false);
-            if (group != null)
+            if (group is not null)
             {
                 var season = group.Groups.Find(s => s.Order == seasonNumber);
                 // Episode order starts at 0
                 var ep = season?.Episodes.Find(e => e.Order == episodeNumber - 1);
-                if (ep != null)
+                if (ep is not null)
                 {
                     seasonNumber = ep.SeasonNumber;
                     episodeNumber = ep.EpisodeNumber;
@@ -286,7 +286,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 extraMethods: TvEpisodeMethods.Credits | TvEpisodeMethods.Images | TvEpisodeMethods.ExternalIds | TvEpisodeMethods.Videos,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            if (episode != null)
+            if (episode is not null)
             {
                 _memoryCache.Set(key, episode, TimeSpan.FromHours(CacheDurationInHours));
             }
@@ -317,7 +317,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 PersonMethods.TvCredits | PersonMethods.MovieCredits | PersonMethods.Images | PersonMethods.ExternalIds,
                 cancellationToken).ConfigureAwait(false);
 
-            if (person != null)
+            if (person is not null)
             {
                 _memoryCache.Set(key, person, TimeSpan.FromHours(CacheDurationInHours));
             }
@@ -353,7 +353,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 TmdbUtils.NormalizeLanguage(language),
                 cancellationToken).ConfigureAwait(false);
 
-            if (result != null)
+            if (result is not null)
             {
                 _memoryCache.Set(key, result, TimeSpan.FromHours(CacheDurationInHours));
             }

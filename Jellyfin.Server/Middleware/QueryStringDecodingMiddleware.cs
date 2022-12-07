@@ -28,7 +28,7 @@ namespace Jellyfin.Server.Middleware
         public async Task Invoke(HttpContext httpContext)
         {
             var feature = httpContext.Features.Get<IQueryFeature>();
-            if (feature != null)
+            if (feature is not null)
             {
                 httpContext.Features.Set<IQueryFeature>(new UrlDecodeQueryFeature(feature));
             }

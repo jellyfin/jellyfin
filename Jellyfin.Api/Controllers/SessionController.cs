@@ -294,7 +294,7 @@ namespace Jellyfin.Api.Controllers
         {
             var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
 
-            if (command == null)
+            if (command is null)
             {
                 throw new ArgumentException("Request body may not be null");
             }

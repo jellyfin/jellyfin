@@ -65,7 +65,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
                 await using FileStream jsonStream = AsyncFile.OpenRead(path);
                 var obj = await JsonSerializer.DeserializeAsync<AudioDbArtistProvider.RootObject>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
-                if (obj != null && obj.artists != null && obj.artists.Count > 0)
+                if (obj is not null && obj.artists is not null && obj.artists.Count > 0)
                 {
                     return GetImages(obj.artists[0]);
                 }

@@ -49,14 +49,14 @@ namespace MediaBrowser.Controller.BaseItemManager
                 return !baseItem.EnableMediaSourceDisplay;
             }
 
-            if (libraryTypeOptions != null)
+            if (libraryTypeOptions is not null)
             {
                 return libraryTypeOptions.MetadataFetchers.Contains(name.AsSpan(), StringComparison.OrdinalIgnoreCase);
             }
 
             var itemConfig = _serverConfigurationManager.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, baseItem.GetType().Name, StringComparison.OrdinalIgnoreCase));
 
-            return itemConfig == null || !itemConfig.DisabledMetadataFetchers.Contains(name.AsSpan(), StringComparison.OrdinalIgnoreCase);
+            return itemConfig is null || !itemConfig.DisabledMetadataFetchers.Contains(name.AsSpan(), StringComparison.OrdinalIgnoreCase);
         }
 
         /// <inheritdoc />
@@ -74,14 +74,14 @@ namespace MediaBrowser.Controller.BaseItemManager
                 return !baseItem.EnableMediaSourceDisplay;
             }
 
-            if (libraryTypeOptions != null)
+            if (libraryTypeOptions is not null)
             {
                 return libraryTypeOptions.ImageFetchers.Contains(name.AsSpan(), StringComparison.OrdinalIgnoreCase);
             }
 
             var itemConfig = _serverConfigurationManager.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, baseItem.GetType().Name, StringComparison.OrdinalIgnoreCase));
 
-            return itemConfig == null || !itemConfig.DisabledImageFetchers.Contains(name.AsSpan(), StringComparison.OrdinalIgnoreCase);
+            return itemConfig is null || !itemConfig.DisabledImageFetchers.Contains(name.AsSpan(), StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

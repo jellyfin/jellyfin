@@ -341,7 +341,7 @@ namespace Jellyfin.Api.Controllers
 
             job ??= _transcodingJobHelper.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
 
-            if (job != null)
+            if (job is not null)
             {
                 _transcodingJobHelper.OnTranscodeEndRequest(job);
             }
@@ -1482,7 +1482,7 @@ namespace Jellyfin.Api.Controllers
                         startTranscoding = true;
                         segmentId = 0;
                     }
-                    else if (currentTranscodingIndex == null)
+                    else if (currentTranscodingIndex is null)
                     {
                         _logger.LogDebug("Starting transcoding because currentTranscodingIndex=null");
                         startTranscoding = true;
@@ -1533,7 +1533,7 @@ namespace Jellyfin.Api.Controllers
                     else
                     {
                         job = _transcodingJobHelper.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
-                        if (job?.TranscodingThrottler != null)
+                        if (job?.TranscodingThrottler is not null)
                         {
                             await job.TranscodingThrottler.UnpauseTranscoding().ConfigureAwait(false);
                         }
@@ -1665,7 +1665,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>The command line arguments for audio transcoding.</returns>
         private string GetAudioArguments(StreamState state)
         {
-            if (state.AudioStream == null)
+            if (state.AudioStream is null)
             {
                 return string.Empty;
             }
@@ -1762,7 +1762,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>The command line arguments for video transcoding.</returns>
         private string GetVideoArguments(StreamState state, int startNumber, bool isEventPlaylist)
         {
-            if (state.VideoStream == null)
+            if (state.VideoStream is null)
             {
                 return string.Empty;
             }
@@ -1806,7 +1806,7 @@ namespace Jellyfin.Api.Controllers
             if (EncodingHelper.IsCopyCodec(codec))
             {
                 // If h264_mp4toannexb is ever added, do not use it for live tv.
-                if (state.VideoStream != null && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
+                if (state.VideoStream is not null && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
                 {
                     string bitStreamArgs = EncodingHelper.GetBitStreamArgs(state.VideoStream);
                     if (!string.IsNullOrEmpty(bitStreamArgs))
@@ -1837,7 +1837,7 @@ namespace Jellyfin.Api.Controllers
 
                 // -start_at_zero is necessary to use with -ss when seeking,
                 // otherwise the target position cannot be determined.
-                if (state.SubtitleStream != null)
+                if (state.SubtitleStream is not null)
                 {
                     // Disable start_at_zero for external graphical subs
                     if (!(state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream))
@@ -1883,7 +1883,7 @@ namespace Jellyfin.Api.Controllers
             var segmentExists = System.IO.File.Exists(segmentPath);
             if (segmentExists)
             {
-                if (transcodingJob != null && transcodingJob.HasExited)
+                if (transcodingJob is not null && transcodingJob.HasExited)
                 {
                     // Transcoding job is over, so assume all existing files are ready
                     _logger.LogDebug("serving up {0} as transcode is over", segmentPath);
@@ -1901,7 +1901,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             var nextSegmentPath = GetSegmentPath(state, playlistPath, segmentIndex + 1);
-            if (transcodingJob != null)
+            if (transcodingJob is not null)
             {
                 while (!cancellationToken.IsCancellationRequested && !transcodingJob.HasExited)
                 {
@@ -1953,7 +1953,7 @@ namespace Jellyfin.Api.Controllers
             Response.OnCompleted(() =>
             {
                 _logger.LogDebug("Finished serving {SegmentPath}", segmentPath);
-                if (transcodingJob != null)
+                if (transcodingJob is not null)
                 {
                     transcodingJob.DownloadPositionTicks = Math.Max(transcodingJob.DownloadPositionTicks ?? segmentEndingPositionTicks, segmentEndingPositionTicks);
                     _transcodingJobHelper.OnTranscodeEndRequest(transcodingJob);
@@ -1969,14 +1969,14 @@ namespace Jellyfin.Api.Controllers
         {
             var job = _transcodingJobHelper.GetTranscodingJob(playlist, TranscodingJobType);
 
-            if (job == null || job.HasExited)
+            if (job is null || job.HasExited)
             {
                 return null;
             }
 
             var file = GetLastTranscodingFile(playlist, segmentExtension, _fileSystem);
 
-            if (file == null)
+            if (file is null)
             {
                 return null;
             }
@@ -2011,7 +2011,7 @@ namespace Jellyfin.Api.Controllers
         {
             var file = GetLastTranscodingFile(playlistPath, segmentExtension, _fileSystem);
 
-            if (file != null)
+            if (file is not null)
             {
                 DeleteFile(file.FullName, retryCount);
             }

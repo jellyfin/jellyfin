@@ -102,12 +102,12 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void NewGroup(SessionInfo session, NewGroupRequest request, CancellationToken cancellationToken)
         {
-            if (session == null)
+            if (session is null)
             {
                 throw new InvalidOperationException("Session is null!");
             }
 
-            if (request == null)
+            if (request is null)
             {
                 throw new InvalidOperationException("Request is null!");
             }
@@ -138,12 +138,12 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void JoinGroup(SessionInfo session, JoinGroupRequest request, CancellationToken cancellationToken)
         {
-            if (session == null)
+            if (session is null)
             {
                 throw new InvalidOperationException("Session is null!");
             }
 
-            if (request == null)
+            if (request is null)
             {
                 throw new InvalidOperationException("Request is null!");
             }
@@ -155,7 +155,7 @@ namespace Emby.Server.Implementations.SyncPlay
             {
                 _groups.TryGetValue(request.GroupId, out Group group);
 
-                if (group == null)
+                if (group is null)
                 {
                     _logger.LogWarning("Session {SessionId} tried to join group {GroupId} that does not exist.", session.Id, request.GroupId);
 
@@ -204,12 +204,12 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void LeaveGroup(SessionInfo session, LeaveGroupRequest request, CancellationToken cancellationToken)
         {
-            if (session == null)
+            if (session is null)
             {
                 throw new InvalidOperationException("Session is null!");
             }
 
-            if (request == null)
+            if (request is null)
             {
                 throw new InvalidOperationException("Request is null!");
             }
@@ -257,12 +257,12 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public List<GroupInfoDto> ListGroups(SessionInfo session, ListGroupsRequest request)
         {
-            if (session == null)
+            if (session is null)
             {
                 throw new InvalidOperationException("Session is null!");
             }
 
-            if (request == null)
+            if (request is null)
             {
                 throw new InvalidOperationException("Request is null!");
             }
@@ -291,12 +291,12 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void HandleRequest(SessionInfo session, IGroupPlaybackRequest request, CancellationToken cancellationToken)
         {
-            if (session == null)
+            if (session is null)
             {
                 throw new InvalidOperationException("Session is null!");
             }
 
-            if (request == null)
+            if (request is null)
             {
                 throw new InvalidOperationException("Request is null!");
             }

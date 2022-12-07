@@ -31,7 +31,7 @@ namespace Jellyfin.Server.Filters
                         .FirstOrDefault(o => o.Key.Equals(SuccessCode, StringComparison.Ordinal));
 
                     // Operation doesn't have a response.
-                    if (response.Value == null)
+                    if (response.Value is null)
                     {
                         continue;
                     }

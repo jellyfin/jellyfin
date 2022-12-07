@@ -56,14 +56,14 @@ namespace MediaBrowser.Controller.Entities
         {
             lock (_childIdsLock)
             {
-                if (_childrenIds == null)
+                if (_childrenIds is null)
                 {
                     var list = base.LoadChildren();
                     _childrenIds = list.Select(i => i.Id).ToList();
                     return list;
                 }
 
-                return _childrenIds.Select(LibraryManager.GetItemById).Where(i => i != null).ToList();
+                return _childrenIds.Select(LibraryManager.GetItemById).Where(i => i is not null).ToList();
             }
         }
 

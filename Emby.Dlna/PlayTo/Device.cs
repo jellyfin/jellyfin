@@ -220,14 +220,14 @@ namespace Emby.Dlna.PlayTo
             var rendererCommands = await GetRenderingProtocolAsync(cancellationToken).ConfigureAwait(false);
 
             var command = rendererCommands?.ServiceActions.FirstOrDefault(c => c.Name == "SetMute");
-            if (command == null)
+            if (command is null)
             {
                 return false;
             }
 
             var service = GetServiceRenderingControl();
 
-            if (service == null)
+            if (service is null)
             {
                 return false;
             }
@@ -260,14 +260,14 @@ namespace Emby.Dlna.PlayTo
             var rendererCommands = await GetRenderingProtocolAsync(cancellationToken).ConfigureAwait(false);
 
             var command = rendererCommands?.ServiceActions.FirstOrDefault(c => c.Name == "SetVolume");
-            if (command == null)
+            if (command is null)
             {
                 return;
             }
 
             var service = GetServiceRenderingControl();
 
-            if (service == null)
+            if (service is null)
             {
                 throw new InvalidOperationException("Unable to find service");
             }
@@ -291,14 +291,14 @@ namespace Emby.Dlna.PlayTo
             var avCommands = await GetAVProtocolAsync(cancellationToken).ConfigureAwait(false);
 
             var command = avCommands?.ServiceActions.FirstOrDefault(c => c.Name == "Seek");
-            if (command == null)
+            if (command is null)
             {
                 return;
             }
 
             var service = GetAvTransportService();
 
-            if (service == null)
+            if (service is null)
             {
                 throw new InvalidOperationException("Unable to find service");
             }
@@ -324,7 +324,7 @@ namespace Emby.Dlna.PlayTo
             _logger.LogDebug("{0} - SetAvTransport Uri: {1} DlnaHeaders: {2}", Properties.Name, url, header);
 
             var command = avCommands?.ServiceActions.FirstOrDefault(c => c.Name == "SetAVTransportURI");
-            if (command == null)
+            if (command is null)
             {
                 return;
             }
@@ -337,7 +337,7 @@ namespace Emby.Dlna.PlayTo
 
             var service = GetAvTransportService();
 
-            if (service == null)
+            if (service is null)
             {
                 throw new InvalidOperationException("Unable to find service");
             }
@@ -381,7 +381,7 @@ namespace Emby.Dlna.PlayTo
             _logger.LogDebug("{PropertyName} - SetNextAvTransport Uri: {Url} DlnaHeaders: {Header}", Properties.Name, url, header);
 
             var command = avCommands.ServiceActions.FirstOrDefault(c => string.Equals(c.Name, "SetNextAVTransportURI", StringComparison.OrdinalIgnoreCase));
-            if (command == null)
+            if (command is null)
             {
                 return;
             }
@@ -394,7 +394,7 @@ namespace Emby.Dlna.PlayTo
 
             var service = GetAvTransportService();
 
-            if (service == null)
+            if (service is null)
             {
                 throw new InvalidOperationException("Unable to find service");
             }
@@ -418,13 +418,13 @@ namespace Emby.Dlna.PlayTo
         private Task SetPlay(TransportCommands avCommands, CancellationToken cancellationToken)
         {
             var command = avCommands.ServiceActions.FirstOrDefault(c => c.Name == "Play");
-            if (command == null)
+            if (command is null)
             {
                 return Task.CompletedTask;
             }
 
             var service = GetAvTransportService();
-            if (service == null)
+            if (service is null)
             {
                 throw new InvalidOperationException("Unable to find service");
             }
@@ -440,7 +440,7 @@ namespace Emby.Dlna.PlayTo
         public async Task SetPlay(CancellationToken cancellationToken)
         {
             var avCommands = await GetAVProtocolAsync(cancellationToken).ConfigureAwait(false);
-            if (avCommands == null)
+            if (avCommands is null)
             {
                 return;
             }
@@ -455,7 +455,7 @@ namespace Emby.Dlna.PlayTo
             var avCommands = await GetAVProtocolAsync(cancellationToken).ConfigureAwait(false);
 
             var command = avCommands?.ServiceActions.FirstOrDefault(c => c.Name == "Stop");
-            if (command == null)
+            if (command is null)
             {
                 return;
             }
@@ -479,7 +479,7 @@ namespace Emby.Dlna.PlayTo
             var avCommands = await GetAVProtocolAsync(cancellationToken).ConfigureAwait(false);
 
             var command = avCommands?.ServiceActions.FirstOrDefault(c => c.Name == "Pause");
-            if (command == null)
+            if (command is null)
             {
                 return;
             }
@@ -513,7 +513,7 @@ namespace Emby.Dlna.PlayTo
 
                 var avCommands = await GetAVProtocolAsync(cancellationToken).ConfigureAwait(false);
 
-                if (avCommands == null)
+                if (avCommands is null)
                 {
                     return;
                 }
@@ -538,12 +538,12 @@ namespace Emby.Dlna.PlayTo
 
                         var currentObject = tuple.Track;
 
-                        if (tuple.Success && currentObject == null)
+                        if (tuple.Success && currentObject is null)
                         {
                             currentObject = await GetMediaInfo(avCommands, cancellationToken).ConfigureAwait(false);
                         }
 
-                        if (currentObject != null)
+                        if (currentObject is not null)
                         {
                             UpdateMediaInfo(currentObject, transportState.Value);
                         }
@@ -585,7 +585,7 @@ namespace Emby.Dlna.PlayTo
                 if (_connectFailureCount >= 3)
                 {
                     var action = OnDeviceUnavailable;
-                    if (action != null)
+                    if (action is not null)
                     {
                         _logger.LogDebug("Disposing device due to loss of connection");
                         action();
@@ -607,14 +607,14 @@ namespace Emby.Dlna.PlayTo
             var rendererCommands = await GetRenderingProtocolAsync(cancellationToken).ConfigureAwait(false);
 
             var command = rendererCommands?.ServiceActions.FirstOrDefault(c => c.Name == "GetVolume");
-            if (command == null)
+            if (command is null)
             {
                 return;
             }
 
             var service = GetServiceRenderingControl();
 
-            if (service == null)
+            if (service is null)
             {
                 return;
             }
@@ -626,12 +626,12 @@ namespace Emby.Dlna.PlayTo
                 rendererCommands.BuildPost(command, service.ServiceType),
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            if (result == null || result.Document == null)
+            if (result is null || result.Document is null)
             {
                 return;
             }
 
-            var volume = result.Document.Descendants(UPnpNamespaces.RenderingControl + "GetVolumeResponse").Select(i => i.Element("CurrentVolume")).FirstOrDefault(i => i != null);
+            var volume = result.Document.Descendants(UPnpNamespaces.RenderingControl + "GetVolumeResponse").Select(i => i.Element("CurrentVolume")).FirstOrDefault(i => i is not null);
             var volumeValue = volume?.Value;
 
             if (string.IsNullOrWhiteSpace(volumeValue))
@@ -657,14 +657,14 @@ namespace Emby.Dlna.PlayTo
             var rendererCommands = await GetRenderingProtocolAsync(cancellationToken).ConfigureAwait(false);
 
             var command = rendererCommands?.ServiceActions.FirstOrDefault(c => c.Name == "GetMute");
-            if (command == null)
+            if (command is null)
             {
                 return;
             }
 
             var service = GetServiceRenderingControl();
 
-            if (service == null)
+            if (service is null)
             {
                 return;
             }
@@ -676,14 +676,14 @@ namespace Emby.Dlna.PlayTo
                 rendererCommands.BuildPost(command, service.ServiceType),
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            if (result == null || result.Document == null)
+            if (result is null || result.Document is null)
             {
                 return;
             }
 
             var valueNode = result.Document.Descendants(UPnpNamespaces.RenderingControl + "GetMuteResponse")
                                             .Select(i => i.Element("CurrentMute"))
-                                            .FirstOrDefault(i => i != null);
+                                            .FirstOrDefault(i => i is not null);
 
             IsMuted = string.Equals(valueNode?.Value, "1", StringComparison.OrdinalIgnoreCase);
         }
@@ -691,13 +691,13 @@ namespace Emby.Dlna.PlayTo
         private async Task<TransportState?> GetTransportInfo(TransportCommands avCommands, CancellationToken cancellationToken)
         {
             var command = avCommands.ServiceActions.FirstOrDefault(c => c.Name == "GetTransportInfo");
-            if (command == null)
+            if (command is null)
             {
                 return null;
             }
 
             var service = GetAvTransportService();
-            if (service == null)
+            if (service is null)
             {
                 return null;
             }
@@ -709,17 +709,17 @@ namespace Emby.Dlna.PlayTo
                 avCommands.BuildPost(command, service.ServiceType),
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            if (result == null || result.Document == null)
+            if (result is null || result.Document is null)
             {
                 return null;
             }
 
             var transportState =
-                result.Document.Descendants(UPnpNamespaces.AvTransport + "GetTransportInfoResponse").Select(i => i.Element("CurrentTransportState")).FirstOrDefault(i => i != null);
+                result.Document.Descendants(UPnpNamespaces.AvTransport + "GetTransportInfoResponse").Select(i => i.Element("CurrentTransportState")).FirstOrDefault(i => i is not null);
 
             var transportStateValue = transportState?.Value;
 
-            if (transportStateValue != null
+            if (transportStateValue is not null
                 && Enum.TryParse(transportStateValue, true, out TransportState state))
             {
                 return state;
@@ -731,19 +731,19 @@ namespace Emby.Dlna.PlayTo
         private async Task<UBaseObject> GetMediaInfo(TransportCommands avCommands, CancellationToken cancellationToken)
         {
             var command = avCommands.ServiceActions.FirstOrDefault(c => c.Name == "GetMediaInfo");
-            if (command == null)
+            if (command is null)
             {
                 return null;
             }
 
             var service = GetAvTransportService();
-            if (service == null)
+            if (service is null)
             {
                 throw new InvalidOperationException("Unable to find service");
             }
 
             var rendererCommands = await GetRenderingProtocolAsync(cancellationToken).ConfigureAwait(false);
-            if (rendererCommands == null)
+            if (rendererCommands is null)
             {
                 return null;
             }
@@ -755,14 +755,14 @@ namespace Emby.Dlna.PlayTo
                 rendererCommands.BuildPost(command, service.ServiceType),
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            if (result == null || result.Document == null)
+            if (result is null || result.Document is null)
             {
                 return null;
             }
 
             var track = result.Document.Descendants("CurrentURIMetaData").FirstOrDefault();
 
-            if (track == null)
+            if (track is null)
             {
                 return null;
             }
@@ -778,7 +778,7 @@ namespace Emby.Dlna.PlayTo
 
             track = result.Document.Descendants("CurrentURI").FirstOrDefault();
 
-            if (track == null)
+            if (track is null)
             {
                 return null;
             }
@@ -801,21 +801,21 @@ namespace Emby.Dlna.PlayTo
         private async Task<(bool Success, UBaseObject Track)> GetPositionInfo(TransportCommands avCommands, CancellationToken cancellationToken)
         {
             var command = avCommands.ServiceActions.FirstOrDefault(c => c.Name == "GetPositionInfo");
-            if (command == null)
+            if (command is null)
             {
                 return (false, null);
             }
 
             var service = GetAvTransportService();
 
-            if (service == null)
+            if (service is null)
             {
                 throw new InvalidOperationException("Unable to find service");
             }
 
             var rendererCommands = await GetRenderingProtocolAsync(cancellationToken).ConfigureAwait(false);
 
-            if (rendererCommands == null)
+            if (rendererCommands is null)
             {
                 return (false, null);
             }
@@ -827,15 +827,15 @@ namespace Emby.Dlna.PlayTo
                 rendererCommands.BuildPost(command, service.ServiceType),
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            if (result == null || result.Document == null)
+            if (result is null || result.Document is null)
             {
                 return (false, null);
             }
 
-            var trackUriElem = result.Document.Descendants(UPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("TrackURI")).FirstOrDefault(i => i != null);
+            var trackUriElem = result.Document.Descendants(UPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("TrackURI")).FirstOrDefault(i => i is not null);
             var trackUri = trackUriElem?.Value;
 
-            var durationElem = result.Document.Descendants(UPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("TrackDuration")).FirstOrDefault(i => i != null);
+            var durationElem = result.Document.Descendants(UPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("TrackDuration")).FirstOrDefault(i => i is not null);
             var duration = durationElem?.Value;
 
             if (!string.IsNullOrWhiteSpace(duration)
@@ -848,7 +848,7 @@ namespace Emby.Dlna.PlayTo
                 Duration = null;
             }
 
-            var positionElem = result.Document.Descendants(UPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("RelTime")).FirstOrDefault(i => i != null);
+            var positionElem = result.Document.Descendants(UPnpNamespaces.AvTransport + "GetPositionInfoResponse").Select(i => i.Element("RelTime")).FirstOrDefault(i => i is not null);
             var position = positionElem?.Value;
 
             if (!string.IsNullOrWhiteSpace(position) && !string.Equals(position, "NOT_IMPLEMENTED", StringComparison.OrdinalIgnoreCase))
@@ -858,7 +858,7 @@ namespace Emby.Dlna.PlayTo
 
             var track = result.Document.Descendants("TrackMetaData").FirstOrDefault();
 
-            if (track == null)
+            if (track is null)
             {
                 // If track is null, some vendors do this, use GetMediaInfo instead.
                 return (true, null);
@@ -882,7 +882,7 @@ namespace Emby.Dlna.PlayTo
                 _logger.LogError(ex, "Uncaught exception while parsing xml");
             }
 
-            if (uPnpResponse == null)
+            if (uPnpResponse is null)
             {
                 _logger.LogError("Failed to parse xml: \n {Xml}", trackString);
                 return (true, null);
@@ -959,11 +959,11 @@ namespace Emby.Dlna.PlayTo
 
             var resElement = container.Element(UPnpNamespaces.Res);
 
-            if (resElement != null)
+            if (resElement is not null)
             {
                 var info = resElement.Attribute(UPnpNamespaces.ProtocolInfo);
 
-                if (info != null && !string.IsNullOrWhiteSpace(info.Value))
+                if (info is not null && !string.IsNullOrWhiteSpace(info.Value))
                 {
                     return info.Value.Split(':');
                 }
@@ -974,7 +974,7 @@ namespace Emby.Dlna.PlayTo
 
         private async Task<TransportCommands> GetAVProtocolAsync(CancellationToken cancellationToken)
         {
-            if (AvCommands != null)
+            if (AvCommands is not null)
             {
                 return AvCommands;
             }
@@ -985,7 +985,7 @@ namespace Emby.Dlna.PlayTo
             }
 
             var avService = GetAvTransportService();
-            if (avService == null)
+            if (avService is null)
             {
                 return null;
             }
@@ -995,7 +995,7 @@ namespace Emby.Dlna.PlayTo
             var httpClient = new DlnaHttpClient(_logger, _httpClientFactory);
 
             var document = await httpClient.GetDataAsync(url, cancellationToken).ConfigureAwait(false);
-            if (document == null)
+            if (document is null)
             {
                 return null;
             }
@@ -1006,7 +1006,7 @@ namespace Emby.Dlna.PlayTo
 
         private async Task<TransportCommands> GetRenderingProtocolAsync(CancellationToken cancellationToken)
         {
-            if (RendererCommands != null)
+            if (RendererCommands is not null)
             {
                 return RendererCommands;
             }
@@ -1017,7 +1017,7 @@ namespace Emby.Dlna.PlayTo
             }
 
             var avService = GetServiceRenderingControl();
-            if (avService == null)
+            if (avService is null)
             {
                 throw new ArgumentException("Device AvService is null");
             }
@@ -1027,7 +1027,7 @@ namespace Emby.Dlna.PlayTo
             var httpClient = new DlnaHttpClient(_logger, _httpClientFactory);
             _logger.LogDebug("Dlna Device.GetRenderingProtocolAsync");
             var document = await httpClient.GetDataAsync(url, cancellationToken).ConfigureAwait(false);
-            if (document == null)
+            if (document is null)
             {
                 return null;
             }
@@ -1062,7 +1062,7 @@ namespace Emby.Dlna.PlayTo
             var ssdpHttpClient = new DlnaHttpClient(logger, httpClientFactory);
 
             var document = await ssdpHttpClient.GetDataAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
-            if (document == null)
+            if (document is null)
             {
                 return null;
             }
@@ -1070,13 +1070,13 @@ namespace Emby.Dlna.PlayTo
             var friendlyNames = new List<string>();
 
             var name = document.Descendants(UPnpNamespaces.Ud.GetName("friendlyName")).FirstOrDefault();
-            if (name != null && !string.IsNullOrWhiteSpace(name.Value))
+            if (name is not null && !string.IsNullOrWhiteSpace(name.Value))
             {
                 friendlyNames.Add(name.Value);
             }
 
             var room = document.Descendants(UPnpNamespaces.Ud.GetName("roomName")).FirstOrDefault();
-            if (room != null && !string.IsNullOrWhiteSpace(room.Value))
+            if (room is not null && !string.IsNullOrWhiteSpace(room.Value))
             {
                 friendlyNames.Add(room.Value);
             }
@@ -1088,74 +1088,74 @@ namespace Emby.Dlna.PlayTo
             };
 
             var model = document.Descendants(UPnpNamespaces.Ud.GetName("modelName")).FirstOrDefault();
-            if (model != null)
+            if (model is not null)
             {
                 deviceProperties.ModelName = model.Value;
             }
 
             var modelNumber = document.Descendants(UPnpNamespaces.Ud.GetName("modelNumber")).FirstOrDefault();
-            if (modelNumber != null)
+            if (modelNumber is not null)
             {
                 deviceProperties.ModelNumber = modelNumber.Value;
             }
 
             var uuid = document.Descendants(UPnpNamespaces.Ud.GetName("UDN")).FirstOrDefault();
-            if (uuid != null)
+            if (uuid is not null)
             {
                 deviceProperties.UUID = uuid.Value;
             }
 
             var manufacturer = document.Descendants(UPnpNamespaces.Ud.GetName("manufacturer")).FirstOrDefault();
-            if (manufacturer != null)
+            if (manufacturer is not null)
             {
                 deviceProperties.Manufacturer = manufacturer.Value;
             }
 
             var manufacturerUrl = document.Descendants(UPnpNamespaces.Ud.GetName("manufacturerURL")).FirstOrDefault();
-            if (manufacturerUrl != null)
+            if (manufacturerUrl is not null)
             {
                 deviceProperties.ManufacturerUrl = manufacturerUrl.Value;
             }
 
             var presentationUrl = document.Descendants(UPnpNamespaces.Ud.GetName("presentationURL")).FirstOrDefault();
-            if (presentationUrl != null)
+            if (presentationUrl is not null)
             {
                 deviceProperties.PresentationUrl = presentationUrl.Value;
             }
 
             var modelUrl = document.Descendants(UPnpNamespaces.Ud.GetName("modelURL")).FirstOrDefault();
-            if (modelUrl != null)
+            if (modelUrl is not null)
             {
                 deviceProperties.ModelUrl = modelUrl.Value;
             }
 
             var serialNumber = document.Descendants(UPnpNamespaces.Ud.GetName("serialNumber")).FirstOrDefault();
-            if (serialNumber != null)
+            if (serialNumber is not null)
             {
                 deviceProperties.SerialNumber = serialNumber.Value;
             }
 
             var modelDescription = document.Descendants(UPnpNamespaces.Ud.GetName("modelDescription")).FirstOrDefault();
-            if (modelDescription != null)
+            if (modelDescription is not null)
             {
                 deviceProperties.ModelDescription = modelDescription.Value;
             }
 
             var icon = document.Descendants(UPnpNamespaces.Ud.GetName("icon")).FirstOrDefault();
-            if (icon != null)
+            if (icon is not null)
             {
                 deviceProperties.Icon = CreateIcon(icon);
             }
 
             foreach (var services in document.Descendants(UPnpNamespaces.Ud.GetName("serviceList")))
             {
-                if (services == null)
+                if (services is null)
                 {
                     continue;
                 }
 
                 var servicesList = services.Descendants(UPnpNamespaces.Ud.GetName("service"));
-                if (servicesList == null)
+                if (servicesList is null)
                 {
                     continue;
                 }
@@ -1164,7 +1164,7 @@ namespace Emby.Dlna.PlayTo
                 {
                     var service = Create(element);
 
-                    if (service != null)
+                    if (service is not null)
                     {
                         deviceProperties.Services.Add(service);
                     }
@@ -1212,14 +1212,14 @@ namespace Emby.Dlna.PlayTo
             var previousMediaInfo = CurrentMediaInfo;
             CurrentMediaInfo = mediaInfo;
 
-            if (mediaInfo == null)
+            if (mediaInfo is null)
             {
-                if (previousMediaInfo != null)
+                if (previousMediaInfo is not null)
                 {
                     OnPlaybackStop(previousMediaInfo);
                 }
             }
-            else if (previousMediaInfo == null)
+            else if (previousMediaInfo is null)
             {
                 if (state != TransportState.STOPPED)
                 {

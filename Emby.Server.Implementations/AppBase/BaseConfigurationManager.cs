@@ -131,7 +131,7 @@ namespace Emby.Server.Implementations.AppBase
             {
                 _configuration = value;
 
-                _configurationLoaded = value != null;
+                _configurationLoaded = value is not null;
             }
         }
 
@@ -144,7 +144,7 @@ namespace Emby.Server.Implementations.AppBase
         {
             IConfigurationFactory factory = Activator.CreateInstance<T>();
 
-            if (_configurationFactories == null)
+            if (_configurationFactories is null)
             {
                 _configurationFactories = new[] { factory };
             }
@@ -306,7 +306,7 @@ namespace Emby.Server.Implementations.AppBase
                         configurationManager._configurationStores,
                         i => string.Equals(i.Key, k, StringComparison.OrdinalIgnoreCase));
 
-                    if (configurationInfo == null)
+                    if (configurationInfo is null)
                     {
                         throw new ResourceNotFoundException("Configuration with key " + k + " not found.");
                     }

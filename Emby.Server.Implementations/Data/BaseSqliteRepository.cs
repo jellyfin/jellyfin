@@ -101,7 +101,7 @@ namespace Emby.Server.Implementations.Data
         protected ManagedConnection GetConnection(bool readOnly = false)
         {
             WriteLock.Wait();
-            if (WriteConnection != null)
+            if (WriteConnection is not null)
             {
                 return new ManagedConnection(WriteConnection, WriteLock);
             }

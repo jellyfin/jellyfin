@@ -31,7 +31,7 @@ namespace Emby.Dlna.PlayTo
 
             var stateValues = document.Descendants(UPnpNamespaces.ServiceStateTable).FirstOrDefault();
 
-            if (stateValues != null)
+            if (stateValues is not null)
             {
                 foreach (var container in stateValues.Elements(UPnpNamespaces.Svc + "stateVariable"))
                 {
@@ -77,7 +77,7 @@ namespace Emby.Dlna.PlayTo
             var element = container.Descendants(UPnpNamespaces.Svc + "allowedValueList")
                 .FirstOrDefault();
 
-            if (element != null)
+            if (element is not null)
             {
                 var values = element.Descendants(UPnpNamespaces.Svc + "allowedValue");
 
@@ -167,7 +167,7 @@ namespace Emby.Dlna.PlayTo
         {
             var state = StateVariables.FirstOrDefault(a => string.Equals(a.Name, argument.RelatedStateVariable, StringComparison.OrdinalIgnoreCase));
 
-            if (state != null)
+            if (state is not null)
             {
                 var sendValue = state.AllowedValues.FirstOrDefault(a => string.Equals(a, commandParameter, StringComparison.OrdinalIgnoreCase)) ??
                     (state.AllowedValues.Count > 0 ? state.AllowedValues[0] : value);

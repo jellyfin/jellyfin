@@ -55,7 +55,7 @@ namespace MediaBrowser.Model.Entities
         {
             ArgumentNullException.ThrowIfNull(instance);
 
-            if (instance.ProviderIds == null)
+            if (instance.ProviderIds is null)
             {
                 id = null;
                 return false;

@@ -96,7 +96,7 @@ namespace Jellyfin.Api.Helpers
                 httpContext.GetNormalizedRemoteIp().ToString(),
                 user).ConfigureAwait(false);
 
-            if (session == null)
+            if (session is null)
             {
                 throw new ArgumentException("Session not found.");
             }

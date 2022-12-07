@@ -115,7 +115,7 @@ namespace Emby.Server.Implementations.IO
 
             var options = _libraryManager.GetLibraryOptions(item);
 
-            if (options != null)
+            if (options is not null)
             {
                 return options.EnableRealtimeMonitor;
             }

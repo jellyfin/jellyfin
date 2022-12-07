@@ -64,7 +64,7 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 var series = Series;
 
-                if (series != null)
+                if (series is not null)
                 {
                     return series.Path;
                 }
@@ -93,7 +93,7 @@ namespace MediaBrowser.Controller.Entities.TV
         public string FindSeriesSortName()
         {
             var series = Series;
-            return series == null ? SeriesName : series.SortName;
+            return series is null ? SeriesName : series.SortName;
         }
 
         public override List<string> GetUserDataKeys()
@@ -101,7 +101,7 @@ namespace MediaBrowser.Controller.Entities.TV
             var list = base.GetUserDataKeys();
 
             var series = Series;
-            if (series != null)
+            if (series is not null)
             {
                 var newList = series.GetUserDataKeys();
                 var suffix = (IndexNumber ?? 0).ToString("000", CultureInfo.InvariantCulture);
@@ -129,7 +129,7 @@ namespace MediaBrowser.Controller.Entities.TV
             if (IndexNumber.HasValue)
             {
                 var series = Series;
-                if (series != null)
+                if (series is not null)
                 {
                     return series.PresentationUniqueKey + "-" + (IndexNumber ?? 0).ToString("000", CultureInfo.InvariantCulture);
                 }
@@ -144,12 +144,12 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <returns>System.String.</returns>
         protected override string CreateSortName()
         {
-            return IndexNumber != null ? IndexNumber.Value.ToString("0000", CultureInfo.InvariantCulture) : Name;
+            return IndexNumber is not null ? IndexNumber.Value.ToString("0000", CultureInfo.InvariantCulture) : Name;
         }
 
         protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
         {
-            if (query.User == null)
+            if (query.User is null)
             {
                 return base.GetItemsInternal(query);
             }
@@ -208,13 +208,13 @@ namespace MediaBrowser.Controller.Entities.TV
         public string FindSeriesPresentationUniqueKey()
         {
             var series = Series;
-            return series == null ? null : series.PresentationUniqueKey;
+            return series is null ? null : series.PresentationUniqueKey;
         }
 
         public string FindSeriesName()
         {
             var series = Series;
-            return series == null ? SeriesName : series.Name;
+            return series is null ? SeriesName : series.Name;
         }
 
         public Guid FindSeriesId()
@@ -233,7 +233,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
             var series = Series;
 
-            if (series != null)
+            if (series is not null)
             {
                 id.SeriesProviderIds = series.ProviderIds;
             }

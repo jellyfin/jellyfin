@@ -721,7 +721,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             {
                                 var child = GetShare(subReader);
 
-                                if (child != null)
+                                if (child is not null)
                                 {
                                     list.Add(child);
                                 }

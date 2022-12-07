@@ -74,7 +74,7 @@ namespace Emby.Server.Implementations.Net
         private void OnReceiveSocketAsyncEventArgsCompleted(object sender, SocketAsyncEventArgs e)
         {
             var tcs = _currentReceiveTaskCompletionSource;
-            if (tcs != null)
+            if (tcs is not null)
             {
                 _currentReceiveTaskCompletionSource = null;
 
@@ -98,7 +98,7 @@ namespace Emby.Server.Implementations.Net
         private void OnSendSocketAsyncEventArgsCompleted(object sender, SocketAsyncEventArgs e)
         {
             var tcs = _currentSendTaskCompletionSource;
-            if (tcs != null)
+            if (tcs is not null)
             {
                 _currentSendTaskCompletionSource = null;
 

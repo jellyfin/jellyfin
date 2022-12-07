@@ -61,7 +61,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool replaceAllImages = false)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }

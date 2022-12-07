@@ -47,7 +47,7 @@ namespace MediaBrowser.Controller.Library
 
         public LibraryOptions LibraryOptions
         {
-            get => _libraryOptions ??= Parent == null ? new LibraryOptions() : BaseItem.LibraryManager.GetLibraryOptions(Parent);
+            get => _libraryOptions ??= Parent is null ? new LibraryOptions() : BaseItem.LibraryManager.GetLibraryOptions(Parent);
             set => _libraryOptions = value;
         }
 
@@ -119,7 +119,7 @@ namespace MediaBrowser.Controller.Library
             get
             {
                 var paths = string.IsNullOrEmpty(Path) ? Array.Empty<string>() : new[] { Path };
-                return AdditionalLocations == null ? paths : paths.Concat(AdditionalLocations).ToArray();
+                return AdditionalLocations is null ? paths : paths.Concat(AdditionalLocations).ToArray();
             }
         }
 
@@ -130,13 +130,13 @@ namespace MediaBrowser.Controller.Library
         {
             var parent = Parent;
 
-            if (parent != null)
+            if (parent is not null)
             {
                 var item = parent as T;
 
                 // Just in case the user decided to nest episodes.
                 // Not officially supported but in some cases we can handle it.
-                if (item == null)
+                if (item is null)
                 {
                     var parents = parent.GetParents();
                     foreach (var currentParent in parents)
@@ -148,7 +148,7 @@ namespace MediaBrowser.Controller.Library
                     }
                 }
 
-                return item != null;
+                return item is not null;
             }
 
             return false;
@@ -287,14 +287,14 @@ namespace MediaBrowser.Controller.Library
         /// <returns><c>true</c> if the arguments are the same, <c>false</c> otherwise.</returns>
         protected bool Equals(ItemResolveArgs args)
         {
-            if (args != null)
+            if (args is not null)
             {
-                if (args.Path == null && Path == null)
+                if (args.Path is null && Path is null)
                 {
                     return true;
                 }
 
-                return args.Path != null && BaseItem.FileSystem.AreEqual(args.Path, Path);
+                return args.Path is not null && BaseItem.FileSystem.AreEqual(args.Path, Path);
             }
 
             return false;

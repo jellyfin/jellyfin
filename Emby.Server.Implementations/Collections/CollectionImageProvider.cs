@@ -59,7 +59,7 @@ namespace Emby.Server.Implementations.Collections
                     var episode = subItem as Episode;
 
                     var series = episode?.Series;
-                    if (series != null && series.HasImage(ImageType.Primary))
+                    if (series is not null && series.HasImage(ImageType.Primary))
                     {
                         return series;
                     }
@@ -71,7 +71,7 @@ namespace Emby.Server.Implementations.Collections
 
                     var parent = subItem.GetOwner() ?? subItem.GetParent();
 
-                    if (parent != null && parent.HasImage(ImageType.Primary))
+                    if (parent is not null && parent.HasImage(ImageType.Primary))
                     {
                         if (parent is MusicAlbum)
                         {
@@ -81,7 +81,7 @@ namespace Emby.Server.Implementations.Collections
 
                     return null;
                 })
-                .Where(i => i != null)
+                .Where(i => i is not null)
                 .GroupBy(x => x!.Id) // We removed the null values
                 .Select(x => x.First())
                 .ToList()!; // Again... the list doesn't contain any null values

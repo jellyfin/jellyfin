@@ -104,7 +104,7 @@ namespace Jellyfin.Api.Controllers
 
                 if (validatePathDto.ValidateWritable)
                 {
-                    if (validatePathDto.Path == null)
+                    if (validatePathDto.Path is null)
                     {
                         throw new ResourceNotFoundException(nameof(validatePathDto.Path));
                     }

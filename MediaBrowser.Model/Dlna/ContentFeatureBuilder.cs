@@ -192,7 +192,7 @@ namespace MediaBrowser.Model.Dlna
 
             var orgPnValues = new List<string>();
 
-            if (mediaProfile != null && !string.IsNullOrEmpty(mediaProfile.OrgPn))
+            if (mediaProfile is not null && !string.IsNullOrEmpty(mediaProfile.OrgPn))
             {
                 orgPnValues.AddRange(mediaProfile.OrgPn.Split(',', StringSplitOptions.RemoveEmptyEntries));
             }

@@ -117,7 +117,7 @@ namespace Jellyfin.Api.Helpers
             TranscodingJobType transcodingJobType,
             CancellationTokenSource cancellationTokenSource)
         {
-            if (_httpContextAccessor.HttpContext == null)
+            if (_httpContextAccessor.HttpContext is null)
             {
                 throw new ResourceNotFoundException(nameof(_httpContextAccessor.HttpContext));
             }
@@ -183,7 +183,7 @@ namespace Jellyfin.Api.Helpers
                 : null;
 
             // If we're burning in subtitles then don't add additional subs to the manifest
-            if (state.SubtitleStream != null && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode)
+            if (state.SubtitleStream is not null && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode)
             {
                 subtitleGroup = null;
             }
@@ -195,7 +195,7 @@ namespace Jellyfin.Api.Helpers
 
             var basicPlaylist = AppendPlaylist(builder, state, playlistUrl, totalBitrate, subtitleGroup);
 
-            if (state.VideoStream != null && state.VideoRequest != null)
+            if (state.VideoStream is not null && state.VideoRequest is not null)
             {
                 // Provide a workaround for the case issue between flac and fLaC.
                 var flacWaPlaylist = ApplyFlacCaseWorkaround(state, basicPlaylist.ToString());
@@ -211,7 +211,7 @@ namespace Jellyfin.Api.Helpers
                     && string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase))
                 {
                     var requestedVideoProfiles = state.GetRequestedProfiles("hevc");
-                    if (requestedVideoProfiles != null && requestedVideoProfiles.Length > 0)
+                    if (requestedVideoProfiles is not null && requestedVideoProfiles.Length > 0)
                     {
                         // Force HEVC Main Profile and disable video stream copy.
                         state.OutputVideoCodec = "hevc";
@@ -271,7 +271,7 @@ namespace Jellyfin.Api.Helpers
 
             if (EnableAdaptiveBitrateStreaming(state, isLiveStream, enableAdaptiveBitrateStreaming, _httpContextAccessor.HttpContext.GetNormalizedRemoteIp()))
             {
-                var requestedVideoBitrate = state.VideoRequest == null ? 0 : state.VideoRequest.VideoBitRate ?? 0;
+                var requestedVideoBitrate = state.VideoRequest is null ? 0 : state.VideoRequest.VideoBitRate ?? 0;
 
                 // By default, vary by just 200k
                 var variation = GetBitrateVariation(totalBitrate);
@@ -327,7 +327,7 @@ namespace Jellyfin.Api.Helpers
         /// <param name="state">StreamState of the current stream.</param>
         private void AppendPlaylistVideoRangeField(StringBuilder builder, StreamState state)
         {
-            if (state.VideoStream != null && !string.IsNullOrEmpty(state.VideoStream.VideoRange))
+            if (state.VideoStream is not null && !string.IsNullOrEmpty(state.VideoStream.VideoRange))
             {
                 var videoRange = state.VideoStream.VideoRange;
                 if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
@@ -425,7 +425,7 @@ namespace Jellyfin.Api.Helpers
             {
                 framerate = Math.Round(state.TargetFramerate.GetValueOrDefault(), 3);
             }
-            else if (state.VideoStream?.RealFrameRate != null)
+            else if (state.VideoStream?.RealFrameRate is not null)
             {
                 framerate = Math.Round(state.VideoStream.RealFrameRate.GetValueOrDefault(), 3);
             }
@@ -483,7 +483,7 @@ namespace Jellyfin.Api.Helpers
                 return;
             }
 
-            var selectedIndex = state.SubtitleStream == null || state.SubtitleDeliveryMethod != SubtitleDeliveryMethod.Hls ? (int?)null : state.SubtitleStream.Index;
+            var selectedIndex = state.SubtitleStream is null || state.SubtitleDeliveryMethod != SubtitleDeliveryMethod.Hls ? (int?)null : state.SubtitleStream.Index;
             const string Format = "#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID=\"subs\",NAME=\"{0}\",DEFAULT={1},FORCED={2},AUTOSELECT=YES,URI=\"{3}\",LANGUAGE=\"{4}\"";
 
             foreach (var stream in subtitles)
@@ -523,7 +523,7 @@ namespace Jellyfin.Api.Helpers
         {
             string levelString = string.Empty;
             if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
-                && state.VideoStream != null
+                && state.VideoStream is not null
                 && state.VideoStream.Level.HasValue)
             {
                 levelString = state.VideoStream.Level.ToString() ?? string.Empty;

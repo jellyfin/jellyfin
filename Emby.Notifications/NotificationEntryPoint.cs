@@ -141,7 +141,7 @@ namespace Emby.Notifications
 
             lock (_libraryChangedSyncLock)
             {
-                if (_libraryUpdateTimer == null)
+                if (_libraryUpdateTimer is null)
                 {
                     _libraryUpdateTimer = new Timer(
                         LibraryUpdateTimerCallback,

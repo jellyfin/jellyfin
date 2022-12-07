@@ -70,7 +70,7 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
 
             var imageInfo = GetImage(item, thumbsPath, ImageType.Thumb, "thumb");
 
-            if (imageInfo == null)
+            if (imageInfo is null)
             {
                 return Enumerable.Empty<RemoteImageInfo>();
             }

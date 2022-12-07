@@ -218,7 +218,7 @@ namespace MediaBrowser.Controller.Entities.TV
             query.IncludeItemTypes = new[] { BaseItemKind.Season };
             query.OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) };
 
-            if (user != null && !user.DisplayMissingEpisodes)
+            if (user is not null && !user.DisplayMissingEpisodes)
             {
                 query.IsMissing = false;
             }
@@ -266,7 +266,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 DtoOptions = options
             };
 
-            if (user == null || !user.DisplayMissingEpisodes)
+            if (user is null || !user.DisplayMissingEpisodes)
             {
                 query.IsMissing = false;
             }
@@ -369,7 +369,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
                 DtoOptions = options
             };
-            if (user != null)
+            if (user is not null)
             {
                 if (!user.DisplayMissingEpisodes)
                 {
@@ -384,7 +384,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public List<BaseItem> GetSeasonEpisodes(Season parentSeason, User user, IEnumerable<BaseItem> allSeriesEpisodes, DtoOptions options)
         {
-            if (allSeriesEpisodes == null)
+            if (allSeriesEpisodes is null)
             {
                 return GetSeasonEpisodes(parentSeason, user, options);
             }
@@ -426,7 +426,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 }
 
                 var season = episodeItem.Season;
-                return season != null && string.Equals(GetUniqueSeriesKey(season), seasonPresentationKey, StringComparison.OrdinalIgnoreCase);
+                return season is not null && string.Equals(GetUniqueSeriesKey(season), seasonPresentationKey, StringComparison.OrdinalIgnoreCase);
             });
         }
 
@@ -448,7 +448,7 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 var episode = i;
 
-                if (episode != null)
+                if (episode is not null)
                 {
                     var currentSeasonNumber = episode.AiredSeasonNumber;
 

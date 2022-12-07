@@ -88,12 +88,12 @@ namespace Jellyfin.Server
                 config.Add(HostWebClientKey, bool.FalseString);
             }
 
-            if (PublishedServerUrl != null)
+            if (PublishedServerUrl is not null)
             {
                 config.Add(AddressOverrideKey, PublishedServerUrl);
             }
 
-            if (FFmpegPath != null)
+            if (FFmpegPath is not null)
             {
                 config.Add(FfmpegPathKey, FFmpegPath);
             }

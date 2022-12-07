@@ -91,7 +91,7 @@ namespace Jellyfin.Server.Migrations.Routines
                 foreach (var result in results)
                 {
                     var dto = JsonSerializer.Deserialize<DisplayPreferencesDto>(result[3].ToBlob(), _jsonOptions);
-                    if (dto == null)
+                    if (dto is null)
                     {
                         continue;
                     }
@@ -108,7 +108,7 @@ namespace Jellyfin.Server.Migrations.Routines
 
                     displayPrefs.Add(displayPreferencesKey);
                     var existingUser = _userManager.GetUserById(dtoUserId);
-                    if (existingUser == null)
+                    if (existingUser is null)
                     {
                         _logger.LogWarning("User with ID {UserId} does not exist in the database, skipping migration.", dtoUserId);
                         continue;

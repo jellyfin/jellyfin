@@ -71,7 +71,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> UpdateItem([FromRoute, Required] Guid itemId, [FromBody, Required] BaseItemDto request)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -80,13 +80,13 @@ namespace Jellyfin.Api.Controllers
             var isLockedChanged = item.IsLocked != newLockData;
 
             var series = item as Series;
-            var displayOrderChanged = series != null && !string.Equals(
+            var displayOrderChanged = series is not null && !string.Equals(
                 series.DisplayOrder ?? string.Empty,
                 request.DisplayOrder ?? string.Empty,
                 StringComparison.OrdinalIgnoreCase);
 
             // Do this first so that metadata savers can pull the updates from the database.
-            if (request.People != null)
+            if (request.People is not null)
             {
                 _libraryManager.UpdatePeople(
                     item,
@@ -198,7 +198,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult UpdateItemContentType([FromRoute, Required] Guid itemId, [FromQuery] string? contentType)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -248,12 +248,12 @@ namespace Jellyfin.Api.Controllers
 
             item.Tags = request.Tags;
 
-            if (request.Taglines != null)
+            if (request.Taglines is not null)
             {
                 item.Tagline = request.Taglines.FirstOrDefault();
             }
 
-            if (request.Studios != null)
+            if (request.Studios is not null)
             {
                 item.Studios = request.Studios.Select(x => x.Name).ToArray();
             }
@@ -269,7 +269,7 @@ namespace Jellyfin.Api.Controllers
             item.OfficialRating = string.IsNullOrWhiteSpace(request.OfficialRating) ? null : request.OfficialRating;
             item.CustomRating = request.CustomRating;
 
-            if (request.ProductionLocations != null)
+            if (request.ProductionLocations is not null)
             {
                 item.ProductionLocations = request.ProductionLocations;
             }
@@ -289,7 +289,7 @@ namespace Jellyfin.Api.Controllers
 
             item.IsLocked = request.LockData ?? false;
 
-            if (request.LockedFields != null)
+            if (request.LockedFields is not null)
             {
                 item.LockedFields = request.LockedFields;
             }
@@ -315,7 +315,7 @@ namespace Jellyfin.Api.Controllers
                 video.Video3DFormat = request.Video3DFormat;
             }
 
-            if (request.AlbumArtists != null)
+            if (request.AlbumArtists is not null)
             {
                 if (item is IHasAlbumArtist hasAlbumArtists)
                 {
@@ -326,7 +326,7 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            if (request.ArtistItems != null)
+            if (request.ArtistItems is not null)
             {
                 if (item is IHasArtist hasArtists)
                 {
@@ -349,7 +349,7 @@ namespace Jellyfin.Api.Controllers
                 {
                     series.Status = GetSeriesStatus(request);
 
-                    if (request.AirDays != null)
+                    if (request.AirDays is not null)
                     {
                         series.AirDays = request.AirDays;
                         series.AirTime = request.AirTime;

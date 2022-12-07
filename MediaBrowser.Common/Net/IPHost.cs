@@ -236,7 +236,7 @@ namespace MediaBrowser.Common.Net
         /// <inheritdoc/>
         public override bool Contains(IPAddress address)
         {
-            if (address != null && !Address.Equals(IPAddress.None))
+            if (address is not null && !Address.Equals(IPAddress.None))
             {
                 if (address.IsIPv4MappedToIPv6)
                 {

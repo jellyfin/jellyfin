@@ -64,7 +64,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         {
             var result = ResolveMultipleInternal(parent, files, collectionType);
 
-            if (result != null)
+            if (result is not null)
             {
                 foreach (var item in result.Items)
                 {
@@ -108,7 +108,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 if (string.IsNullOrEmpty(collectionType))
                 {
                     // Owned items will be caught by the video extra resolver
-                    if (args.Parent == null)
+                    if (args.Parent is null)
                     {
                         return null;
                     }
@@ -127,10 +127,10 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 }
 
                 // ignore extras
-                return movie?.ExtraType == null ? movie : null;
+                return movie?.ExtraType is null ? movie : null;
             }
 
-            if (args.Parent == null)
+            if (args.Parent is null)
             {
                 return base.Resolve(args);
             }
@@ -168,12 +168,12 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             }
 
             // Ignore extras
-            if (item?.ExtraType != null)
+            if (item?.ExtraType is not null)
             {
                 return null;
             }
 
-            if (item != null)
+            if (item is not null)
             {
                 item.IsInMixedFolder = true;
             }
@@ -205,7 +205,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             if (string.IsNullOrEmpty(collectionType))
             {
                 // Owned items should just use the plain video type
-                if (parent == null)
+                if (parent is null)
                 {
                     return ResolveVideos<Video>(parent, files, false, collectionType, false);
                 }
@@ -268,7 +268,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
             var videoInfos = files
                 .Select(i => VideoResolver.Resolve(i.FullName, i.IsDirectory, NamingOptions, parseName))
-                .Where(f => f != null)
+                .Where(f => f is not null)
                 .ToList();
 
             var resolverResult = VideoListResolver.Resolve(videoInfos, NamingOptions, supportMultiEditions, parseName);
@@ -284,7 +284,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             {
                 var firstVideo = video.Files[0];
                 var path = firstVideo.Path;
-                if (video.ExtraType != null)
+                if (video.ExtraType is not null)
                 {
                     result.ExtraFiles.Add(files.Find(f => string.Equals(f.FullName, path, StringComparison.OrdinalIgnoreCase)));
                     continue;
@@ -568,7 +568,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
         private bool IsInvalid(Folder parent, ReadOnlySpan<char> collectionType)
         {
-            if (parent != null)
+            if (parent is not null)
             {
                 if (parent.IsRoot)
                 {

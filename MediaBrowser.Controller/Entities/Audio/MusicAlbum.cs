@@ -138,7 +138,7 @@ namespace MediaBrowser.Controller.Entities.Audio
 
             var artist = GetMusicArtist(new DtoOptions(false));
 
-            if (artist != null)
+            if (artist is not null)
             {
                 id.ArtistProviderIds = artist.ProviderIds;
             }

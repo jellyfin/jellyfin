@@ -373,7 +373,7 @@ namespace MediaBrowser.Controller.Entities
         {
             return LinkedAlternateVersions
                 .Select(GetLinkedChild)
-                .Where(i => i != null)
+                .Where(i => i is not null)
                 .OfType<Video>()
                 .OrderBy(i => i.SortName);
         }
@@ -386,7 +386,7 @@ namespace MediaBrowser.Controller.Entities
         {
             return GetAdditionalPartIds()
                 .Select(i => LibraryManager.GetItemById(i))
-                .Where(i => i != null)
+                .Where(i => i is not null)
                 .OfType<Video>()
                 .OrderBy(i => i.SortName);
         }
@@ -469,7 +469,7 @@ namespace MediaBrowser.Controller.Entities
 
             var localAlternates = GetLocalAlternateVersionIds()
                 .Select(i => LibraryManager.GetItemById(i))
-                .Where(i => i != null);
+                .Where(i => i is not null);
 
             foreach (var item in localAlternates)
             {
@@ -542,7 +542,7 @@ namespace MediaBrowser.Controller.Entities
                     return i.Item1 is Video video ? video.GetLocalAlternateVersionIds() : Enumerable.Empty<Guid>();
                 })
                 .Select(LibraryManager.GetItemById)
-                .Where(i => i != null)
+                .Where(i => i is not null)
                 .ToList();
 
             list.AddRange(localAlternates.Select(i => (i, MediaSourceType.Default)));

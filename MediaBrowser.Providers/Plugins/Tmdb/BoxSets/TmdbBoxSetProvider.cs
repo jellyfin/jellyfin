@@ -51,7 +51,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
             {
                 var collection = await _tmdbClientManager.GetCollectionAsync(tmdbId, language, TmdbUtils.GetImageLanguagesParam(language), cancellationToken).ConfigureAwait(false);
 
-                if (collection == null)
+                if (collection is null)
                 {
                     return Enumerable.Empty<RemoteSearchResult>();
                 }
@@ -62,7 +62,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
                     SearchProviderName = Name
                 };
 
-                if (collection.Images != null)
+                if (collection.Images is not null)
                 {
                     result.ImageUrl = _tmdbClientManager.GetPosterUrl(collection.PosterPath);
                 }
@@ -104,7 +104,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
                 var cleanedName = TmdbUtils.CleanName(parsedName.Name);
                 var searchResults = await _tmdbClientManager.SearchCollectionAsync(cleanedName, language, cancellationToken).ConfigureAwait(false);
 
-                if (searchResults != null && searchResults.Count > 0)
+                if (searchResults is not null && searchResults.Count > 0)
                 {
                     tmdbId = searchResults[0].Id;
                 }
@@ -116,7 +116,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
             {
                 var collection = await _tmdbClientManager.GetCollectionAsync(tmdbId, language, TmdbUtils.GetImageLanguagesParam(language), cancellationToken).ConfigureAwait(false);
 
-                if (collection != null)
+                if (collection is not null)
                 {
                     var item = new BoxSet
                     {

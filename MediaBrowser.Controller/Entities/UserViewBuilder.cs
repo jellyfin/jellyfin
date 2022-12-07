@@ -46,7 +46,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var user = query.User;
 
-            // if (query.IncludeItemTypes != null &&
+            // if (query.IncludeItemTypes is not null &&
             //    query.IncludeItemTypes.Length == 1 &&
             //    string.Equals(query.IncludeItemTypes[0], "Playlist", StringComparison.OrdinalIgnoreCase))
             // {
@@ -263,7 +263,7 @@ namespace MediaBrowser.Controller.Entities
                         return null;
                     }
                 })
-                .Where(i => i != null)
+                .Where(i => i is not null)
                 .Select(i => GetUserViewWithName(SpecialFolder.MovieGenre, i.SortName, parent));
 
             return GetResult(genres, query);
@@ -391,7 +391,7 @@ namespace MediaBrowser.Controller.Entities
                         return null;
                     }
                 })
-                .Where(i => i != null)
+                .Where(i => i is not null)
                 .Select(i => GetUserViewWithName(SpecialFolder.TvGenre, i.SortName, parent));
 
             return GetResult(genres, query);
@@ -559,7 +559,7 @@ namespace MediaBrowser.Controller.Entities
                 var val = query.Is3D.Value;
                 var video = item as Video;
 
-                if (video == null || val != video.Video3DFormat.HasValue)
+                if (video is null || val != video.Video3DFormat.HasValue)
                 {
                     return false;
                 }
@@ -689,7 +689,7 @@ namespace MediaBrowser.Controller.Entities
 
                 var video = item as Video;
 
-                if (video == null || val != video.HasSubtitles)
+                if (video is null || val != video.HasSubtitles)
                 {
                     return false;
                 }
@@ -776,7 +776,7 @@ namespace MediaBrowser.Controller.Entities
             if (query.VideoTypes.Length > 0)
             {
                 var video = item as Video;
-                if (video == null || !query.VideoTypes.Contains(video.VideoType))
+                if (video is null || !query.VideoTypes.Contains(video.VideoType))
                 {
                     return false;
                 }
@@ -791,7 +791,7 @@ namespace MediaBrowser.Controller.Entities
             if (query.StudioIds.Length > 0 && !query.StudioIds.Any(id =>
             {
                 var studioItem = libraryManager.GetItemById(id);
-                return studioItem != null && item.Studios.Contains(studioItem.Name, StringComparison.OrdinalIgnoreCase);
+                return studioItem is not null && item.Studios.Contains(studioItem.Name, StringComparison.OrdinalIgnoreCase);
             }))
             {
                 return false;
@@ -801,7 +801,7 @@ namespace MediaBrowser.Controller.Entities
             if (query.GenreIds.Count > 0 && !query.GenreIds.Any(id =>
             {
                 var genreItem = libraryManager.GetItemById(id);
-                return genreItem != null && item.Genres.Contains(genreItem.Name, StringComparison.OrdinalIgnoreCase);
+                return genreItem is not null && item.Genres.Contains(genreItem.Name, StringComparison.OrdinalIgnoreCase);
             }))
             {
                 return false;
@@ -913,7 +913,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var episode = item as Episode;
 
-                if (episode == null)
+                if (episode is null)
                 {
                     return false;
                 }
@@ -929,7 +929,7 @@ namespace MediaBrowser.Controller.Entities
 
         private IEnumerable<BaseItem> GetMediaFolders(User user)
         {
-            if (user == null)
+            if (user is null)
             {
                 return _libraryManager.RootFolder
                     .Children
@@ -945,14 +945,14 @@ namespace MediaBrowser.Controller.Entities
 
         private BaseItem[] GetMediaFolders(User user, IEnumerable<string> viewTypes)
         {
-            if (user == null)
+            if (user is null)
             {
                 return GetMediaFolders(null)
                     .Where(i =>
                     {
                         var folder = i as ICollectionFolder;
 
-                        return folder != null && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+                        return folder is not null && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparison.OrdinalIgnoreCase);
                     }).ToArray();
             }
 
@@ -961,13 +961,13 @@ namespace MediaBrowser.Controller.Entities
                 {
                     var folder = i as ICollectionFolder;
 
-                    return folder != null && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+                    return folder is not null && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparison.OrdinalIgnoreCase);
                 }).ToArray();
         }
 
         private BaseItem[] GetMediaFolders(Folder parent, User user, IEnumerable<string> viewTypes)
         {
-            if (parent == null || parent is UserView)
+            if (parent is null || parent is UserView)
             {
                 return GetMediaFolders(user, viewTypes);
             }

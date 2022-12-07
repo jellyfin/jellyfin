@@ -165,7 +165,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var timerId = (string?)state ?? throw new ArgumentNullException(nameof(state));
 
             var timer = GetAll().FirstOrDefault(i => string.Equals(i.Id, timerId, StringComparison.OrdinalIgnoreCase));
-            if (timer != null)
+            if (timer is not null)
             {
                 TimerFired?.Invoke(this, new GenericEventArgs<TimerInfo>(timer));
             }

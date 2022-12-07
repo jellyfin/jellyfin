@@ -176,10 +176,10 @@ namespace Emby.Dlna.PlayTo
 
             var controller = sessionInfo.SessionControllers.OfType<PlayToController>().FirstOrDefault();
 
-            if (controller == null)
+            if (controller is null)
             {
                 var device = await Device.CreateuPnpDeviceAsync(uri, _httpClientFactory, _logger, cancellationToken).ConfigureAwait(false);
-                if (device == null)
+                if (device is null)
                 {
                     _logger.LogError("Ignoring device as xml response is invalid.");
                     return;

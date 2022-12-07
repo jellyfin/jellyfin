@@ -19,7 +19,7 @@ namespace MediaBrowser.Common.Events
         /// <param name="logger">The logger.</param>
         public static void QueueEventIfNotNull(EventHandler? handler, object sender, EventArgs args, ILogger logger)
         {
-            if (handler != null)
+            if (handler is not null)
             {
                 Task.Run(() =>
                 {
@@ -45,7 +45,7 @@ namespace MediaBrowser.Common.Events
         /// <param name="logger">The logger.</param>
         public static void QueueEventIfNotNull<T>(EventHandler<T>? handler, object sender, T args, ILogger logger)
         {
-            if (handler != null)
+            if (handler is not null)
             {
                 Task.Run(() =>
                 {

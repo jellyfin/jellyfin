@@ -246,7 +246,7 @@ namespace MediaBrowser.Controller.LiveTv
 
             var listings = GetListingsProviderInfo();
 
-            if (listings != null)
+            if (listings is not null)
             {
                 if (!string.IsNullOrEmpty(listings.MoviePrefix) && name.StartsWith(listings.MoviePrefix, StringComparison.OrdinalIgnoreCase))
                 {

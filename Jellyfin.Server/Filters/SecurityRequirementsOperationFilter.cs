@@ -22,7 +22,7 @@ namespace Jellyfin.Server.Filters
             foreach (var attribute in context.MethodInfo.GetCustomAttributes(true))
             {
                 if (attribute is AuthorizeAttribute authorizeAttribute
-                    && authorizeAttribute.Policy != null
+                    && authorizeAttribute.Policy is not null
                     && !requiredScopes.Contains(authorizeAttribute.Policy, StringComparer.Ordinal))
                 {
                     requiredScopes.Add(authorizeAttribute.Policy);
@@ -31,12 +31,12 @@ namespace Jellyfin.Server.Filters
 
             // Add controller scopes if any.
             var controllerAttributes = context.MethodInfo.DeclaringType?.GetCustomAttributes(true);
-            if (controllerAttributes != null)
+            if (controllerAttributes is not null)
             {
                 foreach (var attribute in controllerAttributes)
                 {
                     if (attribute is AuthorizeAttribute authorizeAttribute
-                        && authorizeAttribute.Policy != null
+                        && authorizeAttribute.Policy is not null
                         && !requiredScopes.Contains(authorizeAttribute.Policy, StringComparer.Ordinal))
                     {
                         requiredScopes.Add(authorizeAttribute.Policy);

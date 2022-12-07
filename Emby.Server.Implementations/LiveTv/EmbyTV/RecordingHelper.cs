@@ -63,7 +63,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     }
                 }
             }
-            else if (info.IsMovie && info.ProductionYear != null)
+            else if (info.IsMovie && info.ProductionYear is not null)
             {
                 name += " (" + info.ProductionYear + ")";
             }

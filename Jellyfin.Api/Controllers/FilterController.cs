@@ -182,7 +182,7 @@ namespace Jellyfin.Api.Controllers
 
             if ((recursive ?? true) || parentItem is UserView || parentItem is ICollectionFolder)
             {
-                genreQuery.AncestorIds = parentItem == null ? Array.Empty<Guid>() : new[] { parentItem.Id };
+                genreQuery.AncestorIds = parentItem is null ? Array.Empty<Guid>() : new[] { parentItem.Id };
             }
             else
             {

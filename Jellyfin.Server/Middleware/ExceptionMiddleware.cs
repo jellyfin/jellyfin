@@ -105,7 +105,7 @@ namespace Jellyfin.Server.Middleware
             if (ex is AggregateException agg)
             {
                 var inner = agg.InnerException;
-                if (inner != null)
+                if (inner is not null)
                 {
                     return GetActualException(inner);
                 }

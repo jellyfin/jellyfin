@@ -174,7 +174,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     var result = CharsetDetector.DetectFromStream(stream).Detected;
                     stream.Position = 0;
 
-                    if (result != null)
+                    if (result is not null)
                     {
                         _logger.LogDebug("charset {CharSet} detected for {Path}", result.EncodingName, fileInfo.Path);
 

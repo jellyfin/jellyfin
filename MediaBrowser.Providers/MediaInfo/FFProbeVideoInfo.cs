@@ -180,7 +180,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             var startIndex = mediaStreams.Count == 0 ? 0 : (mediaStreams.Max(i => i.Index) + 1);
 
-            if (mediaInfo != null)
+            if (mediaInfo is not null)
             {
                 foreach (var mediaStream in mediaInfo.MediaStreams)
                 {
@@ -195,7 +195,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 //    .Replace("matroska", "mkv", StringComparison.OrdinalIgnoreCase);
 
                 // For DVDs this may not always be accurate, so don't set the runtime if the item already has one
-                var needToSetRuntime = video.VideoType != VideoType.Dvd || video.RunTimeTicks == null || video.RunTimeTicks.Value == 0;
+                var needToSetRuntime = video.VideoType != VideoType.Dvd || video.RunTimeTicks is null || video.RunTimeTicks.Value == 0;
 
                 if (needToSetRuntime)
                 {
@@ -218,7 +218,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 video.Container = mediaInfo.Container;
 
                 chapters = mediaInfo.Chapters ?? Array.Empty<ChapterInfo>();
-                if (blurayInfo != null)
+                if (blurayInfo is not null)
                 {
                     FetchBdInfo(video, ref chapters, mediaStreams, blurayInfo);
                 }
@@ -241,7 +241,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             var libraryOptions = _libraryManager.GetLibraryOptions(video);
 
-            if (mediaInfo != null)
+            if (mediaInfo is not null)
             {
                 FetchEmbeddedInfo(video, mediaInfo, options, libraryOptions);
                 FetchPeople(video, mediaInfo, options);
@@ -288,7 +288,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 NormalizeChapterNames(chapters);
 
                 var extractDuringScan = false;
-                if (libraryOptions != null)
+                if (libraryOptions is not null)
                 {
                     extractDuringScan = libraryOptions.ExtractChapterImagesDuringLibraryScan;
                 }
@@ -333,7 +333,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 var videoStream = mediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
 
                 // Grab the values that ffprobe recorded
-                if (videoStream != null)
+                if (videoStream is not null)
                 {
                     currentBitRate = videoStream.BitRate;
                     currentWidth = videoStream.Width;
@@ -349,7 +349,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     video.RunTimeTicks = blurayInfo.RunTimeTicks;
                 }
 
-                if (blurayInfo.Chapters != null)
+                if (blurayInfo.Chapters is not null)
                 {
                     double[] brChapter = blurayInfo.Chapters;
                     chapters = new ChapterInfo[brChapter.Length];
@@ -365,7 +365,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 videoStream = mediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
 
                 // Use the ffprobe values if these are empty
-                if (videoStream != null)
+                if (videoStream is not null)
                 {
                     videoStream.BitRate = IsEmpty(videoStream.BitRate) ? currentBitRate : videoStream.BitRate;
                     videoStream.Width = IsEmpty(videoStream.Width) ? currentWidth : videoStream.Width;
@@ -572,7 +572,7 @@ namespace MediaBrowser.Providers.MediaInfo
             bool requirePerfectMatch;
             bool enabled;
 
-            if (libraryOptions.SubtitleDownloadLanguages == null)
+            if (libraryOptions.SubtitleDownloadLanguages is null)
             {
                 subtitleDownloadLanguages = subtitleOptions.DownloadLanguages;
                 skipIfEmbeddedSubtitlesPresent = subtitleOptions.SkipIfEmbeddedSubtitlesPresent;
@@ -693,7 +693,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             byte? titleNumber = null;
 
-            if (primaryTitle != null)
+            if (primaryTitle is not null)
             {
                 titleNumber = primaryTitle.VideoTitleSetNumber;
                 item.RunTimeTicks = GetRuntime(primaryTitle);

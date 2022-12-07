@@ -47,7 +47,7 @@ namespace Emby.Server.Implementations.Library
         {
             var user = _userManager.GetUserById(query.UserId);
 
-            if (user == null)
+            if (user is null)
             {
                 throw new ArgumentException("User Id specified in the query does not exist.", nameof(query));
             }
@@ -72,7 +72,7 @@ namespace Emby.Server.Implementations.Library
                     continue;
                 }
 
-                if (collectionFolder != null && UserView.IsEligibleForGrouping(folder) && user.IsFolderGrouped(folder.Id))
+                if (collectionFolder is not null && UserView.IsEligibleForGrouping(folder) && user.IsFolderGrouped(folder.Id))
                 {
                     groupedFolders.Add(collectionFolder);
                     continue;
@@ -208,15 +208,15 @@ namespace Emby.Server.Implementations.Library
                 // Only grab the index container for media
                 var container = item.IsFolder || !request.GroupItems ? null : item.LatestItemsIndexContainer;
 
-                if (container == null)
+                if (container is null)
                 {
                     list.Add(new Tuple<BaseItem, List<BaseItem>>(null, new List<BaseItem> { item }));
                 }
                 else
                 {
-                    var current = list.FirstOrDefault(i => i.Item1 != null && i.Item1.Id.Equals(container.Id));
+                    var current = list.FirstOrDefault(i => i.Item1 is not null && i.Item1.Id.Equals(container.Id));
 
-                    if (current != null)
+                    if (current is not null)
                     {
                         current.Item2.Add(item);
                     }

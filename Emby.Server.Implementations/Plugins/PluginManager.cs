@@ -174,7 +174,7 @@ namespace Emby.Server.Implementations.Plugins
             foreach (var pluginServiceRegistrator in _appHost.GetExportTypes<IPluginServiceRegistrator>())
             {
                 var plugin = GetPluginByAssembly(pluginServiceRegistrator.Assembly);
-                if (plugin == null)
+                if (plugin is null)
                 {
                     _logger.LogError("Unable to find plugin in assembly {Assembly}", pluginServiceRegistrator.Assembly.FullName);
                     continue;
@@ -263,12 +263,12 @@ namespace Emby.Server.Implementations.Plugins
         {
             LocalPlugin? plugin;
 
-            if (version == null)
+            if (version is null)
             {
                 // If no version is given, return the current instance.
                 var plugins = _plugins.Where(p => p.Id.Equals(id)).ToList();
 
-                plugin = plugins.FirstOrDefault(p => p.Instance != null) ?? plugins.OrderByDescending(p => p.Version).FirstOrDefault();
+                plugin = plugins.FirstOrDefault(p => p.Instance is not null) ?? plugins.OrderByDescending(p => p.Version).FirstOrDefault();
             }
             else
             {
@@ -320,7 +320,7 @@ namespace Emby.Server.Implementations.Plugins
             ArgumentNullException.ThrowIfNull(assembly);
 
             var plugin = _plugins.FirstOrDefault(p => p.DllFiles.Contains(assembly.Location));
-            if (plugin == null)
+            if (plugin is null)
             {
                 // A plugin's assembly didn't cause this issue, so ignore it.
                 return;
@@ -442,7 +442,7 @@ namespace Emby.Server.Implementations.Plugins
                 _logger.LogDebug("Creating instance of {Type}", type);
                 // _appHost.ServiceProvider is already assigned when we create the plugins
                 var instance = (IPlugin)ActivatorUtilities.CreateInstance(_appHost.ServiceProvider!, type);
-                if (plugin == null)
+                if (plugin is null)
                 {
                     // Create a dummy record for the providers.
                     // TODO: remove this code once all provided have been released as separate plugins.
@@ -500,7 +500,7 @@ namespace Emby.Server.Implementations.Plugins
 #pragma warning restore CA1031 // Do not catch general exception types
             {
                 _logger.LogError(ex, "Error creating {Type}", type.FullName);
-                if (plugin != null)
+                if (plugin is not null)
                 {
                     if (ChangePluginState(plugin, PluginStatus.Malfunctioned))
                     {
@@ -523,7 +523,7 @@ namespace Emby.Server.Implementations.Plugins
 
             var predecessor = _plugins.OrderByDescending(p => p.Version)
                 .FirstOrDefault(p => p.Id.Equals(plugin.Id) && p.IsEnabledAndSupported && p.Version != plugin.Version);
-            if (predecessor != null)
+            if (predecessor is not null)
             {
                 return;
             }
@@ -577,7 +577,7 @@ namespace Emby.Server.Implementations.Plugins
                     _logger.LogError(ex, "Error deserializing {Json}.", Encoding.UTF8.GetString(data!));
                 }
 
-                if (manifest != null)
+                if (manifest is not null)
                 {
                     if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
                     {
@@ -711,7 +711,7 @@ namespace Emby.Server.Implementations.Plugins
                     && p.IsEnabledAndSupported
                     && p.Version != plugin.Version);
 
-            if (previousVersion == null)
+            if (previousVersion is null)
             {
                 // This value is memory only - so that the web will show restart required.
                 plugin.Manifest.Status = PluginStatus.Restart;

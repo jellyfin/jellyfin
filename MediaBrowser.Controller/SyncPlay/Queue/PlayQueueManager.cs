@@ -180,7 +180,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
             _shuffledPlaylist.Clear();
             LastChange = DateTime.UtcNow;
 
-            if (!clearPlayingItem && playingItem != null)
+            if (!clearPlayingItem && playingItem is not null)
             {
                 _sortedPlaylist.Add(playingItem);
                 if (ShuffleMode.Equals(GroupShuffleMode.Shuffle))
@@ -298,7 +298,7 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
 
             LastChange = DateTime.UtcNow;
 
-            if (playingItem != null)
+            if (playingItem is not null)
             {
                 if (playlistItemIds.Contains(playingItem.PlaylistItemId))
                 {

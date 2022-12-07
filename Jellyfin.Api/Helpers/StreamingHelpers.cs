@@ -76,7 +76,7 @@ namespace Jellyfin.Api.Helpers
             }
 
             streamingRequest.StreamOptions = ParseStreamOptions(httpRequest.Query);
-            if (httpRequest.Path.Value == null)
+            if (httpRequest.Path.Value is null)
             {
                 throw new ResourceNotFoundException(nameof(httpRequest.Path));
             }
@@ -137,12 +137,12 @@ namespace Jellyfin.Api.Helpers
                     ? transcodingJobHelper.GetTranscodingJob(streamingRequest.PlaySessionId)
                     : null;
 
-                if (currentJob != null)
+                if (currentJob is not null)
                 {
                     mediaSource = currentJob.MediaSource;
                 }
 
-                if (mediaSource == null)
+                if (mediaSource is null)
                 {
                     var mediaSources = await mediaSourceManager.GetPlaybackMediaSources(libraryManager.GetItemById(streamingRequest.Id), null, false, false, cancellationToken).ConfigureAwait(false);
 
@@ -150,7 +150,7 @@ namespace Jellyfin.Api.Helpers
                         ? mediaSources[0]
                         : mediaSources.Find(i => string.Equals(i.Id, streamingRequest.MediaSourceId, StringComparison.Ordinal));
 
-                    if (mediaSource == null && Guid.Parse(streamingRequest.MediaSourceId).Equals(streamingRequest.Id))
+                    if (mediaSource is null && Guid.Parse(streamingRequest.MediaSourceId).Equals(streamingRequest.Id))
                     {
                         mediaSource = mediaSources[0];
                     }
@@ -189,7 +189,7 @@ namespace Jellyfin.Api.Helpers
 
             state.OutputAudioChannels = encodingHelper.GetNumAudioChannelsParam(state, state.AudioStream, state.OutputAudioCodec);
 
-            if (state.VideoRequest != null)
+            if (state.VideoRequest is not null)
             {
                 state.OutputVideoCodec = state.Request.VideoCodec;
                 state.OutputVideoBitrate = encodingHelper.GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec);
@@ -204,7 +204,7 @@ namespace Jellyfin.Api.Helpers
                         && !state.VideoRequest.MaxHeight.HasValue;
 
                     if (isVideoResolutionNotRequested
-                        && state.VideoStream != null
+                        && state.VideoStream is not null
                         && state.VideoRequest.VideoBitRate.HasValue
                         && state.VideoStream.BitRate.HasValue
                         && state.VideoRequest.VideoBitRate.Value >= state.VideoStream.BitRate.Value)
@@ -281,7 +281,7 @@ namespace Jellyfin.Api.Helpers
                         Convert.ToInt32(ms)));
                 }
 
-                if (!isStaticallyStreamed && profile != null)
+                if (!isStaticallyStreamed && profile is not null)
                 {
                     AddTimeSeekResponseHeaders(state, responseHeaders, startTimeTicks);
                 }
@@ -510,16 +510,16 @@ namespace Jellyfin.Api.Helpers
             {
                 state.DeviceProfile = dlnaManager.GetProfile(deviceProfileId);
 
-                if (state.DeviceProfile == null)
+                if (state.DeviceProfile is null)
                 {
                     var caps = deviceManager.GetCapabilities(deviceProfileId);
-                    state.DeviceProfile = caps == null ? dlnaManager.GetProfile(request.Headers) : caps.DeviceProfile;
+                    state.DeviceProfile = caps is null ? dlnaManager.GetProfile(request.Headers) : caps.DeviceProfile;
                 }
             }
 
             var profile = state.DeviceProfile;
 
-            if (profile == null)
+            if (profile is null)
             {
                 // Don't use settings from the default profile.
                 // Only use a specific profile if it was requested.
@@ -553,7 +553,7 @@ namespace Jellyfin.Api.Helpers
                     state.TargetVideoCodecTag,
                     state.IsTargetAVC);
 
-            if (mediaProfile != null)
+            if (mediaProfile is not null)
             {
                 state.MimeType = mediaProfile.MimeType;
             }
@@ -562,13 +562,13 @@ namespace Jellyfin.Api.Helpers
             {
                 var transcodingProfile = !state.IsVideoRequest ? profile.GetAudioTranscodingProfile(state.OutputContainer, audioCodec) : profile.GetVideoTranscodingProfile(state.OutputContainer, audioCodec, videoCodec);
 
-                if (transcodingProfile != null)
+                if (transcodingProfile is not null)
                 {
                     state.EstimateContentLength = transcodingProfile.EstimateContentLength;
                     // state.EnableMpegtsM2TsMode = transcodingProfile.EnableMpegtsM2TsMode;
                     state.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
 
-                    if (state.VideoRequest != null)
+                    if (state.VideoRequest is not null)
                     {
                         state.VideoRequest.CopyTimestamps = transcodingProfile.CopyTimestamps;
                         state.VideoRequest.EnableSubtitlesInManifest = transcodingProfile.EnableSubtitlesInManifest;
@@ -616,7 +616,7 @@ namespace Jellyfin.Api.Helpers
                         request.Static = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                         break;
                     case 4:
-                        if (videoRequest != null)
+                        if (videoRequest is not null)
                         {
                             videoRequest.VideoCodec = val;
                         }
@@ -626,21 +626,21 @@ namespace Jellyfin.Api.Helpers
                         request.AudioCodec = val;
                         break;
                     case 6:
-                        if (videoRequest != null)
+                        if (videoRequest is not null)
                         {
                             videoRequest.AudioStreamIndex = int.Parse(val, CultureInfo.InvariantCulture);
                         }
 
                         break;
                     case 7:
-                        if (videoRequest != null)
+                        if (videoRequest is not null)
                         {
                             videoRequest.SubtitleStreamIndex = int.Parse(val, CultureInfo.InvariantCulture);
                         }
 
                         break;
                     case 8:
-                        if (videoRequest != null)
+                        if (videoRequest is not null)
                         {
                             videoRequest.VideoBitRate = int.Parse(val, CultureInfo.InvariantCulture);
                         }
@@ -653,21 +653,21 @@ namespace Jellyfin.Api.Helpers
                         request.MaxAudioChannels = int.Parse(val, CultureInfo.InvariantCulture);
                         break;
                     case 11:
-                        if (videoRequest != null)
+                        if (videoRequest is not null)
                         {
                             videoRequest.MaxFramerate = float.Parse(val, CultureInfo.InvariantCulture);
                         }
 
                         break;
                     case 12:
-                        if (videoRequest != null)
+                        if (videoRequest is not null)
                         {
                             videoRequest.MaxWidth = int.Parse(val, CultureInfo.InvariantCulture);
                         }
 
                         break;
                     case 13:
-                        if (videoRequest != null)
+                        if (videoRequest is not null)
                         {
                             videoRequest.MaxHeight = int.Parse(val, CultureInfo.InvariantCulture);
                         }
@@ -677,28 +677,28 @@ namespace Jellyfin.Api.Helpers
                         request.StartTimeTicks = long.Parse(val, CultureInfo.InvariantCulture);
                         break;
                     case 15:
-                        if (videoRequest != null)
+                        if (videoRequest is not null)
                         {
                             videoRequest.Level = val;
                         }
 
                         break;
                     case 16:
-                        if (videoRequest != null)
+                        if (videoRequest is not null)
                         {
                             videoRequest.MaxRefFrames = int.Parse(val, CultureInfo.InvariantCulture);
                         }
 
                         break;
                     case 17:
-                        if (videoRequest != null)
+                        if (videoRequest is not null)
                         {
                             videoRequest.MaxVideoBitDepth = int.Parse(val, CultureInfo.InvariantCulture);
                         }
 
                         break;
                     case 18:
-                        if (videoRequest != null)
+                        if (videoRequest is not null)
                         {
                             videoRequest.Profile = val;
                         }
@@ -720,14 +720,14 @@ namespace Jellyfin.Api.Helpers
                         // Duplicating ItemId because of MediaMonkey
                         break;
                     case 24:
-                        if (videoRequest != null)
+                        if (videoRequest is not null)
                         {
                             videoRequest.CopyTimestamps = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                         }
 
                         break;
                     case 25:
-                        if (!string.IsNullOrWhiteSpace(val) && videoRequest != null)
+                        if (!string.IsNullOrWhiteSpace(val) && videoRequest is not null)
                         {
                             if (Enum.TryParse(val, out SubtitleDeliveryMethod method))
                             {
@@ -740,7 +740,7 @@ namespace Jellyfin.Api.Helpers
                         request.TranscodingMaxAudioChannels = int.Parse(val, CultureInfo.InvariantCulture);
                         break;
                     case 27:
-                        if (videoRequest != null)
+                        if (videoRequest is not null)
                         {
                             videoRequest.EnableSubtitlesInManifest = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                         }
@@ -750,7 +750,7 @@ namespace Jellyfin.Api.Helpers
                         request.Tag = val;
                         break;
                     case 29:
-                        if (videoRequest != null)
+                        if (videoRequest is not null)
                         {
                             videoRequest.RequireAvc = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                         }
@@ -760,14 +760,14 @@ namespace Jellyfin.Api.Helpers
                         request.SubtitleCodec = val;
                         break;
                     case 31:
-                        if (videoRequest != null)
+                        if (videoRequest is not null)
                         {
                             videoRequest.RequireNonAnamorphic = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                         }
 
                         break;
                     case 32:
-                        if (videoRequest != null)
+                        if (videoRequest is not null)
                         {
                             videoRequest.DeInterlace = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                         }

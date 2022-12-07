@@ -83,16 +83,16 @@ namespace MediaBrowser.MediaEncoding.Probing
             var internalStreams = data.Streams ?? Array.Empty<MediaStreamInfo>();
 
             info.MediaStreams = internalStreams.Select(s => GetMediaStream(isAudio, s, data.Format))
-                .Where(i => i != null)
+                .Where(i => i is not null)
                 // Drop subtitle streams if we don't know the codec because it will just cause failures if we don't know how to handle them
                 .Where(i => i.Type != MediaStreamType.Subtitle || !string.IsNullOrWhiteSpace(i.Codec))
                 .ToList();
 
             info.MediaAttachments = internalStreams.Select(GetMediaAttachment)
-                .Where(i => i != null)
+                .Where(i => i is not null)
                 .ToList();
 
-            if (data.Format != null)
+            if (data.Format is not null)
             {
                 info.Container = NormalizeFormat(data.Format.FormatName);
 
@@ -110,7 +110,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             var tagStream = data.Streams?.FirstOrDefault(i => string.Equals(i.CodecType, tagStreamType, StringComparison.OrdinalIgnoreCase));
 
-            if (tagStream?.Tags != null)
+            if (tagStream?.Tags is not null)
             {
                 foreach (var (key, value) in tagStream.Tags)
                 {
@@ -118,7 +118,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
             }
 
-            if (data.Format?.Tags != null)
+            if (data.Format?.Tags is not null)
             {
                 foreach (var (key, value) in data.Format.Tags)
                 {
@@ -156,7 +156,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             else
             {
                 var artist = tags.GetFirstNotNullNorWhiteSpaceValue("artist");
-                info.Artists = artist == null
+                info.Artists = artist is null
                     ? Array.Empty<string>()
                     : SplitDistinctArtists(artist, _nameDelimiters, true).ToArray();
             }
@@ -182,7 +182,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 FetchStudios(info, tags, "copyright");
 
                 var iTunExtc = tags.GetFirstNotNullNorWhiteSpaceValue("iTunEXTC");
-                if (iTunExtc != null)
+                if (iTunExtc is not null)
                 {
                     var parts = iTunExtc.Split('|', StringSplitOptions.RemoveEmptyEntries);
                     // Example
@@ -199,19 +199,19 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
 
                 var iTunXml = tags.GetFirstNotNullNorWhiteSpaceValue("iTunMOVI");
-                if (iTunXml != null)
+                if (iTunXml is not null)
                 {
                     FetchFromItunesInfo(iTunXml, info);
                 }
 
-                if (data.Format != null && !string.IsNullOrEmpty(data.Format.Duration))
+                if (data.Format is not null && !string.IsNullOrEmpty(data.Format.Duration))
                 {
                     info.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(data.Format.Duration, CultureInfo.InvariantCulture)).Ticks;
                 }
 
                 FetchWtvInfo(info, data);
 
-                if (data.Chapters != null)
+                if (data.Chapters is not null)
                 {
                     info.Chapters = data.Chapters.Select(GetChapterInfo).ToArray();
                 }
@@ -459,7 +459,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                             using (var subtree = reader.ReadSubtree())
                             {
                                 var dict = GetNameValuePair(subtree);
-                                if (dict != null)
+                                if (dict is not null)
                                 {
                                     pairs.Add(dict);
                                 }
@@ -614,7 +614,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 attachment.CodecTag = streamInfo.CodecTagString;
             }
 
-            if (streamInfo.Tags != null)
+            if (streamInfo.Tags is not null)
             {
                 attachment.FileName = GetDictionaryValue(streamInfo.Tags, "filename");
                 attachment.MimeType = GetDictionaryValue(streamInfo.Tags, "mimetype");
@@ -680,7 +680,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.CodecTag = streamInfo.CodecTagString;
             }
 
-            if (streamInfo.Tags != null)
+            if (streamInfo.Tags is not null)
             {
                 stream.Language = GetDictionaryValue(streamInfo.Tags, "language");
                 stream.Comment = GetDictionaryValue(streamInfo.Tags, "comment");
@@ -855,7 +855,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                     stream.ColorPrimaries = streamInfo.ColorPrimaries;
                 }
 
-                if (streamInfo.SideDataList != null)
+                if (streamInfo.SideDataList is not null)
                 {
                     foreach (var data in streamInfo.SideDataList)
                     {
@@ -899,7 +899,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             // The bitrate info of FLAC musics and some videos is included in formatInfo.
             if (bitrate == 0
-                && formatInfo != null
+                && formatInfo is not null
                 && !string.IsNullOrEmpty(formatInfo.BitRate)
                 && (stream.Type == MediaStreamType.Video || (isAudio && stream.Type == MediaStreamType.Audio)))
             {
@@ -934,7 +934,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 var durationInSeconds = GetRuntimeSecondsFromTags(streamInfo);
                 var bytes = GetNumberOfBytesFromTags(streamInfo);
-                if (durationInSeconds != null && bytes != null)
+                if (durationInSeconds is not null && bytes is not null)
                 {
                     var bps = Convert.ToInt32(bytes * 8 / durationInSeconds, CultureInfo.InvariantCulture);
                     if (bps > 0)
@@ -945,7 +945,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
 
             var disposition = streamInfo.Disposition;
-            if (disposition != null)
+            if (disposition is not null)
             {
                 if (disposition.GetValueOrDefault("default") == 1)
                 {
@@ -989,7 +989,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <returns>System.String.</returns>
         private string GetDictionaryValue(IReadOnlyDictionary<string, string> tags, string key)
         {
-            if (tags == null)
+            if (tags is null)
             {
                 return null;
             }
@@ -1121,7 +1121,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         {
             // Get the first info stream
             var stream = result.Streams?.FirstOrDefault(s => string.Equals(s.CodecType, "audio", StringComparison.OrdinalIgnoreCase));
-            if (stream == null)
+            if (stream is null)
             {
                 return;
             }
@@ -1144,7 +1144,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private int? GetBPSFromTags(MediaStreamInfo streamInfo)
         {
-            if (streamInfo?.Tags == null)
+            if (streamInfo?.Tags is null)
             {
                 return null;
             }
@@ -1161,7 +1161,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private double? GetRuntimeSecondsFromTags(MediaStreamInfo streamInfo)
         {
-            if (streamInfo?.Tags == null)
+            if (streamInfo?.Tags is null)
             {
                 return null;
             }
@@ -1177,7 +1177,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private long? GetNumberOfBytesFromTags(MediaStreamInfo streamInfo)
         {
-            if (streamInfo?.Tags == null)
+            if (streamInfo?.Tags is null)
             {
                 return null;
             }
@@ -1195,7 +1195,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private void SetSize(InternalMediaInfoResult data, MediaInfo info)
         {
-            if (data.Format == null)
+            if (data.Format is null)
             {
                 return;
             }
@@ -1294,7 +1294,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             // Set album artist
             var albumArtist = tags.GetFirstNotNullNorWhiteSpaceValue("albumartist", "album artist", "album_artist");
-            audio.AlbumArtists = albumArtist != null
+            audio.AlbumArtists = albumArtist is not null
                 ? SplitDistinctArtists(albumArtist, _nameDelimiters, true).ToArray()
                 : Array.Empty<string>();
 
@@ -1489,7 +1489,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         {
             var info = new ChapterInfo();
 
-            if (chapter.Tags != null && chapter.Tags.TryGetValue("title", out string name))
+            if (chapter.Tags is not null && chapter.Tags.TryGetValue("title", out string name))
             {
                 info.Name = name;
             }
@@ -1510,7 +1510,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         {
             var tags = data.Format?.Tags;
 
-            if (tags == null)
+            if (tags is null)
             {
                 return;
             }

@@ -165,7 +165,7 @@ namespace MediaBrowser.Controller.Playlists
 
         public static List<BaseItem> GetPlaylistItems(string playlistMediaType, IEnumerable<BaseItem> inputItems, User user, DtoOptions options)
         {
-            if (user != null)
+            if (user is not null)
             {
                 inputItems = inputItems.Where(i => i.IsVisible(user));
             }
