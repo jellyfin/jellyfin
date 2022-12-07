@@ -216,7 +216,7 @@ namespace MediaBrowser.Controller.Providers
         /// <returns>Task{HttpResponseInfo}.</returns>
         Task<HttpResponseMessage> GetSearchImage(string providerName, string url, CancellationToken cancellationToken);
 
-        Dictionary<Guid, Guid> GetRefreshQueue();
+        HashSet<Guid> GetRefreshQueue();
 
         void OnRefreshStart(BaseItem item);
 
