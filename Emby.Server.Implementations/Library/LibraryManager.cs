@@ -1154,7 +1154,7 @@ namespace Emby.Server.Implementations.Library
                 .ToList();
         }
 
-        private VirtualFolderInfo GetVirtualFolderInfo(string dir, List<BaseItem> allCollectionFolders, Dictionary<Guid, Guid> refreshQueue)
+        private VirtualFolderInfo GetVirtualFolderInfo(string dir, List<BaseItem> allCollectionFolders, HashSet<Guid> refreshQueue)
         {
             var info = new VirtualFolderInfo
             {
@@ -1182,22 +1182,22 @@ namespace Emby.Server.Implementations.Library
             };
 
             var libraryFolder = allCollectionFolders.FirstOrDefault(i => string.Equals(i.Path, dir, StringComparison.OrdinalIgnoreCase));
-
-            if (libraryFolder is not null && libraryFolder.HasImage(ImageType.Primary))
-            {
-                info.PrimaryImageItemId = libraryFolder.Id.ToString("N", CultureInfo.InvariantCulture);
-            }
-
             if (libraryFolder is not null)
             {
-                info.ItemId = libraryFolder.Id.ToString("N", CultureInfo.InvariantCulture);
+                var libraryFolderId = libraryFolder.Id.ToString("N", CultureInfo.InvariantCulture);
+                info.ItemId = libraryFolderId;
+                if (libraryFolder.HasImage(ImageType.Primary))
+                {
+                    info.PrimaryImageItemId = libraryFolderId;
+                }
+
                 info.LibraryOptions = GetLibraryOptions(libraryFolder);
 
                 if (refreshQueue is not null)
                 {
                     info.RefreshProgress = libraryFolder.GetRefreshProgress();
 
-                    info.RefreshStatus = info.RefreshProgress.HasValue ? "Active" : refreshQueue.ContainsKey(libraryFolder.Id) ? "Queued" : "Idle";
+                    info.RefreshStatus = info.RefreshProgress.HasValue ? "Active" : refreshQueue.Contains(libraryFolder.Id) ? "Queued" : "Idle";
                 }
             }
 

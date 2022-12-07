@@ -31,7 +31,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
-using Priority_Queue;
 using Book = MediaBrowser.Controller.Entities.Book;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
@@ -58,7 +57,7 @@ namespace MediaBrowser.Providers.Manager
         private readonly IBaseItemManager _baseItemManager;
         private readonly ConcurrentDictionary<Guid, double> _activeRefreshes = new();
         private readonly CancellationTokenSource _disposeCancellationTokenSource = new();
-        private readonly SimplePriorityQueue<Tuple<Guid, MetadataRefreshOptions>> _refreshQueue = new();
+        private readonly PriorityQueue<(Guid ItemId, MetadataRefreshOptions RefreshOptions), RefreshPriority> _refreshQueue = new();
 
         private IImageProvider[] _imageProviders = Array.Empty<IImageProvider>();
         private IMetadataService[] _metadataServices = Array.Empty<IMetadataService>();
@@ -897,18 +896,11 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <inheritdoc/>
-        public Dictionary<Guid, Guid> GetRefreshQueue()
+        public HashSet<Guid> GetRefreshQueue()
         {
             lock (_refreshQueueLock)
             {
-                var dict = new Dictionary<Guid, Guid>();
-
-                foreach (var item in _refreshQueue)
-                {
-                    dict[item.Item1] = item.Item1;
-                }
-
-                return dict;
+                return _refreshQueue.UnorderedItems.Select(x => x.Element.ItemId).ToHashSet();
             }
         }
 
@@ -969,7 +961,7 @@ namespace MediaBrowser.Providers.Manager
                 return;
             }
 
-            _refreshQueue.Enqueue(new Tuple<Guid, MetadataRefreshOptions>(itemId, options), (int)priority);
+            _refreshQueue.Enqueue((itemId, options), priority);
 
             lock (_refreshQueueLock)
             {
@@ -992,7 +984,7 @@ namespace MediaBrowser.Providers.Manager
 
             var cancellationToken = _disposeCancellationTokenSource.Token;
 
-            while (_refreshQueue.TryDequeue(out Tuple<Guid, MetadataRefreshOptions> refreshItem))
+            while (_refreshQueue.TryDequeue(out var refreshItem, out _))
             {
                 if (_disposed)
                 {
@@ -1001,15 +993,15 @@ namespace MediaBrowser.Providers.Manager
 
                 try
                 {
-                    var item = libraryManager.GetItemById(refreshItem.Item1);
+                    var item = libraryManager.GetItemById(refreshItem.ItemId);
                     if (item is null)
                     {
                         continue;
                     }
 
                     var task = item is MusicArtist artist
-                        ? RefreshArtist(artist, refreshItem.Item2, cancellationToken)
-                        : RefreshItem(item, refreshItem.Item2, cancellationToken);
+                        ? RefreshArtist(artist, refreshItem.RefreshOptions, cancellationToken)
+                        : RefreshItem(item, refreshItem.RefreshOptions, cancellationToken);
 
                     await task.ConfigureAwait(false);
                 }
