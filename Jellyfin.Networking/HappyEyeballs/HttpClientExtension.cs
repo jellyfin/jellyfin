@@ -60,9 +60,9 @@ namespace Jellyfin.Networking.HappyEyeballs
             using var cancelIPv6 = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             var tryConnectAsyncIPv6 = AttemptConnection(AddressFamily.InterNetworkV6, context, cancelIPv6.Token);
 
-            //This connect task uses GetAwaiter().GetResult() as the appropriate task has already been completed.
-            //This results in improved exception handling.
-            //See https://github.com/dotnet/corefx/pull/29792/files#r189415885 for more details.
+            // GetAwaiter().GetResult() is used instead of .Result as this results in improved exception handling.
+            // The tasks have already been completed.
+            // See https://github.com/dotnet/corefx/pull/29792/files#r189415885 for more details.
             if (await Task.WhenAny(tryConnectAsyncIPv6, Task.Delay(200, cancelIPv6.Token)).ConfigureAwait(false) == tryConnectAsyncIPv6 && tryConnectAsyncIPv6.IsCompletedSuccessfully)
             {
                 cancelIPv6.Cancel();
