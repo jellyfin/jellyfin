@@ -69,6 +69,9 @@ namespace Jellyfin.Networking.HappyEyeballs
             using var cancelIPv4 = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             var tryConnectAsyncIPv4 = AttemptConnection(AddressFamily.InterNetwork, context, cancelIPv4.Token);
 
+            //Both connect tasks use GetAwaiter().GetResult() as the appropriate task has already been completed.
+            //This results in improved exception handling.
+            //See https://github.com/dotnet/corefx/pull/29792/files#r189415885 for more details.
             if (await Task.WhenAny(tryConnectAsyncIPv6, tryConnectAsyncIPv4).ConfigureAwait(false) == tryConnectAsyncIPv6)
             {
                 if (tryConnectAsyncIPv6.IsCompletedSuccessfully)
