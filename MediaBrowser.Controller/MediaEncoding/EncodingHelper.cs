@@ -551,6 +551,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     return "aac_at";
                 }
+
                 // Use libfdk_aac for better audio quality if using custom build of FFmpeg which has fdk_aac support
                 if (_mediaEncoder.SupportsEncoder("libfdk_aac"))
                 {
