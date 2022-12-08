@@ -144,7 +144,8 @@ namespace MediaBrowser.MediaEncoding.Probing
                 FFProbeHelpers.GetDictionaryDateTime(tags, "retail date") ??
                 FFProbeHelpers.GetDictionaryDateTime(tags, "retail_date") ??
                 FFProbeHelpers.GetDictionaryDateTime(tags, "date_released") ??
-                FFProbeHelpers.GetDictionaryDateTime(tags, "date");
+                FFProbeHelpers.GetDictionaryDateTime(tags, "date") ??
+                FFProbeHelpers.GetDictionaryDateTime(tags, "creation_time");
 
             // Set common metadata for music (audio) and music videos (video)
             info.Album = tags.GetValueOrDefault("album");
