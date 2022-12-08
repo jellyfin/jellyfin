@@ -107,7 +107,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // vulkan
             "libplacebo",
             "scale_vulkan",
-            "overlay_vulkan"
+            "overlay_vulkan",
             "hwupload_vaapi",
             // videotoolbox
             "yadif_videotoolbox"
