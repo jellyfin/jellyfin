@@ -17,10 +17,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <param name="name">The name of this release.</param>
         public Release(string name)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(name);
 
             Name = name;
 

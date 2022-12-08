@@ -23,6 +23,8 @@
     <Rule Id="SA1316" Action="Error" />
     <!-- error on SA1414: Tuple types in signatures should have element names -->
     <Rule Id="SA1414" Action="Error" />
+    <!-- disable warning SA1513: Closing brace should be followed by blank line -->
+    <Rule Id="SA1513" Action="Error" />
     <!-- error on SA1518: File is required to end with a single newline character -->
     <Rule Id="SA1518" Action="Error" />
     <!-- error on SA1629: Documentation text should end with a period -->

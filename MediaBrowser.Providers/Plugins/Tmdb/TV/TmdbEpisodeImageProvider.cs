@@ -84,7 +84,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 .ConfigureAwait(false);
 
             var stills = episodeResult?.Images?.Stills;
-            if (stills == null)
+            if (stills is null)
             {
                 return Enumerable.Empty<RemoteImageInfo>();
             }

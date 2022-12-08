@@ -110,7 +110,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
         private static IMediaSourceManager GetMediaSourceManager(Video item, MediaStream? defaultStream, List<MediaStream> mediaStreams)
         {
             var defaultStreamList = new List<MediaStream>();
-            if (defaultStream != null)
+            if (defaultStream is not null)
             {
                 defaultStreamList.Add(defaultStream);
             }

@@ -125,7 +125,7 @@ namespace Jellyfin.Api.Controllers
                 .AddClientFields(User);
 
             var item = _libraryManager.GetPerson(name);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }

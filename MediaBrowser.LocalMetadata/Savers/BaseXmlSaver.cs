@@ -126,7 +126,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
                     var baseItem = item;
 
-                    if (baseItem != null)
+                    if (baseItem is not null)
                     {
                         await AddCommonNodesAsync(baseItem, writer).ConfigureAwait(false);
                     }
@@ -309,7 +309,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 await writer.WriteElementStringAsync(null, "RunningTime", null, Math.Floor(timespan.TotalMinutes).ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
             }
 
-            if (item.ProviderIds != null)
+            if (item.ProviderIds is not null)
             {
                 foreach (var providerKey in item.ProviderIds.Keys)
                 {

@@ -188,11 +188,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Work out what the version under test is
             var version = GetFFmpegVersionInternal(versionOutput);
 
-            _logger.LogInformation("Found ffmpeg version {Version}", version != null ? version.ToString() : "unknown");
+            _logger.LogInformation("Found ffmpeg version {Version}", version is not null ? version.ToString() : "unknown");
 
-            if (version == null)
+            if (version is null)
             {
-                if (MaxVersion != null) // Version is unknown
+                if (MaxVersion is not null) // Version is unknown
                 {
                     if (MinVersion == MaxVersion)
                     {
@@ -215,7 +215,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _logger.LogWarning("FFmpeg validation: The minimum recommended version is {MinVersion}", MinVersion);
                 return false;
             }
-            else if (MaxVersion != null && version > MaxVersion) // Version is above what we recommend
+            else if (MaxVersion is not null && version > MaxVersion) // Version is above what we recommend
             {
                 _logger.LogWarning("FFmpeg validation: The maximum recommended version is {MaxVersion}", MaxVersion);
                 return false;

@@ -136,10 +136,7 @@ namespace Jellyfin.Api.Helpers
         /// <exception cref="ArgumentNullException">Play session id is null.</exception>
         public void PingTranscodingJob(string playSessionId, bool? isUserPaused)
         {
-            if (string.IsNullOrEmpty(playSessionId))
-            {
-                throw new ArgumentNullException(nameof(playSessionId));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(playSessionId);
 
             _logger.LogDebug("PingTranscodingJob PlaySessionId={0} isUsedPaused: {1}", playSessionId, isUserPaused);
 
@@ -416,7 +413,7 @@ namespace Jellyfin.Api.Helpers
                 }
             }
 
-            if (exs != null)
+            if (exs is not null)
             {
                 throw new AggregateException("Error deleting HLS files", exs);
             }
@@ -443,7 +440,7 @@ namespace Jellyfin.Api.Helpers
         {
             var ticks = transcodingPosition?.Ticks;
 
-            if (job != null)
+            if (job is not null)
             {
                 job.Framerate = framerate;
                 job.CompletionPercentage = percentComplete;
@@ -510,11 +507,11 @@ namespace Jellyfin.Api.Helpers
 
             await AcquireResources(state, cancellationTokenSource).ConfigureAwait(false);
 
-            if (state.VideoRequest != null && !EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
+            if (state.VideoRequest is not null && !EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
             {
                 var userId = request.HttpContext.User.GetUserId();
                 var user = userId.Equals(default) ? null : _userManager.GetUserById(userId);
-                if (user != null && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding))
+                if (user is not null && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding))
                 {
                     this.OnTranscodeFailedToStart(outputPath, transcodingJobType, state);
 
@@ -522,13 +519,10 @@ namespace Jellyfin.Api.Helpers
                 }
             }
 
-            if (string.IsNullOrEmpty(_mediaEncoder.EncoderPath))
-            {
-                throw new ArgumentException("FFmpeg path not set.");
-            }
+            ArgumentException.ThrowIfNullOrEmpty(_mediaEncoder.EncoderPath);
 
             // If subtitles get burned in fonts may need to be extracted from the media file
-            if (state.SubtitleStream != null && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode)
+            if (state.SubtitleStream is not null && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode)
             {
                 var attachmentPath = Path.Combine(_appPaths.CachePath, "attachments", state.MediaSource.Id);
                 await _attachmentExtractor.ExtractAllAttachments(state.MediaPath, state.MediaSource, attachmentPath, cancellationTokenSource.Token).ConfigureAwait(false);
@@ -577,7 +571,7 @@ namespace Jellyfin.Api.Helpers
             _logger.LogInformation("{Filename} {Arguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
             var logFilePrefix = "FFmpeg.Transcode-";
-            if (state.VideoRequest != null
+            if (state.VideoRequest is not null
                 && EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
             {
                 logFilePrefix = EncodingHelper.IsCopyCodec(state.OutputAudioCodec)
@@ -748,7 +742,7 @@ namespace Jellyfin.Api.Helpers
             {
                 var job = _activeTranscodingJobs.FirstOrDefault(j => j.Type == type && string.Equals(j.Path, path, StringComparison.OrdinalIgnoreCase));
 
-                if (job != null)
+                if (job is not null)
                 {
                     _activeTranscodingJobs.Remove(job);
                 }
@@ -805,7 +799,7 @@ namespace Jellyfin.Api.Helpers
 
                 _encodingHelper.AttachMediaSourceInfo(state, encodingOptions, liveStreamResponse.MediaSource, state.RequestedUrl);
 
-                if (state.VideoRequest != null)
+                if (state.VideoRequest is not null)
                 {
                     _encodingHelper.TryStreamCopy(state);
                 }
@@ -829,7 +823,7 @@ namespace Jellyfin.Api.Helpers
             {
                 var job = _activeTranscodingJobs.FirstOrDefault(j => j.Type == type && string.Equals(j.Path, path, StringComparison.OrdinalIgnoreCase));
 
-                if (job == null)
+                if (job is null)
                 {
                     return null;
                 }

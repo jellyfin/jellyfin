@@ -52,6 +52,6 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value><c>true</c> if this instance has primary image; otherwise, <c>false</c>.</value>
         [JsonIgnore]
-        public bool HasPrimaryImage => PrimaryImageTag != null;
+        public bool HasPrimaryImage => PrimaryImageTag is not null;
     }
 }

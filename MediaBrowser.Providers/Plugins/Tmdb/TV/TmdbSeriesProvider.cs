@@ -61,7 +61,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     .GetSeriesAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), searchInfo.MetadataLanguage, searchInfo.MetadataLanguage, cancellationToken)
                     .ConfigureAwait(false);
 
-                if (series != null)
+                if (series is not null)
                 {
                     var remoteResult = MapTvShowToRemoteSearchResult(series);
 
@@ -76,7 +76,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     .ConfigureAwait(false);
 
                 var tvResults = findResult?.TvResults;
-                if (tvResults != null)
+                if (tvResults is not null)
                 {
                     var imdbIdResults = new RemoteSearchResult[tvResults.Count];
                     for (var i = 0; i < tvResults.Count; i++)
@@ -97,7 +97,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     .ConfigureAwait(false);
 
                 var tvResults = findResult?.TvResults;
-                if (tvResults != null)
+                if (tvResults is not null)
                 {
                     var tvIdResults = new RemoteSearchResult[tvResults.Count];
                     for (var i = 0; i < tvResults.Count; i++)
@@ -134,7 +134,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             };
 
             remoteResult.SetProviderId(MetadataProvider.Tmdb, series.Id.ToString(CultureInfo.InvariantCulture));
-            if (series.ExternalIds != null)
+            if (series.ExternalIds is not null)
             {
                 if (!string.IsNullOrEmpty(series.ExternalIds.ImdbId))
                 {
@@ -233,7 +233,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 result.AddPerson(person);
             }
 
-            result.HasMetadata = result.Item != null;
+            result.HasMetadata = result.Item is not null;
 
             return result;
         }
@@ -252,17 +252,17 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             series.Overview = seriesResult.Overview;
 
-            if (seriesResult.Networks != null)
+            if (seriesResult.Networks is not null)
             {
                 series.Studios = seriesResult.Networks.Select(i => i.Name).ToArray();
             }
 
-            if (seriesResult.Genres != null)
+            if (seriesResult.Genres is not null)
             {
                 series.Genres = seriesResult.Genres.Select(i => i.Name).ToArray();
             }
 
-            if (seriesResult.Keywords?.Results != null)
+            if (seriesResult.Keywords?.Results is not null)
             {
                 for (var i = 0; i < seriesResult.Keywords.Results.Count; i++)
                 {
@@ -288,7 +288,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             series.PremiereDate = seriesResult.FirstAirDate;
 
             var ids = seriesResult.ExternalIds;
-            if (ids != null)
+            if (ids is not null)
             {
                 if (!string.IsNullOrWhiteSpace(ids.ImdbId))
                 {
@@ -312,20 +312,20 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             var usRelease = contentRatings.FirstOrDefault(c => string.Equals(c.Iso_3166_1, "US", StringComparison.OrdinalIgnoreCase));
             var minimumRelease = contentRatings.FirstOrDefault();
 
-            if (ourRelease != null)
+            if (ourRelease is not null)
             {
                 series.OfficialRating = TmdbUtils.BuildParentalRating(ourRelease.Iso_3166_1, ourRelease.Rating);
             }
-            else if (usRelease != null)
+            else if (usRelease is not null)
             {
                 series.OfficialRating = usRelease.Rating;
             }
-            else if (minimumRelease != null)
+            else if (minimumRelease is not null)
             {
                 series.OfficialRating = minimumRelease.Rating;
             }
 
-            if (seriesResult.Videos?.Results != null)
+            if (seriesResult.Videos?.Results is not null)
             {
                 foreach (var video in seriesResult.Videos.Results)
                 {
@@ -341,7 +341,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         private IEnumerable<PersonInfo> GetPersons(TvShow seriesResult)
         {
-            if (seriesResult.Credits?.Cast != null)
+            if (seriesResult.Credits?.Cast is not null)
             {
                 foreach (var actor in seriesResult.Credits.Cast.OrderBy(a => a.Order).Take(Plugin.Instance.Configuration.MaxCastMembers))
                 {
@@ -363,7 +363,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 }
             }
 
-            if (seriesResult.Credits?.Crew != null)
+            if (seriesResult.Credits?.Crew is not null)
             {
                 var keepTypes = new[]
                 {

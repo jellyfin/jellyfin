@@ -33,7 +33,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
 
             var file = GetXmlFile(info, directoryService);
 
-            if (file == null)
+            if (file is null)
             {
                 return Task.FromResult(result);
             }
@@ -64,7 +64,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
         {
             var file = GetXmlFile(new ItemInfo(item), directoryService);
 
-            if (file == null)
+            if (file is null)
             {
                 return false;
             }

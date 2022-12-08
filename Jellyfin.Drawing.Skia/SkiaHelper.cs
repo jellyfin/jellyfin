@@ -34,7 +34,7 @@ namespace Jellyfin.Drawing.Skia
 
                 currentIndex++;
 
-                if (bitmap != null)
+                if (bitmap is not null)
                 {
                     break;
                 }

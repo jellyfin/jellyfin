@@ -48,7 +48,7 @@ namespace MediaBrowser.MediaEncoding.BdInfo
                 MediaStreams = Array.Empty<MediaStream>()
             };
 
-            if (playlist == null)
+            if (playlist is null)
             {
                 return outputStream;
             }
@@ -89,7 +89,7 @@ namespace MediaBrowser.MediaEncoding.BdInfo
 
             outputStream.PlaylistName = playlist.Name;
 
-            if (playlist.StreamClips != null && playlist.StreamClips.Any())
+            if (playlist.StreamClips is not null && playlist.StreamClips.Any())
             {
                 // Get the files in the playlist
                 outputStream.Files = playlist.StreamClips.Select(i => i.StreamFile.Name).ToArray();

@@ -46,8 +46,8 @@ namespace Jellyfin.Api.Helpers
 
                         while (!reader.EndOfStream)
                         {
-                            var line = await reader.ReadLineAsync().ConfigureAwait(false);
-                            if (line == null)
+                            var line = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
+                            if (line is null)
                             {
                                 // Nothing currently in buffer.
                                 break;

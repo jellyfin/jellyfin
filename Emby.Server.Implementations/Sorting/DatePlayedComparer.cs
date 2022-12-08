@@ -58,7 +58,7 @@ namespace Emby.Server.Implementations.Sorting
         {
             var userdata = UserDataRepository.GetUserData(User, x);
 
-            if (userdata != null && userdata.LastPlayedDate.HasValue)
+            if (userdata is not null && userdata.LastPlayedDate.HasValue)
             {
                 return userdata.LastPlayedDate.Value;
             }

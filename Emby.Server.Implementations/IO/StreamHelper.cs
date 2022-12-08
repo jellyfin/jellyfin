@@ -23,7 +23,7 @@ namespace Emby.Server.Implementations.IO
 
                     await destination.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
 
-                    if (onStarted != null)
+                    if (onStarted is not null)
                     {
                         onStarted();
                         onStarted = null;

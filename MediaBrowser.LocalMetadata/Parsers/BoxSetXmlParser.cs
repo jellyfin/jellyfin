@@ -71,7 +71,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                                 {
                                     var child = GetLinkedChild(subReader);
 
-                                    if (child != null)
+                                    if (child is not null)
                                     {
                                         list.Add(child);
                                     }

@@ -149,7 +149,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 tags = file.GetTag(TagTypes.Id3v1);
             }
 
-            if (tags != null)
+            if (tags is not null)
             {
                 if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataField.Cast))
                 {

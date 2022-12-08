@@ -163,7 +163,7 @@ namespace Jellyfin.Api.Controllers
 
             var primaryImageTag = _imageProcessor.GetImageCacheTag(item, ImageType.Primary);
 
-            if (primaryImageTag != null)
+            if (primaryImageTag is not null)
             {
                 result.PrimaryImageTag = primaryImageTag;
                 result.PrimaryImageAspectRatio = _dtoService.GetPrimaryImageAspectRatio(item);
@@ -197,7 +197,7 @@ namespace Jellyfin.Api.Controllers
 
                     MusicAlbum musicAlbum = song.AlbumEntity;
 
-                    if (musicAlbum != null)
+                    if (musicAlbum is not null)
                     {
                         result.Album = musicAlbum.Name;
                         result.AlbumId = musicAlbum.Id;
@@ -223,18 +223,18 @@ namespace Jellyfin.Api.Controllers
         {
             var itemWithImage = item.HasImage(ImageType.Thumb) ? item : null;
 
-            if (itemWithImage == null && item is Episode)
+            if (itemWithImage is null && item is Episode)
             {
                 itemWithImage = GetParentWithImage<Series>(item, ImageType.Thumb);
             }
 
             itemWithImage ??= GetParentWithImage<BaseItem>(item, ImageType.Thumb);
 
-            if (itemWithImage != null)
+            if (itemWithImage is not null)
             {
                 var tag = _imageProcessor.GetImageCacheTag(itemWithImage, ImageType.Thumb);
 
-                if (tag != null)
+                if (tag is not null)
                 {
                     hint.ThumbImageTag = tag;
                     hint.ThumbImageItemId = itemWithImage.Id.ToString("N", CultureInfo.InvariantCulture);
@@ -247,11 +247,11 @@ namespace Jellyfin.Api.Controllers
             var itemWithImage = (item.HasImage(ImageType.Backdrop) ? item : null)
                 ?? GetParentWithImage<BaseItem>(item, ImageType.Backdrop);
 
-            if (itemWithImage != null)
+            if (itemWithImage is not null)
             {
                 var tag = _imageProcessor.GetImageCacheTag(itemWithImage, ImageType.Backdrop);
 
-                if (tag != null)
+                if (tag is not null)
                 {
                     hint.BackdropImageTag = tag;
                     hint.BackdropImageItemId = itemWithImage.Id.ToString("N", CultureInfo.InvariantCulture);

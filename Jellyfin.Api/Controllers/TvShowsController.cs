@@ -251,7 +251,7 @@ namespace Jellyfin.Api.Controllers
                     .GetSeasons(user, dtoOptions)
                     .FirstOrDefault(i => i.IndexNumber == season.Value);
 
-                episodes = seasonItem == null ?
+                episodes = seasonItem is null ?
                     new List<BaseItem>()
                     : ((Season)seasonItem).GetEpisodes(user, dtoOptions);
             }

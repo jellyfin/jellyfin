@@ -55,7 +55,7 @@ namespace Jellyfin.Api.Controllers
             try
             {
                 var item = _libraryManager.GetItemById(videoId);
-                if (item == null)
+                if (item is null)
                 {
                     return NotFound();
                 }

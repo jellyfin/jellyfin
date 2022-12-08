@@ -191,7 +191,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
             lock (_libraryChangedSyncLock)
             {
-                if (LibraryUpdateTimer == null)
+                if (LibraryUpdateTimer is null)
                 {
                     LibraryUpdateTimer = new Timer(
                         LibraryUpdateTimerCallback,
@@ -227,7 +227,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
             lock (_libraryChangedSyncLock)
             {
-                if (LibraryUpdateTimer == null)
+                if (LibraryUpdateTimer is null)
                 {
                     LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration, Timeout.Infinite);
                 }
@@ -254,7 +254,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
             lock (_libraryChangedSyncLock)
             {
-                if (LibraryUpdateTimer == null)
+                if (LibraryUpdateTimer is null)
                 {
                     LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration, Timeout.Infinite);
                 }
@@ -299,7 +299,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
                 SendChangeNotifications(_itemsAdded.ToList(), itemsUpdated, _itemsRemoved.ToList(), foldersAddedTo, foldersRemovedFrom, CancellationToken.None).GetAwaiter().GetResult();
 
-                if (LibraryUpdateTimer != null)
+                if (LibraryUpdateTimer is not null)
                 {
                     LibraryUpdateTimer.Dispose();
                     LibraryUpdateTimer = null;
@@ -475,7 +475,7 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             if (dispose)
             {
-                if (LibraryUpdateTimer != null)
+                if (LibraryUpdateTimer is not null)
                 {
                     LibraryUpdateTimer.Dispose();
                     LibraryUpdateTimer = null;

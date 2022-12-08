@@ -73,7 +73,7 @@ namespace MediaBrowser.Providers.Manager
             for (var i = 0; i < _singularImages.Length; i++)
             {
                 var currentImage = item.GetImageInfo(_singularImages[i], 0);
-                if (currentImage != null)
+                if (currentImage is not null)
                 {
                     singular.Add(currentImage);
                 }
@@ -395,11 +395,11 @@ namespace MediaBrowser.Providers.Manager
                 var type = _singularImages[i];
                 var image = GetFirstLocalImageInfoByType(images, type);
 
-                if (image != null)
+                if (image is not null)
                 {
                     var currentImage = item.GetImageInfo(type, 0);
 
-                    if (currentImage == null || !string.Equals(currentImage.Path, image.FileInfo.FullName, StringComparison.OrdinalIgnoreCase))
+                    if (currentImage is null || !string.Equals(currentImage.Path, image.FileInfo.FullName, StringComparison.OrdinalIgnoreCase))
                     {
                         item.SetImagePath(type, image.FileInfo);
                         changed = true;
@@ -471,7 +471,7 @@ namespace MediaBrowser.Providers.Manager
             CancellationToken cancellationToken)
         {
             var eligibleImages = images
-                .Where(i => i.Type == type && (i.Width == null || i.Width >= minWidth))
+                .Where(i => i.Type == type && (i.Width is null || i.Width >= minWidth))
                 .ToList();
 
             if (EnableImageStub(item) && eligibleImages.Count > 0)
@@ -539,7 +539,7 @@ namespace MediaBrowser.Providers.Manager
             if (item is IItemByName and not MusicArtist)
             {
                 var hasDualAccess = item as IHasDualAccess;
-                if (hasDualAccess == null || hasDualAccess.IsAccessedByName)
+                if (hasDualAccess is null || hasDualAccess.IsAccessedByName)
                 {
                     return true;
                 }

@@ -132,7 +132,7 @@ namespace Jellyfin.Api.Controllers
         {
             var user = _userManager.Users.First();
 
-            if (startupUserDto.Name != null)
+            if (startupUserDto.Name is not null)
             {
                 user.Username = startupUserDto.Name;
             }

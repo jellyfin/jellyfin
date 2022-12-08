@@ -63,7 +63,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<DeviceProfile> GetProfile([FromRoute, Required] string profileId)
         {
             var profile = _dlnaManager.GetProfile(profileId);
-            if (profile == null)
+            if (profile is null)
             {
                 return NotFound();
             }
@@ -84,7 +84,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult DeleteProfile([FromRoute, Required] string profileId)
         {
             var existingDeviceProfile = _dlnaManager.GetProfile(profileId);
-            if (existingDeviceProfile == null)
+            if (existingDeviceProfile is null)
             {
                 return NotFound();
             }
@@ -121,7 +121,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult UpdateProfile([FromRoute, Required] string profileId, [FromBody] DeviceProfile deviceProfile)
         {
             var existingDeviceProfile = _dlnaManager.GetProfile(profileId);
-            if (existingDeviceProfile == null)
+            if (existingDeviceProfile is null)
             {
                 return NotFound();
             }

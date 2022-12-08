@@ -11,7 +11,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Gets a new copy of the default configuration options.
         /// </summary>
-        public static Dictionary<string, string> DefaultConfiguration => new Dictionary<string, string>
+        public static Dictionary<string, string?> DefaultConfiguration => new Dictionary<string, string?>
         {
             { HostWebClientKey, bool.TrueString },
             { DefaultRedirectKey, "web/index.html" },

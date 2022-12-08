@@ -29,7 +29,7 @@ namespace Emby.Dlna.PlayTo
             var directPlay = profile.DirectPlayProfiles
                 .FirstOrDefault(i => i.Type == DlnaProfileType.Photo && IsSupported(i, item));
 
-            if (directPlay != null)
+            if (directPlay is not null)
             {
                 playlistItem.StreamInfo.PlayMethod = PlayMethod.DirectStream;
                 playlistItem.StreamInfo.Container = Path.GetExtension(item.Path);
@@ -40,7 +40,7 @@ namespace Emby.Dlna.PlayTo
             var transcodingProfile = profile.TranscodingProfiles
                 .FirstOrDefault(i => i.Type == DlnaProfileType.Photo);
 
-            if (transcodingProfile != null)
+            if (transcodingProfile is not null)
             {
                 playlistItem.StreamInfo.PlayMethod = PlayMethod.Transcode;
                 playlistItem.StreamInfo.Container = "." + transcodingProfile.Container.TrimStart('.');

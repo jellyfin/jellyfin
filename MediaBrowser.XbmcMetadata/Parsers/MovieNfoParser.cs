@@ -82,14 +82,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         var movie = item as Movie;
 
                         var tmdbcolid = reader.GetAttribute("tmdbcolid");
-                        if (!string.IsNullOrWhiteSpace(tmdbcolid) && movie != null)
+                        if (!string.IsNullOrWhiteSpace(tmdbcolid) && movie is not null)
                         {
                             movie.SetProviderId(MetadataProvider.TmdbCollection, tmdbcolid);
                         }
 
                         var val = reader.ReadInnerXml();
 
-                        if (!string.IsNullOrWhiteSpace(val) && movie != null)
+                        if (!string.IsNullOrWhiteSpace(val) && movie is not null)
                         {
                             // TODO Handle this better later
                             if (!val.Contains('<', StringComparison.Ordinal))

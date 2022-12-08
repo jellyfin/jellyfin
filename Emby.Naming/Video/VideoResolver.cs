@@ -87,7 +87,7 @@ namespace Emby.Naming.Video
                 name = cleanDateTimeResult.Name;
                 year = cleanDateTimeResult.Year;
 
-                if (extraResult.ExtraType == null
+                if (extraResult.ExtraType is null
                     && TryCleanString(name, namingOptions, out var newName))
                 {
                     name = newName;

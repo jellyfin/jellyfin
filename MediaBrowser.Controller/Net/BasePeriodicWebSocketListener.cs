@@ -166,7 +166,7 @@ namespace MediaBrowser.Controller.Net
 
                 var data = await GetDataToSend().ConfigureAwait(false);
 
-                if (data != null)
+                if (data is not null)
                 {
                     await connection.SendAsync(
                         new WebSocketMessage<TReturnDataType>
@@ -204,7 +204,7 @@ namespace MediaBrowser.Controller.Net
             {
                 var connection = _activeConnections.FirstOrDefault(c => c.Item1 == message.Connection);
 
-                if (connection != null)
+                if (connection is not null)
                 {
                     DisposeConnection(connection);
                 }

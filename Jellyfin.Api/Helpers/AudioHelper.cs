@@ -85,7 +85,7 @@ namespace Jellyfin.Api.Helpers
             TranscodingJobType transcodingJobType,
             StreamingRequestDto streamingRequest)
         {
-            if (_httpContextAccessor.HttpContext == null)
+            if (_httpContextAccessor.HttpContext is null)
             {
                 throw new ResourceNotFoundException(nameof(_httpContextAccessor.HttpContext));
             }
@@ -111,12 +111,12 @@ namespace Jellyfin.Api.Helpers
                     cancellationTokenSource.Token)
                 .ConfigureAwait(false);
 
-            if (streamingRequest.Static && state.DirectStreamProvider != null)
+            if (streamingRequest.Static && state.DirectStreamProvider is not null)
             {
                 StreamingHelpers.AddDlnaHeaders(state, _httpContextAccessor.HttpContext.Response.Headers, true, streamingRequest.StartTimeTicks, _httpContextAccessor.HttpContext.Request, _dlnaManager);
 
                 var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfo(streamingRequest.LiveStreamId);
-                if (liveStreamInfo == null)
+                if (liveStreamInfo is null)
                 {
                     throw new FileNotFoundException();
                 }
@@ -144,7 +144,7 @@ namespace Jellyfin.Api.Helpers
             var outputPathExists = File.Exists(outputPath);
 
             var transcodingJob = _transcodingJobHelper.GetTranscodingJob(outputPath, TranscodingJobType.Progressive);
-            var isTranscodeCached = outputPathExists && transcodingJob != null;
+            var isTranscodeCached = outputPathExists && transcodingJob is not null;
 
             StreamingHelpers.AddDlnaHeaders(state, _httpContextAccessor.HttpContext.Response.Headers, streamingRequest.Static || isTranscodeCached, streamingRequest.StartTimeTicks, _httpContextAccessor.HttpContext.Request, _dlnaManager);
 

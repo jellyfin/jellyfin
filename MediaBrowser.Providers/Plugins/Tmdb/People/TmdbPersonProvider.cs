@@ -43,7 +43,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
             {
                 var personResult = await _tmdbClientManager.GetPersonAsync(int.Parse(personTmdbId, CultureInfo.InvariantCulture), searchInfo.MetadataLanguage, cancellationToken).ConfigureAwait(false);
 
-                if (personResult != null)
+                if (personResult is not null)
                 {
                     var result = new RemoteSearchResult
                     {
@@ -52,7 +52,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                         Overview = personResult.Biography
                     };
 
-                    if (personResult.Images?.Profiles != null && personResult.Images.Profiles.Count > 0)
+                    if (personResult.Images?.Profiles is not null && personResult.Images.Profiles.Count > 0)
                     {
                         result.ImageUrl = _tmdbClientManager.GetProfileUrl(personResult.Images.Profiles[0].FilePath);
                     }

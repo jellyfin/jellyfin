@@ -126,7 +126,7 @@ namespace Emby.Server.Implementations.Library
         {
             var userData = _repository.GetUserData(internalUserId, keys);
 
-            if (userData != null)
+            if (userData is not null)
             {
                 return userData;
             }

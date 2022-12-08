@@ -54,7 +54,7 @@ namespace Jellyfin.Api.Controllers
                     assemblyGuid ?? default)
                 .FirstOrDefault();
 
-            if (result == null)
+            if (result is null)
             {
                 return NotFound();
             }
@@ -110,7 +110,7 @@ namespace Jellyfin.Api.Controllers
                     specificVersion: string.IsNullOrEmpty(version) ? null : Version.Parse(version))
                 .FirstOrDefault();
 
-            if (package == null)
+            if (package is null)
             {
                 return NotFound();
             }

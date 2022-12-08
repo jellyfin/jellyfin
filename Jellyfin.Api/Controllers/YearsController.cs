@@ -153,7 +153,7 @@ namespace Jellyfin.Api.Controllers
             var result = new QueryResult<BaseItemDto>(
                 startIndex,
                 ibnItemsArray.Count,
-                dtos.Where(i => i != null).ToArray());
+                dtos.Where(i => i is not null).ToArray());
             return result;
         }
 
@@ -175,7 +175,7 @@ namespace Jellyfin.Api.Controllers
         {
             userId = RequestHelpers.GetUserId(User, userId);
             var item = _libraryManager.GetYear(year);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }

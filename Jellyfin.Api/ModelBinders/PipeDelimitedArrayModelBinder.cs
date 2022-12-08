@@ -40,7 +40,7 @@ namespace Jellyfin.Api.ModelBinders
             {
                 var value = valueProviderResult.FirstValue;
 
-                if (value != null)
+                if (value is not null)
                 {
                     var splitValues = value.Split('|', StringSplitOptions.RemoveEmptyEntries);
                     var typedValues = GetParsedResult(splitValues, elementType, converter);

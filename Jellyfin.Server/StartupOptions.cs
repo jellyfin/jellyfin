@@ -79,21 +79,21 @@ namespace Jellyfin.Server
         /// Gets the command line options as a dictionary that can be used in the .NET configuration system.
         /// </summary>
         /// <returns>The configuration dictionary.</returns>
-        public Dictionary<string, string> ConvertToConfig()
+        public Dictionary<string, string?> ConvertToConfig()
         {
-            var config = new Dictionary<string, string>();
+            var config = new Dictionary<string, string?>();
 
             if (NoWebClient)
             {
                 config.Add(HostWebClientKey, bool.FalseString);
             }
 
-            if (PublishedServerUrl != null)
+            if (PublishedServerUrl is not null)
             {
                 config.Add(AddressOverrideKey, PublishedServerUrl);
             }
 
-            if (FFmpegPath != null)
+            if (FFmpegPath is not null)
             {
                 config.Add(FfmpegPathKey, FFmpegPath);
             }

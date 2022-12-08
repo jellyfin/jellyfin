@@ -141,7 +141,7 @@ namespace Emby.Dlna.ContentDirectory
             {
                 var user = _userManager.GetUserById(Guid.Parse(profile.UserId));
 
-                if (user != null)
+                if (user is not null)
                 {
                     return user;
                 }
@@ -153,7 +153,7 @@ namespace Emby.Dlna.ContentDirectory
             {
                 var user = _userManager.GetUserById(Guid.Parse(userId));
 
-                if (user != null)
+                if (user is not null)
                 {
                     return user;
                 }

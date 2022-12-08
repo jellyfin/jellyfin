@@ -71,7 +71,7 @@ namespace Emby.Server.Implementations.MediaEncoder
             }
 
             var libraryOptions = _libraryManager.GetLibraryOptions(video);
-            if (libraryOptions != null)
+            if (libraryOptions is not null)
             {
                 if (!libraryOptions.EnableChapterImageExtraction)
                 {

@@ -771,7 +771,7 @@ namespace Jellyfin.Api.Controllers
             await AssertUserCanManageLiveTv().ConfigureAwait(false);
 
             var item = _libraryManager.GetItemById(recordingId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -848,7 +848,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult<SeriesTimerInfoDto>> GetSeriesTimer([FromRoute, Required] string timerId)
         {
             var timer = await _liveTvManager.GetSeriesTimer(timerId, CancellationToken.None).ConfigureAwait(false);
-            if (timer == null)
+            if (timer is null)
             {
                 return NotFound();
             }
@@ -1209,7 +1209,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult GetLiveStreamFile([FromRoute, Required] string streamId, [FromRoute, Required] string container)
         {
             var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfoByUniqueId(streamId);
-            if (liveStreamInfo == null)
+            if (liveStreamInfo is null)
             {
                 return NotFound();
             }

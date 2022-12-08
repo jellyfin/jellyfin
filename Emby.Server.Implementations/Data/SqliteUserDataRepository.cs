@@ -140,10 +140,7 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException(nameof(userId));
             }
 
-            if (string.IsNullOrEmpty(key))
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(key);
 
             PersistUserData(userId, key, userData, cancellationToken);
         }
@@ -274,10 +271,7 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException(nameof(userId));
             }
 
-            if (string.IsNullOrEmpty(key))
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(key);
 
             using (var connection = GetConnection(true))
             {

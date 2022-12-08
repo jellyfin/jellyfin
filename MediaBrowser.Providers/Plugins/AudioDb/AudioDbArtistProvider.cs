@@ -70,7 +70,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
                 await using FileStream jsonStream = AsyncFile.OpenRead(path);
                 var obj = await JsonSerializer.DeserializeAsync<RootObject>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
-                if (obj != null && obj.artists != null && obj.artists.Count > 0)
+                if (obj is not null && obj.artists is not null && obj.artists.Count > 0)
                 {
                     result.Item = new MusicArtist();
                     result.HasMetadata = true;
@@ -149,11 +149,11 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             var url = BaseUrl + "/artist-mb.php?i=" + musicBrainzId;
 
-            var path = GetArtistInfoPath(_config.ApplicationPaths, musicBrainzId);
-
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
+            var path = GetArtistInfoPath(_config.ApplicationPaths, musicBrainzId);
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             var fileStreamOptions = AsyncFile.WriteOptions;

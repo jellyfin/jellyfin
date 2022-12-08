@@ -70,7 +70,7 @@ namespace Emby.Server.Implementations.Playlists
 
             var folderName = _fileSystem.GetValidFilename(name);
             var parentFolder = GetPlaylistsFolder(Guid.Empty);
-            if (parentFolder == null)
+            if (parentFolder is null)
             {
                 throw new ArgumentException(nameof(parentFolder));
             }
@@ -81,7 +81,7 @@ namespace Emby.Server.Implementations.Playlists
                 {
                     var item = _libraryManager.GetItemById(itemId);
 
-                    if (item == null)
+                    if (item is null)
                     {
                         throw new ArgumentException("No item exists with the supplied Id");
                     }
@@ -183,7 +183,7 @@ namespace Emby.Server.Implementations.Playlists
 
         private List<BaseItem> GetPlaylistItems(IEnumerable<Guid> itemIds, string playlistMediaType, User user, DtoOptions options)
         {
-            var items = itemIds.Select(i => _libraryManager.GetItemById(i)).Where(i => i != null);
+            var items = itemIds.Select(i => _libraryManager.GetItemById(i)).Where(i => i is not null);
 
             return Playlist.GetPlaylistItems(playlistMediaType, items, user, options);
         }
@@ -502,15 +502,8 @@ namespace Emby.Server.Implementations.Playlists
 
         private static string MakeRelativePath(string folderPath, string fileAbsolutePath)
         {
-            if (string.IsNullOrEmpty(folderPath))
-            {
-                throw new ArgumentException("Folder path was null or empty.", nameof(folderPath));
-            }
-
-            if (string.IsNullOrEmpty(fileAbsolutePath))
-            {
-                throw new ArgumentException("File absolute path was null or empty.", nameof(fileAbsolutePath));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(folderPath);
+            ArgumentException.ThrowIfNullOrEmpty(fileAbsolutePath);
 
             if (!folderPath.EndsWith(Path.DirectorySeparatorChar))
             {

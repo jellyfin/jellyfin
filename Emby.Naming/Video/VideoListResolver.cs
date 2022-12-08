@@ -26,7 +26,7 @@ namespace Emby.Naming.Video
             // Filter out all extras, otherwise they could cause stacks to not be resolved
             // See the unit test TestStackedWithTrailer
             var nonExtras = videoInfos
-                .Where(i => i.ExtraType == null)
+                .Where(i => i.ExtraType is null)
                 .Select(i => new FileSystemMetadata { FullName = i.Path, IsDirectory = i.IsDirectory });
 
             var stackResult = StackResolver.Resolve(nonExtras, namingOptions).ToList();
@@ -42,7 +42,7 @@ namespace Emby.Naming.Video
                     continue;
                 }
 
-                if (current.ExtraType == null)
+                if (current.ExtraType is null)
                 {
                     standaloneMedia.Add(current);
                 }
@@ -109,7 +109,7 @@ namespace Emby.Naming.Video
             for (var i = 0; i < videos.Count; i++)
             {
                 var video = videos[i];
-                if (video.ExtraType != null)
+                if (video.ExtraType is not null)
                 {
                     continue;
                 }

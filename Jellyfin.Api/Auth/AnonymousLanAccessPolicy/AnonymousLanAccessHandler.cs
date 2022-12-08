@@ -32,7 +32,7 @@ namespace Jellyfin.Api.Auth.AnonymousLanAccessPolicy
             var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress;
 
             // Loopback will be on LAN, so we can accept null.
-            if (ip == null || _networkManager.IsInLocalNetwork(ip))
+            if (ip is null || _networkManager.IsInLocalNetwork(ip))
             {
                 context.Succeed(requirement);
             }

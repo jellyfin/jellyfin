@@ -145,12 +145,7 @@ namespace Jellyfin.Drawing.Skia
         /// <exception cref="SkiaCodecException">The file at the specified path could not be used to generate a codec.</exception>
         public string GetImageBlurHash(int xComp, int yComp, string path)
         {
-            ArgumentNullException.ThrowIfNull(path);
-
-            if (path.Length == 0)
-            {
-                throw new ArgumentException("String can't be empty", nameof(path));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(path);
 
             var extension = Path.GetExtension(path.AsSpan()).TrimStart('.');
             if (!SupportedInputFormats.Contains(extension, StringComparison.OrdinalIgnoreCase))
@@ -250,7 +245,7 @@ namespace Jellyfin.Drawing.Skia
 
             var resultBitmap = SKBitmap.Decode(NormalizePath(path));
 
-            if (resultBitmap == null)
+            if (resultBitmap is null)
             {
                 return Decode(path, true, orientation, out origin);
             }
@@ -274,7 +269,7 @@ namespace Jellyfin.Drawing.Skia
             {
                 var bitmap = Decode(path, true, orientation, out var origin);
 
-                if (bitmap != null && origin != SKEncodedOrigin.TopLeft)
+                if (bitmap is not null && origin != SKEncodedOrigin.TopLeft)
                 {
                     using (bitmap)
                     {
@@ -389,15 +384,8 @@ namespace Jellyfin.Drawing.Skia
         /// <inheritdoc/>
         public string EncodeImage(string inputPath, DateTime dateModified, string outputPath, bool autoOrient, ImageOrientation? orientation, int quality, ImageProcessingOptions options, ImageFormat outputFormat)
         {
-            if (inputPath.Length == 0)
-            {
-                throw new ArgumentException("String can't be empty.", nameof(inputPath));
-            }
-
-            if (outputPath.Length == 0)
-            {
-                throw new ArgumentException("String can't be empty.", nameof(outputPath));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(inputPath);
+            ArgumentException.ThrowIfNullOrEmpty(outputPath);
 
             var inputFormat = Path.GetExtension(inputPath.AsSpan()).TrimStart('.');
             if (!SupportedInputFormats.Contains(inputFormat, StringComparison.OrdinalIgnoreCase))
@@ -414,7 +402,7 @@ namespace Jellyfin.Drawing.Skia
             var hasIndicator = options.AddPlayedIndicator || options.UnplayedCount.HasValue || !options.PercentPlayed.Equals(0);
 
             using var bitmap = GetBitmap(inputPath, autoOrient, orientation);
-            if (bitmap == null)
+            if (bitmap is null)
             {
                 throw new InvalidDataException($"Skia unable to read image {inputPath}");
             }

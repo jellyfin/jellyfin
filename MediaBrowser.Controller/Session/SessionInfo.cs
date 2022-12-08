@@ -64,7 +64,7 @@ namespace MediaBrowser.Controller.Session
         {
             get
             {
-                if (Capabilities == null)
+                if (Capabilities is null)
                 {
                     return Array.Empty<string>();
                 }
@@ -182,7 +182,7 @@ namespace MediaBrowser.Controller.Session
         {
             get
             {
-                if (Capabilities == null || !Capabilities.SupportsMediaControl)
+                if (Capabilities is null || !Capabilities.SupportsMediaControl)
                 {
                     return false;
                 }
@@ -204,7 +204,7 @@ namespace MediaBrowser.Controller.Session
         {
             get
             {
-                if (Capabilities == null || !Capabilities.SupportsMediaControl)
+                if (Capabilities is null || !Capabilities.SupportsMediaControl)
                 {
                     return false;
                 }
@@ -239,7 +239,7 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <value>The supported commands.</value>
         public IReadOnlyList<GeneralCommandType> SupportedCommands
-            => Capabilities == null ? Array.Empty<GeneralCommandType>() : Capabilities.SupportedCommands;
+            => Capabilities is null ? Array.Empty<GeneralCommandType>() : Capabilities.SupportedCommands;
 
         public Tuple<ISessionController, bool> EnsureController<T>(Func<SessionInfo, ISessionController> factory)
         {
@@ -296,7 +296,7 @@ namespace MediaBrowser.Controller.Session
             {
                 _lastProgressInfo = progressInfo;
 
-                if (_progressTimer == null)
+                if (_progressTimer is null)
                 {
                     _progressTimer = new Timer(OnProgressTimerCallback, null, 1000, 1000);
                 }
@@ -315,7 +315,7 @@ namespace MediaBrowser.Controller.Session
             }
 
             var progressInfo = _lastProgressInfo;
-            if (progressInfo == null)
+            if (progressInfo is null)
             {
                 return;
             }
@@ -357,7 +357,7 @@ namespace MediaBrowser.Controller.Session
         {
             lock (_progressLock)
             {
-                if (_progressTimer != null)
+                if (_progressTimer is not null)
                 {
                     _progressTimer.Dispose();
                     _progressTimer = null;

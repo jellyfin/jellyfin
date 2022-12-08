@@ -114,7 +114,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>True if both are equal.</returns>
         public static bool Compare(this Collection<IPObject> source, Collection<IPObject> dest)
         {
-            if (dest == null || source.Count != dest.Count)
+            if (dest is null || source.Count != dest.Count)
             {
                 return false;
             }
@@ -187,7 +187,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>A new collection, with the items excluded.</returns>
         public static Collection<IPObject> Exclude(this Collection<IPObject> source, Collection<IPObject> excludeList, bool isNetwork)
         {
-            if (source.Count == 0 || excludeList == null)
+            if (source.Count == 0 || excludeList is null)
             {
                 return new Collection<IPObject>(source);
             }

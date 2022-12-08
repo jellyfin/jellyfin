@@ -199,7 +199,7 @@ namespace Emby.Dlna.Main
         {
             try
             {
-                if (_communicationsServer == null)
+                if (_communicationsServer is null)
                 {
                     var enableMultiSocketBinding = OperatingSystem.IsWindows() ||
                                                    OperatingSystem.IsLinux();
@@ -222,7 +222,7 @@ namespace Emby.Dlna.Main
         {
             try
             {
-                if (communicationsServer != null)
+                if (communicationsServer is not null)
                 {
                     ((DeviceDiscovery)_deviceDiscovery).Start(communicationsServer);
                 }
@@ -253,7 +253,7 @@ namespace Emby.Dlna.Main
                 return;
             }
 
-            if (_publisher != null)
+            if (_publisher is not null)
             {
                 return;
             }
@@ -382,7 +382,7 @@ namespace Emby.Dlna.Main
         {
             lock (_syncLock)
             {
-                if (_manager != null)
+                if (_manager is not null)
                 {
                     return;
                 }
@@ -417,7 +417,7 @@ namespace Emby.Dlna.Main
         {
             lock (_syncLock)
             {
-                if (_manager != null)
+                if (_manager is not null)
                 {
                     try
                     {
@@ -436,7 +436,7 @@ namespace Emby.Dlna.Main
 
         public void DisposeDevicePublisher()
         {
-            if (_publisher != null)
+            if (_publisher is not null)
             {
                 _logger.LogInformation("Disposing SsdpDevicePublisher");
                 _publisher.Dispose();
@@ -456,7 +456,7 @@ namespace Emby.Dlna.Main
             DisposePlayToManager();
             DisposeDeviceDiscovery();
 
-            if (_communicationsServer != null)
+            if (_communicationsServer is not null)
             {
                 _logger.LogInformation("Disposing SsdpCommunicationsServer");
                 _communicationsServer.Dispose();

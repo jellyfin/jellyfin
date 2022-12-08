@@ -43,7 +43,7 @@ namespace Jellyfin.Api.Models.StreamingDtos
             set
             {
                 BaseRequest = value;
-                IsVideoRequest = VideoRequest != null;
+                IsVideoRequest = VideoRequest is not null;
             }
         }
 

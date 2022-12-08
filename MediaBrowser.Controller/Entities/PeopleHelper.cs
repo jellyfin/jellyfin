@@ -12,11 +12,7 @@ namespace MediaBrowser.Controller.Entities
         public static void AddPerson(List<PersonInfo> people, PersonInfo person)
         {
             ArgumentNullException.ThrowIfNull(person);
-
-            if (string.IsNullOrEmpty(person.Name))
-            {
-                throw new ArgumentException("The person's name was empty or null.", nameof(person));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(person.Name);
 
             // Normalize
             if (string.Equals(person.Role, PersonType.GuestStar, StringComparison.OrdinalIgnoreCase))
@@ -41,7 +37,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var existing = people.FirstOrDefault(p => p.Name.Equals(person.Name, StringComparison.OrdinalIgnoreCase) && p.Type.Equals(PersonType.Actor, StringComparison.OrdinalIgnoreCase));
 
-                if (existing != null)
+                if (existing is not null)
                 {
                     existing.Type = PersonType.GuestStar;
                     MergeExisting(existing, person);
@@ -53,7 +49,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 // If the actor already exists without a role and we have one, fill it in
                 var existing = people.FirstOrDefault(p => p.Name.Equals(person.Name, StringComparison.OrdinalIgnoreCase) && (p.Type.Equals(PersonType.Actor, StringComparison.OrdinalIgnoreCase) || p.Type.Equals(PersonType.GuestStar, StringComparison.OrdinalIgnoreCase)));
-                if (existing == null)
+                if (existing is null)
                 {
                     // Wasn't there - add it
                     people.Add(person);
@@ -76,7 +72,7 @@ namespace MediaBrowser.Controller.Entities
                             string.Equals(p.Type, person.Type, StringComparison.OrdinalIgnoreCase));
 
                 // Check for dupes based on the combination of Name and Type
-                if (existing == null)
+                if (existing is null)
                 {
                     people.Add(person);
                 }

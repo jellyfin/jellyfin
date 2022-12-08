@@ -65,11 +65,11 @@ namespace MediaBrowser.Providers.Subtitles
         /// <inheritdoc />
         public async Task<RemoteSubtitleInfo[]> SearchSubtitles(SubtitleSearchRequest request, CancellationToken cancellationToken)
         {
-            if (request.Language != null)
+            if (request.Language is not null)
             {
                 var culture = _localization.FindLanguageInfo(request.Language);
 
-                if (culture != null)
+                if (culture is not null)
                 {
                     request.TwoLetterISOLanguageName = culture.TwoLetterISOLanguageName;
                 }
@@ -271,7 +271,7 @@ namespace MediaBrowser.Providers.Subtitles
                 stream.Position = 0;
             }
 
-            if (exs != null)
+            if (exs is not null)
             {
                 throw new AggregateException(exs);
             }

@@ -48,10 +48,7 @@ namespace Emby.Server.Implementations.IO
         /// <exception cref="ArgumentNullException"><paramref name="filename"/> is <c>null</c>.</exception>
         public virtual bool IsShortcut(string filename)
         {
-            if (string.IsNullOrEmpty(filename))
-            {
-                throw new ArgumentNullException(nameof(filename));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(filename);
 
             var extension = Path.GetExtension(filename);
             return _shortcutHandlers.Any(i => string.Equals(extension, i.Extension, StringComparison.OrdinalIgnoreCase));
@@ -65,10 +62,7 @@ namespace Emby.Server.Implementations.IO
         /// <exception cref="ArgumentNullException"><paramref name="filename"/> is <c>null</c>.</exception>
         public virtual string? ResolveShortcut(string filename)
         {
-            if (string.IsNullOrEmpty(filename))
-            {
-                throw new ArgumentNullException(nameof(filename));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(filename);
 
             var extension = Path.GetExtension(filename);
             var handler = _shortcutHandlers.Find(i => string.Equals(extension, i.Extension, StringComparison.OrdinalIgnoreCase));
@@ -136,20 +130,13 @@ namespace Emby.Server.Implementations.IO
         /// <exception cref="ArgumentNullException">The shortcutPath or target is null.</exception>
         public virtual void CreateShortcut(string shortcutPath, string target)
         {
-            if (string.IsNullOrEmpty(shortcutPath))
-            {
-                throw new ArgumentNullException(nameof(shortcutPath));
-            }
-
-            if (string.IsNullOrEmpty(target))
-            {
-                throw new ArgumentNullException(nameof(target));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(shortcutPath);
+            ArgumentException.ThrowIfNullOrEmpty(target);
 
             var extension = Path.GetExtension(shortcutPath);
             var handler = _shortcutHandlers.Find(i => string.Equals(extension, i.Extension, StringComparison.OrdinalIgnoreCase));
 
-            if (handler != null)
+            if (handler is not null)
             {
                 handler.Create(shortcutPath, target);
             }
@@ -488,15 +475,8 @@ namespace Emby.Server.Implementations.IO
         /// <param name="file2">The file2.</param>
         public virtual void SwapFiles(string file1, string file2)
         {
-            if (string.IsNullOrEmpty(file1))
-            {
-                throw new ArgumentNullException(nameof(file1));
-            }
-
-            if (string.IsNullOrEmpty(file2))
-            {
-                throw new ArgumentNullException(nameof(file2));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(file1);
+            ArgumentException.ThrowIfNullOrEmpty(file2);
 
             var temp1 = Path.Combine(_tempPath, Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture));
 
@@ -514,15 +494,8 @@ namespace Emby.Server.Implementations.IO
         /// <inheritdoc />
         public virtual bool ContainsSubPath(string parentPath, string path)
         {
-            if (string.IsNullOrEmpty(parentPath))
-            {
-                throw new ArgumentNullException(nameof(parentPath));
-            }
-
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(parentPath);
+            ArgumentException.ThrowIfNullOrEmpty(path);
 
             return path.Contains(
                 Path.TrimEndingDirectorySeparator(parentPath) + Path.DirectorySeparatorChar,
@@ -532,10 +505,7 @@ namespace Emby.Server.Implementations.IO
         /// <inheritdoc />
         public virtual string NormalizePath(string path)
         {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(path);
 
             if (path.EndsWith(":\\", StringComparison.OrdinalIgnoreCase))
             {
@@ -621,14 +591,14 @@ namespace Emby.Server.Implementations.IO
 
             // On linux and osx the search pattern is case sensitive
             // If we're OK with case-sensitivity, and we're only filtering for one extension, then use the native method
-            if ((enableCaseSensitiveExtensions || _isEnvironmentCaseInsensitive) && extensions != null && extensions.Count == 1)
+            if ((enableCaseSensitiveExtensions || _isEnvironmentCaseInsensitive) && extensions is not null && extensions.Count == 1)
             {
                 return ToMetadata(new DirectoryInfo(path).EnumerateFiles("*" + extensions[0], enumerationOptions));
             }
 
             var files = new DirectoryInfo(path).EnumerateFiles("*", enumerationOptions);
 
-            if (extensions != null && extensions.Count > 0)
+            if (extensions is not null && extensions.Count > 0)
             {
                 files = files.Where(i =>
                 {
@@ -678,14 +648,14 @@ namespace Emby.Server.Implementations.IO
 
             // On linux and osx the search pattern is case sensitive
             // If we're OK with case-sensitivity, and we're only filtering for one extension, then use the native method
-            if ((enableCaseSensitiveExtensions || _isEnvironmentCaseInsensitive) && extensions != null && extensions.Length == 1)
+            if ((enableCaseSensitiveExtensions || _isEnvironmentCaseInsensitive) && extensions is not null && extensions.Length == 1)
             {
                 return Directory.EnumerateFiles(path, "*" + extensions[0], enumerationOptions);
             }
 
             var files = Directory.EnumerateFiles(path, "*", enumerationOptions);
 
-            if (extensions != null && extensions.Length > 0)
+            if (extensions is not null && extensions.Length > 0)
             {
                 files = files.Where(i =>
                 {

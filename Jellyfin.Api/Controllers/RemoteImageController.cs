@@ -68,7 +68,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool includeAllLanguages = false)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -127,7 +127,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<IEnumerable<ImageProviderInfo>> GetRemoteImageProviders([FromRoute, Required] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -154,7 +154,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? imageUrl)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }

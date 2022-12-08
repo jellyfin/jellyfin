@@ -48,7 +48,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
         public bool TryGetExtraTypeForOwner(string path, VideoFileInfo ownerVideoFileInfo, [NotNullWhen(true)] out ExtraType? extraType)
         {
             var extraResult = GetExtraInfo(path, _namingOptions);
-            if (extraResult.ExtraType == null)
+            if (extraResult.ExtraType is null)
             {
                 extraType = null;
                 return false;

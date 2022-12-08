@@ -25,13 +25,10 @@ namespace Emby.Server.Implementations.Library
         public static bool SetInitialItemValues(BaseItem item, Folder? parent, ILibraryManager libraryManager, IDirectoryService directoryService)
         {
             // This version of the below method has no ItemResolveArgs, so we have to require the path already being set
-            if (string.IsNullOrEmpty(item.Path))
-            {
-                throw new ArgumentException("Item must have a Path");
-            }
+            ArgumentException.ThrowIfNullOrEmpty(item.Path);
 
             // If the resolver didn't specify this
-            if (parent != null)
+            if (parent is not null)
             {
                 item.SetParent(parent);
             }
@@ -43,7 +40,7 @@ namespace Emby.Server.Implementations.Library
 
             // Make sure DateCreated and DateModified have values
             var fileInfo = directoryService.GetFile(item.Path);
-            if (fileInfo == null)
+            if (fileInfo is null)
             {
                 return false;
             }
@@ -71,7 +68,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             // If the resolver didn't specify this
-            if (args.Parent != null)
+            if (args.Parent is not null)
             {
                 item.SetParent(args.Parent);
             }
@@ -113,7 +110,7 @@ namespace Emby.Server.Implementations.Library
             {
                 var childData = args.IsDirectory ? args.GetFileSystemEntryByPath(item.Path) : null;
 
-                if (childData != null)
+                if (childData is not null)
                 {
                     SetDateCreated(item, childData);
                 }
@@ -140,7 +137,7 @@ namespace Emby.Server.Implementations.Library
             if (config.UseFileCreationTimeForDateAdded)
             {
                 // directoryService.getFile may return null
-                if (info != null)
+                if (info is not null)
                 {
                     var dateCreated = info.CreationTimeUtc;
 

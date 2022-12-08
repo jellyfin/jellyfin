@@ -55,7 +55,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 .GetSeasonAsync(Convert.ToInt32(seriesTmdbId, CultureInfo.InvariantCulture), seasonNumber.Value, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
                 .ConfigureAwait(false);
 
-            if (seasonResult == null)
+            if (seasonResult is null)
             {
                 return result;
             }
@@ -79,7 +79,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             // TODO why was this disabled?
             var credits = seasonResult.Credits;
-            if (credits?.Cast != null)
+            if (credits?.Cast is not null)
             {
                 var cast = credits.Cast.OrderBy(c => c.Order).Take(Plugin.Instance.Configuration.MaxCastMembers).ToList();
                 for (var i = 0; i < cast.Count; i++)
@@ -94,7 +94,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 }
             }
 
-            if (credits?.Crew != null)
+            if (credits?.Crew is not null)
             {
                 foreach (var person in credits.Crew)
                 {

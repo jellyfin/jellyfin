@@ -184,7 +184,7 @@ namespace Jellyfin.Api.Controllers
                     {
                         return null;
                     }
-                }).Where(i => i != null).Select(i => i!.Id).ToArray();
+                }).Where(i => i is not null).Select(i => i!.Id).ToArray();
             }
 
             foreach (var filter in filters)
@@ -388,7 +388,7 @@ namespace Jellyfin.Api.Controllers
                     {
                         return null;
                     }
-                }).Where(i => i != null).Select(i => i!.Id).ToArray();
+                }).Where(i => i is not null).Select(i => i!.Id).ToArray();
             }
 
             foreach (var filter in filters)

@@ -61,7 +61,7 @@ namespace Jellyfin.Naming.Tests.Video
 
             Assert.Equal(is3D, result.Is3D);
 
-            if (format3D == null)
+            if (format3D is null)
             {
                 Assert.Null(result?.Format3D);
             }

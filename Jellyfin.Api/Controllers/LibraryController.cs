@@ -105,7 +105,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult GetFile([FromRoute, Required] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
@@ -156,7 +156,7 @@ namespace Jellyfin.Api.Controllers
                     : _libraryManager.GetUserRootFolder())
                 : _libraryManager.GetItemById(itemId);
 
-            if (item == null)
+            if (item is null)
             {
                 return NotFound("Item not found.");
             }
@@ -173,7 +173,7 @@ namespace Jellyfin.Api.Controllers
                 }
 
                 var parent = item.GetParent();
-                if (parent == null)
+                if (parent is null)
                 {
                     break;
                 }
@@ -223,7 +223,7 @@ namespace Jellyfin.Api.Controllers
                     : _libraryManager.GetUserRootFolder())
                 : _libraryManager.GetItemById(itemId);
 
-            if (item == null)
+            if (item is null)
             {
                 return NotFound("Item not found.");
             }
@@ -240,7 +240,7 @@ namespace Jellyfin.Api.Controllers
                 }
 
                 var parent = item.GetParent();
-                if (parent == null)
+                if (parent is null)
                 {
                     break;
                 }
@@ -440,7 +440,7 @@ namespace Jellyfin.Api.Controllers
             var item = _libraryManager.GetItemById(itemId);
             userId = RequestHelpers.GetUserId(User, userId);
 
-            if (item == null)
+            if (item is null)
             {
                 return NotFound("Item not found");
             }
@@ -454,9 +454,9 @@ namespace Jellyfin.Api.Controllers
             var dtoOptions = new DtoOptions().AddClientFields(User);
             BaseItem? parent = item.GetParent();
 
-            while (parent != null)
+            while (parent is not null)
             {
-                if (user != null)
+                if (user is not null)
                 {
                     parent = TranslateParentItem(parent, user);
                 }
@@ -615,14 +615,14 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> GetDownload([FromRoute, Required] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
-            if (item == null)
+            if (item is null)
             {
                 return NotFound();
             }
 
             var user = _userManager.GetUserById(User.GetUserId());
 
-            if (user != null)
+            if (user is not null)
             {
                 if (!item.CanDownload(user))
                 {
@@ -637,27 +637,15 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            if (user != null)
+            if (user is not null)
             {
                 await LogDownloadAsync(item, user).ConfigureAwait(false);
             }
 
-            var path = item.Path;
+            // Quotes are valid in linux. They'll possibly cause issues here.
+            var filename = Path.GetFileName(item.Path)?.Replace("\"", string.Empty, StringComparison.Ordinal);
 
-            // Quotes are valid in linux. They'll possibly cause issues here
-            var filename = (Path.GetFileName(path) ?? string.Empty).Replace("\"", string.Empty, StringComparison.Ordinal);
-            if (!string.IsNullOrWhiteSpace(filename))
-            {
-                // Kestrel doesn't support non-ASCII characters in headers
-                if (Regex.IsMatch(filename, @"[^\p{IsBasicLatin}]"))
-                {
-                    // Manually encoding non-ASCII characters, following https://tools.ietf.org/html/rfc5987#section-3.2.2
-                    filename = WebUtility.UrlEncode(filename);
-                }
-            }
-
-            // TODO determine non-ASCII validity.
-            return PhysicalFile(path, MimeTypes.GetMimeType(path), filename, true);
+            return PhysicalFile(item.Path, MimeTypes.GetMimeType(item.Path), filename, true);
         }
 
         /// <summary>
@@ -704,8 +692,8 @@ namespace Jellyfin.Api.Controllers
                 .AddClientFields(User);
 
             var program = item as IHasProgramAttributes;
-            bool? isMovie = item is Movie || (program != null && program.IsMovie) || item is Trailer;
-            bool? isSeries = item is Series || (program != null && program.IsSeries);
+            bool? isMovie = item is Movie || (program is not null && program.IsMovie) || item is Trailer;
+            bool? isSeries = item is Series || (program is not null && program.IsSeries);
 
             var includeItemTypes = new List<BaseItemKind>();
             if (isMovie.Value)

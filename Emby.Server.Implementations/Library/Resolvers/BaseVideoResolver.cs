@@ -79,7 +79,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                         videoType = VideoType.Dvd;
                     }
 
-                    if (videoType == null)
+                    if (videoType is null)
                     {
                         continue;
                     }
@@ -93,7 +93,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                 videoInfo = VideoResolver.Resolve(args.Path, false, NamingOptions, parseName);
             }
 
-            if (videoInfo == null || (!videoInfo.IsStub && !VideoResolver.IsVideoFile(args.Path, NamingOptions)))
+            if (videoInfo is null || (!videoInfo.IsStub && !VideoResolver.IsVideoFile(args.Path, NamingOptions)))
             {
                 return null;
             }
@@ -163,17 +163,15 @@ namespace Emby.Server.Implementations.Library.Resolvers
                     try
                     {
                         // use disc-utils, both DVDs and BDs use UDF filesystem
-                        using (var videoFileStream = File.Open(video.Path, FileMode.Open, FileAccess.Read))
-                        using (UdfReader udfReader = new UdfReader(videoFileStream))
+                        using var videoFileStream = File.Open(video.Path, FileMode.Open, FileAccess.Read, FileShare.Read);
+                        using UdfReader udfReader = new UdfReader(videoFileStream);
+                        if (udfReader.DirectoryExists("VIDEO_TS"))
                         {
-                            if (udfReader.DirectoryExists("VIDEO_TS"))
-                            {
-                                video.IsoType = IsoType.Dvd;
-                            }
-                            else if (udfReader.DirectoryExists("BDMV"))
-                            {
-                                video.IsoType = IsoType.BluRay;
-                            }
+                            video.IsoType = IsoType.Dvd;
+                        }
+                        else if (udfReader.DirectoryExists("BDMV"))
+                        {
+                            video.IsoType = IsoType.BluRay;
                         }
                     }
                     catch (Exception ex)
