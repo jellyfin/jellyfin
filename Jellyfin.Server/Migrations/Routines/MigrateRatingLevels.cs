@@ -9,7 +9,7 @@ using SQLitePCL.pretty;
 namespace Jellyfin.Server.Migrations.Routines
 {
     /// <summary>
-    /// Remove duplicate entries which were caused by a bug where a file was considered to be an "Extra" to itself.
+    /// Migrate rating levels to new rating level system.
     /// </summary>
     internal class MigrateRatingLevels : IMigrationRoutine
     {

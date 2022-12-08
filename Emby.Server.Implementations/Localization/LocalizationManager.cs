@@ -194,7 +194,7 @@ namespace Emby.Server.Implementations.Localization
                 ratings.Add(new ParentalRating("Approved", 0));
             }
 
-            // Matches PG (this has differnet age restrictions depending on country)
+            // Matches PG (this has different age restrictions depending on country)
             if (!ratings.Any(x => x.Value == 10))
             {
                 ratings.Add(new ParentalRating("10", 10));
