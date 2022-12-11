@@ -170,6 +170,7 @@ namespace Jellyfin.LiveTv.Listings
                 IsSeries = program.Episode.Episode is not null,
                 IsRepeat = program.IsPreviouslyShown && !program.IsNew,
                 IsPremiere = program.Premiere is not null,
+                IsLive = program.IsLive,
                 IsKids = programCategories.Any(c => info.KidsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
                 IsMovie = programCategories.Any(c => info.MovieCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
                 IsNews = programCategories.Any(c => info.NewsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
