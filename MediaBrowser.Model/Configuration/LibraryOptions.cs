@@ -45,6 +45,8 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableEmbeddedTitles { get; set; }
 
+        public bool EnableEmbeddedExtrasTitles { get; set; }
+
         public bool EnableEmbeddedEpisodeInfos { get; set; }
 
         public int AutomaticRefreshIntervalDays { get; set; }

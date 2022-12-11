@@ -484,8 +484,8 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 if (!string.IsNullOrWhiteSpace(data.Name) && libraryOptions.EnableEmbeddedTitles)
                 {
-                    // Don't use the embedded name for extras because it will often be the same name as the movie
-                    if (!video.ExtraType.HasValue)
+                    // Separate option to use the embedded name for extras because it will often be the same name as the movie
+                    if (!video.ExtraType.HasValue || libraryOptions.EnableEmbeddedExtrasTitles)
                     {
                         video.Name = data.Name;
                     }
