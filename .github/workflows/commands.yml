@@ -24,7 +24,7 @@ jobs:
           reactions: '+1'
 
       - name: Checkout the latest code
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3
+        uses: actions/checkout@7dd9e2a3dc350cf687eb1b2a4fadfee8c8e49675 # v3
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
           fetch-depth: 0
@@ -51,7 +51,7 @@ jobs:
           reactions: eyes
 
       - name: Checkout the latest code
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3
+        uses: actions/checkout@7dd9e2a3dc350cf687eb1b2a4fadfee8c8e49675 # v3
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
           fetch-depth: 0
