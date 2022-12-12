@@ -47,9 +47,10 @@ namespace Jellyfin.Server.Middleware
             context.Response.OnStarting(() =>
             {
                 watch.Stop();
-                if (enableWarning && watch.ElapsedMilliseconds > warningThreshold)
+                var responseTimeForCompleteRequest = watch.ElapsedMilliseconds;
+                if (enableWarning && responseTimeForCompleteRequest > warningThreshold && _logger.IsEnabled(LogLevel.Debug))
                 {
-                    _logger.LogWarning(
+                    _logger.LogDebug(
                         "Slow HTTP Response from {Url} to {RemoteIp} in {Elapsed:g} with Status Code {StatusCode}",
                         context.Request.GetDisplayUrl(),
                         context.GetNormalizedRemoteIp(),
@@ -57,7 +58,6 @@ namespace Jellyfin.Server.Middleware
                         context.Response.StatusCode);
                 }
 
-                var responseTimeForCompleteRequest = watch.ElapsedMilliseconds;
                 context.Response.Headers[ResponseHeaderResponseTime] = responseTimeForCompleteRequest.ToString(CultureInfo.InvariantCulture);
                 return Task.CompletedTask;
             });
