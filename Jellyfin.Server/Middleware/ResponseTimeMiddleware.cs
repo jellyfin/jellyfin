@@ -40,25 +40,25 @@ namespace Jellyfin.Server.Middleware
         /// <returns>Task.</returns>
         public async Task Invoke(HttpContext context, IServerConfigurationManager serverConfigurationManager)
         {
-            var watch = new Stopwatch();
-            watch.Start();
+            var startTimestamp = Stopwatch.GetTimestamp();
+
             var enableWarning = serverConfigurationManager.Configuration.EnableSlowResponseWarning;
             var warningThreshold = serverConfigurationManager.Configuration.SlowResponseThresholdMs;
             context.Response.OnStarting(() =>
             {
-                watch.Stop();
-                var responseTimeForCompleteRequest = watch.ElapsedMilliseconds;
-                if (enableWarning && responseTimeForCompleteRequest > warningThreshold && _logger.IsEnabled(LogLevel.Debug))
+                var responseTime = Stopwatch.GetElapsedTime(startTimestamp);
+                var responseTimeMs = responseTime.TotalMilliseconds;
+                if (enableWarning && responseTimeMs > warningThreshold && _logger.IsEnabled(LogLevel.Debug))
                 {
                     _logger.LogDebug(
                         "Slow HTTP Response from {Url} to {RemoteIp} in {Elapsed:g} with Status Code {StatusCode}",
                         context.Request.GetDisplayUrl(),
                         context.GetNormalizedRemoteIp(),
-                        watch.Elapsed,
+                        responseTime,
                         context.Response.StatusCode);
                 }
 
-                context.Response.Headers[ResponseHeaderResponseTime] = responseTimeForCompleteRequest.ToString(CultureInfo.InvariantCulture);
+                context.Response.Headers[ResponseHeaderResponseTime] = responseTimeMs.ToString(CultureInfo.InvariantCulture);
                 return Task.CompletedTask;
             });
 
