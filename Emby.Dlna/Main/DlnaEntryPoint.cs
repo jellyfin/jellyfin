@@ -288,7 +288,7 @@ namespace Emby.Dlna.Main
             var bindAddresses = _networkManager
                                     .GetInternalBindAddresses()
                                     .Where(i => i.Address.AddressFamily == AddressFamily.InterNetwork
-                                                || (i.AddressFamily == AddressFamily.InterNetworkV6 && i.Address.ScopeId != 0))
+                                        || (i.AddressFamily == AddressFamily.InterNetworkV6 && i.Address.ScopeId != 0))
                                     .ToList();
 
             if (bindAddresses.Count == 0)
