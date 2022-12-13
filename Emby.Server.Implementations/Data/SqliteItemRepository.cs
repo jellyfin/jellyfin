@@ -6210,25 +6210,24 @@ AND Type = @InternalPersonType)");
             private readonly ILogger _logger;
             private readonly string _commandText;
             private readonly string _methodName;
-            private readonly Stopwatch? _stopwatch;
+            private readonly long _startTimestamp;
 
             public QueryTimeLogger(ILogger logger, string commandText, [CallerMemberName] string methodName = "")
             {
                 _logger = logger;
                 _commandText = commandText;
                 _methodName = methodName;
-                _stopwatch = logger.IsEnabled(LogLevel.Debug) ? Stopwatch.StartNew() : null;
+                _startTimestamp = logger.IsEnabled(LogLevel.Debug) ? Stopwatch.GetTimestamp() : -1;
             }
 
             public void Dispose()
             {
-                if (_stopwatch is null)
+                if (_startTimestamp == -1)
                 {
                     return;
                 }
 
-                _stopwatch.Stop();
-                var elapsed = _stopwatch.ElapsedMilliseconds;
+                var elapsedMs = Stopwatch.GetElapsedTime(_startTimestamp).TotalMilliseconds;
 
 #if DEBUG
                 const int SlowThreshold = 100;
@@ -6236,12 +6235,12 @@ AND Type = @InternalPersonType)");
                 const int SlowThreshold = 10;
 #endif
 
-                if (elapsed >= SlowThreshold)
+                if (elapsedMs >= SlowThreshold)
                 {
                     _logger.LogDebug(
                         "{Method} query time (slow): {ElapsedMs}ms. Query: {Query}",
                         _methodName,
-                        elapsed,
+                        elapsedMs,
                         _commandText);
                 }
             }
