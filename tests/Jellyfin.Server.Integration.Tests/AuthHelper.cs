@@ -48,7 +48,7 @@ namespace Jellyfin.Server.Integration.Tests
             headers.Add(AuthHeaderName, DummyAuthHeader + $", Token={accessToken}");
         }
 
-        private class AuthenticationResultDto
+        private sealed class AuthenticationResultDto
         {
             public string AccessToken { get; set; } = string.Empty;
 

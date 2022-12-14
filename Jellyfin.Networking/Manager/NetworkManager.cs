@@ -1301,7 +1301,8 @@ namespace Jellyfin.Networking.Manager
             var extResult = _interfaceAddresses
                 .Exclude(_bindExclusions, false)
                 .Where(p => !IsInLocalNetwork(p))
-                .OrderBy(p => p.Tag);
+                .OrderBy(p => p.Tag)
+                .ToList();
 
             if (extResult.Any())
             {

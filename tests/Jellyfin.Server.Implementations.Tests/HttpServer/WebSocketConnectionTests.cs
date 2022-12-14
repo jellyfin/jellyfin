@@ -48,7 +48,7 @@ namespace Jellyfin.Server.Implementations.Tests.HttpServer
             Assert.Throws<JsonException>(() => con.DeserializeWebSocketMessage(new ReadOnlySequence<byte>(bytes), out var bytesConsumed));
         }
 
-        internal class BufferSegment : ReadOnlySequenceSegment<byte>
+        internal sealed class BufferSegment : ReadOnlySequenceSegment<byte>
         {
             public BufferSegment(Memory<byte> memory)
             {

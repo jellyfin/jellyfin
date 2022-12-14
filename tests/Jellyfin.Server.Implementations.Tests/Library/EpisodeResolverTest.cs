@@ -60,7 +60,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library
             Assert.NotNull(episodeResolver.Resolve(itemResolveArgs));
         }
 
-        private class EpisodeResolverMock : EpisodeResolver
+        private sealed class EpisodeResolverMock : EpisodeResolver
         {
             public EpisodeResolverMock(ILogger<EpisodeResolver> logger, NamingOptions namingOptions) : base(logger, namingOptions)
             {

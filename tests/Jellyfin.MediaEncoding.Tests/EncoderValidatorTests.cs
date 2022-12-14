@@ -32,7 +32,7 @@ namespace Jellyfin.MediaEncoding.Tests
             Assert.Equal(valid, _encoderValidator.ValidateVersionInternal(versionOutput));
         }
 
-        private class GetFFmpegVersionTestData : TheoryData<string, Version?>
+        private sealed class GetFFmpegVersionTestData : TheoryData<string, Version?>
         {
             public GetFFmpegVersionTestData()
             {
