@@ -282,7 +282,7 @@ namespace Jellyfin.Server.Implementations.Tests.Data
             Assert.Equal(expected, SqliteItemRepository.SerializeProviderIds(values));
         }
 
-        private class ProviderIdsExtensionsTestsObject : IHasProviderIds
+        private sealed class ProviderIdsExtensionsTestsObject : IHasProviderIds
         {
             public Dictionary<string, string> ProviderIds { get; set; } = new Dictionary<string, string>();
         }
