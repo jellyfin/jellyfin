@@ -1450,15 +1450,16 @@ namespace MediaBrowser.Model.Dlna
 
         private bool IsItemBitrateEligibleForDirectPlayback(MediaSourceInfo item, long maxBitrate, PlayMethod playMethod)
         {
-            // Don't restrict by bitrate if coming from an external domain
+            // Don't restrict bitrate if item is remote.
             if (item.IsRemote)
             {
                 return true;
             }
 
-            long requestedMaxBitrate = maxBitrate > 0 ? maxBitrate : 1000000;
+            // If no maximum bitrate is set, default to no maximum bitrate.
+            long requestedMaxBitrate = maxBitrate > 0 ? maxBitrate : int.MaxValue;
 
-            // If we don't know the bitrate, then force a transcode if requested max bitrate is under 40 mbps
+            // If we don't know the item bitrate, then force a transcode if requested max bitrate is under 40 mbps
             int itemBitrate = item.Bitrate ?? 40000000;
 
             if (itemBitrate > requestedMaxBitrate)
