@@ -241,6 +241,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             if (movieResult.Keywords?.Keywords is not null)
             {
+                movie.AddTag("lang-" + movieResult.OriginalLanguage);
                 for (var i = 0; i < movieResult.Keywords.Keywords.Count; i++)
                 {
                     movie.AddTag(movieResult.Keywords.Keywords[i].Name);
