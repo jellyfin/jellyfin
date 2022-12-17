@@ -61,7 +61,7 @@ namespace Jellyfin.Api.Helpers
         /// </summary>
         /// <param name="claimsPrincipal">The <see cref="ClaimsPrincipal"/> for the current request.</param>
         /// <param name="userId">The user id.</param>
-        /// <returns>A <see cref="bool"/> whether the user can update the entry.</returns>
+        /// <returns>A <see cref="bool"/> whether the user can access the user.</returns>
         internal static Guid GetUserId(ClaimsPrincipal claimsPrincipal, Guid? userId)
         {
             var authenticatedUserId = claimsPrincipal.GetUserId();
