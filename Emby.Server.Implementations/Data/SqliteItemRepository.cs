@@ -2164,6 +2164,7 @@ namespace Emby.Server.Implementations.Data
                     || sortingFields.Contains(ItemSortBy.IsPlayed)
                     || sortingFields.Contains(ItemSortBy.IsUnplayed)
                     || sortingFields.Contains(ItemSortBy.PlayCount)
+                    || sortingFields.Contains(ItemSortBy.UserRating)
                     || sortingFields.Contains(ItemSortBy.DatePlayed)
                     || sortingFields.Contains(ItemSortBy.SeriesDatePlayed)
                     || query.IsFavoriteOrLiked.HasValue
@@ -3100,6 +3101,11 @@ namespace Emby.Server.Implementations.Data
             if (string.Equals(name, ItemSortBy.CriticRating, StringComparison.OrdinalIgnoreCase))
             {
                 return ItemSortBy.CriticRating;
+            }
+
+            if (string.Equals(name, ItemSortBy.UserRating, StringComparison.OrdinalIgnoreCase))
+            {
+                return "userrating";
             }
 
             if (string.Equals(name, ItemSortBy.VideoBitRate, StringComparison.OrdinalIgnoreCase))

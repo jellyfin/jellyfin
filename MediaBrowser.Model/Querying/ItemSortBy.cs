@@ -91,6 +91,11 @@ namespace MediaBrowser.Model.Querying
         public const string CriticRating = "CriticRating";
 
         /// <summary>
+        /// The user rating.
+        /// </summary>
+        public const string UserRating = "UserRating";
+
+        /// <summary>
         /// The IsFolder boolean.
         /// </summary>
         public const string IsFolder = "IsFolder";
