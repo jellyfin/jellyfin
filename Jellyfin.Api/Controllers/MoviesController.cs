@@ -200,8 +200,7 @@ namespace Jellyfin.Api.Controllers
                         IsMovie = true,
                         EnableGroupByMetadataKey = true,
                         DtoOptions = dtoOptions
-                    }).GroupBy(i => i.GetProviderId(MediaBrowser.Model.Entities.MetadataProvider.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
-                    .Select(x => x.First())
+                    }).DistinctBy(i => i.GetProviderId(MediaBrowser.Model.Entities.MetadataProvider.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
                     .Take(itemLimit)
                     .ToList();
 
@@ -240,8 +239,7 @@ namespace Jellyfin.Api.Controllers
                     IsMovie = true,
                     EnableGroupByMetadataKey = true,
                     DtoOptions = dtoOptions
-                }).GroupBy(i => i.GetProviderId(MediaBrowser.Model.Entities.MetadataProvider.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
-                    .Select(x => x.First())
+                }).DistinctBy(i => i.GetProviderId(MediaBrowser.Model.Entities.MetadataProvider.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
                     .Take(itemLimit)
                     .ToList();
 

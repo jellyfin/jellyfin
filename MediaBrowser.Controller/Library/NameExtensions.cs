@@ -10,8 +10,7 @@ namespace MediaBrowser.Controller.Library
     public static class NameExtensions
     {
         public static IEnumerable<string> DistinctNames(this IEnumerable<string> names)
-            => names.GroupBy(RemoveDiacritics, StringComparer.OrdinalIgnoreCase)
-                .Select(x => x.First());
+            => names.DistinctBy(RemoveDiacritics, StringComparer.OrdinalIgnoreCase);
 
         private static string RemoveDiacritics(string? name)
         {
