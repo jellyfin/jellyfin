@@ -51,7 +51,7 @@ namespace Emby.Server.Implementations.Data
                     {
                         db.ExecuteAll(string.Join(';', new[]
                         {
-                            "create table if not exists UserDatas (key nvarchar not null, userId INT not null, rating float null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null, AudioStreamIndex INT, SubtitleStreamIndex INT)",
+                            "create table if not exists UserDatas (key nvarchar not null, userId INT not null, rating float null, userrating INT null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null, AudioStreamIndex INT, SubtitleStreamIndex INT)",
 
                             "drop index if exists idx_userdata",
                             "drop index if exists idx_userdata1",
@@ -78,7 +78,7 @@ namespace Emby.Server.Implementations.Data
                             {
                                 ImportUserIds(db, users);
 
-                                db.ExecuteAll("INSERT INTO UserDatas (key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex) SELECT key, InternalUserId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex from userdata where InternalUserId not null");
+                                db.ExecuteAll("INSERT INTO UserDatas (key, userId, rating, userrating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex) SELECT key, InternalUserId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex from userdata where InternalUserId not null");
                             }
                         }
                     },
@@ -182,7 +182,7 @@ namespace Emby.Server.Implementations.Data
 
         private static void SaveUserData(IDatabaseConnection db, long internalUserId, string key, UserItemData userData)
         {
-            using (var statement = db.PrepareStatement("replace into UserDatas (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex)"))
+            using (var statement = db.PrepareStatement("replace into UserDatas (key, userId, rating,userrating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex) values (@key, @userId, @rating,@userrating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex)"))
             {
                 statement.TryBind("@userId", internalUserId);
                 statement.TryBind("@key", key);
@@ -194,6 +194,15 @@ namespace Emby.Server.Implementations.Data
                 else
                 {
                     statement.TryBindNull("@rating");
+                }
+
+                if (userData.UserRating.HasValue)
+                {
+                    statement.TryBind("@userrating", userData.UserRating.Value);
+                }
+                else
+                {
+                    statement.TryBindNull("@userrating");
                 }
 
                 statement.TryBind("@played", userData.Played);
@@ -275,7 +284,7 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection(true))
             {
-                using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where key =@Key and userId=@UserId"))
+                using (var statement = connection.PrepareStatement("select key,userid,rating,userrating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where key =@Key and userId=@UserId"))
                 {
                     statement.TryBind("@UserId", userId);
                     statement.TryBind("@Key", key);
@@ -318,7 +327,7 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection())
             {
-                using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where userId=@UserId"))
+                using (var statement = connection.PrepareStatement("select key,userid,rating,userrating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where userId=@UserId"))
                 {
                     statement.TryBind("@UserId", userId);
 
@@ -344,27 +353,27 @@ namespace Emby.Server.Implementations.Data
             userData.Key = reader[0].ToString();
             // userData.UserId = reader[1].ReadGuidFromBlob();
 
-            if (reader.TryGetDouble(2, out var rating))
+            if (reader.TryGetInt32(3, out var userrating))
             {
-                userData.Rating = rating;
+                userData.UserRating = userrating;
             }
 
-            userData.Played = reader[3].ToBool();
-            userData.PlayCount = reader[4].ToInt();
-            userData.IsFavorite = reader[5].ToBool();
-            userData.PlaybackPositionTicks = reader[6].ToInt64();
+            userData.Played = reader[4].ToBool();
+            userData.PlayCount = reader[5].ToInt();
+            userData.IsFavorite = reader[6].ToBool();
+            userData.PlaybackPositionTicks = reader[7].ToInt64();
 
-            if (reader.TryReadDateTime(7, out var lastPlayedDate))
+            if (reader.TryReadDateTime(8, out var lastPlayedDate))
             {
                 userData.LastPlayedDate = lastPlayedDate;
             }
 
-            if (reader.TryGetInt32(8, out var audioStreamIndex))
+            if (reader.TryGetInt32(9, out var audioStreamIndex))
             {
                 userData.AudioStreamIndex = audioStreamIndex;
             }
 
-            if (reader.TryGetInt32(9, out var subtitleStreamIndex))
+            if (reader.TryGetInt32(10, out var subtitleStreamIndex))
             {
                 userData.SubtitleStreamIndex = subtitleStreamIndex;
             }

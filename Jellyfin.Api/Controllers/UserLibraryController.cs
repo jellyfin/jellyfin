@@ -161,7 +161,7 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Deletes a user's saved personal rating for an item.
+        /// Deletes a user's saved personal rating for an item (old rating field, will be removed in final commit).
         /// </summary>
         /// <param name="userId">User id.</param>
         /// <param name="itemId">Item id.</param>
@@ -175,7 +175,7 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Updates a user's rating for an item.
+        /// Updates a user's rating for an item (old rating field, will be removed in final commit).
         /// </summary>
         /// <param name="userId">User id.</param>
         /// <param name="itemId">Item id.</param>
@@ -187,6 +187,35 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<UserItemDataDto> UpdateUserItemRating([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId, [FromQuery] bool? likes)
         {
             return UpdateUserItemRatingInternal(userId, itemId, likes);
+        }
+
+        /// <summary>
+        /// Removes a previously set rating .
+        /// </summary>
+        /// <param name="userId">User id.</param>
+        /// <param name="itemId">Item id.</param>
+        /// <param name="userRating">Integer representing a user rating.</param>
+        /// <response code="200">Item Rating Updated.</response>
+        /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
+        [HttpPost("Users/{userId}/UserRating/{itemId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<UserItemDataDto> AddorChangeUserRating([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId, [FromQuery, Required] int userRating)
+        {
+            return UpdateUserRating(userId, itemId, userRating);
+        }
+
+        /// <summary>
+        /// Removes a previously set rating .
+        /// </summary>
+        /// <param name="userId">User id.</param>
+        /// <param name="itemId">Item id.</param>
+        /// <response code="200">Item Rating Removed.</response>
+        /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
+        [HttpDelete("Users/{userId}/UserRating/{itemId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<UserItemDataDto> RemoveUserRating([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
+        {
+            return UpdateUserRating(userId, itemId, null);
         }
 
         /// <summary>
@@ -367,7 +396,7 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Updates the user item rating.
+        /// Updates the user item rating (old rating field, will be removed in final commit).
         /// </summary>
         /// <param name="userId">The user id.</param>
         /// <param name="itemId">The item id.</param>
@@ -382,6 +411,29 @@ namespace Jellyfin.Api.Controllers
             var data = _userDataRepository.GetUserData(user, item);
 
             data.Likes = likes;
+
+            _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
+
+            return _userDataRepository.GetUserDataDto(item, user);
+        }
+
+        /// <summary>
+        /// Marks the favorite.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="itemId">The item id.</param>
+        /// <param name="userRating">Set to <c>int</c> or <c>null</c>.</param>
+        private UserItemDataDto UpdateUserRating(Guid userId, Guid itemId, int? userRating)
+        {
+            var user = _userManager.GetUserById(userId);
+
+            var item = itemId.Equals(default) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(itemId);
+
+            // Get the user data for this item
+            var data = _userDataRepository.GetUserData(user, item);
+
+            // Set favorite status
+            data.UserRating = userRating;
 
             _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
 

@@ -15,6 +15,12 @@ namespace MediaBrowser.Model.Dto
         public double? Rating { get; set; }
 
         /// <summary>
+        /// Gets or sets the rating.
+        /// </summary>
+        /// <value>The User rating.</value>
+        public double? UserRating { get; set; }
+
+        /// <summary>
         /// Gets or sets the played percentage.
         /// </summary>
         /// <value>The played percentage.</value>

@@ -223,6 +223,7 @@ namespace MediaBrowser.Model.Querying
         ExtraIds,
         LocalTrailerCount,
         IsHD,
-        SpecialFeatureCount
+        SpecialFeatureCount,
+        UserRating
     }
 }

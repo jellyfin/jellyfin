@@ -197,6 +197,7 @@ namespace Emby.Server.Implementations.Library
                 PlaybackPositionTicks = data.PlaybackPositionTicks,
                 PlayCount = data.PlayCount,
                 Rating = data.Rating,
+                UserRating = data.UserRating,
                 Played = data.Played,
                 LastPlayedDate = data.LastPlayedDate,
                 Key = data.Key

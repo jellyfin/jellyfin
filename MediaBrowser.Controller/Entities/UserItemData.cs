@@ -20,6 +20,11 @@ namespace MediaBrowser.Controller.Entities
         private double? _rating;
 
         /// <summary>
+        /// The _userrating.
+        /// </summary>
+        private int? _userrating;
+
+        /// <summary>
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
@@ -50,6 +55,28 @@ namespace MediaBrowser.Controller.Entities
                 }
 
                 _rating = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the users 0-10 rating.
+        /// </summary>
+        /// <value>The rating.</value>
+        /// <exception cref="ArgumentOutOfRangeException">Rating;A 0 to 10 rating is required for UserItemData.</exception>
+        public int? UserRating
+        {
+            get => _userrating;
+            set
+            {
+                if (value.HasValue)
+                {
+                    if (value.Value < 0 || value.Value > 10)
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(value), "A 0 to 10 rating is required for UserItemData.");
+                    }
+                }
+
+                _userrating = value;
             }
         }
 
