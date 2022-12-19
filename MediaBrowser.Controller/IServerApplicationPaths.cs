@@ -51,24 +51,6 @@ namespace MediaBrowser.Controller
         string YearPath { get; }
 
         /// <summary>
-        /// Gets the path to the General IBN directory.
-        /// </summary>
-        /// <value>The general path.</value>
-        string GeneralPath { get; }
-
-        /// <summary>
-        /// Gets the path to the Ratings IBN directory.
-        /// </summary>
-        /// <value>The ratings path.</value>
-        string RatingsPath { get; }
-
-        /// <summary>
-        /// Gets the media info images path.
-        /// </summary>
-        /// <value>The media info images path.</value>
-        string MediaInfoImagesPath { get; }
-
-        /// <summary>
         /// Gets the path to the user configuration directory.
         /// </summary>
         /// <value>The user configuration directory path.</value>
