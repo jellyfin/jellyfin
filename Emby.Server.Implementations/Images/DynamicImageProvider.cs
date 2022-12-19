@@ -81,8 +81,7 @@ namespace Emby.Server.Implementations.Images
                 }
 
                 return i;
-            }).GroupBy(x => x.Id)
-            .Select(x => x.First());
+            }).DistinctBy(x => x.Id);
 
             List<BaseItem> returnItems;
             if (isUsingCollectionStrip)

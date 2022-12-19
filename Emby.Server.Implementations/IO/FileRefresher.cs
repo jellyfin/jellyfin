@@ -133,8 +133,7 @@ namespace Emby.Server.Implementations.IO
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(GetAffectedBaseItem)
                 .Where(item => item is not null)
-                .GroupBy(x => x!.Id) // Removed null values in the previous .Where()
-                .Select(x => x.First())!;
+                .DistinctBy(x => x!.Id)!;  // Removed null values in the previous .Where()
 
             foreach (var item in itemsToRefresh)
             {

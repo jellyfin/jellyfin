@@ -770,8 +770,7 @@ namespace Jellyfin.Api.Controllers
                     Name = i.Name,
                     DefaultEnabled = IsSaverEnabledByDefault(i.Name, types, isNewLibrary)
                 })
-                .GroupBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
-                .Select(x => x.First())
+                .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
 
             result.MetadataReaders = plugins
@@ -781,8 +780,7 @@ namespace Jellyfin.Api.Controllers
                     Name = i.Name,
                     DefaultEnabled = true
                 })
-                .GroupBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
-                .Select(x => x.First())
+                .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
 
             result.SubtitleFetchers = plugins
@@ -792,8 +790,7 @@ namespace Jellyfin.Api.Controllers
                     Name = i.Name,
                     DefaultEnabled = true
                 })
-                .GroupBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
-                .Select(x => x.First())
+                .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
 
             var typeOptions = new List<LibraryTypeOptionsDto>();
@@ -814,8 +811,7 @@ namespace Jellyfin.Api.Controllers
                         Name = i.Name,
                         DefaultEnabled = IsMetadataFetcherEnabledByDefault(i.Name, type, isNewLibrary)
                     })
-                    .GroupBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
-                    .Select(x => x.First())
+                    .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
                     .ToArray(),
 
                     ImageFetchers = plugins
@@ -826,8 +822,7 @@ namespace Jellyfin.Api.Controllers
                         Name = i.Name,
                         DefaultEnabled = IsImageFetcherEnabledByDefault(i.Name, type, isNewLibrary)
                     })
-                    .GroupBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
-                    .Select(x => x.First())
+                    .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
                     .ToArray(),
 
                     SupportedImageTypes = plugins
