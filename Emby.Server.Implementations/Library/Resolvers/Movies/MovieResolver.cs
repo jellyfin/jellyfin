@@ -529,7 +529,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 }
 
                 return false;
-            }).OrderBy(i => i).ToList();
+            }).Order().ToList();
 
             // If different video types were found, don't allow this
             if (videoTypes.Distinct().Count() > 1)

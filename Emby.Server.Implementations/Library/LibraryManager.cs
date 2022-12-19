@@ -1175,7 +1175,7 @@ namespace Emby.Server.Implementations.Library
                         }
                     })
                     .Where(i => i is not null)
-                    .OrderBy(i => i)
+                    .Order()
                     .ToArray(),
 
                 CollectionType = GetCollectionType(dir)
