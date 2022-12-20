@@ -50,6 +50,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="isUnaired">Optional filter by items that are unaired episodes or not.</param>
         /// <param name="minCommunityRating">Optional filter by minimum community rating.</param>
         /// <param name="minCriticRating">Optional filter by minimum critic rating.</param>
+        /// <param name="minUserRating">Optional filter by items that have a minimum user rating.</param>
         /// <param name="minPremiereDate">Optional. The minimum premiere date. Format = ISO.</param>
         /// <param name="minDateLastSaved">Optional. The minimum last saved date. Format = ISO.</param>
         /// <param name="minDateLastSavedForUser">Optional. The minimum last saved date for the current user. Format = ISO.</param>
@@ -138,6 +139,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? isUnaired,
             [FromQuery] double? minCommunityRating,
             [FromQuery] double? minCriticRating,
+            [FromQuery] int? minUserRating,
             [FromQuery] DateTime? minPremiereDate,
             [FromQuery] DateTime? minDateLastSaved,
             [FromQuery] DateTime? minDateLastSavedForUser,
@@ -227,6 +229,7 @@ namespace Jellyfin.Api.Controllers
                     isUnaired,
                     minCommunityRating,
                     minCriticRating,
+                    minUserRating,
                     minPremiereDate,
                     minDateLastSaved,
                     minDateLastSavedForUser,

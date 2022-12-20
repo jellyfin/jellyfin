@@ -2168,6 +2168,7 @@ namespace Emby.Server.Implementations.Data
                     || sortingFields.Contains(ItemSortBy.DatePlayed)
                     || sortingFields.Contains(ItemSortBy.SeriesDatePlayed)
                     || query.IsFavoriteOrLiked.HasValue
+                    || query.MinUserRating.HasValue
                     || query.IsFavorite.HasValue
                     || query.IsResumable.HasValue
                     || query.IsPlayed.HasValue
@@ -3105,7 +3106,7 @@ namespace Emby.Server.Implementations.Data
 
             if (string.Equals(name, ItemSortBy.UserRating, StringComparison.OrdinalIgnoreCase))
             {
-                return "userrating";
+                return ItemSortBy.UserRating;
             }
 
             if (string.Equals(name, ItemSortBy.VideoBitRate, StringComparison.OrdinalIgnoreCase))
@@ -3779,6 +3780,12 @@ namespace Emby.Server.Implementations.Data
                 }
 
                 statement?.TryBind("@IsFavorite", query.IsFavorite.Value);
+            }
+
+            if (query.MinUserRating.HasValue)
+            {
+                whereClauses.Add("userrating>=@MinUserRating");
+                statement?.TryBind("@MinUserRating", query.MinUserRating.Value);
             }
 
             if (EnableJoinUserData(query))
