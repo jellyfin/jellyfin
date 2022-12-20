@@ -73,6 +73,7 @@ namespace Emby.Server.Implementations.Data
                             AddColumn(db, "userdata", "InternalUserId", "int", existingColumnNames);
                             AddColumn(db, "userdata", "AudioStreamIndex", "int", existingColumnNames);
                             AddColumn(db, "userdata", "SubtitleStreamIndex", "int", existingColumnNames);
+                            AddColumn(db, "userdata", "userrating", "int", existingColumnNames);
 
                             if (!userDatasTableExists)
                             {
