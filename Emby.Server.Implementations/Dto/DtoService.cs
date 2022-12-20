@@ -574,8 +574,7 @@ namespace Emby.Server.Implementations.Dto
                 .Where(i => user is null ?
                     true :
                     i.IsVisible(user))
-                .GroupBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
-                .Select(x => x.First())
+                .DistinctBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
             for (var i = 0; i < people.Count; i++)

@@ -282,19 +282,16 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 // Remove dupes in case some were saved multiple times
                 var foldersAddedTo = _foldersAddedTo
-                                        .GroupBy(x => x.Id)
-                                        .Select(x => x.First())
+                                        .DistinctBy(x => x.Id)
                                         .ToList();
 
                 var foldersRemovedFrom = _foldersRemovedFrom
-                                            .GroupBy(x => x.Id)
-                                            .Select(x => x.First())
+                                            .DistinctBy(x => x.Id)
                                             .ToList();
 
                 var itemsUpdated = _itemsUpdated
                                     .Where(i => !_itemsAdded.Contains(i))
-                                    .GroupBy(x => x.Id)
-                                    .Select(x => x.First())
+                                    .DistinctBy(x => x.Id)
                                     .ToList();
 
                 SendChangeNotifications(_itemsAdded.ToList(), itemsUpdated, _itemsRemoved.ToList(), foldersAddedTo, foldersRemovedFrom, CancellationToken.None).GetAwaiter().GetResult();

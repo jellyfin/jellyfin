@@ -58,8 +58,7 @@ namespace Emby.Server.Implementations.Images
                     return null;
                 })
                 .Where(i => i is not null)
-                .GroupBy(x => x.Id)
-                .Select(x => x.First())
+                .DistinctBy(x => x.Id)
                 .ToList();
         }
     }

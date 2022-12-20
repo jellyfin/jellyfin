@@ -465,7 +465,7 @@ namespace MediaBrowser.Providers.Manager
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToArray();
 
-                if (currentList.Length != item.Genres.Length || !currentList.OrderBy(i => i).SequenceEqual(item.Genres.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
+                if (currentList.Length != item.Genres.Length || !currentList.Order().SequenceEqual(item.Genres.Order(), StringComparer.OrdinalIgnoreCase))
                 {
                     updateType |= ItemUpdateType.MetadataEdit;
                 }
@@ -486,7 +486,7 @@ namespace MediaBrowser.Providers.Manager
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToArray();
 
-                if (currentList.Length != item.Studios.Length || !currentList.OrderBy(i => i).SequenceEqual(item.Studios.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
+                if (currentList.Length != item.Studios.Length || !currentList.Order().SequenceEqual(item.Studios.Order(), StringComparer.OrdinalIgnoreCase))
                 {
                     updateType |= ItemUpdateType.MetadataEdit;
                 }

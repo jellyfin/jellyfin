@@ -163,17 +163,15 @@ namespace Emby.Server.Implementations.Library.Resolvers
                     try
                     {
                         // use disc-utils, both DVDs and BDs use UDF filesystem
-                        using (var videoFileStream = File.Open(video.Path, FileMode.Open, FileAccess.Read))
-                        using (UdfReader udfReader = new UdfReader(videoFileStream))
+                        using var videoFileStream = File.Open(video.Path, FileMode.Open, FileAccess.Read, FileShare.Read);
+                        using UdfReader udfReader = new UdfReader(videoFileStream);
+                        if (udfReader.DirectoryExists("VIDEO_TS"))
                         {
-                            if (udfReader.DirectoryExists("VIDEO_TS"))
-                            {
-                                video.IsoType = IsoType.Dvd;
-                            }
-                            else if (udfReader.DirectoryExists("BDMV"))
-                            {
-                                video.IsoType = IsoType.BluRay;
-                            }
+                            video.IsoType = IsoType.Dvd;
+                        }
+                        else if (udfReader.DirectoryExists("BDMV"))
+                        {
+                            video.IsoType = IsoType.BluRay;
                         }
                     }
                     catch (Exception ex)

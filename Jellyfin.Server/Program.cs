@@ -94,8 +94,7 @@ namespace Jellyfin.Server
 
         private static async Task StartApp(StartupOptions options)
         {
-            var stopWatch = new Stopwatch();
-            stopWatch.Start();
+            var startTimestamp = Stopwatch.GetTimestamp();
 
             // Log all uncaught exceptions to std error
             static void UnhandledExceptionToConsole(object sender, UnhandledExceptionEventArgs e) =>
@@ -217,9 +216,7 @@ namespace Jellyfin.Server
 
                 await appHost.RunStartupTasksAsync(_tokenSource.Token).ConfigureAwait(false);
 
-                stopWatch.Stop();
-
-                _logger.LogInformation("Startup complete {Time:g}", stopWatch.Elapsed);
+                _logger.LogInformation("Startup complete {Time:g}", Stopwatch.GetElapsedTime(startTimestamp));
 
                 // Block main thread until shutdown
                 await Task.Delay(-1, _tokenSource.Token).ConfigureAwait(false);

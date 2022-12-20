@@ -149,11 +149,11 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             var url = BaseUrl + "/artist-mb.php?i=" + musicBrainzId;
 
-            var path = GetArtistInfoPath(_config.ApplicationPaths, musicBrainzId);
-
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
+            var path = GetArtistInfoPath(_config.ApplicationPaths, musicBrainzId);
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             var fileStreamOptions = AsyncFile.WriteOptions;
