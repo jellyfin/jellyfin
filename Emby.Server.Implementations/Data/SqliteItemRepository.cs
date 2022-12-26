@@ -2401,13 +2401,17 @@ namespace Emby.Server.Implementations.Data
                 var builder = new StringBuilder();
                 builder.Append('(');
 
-                if (string.IsNullOrEmpty(item.OfficialRating))
+                if (item.InheritedParentalRatingValue == 0)
                 {
-                    builder.Append("(OfficialRating is null * 10)");
+                    builder.Append("((InheritedParentalRatingValue=0) * 10)");
                 }
                 else
                 {
-                    builder.Append("(OfficialRating=@ItemOfficialRating * 10)");
+                    builder.Append(
+                        @"(SELECT CASE WHEN InheritedParentalRatingValue=0
+                                THEN 0
+                                ELSE 10.0 / (1.0 + ABS(InheritedParentalRatingValue - @InheritedParentalRatingValue))
+                                END)");
                 }
 
                 if (item.ProductionYear.HasValue)
@@ -2520,6 +2524,11 @@ namespace Emby.Server.Implementations.Data
             if (commandText.Contains("@SimilarItemId", StringComparison.OrdinalIgnoreCase))
             {
                 statement.TryBind("@SimilarItemId", item.Id);
+            }
+
+            if (commandText.Contains("@InheritedParentalRatingValue", StringComparison.OrdinalIgnoreCase))
+            {
+                statement.TryBind("@InheritedParentalRatingValue", item.InheritedParentalRatingValue);
             }
         }
 
