@@ -108,5 +108,20 @@
     "UserPasswordChangedWithName": "მომხმარებლისთვის {0} პაროლი შეცვლილია",
     "UserPolicyUpdatedWithName": "{0}-ის მომხმარებლის პოლიტიკა განახლდა",
     "UserStoppedPlayingItemWithValues": "{0}-მა დაამთავრა {1}-ის დაკვრა {2}-ზე",
-    "TaskRefreshChapterImagesDescription": "თავების მქონე ვიდეოებისთვის მინიატურების შექმნა."
+    "TaskRefreshChapterImagesDescription": "თავების მქონე ვიდეოებისთვის მინიატურების შექმნა.",
+    "TaskKeyframeExtractorDescription": "უფრო ზუსტი HLS დასაკრავი სიებისითვის ვიდეოდან საკვანძო გადრების ამოღება. შეიძლება საკმაო დრო დასჭირდეს.",
+    "NewVersionIsAvailable": "გადმოსაწერად ხელმისაწვდომია Jellyfin -ის ახალი ვერსია.",
+    "CameraImageUploadedFrom": "ახალი კამერის გამოსახულება ატვირთულია {0}-დან",
+    "StartupEmbyServerIsLoading": "Jellyfin სერვერი იტვირთება. მოგვიანებით სცადეთ.",
+    "SubtitleDownloadFailureFromForItem": "{0}-დან {1}-სთვის სუბტიტრების გადმოწერის შეცდომა",
+    "ValueHasBeenAddedToLibrary": "{0} დაემატა თქვენს მედიის ბიბლიოთეკას",
+    "TaskCleanActivityLogDescription": "მითითებულ ასაკზე ძველი ჟურნალის ჩანაწერების წაშლა.",
+    "TaskCleanCacheDescription": "სისტემისთვის არასაჭირო ქეშის ფაილების წაშლა.",
+    "TaskRefreshLibraryDescription": "თქვენი მედია ბიბლიოთეკაში ახალი ფაილების ძებნა და მეტამონაცემების განახლება.",
+    "TaskCleanLogsDescription": "{0} დღეზე ძველი ჟურნალის ფაილების წაშლა.",
+    "TaskRefreshPeopleDescription": "თქვენს მედიის ბიბლიოთეკაში მსახიობების და რეჟისორების მეტამონაცემების განახლება.",
+    "TaskUpdatePluginsDescription": "ავტომატურად განახლებადად მონიშნული დამატებების განახლებების გადმოწერა და დაყენება.",
+    "TaskCleanTranscodeDescription": "ერთ დღეზე უფრო ძველი ტრანსკოდირების ფაილების წაშლა.",
+    "TaskDownloadMissingSubtitlesDescription": "მეტამონაცემებზე დაყრდნობით ინტერნეტში ნაკლული სუბტიტრების ძებნა.",
+    "TaskOptimizeDatabaseDescription": "ბაზს შეკუშვა და ადგილის გათავისუფლება. ამ ამოცანის ბიბლიოთეკის სკანირების ან ნებისმიერი ცვლილების, რომელიც ბაზაში რამეს აკეთებს, გაშვებას შეუძლია ბაზის წარმადობა გაზარდოს."
 }
