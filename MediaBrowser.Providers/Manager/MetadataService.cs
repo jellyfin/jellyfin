@@ -444,8 +444,8 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            if ((originalPremiereDate ?? DateTime.MinValue) != (item.PremiereDate ?? DateTime.MinValue) ||
-                (originalProductionYear ?? -1) != (item.ProductionYear ?? -1))
+            if ((originalPremiereDate ?? DateTime.MinValue) != (item.PremiereDate ?? DateTime.MinValue)
+                || (originalProductionYear ?? -1) != (item.ProductionYear ?? -1))
             {
                 updateType |= ItemUpdateType.MetadataEdit;
             }

@@ -23,7 +23,7 @@ namespace Jellyfin.Extensions.Tests
         {
             var copy = strings.Reverse().ToArray();
             Array.Sort(copy, new AlphanumericComparator());
-            Assert.True(strings.SequenceEqual(copy));
+            Assert.Equal(strings, copy);
         }
     }
 }

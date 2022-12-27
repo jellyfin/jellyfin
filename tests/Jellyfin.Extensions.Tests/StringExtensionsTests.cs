@@ -9,6 +9,7 @@ namespace Jellyfin.Extensions.Tests
         [InlineData("", "")] // Identity edge-case (no diactritics)
         [InlineData("Indiana Jones", "Indiana Jones")] // Identity (no diactritics)
         [InlineData("a\ud800b", "ab")] // Invalid UTF-16 char stripping
+        [InlineData("åäö", "aao")] // Issue #7484
         [InlineData("Jön", "Jon")] // Issue #7484
         [InlineData("Jönssonligan", "Jonssonligan")] // Issue #7484
         [InlineData("Kieślowski", "Kieslowski")] // Issue #7450
@@ -25,6 +26,7 @@ namespace Jellyfin.Extensions.Tests
         [InlineData("", false)] // Identity edge-case (no diactritics)
         [InlineData("Indiana Jones", false)] // Identity (no diactritics)
         [InlineData("a\ud800b", true)] // Invalid UTF-16 char stripping
+        [InlineData("åäö", true)] // Issue #7484
         [InlineData("Jön", true)] // Issue #7484
         [InlineData("Jönssonligan", true)] // Issue #7484
         [InlineData("Kieślowski", true)] // Issue #7450
