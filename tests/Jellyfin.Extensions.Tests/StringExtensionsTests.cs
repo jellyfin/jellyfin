@@ -16,6 +16,8 @@ namespace Jellyfin.Extensions.Tests
         [InlineData("Cidadão Kane", "Cidadao Kane")] // Issue #7560
         [InlineData("운명처럼 널 사랑해", "운명처럼 널 사랑해")] // Issue #6393 (Korean language support)
         [InlineData("애타는 로맨스", "애타는 로맨스")] // Issue #6393
+        [InlineData("Le cœur a ses raisons", "Le coeur a ses raisons")] // Issue #8893
+        [InlineData("Béla Tarr", "Bela Tarr")] // Issue #8893
         public void RemoveDiacritics_ValidInput_Corrects(string input, string expectedResult)
         {
             string result = input.RemoveDiacritics();
@@ -33,6 +35,8 @@ namespace Jellyfin.Extensions.Tests
         [InlineData("Cidadão Kane", true)] // Issue #7560
         [InlineData("운명처럼 널 사랑해", false)] // Issue #6393 (Korean language support)
         [InlineData("애타는 로맨스", false)] // Issue #6393
+        [InlineData("Le cœur a ses raisons", true)] // Issue #8893
+        [InlineData("Béla Tarr", true)] // Issue #8893
         public void HasDiacritics_ValidInput_Corrects(string input, bool expectedResult)
         {
             bool result = input.HasDiacritics();
