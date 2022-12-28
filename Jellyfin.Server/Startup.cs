@@ -8,6 +8,7 @@ using System.Text;
 using Jellyfin.MediaEncoding.Hls.Extensions;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Server.Extensions;
+using Jellyfin.Server.HealthChecks;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Extensions;
 using Jellyfin.Server.Infrastructure;
@@ -122,7 +123,7 @@ namespace Jellyfin.Server
                 .ConfigurePrimaryHttpMessageHandler(defaultHttpClientHandlerDelegate);
 
             services.AddHealthChecks()
-                .AddDbContextCheck<JellyfinDb>();
+                .AddCheck<DbContextFactoryHealthCheck<JellyfinDb>>(nameof(JellyfinDb));
 
             services.AddHlsPlaylistGenerator();
         }
