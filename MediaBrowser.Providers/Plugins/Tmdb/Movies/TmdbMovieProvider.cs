@@ -139,6 +139,67 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             return remoteSearchResults;
         }
 
+        private string ComparableName(string name)
+        {
+            return name.Replace(" ", string.Empty, StringComparison.InvariantCulture)
+                .Replace("²", "2", StringComparison.InvariantCulture)
+                .Replace("³", "3", StringComparison.InvariantCulture)
+                .ToLower();
+        }
+
+        private List<Func<string, bool>> MatchRules(string comparableName)
+        {
+            List<Func<string, bool>> matchRules = new List<Func<string, bool>>();
+            // exact match
+            matchRules.Add((resultName) => resultName == comparableName);
+            bool traillingOne = comparableName.EndsWith("1", StringComparison.OrdinalIgnoreCase);
+            string trimmedComparableName = comparableName.Trim('1');
+            if (traillingOne)
+            {
+                matchRules.Add((resultName) => resultName == trimmedComparableName);
+            }
+
+            // starts with
+            matchRules.Add((resultName) => resultName.StartsWith(comparableName, StringComparison.OrdinalIgnoreCase));
+            if (traillingOne)
+            {
+                matchRules.Add((resultName) => resultName.StartsWith(trimmedComparableName, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // contains
+            matchRules.Add((resultName) => resultName.Contains(comparableName, StringComparison.OrdinalIgnoreCase));
+            if (traillingOne)
+            {
+                matchRules.Add((resultName) => resultName.Contains(trimmedComparableName, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return matchRules;
+        }
+
+        private SearchMovie FindBest(string name, IReadOnlyList<SearchMovie> searchResults)
+        {
+            if (searchResults.Count == 1)
+            {
+                return searchResults[0];
+            }
+
+            List<Func<string, bool>> matchRules = MatchRules(ComparableName(name));
+
+            foreach (Func<string, bool> matchRule in matchRules)
+            {
+                foreach (SearchMovie searchResult in searchResults)
+                {
+                    string resultName = searchResult.Title ?? searchResult.OriginalTitle;
+                    if (matchRule(ComparableName(resultName)))
+                    {
+                        return searchResult;
+                    }
+                }
+            }
+
+            return searchResults[0];  // fallback on first result
+        }
+
         /// <inheritdoc />
         public async Task<MetadataResult<Movie>> GetMetadata(MovieInfo info, CancellationToken cancellationToken)
         {
@@ -151,11 +212,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 // Caller provides the filename with extension stripped and NOT the parsed filename
                 var parsedName = _libraryManager.ParseName(info.Name);
                 var cleanedName = TmdbUtils.CleanName(parsedName.Name);
-                var searchResults = await _tmdbClientManager.SearchMovieAsync(cleanedName, info.Year ?? parsedName.Year ?? 0, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+
+                IReadOnlyList<SearchMovie> searchResults = await _tmdbClientManager.SearchMovieAsync(cleanedName, info.Year ?? parsedName.Year ?? 0, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                var len = searchResults.Count;
 
                 if (searchResults.Count > 0)
                 {
-                    tmdbId = searchResults[0].Id.ToString(CultureInfo.InvariantCulture);
+                    tmdbId = FindBest(cleanedName, searchResults).Id.ToString(CultureInfo.InvariantCulture);
                 }
             }
 
