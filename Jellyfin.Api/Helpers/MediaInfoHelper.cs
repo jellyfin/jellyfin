@@ -181,7 +181,7 @@ namespace Jellyfin.Api.Helpers
         {
             var streamBuilder = new StreamBuilder(_mediaEncoder, _logger);
 
-            var options = new VideoOptions
+            var options = new MediaOptions
             {
                 MediaSources = new[] { mediaSource },
                 Context = EncodingContext.Streaming,
@@ -244,8 +244,8 @@ namespace Jellyfin.Api.Helpers
 
             // Beginning of Playback Determination
             var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase)
-                ? streamBuilder.BuildAudioItem(options)
-                : streamBuilder.BuildVideoItem(options);
+                ? streamBuilder.GetOptimalAudioStream(options)
+                : streamBuilder.GetOptimalVideoStream(options);
 
             if (streamInfo is not null)
             {

@@ -1,5 +1,4 @@
 #nullable disable
-#pragma warning disable CS1591
 
 using System;
 using MediaBrowser.Model.Dto;
@@ -7,11 +6,14 @@ using MediaBrowser.Model.Dto;
 namespace MediaBrowser.Model.Dlna
 {
     /// <summary>
-    /// Class AudioOptions.
+    /// Class MediaOptions.
     /// </summary>
-    public class AudioOptions
+    public class MediaOptions
     {
-        public AudioOptions()
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MediaOptions"/> class.
+        /// </summary>
+        public MediaOptions()
         {
             Context = EncodingContext.Streaming;
 
@@ -19,20 +21,49 @@ namespace MediaBrowser.Model.Dlna
             EnableDirectStream = true;
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether direct playback is allowed.
+        /// </summary>
         public bool EnableDirectPlay { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether direct streaming is allowed.
+        /// </summary>
         public bool EnableDirectStream { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether direct playback is forced.
+        /// </summary>
         public bool ForceDirectPlay { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether direct streaming is forced.
+        /// </summary>
         public bool ForceDirectStream { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether audio stream copy is allowed.
+        /// </summary>
         public bool AllowAudioStreamCopy { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether video stream copy is allowed.
+        /// </summary>
+        public bool AllowVideoStreamCopy { get; set; }
+
+        /// <summary>
+        /// Gets or sets the item id.
+        /// </summary>
         public Guid ItemId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the media sources.
+        /// </summary>
         public MediaSourceInfo[] MediaSources { get; set; }
 
+        /// <summary>
+        /// Gets or sets the device profile.
+        /// </summary>
         public DeviceProfile Profile { get; set; }
 
         /// <summary>
@@ -40,6 +71,9 @@ namespace MediaBrowser.Model.Dlna
         /// </summary>
         public string MediaSourceId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the device id.
+        /// </summary>
         public string DeviceId { get; set; }
 
         /// <summary>
@@ -49,7 +83,7 @@ namespace MediaBrowser.Model.Dlna
         public int? MaxAudioChannels { get; set; }
 
         /// <summary>
-        /// Gets or sets the application's configured quality setting.
+        /// Gets or sets the application's configured maximum bitrate.
         /// </summary>
         public int? MaxBitrate { get; set; }
 
@@ -64,6 +98,16 @@ namespace MediaBrowser.Model.Dlna
         /// </summary>
         /// <value>The audio transcoding bitrate.</value>
         public int? AudioTranscodingBitrate { get; set; }
+
+        /// <summary>
+        /// Gets or sets an override for the audio stream index.
+        /// </summary>
+        public int? AudioStreamIndex { get; set; }
+
+        /// <summary>
+        /// Gets or sets an override for the subtitle stream index.
+        /// </summary>
+        public int? SubtitleStreamIndex { get; set; }
 
         /// <summary>
         /// Gets the maximum bitrate.
