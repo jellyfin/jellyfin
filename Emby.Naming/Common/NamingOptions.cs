@@ -169,6 +169,7 @@ namespace Emby.Naming.Common
                 ".srt",
                 ".ssa",
                 ".sub",
+                ".sup",
                 ".vtt",
             };
 

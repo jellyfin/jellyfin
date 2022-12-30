@@ -938,8 +938,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && state.SubtitleStream.IsExternal)
             {
                 var subtitlePath = state.SubtitleStream.Path;
+                var subtitleExtension = Path.GetExtension(subtitlePath);
 
-                if (string.Equals(Path.GetExtension(subtitlePath), ".sub", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(subtitleExtension, ".sub", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(subtitleExtension, ".sup", StringComparison.OrdinalIgnoreCase))
                 {
                     var idxFile = Path.ChangeExtension(subtitlePath, ".idx");
                     if (File.Exists(idxFile))
