@@ -41,7 +41,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b # v3
         with:
-          ref: ${{ github.base_ref }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          fetch-depth: 0
+      - name: Checkout common ancestor
+        run: |
+          git remote add upstream https://github.com/${{ github.event.pull_request.base.repo.full_name }}
+          git -c protocol.version=2 fetch --prune --progress --no-recurse-submodules upstream +refs/heads/*:refs/remotes/upstream/* +refs/tags/*:refs/tags/*
+          ANCESTOR_REF=$(git merge-base upstream/${{ github.base_ref }} origin/${{ github.head_ref }})
+          git checkout --progress --force $ANCESTOR_REF
       - name: Setup .NET
         uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a # tag=v3
         with:
