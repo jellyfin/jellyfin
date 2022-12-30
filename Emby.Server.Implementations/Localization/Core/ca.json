@@ -40,7 +40,7 @@
     "Movies": "Pel·lícules",
     "Music": "Música",
     "MusicVideos": "Vídeos Musicals",
-    "NameInstallFailed": "Instal·lació de {0} fallida",
+    "NameInstallFailed": "{0} instal·lació fallida",
     "NameSeasonNumber": "Temporada {0}",
     "NameSeasonUnknown": "Temporada Desconeguda",
     "NewVersionIsAvailable": "Una nova versió del Servidor Jellyfin està disponible per descarregar.",
