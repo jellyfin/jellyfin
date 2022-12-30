@@ -56,6 +56,7 @@ namespace MediaBrowser.Controller.Entities
             ".srt",
             ".vtt",
             ".sub",
+            ".sup",
             ".idx",
             ".txt",
             ".edl",

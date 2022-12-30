@@ -95,6 +95,12 @@ namespace Emby.Dlna.Profiles
 
                 new SubtitleProfile
                 {
+                    Format = "sup",
+                    Method = SubtitleDeliveryMethod.External
+                },
+
+                new SubtitleProfile
+                {
                     Format = "srt",
                     Method = SubtitleDeliveryMethod.Embed
                 },
@@ -138,6 +144,12 @@ namespace Emby.Dlna.Profiles
                 new SubtitleProfile
                 {
                     Format = "sub",
+                    Method = SubtitleDeliveryMethod.Embed
+                },
+
+                new SubtitleProfile
+                {
+                    Format = "sup",
                     Method = SubtitleDeliveryMethod.Embed
                 },
 
