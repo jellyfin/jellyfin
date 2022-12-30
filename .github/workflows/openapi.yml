@@ -41,7 +41,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b # v3
         with:
-          ref: ${{ github.base_ref }}
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.base.sha }}
+      - name: Checkout common ancestor
+        run: git checkout $(git merge-base --fork-point "${{ github.base_ref }}")
       - name: Setup .NET
         uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a # tag=v3
         with:
