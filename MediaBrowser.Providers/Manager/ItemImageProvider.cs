@@ -313,7 +313,8 @@ namespace MediaBrowser.Providers.Manager
                 }
 
                 minWidth = savedOptions.GetMinWidth(ImageType.Backdrop);
-                await DownloadMultiImages(item, ImageType.Backdrop, refreshOptions, backdropLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
+                var listWithNoLangFirst = list.Where(i => string.IsNullOrEmpty(i.Language)).Concat(list.Where(i => !string.IsNullOrEmpty(i.Language)));
+                await DownloadMultiImages(item, ImageType.Backdrop, refreshOptions, backdropLimit, provider, result, listWithNoLangFirst, minWidth, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
