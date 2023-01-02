@@ -216,8 +216,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<IEnumerable<WakeOnLanInfo>> GetWakeOnLanInfo()
         {
             var result = _network.GetMacAddresses()
-                .Select(i => new WakeOnLanInfo(i))
-                .ToList();
+                .Select(i => new WakeOnLanInfo(i));
             return Ok(result);
         }
     }

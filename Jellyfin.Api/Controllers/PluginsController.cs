@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -143,7 +144,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult UninstallPlugin([FromRoute, Required] Guid pluginId)
         {
             // If no version is given, return the current instance.
-            var plugins = _pluginManager.Plugins.Where(p => p.Id.Equals(pluginId));
+            var plugins = _pluginManager.Plugins.Where(p => p.Id.Equals(pluginId)).ToList();
 
             // Select the un-instanced one first.
             var plugin = plugins.FirstOrDefault(p => p.Instance is null) ?? plugins.OrderBy(p => p.Manifest.Status).FirstOrDefault();

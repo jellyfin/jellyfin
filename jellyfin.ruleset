@@ -138,6 +138,10 @@
     <Rule Id="CA2253" Action="Info" />
     <!-- disable warning CA5394: Do not use insecure randomness -->
     <Rule Id="CA5394" Action="Info" />
+    <!-- error on CA3003: Review code for file path injection vulnerabilities -->
+    <Rule Id="CA3003" Action="Info" />
+    <!-- error on CA3006: Review code for process command injection vulnerabilities -->
+    <Rule Id="CA3006" Action="Info" />
 
     <!-- disable warning CA1054: Change the type of parameter url from string to System.Uri -->
     <Rule Id="CA1054" Action="None" />

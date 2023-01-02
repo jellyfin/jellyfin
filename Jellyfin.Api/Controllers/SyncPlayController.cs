@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
@@ -107,7 +108,7 @@ namespace Jellyfin.Api.Controllers
         {
             var currentSession = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
             var syncPlayRequest = new ListGroupsRequest();
-            return Ok(_syncPlayManager.ListGroups(currentSession, syncPlayRequest));
+            return Ok(_syncPlayManager.ListGroups(currentSession, syncPlayRequest).AsEnumerable());
         }
 
         /// <summary>

@@ -145,7 +145,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<RepositoryInfo>> GetRepositories()
         {
-            return _serverConfigurationManager.Configuration.PluginRepositories;
+            return Ok(_serverConfigurationManager.Configuration.PluginRepositories.AsEnumerable());
         }
 
         /// <summary>
@@ -157,7 +157,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Repositories")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult SetRepositories([FromBody, Required] List<RepositoryInfo> repositoryInfos)
+        public ActionResult SetRepositories([FromBody, Required] RepositoryInfo[] repositoryInfos)
         {
             _serverConfigurationManager.Configuration.PluginRepositories = repositoryInfos;
             _serverConfigurationManager.SaveConfiguration();

@@ -106,24 +106,26 @@ namespace Jellyfin.Api.Controllers
             }
 
             var user = _userManager.GetUserById(userId);
-            await using var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
-
-            // Handle image/png; charset=utf-8
-            var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
-            var userDataPath = Path.Combine(_serverConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, user.Username);
-            if (user.ProfileImage is not null)
+            var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
+            await using (memoryStream.ConfigureAwait(false))
             {
-                await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
+                // Handle image/png; charset=utf-8
+                var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
+                var userDataPath = Path.Combine(_serverConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, user.Username);
+                if (user.ProfileImage is not null)
+                {
+                    await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
+                }
+
+                user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType ?? string.Empty)));
+
+                await _providerManager
+                    .SaveImage(memoryStream, mimeType, user.ProfileImage.Path)
+                    .ConfigureAwait(false);
+                await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
+
+                return NoContent();
             }
-
-            user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType ?? string.Empty)));
-
-            await _providerManager
-                .SaveImage(memoryStream, mimeType, user.ProfileImage.Path)
-                .ConfigureAwait(false);
-            await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
-
-            return NoContent();
         }
 
         /// <summary>
@@ -153,24 +155,26 @@ namespace Jellyfin.Api.Controllers
             }
 
             var user = _userManager.GetUserById(userId);
-            await using var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
-
-            // Handle image/png; charset=utf-8
-            var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
-            var userDataPath = Path.Combine(_serverConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, user.Username);
-            if (user.ProfileImage is not null)
+            var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
+            await using (memoryStream.ConfigureAwait(false))
             {
-                await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
+                // Handle image/png; charset=utf-8
+                var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
+                var userDataPath = Path.Combine(_serverConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, user.Username);
+                if (user.ProfileImage is not null)
+                {
+                    await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
+                }
+
+                user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType ?? string.Empty)));
+
+                await _providerManager
+                    .SaveImage(memoryStream, mimeType, user.ProfileImage.Path)
+                    .ConfigureAwait(false);
+                await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
+
+                return NoContent();
             }
-
-            user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType ?? string.Empty)));
-
-            await _providerManager
-                .SaveImage(memoryStream, mimeType, user.ProfileImage.Path)
-                .ConfigureAwait(false);
-            await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
-
-            return NoContent();
         }
 
         /// <summary>
@@ -341,14 +345,16 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            await using var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
+            var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
+            await using (memoryStream.ConfigureAwait(false))
+            {
+                // Handle image/png; charset=utf-8
+                var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
+                await _providerManager.SaveImage(item, memoryStream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
+                await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
 
-            // Handle image/png; charset=utf-8
-            var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
-            await _providerManager.SaveImage(item, memoryStream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
-            await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
-
-            return NoContent();
+                return NoContent();
+            }
         }
 
         /// <summary>
@@ -377,14 +383,16 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            await using var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
+            var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
+            await using (memoryStream.ConfigureAwait(false))
+            {
+                // Handle image/png; charset=utf-8
+                var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
+                await _providerManager.SaveImage(item, memoryStream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
+                await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
 
-            // Handle image/png; charset=utf-8
-            var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
-            await _providerManager.SaveImage(item, memoryStream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
-            await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
-
-            return NoContent();
+                return NoContent();
+            }
         }
 
         /// <summary>
@@ -1788,32 +1796,35 @@ namespace Jellyfin.Api.Controllers
         [AcceptsImageFile]
         public async Task<ActionResult> UploadCustomSplashscreen()
         {
-            await using var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
-
-            var mimeType = MediaTypeHeaderValue.Parse(Request.ContentType).MediaType;
-
-            if (!mimeType.HasValue)
+            var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
+            await using (memoryStream.ConfigureAwait(false))
             {
-                return BadRequest("Error reading mimetype from uploaded image");
+                var mimeType = MediaTypeHeaderValue.Parse(Request.ContentType).MediaType;
+
+                if (!mimeType.HasValue)
+                {
+                    return BadRequest("Error reading mimetype from uploaded image");
+                }
+
+                var extension = MimeTypes.ToExtension(mimeType.Value);
+                if (string.IsNullOrEmpty(extension))
+                {
+                    return BadRequest("Error converting mimetype to an image extension");
+                }
+
+                var filePath = Path.Combine(_appPaths.DataPath, "splashscreen-upload" + extension);
+                var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
+                brandingOptions.SplashscreenLocation = filePath;
+                _serverConfigurationManager.SaveConfiguration("branding", brandingOptions);
+
+                var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+                await using (fs.ConfigureAwait(false))
+                {
+                    await memoryStream.CopyToAsync(fs, CancellationToken.None).ConfigureAwait(false);
+                }
+
+                return NoContent();
             }
-
-            var extension = MimeTypes.ToExtension(mimeType.Value);
-            if (string.IsNullOrEmpty(extension))
-            {
-                return BadRequest("Error converting mimetype to an image extension");
-            }
-
-            var filePath = Path.Combine(_appPaths.DataPath, "splashscreen-upload" + extension);
-            var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
-            brandingOptions.SplashscreenLocation = filePath;
-            _serverConfigurationManager.SaveConfiguration("branding", brandingOptions);
-
-            await using (var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous))
-            {
-                await memoryStream.CopyToAsync(fs, CancellationToken.None).ConfigureAwait(false);
-            }
-
-            return NoContent();
         }
 
         /// <summary>
