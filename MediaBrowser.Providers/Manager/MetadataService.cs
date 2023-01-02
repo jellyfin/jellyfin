@@ -685,7 +685,8 @@ namespace MediaBrowser.Providers.Manager
                         {
                             try
                             {
-                                if (!options.IsReplacingImage(remoteImage.Type))
+                                if (item.ImageInfos.Any(x => x.Type == remoteImage.Type)
+                                    && !options.IsReplacingImage(remoteImage.Type))
                                 {
                                     continue;
                                 }
