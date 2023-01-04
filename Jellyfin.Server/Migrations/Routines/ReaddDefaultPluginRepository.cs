@@ -39,9 +39,9 @@ namespace Jellyfin.Server.Migrations.Routines
         public void Perform()
         {
             // Only add if repository list is empty
-            if (_serverConfigurationManager.Configuration.PluginRepositories.Count == 0)
+            if (_serverConfigurationManager.Configuration.PluginRepositories.Length == 0)
             {
-                _serverConfigurationManager.Configuration.PluginRepositories.Add(_defaultRepositoryInfo);
+                _serverConfigurationManager.Configuration.PluginRepositories = new[] { _defaultRepositoryInfo };
                 _serverConfigurationManager.SaveConfiguration();
             }
         }

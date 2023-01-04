@@ -40,7 +40,7 @@ namespace Jellyfin.Server.Filters
                     response.Value.Content.Clear();
 
                     // Add all content-types as file.
-                    foreach (var contentType in producesFileAttribute.GetContentTypes())
+                    foreach (var contentType in producesFileAttribute.ContentTypes)
                     {
                         response.Value.Content.Add(contentType, _openApiMediaType);
                     }

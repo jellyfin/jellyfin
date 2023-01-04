@@ -36,7 +36,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<QueryResult<AuthenticationInfo>>> GetKeys()
         {
-            var keys = await _authenticationManager.GetApiKeys();
+            var keys = await _authenticationManager.GetApiKeys().ConfigureAwait(false);
 
             return new QueryResult<AuthenticationInfo>(keys);
         }

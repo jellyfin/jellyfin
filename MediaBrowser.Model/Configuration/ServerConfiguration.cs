@@ -194,7 +194,7 @@ namespace MediaBrowser.Model.Configuration
 
         public string[] CodecsUsed { get; set; } = Array.Empty<string>();
 
-        public List<RepositoryInfo> PluginRepositories { get; set; } = new List<RepositoryInfo>();
+        public RepositoryInfo[] PluginRepositories { get; set; } = Array.Empty<RepositoryInfo>();
 
         public bool EnableExternalContentInSuggestions { get; set; } = true;
 

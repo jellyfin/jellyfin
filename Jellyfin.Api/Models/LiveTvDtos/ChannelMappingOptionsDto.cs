@@ -14,14 +14,12 @@ namespace Jellyfin.Api.Models.LiveTvDtos
         /// <summary>
         /// Gets or sets list of tuner channels.
         /// </summary>
-        [SuppressMessage("Microsoft.Performance", "CA2227:ReadOnlyRemoveSetter", MessageId = "TunerChannels", Justification = "Imported from ServiceStack")]
-        public List<TunerChannelMapping> TunerChannels { get; set; } = null!;
+        required public IReadOnlyList<TunerChannelMapping> TunerChannels { get; set; }
 
         /// <summary>
         /// Gets or sets list of provider channels.
         /// </summary>
-        [SuppressMessage("Microsoft.Performance", "CA2227:ReadOnlyRemoveSetter", MessageId = "ProviderChannels", Justification = "Imported from ServiceStack")]
-        public List<NameIdPair> ProviderChannels { get; set; } = null!;
+        required public IReadOnlyList<NameIdPair> ProviderChannels { get; set; }
 
         /// <summary>
         /// Gets or sets list of mappings.
