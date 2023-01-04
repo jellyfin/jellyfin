@@ -122,5 +122,6 @@
     "TaskOptimizeDatabase": "データベースの最適化",
     "TaskKeyframeExtractorDescription": "より正確なHLSプレイリストを作成するため、動画ファイルからキーフレームを抽出する。この処理には時間がかかる場合があります。",
     "TaskKeyframeExtractor": "キーフレーム抽出",
-    "External": "外部"
+    "External": "外部",
+    "HearingImpaired": "聴覚障害の方"
 }
