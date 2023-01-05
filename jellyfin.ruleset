@@ -93,6 +93,8 @@
     <Rule Id="CA1845" Action="Error" />
     <!-- error on CA1849: Call async methods when in an async method -->
     <Rule Id="CA1849" Action="Error" />
+    <!-- error on CA1851: Possible multiple enumerations of IEnumerable collection -->
+    <Rule Id="CA1851" Action="Error" />
     <!-- error on CA2016: Forward the CancellationToken parameter to methods that take one
         or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token -->
     <Rule Id="CA2016" Action="Error" />
