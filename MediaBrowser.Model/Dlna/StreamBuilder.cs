@@ -1088,9 +1088,6 @@ namespace MediaBrowser.Model.Dlna
             bool? isInterlaced = videoStream?.IsInterlaced;
             string videoCodecTag = videoStream?.CodecTag;
             bool? isAvc = videoStream?.IsAVC;
-            // Audio
-            var defaultLanguage = audioStream?.Language ?? string.Empty;
-            var defaultMarked = audioStream?.IsDefault ?? false;
 
             TransportStreamTimestamp? timestamp = videoStream == null ? TransportStreamTimestamp.None : mediaSource.Timestamp;
             int? packetLength = videoStream?.PacketLength;
@@ -1122,7 +1119,7 @@ namespace MediaBrowser.Model.Dlna
                     .SelectMany(codecProfile => checkVideoConditions(codecProfile.Conditions)));
 
             // Check audiocandidates profile conditions
-            var audioStreamMatches = candidateAudioStreams.ToDictionary(s => s, audioStream => CheckVideoAudioStreamDirectPlay(options, mediaSource, container, audioStream, defaultLanguage, defaultMarked));
+            var audioStreamMatches = candidateAudioStreams.ToDictionary(s => s, audioStream => CheckVideoAudioStreamDirectPlay(options, mediaSource, container, audioStream));
 
             TranscodeReason subtitleProfileReasons = 0;
             if (subtitleStream != null)
@@ -1243,10 +1240,10 @@ namespace MediaBrowser.Model.Dlna
             return (Profile: null, PlayMethod: null, AudioStreamIndex: null, TranscodeReasons: failureReasons);
         }
 
-        private TranscodeReason CheckVideoAudioStreamDirectPlay(VideoOptions options, MediaSourceInfo mediaSource, string container, MediaStream audioStream, string language, bool isDefault)
+        private TranscodeReason CheckVideoAudioStreamDirectPlay(VideoOptions options, MediaSourceInfo mediaSource, string container, MediaStream audioStream)
         {
             var profile = options.Profile;
-            var audioFailureConditions = GetProfileConditionsForVideoAudio(profile.CodecProfiles, container, audioStream.Codec, audioStream.Channels, audioStream.BitRate, audioStream.SampleRate, audioStream.BitDepth, audioStream.Profile, !audioStream.IsDefault);
+            var audioFailureConditions = GetProfileConditionsForVideoAudio(profile.CodecProfiles, container, audioStream.Codec, audioStream.Channels, audioStream.BitRate, audioStream.SampleRate, audioStream.BitDepth, audioStream.Profile, mediaSource.IsSecondaryAudio(audioStream));
 
             var audioStreamFailureReasons = AggregateFailureConditions(mediaSource, profile, "VideoAudioCodecProfile", audioFailureConditions);
             if (audioStream?.IsExternal == true)
