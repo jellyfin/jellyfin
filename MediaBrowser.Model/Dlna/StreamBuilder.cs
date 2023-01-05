@@ -359,6 +359,11 @@ namespace MediaBrowser.Model.Dlna
 
                 var longBitrate = Math.Min(transcodingBitrate, playlistItem.AudioBitrate ?? transcodingBitrate);
                 playlistItem.AudioBitrate = longBitrate > int.MaxValue ? int.MaxValue : Convert.ToInt32(longBitrate);
+
+                if (options.Profile.EnableMultipleCodecStreaming.HasValue)
+                {
+                    playlistItem.EnableMultipleCodecStreaming = options.Profile.EnableMultipleCodecStreaming;
+                }
             }
 
             playlistItem.TranscodeReasons = transcodeReasons;
@@ -914,6 +919,11 @@ namespace MediaBrowser.Model.Dlna
                 // Don't use Math.Clamp as availableBitrateForVideo can be lower then 64k.
                 var currentValue = playlistItem.VideoBitrate ?? availableBitrateForVideo;
                 playlistItem.VideoBitrate = Math.Max(Math.Min(availableBitrateForVideo, currentValue), 64_000);
+            }
+
+            if (options.Profile.EnableMultipleCodecStreaming.HasValue)
+            {
+                playlistItem.EnableMultipleCodecStreaming = options.Profile.EnableMultipleCodecStreaming;
             }
 
             _logger.LogDebug(

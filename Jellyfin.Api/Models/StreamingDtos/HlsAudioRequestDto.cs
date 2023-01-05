@@ -9,5 +9,10 @@
         /// Gets or sets a value indicating whether enable adaptive bitrate streaming.
         /// </summary>
         public bool EnableAdaptiveBitrateStreaming { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether enable multiple codec streaming.
+        /// </summary>
+        public bool EnableMultipleCodecStreaming { get; set; }
     }
 }
