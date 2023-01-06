@@ -1214,7 +1214,7 @@ namespace MediaBrowser.Model.Dlna
                     {
                         playMethod = PlayMethod.DirectPlay;
                     }
-                    else if (directStreamFailureReasons == 0 && isEligibleForDirectStream && mediaSource.SupportsDirectStream && directPlayProfile != null)
+                    else if (directStreamFailureReasons == 0 && isEligibleForDirectStream && mediaSource.SupportsDirectStream)
                     {
                         playMethod = PlayMethod.DirectStream;
                     }
