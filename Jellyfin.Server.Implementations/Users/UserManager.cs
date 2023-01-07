@@ -157,7 +157,9 @@ namespace Jellyfin.Server.Implementations.Users
                 await UpdateUserInternalAsync(dbContext, user).ConfigureAwait(false);
             }
 
-            OnUserUpdated?.Invoke(this, new GenericEventArgs<User>(user));
+            var eventArgs = new UserUpdatedEventArgs(user);
+            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
+            OnUserUpdated?.Invoke(this, eventArgs);
         }
 
         /// <inheritdoc/>
