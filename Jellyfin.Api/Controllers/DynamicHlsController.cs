@@ -1712,11 +1712,12 @@ namespace Jellyfin.Api.Controllers
                 return audioTranscodeParams;
             }
 
-            // flac and opus are experimental in mp4 muxer
+            // dts, flac and opus are experimental in mp4 muxer
             var strictArgs = string.Empty;
 
             if (string.Equals(state.ActualOutputAudioCodec, "flac", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(state.ActualOutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase))
+                || string.Equals(state.ActualOutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(state.ActualOutputAudioCodec, "dts", StringComparison.OrdinalIgnoreCase))
             {
                 strictArgs = " -strict -2";
             }
