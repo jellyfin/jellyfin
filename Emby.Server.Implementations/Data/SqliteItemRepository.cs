@@ -359,8 +359,6 @@ namespace Emby.Server.Implementations.Data
 
             string[] queries =
             {
-                "PRAGMA locking_mode=EXCLUSIVE",
-
                 "create table if not exists TypedBaseItems (guid GUID primary key NOT NULL, type TEXT NOT NULL, data BLOB NULL, ParentId GUID NULL, Path TEXT NULL)",
 
                 "create table if not exists AncestorIds (ItemId GUID NOT NULL, AncestorId GUID NOT NULL, AncestorIdText TEXT NOT NULL, PRIMARY KEY (ItemId, AncestorId))",

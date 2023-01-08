@@ -61,10 +61,15 @@ namespace Emby.Server.Implementations.Data
         protected virtual int? CacheSize => null;
 
         /// <summary>
+        /// Gets the locking mode. <see href="https://www.sqlite.org/pragma.html#pragma_locking_mode" />.
+        /// </summary>
+        protected virtual string LockingMode => "EXCLUSIVE";
+
+        /// <summary>
         /// Gets the journal mode. <see href="https://www.sqlite.org/pragma.html#pragma_journal_mode" />.
         /// </summary>
         /// <value>The journal mode.</value>
-        protected virtual string JournalMode => "TRUNCATE";
+        protected virtual string JournalMode => "WAL";
 
         /// <summary>
         /// Gets the page size.
@@ -114,6 +119,11 @@ namespace Emby.Server.Implementations.Data
             if (CacheSize.HasValue)
             {
                 WriteConnection.Execute("PRAGMA cache_size=" + CacheSize.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(LockingMode))
+            {
+                WriteConnection.Execute("PRAGMA locking_mode=" + LockingMode);
             }
 
             if (!string.IsNullOrWhiteSpace(JournalMode))
