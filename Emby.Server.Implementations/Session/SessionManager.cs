@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
@@ -40,6 +41,17 @@ using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 
 namespace Emby.Server.Implementations.Session
 {
+    // based on https://stackoverflow.com/a/60512156
+    [Flags]
+    public enum EXECUTION_STATE : uint
+    {
+        ES_AWAYMODE_REQUIRED = 0x00000040,
+        ES_CONTINUOUS = 0x80000000,
+        ES_DISPLAY_REQUIRED = 0x00000002,
+        ES_SYSTEM_REQUIRED = 0x00000001
+        // ES_USER_PRESENT = 0x00000004
+    }
+
     /// <summary>
     /// Class SessionManager.
     /// </summary>
@@ -63,9 +75,12 @@ namespace Emby.Server.Implementations.Session
         private readonly ConcurrentDictionary<string, SessionInfo> _activeConnections = new(StringComparer.OrdinalIgnoreCase);
 
         private Timer _idleTimer;
+        private Timer _busyTimer;
 
         private DtoOptions _itemInfoDtoOptions;
         private bool _disposed = false;
+
+        private bool _isBusy = false;
 
         public SessionManager(
             ILogger<SessionManager> logger,
@@ -171,6 +186,7 @@ namespace Emby.Server.Implementations.Session
             if (disposing)
             {
                 _idleTimer?.Dispose();
+                _busyTimer?.Dispose();
             }
 
             _idleTimer = null;
@@ -210,6 +226,8 @@ namespace Emby.Server.Implementations.Session
                     SessionInfo = info
                 },
                 _logger);
+
+            StartBusyTimer(); // not sure if needed; can a session start without triggering a PlaybackStarted event?
         }
 
         private void OnSessionEnded(SessionInfo info)
@@ -309,6 +327,8 @@ namespace Emby.Server.Implementations.Session
                     SessionInfo = session
                 },
                 _logger);
+
+            StartBusyTimer(); // just to be sure, likely only needed in OnPlaybackStart
         }
 
         /// <inheritdoc />
@@ -564,6 +584,12 @@ namespace Emby.Server.Implementations.Session
             return users;
         }
 
+        private void StartBusyTimer()
+        {
+            // The minimum time to sleep in Windows is 1 minute, so updating the busy state every 30 seconds is on the safe side
+            _busyTimer ??= new Timer(UpdateBusyState, null, TimeSpan.Zero, TimeSpan.FromSeconds(30));
+        }
+
         private void StartIdleCheckTimer()
         {
             _idleTimer ??= new Timer(CheckForIdlePlayback, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
@@ -697,6 +723,8 @@ namespace Emby.Server.Implementations.Session
                 _logger);
 
             StartIdleCheckTimer();
+
+            StartBusyTimer();
         }
 
         /// <summary>
@@ -858,6 +886,33 @@ namespace Emby.Server.Implementations.Session
             }
 
             return changed;
+        }
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern uint SetThreadExecutionState(EXECUTION_STATE esFlags);
+
+        private void UpdateBusyState(object state)
+        {
+            var playingSessions = Sessions.Where(i => i.NowPlayingItem is not null)
+                .ToList();
+            var newIsBusy = playingSessions.Count > 0;
+            if (_isBusy != newIsBusy)
+            {
+                _logger.LogInformation("New busy state: {State}", newIsBusy);
+                _isBusy = newIsBusy;
+            }
+
+            if (_isBusy)
+            {
+                // Repeat regular calls to SetThreadExecutionState.
+                // We can't use ES_CONTINUOUS because the calls may be made from separate multiprocessing instances,
+                // so there is no guarantee that the flag will be cleared in the correct process.
+                uint oldState = SetThreadExecutionState(EXECUTION_STATE.ES_SYSTEM_REQUIRED);
+                if (oldState == 0)
+                {
+                    _logger.LogError("Call to SetThreadExecutionState failed");
+                }
+            }
         }
 
         /// <summary>
