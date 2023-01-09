@@ -89,7 +89,7 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <value>The synchronous mode or null.</value>
         /// <see cref="SynchronousMode"/>
-        protected virtual SynchronousMode? Synchronous => null;
+        protected virtual SynchronousMode? Synchronous => SynchronousMode.Normal;
 
         /// <summary>
         /// Gets or sets the write lock.
