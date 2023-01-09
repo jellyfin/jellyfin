@@ -27,6 +27,7 @@
  - [cvium](https://github.com/cvium)
  - [dannymichel](https://github.com/dannymichel)
  - [DaveChild](https://github.com/DaveChild)
+ - [DavidFair](https://github.com/DavidFair)
  - [Delgan](https://github.com/Delgan)
  - [dcrdev](https://github.com/dcrdev)
  - [dhartung](https://github.com/dhartung)
