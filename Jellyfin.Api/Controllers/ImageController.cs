@@ -91,6 +91,7 @@ public class ImageController : BaseJellyfinApiController
     [Authorize]
     [AcceptsImageFile]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
@@ -110,6 +111,11 @@ public class ImageController : BaseJellyfinApiController
             return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the image.");
         }
 
+        if (!TryGetImageExtensionFromContentType(Request.ContentType, out string? extension))
+        {
+            return BadRequest("Incorrect ContentType.");
+        }
+
         var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
         await using (memoryStream.ConfigureAwait(false))
         {
@@ -121,7 +127,7 @@ public class ImageController : BaseJellyfinApiController
                 await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
             }
 
-            user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType ?? string.Empty)));
+            user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + extension));
 
             await _providerManager
                 .SaveImage(memoryStream, mimeType, user.ProfileImage.Path)
@@ -145,6 +151,7 @@ public class ImageController : BaseJellyfinApiController
     [Authorize]
     [AcceptsImageFile]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
@@ -164,6 +171,11 @@ public class ImageController : BaseJellyfinApiController
             return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the image.");
         }
 
+        if (!TryGetImageExtensionFromContentType(Request.ContentType, out string? extension))
+        {
+            return BadRequest("Incorrect ContentType.");
+        }
+
         var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
         await using (memoryStream.ConfigureAwait(false))
         {
@@ -175,7 +187,7 @@ public class ImageController : BaseJellyfinApiController
                 await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
             }
 
-            user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType ?? string.Empty)));
+            user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + extension));
 
             await _providerManager
                 .SaveImage(memoryStream, mimeType, user.ProfileImage.Path)
@@ -342,6 +354,7 @@ public class ImageController : BaseJellyfinApiController
     [Authorize(Policy = Policies.RequiresElevation)]
     [AcceptsImageFile]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
     public async Task<ActionResult> SetItemImage(
@@ -352,6 +365,11 @@ public class ImageController : BaseJellyfinApiController
         if (item is null)
         {
             return NotFound();
+        }
+
+        if (!TryGetImageExtensionFromContentType(Request.ContentType, out _))
+        {
+            return BadRequest("Incorrect ContentType.");
         }
 
         var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
@@ -379,6 +397,7 @@ public class ImageController : BaseJellyfinApiController
     [Authorize(Policy = Policies.RequiresElevation)]
     [AcceptsImageFile]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
     public async Task<ActionResult> SetItemImageByIndex(
@@ -390,6 +409,11 @@ public class ImageController : BaseJellyfinApiController
         if (item is null)
         {
             return NotFound();
+        }
+
+        if (!TryGetImageExtensionFromContentType(Request.ContentType, out _))
+        {
+            return BadRequest("Incorrect ContentType.");
         }
 
         var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
@@ -1763,22 +1787,14 @@ public class ImageController : BaseJellyfinApiController
     [AcceptsImageFile]
     public async Task<ActionResult> UploadCustomSplashscreen()
     {
+        if (!TryGetImageExtensionFromContentType(Request.ContentType, out var extension))
+        {
+            return BadRequest("Incorrect ContentType.");
+        }
+
         var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
         await using (memoryStream.ConfigureAwait(false))
         {
-            var mimeType = MediaTypeHeaderValue.Parse(Request.ContentType).MediaType;
-
-            if (!mimeType.HasValue)
-            {
-                return BadRequest("Error reading mimetype from uploaded image");
-            }
-
-            var extension = MimeTypes.ToExtension(mimeType.Value);
-            if (string.IsNullOrEmpty(extension))
-            {
-                return BadRequest("Error converting mimetype to an image extension");
-            }
-
             var filePath = Path.Combine(_appPaths.DataPath, "splashscreen-upload" + extension);
             var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
             brandingOptions.SplashscreenLocation = filePath;
@@ -2105,5 +2121,24 @@ public class ImageController : BaseJellyfinApiController
         }
 
         return PhysicalFile(imagePath, imageContentType ?? MediaTypeNames.Text.Plain);
+    }
+
+    internal static bool TryGetImageExtensionFromContentType(string? contentType, [NotNullWhen(true)] out string? extension)
+    {
+        extension = null;
+        if (string.IsNullOrEmpty(contentType))
+        {
+            return false;
+        }
+
+        if (MediaTypeHeaderValue.TryParse(contentType, out var parsedValue)
+            && parsedValue.MediaType.HasValue
+            && MimeTypes.IsImage(parsedValue.MediaType.Value))
+        {
+            extension = MimeTypes.ToExtension(parsedValue.MediaType.Value);
+            return extension is not null;
+        }
+
+        return false;
     }
 }
