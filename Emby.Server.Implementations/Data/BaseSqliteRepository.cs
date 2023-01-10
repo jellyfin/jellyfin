@@ -72,6 +72,12 @@ namespace Emby.Server.Implementations.Data
         protected virtual string JournalMode => "WAL";
 
         /// <summary>
+        /// Gets the journal size limit. <see href="https://www.sqlite.org/pragma.html#pragma_journal_size_limit" />.
+        /// </summary>
+        /// <value>The journal size limit.</value>
+        protected virtual int? JournalSizeLimit => 0;
+
+        /// <summary>
         /// Gets the page size.
         /// </summary>
         /// <value>The page size or null.</value>
@@ -129,6 +135,11 @@ namespace Emby.Server.Implementations.Data
             if (!string.IsNullOrWhiteSpace(JournalMode))
             {
                 WriteConnection.Execute("PRAGMA journal_mode=" + JournalMode);
+            }
+
+            if (JournalSizeLimit.HasValue)
+            {
+                WriteConnection.Execute("PRAGMA journal_size_limit=" + (int)JournalSizeLimit.Value);
             }
 
             if (Synchronous.HasValue)
