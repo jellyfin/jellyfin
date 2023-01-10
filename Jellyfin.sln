@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaBrowser.XbmcMetadata",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaBrowser.LocalMetadata", "MediaBrowser.LocalMetadata\MediaBrowser.LocalMetadata.csproj", "{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emby.Drawing", "src\Emby.Drawing\Emby.Drawing.csproj", "{08FFF49B-F175-4807-A2B5-73B0EBD9F716}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Drawing", "src\Jellyfin.Drawing\Jellyfin.Drawing.csproj", "{08FFF49B-F175-4807-A2B5-73B0EBD9F716}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emby.Photos", "Emby.Photos\Emby.Photos.csproj", "{89AB4548-770D-41FD-A891-8DAFF44F452C}"
 EndProject
