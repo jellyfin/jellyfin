@@ -498,11 +498,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             _logger.LogInformation("Starting {ProcessFileName} with args {ProcessArgs}", _ffprobePath, args);
 
+            var memoryStream = new MemoryStream();
+            await using (memoryStream.ConfigureAwait(false))
             using (var processWrapper = new ProcessWrapper(process, this))
             {
-                await using var memoryStream = new MemoryStream();
                 StartProcess(processWrapper);
-                await process.StandardOutput.BaseStream.CopyToAsync(memoryStream, cancellationToken);
+                await process.StandardOutput.BaseStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
                 memoryStream.Seek(0, SeekOrigin.Begin);
                 InternalMediaInfoResult result;
                 try
