@@ -264,7 +264,8 @@ namespace MediaBrowser.Providers.Manager
                 var fileStreamOptions = AsyncFile.WriteOptions;
                 fileStreamOptions.Mode = FileMode.Create;
                 fileStreamOptions.PreallocationSize = source.Length;
-                await using (var fs = new FileStream(path, fileStreamOptions))
+                var fs = new FileStream(path, fileStreamOptions);
+                await using (fs.ConfigureAwait(false))
                 {
                     await source.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
                 }

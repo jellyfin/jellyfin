@@ -140,7 +140,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (attachmentStream is not null)
             {
-                return await ExtractAttachment(item, attachmentStream, mediaSource, cancellationToken);
+                return await ExtractAttachment(item, attachmentStream, mediaSource, cancellationToken).ConfigureAwait(false);
             }
 
             // Fall back to EmbeddedImage streams
