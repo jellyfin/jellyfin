@@ -54,7 +54,7 @@
   <ItemGroup>
     <ProjectReference Include="..\src\Jellyfin.Drawing\Jellyfin.Drawing.csproj" />
     <ProjectReference Include="..\Emby.Server.Implementations\Emby.Server.Implementations.csproj" />
-    <ProjectReference Include="..\Jellyfin.Drawing.Skia\Jellyfin.Drawing.Skia.csproj" />
+    <ProjectReference Include="..\src\Jellyfin.Drawing.Skia\Jellyfin.Drawing.Skia.csproj" />
     <ProjectReference Include="..\Jellyfin.Server.Implementations\Jellyfin.Server.Implementations.csproj" />
     <ProjectReference Include="..\src\Jellyfin.MediaEncoding.Hls\Jellyfin.MediaEncoding.Hls.csproj" />
   </ItemGroup>

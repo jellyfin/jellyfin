@@ -42,7 +42,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		SharedVersion.cs = SharedVersion.cs
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Drawing.Skia", "Jellyfin.Drawing.Skia\Jellyfin.Drawing.Skia.csproj", "{154872D9-6C12-4007-96E3-8F70A58386CE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Drawing.Skia", "src\Jellyfin.Drawing.Skia\Jellyfin.Drawing.Skia.csproj", "{154872D9-6C12-4007-96E3-8F70A58386CE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Api", "Jellyfin.Api\Jellyfin.Api.csproj", "{DFBEFB4C-DA19-4143-98B7-27320C7F7163}"
 EndProject
@@ -288,6 +288,7 @@ Global
 		{FE47334C-EFDE-4519-BD50-F24430FF360B} = {FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}
 		{24960660-DE6C-47BF-AEEF-CEE8F19FE6C2} = {FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}
 		{08FFF49B-F175-4807-A2B5-73B0EBD9F716} = {C9F0AB5D-F4D7-40C8-A353-3305C86D6D4C}
+		{154872D9-6C12-4007-96E3-8F70A58386CE} = {C9F0AB5D-F4D7-40C8-A353-3305C86D6D4C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3448830C-EBDC-426C-85CD-7BBB9651A7FE}
