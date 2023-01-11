@@ -182,14 +182,17 @@ namespace MediaBrowser.Providers.Manager
                 contentType = MimeTypes.GetMimeType(url);
             }
 
-            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            await SaveImage(
-                item,
-                stream,
-                contentType,
-                type,
-                imageIndex,
-                cancellationToken).ConfigureAwait(false);
+            var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using (stream.ConfigureAwait(false))
+            {
+                await SaveImage(
+                    item,
+                    stream,
+                    contentType,
+                    type,
+                    imageIndex,
+                    cancellationToken).ConfigureAwait(false);
+            }
         }
 
         /// <inheritdoc/>

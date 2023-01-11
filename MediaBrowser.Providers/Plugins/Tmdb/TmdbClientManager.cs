@@ -531,55 +531,45 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// </summary>
         /// <param name="images">The input images.</param>
         /// <param name="requestLanguage">The requested language.</param>
-        /// <param name="results">The collection to add the remote images into.</param>
-        public void ConvertPostersToRemoteImageInfo(List<ImageData> images, string requestLanguage, List<RemoteImageInfo> results)
-        {
-            ConvertToRemoteImageInfo(images, Plugin.Instance.Configuration.PosterSize, ImageType.Primary, requestLanguage, results);
-        }
+        /// <returns>The remote images.</returns>
+        public IEnumerable<RemoteImageInfo> ConvertPostersToRemoteImageInfo(IReadOnlyList<ImageData> images, string requestLanguage)
+            => ConvertToRemoteImageInfo(images, Plugin.Instance.Configuration.PosterSize, ImageType.Primary, requestLanguage);
 
         /// <summary>
         /// Converts backdrop <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
         /// </summary>
         /// <param name="images">The input images.</param>
         /// <param name="requestLanguage">The requested language.</param>
-        /// <param name="results">The collection to add the remote images into.</param>
-        public void ConvertBackdropsToRemoteImageInfo(List<ImageData> images, string requestLanguage, List<RemoteImageInfo> results)
-        {
-            ConvertToRemoteImageInfo(images, Plugin.Instance.Configuration.BackdropSize, ImageType.Backdrop, requestLanguage, results);
-        }
+        /// <returns>The remote images.</returns>
+        public IEnumerable<RemoteImageInfo> ConvertBackdropsToRemoteImageInfo(IReadOnlyList<ImageData> images, string requestLanguage)
+            => ConvertToRemoteImageInfo(images, Plugin.Instance.Configuration.BackdropSize, ImageType.Backdrop, requestLanguage);
 
         /// <summary>
         /// Converts logo <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
         /// </summary>
         /// <param name="images">The input images.</param>
         /// <param name="requestLanguage">The requested language.</param>
-        /// <param name="results">The collection to add the remote images into.</param>
-        public void ConvertLogosToRemoteImageInfo(List<ImageData> images, string requestLanguage, List<RemoteImageInfo> results)
-        {
-            ConvertToRemoteImageInfo(images, Plugin.Instance.Configuration.LogoSize, ImageType.Logo, requestLanguage, results);
-        }
+        /// <returns>The remote images.</returns>
+        public IEnumerable<RemoteImageInfo> ConvertLogosToRemoteImageInfo(IReadOnlyList<ImageData> images, string requestLanguage)
+            => ConvertToRemoteImageInfo(images, Plugin.Instance.Configuration.LogoSize, ImageType.Logo, requestLanguage);
 
         /// <summary>
         /// Converts profile <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
         /// </summary>
         /// <param name="images">The input images.</param>
         /// <param name="requestLanguage">The requested language.</param>
-        /// <param name="results">The collection to add the remote images into.</param>
-        public void ConvertProfilesToRemoteImageInfo(List<ImageData> images, string requestLanguage, List<RemoteImageInfo> results)
-        {
-            ConvertToRemoteImageInfo(images, Plugin.Instance.Configuration.ProfileSize, ImageType.Primary, requestLanguage, results);
-        }
+        /// <returns>The remote images.</returns>
+        public IEnumerable<RemoteImageInfo> ConvertProfilesToRemoteImageInfo(IReadOnlyList<ImageData> images, string requestLanguage)
+            => ConvertToRemoteImageInfo(images, Plugin.Instance.Configuration.ProfileSize, ImageType.Primary, requestLanguage);
 
         /// <summary>
         /// Converts still <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
         /// </summary>
         /// <param name="images">The input images.</param>
         /// <param name="requestLanguage">The requested language.</param>
-        /// <param name="results">The collection to add the remote images into.</param>
-        public void ConvertStillsToRemoteImageInfo(List<ImageData> images, string requestLanguage, List<RemoteImageInfo> results)
-        {
-            ConvertToRemoteImageInfo(images, Plugin.Instance.Configuration.StillSize, ImageType.Primary, requestLanguage, results);
-        }
+        /// <returns>The remote images.</returns>
+        public IEnumerable<RemoteImageInfo> ConvertStillsToRemoteImageInfo(IReadOnlyList<ImageData> images, string requestLanguage)
+            => ConvertToRemoteImageInfo(images, Plugin.Instance.Configuration.StillSize, ImageType.Primary, requestLanguage);
 
         /// <summary>
         /// Converts <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
@@ -588,8 +578,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="size">The size of the image to fetch.</param>
         /// <param name="type">The type of the image.</param>
         /// <param name="requestLanguage">The requested language.</param>
-        /// <param name="results">The collection to add the remote images into.</param>
-        private void ConvertToRemoteImageInfo(List<ImageData> images, string size, ImageType type, string requestLanguage, List<RemoteImageInfo> results)
+        /// <returns>The remote images.</returns>
+        private IEnumerable<RemoteImageInfo> ConvertToRemoteImageInfo(IReadOnlyList<ImageData> images, string size, ImageType type, string requestLanguage)
         {
             // sizes provided are for original resolution, don't store them when downloading scaled images
             var scaleImage = !string.Equals(size, "original", StringComparison.OrdinalIgnoreCase);
@@ -598,7 +588,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             {
                 var image = images[i];
 
-                results.Add(new RemoteImageInfo
+                yield return new RemoteImageInfo
                 {
                     Url = GetUrl(size, image.FilePath),
                     CommunityRating = image.VoteAverage,
@@ -609,7 +599,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                     ProviderName = TmdbUtils.ProviderName,
                     Type = type,
                     RatingType = RatingType.Score
-                });
+                };
             }
         }
 

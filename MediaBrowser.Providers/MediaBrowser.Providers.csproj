@@ -34,10 +34,6 @@
     <CodeAnalysisRuleSet>../jellyfin.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <CodeAnalysisTreatWarningsAsErrors>false</CodeAnalysisTreatWarningsAsErrors>
-  </PropertyGroup>
-
   <!-- Code Analyzers-->
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
     <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.3">

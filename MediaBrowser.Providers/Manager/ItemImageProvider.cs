@@ -502,15 +502,17 @@ namespace MediaBrowser.Providers.Manager
                         break;
                     }
 
-                    await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-
-                    await _providerManager.SaveImage(
-                        item,
-                        stream,
-                        response.Content.Headers.ContentType?.MediaType,
-                        type,
-                        null,
-                        cancellationToken).ConfigureAwait(false);
+                    var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                    await using (stream.ConfigureAwait(false))
+                    {
+                        await _providerManager.SaveImage(
+                            item,
+                            stream,
+                            response.Content.Headers.ContentType?.MediaType,
+                            type,
+                            null,
+                            cancellationToken).ConfigureAwait(false);
+                    }
 
                     result.UpdateType |= ItemUpdateType.ImageUpdate;
                     return true;
@@ -626,14 +628,18 @@ namespace MediaBrowser.Providers.Manager
                         }
                     }
 
-                    await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                    await _providerManager.SaveImage(
-                        item,
-                        stream,
-                        response.Content.Headers.ContentType?.MediaType,
-                        imageType,
-                        null,
-                        cancellationToken).ConfigureAwait(false);
+                    var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                    await using (stream.ConfigureAwait(false))
+                    {
+                        await _providerManager.SaveImage(
+                            item,
+                            stream,
+                            response.Content.Headers.ContentType?.MediaType,
+                            imageType,
+                            null,
+                            cancellationToken).ConfigureAwait(false);
+                    }
+
                     result.UpdateType |= ItemUpdateType.ImageUpdate;
                 }
                 catch (HttpRequestException)
