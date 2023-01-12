@@ -185,11 +185,7 @@ namespace Jellyfin.Server
             try
             {
                 var host = Host.CreateDefaultBuilder()
-                    .ConfigureServices(services =>
-                    {
-                        // NOTE: Called first to ensure app host configuration is fully initialized
-                        appHost.Init(services);
-                    })
+                    .ConfigureServices(services => appHost.Init(services))
                     .ConfigureWebHostDefaults(webHostBuilder => webHostBuilder.ConfigureWebHostBuilder(appHost, startupConfig, appPaths))
                     .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(options, appPaths, startupConfig))
                     .UseSerilog()
