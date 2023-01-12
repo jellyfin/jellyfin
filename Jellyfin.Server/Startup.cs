@@ -204,7 +204,7 @@ namespace Jellyfin.Server
                     endpoints.MapControllers();
                     if (_serverConfigurationManager.Configuration.EnableMetrics)
                     {
-                        endpoints.MapMetrics("/metrics");
+                        endpoints.MapMetrics();
                     }
 
                     endpoints.MapHealthChecks("/health");
