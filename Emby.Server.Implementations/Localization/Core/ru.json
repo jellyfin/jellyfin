@@ -1,6 +1,6 @@
 {
     "Albums": "Альбомы",
-    "AppDeviceValues": "Приложение.: {0}, Устройство.: {1}",
+    "AppDeviceValues": "Приложение: {0}, Устройство: {1}",
     "Application": "Приложение",
     "Artists": "Исполнители",
     "AuthenticationSucceededWithUserName": "{0} - авторизация успешна",
@@ -50,7 +50,7 @@
     "NotificationOptionAudioPlaybackStopped": "Воспроизведение аудио остановлено",
     "NotificationOptionCameraImageUploaded": "Изображения с камеры загружены",
     "NotificationOptionInstallationFailed": "Сбой установки",
-    "NotificationOptionNewLibraryContent": "Новое содержание добавлено",
+    "NotificationOptionNewLibraryContent": "Новое содержимое добавлено",
     "NotificationOptionPluginError": "Сбой плагина",
     "NotificationOptionPluginInstalled": "Плагин установлен",
     "NotificationOptionPluginUninstalled": "Плагин удалён",
