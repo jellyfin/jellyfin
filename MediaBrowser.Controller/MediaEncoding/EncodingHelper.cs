@@ -2129,15 +2129,30 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var filters = new List<string>();
 
-            // Boost volume to 200% when downsampling from 6ch to 2ch
             if (channels.HasValue
-                && channels.Value <= 2
+                && channels.Value == 2
                 && state.AudioStream is not null
                 && state.AudioStream.Channels.HasValue
-                && state.AudioStream.Channels.Value > 5
-                && !encodingOptions.DownMixAudioBoost.Equals(1))
+                && state.AudioStream.Channels.Value > 5)
             {
-                filters.Add("volume=" + encodingOptions.DownMixAudioBoost.ToString(CultureInfo.InvariantCulture));
+                switch (encodingOptions.DownMixStereoAlgorithm)
+                {
+                    case DownMixStereoAlgorithms.Dave750:
+                        filters.Add("volume=4.25");
+                        filters.Add("pan=stereo|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3");
+                        break;
+                    case DownMixStereoAlgorithms.NightmodeDialogue:
+                        filters.Add("pan=stereo|c0=c2+0.30*c0+0.30*c4|c1=c2+0.30*c1+0.30*c5");
+                        break;
+                    case DownMixStereoAlgorithms.None:
+                    default:
+                        if (!encodingOptions.DownMixAudioBoost.Equals(1))
+                        {
+                            filters.Add("volume=" + encodingOptions.DownMixAudioBoost.ToString(CultureInfo.InvariantCulture));
+                        }
+
+                        break;
+                }
             }
 
             var isCopyingTimestamps = state.CopyTimestamps || state.TranscodingType != TranscodingJobType.Progressive;
@@ -5711,10 +5726,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return args;
             }
 
-            // Add the number of audio channels
             var channels = state.OutputAudioChannels;
 
-            if (channels.HasValue)
+            if (channels.HasValue && ((channels.Value != 2 && state.AudioStream.Channels <= 5) || encodingOptions.DownMixStereoAlgorithm == DownMixStereoAlgorithms.None))
             {
                 args += " -ac " + channels.Value;
             }
