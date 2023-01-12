@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
 using System.Threading;
@@ -21,7 +20,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -186,20 +184,26 @@ namespace Jellyfin.Server
 
             try
             {
-                var serviceCollection = new ServiceCollection();
-                appHost.Init(serviceCollection);
+                var host = Host.CreateDefaultBuilder()
+                    .ConfigureServices(services =>
+                    {
+                        // NOTE: Called first to ensure app host configuration is fully initialized
+                        appHost.Init(services);
+                    })
+                    .ConfigureWebHostDefaults(webHostBuilder => webHostBuilder.ConfigureWebHostBuilder(appHost, startupConfig, appPaths))
+                    .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(options, appPaths, startupConfig))
+                    .UseSerilog()
+                    .Build();
 
-                var webHost = new WebHostBuilder().ConfigureWebHostBuilder(appHost, serviceCollection, options, startupConfig, appPaths).Build();
-
-                // Re-use the web host service provider in the app host since ASP.NET doesn't allow a custom service collection.
-                appHost.ServiceProvider = webHost.Services;
+                // Re-use the host service provider in the app host since ASP.NET doesn't allow a custom service collection.
+                appHost.ServiceProvider = host.Services;
 
                 await appHost.InitializeServices().ConfigureAwait(false);
                 Migrations.MigrationRunner.Run(appHost, _loggerFactory);
 
                 try
                 {
-                    await webHost.StartAsync(_tokenSource.Token).ConfigureAwait(false);
+                    await host.StartAsync(_tokenSource.Token).ConfigureAwait(false);
 
                     if (!OperatingSystem.IsWindows() && startupConfig.UseUnixSocket())
                     {
@@ -284,16 +288,12 @@ namespace Jellyfin.Server
         /// </summary>
         /// <param name="builder">The builder to configure.</param>
         /// <param name="appHost">The application host.</param>
-        /// <param name="serviceCollection">The application service collection.</param>
-        /// <param name="commandLineOpts">The command line options passed to the application.</param>
         /// <param name="startupConfig">The application configuration.</param>
         /// <param name="appPaths">The application paths.</param>
         /// <returns>The configured web host builder.</returns>
         public static IWebHostBuilder ConfigureWebHostBuilder(
             this IWebHostBuilder builder,
-            ApplicationHost appHost,
-            IServiceCollection serviceCollection,
-            StartupOptions commandLineOpts,
+            CoreAppHost appHost,
             IConfiguration startupConfig,
             IApplicationPaths appPaths)
         {
@@ -349,14 +349,7 @@ namespace Jellyfin.Server
                         _logger.LogInformation("Kestrel listening to unix socket {SocketPath}", socketPath);
                     }
                 })
-                .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(commandLineOpts, appPaths, startupConfig))
-                .UseSerilog()
-                .ConfigureServices(services =>
-                {
-                    // Merge the external ServiceCollection into ASP.NET DI
-                    services.Add(serviceCollection);
-                })
-                .UseStartup<Startup>();
+                .UseStartup(_ => new Startup(appHost));
         }
 
         /// <summary>

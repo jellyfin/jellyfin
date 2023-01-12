@@ -82,7 +82,7 @@ namespace Jellyfin.Server.Integration.Tests
             appHost.Init(serviceCollection);
 
             // Configure the web host builder
-            Program.ConfigureWebHostBuilder(builder, appHost, serviceCollection, commandLineOpts, startupConfig, appPaths);
+            Program.ConfigureWebHostBuilder(builder, appHost, startupConfig, appPaths);
         }
 
         /// <inheritdoc/>
