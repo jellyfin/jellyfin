@@ -239,6 +239,13 @@ namespace Jellyfin.Api.Helpers
 
             options.MaxBitrate = GetMaxBitrate(maxBitrate, user, ipAddress);
 
+            // If the user doesn't have access to transcoding, then ignore the bitrate limit
+            if ((item is Video && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding))
+                || (item is Audio && !user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding)))
+            {
+                options.MaxBitrate = null;
+            }
+
             if (!options.ForceDirectStream)
             {
                 // direct-stream http streaming is currently broken
