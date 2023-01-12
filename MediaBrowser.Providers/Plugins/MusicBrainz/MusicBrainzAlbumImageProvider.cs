@@ -1,7 +1,3 @@
-#nullable disable
-
-#pragma warning disable CS1591
-
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -21,14 +17,19 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Providers.Plugins.MusicBrainz;
 
 /// <summary>
-/// Music album cover art provider for MusicBrainz.
+/// Music album image provider for MusicBrainz. It queries coverartarchive.org with a MusicBrainz album id.
 /// </summary>
 public class MusicBrainzAlbumImageProvider : IRemoteImageProvider, IHasOrder
 {
     private readonly ILogger<MusicBrainzAlbumImageProvider> _logger;
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+    private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.CamelCaseOptions;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MusicBrainzAlbumImageProvider"/> class.
+    /// </summary>
+    /// <param name="httpClientFactory">The HTTP client factory.</param>
+    /// <param name="logger">The logger.</param>
     public MusicBrainzAlbumImageProvider(IHttpClientFactory httpClientFactory, ILogger<MusicBrainzAlbumImageProvider> logger)
     {
         _httpClientFactory = httpClientFactory;
@@ -60,25 +61,26 @@ public class MusicBrainzAlbumImageProvider : IRemoteImageProvider, IHasOrder
         if (!string.IsNullOrWhiteSpace(id))
         {
             var jsonUri = $"https://coverartarchive.org/release/{id}";
-
             var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
             try
             {
-                var obj = await httpClient.GetFromJsonAsync<CoverArtArchiveObject>(jsonUri, _jsonOptions, cancellationToken);
-                var images = obj.images.Select(img => new RemoteImageInfo
+                var obj = await httpClient.GetFromJsonAsync<CoverArtArchiveObject>(jsonUri, _jsonOptions, cancellationToken).ConfigureAwait(false);
+
+                if (obj is not null)
                 {
-                    ProviderName = Name,
-                    Url = img.image,
-                    ThumbnailUrl = img.thumbnails.small,
-                    Type = ImageType.Primary
-                });
-                list.AddRange(images);
+                    var images = obj.Images.Select(img => new RemoteImageInfo
+                    {
+                        ProviderName = Name,
+                        Url = img.Image,
+                        ThumbnailUrl = img.Thumbnails.Small,
+                        Type = ImageType.Primary
+                    });
+                    list.AddRange(images);
+                }
             }
             catch (HttpRequestException ex)
             {
-#pragma warning disable CA2254
-                _logger.LogWarning($"Failed to retrieve image for album {id} (HTTP error {ex.StatusCode})");
-#pragma warning restore CA2254
+                _logger.LogWarning(ex, "Failed to retrieve image for album {Id} (HTTP error {StatusCode})", id, ex.StatusCode);
             }
         }
 
@@ -96,40 +98,63 @@ public class MusicBrainzAlbumImageProvider : IRemoteImageProvider, IHasOrder
     public bool Supports(BaseItem item)
         => item is MusicAlbum;
 
-#pragma warning disable SA1300
-    public class CoverArtArchiveObject
+    private class CoverArtArchiveObject
     {
-        public List<CoverArtArchiveImage> images { get; set; }
+        public CoverArtArchiveObject(List<CoverArtArchiveImage> images, string release)
+        {
+            Images = images;
+            Release = release;
+        }
 
-        public string release { get; set; }
+        public List<CoverArtArchiveImage> Images { get; }
+
+        public string Release { get; }
     }
 
-    public class CoverArtArchiveImage
+    private class CoverArtArchiveImage
     {
-        public List<string> types { get; set; }
+        public CoverArtArchiveImage(List<string> types, bool front, bool back, uint edit, string image, string comment, bool approved, CoverArtArchiveThumbnail thumbnails, string id)
+        {
+            Types = types;
+            Front = front;
+            Back = back;
+            Edit = edit;
+            Image = image;
+            Comment = comment;
+            Approved = approved;
+            Thumbnails = thumbnails;
+            Id = id;
+        }
 
-        public bool front { get; set; }
+        public List<string> Types { get; }
 
-        public bool back { get; set; }
+        public bool Front { get; }
 
-        public uint edit { get; set; }
+        public bool Back { get; }
 
-        public string image { get; set; }
+        public uint Edit { get; }
 
-        public string comment { get; set; }
+        public string Image { get; }
 
-        public bool approved { get; set; }
+        public string Comment { get; }
 
-        public CoverArtArchiveThumbnail thumbnails { get; set; }
+        public bool Approved { get; }
 
-        public string id { get; set; }
+        public CoverArtArchiveThumbnail Thumbnails { get; }
+
+        public string Id { get; }
     }
 
-    public class CoverArtArchiveThumbnail
+    private class CoverArtArchiveThumbnail
     {
-        public string large { get; set; }
+        public CoverArtArchiveThumbnail(string large, string small)
+        {
+            Large = large;
+            Small = small;
+        }
 
-        public string small { get; set; }
+        public string Large { get; }
+
+        public string Small { get; }
     }
-#pragma warning restore SA1300
 }
