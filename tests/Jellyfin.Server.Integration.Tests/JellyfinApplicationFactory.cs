@@ -8,6 +8,7 @@ using MediaBrowser.Common;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -78,11 +79,17 @@ namespace Jellyfin.Server.Integration.Tests
                 commandLineOpts,
                 startupConfig);
             _disposableComponents.Add(appHost);
-            var serviceCollection = new ServiceCollection();
-            appHost.Init(serviceCollection);
 
-            // Configure the web host builder
-            Program.ConfigureWebHostBuilder(builder, appHost, serviceCollection, commandLineOpts, startupConfig, appPaths);
+            builder.ConfigureServices(services => appHost.Init(services))
+                .ConfigureWebHostBuilder(appHost, startupConfig, appPaths)
+                .ConfigureAppConfiguration((context, builder) =>
+                {
+                    builder
+                        .SetBasePath(appPaths.ConfigurationDirectoryPath)
+                        .AddInMemoryCollection(ConfigurationOptions.DefaultConfiguration)
+                        .AddEnvironmentVariables("JELLYFIN_")
+                        .AddInMemoryCollection(commandLineOpts.ConvertToConfig());
+                });
         }
 
         /// <inheritdoc/>
