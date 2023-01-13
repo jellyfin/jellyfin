@@ -237,13 +237,13 @@ namespace Jellyfin.Api.Helpers
                     user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding));
             }
 
-            options.MaxBitrate = GetMaxBitrate(maxBitrate, user, ipAddress);
-
-            // If the user doesn't have access to transcoding, then ignore the bitrate limit
+            // If the user doesn't have access to transcoding or has disabled it, then ignore the bitrate limit of the client
             if (!mediaSource.SupportsTranscoding)
             {
-                options.MaxBitrate = null;
+                maxBitrate = null;
             }
+
+            options.MaxBitrate = GetMaxBitrate(maxBitrate, user, ipAddress);
 
             if (!options.ForceDirectStream)
             {
