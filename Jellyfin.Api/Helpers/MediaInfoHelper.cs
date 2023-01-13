@@ -251,8 +251,10 @@ namespace Jellyfin.Api.Helpers
                 options.EnableDirectStream = false;
             }
 
+            var isAudio = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase);
+
             // Beginning of Playback Determination
-            var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase)
+            var streamInfo = isAudio
                 ? streamBuilder.BuildAudioItem(options)
                 : streamBuilder.BuildVideoItem(options);
 
@@ -261,33 +263,42 @@ namespace Jellyfin.Api.Helpers
                 streamInfo.PlaySessionId = playSessionId;
                 streamInfo.StartPositionTicks = startTimeTicks;
 
-                mediaSource.SupportsDirectPlay = streamInfo.PlayMethod == PlayMethod.DirectPlay;
-
-                // Players do not handle this being set according to PlayMethod
-                mediaSource.SupportsDirectStream =
-                    options.EnableDirectStream
-                        ? streamInfo.PlayMethod == PlayMethod.DirectPlay || streamInfo.PlayMethod == PlayMethod.DirectStream
-                        : streamInfo.PlayMethod == PlayMethod.DirectPlay;
-
-                mediaSource.SupportsTranscoding =
-                    streamInfo.PlayMethod == PlayMethod.DirectStream
-                    || mediaSource.TranscodingContainer != null
-                    || profile.TranscodingProfiles.Any(i => i.Type == streamInfo.MediaType && i.Context == options.Context);
-
-                if (item is Audio)
+                // If the media bitrate exceeds the limit (transcoding is required) but transcoding is disabled, block playback
+                if (!mediaSource.SupportsTranscoding && streamInfo.TargetTotalBitrate > options.GetMaxBitrate(isAudio))
                 {
-                    if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding))
-                    {
-                        mediaSource.SupportsTranscoding = false;
-                    }
+                    mediaSource.SupportsDirectPlay = false;
+                    mediaSource.SupportsDirectStream = false;
                 }
-                else if (item is Video)
+                else
                 {
-                    if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding)
-                        && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding)
-                        && !user.HasPermission(PermissionKind.EnablePlaybackRemuxing))
+                    mediaSource.SupportsDirectPlay = streamInfo.PlayMethod == PlayMethod.DirectPlay;
+
+                    // Players do not handle this being set according to PlayMethod
+                    mediaSource.SupportsDirectStream =
+                        options.EnableDirectStream
+                            ? streamInfo.PlayMethod == PlayMethod.DirectPlay || streamInfo.PlayMethod == PlayMethod.DirectStream
+                            : streamInfo.PlayMethod == PlayMethod.DirectPlay;
+
+                    mediaSource.SupportsTranscoding =
+                        streamInfo.PlayMethod == PlayMethod.DirectStream
+                        || mediaSource.TranscodingContainer != null
+                        || profile.TranscodingProfiles.Any(i => i.Type == streamInfo.MediaType && i.Context == options.Context);
+
+                    if (item is Audio)
                     {
-                        mediaSource.SupportsTranscoding = false;
+                        if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding))
+                        {
+                            mediaSource.SupportsTranscoding = false;
+                        }
+                    }
+                    else if (item is Video)
+                    {
+                        if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding)
+                            && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding)
+                            && !user.HasPermission(PermissionKind.EnablePlaybackRemuxing))
+                        {
+                            mediaSource.SupportsTranscoding = false;
+                        }
                     }
                 }
 
