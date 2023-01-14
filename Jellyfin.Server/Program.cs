@@ -273,10 +273,6 @@ namespace Jellyfin.Server
             ServicePointManager.Expect100Continue = false;
 
             Batteries_V2.Init();
-            if (raw.sqlite3_enable_shared_cache(1) != raw.SQLITE_OK)
-            {
-                _logger.LogWarning("Failed to enable shared cache for SQLite");
-            }
         }
 
         /// <summary>

@@ -359,8 +359,6 @@ namespace Emby.Server.Implementations.Data
 
             string[] queries =
             {
-                "PRAGMA locking_mode=EXCLUSIVE",
-
                 "create table if not exists TypedBaseItems (guid GUID primary key NOT NULL, type TEXT NOT NULL, data BLOB NULL, ParentId GUID NULL, Path TEXT NULL)",
 
                 "create table if not exists AncestorIds (ItemId GUID NOT NULL, AncestorId GUID NOT NULL, AncestorIdText TEXT NOT NULL, PRIMARY KEY (ItemId, AncestorId))",
@@ -385,39 +383,6 @@ namespace Emby.Server.Implementations.Data
 
             string[] postQueries =
             {
-                // obsolete
-                "drop index if exists idx_TypedBaseItems",
-                "drop index if exists idx_mediastreams",
-                "drop index if exists idx_mediastreams1",
-                "drop index if exists idx_" + ChaptersTableName,
-                "drop index if exists idx_UserDataKeys1",
-                "drop index if exists idx_UserDataKeys2",
-                "drop index if exists idx_TypeTopParentId3",
-                "drop index if exists idx_TypeTopParentId2",
-                "drop index if exists idx_TypeTopParentId4",
-                "drop index if exists idx_Type",
-                "drop index if exists idx_TypeTopParentId",
-                "drop index if exists idx_GuidType",
-                "drop index if exists idx_TopParentId",
-                "drop index if exists idx_TypeTopParentId6",
-                "drop index if exists idx_ItemValues2",
-                "drop index if exists Idx_ProviderIds",
-                "drop index if exists idx_ItemValues3",
-                "drop index if exists idx_ItemValues4",
-                "drop index if exists idx_ItemValues5",
-                "drop index if exists idx_UserDataKeys3",
-                "drop table if exists UserDataKeys",
-                "drop table if exists ProviderIds",
-                "drop index if exists Idx_ProviderIds1",
-                "drop table if exists Images",
-                "drop index if exists idx_Images",
-                "drop index if exists idx_TypeSeriesPresentationUniqueKey",
-                "drop index if exists idx_SeriesPresentationUniqueKey",
-                "drop index if exists idx_TypeSeriesPresentationUniqueKey2",
-                "drop index if exists idx_AncestorIds3",
-                "drop index if exists idx_AncestorIds4",
-                "drop index if exists idx_AncestorIds2",
-
                 "create index if not exists idx_PathTypedBaseItems on TypedBaseItems(Path)",
                 "create index if not exists idx_ParentIdTypedBaseItems on TypedBaseItems(ParentId)",
 
@@ -458,6 +423,9 @@ namespace Emby.Server.Implementations.Data
 
                 // Used to update inherited tags
                 "create index if not exists idx_ItemValues8 on ItemValues(Type, ItemId, Value)",
+
+                "CREATE INDEX IF NOT EXISTS idx_TypedBaseItemsUserDataKeyType ON TypedBaseItems(UserDataKey, Type)",
+                "CREATE INDEX IF NOT EXISTS idx_PeopleNameListOrder ON People(Name, ListOrder)"
             };
 
             using (var connection = GetConnection())
