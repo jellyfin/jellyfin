@@ -5,7 +5,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Http;
 
-namespace Jellyfin.Server.Middleware
+namespace Jellyfin.Api.Middleware
 {
     /// <summary>
     /// Validates the LAN host IP based on application configuration.
