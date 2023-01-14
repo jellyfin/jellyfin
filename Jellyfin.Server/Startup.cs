@@ -12,11 +12,13 @@ using Jellyfin.Server.HealthChecks;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Extensions;
 using Jellyfin.Server.Infrastructure;
+using Jellyfin.Server.Infrastructure.FileTransformation;
 using Jellyfin.Server.Middleware;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Extensions;
+using MediaBrowser.Controller.FileTransformation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -66,6 +68,7 @@ namespace Jellyfin.Server
             services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.GetNetworkConfiguration());
             services.AddJellyfinDbContext();
             services.AddJellyfinApiSwagger();
+            services.AddJellyfinFileTransformation();
 
             // configure custom legacy authentication
             services.AddCustomAuthentication();
@@ -174,7 +177,9 @@ namespace Jellyfin.Server
                     extensionProvider.Mappings.Add(".mem", MediaTypeNames.Application.Octet);
                     mainApp.UseStaticFiles(new StaticFileOptions
                     {
-                        FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
+                        FileProvider = new PhysicalTransformedFileProvider(
+                            new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
+                            mainApp.ApplicationServices.GetRequiredService<IWebFileTransformationReadService>()),
                         RequestPath = "/web",
                         ContentTypeProvider = extensionProvider
                     });

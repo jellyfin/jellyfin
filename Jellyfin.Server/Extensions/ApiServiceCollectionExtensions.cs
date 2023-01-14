@@ -27,7 +27,9 @@ using Jellyfin.Networking.Configuration;
 using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
 using Jellyfin.Server.Formatters;
+using Jellyfin.Server.Infrastructure.FileTransformation;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.FileTransformation;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Authentication;
@@ -260,6 +262,18 @@ namespace Jellyfin.Server.Extensions
             }
 
             return mvcBuilder.AddControllersAsServices();
+        }
+
+        /// <summary>
+        /// Adds the File Transformation services to the service collection.
+        /// </summary>
+        /// <param name="serviceCollection">The service collection.</param>
+        /// <returns>The updated service collection.</returns>
+        public static IServiceCollection AddJellyfinFileTransformation(this IServiceCollection serviceCollection)
+        {
+            return serviceCollection.AddSingleton<WebFileTransformationService>()
+                .AddSingleton<IWebFileTransformationReadService>(s => s.GetRequiredService<WebFileTransformationService>())
+                .AddSingleton<IWebFileTransformationWriteService>(s => s.GetRequiredService<WebFileTransformationService>());
         }
 
         /// <summary>
