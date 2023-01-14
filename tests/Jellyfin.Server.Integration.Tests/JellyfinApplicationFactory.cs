@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using Emby.Server.Implementations;
+using Jellyfin.Server.Helpers;
 using MediaBrowser.Common;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -33,7 +34,7 @@ namespace Jellyfin.Server.Integration.Tests
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
                 .CreateLogger();
-            Program.PerformStaticInitialization();
+            StartupHelpers.PerformStaticInitialization();
         }
 
         /// <inheritdoc/>
@@ -63,7 +64,7 @@ namespace Jellyfin.Server.Integration.Tests
 
             // Create the logging config file
             // TODO: We shouldn't need to do this since we are only logging to console
-            Program.InitLoggingConfigFile(appPaths).GetAwaiter().GetResult();
+            StartupHelpers.InitLoggingConfigFile(appPaths).GetAwaiter().GetResult();
 
             // Create a copy of the application configuration to use for startup
             var startupConfig = Program.CreateAppConfiguration(commandLineOpts, appPaths);
