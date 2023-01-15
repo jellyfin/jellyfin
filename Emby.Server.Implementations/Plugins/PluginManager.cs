@@ -128,7 +128,7 @@ namespace Emby.Server.Implementations.Plugins
                     Assembly assembly;
                     try
                     {
-                        var assemblyLoadContext = new AssemblyLoadContext($"{plugin.Name} ${plugin.Version}", true);
+                        var assemblyLoadContext = new PluginLoadContext(file);
                         _assemblyLoadContexts.Add(assemblyLoadContext);
 
                         assembly = assemblyLoadContext.LoadFromAssemblyPath(file);
