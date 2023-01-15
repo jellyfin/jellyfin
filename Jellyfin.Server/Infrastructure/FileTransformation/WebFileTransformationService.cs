@@ -21,10 +21,15 @@ public class WebFileTransformationService : IWebFileTransformationReadService, I
         _fileTransformations = new Dictionary<string, ICollection<TransformFile>>();
     }
 
+    private string NormalizePath(string path)
+    {
+        return path.TrimStart('/');
+    }
+
     /// <inheritdoc />
     public bool NeedsTransformation(string path)
     {
-        return _fileTransformations.ContainsKey(path);
+        return _fileTransformations.ContainsKey(NormalizePath(path));
     }
 
     /// <inheritdoc />
@@ -35,6 +40,7 @@ public class WebFileTransformationService : IWebFileTransformationReadService, I
             throw new ArgumentNullException(nameof(stream));
         }
 
+        path = NormalizePath(path);
         var pipeline = _fileTransformations[path];
         foreach (var action in pipeline)
         {
@@ -56,6 +62,7 @@ public class WebFileTransformationService : IWebFileTransformationReadService, I
             throw new ArgumentNullException(nameof(transformation));
         }
 
+        path = NormalizePath(path);
         if (!_fileTransformations.TryGetValue(path, out var pipeline))
         {
             pipeline = new List<TransformFile>();
