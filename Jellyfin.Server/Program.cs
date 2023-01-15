@@ -12,6 +12,7 @@ using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Helpers;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,8 +41,9 @@ namespace Jellyfin.Server
         /// </summary>
         public const string LoggingConfigFileSystem = "logging.json";
 
-        private static readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
         private static readonly ILoggerFactory _loggerFactory = new SerilogLoggerFactory();
+        private static CancellationTokenSource _tokenSource = new();
+        private static long _startTimestamp;
         private static ILogger _logger = NullLogger.Instance;
         private static bool _restartOnShutdown;
 
@@ -86,11 +88,11 @@ namespace Jellyfin.Server
 
         private static async Task StartApp(StartupOptions options)
         {
-            var startTimestamp = Stopwatch.GetTimestamp();
+            _startTimestamp = Stopwatch.GetTimestamp();
 
             // Log all uncaught exceptions to std error
             static void UnhandledExceptionToConsole(object sender, UnhandledExceptionEventArgs e) =>
-                Console.Error.WriteLine("Unhandled Exception\n" + e.ExceptionObject.ToString());
+                Console.Error.WriteLine("Unhandled Exception\n" + e.ExceptionObject);
             AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionToConsole;
 
             ServerApplicationPaths appPaths = StartupHelpers.CreateApplicationPaths(options);
@@ -151,14 +153,14 @@ namespace Jellyfin.Server
             // If hosting the web client, validate the client content path
             if (startupConfig.HostWebClient())
             {
-                string? webContentPath = appPaths.WebPath;
+                var webContentPath = appPaths.WebPath;
                 if (!Directory.Exists(webContentPath) || !Directory.EnumerateFiles(webContentPath).Any())
                 {
                     _logger.LogError(
                         "The server is expected to host the web client, but the provided content directory is either " +
                         "invalid or empty: {WebContentPath}. If you do not want to host the web client with the " +
                         "server, you may set the '--nowebclient' command line flag, or set" +
-                        "'{ConfigKey}=false' in your config settings.",
+                        "'{ConfigKey}=false' in your config settings",
                         webContentPath,
                         HostWebClientKey);
                     Environment.ExitCode = 1;
@@ -169,15 +171,31 @@ namespace Jellyfin.Server
             StartupHelpers.PerformStaticInitialization();
             Migrations.MigrationRunner.RunPreStartup(appPaths, _loggerFactory);
 
+            do
+            {
+                _restartOnShutdown = false;
+                await StartServer(appPaths, options, startupConfig).ConfigureAwait(false);
+
+                if (_restartOnShutdown)
+                {
+                    _tokenSource = new CancellationTokenSource();
+                    _startTimestamp = Stopwatch.GetTimestamp();
+                }
+            } while (_restartOnShutdown);
+        }
+
+        private static async Task StartServer(IServerApplicationPaths appPaths, StartupOptions options, IConfiguration startupConfig)
+        {
             var appHost = new CoreAppHost(
                 appPaths,
                 _loggerFactory,
                 options,
                 startupConfig);
 
+            IHost? host = null;
             try
             {
-                var host = Host.CreateDefaultBuilder()
+                host = Host.CreateDefaultBuilder()
                     .ConfigureServices(services => appHost.Init(services))
                     .ConfigureWebHostDefaults(webHostBuilder => webHostBuilder.ConfigureWebHostBuilder(appHost, startupConfig, appPaths, _logger))
                     .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(options, appPaths, startupConfig))
@@ -203,13 +221,13 @@ namespace Jellyfin.Server
                 }
                 catch (Exception ex) when (ex is not TaskCanceledException)
                 {
-                    _logger.LogError("Kestrel failed to start! This is most likely due to an invalid address or port bind - correct your bind configuration in network.xml and try again.");
+                    _logger.LogError("Kestrel failed to start! This is most likely due to an invalid address or port bind - correct your bind configuration in network.xml and try again");
                     throw;
                 }
 
                 await appHost.RunStartupTasksAsync(_tokenSource.Token).ConfigureAwait(false);
 
-                _logger.LogInformation("Startup complete {Time:g}", Stopwatch.GetElapsedTime(startTimestamp));
+                _logger.LogInformation("Startup complete {Time:g}", Stopwatch.GetElapsedTime(_startTimestamp));
 
                 // Block main thread until shutdown
                 await Task.Delay(-1, _tokenSource.Token).ConfigureAwait(false);
@@ -220,7 +238,7 @@ namespace Jellyfin.Server
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex, "Error while starting server.");
+                _logger.LogCritical(ex, "Error while starting server");
             }
             finally
             {
@@ -240,11 +258,7 @@ namespace Jellyfin.Server
                 }
 
                 await appHost.DisposeAsync().ConfigureAwait(false);
-            }
-
-            if (_restartOnShutdown)
-            {
-                StartNewInstance(options);
+                host?.Dispose();
             }
         }
 
@@ -281,45 +295,6 @@ namespace Jellyfin.Server
                 .AddJsonFile(LoggingConfigFileSystem, optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables("JELLYFIN_")
                 .AddInMemoryCollection(commandLineOpts.ConvertToConfig());
-        }
-
-        private static void StartNewInstance(StartupOptions options)
-        {
-            _logger.LogInformation("Starting new instance");
-
-            var module = options.RestartPath;
-
-            if (string.IsNullOrWhiteSpace(module))
-            {
-                module = Environment.GetCommandLineArgs()[0];
-            }
-
-            string commandLineArgsString;
-            if (options.RestartArgs is not null)
-            {
-                commandLineArgsString = options.RestartArgs;
-            }
-            else
-            {
-                commandLineArgsString = string.Join(
-                    ' ',
-                    Environment.GetCommandLineArgs().Skip(1).Select(NormalizeCommandLineArgument));
-            }
-
-            _logger.LogInformation("Executable: {0}", module);
-            _logger.LogInformation("Arguments: {0}", commandLineArgsString);
-
-            Process.Start(module, commandLineArgsString);
-        }
-
-        private static string NormalizeCommandLineArgument(string arg)
-        {
-            if (!arg.Contains(' ', StringComparison.Ordinal))
-            {
-                return arg;
-            }
-
-            return "\"" + arg + "\"";
         }
     }
 }

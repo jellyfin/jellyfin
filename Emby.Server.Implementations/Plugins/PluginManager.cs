@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Runtime.Loader;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -30,6 +31,7 @@ namespace Emby.Server.Implementations.Plugins
     {
         private readonly string _pluginsPath;
         private readonly Version _appVersion;
+        private readonly AssemblyLoadContext _assemblyLoadContext;
         private readonly JsonSerializerOptions _jsonOptions;
         private readonly ILogger<PluginManager> _logger;
         private readonly IApplicationHost _appHost;
@@ -76,6 +78,8 @@ namespace Emby.Server.Implementations.Plugins
             _appHost = appHost;
             _minimumVersion = new Version(0, 0, 0, 1);
             _plugins = Directory.Exists(_pluginsPath) ? DiscoverPlugins().ToList() : new List<LocalPlugin>();
+
+            _assemblyLoadContext = new AssemblyLoadContext("PluginContext", true);
         }
 
         private IHttpClientFactory HttpClientFactory
@@ -124,7 +128,7 @@ namespace Emby.Server.Implementations.Plugins
                     Assembly assembly;
                     try
                     {
-                        assembly = Assembly.LoadFrom(file);
+                        assembly = _assemblyLoadContext.LoadFromAssemblyPath(file);
 
                         // Load all required types to verify that the plugin will load
                         assembly.GetTypes();
@@ -154,6 +158,12 @@ namespace Emby.Server.Implementations.Plugins
                     yield return assembly;
                 }
             }
+        }
+
+        /// <inheritdoc />
+        public void UnloadAssemblies()
+        {
+            _assemblyLoadContext.Unload();
         }
 
         /// <summary>
