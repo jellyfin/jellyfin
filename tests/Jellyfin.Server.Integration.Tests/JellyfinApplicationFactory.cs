@@ -36,6 +36,8 @@ namespace Jellyfin.Server.Integration.Tests
             Program.PerformStaticInitialization();
         }
 
+        public ServerApplicationPaths? AppPaths { get; private set; }
+
         /// <inheritdoc/>
         protected override IWebHostBuilder CreateWebHostBuilder()
         {
@@ -54,7 +56,8 @@ namespace Jellyfin.Server.Integration.Tests
             Directory.CreateDirectory(Path.Combine(webHostPathRoot, "config"));
             Directory.CreateDirectory(Path.Combine(webHostPathRoot, "cache"));
             Directory.CreateDirectory(Path.Combine(webHostPathRoot, "jellyfin-web"));
-            var appPaths = new ServerApplicationPaths(
+
+            AppPaths = new ServerApplicationPaths(
                 webHostPathRoot,
                 Path.Combine(webHostPathRoot, "logs"),
                 Path.Combine(webHostPathRoot, "config"),
@@ -63,10 +66,10 @@ namespace Jellyfin.Server.Integration.Tests
 
             // Create the logging config file
             // TODO: We shouldn't need to do this since we are only logging to console
-            Program.InitLoggingConfigFile(appPaths).GetAwaiter().GetResult();
+            Program.InitLoggingConfigFile(AppPaths).GetAwaiter().GetResult();
 
             // Create a copy of the application configuration to use for startup
-            var startupConfig = Program.CreateAppConfiguration(commandLineOpts, appPaths);
+            var startupConfig = Program.CreateAppConfiguration(commandLineOpts, AppPaths);
 
             ILoggerFactory loggerFactory = new SerilogLoggerFactory();
 
@@ -74,18 +77,18 @@ namespace Jellyfin.Server.Integration.Tests
 
             // Create the app host and initialize it
             var appHost = new TestAppHost(
-                appPaths,
+                AppPaths,
                 loggerFactory,
                 commandLineOpts,
                 startupConfig);
             _disposableComponents.Add(appHost);
 
             builder.ConfigureServices(services => appHost.Init(services))
-                .ConfigureWebHostBuilder(appHost, startupConfig, appPaths)
+                .ConfigureWebHostBuilder(appHost, startupConfig, AppPaths)
                 .ConfigureAppConfiguration((context, builder) =>
                 {
                     builder
-                        .SetBasePath(appPaths.ConfigurationDirectoryPath)
+                        .SetBasePath(AppPaths.ConfigurationDirectoryPath)
                         .AddInMemoryCollection(ConfigurationOptions.DefaultConfiguration)
                         .AddEnvironmentVariables("JELLYFIN_")
                         .AddInMemoryCollection(commandLineOpts.ConvertToConfig());
