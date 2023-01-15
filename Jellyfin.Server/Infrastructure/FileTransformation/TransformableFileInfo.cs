@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.FileProviders.Physical;
@@ -26,7 +26,7 @@ internal class TransformableFileInfo : IFileInfo
 
     public string Name => _baseInfo.Name;
 
-    public string? PhysicalPath => _baseInfo.PhysicalPath;
+    public string? PhysicalPath => null;
 
     public Stream CreateReadStream()
     {
