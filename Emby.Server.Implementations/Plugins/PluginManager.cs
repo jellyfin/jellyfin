@@ -31,7 +31,7 @@ namespace Emby.Server.Implementations.Plugins
     {
         private readonly string _pluginsPath;
         private readonly Version _appVersion;
-        private readonly AssemblyLoadContext _assemblyLoadContext;
+        private readonly List<AssemblyLoadContext> _assemblyLoadContexts;
         private readonly JsonSerializerOptions _jsonOptions;
         private readonly ILogger<PluginManager> _logger;
         private readonly IApplicationHost _appHost;
@@ -79,7 +79,7 @@ namespace Emby.Server.Implementations.Plugins
             _minimumVersion = new Version(0, 0, 0, 1);
             _plugins = Directory.Exists(_pluginsPath) ? DiscoverPlugins().ToList() : new List<LocalPlugin>();
 
-            _assemblyLoadContext = new AssemblyLoadContext("PluginContext", true);
+            _assemblyLoadContexts = new List<AssemblyLoadContext>();
         }
 
         private IHttpClientFactory HttpClientFactory
@@ -128,7 +128,10 @@ namespace Emby.Server.Implementations.Plugins
                     Assembly assembly;
                     try
                     {
-                        assembly = _assemblyLoadContext.LoadFromAssemblyPath(file);
+                        var assemblyLoadContext = new AssemblyLoadContext($"{plugin.Name} ${plugin.Version}", true);
+                        _assemblyLoadContexts.Add(assemblyLoadContext);
+
+                        assembly = assemblyLoadContext.LoadFromAssemblyPath(file);
 
                         // Load all required types to verify that the plugin will load
                         assembly.GetTypes();
@@ -163,7 +166,10 @@ namespace Emby.Server.Implementations.Plugins
         /// <inheritdoc />
         public void UnloadAssemblies()
         {
-            _assemblyLoadContext.Unload();
+            foreach (var assemblyLoadContext in _assemblyLoadContexts)
+            {
+                assemblyLoadContext.Unload();
+            }
         }
 
         /// <summary>
