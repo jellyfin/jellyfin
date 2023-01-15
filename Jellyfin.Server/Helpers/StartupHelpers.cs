@@ -2,14 +2,18 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
 using Emby.Server.Implementations;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Serilog;
 using SQLitePCL;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Jellyfin.Server.Helpers;
 
@@ -185,6 +189,52 @@ public static class StartupHelpers
         }
 
         return new ServerApplicationPaths(dataDir, logDir, configDir, cacheDir, webDir);
+    }
+
+    /// <summary>
+    /// Gets the path for the unix socket Kestrel should bind to.
+    /// </summary>
+    /// <param name="startupConfig">The startup config.</param>
+    /// <param name="appPaths">The application paths.</param>
+    /// <returns>The path for Kestrel to bind to.</returns>
+    public static string GetUnixSocketPath(IConfiguration startupConfig, IApplicationPaths appPaths)
+    {
+        var socketPath = startupConfig.GetUnixSocketPath();
+
+        if (string.IsNullOrEmpty(socketPath))
+        {
+            var xdgRuntimeDir = Environment.GetEnvironmentVariable("XDG_RUNTIME_DIR");
+            var socketFile = "jellyfin.sock";
+            if (xdgRuntimeDir is null)
+            {
+                // Fall back to config dir
+                socketPath = Path.Join(appPaths.ConfigurationDirectoryPath, socketFile);
+            }
+            else
+            {
+                socketPath = Path.Join(xdgRuntimeDir, socketFile);
+            }
+        }
+
+        return socketPath;
+    }
+
+    /// <summary>
+    /// Sets the unix file permissions for Kestrel's socket file.
+    /// </summary>
+    /// <param name="startupConfig">The startup config.</param>
+    /// <param name="socketPath">The socket path.</param>
+    /// <param name="logger">The logger.</param>
+    [UnsupportedOSPlatform("windows")]
+    public static void SetUnixSocketPermissions(IConfiguration startupConfig, string socketPath, ILogger logger)
+    {
+        var socketPerms = startupConfig.GetUnixSocketPermissions();
+
+        if (!string.IsNullOrEmpty(socketPerms))
+        {
+            File.SetUnixFileMode(socketPath, (UnixFileMode)Convert.ToInt32(socketPerms, 8));
+            logger.LogInformation("Kestrel unix socket permissions set to {SocketPerms}", socketPerms);
+        }
     }
 
     /// <summary>

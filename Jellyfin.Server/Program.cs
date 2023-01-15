@@ -3,18 +3,15 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Reflection;
-using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 using Emby.Server.Implementations;
+using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Helpers;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -182,7 +179,7 @@ namespace Jellyfin.Server
             {
                 var host = Host.CreateDefaultBuilder()
                     .ConfigureServices(services => appHost.Init(services))
-                    .ConfigureWebHostDefaults(webHostBuilder => webHostBuilder.ConfigureWebHostBuilder(appHost, startupConfig, appPaths))
+                    .ConfigureWebHostDefaults(webHostBuilder => webHostBuilder.ConfigureWebHostBuilder(appHost, startupConfig, appPaths, _logger))
                     .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(options, appPaths, startupConfig))
                     .UseSerilog()
                     .Build();
@@ -199,9 +196,9 @@ namespace Jellyfin.Server
 
                     if (!OperatingSystem.IsWindows() && startupConfig.UseUnixSocket())
                     {
-                        var socketPath = GetUnixSocketPath(startupConfig, appPaths);
+                        var socketPath = StartupHelpers.GetUnixSocketPath(startupConfig, appPaths);
 
-                        SetUnixSocketPermissions(startupConfig, socketPath);
+                        StartupHelpers.SetUnixSocketPermissions(startupConfig, socketPath, _logger);
                     }
                 }
                 catch (Exception ex) when (ex is not TaskCanceledException)
@@ -249,75 +246,6 @@ namespace Jellyfin.Server
             {
                 StartNewInstance(options);
             }
-        }
-
-        /// <summary>
-        /// Configure the web host builder.
-        /// </summary>
-        /// <param name="builder">The builder to configure.</param>
-        /// <param name="appHost">The application host.</param>
-        /// <param name="startupConfig">The application configuration.</param>
-        /// <param name="appPaths">The application paths.</param>
-        /// <returns>The configured web host builder.</returns>
-        public static IWebHostBuilder ConfigureWebHostBuilder(
-            this IWebHostBuilder builder,
-            CoreAppHost appHost,
-            IConfiguration startupConfig,
-            IApplicationPaths appPaths)
-        {
-            return builder
-                .UseKestrel((builderContext, options) =>
-                {
-                    var addresses = appHost.NetManager.GetAllBindInterfaces();
-
-                    bool flagged = false;
-                    foreach (IPObject netAdd in addresses)
-                    {
-                        _logger.LogInformation("Kestrel listening on {Address}", netAdd.Address == IPAddress.IPv6Any ? "All Addresses" : netAdd);
-                        options.Listen(netAdd.Address, appHost.HttpPort);
-                        if (appHost.ListenWithHttps)
-                        {
-                            options.Listen(
-                                netAdd.Address,
-                                appHost.HttpsPort,
-                                listenOptions => listenOptions.UseHttps(appHost.Certificate));
-                        }
-                        else if (builderContext.HostingEnvironment.IsDevelopment())
-                        {
-                            try
-                            {
-                                options.Listen(
-                                    netAdd.Address,
-                                    appHost.HttpsPort,
-                                    listenOptions => listenOptions.UseHttps());
-                            }
-                            catch (InvalidOperationException)
-                            {
-                                if (!flagged)
-                                {
-                                    _logger.LogWarning("Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
-                                    flagged = true;
-                                }
-                            }
-                        }
-                    }
-
-                    // Bind to unix socket (only on unix systems)
-                    if (startupConfig.UseUnixSocket() && Environment.OSVersion.Platform == PlatformID.Unix)
-                    {
-                        var socketPath = GetUnixSocketPath(startupConfig, appPaths);
-
-                        // Workaround for https://github.com/aspnet/AspNetCore/issues/14134
-                        if (File.Exists(socketPath))
-                        {
-                            File.Delete(socketPath);
-                        }
-
-                        options.ListenUnixSocket(socketPath);
-                        _logger.LogInformation("Kestrel listening to unix socket {SocketPath}", socketPath);
-                    }
-                })
-                .UseStartup(_ => new Startup(appHost));
         }
 
         /// <summary>
@@ -392,40 +320,6 @@ namespace Jellyfin.Server
             }
 
             return "\"" + arg + "\"";
-        }
-
-        private static string GetUnixSocketPath(IConfiguration startupConfig, IApplicationPaths appPaths)
-        {
-            var socketPath = startupConfig.GetUnixSocketPath();
-
-            if (string.IsNullOrEmpty(socketPath))
-            {
-                var xdgRuntimeDir = Environment.GetEnvironmentVariable("XDG_RUNTIME_DIR");
-                var socketFile = "jellyfin.sock";
-                if (xdgRuntimeDir is null)
-                {
-                    // Fall back to config dir
-                    socketPath = Path.Join(appPaths.ConfigurationDirectoryPath, socketFile);
-                }
-                else
-                {
-                    socketPath = Path.Join(xdgRuntimeDir, socketFile);
-                }
-            }
-
-            return socketPath;
-        }
-
-        [UnsupportedOSPlatform("windows")]
-        private static void SetUnixSocketPermissions(IConfiguration startupConfig, string socketPath)
-        {
-            var socketPerms = startupConfig.GetUnixSocketPermissions();
-
-            if (!string.IsNullOrEmpty(socketPerms))
-            {
-                File.SetUnixFileMode(socketPath, (UnixFileMode)Convert.ToInt32(socketPerms, 8));
-                _logger.LogInformation("Kestrel unix socket permissions set to {SocketPerms}", socketPerms);
-            }
         }
     }
 }

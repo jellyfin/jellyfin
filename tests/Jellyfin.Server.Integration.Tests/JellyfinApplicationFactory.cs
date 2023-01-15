@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using Emby.Server.Implementations;
+using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Helpers;
 using MediaBrowser.Common;
 using Microsoft.AspNetCore.Hosting;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
 using Serilog.Extensions.Logging;
 
@@ -82,7 +84,7 @@ namespace Jellyfin.Server.Integration.Tests
             _disposableComponents.Add(appHost);
 
             builder.ConfigureServices(services => appHost.Init(services))
-                .ConfigureWebHostBuilder(appHost, startupConfig, appPaths)
+                .ConfigureWebHostBuilder(appHost, startupConfig, appPaths, NullLogger.Instance)
                 .ConfigureAppConfiguration((context, builder) =>
                 {
                     builder
