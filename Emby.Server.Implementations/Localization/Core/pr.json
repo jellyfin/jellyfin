@@ -13,5 +13,11 @@
     "DeviceOfflineWithName": "{0} abandoned ship",
     "AppDeviceValues": "Captain: {0}, Ship: {1}",
     "CameraImageUploadedFrom": "Yer looking glass has glimpsed another painting from {0}",
-    "Collections": "Barrels"
+    "Collections": "Barrels",
+    "ItemAddedWithName": "{0} is now with yer treasure",
+    "Default": "Normal-like",
+    "FailedLoginAttemptWithUserName": "Ye failed to get in, try from {0}",
+    "Favorites": "Finest Loot",
+    "ItemRemovedWithName": "{0} was taken from yer treasure",
+    "LabelIpAddressValue": "Ship's coordinates: {0}"
 }
