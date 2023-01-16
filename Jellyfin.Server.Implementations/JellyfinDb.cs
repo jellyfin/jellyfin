@@ -1,4 +1,3 @@
-#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -21,118 +20,113 @@ public class JellyfinDb : DbContext
     {
     }
 
-    /// <summary>
-    /// Gets or sets the default connection string.
-    /// </summary>
-    public static string ConnectionString { get; set; } = @"Data Source=jellyfin.db";
+    public DbSet<AccessSchedule> AccessSchedules => Set<AccessSchedule>();
 
-    public virtual DbSet<AccessSchedule> AccessSchedules { get; set; }
+    public DbSet<ActivityLog> ActivityLogs => Set<ActivityLog>();
 
-    public virtual DbSet<ActivityLog> ActivityLogs { get; set; }
+    public DbSet<ApiKey> ApiKeys => Set<ApiKey>();
 
-    public virtual DbSet<ApiKey> ApiKeys { get; set; }
+    public DbSet<Device> Devices => Set<Device>();
 
-    public virtual DbSet<Device> Devices { get; set; }
+    public DbSet<DeviceOptions> DeviceOptions => Set<DeviceOptions>();
 
-    public virtual DbSet<DeviceOptions> DeviceOptions { get; set; }
+    public DbSet<DisplayPreferences> DisplayPreferences => Set<DisplayPreferences>();
 
-    public virtual DbSet<DisplayPreferences> DisplayPreferences { get; set; }
+    public DbSet<ImageInfo> ImageInfos => Set<ImageInfo>();
 
-    public virtual DbSet<ImageInfo> ImageInfos { get; set; }
+    public DbSet<ItemDisplayPreferences> ItemDisplayPreferences => Set<ItemDisplayPreferences>();
 
-    public virtual DbSet<ItemDisplayPreferences> ItemDisplayPreferences { get; set; }
+    public DbSet<CustomItemDisplayPreferences> CustomItemDisplayPreferences => Set<CustomItemDisplayPreferences>();
 
-    public virtual DbSet<CustomItemDisplayPreferences> CustomItemDisplayPreferences { get; set; }
+    public DbSet<Permission> Permissions => Set<Permission>();
 
-    public virtual DbSet<Permission> Permissions { get; set; }
+    public DbSet<Preference> Preferences => Set<Preference>();
 
-    public virtual DbSet<Preference> Preferences { get; set; }
+    public DbSet<User> Users => Set<User>();
 
-    public virtual DbSet<User> Users { get; set; }
+    /*public DbSet<Artwork> Artwork => Set<Artwork>();
 
-    /*public virtual DbSet<Artwork> Artwork { get; set; }
+    public DbSet<Book> Books => Set<Book>();
 
-    public virtual DbSet<Book> Books { get; set; }
+    public DbSet<BookMetadata> BookMetadata => Set<BookMetadata>();
 
-    public virtual DbSet<BookMetadata> BookMetadata { get; set; }
+    public DbSet<Chapter> Chapters => Set<Chapter>();
 
-    public virtual DbSet<Chapter> Chapters { get; set; }
+    public DbSet<Collection> Collections => Set<Collection>();
 
-    public virtual DbSet<Collection> Collections { get; set; }
+    public DbSet<CollectionItem> CollectionItems => Set<CollectionItem>();
 
-    public virtual DbSet<CollectionItem> CollectionItems { get; set; }
+    public DbSet<Company> Companies => Set<Company>();
 
-    public virtual DbSet<Company> Companies { get; set; }
+    public DbSet<CompanyMetadata> CompanyMetadata => Set<CompanyMetadata>();
 
-    public virtual DbSet<CompanyMetadata> CompanyMetadata { get; set; }
+    public DbSet<CustomItem> CustomItems => Set<CustomItem>();
 
-    public virtual DbSet<CustomItem> CustomItems { get; set; }
+    public DbSet<CustomItemMetadata> CustomItemMetadata => Set<CustomItemMetadata>();
 
-    public virtual DbSet<CustomItemMetadata> CustomItemMetadata { get; set; }
+    public DbSet<Episode> Episodes => Set<Episode>();
 
-    public virtual DbSet<Episode> Episodes { get; set; }
+    public DbSet<EpisodeMetadata> EpisodeMetadata => Set<EpisodeMetadata>();
 
-    public virtual DbSet<EpisodeMetadata> EpisodeMetadata { get; set; }
+    public DbSet<Genre> Genres => Set<Genre>();
 
-    public virtual DbSet<Genre> Genres { get; set; }
+    public DbSet<Group> Groups => Set<Groups>();
 
-    public virtual DbSet<Group> Groups { get; set; }
+    public DbSet<Library> Libraries => Set<Library>();
 
-    public virtual DbSet<Library> Libraries { get; set; }
+    public DbSet<LibraryItem> LibraryItems => Set<LibraryItems>();
 
-    public virtual DbSet<LibraryItem> LibraryItems { get; set; }
+    public DbSet<LibraryRoot> LibraryRoot => Set<LibraryRoot>();
 
-    public virtual DbSet<LibraryRoot> LibraryRoot { get; set; }
+    public DbSet<MediaFile> MediaFiles => Set<MediaFiles>();
 
-    public virtual DbSet<MediaFile> MediaFiles { get; set; }
+    public DbSet<MediaFileStream> MediaFileStream => Set<MediaFileStream>();
 
-    public virtual DbSet<MediaFileStream> MediaFileStream { get; set; }
+    public DbSet<Metadata> Metadata => Set<Metadata>();
 
-    public virtual DbSet<Metadata> Metadata { get; set; }
+    public DbSet<MetadataProvider> MetadataProviders => Set<MetadataProvider>();
 
-    public virtual DbSet<MetadataProvider> MetadataProviders { get; set; }
+    public DbSet<MetadataProviderId> MetadataProviderIds => Set<MetadataProviderId>();
 
-    public virtual DbSet<MetadataProviderId> MetadataProviderIds { get; set; }
+    public DbSet<Movie> Movies => Set<Movie>();
 
-    public virtual DbSet<Movie> Movies { get; set; }
+    public DbSet<MovieMetadata> MovieMetadata => Set<MovieMetadata>();
 
-    public virtual DbSet<MovieMetadata> MovieMetadata { get; set; }
+    public DbSet<MusicAlbum> MusicAlbums => Set<MusicAlbum>();
 
-    public virtual DbSet<MusicAlbum> MusicAlbums { get; set; }
+    public DbSet<MusicAlbumMetadata> MusicAlbumMetadata => Set<MusicAlbumMetadata>();
 
-    public virtual DbSet<MusicAlbumMetadata> MusicAlbumMetadata { get; set; }
+    public DbSet<Person> People => Set<Person>();
 
-    public virtual DbSet<Person> People { get; set; }
+    public DbSet<PersonRole> PersonRoles => Set<PersonRole>();
 
-    public virtual DbSet<PersonRole> PersonRoles { get; set; }
+    public DbSet<Photo> Photo => Set<Photo>();
 
-    public virtual DbSet<Photo> Photo { get; set; }
+    public DbSet<PhotoMetadata> PhotoMetadata => Set<PhotoMetadata>();
 
-    public virtual DbSet<PhotoMetadata> PhotoMetadata { get; set; }
+    public DbSet<ProviderMapping> ProviderMappings => Set<ProviderMapping>();
 
-    public virtual DbSet<ProviderMapping> ProviderMappings { get; set; }
-
-    public virtual DbSet<Rating> Ratings { get; set; }
+    public DbSet<Rating> Ratings => Set<Rating>();
 
     /// <summary>
     /// Repository for global::Jellyfin.Data.Entities.RatingSource - This is the entity to
     /// store review ratings, not age ratings.
     /// </summary>
-    public virtual DbSet<RatingSource> RatingSources { get; set; }
+    public DbSet<RatingSource> RatingSources => Set<RatingSource>();
 
-    public virtual DbSet<Release> Releases { get; set; }
+    public DbSet<Release> Releases => Set<Release>();
 
-    public virtual DbSet<Season> Seasons { get; set; }
+    public DbSet<Season> Seasons => Set<Season>();
 
-    public virtual DbSet<SeasonMetadata> SeasonMetadata { get; set; }
+    public DbSet<SeasonMetadata> SeasonMetadata => Set<SeasonMetadata>();
 
-    public virtual DbSet<Series> Series { get; set; }
+    public DbSet<Series> Series => Set<Series>();
 
-    public virtual DbSet<SeriesMetadata> SeriesMetadata { get; set; }
+    public DbSet<SeriesMetadata> SeriesMetadata => Set<SeriesMetadata();
 
-    public virtual DbSet<Track> Tracks { get; set; }
+    public DbSet<Track> Tracks => Set<Track>();
 
-    public virtual DbSet<TrackMetadata> TrackMetadata { get; set; }*/
+    public DbSet<TrackMetadata> TrackMetadata => Set<TrackMetadata>();*/
 
     /// <inheritdoc/>
     public override int SaveChanges()
