@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Linq;
 using Jellyfin.Data.Entities;
@@ -20,28 +18,64 @@ public class JellyfinDb : DbContext
     {
     }
 
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the access schedules.
+    /// </summary>
     public DbSet<AccessSchedule> AccessSchedules => Set<AccessSchedule>();
 
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the activity logs.
+    /// </summary>
     public DbSet<ActivityLog> ActivityLogs => Set<ActivityLog>();
 
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the API keys.
+    /// </summary>
     public DbSet<ApiKey> ApiKeys => Set<ApiKey>();
 
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the devices.
+    /// </summary>
     public DbSet<Device> Devices => Set<Device>();
 
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the device options.
+    /// </summary>
     public DbSet<DeviceOptions> DeviceOptions => Set<DeviceOptions>();
 
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the display preferences.
+    /// </summary>
     public DbSet<DisplayPreferences> DisplayPreferences => Set<DisplayPreferences>();
 
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the image infos.
+    /// </summary>
     public DbSet<ImageInfo> ImageInfos => Set<ImageInfo>();
 
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the item display preferences.
+    /// </summary>
     public DbSet<ItemDisplayPreferences> ItemDisplayPreferences => Set<ItemDisplayPreferences>();
 
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the custom item display preferences.
+    /// </summary>
     public DbSet<CustomItemDisplayPreferences> CustomItemDisplayPreferences => Set<CustomItemDisplayPreferences>();
 
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the permissions.
+    /// </summary>
     public DbSet<Permission> Permissions => Set<Permission>();
 
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the preferences.
+    /// </summary>
     public DbSet<Preference> Preferences => Set<Preference>();
 
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the users.
+    /// </summary>
     public DbSet<User> Users => Set<User>();
 
     /*public DbSet<Artwork> Artwork => Set<Artwork>();
