@@ -153,7 +153,6 @@ namespace Jellyfin.Server.Implementations
         {
             modelBuilder.SetDefaultDateTimeKind(DateTimeKind.Utc);
             base.OnModelCreating(modelBuilder);
-            modelBuilder.HasDefaultSchema("jellyfin");
 
             // Configuration for each entity is in it's own class inside 'ModelConfiguration'.
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(JellyfinDb).Assembly);
