@@ -4,7 +4,6 @@ using EFCoreSecondLevelCacheInterceptor;
 using MediaBrowser.Common.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Implementations.Extensions;
 
@@ -32,10 +31,8 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddPooledDbContextFactory<JellyfinDbContext>((serviceProvider, opt) =>
         {
             var applicationPaths = serviceProvider.GetRequiredService<IApplicationPaths>();
-            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
             opt.UseSqlite($"Filename={Path.Combine(applicationPaths.DataPath, "jellyfin.db")}")
-                .AddInterceptors(serviceProvider.GetRequiredService<SecondLevelCacheInterceptor>())
-                .UseLoggerFactory(loggerFactory);
+                .AddInterceptors(serviceProvider.GetRequiredService<SecondLevelCacheInterceptor>());
         });
 
         return serviceCollection;
