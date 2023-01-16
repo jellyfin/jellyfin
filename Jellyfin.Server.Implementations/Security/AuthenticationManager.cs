@@ -40,7 +40,6 @@ namespace Jellyfin.Server.Implementations.Security
             await using (dbContext.ConfigureAwait(false))
             {
                 return await dbContext.ApiKeys
-                    .AsAsyncEnumerable()
                     .Select(key => new AuthenticationInfo
                     {
                         AppName = key.Name,
@@ -60,7 +59,6 @@ namespace Jellyfin.Server.Implementations.Security
             await using (dbContext.ConfigureAwait(false))
             {
                 var key = await dbContext.ApiKeys
-                    .AsQueryable()
                     .Where(apiKey => apiKey.AccessToken == accessToken)
                     .FirstOrDefaultAsync()
                     .ConfigureAwait(false);

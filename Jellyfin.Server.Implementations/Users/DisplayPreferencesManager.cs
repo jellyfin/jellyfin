@@ -62,7 +62,6 @@ namespace Jellyfin.Server.Implementations.Users
         public IList<ItemDisplayPreferences> ListItemDisplayPreferences(Guid userId, string client)
         {
             return _dbContext.ItemDisplayPreferences
-                .AsQueryable()
                 .Where(prefs => prefs.UserId.Equals(userId) && !prefs.ItemId.Equals(default) && string.Equals(prefs.Client, client))
                 .ToList();
         }
@@ -71,7 +70,6 @@ namespace Jellyfin.Server.Implementations.Users
         public Dictionary<string, string?> ListCustomItemDisplayPreferences(Guid userId, Guid itemId, string client)
         {
             return _dbContext.CustomItemDisplayPreferences
-                .AsQueryable()
                 .Where(prefs => prefs.UserId.Equals(userId)
                                 && prefs.ItemId.Equals(itemId)
                                 && string.Equals(prefs.Client, client))
@@ -82,7 +80,6 @@ namespace Jellyfin.Server.Implementations.Users
         public void SetCustomItemDisplayPreferences(Guid userId, Guid itemId, string client, Dictionary<string, string?> customPreferences)
         {
             var existingPrefs = _dbContext.CustomItemDisplayPreferences
-                .AsQueryable()
                 .Where(prefs => prefs.UserId.Equals(userId)
                                 && prefs.ItemId.Equals(itemId)
                                 && string.Equals(prefs.Client, client));

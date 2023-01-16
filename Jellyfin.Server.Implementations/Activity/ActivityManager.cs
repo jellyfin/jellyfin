@@ -48,18 +48,10 @@ namespace Jellyfin.Server.Implementations.Activity
             var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                IQueryable<ActivityLog> entries = dbContext.ActivityLogs
-                    .OrderByDescending(entry => entry.DateCreated);
-
-                if (query.MinDate.HasValue)
-                {
-                    entries = entries.Where(entry => entry.DateCreated >= query.MinDate);
-                }
-
-                if (query.HasUserId.HasValue)
-                {
-                    entries = entries.Where(entry => (!entry.UserId.Equals(default)) == query.HasUserId.Value);
-                }
+                var entries = dbContext.ActivityLogs
+                    .OrderByDescending(entry => entry.DateCreated)
+                    .Where(entry => query.MinDate == null || entry.DateCreated >= query.MinDate)
+                    .Where(entry => !query.HasUserId.HasValue || entry.UserId.Equals(default) != query.HasUserId.Value);
 
                 return new QueryResult<ActivityLogEntry>(
                     query.Skip,
@@ -67,8 +59,16 @@ namespace Jellyfin.Server.Implementations.Activity
                     await entries
                         .Skip(query.Skip ?? 0)
                         .Take(query.Limit ?? 100)
-                        .AsAsyncEnumerable()
-                        .Select(ConvertToOldModel)
+                        .Select(entity => new ActivityLogEntry(entity.Name, entity.Type, entity.UserId)
+                        {
+                            Id = entity.Id,
+                            Overview = entity.Overview,
+                            ShortOverview = entity.ShortOverview,
+                            ItemId = entity.ItemId,
+                            Date = entity.DateCreated,
+                            Severity = entity.LogSeverity
+                        })
+                        .AsQueryable()
                         .ToListAsync()
                         .ConfigureAwait(false));
             }

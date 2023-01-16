@@ -143,7 +143,6 @@ namespace Jellyfin.Server.Implementations.Users
             await using (dbContext.ConfigureAwait(false))
             {
                 if (await dbContext.Users
-                        .AsQueryable()
                         .AnyAsync(u => u.Username == newName && !u.Id.Equals(user.Id))
                         .ConfigureAwait(false))
                 {
