@@ -29,7 +29,7 @@ public static class ServiceCollectionExtensions
                 .SkipCachingResults(result =>
                     result.Value is null || (result.Value is EFTableRows rows && rows.RowsCount == 0)));
 
-        serviceCollection.AddPooledDbContextFactory<JellyfinDb>((serviceProvider, opt) =>
+        serviceCollection.AddPooledDbContextFactory<JellyfinDbContext>((serviceProvider, opt) =>
         {
             var applicationPaths = serviceProvider.GetRequiredService<IApplicationPaths>();
             var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();

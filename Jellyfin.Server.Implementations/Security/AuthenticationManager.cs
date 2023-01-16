@@ -10,13 +10,13 @@ namespace Jellyfin.Server.Implementations.Security
     /// <inheritdoc />
     public class AuthenticationManager : IAuthenticationManager
     {
-        private readonly IDbContextFactory<JellyfinDb> _dbProvider;
+        private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthenticationManager"/> class.
         /// </summary>
         /// <param name="dbProvider">The database provider.</param>
-        public AuthenticationManager(IDbContextFactory<JellyfinDb> dbProvider)
+        public AuthenticationManager(IDbContextFactory<JellyfinDbContext> dbProvider)
         {
             _dbProvider = dbProvider;
         }

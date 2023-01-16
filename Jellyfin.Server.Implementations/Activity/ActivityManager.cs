@@ -15,13 +15,13 @@ namespace Jellyfin.Server.Implementations.Activity
     /// </summary>
     public class ActivityManager : IActivityManager
     {
-        private readonly IDbContextFactory<JellyfinDb> _provider;
+        private readonly IDbContextFactory<JellyfinDbContext> _provider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ActivityManager"/> class.
         /// </summary>
         /// <param name="provider">The Jellyfin database provider.</param>
-        public ActivityManager(IDbContextFactory<JellyfinDb> provider)
+        public ActivityManager(IDbContextFactory<JellyfinDbContext> provider)
         {
             _provider = provider;
         }

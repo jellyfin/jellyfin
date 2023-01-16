@@ -23,7 +23,7 @@ namespace Jellyfin.Server.Implementations.Devices
     /// </summary>
     public class DeviceManager : IDeviceManager
     {
-        private readonly IDbContextFactory<JellyfinDb> _dbProvider;
+        private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
         private readonly IUserManager _userManager;
         private readonly ConcurrentDictionary<string, ClientCapabilities> _capabilitiesMap = new();
 
@@ -32,7 +32,7 @@ namespace Jellyfin.Server.Implementations.Devices
         /// </summary>
         /// <param name="dbProvider">The database provider.</param>
         /// <param name="userManager">The user manager.</param>
-        public DeviceManager(IDbContextFactory<JellyfinDb> dbProvider, IUserManager userManager)
+        public DeviceManager(IDbContextFactory<JellyfinDbContext> dbProvider, IUserManager userManager)
         {
             _dbProvider = dbProvider;
             _userManager = userManager;

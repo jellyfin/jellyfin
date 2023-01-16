@@ -15,13 +15,13 @@ namespace Jellyfin.Server.Implementations.Users
     /// </summary>
     public class DisplayPreferencesManager : IDisplayPreferencesManager
     {
-        private readonly JellyfinDb _dbContext;
+        private readonly JellyfinDbContext _dbContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DisplayPreferencesManager"/> class.
         /// </summary>
         /// <param name="dbContextFactory">The database context factory.</param>
-        public DisplayPreferencesManager(IDbContextFactory<JellyfinDb> dbContextFactory)
+        public DisplayPreferencesManager(IDbContextFactory<JellyfinDbContext> dbContextFactory)
         {
             _dbContext = dbContextFactory.CreateDbContext();
         }

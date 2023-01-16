@@ -8,13 +8,13 @@ using Microsoft.EntityFrameworkCore;
 namespace Jellyfin.Server.Implementations;
 
 /// <inheritdoc/>
-public class JellyfinDb : DbContext
+public class JellyfinDbContext : DbContext
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="JellyfinDb"/> class.
+    /// Initializes a new instance of the <see cref="JellyfinDbContext"/> class.
     /// </summary>
     /// <param name="options">The database context options.</param>
-    public JellyfinDb(DbContextOptions<JellyfinDb> options) : base(options)
+    public JellyfinDbContext(DbContextOptions<JellyfinDbContext> options) : base(options)
     {
     }
 
@@ -183,6 +183,6 @@ public class JellyfinDb : DbContext
         base.OnModelCreating(modelBuilder);
 
         // Configuration for each entity is in it's own class inside 'ModelConfiguration'.
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(JellyfinDb).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(JellyfinDbContext).Assembly);
     }
 }
