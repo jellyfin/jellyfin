@@ -63,7 +63,7 @@ namespace Emby.Server.Implementations.MediaEncoder
         /// Determines whether [is eligible for chapter image extraction] [the specified video].
         /// </summary>
         /// <param name="video">The video.</param>
-        /// <param name="libraryOptions"></param>
+        /// <param name="libraryOptions">The library options for the video.</param>
         /// <returns><c>true</c> if [is eligible for chapter image extraction] [the specified video]; otherwise, <c>false</c>.</returns>
         private bool IsEligibleForChapterImageExtraction(Video video, LibraryOptions libraryOptions)
         {
