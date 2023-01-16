@@ -85,6 +85,7 @@ namespace Jellyfin.Server.Implementations.Users
             _users = new ConcurrentDictionary<Guid, User>();
             using var dbContext = _dbProvider.CreateDbContext();
             foreach (var user in dbContext.Users
+                .AsSplitQuery()
                 .Include(user => user.Permissions)
                 .Include(user => user.Preferences)
                 .Include(user => user.AccessSchedules)
