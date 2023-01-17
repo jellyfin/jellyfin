@@ -19,7 +19,7 @@ namespace Jellyfin.Server.Migrations.Routines
         private const string DbFilename = "activitylog.db";
 
         private readonly ILogger<MigrateActivityLogDb> _logger;
-        private readonly IDbContextFactory<JellyfinDb> _provider;
+        private readonly IDbContextFactory<JellyfinDbContext> _provider;
         private readonly IServerApplicationPaths _paths;
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace Jellyfin.Server.Migrations.Routines
         /// <param name="logger">The logger.</param>
         /// <param name="paths">The server application paths.</param>
         /// <param name="provider">The database provider.</param>
-        public MigrateActivityLogDb(ILogger<MigrateActivityLogDb> logger, IServerApplicationPaths paths, IDbContextFactory<JellyfinDb> provider)
+        public MigrateActivityLogDb(ILogger<MigrateActivityLogDb> logger, IServerApplicationPaths paths, IDbContextFactory<JellyfinDbContext> provider)
         {
             _logger = logger;
             _provider = provider;

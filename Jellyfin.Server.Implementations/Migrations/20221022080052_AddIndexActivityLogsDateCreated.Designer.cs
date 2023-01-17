@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Jellyfin.Server.Implementations.Migrations
 {
-    [DbContext(typeof(JellyfinDb))]
+    [DbContext(typeof(JellyfinDbContext))]
     [Migration("20221022080052_AddIndexActivityLogsDateCreated")]
     partial class AddIndexActivityLogsDateCreated
     {

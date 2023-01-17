@@ -649,7 +649,7 @@ namespace Emby.Server.Implementations
         /// <returns>A task representing the service initialization operation.</returns>
         public async Task InitializeServices()
         {
-            var jellyfinDb = await Resolve<IDbContextFactory<JellyfinDb>>().CreateDbContextAsync().ConfigureAwait(false);
+            var jellyfinDb = await Resolve<IDbContextFactory<JellyfinDbContext>>().CreateDbContextAsync().ConfigureAwait(false);
             await using (jellyfinDb.ConfigureAwait(false))
             {
                 if ((await jellyfinDb.Database.GetPendingMigrationsAsync().ConfigureAwait(false)).Any())

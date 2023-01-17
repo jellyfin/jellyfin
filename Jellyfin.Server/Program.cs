@@ -247,7 +247,7 @@ namespace Jellyfin.Server
                 {
                     _logger.LogInformation("Running query planner optimizations in the database... This might take a while");
                     // Run before disposing the application
-                    var context = await appHost.ServiceProvider.GetRequiredService<IDbContextFactory<JellyfinDb>>().CreateDbContextAsync().ConfigureAwait(false);
+                    var context = await appHost.ServiceProvider.GetRequiredService<IDbContextFactory<JellyfinDbContext>>().CreateDbContextAsync().ConfigureAwait(false);
                     await using (context.ConfigureAwait(false))
                     {
                         if (context.Database.IsSqlite())
