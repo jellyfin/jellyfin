@@ -123,14 +123,14 @@ namespace Emby.Server.Implementations.Plugins
                     continue;
                 }
 
+                var assemblyLoadContext = new PluginLoadContext(plugin.Path);
+                _assemblyLoadContexts.Add(assemblyLoadContext);
+
                 foreach (var file in plugin.DllFiles)
                 {
                     Assembly assembly;
                     try
                     {
-                        var assemblyLoadContext = new PluginLoadContext(file);
-                        _assemblyLoadContexts.Add(assemblyLoadContext);
-
                         assembly = assemblyLoadContext.LoadFromAssemblyPath(file);
 
                         // Load all required types to verify that the plugin will load
