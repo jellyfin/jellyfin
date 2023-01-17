@@ -1,7 +1,6 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -11,6 +10,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using AsyncKeyedLock;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -36,12 +36,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly ISubtitleParser _subtitleParser;
-
-        /// <summary>
-        /// The _semaphoreLocks.
-        /// </summary>
-        private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks =
-            new ConcurrentDictionary<string, SemaphoreSlim>();
+        private readonly AsyncKeyedLocker<string> _asyncKeyedLocker;
 
         public SubtitleEncoder(
             ILogger<SubtitleEncoder> logger,
@@ -50,7 +45,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             IMediaEncoder mediaEncoder,
             IHttpClientFactory httpClientFactory,
             IMediaSourceManager mediaSourceManager,
-            ISubtitleParser subtitleParser)
+            ISubtitleParser subtitleParser,
+            AsyncKeyedLocker<string> asyncKeyedLocker)
         {
             _logger = logger;
             _appPaths = appPaths;
@@ -59,6 +55,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             _httpClientFactory = httpClientFactory;
             _mediaSourceManager = mediaSourceManager;
             _subtitleParser = subtitleParser;
+            _asyncKeyedLocker = asyncKeyedLocker;
         }
 
         private string SubtitleCachePath => Path.Combine(_appPaths.DataPath, "subtitles");
@@ -320,16 +317,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         }
 
         /// <summary>
-        /// Gets the lock.
-        /// </summary>
-        /// <param name="filename">The filename.</param>
-        /// <returns>System.Object.</returns>
-        private SemaphoreSlim GetLock(string filename)
-        {
-            return _semaphoreLocks.GetOrAdd(filename, _ => new SemaphoreSlim(1, 1));
-        }
-
-        /// <summary>
         /// Converts the text subtitle to SRT.
         /// </summary>
         /// <param name="subtitleStream">The subtitle stream.</param>
@@ -339,20 +326,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <returns>Task.</returns>
         private async Task ConvertTextSubtitleToSrt(MediaStream subtitleStream, MediaSourceInfo mediaSource, string outputPath, CancellationToken cancellationToken)
         {
-            var semaphore = GetLock(outputPath);
-
-            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
+            using (await _asyncKeyedLocker.LockAsync(outputPath, cancellationToken).ConfigureAwait(false))
             {
                 if (!File.Exists(outputPath))
                 {
                     await ConvertTextSubtitleToSrtInternal(subtitleStream, mediaSource, outputPath, cancellationToken).ConfigureAwait(false);
                 }
-            }
-            finally
-            {
-                semaphore.Release();
             }
         }
 
@@ -493,16 +472,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             string outputPath,
             CancellationToken cancellationToken)
         {
-            var semaphore = GetLock(outputPath);
-
-            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            var subtitleStreamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
-
-            try
+            using (await _asyncKeyedLocker.LockAsync(outputPath, cancellationToken).ConfigureAwait(false))
             {
                 if (!File.Exists(outputPath))
                 {
+                    var subtitleStreamIndex = EncodingHelper.FindIndex(mediaSource.MediaStreams, subtitleStream);
+
                     var args = _mediaEncoder.GetInputArgument(mediaSource.Path, mediaSource);
 
                     if (subtitleStream.IsExternal)
@@ -517,10 +492,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         outputPath,
                         cancellationToken).ConfigureAwait(false);
                 }
-            }
-            finally
-            {
-                semaphore.Release();
             }
         }
 

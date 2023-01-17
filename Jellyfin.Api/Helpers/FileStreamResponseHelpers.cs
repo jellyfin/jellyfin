@@ -93,9 +93,7 @@ namespace Jellyfin.Api.Helpers
                 return new OkResult();
             }
 
-            var transcodingLock = transcodingJobHelper.GetTranscodingLock(outputPath);
-            await transcodingLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
-            try
+            using (await transcodingJobHelper.LockAsync(outputPath, cancellationTokenSource.Token).ConfigureAwait(false))
             {
                 TranscodingJobDto? job;
                 if (!File.Exists(outputPath))
@@ -110,10 +108,6 @@ namespace Jellyfin.Api.Helpers
 
                 var stream = new ProgressiveFileStream(outputPath, job, transcodingJobHelper);
                 return new FileStreamResult(stream, contentType);
-            }
-            finally
-            {
-                transcodingLock.Release();
             }
         }
     }

@@ -15,6 +15,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using AsyncKeyedLock;
 using Emby.Dlna;
 using Emby.Dlna.Main;
 using Emby.Dlna.Ssdp;
@@ -637,6 +638,11 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<ISubtitleParser, SubtitleEditParser>();
             serviceCollection.AddSingleton<ISubtitleEncoder, SubtitleEncoder>();
+            serviceCollection.AddSingleton(new AsyncKeyedLocker<string>(o =>
+            {
+                o.PoolSize = 20;
+                o.PoolInitialFill = 1;
+            }));
 
             serviceCollection.AddSingleton<IAttachmentExtractor, MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor>();
 

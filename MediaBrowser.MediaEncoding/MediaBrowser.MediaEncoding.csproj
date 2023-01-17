@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AsyncKeyedLock" Version="6.0.5" />
     <PackageReference Include="BDInfo" Version="0.7.6.2" />
     <PackageReference Include="libse" Version="3.6.10" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />

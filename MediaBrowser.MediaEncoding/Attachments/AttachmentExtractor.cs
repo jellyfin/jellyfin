@@ -2,13 +2,13 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AsyncKeyedLock;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
@@ -29,9 +29,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
         private readonly IFileSystem _fileSystem;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IMediaSourceManager _mediaSourceManager;
-
-        private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks =
-            new ConcurrentDictionary<string, SemaphoreSlim>();
+        private readonly AsyncKeyedLocker<string> _asyncKeyedLocker;
 
         private bool _disposed = false;
 
@@ -40,13 +38,15 @@ namespace MediaBrowser.MediaEncoding.Attachments
             IApplicationPaths appPaths,
             IFileSystem fileSystem,
             IMediaEncoder mediaEncoder,
-            IMediaSourceManager mediaSourceManager)
+            IMediaSourceManager mediaSourceManager,
+            AsyncKeyedLocker<string> asyncKeyedLocker)
         {
             _logger = logger;
             _appPaths = appPaths;
             _fileSystem = fileSystem;
             _mediaEncoder = mediaEncoder;
             _mediaSourceManager = mediaSourceManager;
+            _asyncKeyedLocker = asyncKeyedLocker;
         }
 
         /// <inheritdoc />
@@ -86,11 +86,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
             string outputPath,
             CancellationToken cancellationToken)
         {
-            var semaphore = _semaphoreLocks.GetOrAdd(outputPath, key => new SemaphoreSlim(1, 1));
-
-            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
+            using (await _asyncKeyedLocker.LockAsync(outputPath, cancellationToken).ConfigureAwait(false))
             {
                 if (!Directory.Exists(outputPath))
                 {
@@ -101,10 +97,6 @@ namespace MediaBrowser.MediaEncoding.Attachments
                         cancellationToken).ConfigureAwait(false);
                 }
             }
-            finally
-            {
-                semaphore.Release();
-            }
         }
 
         public async Task ExtractAllAttachmentsExternal(
@@ -113,11 +105,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
             string outputPath,
             CancellationToken cancellationToken)
         {
-            var semaphore = _semaphoreLocks.GetOrAdd(outputPath, key => new SemaphoreSlim(1, 1));
-
-            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
+            using (await _asyncKeyedLocker.LockAsync(outputPath, cancellationToken).ConfigureAwait(false))
             {
                 if (!File.Exists(Path.Join(outputPath, id)))
                 {
@@ -132,10 +120,6 @@ namespace MediaBrowser.MediaEncoding.Attachments
                         File.Create(Path.Join(outputPath, id));
                     }
                 }
-            }
-            finally
-            {
-                semaphore.Release();
             }
         }
 
@@ -266,11 +250,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
             string outputPath,
             CancellationToken cancellationToken)
         {
-            var semaphore = _semaphoreLocks.GetOrAdd(outputPath, key => new SemaphoreSlim(1, 1));
-
-            await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
+            using (await _asyncKeyedLocker.LockAsync(outputPath, cancellationToken).ConfigureAwait(false))
             {
                 if (!File.Exists(outputPath))
                 {
@@ -280,10 +260,6 @@ namespace MediaBrowser.MediaEncoding.Attachments
                         outputPath,
                         cancellationToken).ConfigureAwait(false);
                 }
-            }
-            finally
-            {
-                semaphore.Release();
             }
         }
 

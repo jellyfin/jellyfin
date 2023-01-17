@@ -302,9 +302,7 @@ namespace Jellyfin.Api.Controllers
 
             if (!System.IO.File.Exists(playlistPath))
             {
-                var transcodingLock = _transcodingJobHelper.GetTranscodingLock(playlistPath);
-                await transcodingLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-                try
+                using (await _transcodingJobHelper.LockAsync(playlistPath, cancellationToken).ConfigureAwait(false))
                 {
                     if (!System.IO.File.Exists(playlistPath))
                     {
@@ -333,10 +331,6 @@ namespace Jellyfin.Api.Controllers
                             await HlsHelpers.WaitForMinimumSegmentCount(playlistPath, minSegments, _logger, cancellationToken).ConfigureAwait(false);
                         }
                     }
-                }
-                finally
-                {
-                    transcodingLock.Release();
                 }
             }
 
@@ -1457,18 +1451,13 @@ namespace Jellyfin.Api.Controllers
                 return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
             }
 
-            var transcodingLock = _transcodingJobHelper.GetTranscodingLock(playlistPath);
-            await transcodingLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-            var released = false;
-            var startTranscoding = false;
-
-            try
+            using (await _transcodingJobHelper.LockAsync(playlistPath, cancellationToken).ConfigureAwait(false))
             {
+                var startTranscoding = false;
+
                 if (System.IO.File.Exists(segmentPath))
                 {
                     job = _transcodingJobHelper.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
-                    transcodingLock.Release();
-                    released = true;
                     _logger.LogDebug("returning {0} [it exists, try 2]", segmentPath);
                     return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
                 }
@@ -1539,13 +1528,6 @@ namespace Jellyfin.Api.Controllers
                             await job.TranscodingThrottler.UnpauseTranscoding().ConfigureAwait(false);
                         }
                     }
-                }
-            }
-            finally
-            {
-                if (!released)
-                {
-                    transcodingLock.Release();
                 }
             }
 
