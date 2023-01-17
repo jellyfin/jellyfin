@@ -1038,7 +1038,6 @@ namespace Emby.Server.Implementations
                 CachePath = ApplicationPaths.CachePath,
                 OperatingSystem = MediaBrowser.Common.System.OperatingSystem.Id.ToString(),
                 OperatingSystemDisplayName = MediaBrowser.Common.System.OperatingSystem.Name,
-                CanSelfRestart = true,
                 CanLaunchWebBrowser = CanLaunchWebBrowser,
                 TranscodingTempPath = ConfigurationManager.GetTranscodePath(),
                 ServerName = FriendlyName,
