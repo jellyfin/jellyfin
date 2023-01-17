@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Server.Middleware
+namespace Jellyfin.Api.Middleware
 {
     /// <summary>
     /// Exception Middleware.

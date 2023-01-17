@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 
-namespace Jellyfin.Server.Formatters
+namespace Jellyfin.Api.Formatters
 {
     /// <summary>
     /// Css output formatter.

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 
-namespace Jellyfin.Server.Middleware
+namespace Jellyfin.Api.Middleware
 {
     /// <summary>
     /// Redirect requests without baseurl prefix to the baseurl prefixed URL.

@@ -193,11 +193,6 @@ namespace Emby.Server.Implementations
         /// </summary>
         private string PublishedServerUrl => _startupConfig[AddressOverrideKey];
 
-        /// <summary>
-        /// Gets a value indicating whether this instance can self restart.
-        /// </summary>
-        public bool CanSelfRestart => _startupOptions.RestartPath is not null;
-
         public bool CoreStartupHasCompleted { get; private set; }
 
         public virtual bool CanLaunchWebBrowser
@@ -935,17 +930,13 @@ namespace Emby.Server.Implementations
         /// </summary>
         public void Restart()
         {
-            if (!CanSelfRestart)
-            {
-                throw new PlatformNotSupportedException("The server is unable to self-restart. Please restart manually.");
-            }
-
             if (IsShuttingDown)
             {
                 return;
             }
 
             IsShuttingDown = true;
+            _pluginManager.UnloadAssemblies();
 
             Task.Run(async () =>
             {
@@ -1047,7 +1038,6 @@ namespace Emby.Server.Implementations
                 CachePath = ApplicationPaths.CachePath,
                 OperatingSystem = MediaBrowser.Common.System.OperatingSystem.Id.ToString(),
                 OperatingSystemDisplayName = MediaBrowser.Common.System.OperatingSystem.Name,
-                CanSelfRestart = CanSelfRestart,
                 CanLaunchWebBrowser = CanLaunchWebBrowser,
                 TranscodingTempPath = ConfigurationManager.GetTranscodePath(),
                 ServerName = FriendlyName,
