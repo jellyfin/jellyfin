@@ -31,16 +31,6 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
         public void GetFrameRate_Success(string value, float? expected)
             => Assert.Equal(expected, ProbeResultNormalizer.GetFrameRate(value));
 
-        [Theory]
-        [InlineData(0.5f, "0/1", false)]
-        [InlineData(24.5f, "8/196", false)]
-        [InlineData(63.5f, "1/127", true)]
-        [InlineData(null, "1/60", false)]
-        [InlineData(30f, "2/120", true)]
-        [InlineData(59.999996f, "1563/187560", true)]
-        public void IsCodecTimeBaseDoubleTheFrameRate_Success(float? frameRate, string codecTimeBase, bool expected)
-            => Assert.Equal(expected, ProbeResultNormalizer.IsCodecTimeBaseDoubleTheFrameRate(frameRate, codecTimeBase));
-
         [Fact]
         public void GetMediaInfo_MetaData_Success()
         {
@@ -156,6 +146,99 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Equal("mov_text", res.MediaStreams[5].Codec);
             Assert.Equal("Commentary", res.MediaStreams[5].Title);
             Assert.False(res.MediaStreams[5].IsHearingImpaired);
+        }
+
+        [Fact]
+        public void GetMediaInfo_ProgressiveVideoNoFieldOrder_Success()
+        {
+            var bytes = File.ReadAllBytes("Test Data/Probing/video_progressive_no_field_order.json");
+
+            var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
+            MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "Test Data/Probing/video_progressive_no_field_order.mp4", MediaProtocol.File);
+
+            Assert.Equal(2, res.MediaStreams.Count);
+
+            Assert.NotNull(res.VideoStream);
+            Assert.Equal(res.MediaStreams[0], res.VideoStream);
+            Assert.Equal(0, res.VideoStream.Index);
+            Assert.Equal("h264", res.VideoStream.Codec);
+            Assert.Equal("Main", res.VideoStream.Profile);
+            Assert.Equal(MediaStreamType.Video, res.VideoStream.Type);
+            Assert.Equal(1080, res.VideoStream.Height);
+            Assert.Equal(1920, res.VideoStream.Width);
+            Assert.False(res.VideoStream.IsInterlaced);
+            Assert.Equal("16:9", res.VideoStream.AspectRatio);
+            Assert.Equal("yuv420p", res.VideoStream.PixelFormat);
+            Assert.Equal(41d, res.VideoStream.Level);
+            Assert.Equal(1, res.VideoStream.RefFrames);
+            Assert.True(res.VideoStream.IsAVC);
+            Assert.Equal(23.9760246f, res.VideoStream.RealFrameRate);
+            Assert.Equal("1/24000", res.VideoStream.TimeBase);
+            Assert.Equal(3948341, res.VideoStream.BitRate);
+            Assert.Equal(8, res.VideoStream.BitDepth);
+            Assert.True(res.VideoStream.IsDefault);
+        }
+
+        [Fact]
+        public void GetMediaInfo_ProgressiveVideoNoFieldOrder2_Success()
+        {
+            var bytes = File.ReadAllBytes("Test Data/Probing/video_progressive_no_field_order2.json");
+
+            var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
+            MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "Test Data/Probing/video_progressive_no_field_order2.mp4", MediaProtocol.File);
+
+            Assert.Single(res.MediaStreams);
+
+            Assert.NotNull(res.VideoStream);
+            Assert.Equal(res.MediaStreams[0], res.VideoStream);
+            Assert.Equal(0, res.VideoStream.Index);
+            Assert.Equal("h264", res.VideoStream.Codec);
+            Assert.Equal("High", res.VideoStream.Profile);
+            Assert.Equal(MediaStreamType.Video, res.VideoStream.Type);
+            Assert.Equal(720, res.VideoStream.Height);
+            Assert.Equal(1280, res.VideoStream.Width);
+            Assert.False(res.VideoStream.IsInterlaced);
+            Assert.Equal("16:9", res.VideoStream.AspectRatio);
+            Assert.Equal("yuv420p", res.VideoStream.PixelFormat);
+            Assert.Equal(31d, res.VideoStream.Level);
+            Assert.Equal(1, res.VideoStream.RefFrames);
+            Assert.True(res.VideoStream.IsAVC);
+            Assert.Equal(25f, res.VideoStream.RealFrameRate);
+            Assert.Equal("1/12800", res.VideoStream.TimeBase);
+            Assert.Equal(53288, res.VideoStream.BitRate);
+            Assert.Equal(8, res.VideoStream.BitDepth);
+            Assert.True(res.VideoStream.IsDefault);
+        }
+
+        [Fact]
+        public void GetMediaInfo_InterlacedVideo_Success()
+        {
+            var bytes = File.ReadAllBytes("Test Data/Probing/video_interlaced.json");
+
+            var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
+            MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "Test Data/Probing/video_interlaced.mp4", MediaProtocol.File);
+
+            Assert.Single(res.MediaStreams);
+
+            Assert.NotNull(res.VideoStream);
+            Assert.Equal(res.MediaStreams[0], res.VideoStream);
+            Assert.Equal(0, res.VideoStream.Index);
+            Assert.Equal("h264", res.VideoStream.Codec);
+            Assert.Equal("High", res.VideoStream.Profile);
+            Assert.Equal(MediaStreamType.Video, res.VideoStream.Type);
+            Assert.Equal(720, res.VideoStream.Height);
+            Assert.Equal(1280, res.VideoStream.Width);
+            Assert.True(res.VideoStream.IsInterlaced);
+            Assert.Equal("16:9", res.VideoStream.AspectRatio);
+            Assert.Equal("yuv420p", res.VideoStream.PixelFormat);
+            Assert.Equal(40d, res.VideoStream.Level);
+            Assert.Equal(1, res.VideoStream.RefFrames);
+            Assert.True(res.VideoStream.IsAVC);
+            Assert.Equal(25f, res.VideoStream.RealFrameRate);
+            Assert.Equal("1/12800", res.VideoStream.TimeBase);
+            Assert.Equal(56945, res.VideoStream.BitRate);
+            Assert.Equal(8, res.VideoStream.BitDepth);
+            Assert.True(res.VideoStream.IsDefault);
         }
 
         [Fact]
