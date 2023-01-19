@@ -28,7 +28,7 @@ namespace Jellyfin.Api.Auth.DownloadPolicy
         /// <inheritdoc />
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, DownloadRequirement requirement)
         {
-            var validated = ValidateClaims(context.User);
+            var validated = ValidateClaims(context.User, requiredDownloadPermission: true);
             if (validated)
             {
                 context.Succeed(requirement);
