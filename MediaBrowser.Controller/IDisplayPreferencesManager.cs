@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 
 namespace MediaBrowser.Controller
@@ -19,7 +20,7 @@ namespace MediaBrowser.Controller
         /// <param name="itemId">The item id.</param>
         /// <param name="client">The client string.</param>
         /// <returns>The associated display preferences.</returns>
-        DisplayPreferences GetDisplayPreferences(Guid userId, Guid itemId, string client);
+        Task<DisplayPreferences> GetDisplayPreferencesAsync(Guid userId, Guid itemId, string client);
 
         /// <summary>
         /// Gets the default item display preferences for the user and client.
@@ -31,7 +32,7 @@ namespace MediaBrowser.Controller
         /// <param name="itemId">The item id.</param>
         /// <param name="client">The client string.</param>
         /// <returns>The item display preferences.</returns>
-        ItemDisplayPreferences GetItemDisplayPreferences(Guid userId, Guid itemId, string client);
+        Task<ItemDisplayPreferences> GetItemDisplayPreferencesAsync(Guid userId, Guid itemId, string client);
 
         /// <summary>
         /// Gets all of the item display preferences for the user and client.
@@ -39,7 +40,7 @@ namespace MediaBrowser.Controller
         /// <param name="userId">The user id.</param>
         /// <param name="client">The client string.</param>
         /// <returns>A list of item display preferences.</returns>
-        IList<ItemDisplayPreferences> ListItemDisplayPreferences(Guid userId, string client);
+        Task<IList<ItemDisplayPreferences>> ListItemDisplayPreferencesAsync(Guid userId, string client);
 
         /// <summary>
         /// Gets all of the custom item display preferences for the user and client.
@@ -48,7 +49,7 @@ namespace MediaBrowser.Controller
         /// <param name="itemId">The item id.</param>
         /// <param name="client">The client string.</param>
         /// <returns>The dictionary of custom item display preferences.</returns>
-        Dictionary<string, string?> ListCustomItemDisplayPreferences(Guid userId, Guid itemId, string client);
+        Task<Dictionary<string, string?>> ListCustomItemDisplayPreferencesAsync(Guid userId, Guid itemId, string client);
 
         /// <summary>
         /// Sets the custom item display preference for the user and client.
@@ -57,11 +58,7 @@ namespace MediaBrowser.Controller
         /// <param name="itemId">The item id.</param>
         /// <param name="client">The client id.</param>
         /// <param name="customPreferences">A dictionary of custom item display preferences.</param>
-        void SetCustomItemDisplayPreferences(Guid userId, Guid itemId, string client, Dictionary<string, string?> customPreferences);
-
-        /// <summary>
-        /// Saves changes made to the database.
-        /// </summary>
-        void SaveChanges();
+        /// <returns>A task.</returns>
+        Task SetCustomItemDisplayPreferencesAsync(Guid userId, Guid itemId, string client, Dictionary<string, string?> customPreferences);
     }
 }

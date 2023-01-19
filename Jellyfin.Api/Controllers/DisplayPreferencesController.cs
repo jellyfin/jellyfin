@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
@@ -47,7 +48,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("{displayPreferencesId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "displayPreferencesId", Justification = "Imported from ServiceStack")]
-        public ActionResult<DisplayPreferencesDto> GetDisplayPreferences(
+        public async Task<ActionResult<DisplayPreferencesDto>> GetDisplayPreferences(
             [FromRoute, Required] string displayPreferencesId,
             [FromQuery, Required] Guid userId,
             [FromQuery, Required] string client)
@@ -57,9 +58,8 @@ namespace Jellyfin.Api.Controllers
                 itemId = displayPreferencesId.GetMD5();
             }
 
-            var displayPreferences = _displayPreferencesManager.GetDisplayPreferences(userId, itemId, client);
-            var itemPreferences = _displayPreferencesManager.GetItemDisplayPreferences(displayPreferences.UserId, itemId, displayPreferences.Client);
-            itemPreferences.ItemId = itemId;
+            var displayPreferences = await _displayPreferencesManager.GetDisplayPreferencesAsync(userId, itemId, client).ConfigureAwait(false);
+            var itemPreferences = await _displayPreferencesManager.GetItemDisplayPreferencesAsync(displayPreferences.UserId, itemId, displayPreferences.Client).ConfigureAwait(false);
 
             var dto = new DisplayPreferencesDto
             {
@@ -88,14 +88,11 @@ namespace Jellyfin.Api.Controllers
             dto.CustomPrefs["dashboardTheme"] = displayPreferences.DashboardTheme;
 
             // Load all custom display preferences
-            var customDisplayPreferences = _displayPreferencesManager.ListCustomItemDisplayPreferences(displayPreferences.UserId, itemId, displayPreferences.Client);
+            var customDisplayPreferences = await _displayPreferencesManager.ListCustomItemDisplayPreferencesAsync(displayPreferences.UserId, itemId, displayPreferences.Client).ConfigureAwait(false);
             foreach (var (key, value) in customDisplayPreferences)
             {
                 dto.CustomPrefs.TryAdd(key, value);
             }
-
-            // This will essentially be a noop if no changes have been made, but new prefs must be saved at least.
-            _displayPreferencesManager.SaveChanges();
 
             return dto;
         }
@@ -112,7 +109,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("{displayPreferencesId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "displayPreferencesId", Justification = "Imported from ServiceStack")]
-        public ActionResult UpdateDisplayPreferences(
+        public async Task<ActionResult> UpdateDisplayPreferences(
             [FromRoute, Required] string displayPreferencesId,
             [FromQuery, Required] Guid userId,
             [FromQuery, Required] string client,
@@ -135,7 +132,7 @@ namespace Jellyfin.Api.Controllers
                 itemId = displayPreferencesId.GetMD5();
             }
 
-            var existingDisplayPreferences = _displayPreferencesManager.GetDisplayPreferences(userId, itemId, client);
+            var existingDisplayPreferences = await _displayPreferencesManager.GetDisplayPreferencesAsync(userId, itemId, client).ConfigureAwait(false);
             existingDisplayPreferences.IndexBy = Enum.TryParse<IndexingKind>(displayPreferences.IndexBy, true, out var indexBy) ? indexBy : null;
             existingDisplayPreferences.ShowBackdrop = displayPreferences.ShowBackdrop;
             existingDisplayPreferences.ShowSidebar = displayPreferences.ShowSidebar;
@@ -197,7 +194,7 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            var itemPrefs = _displayPreferencesManager.GetItemDisplayPreferences(existingDisplayPreferences.UserId, itemId, existingDisplayPreferences.Client);
+            var itemPrefs = await _displayPreferencesManager.GetItemDisplayPreferencesAsync(existingDisplayPreferences.UserId, itemId, existingDisplayPreferences.Client).ConfigureAwait(false);
             itemPrefs.SortBy = displayPreferences.SortBy ?? "SortName";
             itemPrefs.SortOrder = displayPreferences.SortOrder;
             itemPrefs.RememberIndexing = displayPreferences.RememberIndexing;
@@ -205,8 +202,7 @@ namespace Jellyfin.Api.Controllers
             itemPrefs.ItemId = itemId;
 
             // Set all remaining custom preferences.
-            _displayPreferencesManager.SetCustomItemDisplayPreferences(userId, itemId, existingDisplayPreferences.Client, displayPreferences.CustomPrefs);
-            _displayPreferencesManager.SaveChanges();
+            await _displayPreferencesManager.SetCustomItemDisplayPreferencesAsync(userId, itemId, existingDisplayPreferences.Client, displayPreferences.CustomPrefs).ConfigureAwait(false);
 
             return NoContent();
         }
