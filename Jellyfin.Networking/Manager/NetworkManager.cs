@@ -564,13 +564,13 @@ namespace Jellyfin.Networking.Manager
             if (_interfaces != null)
             {
                 // Match all interfaces starting with names starting with token
-                var matchedInterfaces = _interfaces.Where(s => s.Name.Equals(intf, StringComparison.OrdinalIgnoreCase)).OrderBy(x => x.Index);
+                var matchedInterfaces = _interfaces.Where(s => s.Name.Equals(intf, StringComparison.OrdinalIgnoreCase)).OrderBy(x => x.Index).ToList();
                 if (matchedInterfaces.Any())
                 {
                     _logger.LogInformation("Interface {Token} used in settings. Using its interface addresses.", intf);
 
                     // Use interface IP instead of name
-                    foreach (IPData iface in matchedInterfaces)
+                    foreach (var iface in matchedInterfaces)
                     {
                         if ((IsIpv4Enabled && iface.Address.AddressFamily == AddressFamily.InterNetwork)
                             || (IsIpv6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetworkV6))
@@ -746,7 +746,8 @@ namespace Jellyfin.Networking.Manager
             // Get the first LAN interface address that's not excluded and not a loopback address.
             var availableInterfaces = _interfaces.Where(x => !IPAddress.IsLoopback(x.Address))
                 .OrderByDescending(x => IsInLocalNetwork(x.Address))
-                .ThenBy(x => x.Index);
+                .ThenBy(x => x.Index)
+                .ToList();
 
             if (availableInterfaces.Any())
             {
