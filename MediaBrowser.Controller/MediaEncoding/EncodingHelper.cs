@@ -5791,7 +5791,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             return string.Format(
                 CultureInfo.InvariantCulture,
-                "{0} {1}{7}{8} -threads {2}{3} {4} -id3v2_version 3 -write_id3v1 1{6} -y \"{5}\"",
+                "{0} {1}{7}{8} -threads {2}{3} {4} -af volume=replaygain=track -id3v2_version 3 -write_id3v1 1{6} -y \"{5}\"",
                 inputModifier,
                 GetInputArgument(state, encodingOptions, null),
                 threads,
