@@ -36,7 +36,6 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ILogger<FFProbeVideoInfo> _logger;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IItemRepository _itemRepo;
-        private readonly IBlurayExaminer _blurayExaminer;
         private readonly ILocalizationManager _localization;
         private readonly IEncodingManager _encodingManager;
         private readonly IServerConfigurationManager _config;
@@ -52,7 +51,6 @@ namespace MediaBrowser.Providers.MediaInfo
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
             IItemRepository itemRepo,
-            IBlurayExaminer blurayExaminer,
             ILocalizationManager localization,
             IEncodingManager encodingManager,
             IServerConfigurationManager config,
@@ -66,7 +64,6 @@ namespace MediaBrowser.Providers.MediaInfo
             _mediaSourceManager = mediaSourceManager;
             _mediaEncoder = mediaEncoder;
             _itemRepo = itemRepo;
-            _blurayExaminer = blurayExaminer;
             _localization = localization;
             _encodingManager = encodingManager;
             _config = config;
@@ -88,18 +85,6 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!item.IsShortcut || options.EnableRemoteContentProbe)
             {
-                if (item.VideoType == VideoType.BluRay)
-                {
-                    var inputPath = item.Path;
-                    blurayDiscInfo = GetBDInfo(inputPath);
-
-                    if (blurayDiscInfo.Files.Length == 0)
-                    {
-                        _logger.LogError("No playable files found in bluray structure, skipping ffprobe.");
-                        return ItemUpdateType.MetadataImport;
-                    }
-                }
-
                 mediaInfoResult = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -358,29 +343,6 @@ namespace MediaBrowser.Providers.MediaInfo
         private bool IsEmpty(int? num)
         {
             return !num.HasValue || num.Value == 0;
-        }
-
-        /// <summary>
-        /// Gets information about the longest playlist on a bdrom.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>VideoStream.</returns>
-        private BlurayDiscInfo GetBDInfo(string path)
-        {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
-            try
-            {
-                return _blurayExaminer.GetDiscInfo(path);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting BDInfo");
-                return null;
-            }
         }
 
         private void FetchEmbeddedInfo(Video video, Model.MediaInfo.MediaInfo data, MetadataRefreshOptions refreshOptions, LibraryOptions libraryOptions)
