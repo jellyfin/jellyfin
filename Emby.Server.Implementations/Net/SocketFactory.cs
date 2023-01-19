@@ -61,14 +61,10 @@ namespace Emby.Server.Implementations.Net
         }
 
         /// <inheritdoc />
-        public ISocket CreateUdpMulticastSocket(IPAddress ipAddress, IPAddress? bindIpAddress, int multicastTimeToLive, int localPort)
+        public ISocket CreateUdpMulticastSocket(IPAddress ipAddress, IPAddress bindIpAddress, int multicastTimeToLive, int localPort)
         {
             ArgumentNullException.ThrowIfNull(ipAddress);
-
-            if (bindIpAddress == null)
-            {
-                bindIpAddress = IPAddress.Any;
-            }
+            ArgumentNullException.ThrowIfNull(bindIpAddress);
 
             if (multicastTimeToLive <= 0)
             {

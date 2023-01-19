@@ -336,13 +336,15 @@ namespace Rssdp.Infrastructure
         private List<ISocket> ListenForBroadcasts()
         {
             var sockets = new List<ISocket>();
+            var nonNullBindAddresses = _networkManager.GetInternalBindAddresses().Where(x => x.Address != null);
+
             if (_enableMultiSocketBinding)
             {
-                foreach (var address in _networkManager.GetInternalBindAddresses())
+                foreach (var address in nonNullBindAddresses)
                 {
                     if (address.AddressFamily == AddressFamily.InterNetworkV6)
                     {
-                        // Not support IPv6 right now
+                        // Not supporting IPv6 right now
                         continue;
                     }
 
@@ -379,7 +381,7 @@ namespace Rssdp.Infrastructure
                 {
                     if (address.AddressFamily == AddressFamily.InterNetworkV6)
                     {
-                        // Not support IPv6 right now
+                        // Not supporting IPv6 right now
                         continue;
                     }
 
