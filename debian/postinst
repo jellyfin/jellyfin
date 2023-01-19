@@ -59,8 +59,6 @@ case "$1" in
     chgrp adm $PROGRAMDATA $CONFIGDATA $LOGDATA $CACHEDATA
     chmod 0750 $PROGRAMDATA $CONFIGDATA $LOGDATA $CACHEDATA
 
-    chmod +x /usr/lib/jellyfin/restart.sh > /dev/null 2>&1 || true
-
     # Install jellyfin symlink into /usr/bin
     ln -sf /usr/lib/jellyfin/bin/jellyfin /usr/bin/jellyfin
 

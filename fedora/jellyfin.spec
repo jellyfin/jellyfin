@@ -17,10 +17,9 @@ Source0:        jellyfin-server-%{version}.tar.gz
 Source11:       jellyfin.service
 Source12:       jellyfin.env
 Source13:       jellyfin.sudoers
-Source14:       restart.sh
-Source15:       jellyfin.override.conf
-Source16:       jellyfin-firewalld.xml
-Source17:       jellyfin-server-lowports.conf
+Source14:       jellyfin.override.conf
+Source15:       jellyfin-firewalld.xml
+Source16:       jellyfin-server-lowports.conf
 
 %{?systemd_requires}
 BuildRequires:  systemd
@@ -76,16 +75,15 @@ dotnet publish --configuration Release --self-contained --runtime %{dotnet_runti
 %{__mkdir} -p %{buildroot}%{_libdir}/jellyfin %{buildroot}%{_bindir}
 %{__cp} -r Jellyfin.Server/bin/Release/net7.0/%{dotnet_runtime}/publish/* %{buildroot}%{_libdir}/jellyfin
 ln -srf %{_libdir}/jellyfin/jellyfin %{buildroot}%{_bindir}/jellyfin
-%{__install} -D %{SOURCE14} %{buildroot}%{_libexecdir}/jellyfin/restart.sh
 
 # Jellyfin config
 %{__install} -D Jellyfin.Server/Resources/Configuration/logging.json %{buildroot}%{_sysconfdir}/jellyfin/logging.json
 %{__install} -D %{SOURCE12} %{buildroot}%{_sysconfdir}/sysconfig/jellyfin
 
 # system config
-%{__install} -D %{SOURCE16} %{buildroot}%{_prefix}/lib/firewalld/services/jellyfin.xml
+%{__install} -D %{SOURCE15} %{buildroot}%{_prefix}/lib/firewalld/services/jellyfin.xml
 %{__install} -D %{SOURCE13} %{buildroot}%{_sysconfdir}/sudoers.d/jellyfin-sudoers
-%{__install} -D %{SOURCE15} %{buildroot}%{_sysconfdir}/systemd/system/jellyfin.service.d/override.conf
+%{__install} -D %{SOURCE14} %{buildroot}%{_sysconfdir}/systemd/system/jellyfin.service.d/override.conf
 %{__install} -D %{SOURCE11} %{buildroot}%{_unitdir}/jellyfin.service
 
 # empty directories
@@ -95,7 +93,7 @@ ln -srf %{_libdir}/jellyfin/jellyfin %{buildroot}%{_bindir}/jellyfin
 %{__mkdir} -p %{buildroot}%{_var}/log/jellyfin
 
 # jellyfin-server-lowports subpackage
-%{__install} -D -m 0644 %{SOURCE17} %{buildroot}%{_unitdir}/jellyfin.service.d/jellyfin-server-lowports.conf
+%{__install} -D -m 0644 %{SOURCE16} %{buildroot}%{_unitdir}/jellyfin.service.d/jellyfin-server-lowports.conf
 
 
 %files
@@ -110,7 +108,6 @@ ln -srf %{_libdir}/jellyfin/jellyfin %{buildroot}%{_bindir}/jellyfin
 %attr(755,root,root) %{_libdir}/jellyfin/createdump
 %attr(755,root,root) %{_libdir}/jellyfin/jellyfin
 %{_libdir}/jellyfin/*
-%attr(755,root,root) %{_libexecdir}/jellyfin/restart.sh
 
 # Jellyfin config
 %config(noreplace) %attr(644,jellyfin,jellyfin) %{_sysconfdir}/jellyfin/logging.json
