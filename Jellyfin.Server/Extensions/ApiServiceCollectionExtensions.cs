@@ -14,6 +14,8 @@ using Jellyfin.Api.Auth.FirstTimeOrIgnoreParentalControlSetupPolicy;
 using Jellyfin.Api.Auth.FirstTimeSetupOrDefaultPolicy;
 using Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy;
 using Jellyfin.Api.Auth.IgnoreParentalControlPolicy;
+using Jellyfin.Api.Auth.LiveTvAccessPolicy;
+using Jellyfin.Api.Auth.LiveTvManagementPolicy;
 using Jellyfin.Api.Auth.LocalAccessOrRequiresElevationPolicy;
 using Jellyfin.Api.Auth.LocalAccessPolicy;
 using Jellyfin.Api.Auth.RequiresElevationPolicy;
@@ -66,6 +68,8 @@ namespace Jellyfin.Server.Extensions
             serviceCollection.AddSingleton<IAuthorizationHandler, AnonymousLanAccessHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessOrRequiresElevationHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, RequiresElevationHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, LiveTvAccessHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, LiveTvManagementHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, SyncPlayAccessHandler>();
             return serviceCollection.AddAuthorizationCore(options =>
             {
@@ -166,6 +170,20 @@ namespace Jellyfin.Server.Extensions
                     {
                         policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
                         policy.AddRequirements(new AnonymousLanAccessRequirement());
+                    });
+                options.AddPolicy(
+                    Policies.LiveTvAccess,
+                    policy =>
+                    {
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
+                        policy.AddRequirements(new LiveTvAccessRequirement());
+                    });
+                options.AddPolicy(
+                    Policies.LiveTvManagement,
+                    policy =>
+                    {
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
+                        policy.AddRequirements(new LiveTvManagementRequirement());
                     });
             });
         }
