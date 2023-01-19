@@ -95,7 +95,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                     if (blurayDiscInfo.Files.Length == 0)
                     {
-                        _logger.LogError("No playable vobs found in bluray structure, skipping ffprobe.");
+                        _logger.LogError("No playable files found in bluray structure, skipping ffprobe.");
                         return ItemUpdateType.MetadataImport;
                     }
                 }
