@@ -139,6 +139,9 @@ getent group jellyfin >/dev/null || groupadd -r jellyfin
 getent passwd jellyfin >/dev/null || \
     useradd -r -g jellyfin -d %{_sharedstatedir}/jellyfin -s /sbin/nologin \
     -c "Jellyfin default user" jellyfin
+# Add jellyfin to the render and video groups for hwa.
+[ ! -z "$(getent group render)" ] && usermod -aG render jellyfin >/dev/null 2>&1
+[ ! -z "$(getent group video)" ] && usermod -aG video jellyfin >/dev/null 2>&1
 exit 0
 
 %post server

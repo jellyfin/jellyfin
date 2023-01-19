@@ -25,6 +25,6 @@ namespace Jellyfin.Api.Attributes
         /// Gets the configured content types.
         /// </summary>
         /// <returns>the configured content types.</returns>
-        public string[] GetContentTypes() => _contentTypes;
+        public string[] ContentTypes => _contentTypes;
     }
 }

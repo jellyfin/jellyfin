@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Emby.Drawing;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.Session;
 using Jellyfin.Api.WebSocketListeners;
+using Jellyfin.Drawing;
 using Jellyfin.Drawing.Skia;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Activity;
@@ -107,7 +107,7 @@ namespace Jellyfin.Server
             yield return typeof(CoreAppHost).Assembly;
 
             // Jellyfin.Server.Implementations
-            yield return typeof(JellyfinDb).Assembly;
+            yield return typeof(JellyfinDbContext).Assembly;
         }
 
         /// <inheritdoc />

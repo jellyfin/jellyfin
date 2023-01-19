@@ -95,12 +95,6 @@ namespace Emby.Server.Implementations.Session
             _deviceManager.DeviceOptionsUpdated += OnDeviceManagerDeviceOptionsUpdated;
         }
 
-        /// <inheritdoc />
-        public event EventHandler<GenericEventArgs<AuthenticationRequest>> AuthenticationFailed;
-
-        /// <inheritdoc />
-        public event EventHandler<GenericEventArgs<AuthenticationResult>> AuthenticationSucceeded;
-
         /// <summary>
         /// Occurs when playback has started.
         /// </summary>
@@ -1468,7 +1462,7 @@ namespace Emby.Server.Implementations.Session
 
             if (user is null)
             {
-                AuthenticationFailed?.Invoke(this, new GenericEventArgs<AuthenticationRequest>(request));
+                await _eventManager.PublishAsync(new GenericEventArgs<AuthenticationRequest>(request)).ConfigureAwait(false);
                 throw new AuthenticationException("Invalid username or password entered.");
             }
 
@@ -1504,8 +1498,7 @@ namespace Emby.Server.Implementations.Session
                 ServerId = _appHost.SystemId
             };
 
-            AuthenticationSucceeded?.Invoke(this, new GenericEventArgs<AuthenticationResult>(returnResult));
-
+            await _eventManager.PublishAsync(new GenericEventArgs<AuthenticationResult>(returnResult)).ConfigureAwait(false);
             return returnResult;
         }
 

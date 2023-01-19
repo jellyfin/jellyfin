@@ -27,9 +27,14 @@
     <Compile Include="../../SharedVersion.cs" />
   </ItemGroup>
 
+
+  <ItemGroup>
+    <PackageReference Include="Diacritics" Version="3.3.14" />
+  </ItemGroup>
+
   <!-- Code Analyzers-->
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.3">
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>

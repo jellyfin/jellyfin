@@ -18,7 +18,7 @@
     <ProjectReference Include="..\Emby.Dlna\Emby.Dlna.csproj" />
     <ProjectReference Include="..\MediaBrowser.LocalMetadata\MediaBrowser.LocalMetadata.csproj" />
     <ProjectReference Include="..\Emby.Photos\Emby.Photos.csproj" />
-    <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj" />
+    <ProjectReference Include="..\src\Jellyfin.Drawing\Jellyfin.Drawing.csproj" />
     <ProjectReference Include="..\MediaBrowser.MediaEncoding\MediaBrowser.MediaEncoding.csproj" />
   </ItemGroup>
 
@@ -29,7 +29,7 @@
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.2" />
     <PackageReference Include="Mono.Nat" Version="3.0.4" />
     <PackageReference Include="prometheus-net.DotNetRuntime" Version="4.4.0" />
     <PackageReference Include="SQLitePCL.pretty.netstandard" Version="3.1.0" />
@@ -54,7 +54,7 @@
 
   <!-- Code Analyzers-->
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.3">
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>

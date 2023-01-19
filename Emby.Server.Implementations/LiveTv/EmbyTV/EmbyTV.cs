@@ -1814,21 +1814,29 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     program.AddGenre("News");
                 }
 
-                if (timer.IsProgramSeries)
+                var config = GetConfiguration();
+
+                if (config.SaveRecordingNFO)
                 {
-                    await SaveSeriesNfoAsync(timer, seriesPath).ConfigureAwait(false);
-                    await SaveVideoNfoAsync(timer, recordingPath, program, false).ConfigureAwait(false);
-                }
-                else if (!timer.IsMovie || timer.IsSports || timer.IsNews)
-                {
-                    await SaveVideoNfoAsync(timer, recordingPath, program, true).ConfigureAwait(false);
-                }
-                else
-                {
-                    await SaveVideoNfoAsync(timer, recordingPath, program, false).ConfigureAwait(false);
+                    if (timer.IsProgramSeries)
+                    {
+                        await SaveSeriesNfoAsync(timer, seriesPath).ConfigureAwait(false);
+                        await SaveVideoNfoAsync(timer, recordingPath, program, false).ConfigureAwait(false);
+                    }
+                    else if (!timer.IsMovie || timer.IsSports || timer.IsNews)
+                    {
+                        await SaveVideoNfoAsync(timer, recordingPath, program, true).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await SaveVideoNfoAsync(timer, recordingPath, program, false).ConfigureAwait(false);
+                    }
                 }
 
-                await SaveRecordingImages(recordingPath, program).ConfigureAwait(false);
+                if (config.SaveRecordingImages)
+                {
+                    await SaveRecordingImages(recordingPath, program).ConfigureAwait(false);
+                }
             }
             catch (Exception ex)
             {

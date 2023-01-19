@@ -20,7 +20,7 @@ namespace Jellyfin.Server.Migrations.Routines
         private const string DbFilename = "authentication.db";
 
         private readonly ILogger<MigrateAuthenticationDb> _logger;
-        private readonly IDbContextFactory<JellyfinDb> _dbProvider;
+        private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
         private readonly IServerApplicationPaths _appPaths;
         private readonly IUserManager _userManager;
 
@@ -33,7 +33,7 @@ namespace Jellyfin.Server.Migrations.Routines
         /// <param name="userManager">The user manager.</param>
         public MigrateAuthenticationDb(
             ILogger<MigrateAuthenticationDb> logger,
-            IDbContextFactory<JellyfinDb> dbProvider,
+            IDbContextFactory<JellyfinDbContext> dbProvider,
             IServerApplicationPaths appPaths,
             IUserManager userManager)
         {

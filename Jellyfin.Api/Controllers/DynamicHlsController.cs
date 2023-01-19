@@ -22,6 +22,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Authorization;
@@ -1704,11 +1705,12 @@ namespace Jellyfin.Api.Controllers
                 return audioTranscodeParams;
             }
 
-            // flac and opus are experimental in mp4 muxer
+            // dts, flac and opus are experimental in mp4 muxer
             var strictArgs = string.Empty;
 
             if (string.Equals(state.ActualOutputAudioCodec, "flac", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(state.ActualOutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase))
+                || string.Equals(state.ActualOutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(state.ActualOutputAudioCodec, "dts", StringComparison.OrdinalIgnoreCase))
             {
                 strictArgs = " -strict -2";
             }
@@ -1731,7 +1733,12 @@ namespace Jellyfin.Api.Controllers
 
             var channels = state.OutputAudioChannels;
 
-            if (channels.HasValue)
+            if (channels.HasValue
+                && (channels.Value != 2
+                    || (state.AudioStream is not null
+                        && state.AudioStream.Channels.HasValue
+                        && state.AudioStream.Channels.Value > 5
+                        && _encodingOptions.DownMixStereoAlgorithm == DownMixStereoAlgorithms.None)))
             {
                 args += " -ac " + channels.Value;
             }

@@ -211,7 +211,7 @@ namespace Jellyfin.Api.Controllers
             if (item is IHasTrailers hasTrailers)
             {
                 var trailers = hasTrailers.LocalTrailers;
-                return Ok(_dtoService.GetBaseItemDtos(trailers, dtoOptions, user, item));
+                return Ok(_dtoService.GetBaseItemDtos(trailers, dtoOptions, user, item).AsEnumerable());
             }
 
             return Ok(item.GetExtras()

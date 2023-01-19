@@ -234,15 +234,21 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         internal async Task<RootObject> GetRootObject(string imdbId, CancellationToken cancellationToken)
         {
             var path = await EnsureItemInfo(imdbId, cancellationToken).ConfigureAwait(false);
-            await using var stream = AsyncFile.OpenRead(path);
-            return await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            var stream = AsyncFile.OpenRead(path);
+            await using (stream.ConfigureAwait(false))
+            {
+                return await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            }
         }
 
         internal async Task<SeasonRootObject> GetSeasonRootObject(string imdbId, int seasonId, CancellationToken cancellationToken)
         {
             var path = await EnsureSeasonInfo(imdbId, seasonId, cancellationToken).ConfigureAwait(false);
-            await using var stream = AsyncFile.OpenRead(path);
-            return await JsonSerializer.DeserializeAsync<SeasonRootObject>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            var stream = AsyncFile.OpenRead(path);
+            await using (stream.ConfigureAwait(false))
+            {
+                return await JsonSerializer.DeserializeAsync<SeasonRootObject>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            }
         }
 
         /// <summary>Gets OMDB URL.</summary>
@@ -317,8 +323,11 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     imdbParam));
 
             var rootObject = await _httpClientFactory.CreateClient(NamedClient.Default).GetFromJsonAsync<RootObject>(url, _jsonOptions, cancellationToken).ConfigureAwait(false);
-            await using FileStream jsonFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
-            await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            FileStream jsonFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+            await using (jsonFileStream.ConfigureAwait(false))
+            {
+                await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            }
 
             return path;
         }
@@ -357,8 +366,11 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     seasonId));
 
             var rootObject = await _httpClientFactory.CreateClient(NamedClient.Default).GetFromJsonAsync<SeasonRootObject>(url, _jsonOptions, cancellationToken).ConfigureAwait(false);
-            await using FileStream jsonFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
-            await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            FileStream jsonFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+            await using (jsonFileStream.ConfigureAwait(false))
+            {
+                await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            }
 
             return path;
         }

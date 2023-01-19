@@ -68,14 +68,17 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
                 var path = GetAlbumInfoPath(_config.ApplicationPaths, id);
 
-                await using FileStream jsonStream = AsyncFile.OpenRead(path);
-                var obj = await JsonSerializer.DeserializeAsync<RootObject>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-
-                if (obj is not null && obj.album is not null && obj.album.Count > 0)
+                FileStream jsonStream = AsyncFile.OpenRead(path);
+                await using (jsonStream.ConfigureAwait(false))
                 {
-                    result.Item = new MusicAlbum();
-                    result.HasMetadata = true;
-                    ProcessResult(result.Item, obj.album[0], info.MetadataLanguage);
+                    var obj = await JsonSerializer.DeserializeAsync<RootObject>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+
+                    if (obj is not null && obj.album is not null && obj.album.Count > 0)
+                    {
+                        result.Item = new MusicAlbum();
+                        result.HasMetadata = true;
+                        ProcessResult(result.Item, obj.album[0], info.MetadataLanguage);
+                    }
                 }
             }
 
@@ -173,13 +176,18 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-
-            var fileStreamOptions = AsyncFile.WriteOptions;
-            fileStreamOptions.Mode = FileMode.Create;
-            fileStreamOptions.PreallocationSize = stream.Length;
-            await using var xmlFileStream = new FileStream(path, fileStreamOptions);
-            await stream.CopyToAsync(xmlFileStream, cancellationToken).ConfigureAwait(false);
+            var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using (stream.ConfigureAwait(false))
+            {
+                var fileStreamOptions = AsyncFile.WriteOptions;
+                fileStreamOptions.Mode = FileMode.Create;
+                fileStreamOptions.PreallocationSize = stream.Length;
+                var xmlFileStream = new FileStream(path, fileStreamOptions);
+                await using (xmlFileStream.ConfigureAwait(false))
+                {
+                    await stream.CopyToAsync(xmlFileStream, cancellationToken).ConfigureAwait(false);
+                }
+            }
         }
 
         private static string GetAlbumDataPath(IApplicationPaths appPaths, string musicBrainzReleaseGroupId)

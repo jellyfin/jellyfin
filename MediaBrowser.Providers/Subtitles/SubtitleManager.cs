@@ -188,10 +188,16 @@ namespace MediaBrowser.Providers.Subtitles
         {
             var saveInMediaFolder = libraryOptions.SaveSubtitlesWithMedia;
 
-            await using var stream = response.Stream;
-            await using var memoryStream = new MemoryStream();
-            await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
-            memoryStream.Position = 0;
+            var memoryStream = new MemoryStream();
+            await using (memoryStream.ConfigureAwait(false))
+            {
+                var stream = response.Stream;
+                await using (stream.ConfigureAwait(false))
+                {
+                    await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
+                    memoryStream.Position = 0;
+                }
+            }
 
             var savePaths = new List<string>();
             var saveFileName = Path.GetFileNameWithoutExtension(video.Path) + "." + response.Language.ToLowerInvariant();

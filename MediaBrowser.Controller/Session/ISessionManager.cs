@@ -58,16 +58,6 @@ namespace MediaBrowser.Controller.Session
         event EventHandler<SessionEventArgs> CapabilitiesChanged;
 
         /// <summary>
-        /// Occurs when [authentication failed].
-        /// </summary>
-        event EventHandler<GenericEventArgs<AuthenticationRequest>> AuthenticationFailed;
-
-        /// <summary>
-        /// Occurs when [authentication succeeded].
-        /// </summary>
-        event EventHandler<GenericEventArgs<AuthenticationResult>> AuthenticationSucceeded;
-
-        /// <summary>
         /// Gets the sessions.
         /// </summary>
         /// <value>The sessions.</value>

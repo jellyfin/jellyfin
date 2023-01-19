@@ -236,14 +236,17 @@ namespace Jellyfin.Api.Controllers
 
             if (string.Equals(format, "vtt", StringComparison.OrdinalIgnoreCase) && addVttTimeMap)
             {
-                await using Stream stream = await EncodeSubtitles(itemId.Value, mediaSourceId, index.Value, format, startPositionTicks, endPositionTicks, copyTimestamps).ConfigureAwait(false);
-                using var reader = new StreamReader(stream);
+                Stream stream = await EncodeSubtitles(itemId.Value, mediaSourceId, index.Value, format, startPositionTicks, endPositionTicks, copyTimestamps).ConfigureAwait(false);
+                await using (stream.ConfigureAwait(false))
+                {
+                    using var reader = new StreamReader(stream);
 
-                var text = await reader.ReadToEndAsync().ConfigureAwait(false);
+                    var text = await reader.ReadToEndAsync().ConfigureAwait(false);
 
-                text = text.Replace("WEBVTT", "WEBVTT\nX-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:00:00:00.000", StringComparison.Ordinal);
+                    text = text.Replace("WEBVTT", "WEBVTT\nX-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:00:00:00.000", StringComparison.Ordinal);
 
-                return File(Encoding.UTF8.GetBytes(text), MimeTypes.GetMimeType("file." + format));
+                    return File(Encoding.UTF8.GetBytes(text), MimeTypes.GetMimeType("file." + format));
+                }
             }
 
             return File(
@@ -403,19 +406,22 @@ namespace Jellyfin.Api.Controllers
         {
             var video = (Video)_libraryManager.GetItemById(itemId);
             var data = Convert.FromBase64String(body.Data);
-            await using var memoryStream = new MemoryStream(data);
-            await _subtitleManager.UploadSubtitle(
-                video,
-                new SubtitleResponse
-                {
-                    Format = body.Format,
-                    Language = body.Language,
-                    IsForced = body.IsForced,
-                    Stream = memoryStream
-                }).ConfigureAwait(false);
-            _providerManager.QueueRefresh(video.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
+            var memoryStream = new MemoryStream(data, 0, data.Length, false, true);
+            await using (memoryStream.ConfigureAwait(false))
+            {
+                await _subtitleManager.UploadSubtitle(
+                    video,
+                    new SubtitleResponse
+                    {
+                        Format = body.Format,
+                        Language = body.Language,
+                        IsForced = body.IsForced,
+                        Stream = memoryStream
+                    }).ConfigureAwait(false);
+                _providerManager.QueueRefresh(video.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
 
-            return NoContent();
+                return NoContent();
+            }
         }
 
         /// <summary>
