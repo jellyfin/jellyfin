@@ -80,7 +80,6 @@ namespace MediaBrowser.Providers.MediaInfo
             CancellationToken cancellationToken)
             where T : Video
         {
-            BlurayDiscInfo blurayDiscInfo = null;
             Model.MediaInfo.MediaInfo mediaInfoResult = null;
 
             if (!item.IsShortcut || options.EnableRemoteContentProbe)
@@ -90,7 +89,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 cancellationToken.ThrowIfCancellationRequested();
             }
 
-            await Fetch(item, cancellationToken, mediaInfoResult, blurayDiscInfo, options).ConfigureAwait(false);
+            await Fetch(item, cancellationToken, mediaInfoResult, options).ConfigureAwait(false);
 
             return ItemUpdateType.MetadataImport;
         }
@@ -130,7 +129,6 @@ namespace MediaBrowser.Providers.MediaInfo
             Video video,
             CancellationToken cancellationToken,
             Model.MediaInfo.MediaInfo mediaInfo,
-            BlurayDiscInfo blurayInfo,
             MetadataRefreshOptions options)
         {
             List<MediaStream> mediaStreams;
@@ -184,10 +182,6 @@ namespace MediaBrowser.Providers.MediaInfo
                 video.Container = mediaInfo.Container;
 
                 chapters = mediaInfo.Chapters ?? Array.Empty<ChapterInfo>();
-                if (blurayInfo is not null)
-                {
-                    FetchBdInfo(video, ref chapters, mediaStreams, blurayInfo);
-                }
             }
             else
             {
@@ -281,68 +275,6 @@ namespace MediaBrowser.Providers.MediaInfo
                         (i + 1).ToString(CultureInfo.InvariantCulture));
                 }
             }
-        }
-
-        private void FetchBdInfo(BaseItem item, ref ChapterInfo[] chapters, List<MediaStream> mediaStreams, BlurayDiscInfo blurayInfo)
-        {
-            var video = (Video)item;
-
-            // video.PlayableStreamFileNames = blurayInfo.Files.ToList();
-
-            // Use BD Info if it has multiple m2ts. Otherwise, treat it like a video file and rely more on ffprobe output
-            if (blurayInfo.Files.Length > 1)
-            {
-                int? currentHeight = null;
-                int? currentWidth = null;
-                int? currentBitRate = null;
-
-                var videoStream = mediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
-
-                // Grab the values that ffprobe recorded
-                if (videoStream is not null)
-                {
-                    currentBitRate = videoStream.BitRate;
-                    currentWidth = videoStream.Width;
-                    currentHeight = videoStream.Height;
-                }
-
-                // Fill video properties from the BDInfo result
-                mediaStreams.Clear();
-                mediaStreams.AddRange(blurayInfo.MediaStreams);
-
-                if (blurayInfo.RunTimeTicks.HasValue && blurayInfo.RunTimeTicks.Value > 0)
-                {
-                    video.RunTimeTicks = blurayInfo.RunTimeTicks;
-                }
-
-                if (blurayInfo.Chapters is not null)
-                {
-                    double[] brChapter = blurayInfo.Chapters;
-                    chapters = new ChapterInfo[brChapter.Length];
-                    for (int i = 0; i < brChapter.Length; i++)
-                    {
-                        chapters[i] = new ChapterInfo
-                        {
-                            StartPositionTicks = TimeSpan.FromSeconds(brChapter[i]).Ticks
-                        };
-                    }
-                }
-
-                videoStream = mediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
-
-                // Use the ffprobe values if these are empty
-                if (videoStream is not null)
-                {
-                    videoStream.BitRate = IsEmpty(videoStream.BitRate) ? currentBitRate : videoStream.BitRate;
-                    videoStream.Width = IsEmpty(videoStream.Width) ? currentWidth : videoStream.Width;
-                    videoStream.Height = IsEmpty(videoStream.Height) ? currentHeight : videoStream.Height;
-                }
-            }
-        }
-
-        private bool IsEmpty(int? num)
-        {
-            return !num.HasValue || num.Value == 0;
         }
 
         private void FetchEmbeddedInfo(Video video, Model.MediaInfo.MediaInfo data, MetadataRefreshOptions refreshOptions, LibraryOptions libraryOptions)
