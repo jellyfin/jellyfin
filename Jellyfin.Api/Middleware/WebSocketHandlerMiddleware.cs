@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Http;
 
-namespace Jellyfin.Server.Middleware
+namespace Jellyfin.Api.Middleware
 {
     /// <summary>
     /// Handles WebSocket requests.

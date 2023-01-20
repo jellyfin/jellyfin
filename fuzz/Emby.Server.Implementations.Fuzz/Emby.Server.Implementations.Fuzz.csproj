@@ -19,7 +19,7 @@
     <PackageReference Include="AutoFixture" Version="4.17.0" />
     <PackageReference Include="AutoFixture.AutoMoq" Version="4.17.0" />
     <PackageReference Include="Moq" Version="4.18.4" />
-    <PackageReference Include="SharpFuzz" Version="2.0.0" />
+    <PackageReference Include="SharpFuzz" Version="2.0.1" />
   </ItemGroup>
 
 </Project>

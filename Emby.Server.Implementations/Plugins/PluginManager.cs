@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Runtime.Loader;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -30,6 +31,7 @@ namespace Emby.Server.Implementations.Plugins
     {
         private readonly string _pluginsPath;
         private readonly Version _appVersion;
+        private readonly List<AssemblyLoadContext> _assemblyLoadContexts;
         private readonly JsonSerializerOptions _jsonOptions;
         private readonly ILogger<PluginManager> _logger;
         private readonly IApplicationHost _appHost;
@@ -76,6 +78,8 @@ namespace Emby.Server.Implementations.Plugins
             _appHost = appHost;
             _minimumVersion = new Version(0, 0, 0, 1);
             _plugins = Directory.Exists(_pluginsPath) ? DiscoverPlugins().ToList() : new List<LocalPlugin>();
+
+            _assemblyLoadContexts = new List<AssemblyLoadContext>();
         }
 
         private IHttpClientFactory HttpClientFactory
@@ -124,7 +128,10 @@ namespace Emby.Server.Implementations.Plugins
                     Assembly assembly;
                     try
                     {
-                        assembly = Assembly.LoadFrom(file);
+                        var assemblyLoadContext = new PluginLoadContext(file);
+                        _assemblyLoadContexts.Add(assemblyLoadContext);
+
+                        assembly = assemblyLoadContext.LoadFromAssemblyPath(file);
 
                         // Load all required types to verify that the plugin will load
                         assembly.GetTypes();
@@ -153,6 +160,15 @@ namespace Emby.Server.Implementations.Plugins
                     _logger.LogInformation("Loaded assembly {Assembly} from {Path}", assembly.FullName, file);
                     yield return assembly;
                 }
+            }
+        }
+
+        /// <inheritdoc />
+        public void UnloadAssemblies()
+        {
+            foreach (var assemblyLoadContext in _assemblyLoadContexts)
+            {
+                assemblyLoadContext.Unload();
             }
         }
 

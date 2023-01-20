@@ -16,12 +16,12 @@ namespace Jellyfin.Server.Implementations.Security
 {
     public class AuthorizationContext : IAuthorizationContext
     {
-        private readonly IDbContextFactory<JellyfinDb> _jellyfinDbProvider;
+        private readonly IDbContextFactory<JellyfinDbContext> _jellyfinDbProvider;
         private readonly IUserManager _userManager;
         private readonly IServerApplicationHost _serverApplicationHost;
 
         public AuthorizationContext(
-            IDbContextFactory<JellyfinDb> jellyfinDb,
+            IDbContextFactory<JellyfinDbContext> jellyfinDb,
             IUserManager userManager,
             IServerApplicationHost serverApplicationHost)
         {

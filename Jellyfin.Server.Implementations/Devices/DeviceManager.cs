@@ -23,7 +23,7 @@ namespace Jellyfin.Server.Implementations.Devices
     /// </summary>
     public class DeviceManager : IDeviceManager
     {
-        private readonly IDbContextFactory<JellyfinDb> _dbProvider;
+        private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
         private readonly IUserManager _userManager;
         private readonly ConcurrentDictionary<string, ClientCapabilities> _capabilitiesMap = new();
 
@@ -32,7 +32,7 @@ namespace Jellyfin.Server.Implementations.Devices
         /// </summary>
         /// <param name="dbProvider">The database provider.</param>
         /// <param name="userManager">The user manager.</param>
-        public DeviceManager(IDbContextFactory<JellyfinDb> dbProvider, IUserManager userManager)
+        public DeviceManager(IDbContextFactory<JellyfinDbContext> dbProvider, IUserManager userManager)
         {
             _dbProvider = dbProvider;
             _userManager = userManager;
@@ -54,7 +54,7 @@ namespace Jellyfin.Server.Implementations.Devices
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                deviceOptions = await dbContext.DeviceOptions.AsQueryable().FirstOrDefaultAsync(dev => dev.DeviceId == deviceId).ConfigureAwait(false);
+                deviceOptions = await dbContext.DeviceOptions.FirstOrDefaultAsync(dev => dev.DeviceId == deviceId).ConfigureAwait(false);
                 if (deviceOptions is null)
                 {
                     deviceOptions = new DeviceOptions(deviceId);
@@ -132,22 +132,11 @@ namespace Jellyfin.Server.Implementations.Devices
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                var devices = dbContext.Devices.AsQueryable();
-
-                if (query.UserId.HasValue)
-                {
-                    devices = devices.Where(device => device.UserId.Equals(query.UserId.Value));
-                }
-
-                if (query.DeviceId is not null)
-                {
-                    devices = devices.Where(device => device.DeviceId == query.DeviceId);
-                }
-
-                if (query.AccessToken is not null)
-                {
-                    devices = devices.Where(device => device.AccessToken == query.AccessToken);
-                }
+                var devices = dbContext.Devices
+                    .OrderBy(d => d.Id)
+                    .Where(device => !query.UserId.HasValue || device.UserId.Equals(query.UserId.Value))
+                    .Where(device => query.DeviceId == null || device.DeviceId == query.DeviceId)
+                    .Where(device => query.AccessToken == null || device.AccessToken == query.AccessToken);
 
                 var count = await devices.CountAsync().ConfigureAwait(false);
 
@@ -179,11 +168,10 @@ namespace Jellyfin.Server.Implementations.Devices
         /// <inheritdoc />
         public async Task<QueryResult<DeviceInfo>> GetDevicesForUser(Guid? userId, bool? supportsSync)
         {
-            IAsyncEnumerable<Device> sessions;
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                sessions = dbContext.Devices
+                IAsyncEnumerable<Device> sessions = dbContext.Devices
                     .Include(d => d.User)
                     .OrderByDescending(d => d.DateLastActivity)
                     .ThenBy(d => d.DeviceId)

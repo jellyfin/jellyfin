@@ -64,14 +64,6 @@ namespace Jellyfin.Server
         public string? PackageName { get; set; }
 
         /// <inheritdoc />
-        [Option("restartpath", Required = false, HelpText = "Path to restart script.")]
-        public string? RestartPath { get; set; }
-
-        /// <inheritdoc />
-        [Option("restartargs", Required = false, HelpText = "Arguments for restart script.")]
-        public string? RestartArgs { get; set; }
-
-        /// <inheritdoc />
         [Option("published-server-url", Required = false, HelpText = "Jellyfin Server URL to publish via auto discover process")]
         public string? PublishedServerUrl { get; set; }
 

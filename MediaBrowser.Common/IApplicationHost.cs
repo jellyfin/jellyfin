@@ -48,12 +48,6 @@ namespace MediaBrowser.Common
         bool IsShuttingDown { get; }
 
         /// <summary>
-        /// Gets a value indicating whether this instance can self restart.
-        /// </summary>
-        /// <value><c>true</c> if this instance can self restart; otherwise, <c>false</c>.</value>
-        bool CanSelfRestart { get; }
-
-        /// <summary>
         /// Gets the application version.
         /// </summary>
         /// <value>The application version.</value>

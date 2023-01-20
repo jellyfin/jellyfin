@@ -2,7 +2,7 @@ using Jellyfin.Extensions.Json;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Net.Http.Headers;
 
-namespace Jellyfin.Server.Formatters
+namespace Jellyfin.Api.Formatters
 {
     /// <summary>
     /// Camel Case Json Profile Formatter.

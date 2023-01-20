@@ -25,7 +25,7 @@ namespace Jellyfin.Server.Migrations.Routines
 
         private readonly ILogger<MigrateDisplayPreferencesDb> _logger;
         private readonly IServerApplicationPaths _paths;
-        private readonly IDbContextFactory<JellyfinDb> _provider;
+        private readonly IDbContextFactory<JellyfinDbContext> _provider;
         private readonly JsonSerializerOptions _jsonOptions;
         private readonly IUserManager _userManager;
 
@@ -39,7 +39,7 @@ namespace Jellyfin.Server.Migrations.Routines
         public MigrateDisplayPreferencesDb(
             ILogger<MigrateDisplayPreferencesDb> logger,
             IServerApplicationPaths paths,
-            IDbContextFactory<JellyfinDb> provider,
+            IDbContextFactory<JellyfinDbContext> provider,
             IUserManager userManager)
         {
             _logger = logger;

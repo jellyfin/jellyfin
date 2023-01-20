@@ -21,9 +21,6 @@ JELLYFIN_CACHE_DIR="/var/cache/jellyfin"
 # web client path, installed by the jellyfin-web package
 JELLYFIN_WEB_OPT="--webdir=/usr/share/jellyfin/web"
 
-# Restart script for in-app server control
-JELLYFIN_RESTART_OPT="--restartpath=/usr/lib/jellyfin/restart.sh"
-
 # ffmpeg binary paths, overriding the system values
 JELLYFIN_FFMPEG_OPT="--ffmpeg=/usr/lib/jellyfin-ffmpeg/ffmpeg"
 
@@ -50,4 +47,4 @@ JELLYFIN_ADDITIONAL_OPTS=""
 # Application username
 JELLYFIN_USER="jellyfin"
 # Full application command
-JELLYFIN_ARGS="$JELLYFIN_WEB_OPT $JELLYFIN_RESTART_OPT $JELLYFIN_FFMPEG_OPT $JELLYFIN_SERVICE_OPT $JELLYFIN_NOWEBAPP_OPT $JELLFIN_ADDITIONAL_OPTS"
+JELLYFIN_ARGS="$JELLYFIN_WEB_OPT $JELLYFIN_FFMPEG_OPT $JELLYFIN_SERVICE_OPT $JELLYFIN_NOWEBAPP_OPT $JELLFIN_ADDITIONAL_OPTS"

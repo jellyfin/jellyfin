@@ -79,8 +79,9 @@ namespace MediaBrowser.Model.System
         /// <summary>
         /// Gets or sets a value indicating whether this instance can self restart.
         /// </summary>
-        /// <value><c>true</c> if this instance can self restart; otherwise, <c>false</c>.</value>
-        public bool CanSelfRestart { get; set; }
+        /// <value><c>true</c>.</value>
+        [Obsolete("This is always true")]
+        public bool CanSelfRestart { get; set; } = true;
 
         public bool CanLaunchWebBrowser { get; set; }
 

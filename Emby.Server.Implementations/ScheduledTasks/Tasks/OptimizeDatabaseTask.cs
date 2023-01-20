@@ -17,7 +17,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
     {
         private readonly ILogger<OptimizeDatabaseTask> _logger;
         private readonly ILocalizationManager _localization;
-        private readonly IDbContextFactory<JellyfinDb> _provider;
+        private readonly IDbContextFactory<JellyfinDbContext> _provider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OptimizeDatabaseTask" /> class.
@@ -28,7 +28,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         public OptimizeDatabaseTask(
             ILogger<OptimizeDatabaseTask> logger,
             ILocalizationManager localization,
-            IDbContextFactory<JellyfinDb> provider)
+            IDbContextFactory<JellyfinDbContext> provider)
         {
             _logger = logger;
             _localization = localization;
