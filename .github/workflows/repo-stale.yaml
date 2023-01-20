@@ -19,6 +19,7 @@ jobs:
           days-before-pr-stale: -1
           days-before-close: 21
           days-before-pr-close: -1
+          operations-per-run: 75
           exempt-issue-labels: regression,security,roadmap,future,feature,enhancement,confirmed
           stale-issue-label: stale
           stale-issue-message: |-
