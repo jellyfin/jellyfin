@@ -626,17 +626,6 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Determines whether a stream code time base is double the frame rate.
-        /// </summary>
-        /// <param name="averageFrameRate">average frame rate.</param>
-        /// <param name="codecTimeBase">codec time base string.</param>
-        /// <returns>true if the codec time base is double the frame rate.</returns>
-        internal static bool IsCodecTimeBaseDoubleTheFrameRate(float? averageFrameRate, string codecTimeBase)
-        {
-            return MathF.Abs(((averageFrameRate ?? 0) * (GetFrameRate(codecTimeBase) ?? 0)) - 0.5f) <= float.Epsilon;
-        }
-
-        /// <summary>
         /// Converts ffprobe stream info to our MediaStream class.
         /// </summary>
         /// <param name="isAudio">if set to <c>true</c> [is info].</param>
@@ -748,21 +737,8 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.AverageFrameRate = GetFrameRate(streamInfo.AverageFrameRate);
                 stream.RealFrameRate = GetFrameRate(streamInfo.RFrameRate);
 
-                bool videoInterlaced = !string.IsNullOrWhiteSpace(streamInfo.FieldOrder)
+                stream.IsInterlaced = !string.IsNullOrWhiteSpace(streamInfo.FieldOrder)
                     && !string.Equals(streamInfo.FieldOrder, "progressive", StringComparison.OrdinalIgnoreCase);
-
-                // Some interlaced H.264 files in mp4 containers using MBAFF coding aren't flagged as being interlaced by FFprobe,
-                // so for H.264 files we also calculate the frame rate from the codec time base and check if it is double the reported
-                // frame rate to determine if the file is interlaced
-
-                bool h264MbaffCoded = string.Equals(stream.Codec, "h264", StringComparison.OrdinalIgnoreCase)
-                    && string.IsNullOrWhiteSpace(streamInfo.FieldOrder)
-                    && IsCodecTimeBaseDoubleTheFrameRate(stream.AverageFrameRate, stream.CodecTimeBase);
-
-                if (videoInterlaced || h264MbaffCoded)
-                {
-                    stream.IsInterlaced = true;
-                }
 
                 if (isAudio
                     || string.Equals(stream.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase)

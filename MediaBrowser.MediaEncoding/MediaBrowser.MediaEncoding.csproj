@@ -23,7 +23,6 @@
 
   <ItemGroup>
     <PackageReference Include="AsyncKeyedLock" Version="6.0.5" />
-    <PackageReference Include="BDInfo" Version="0.7.6.2" />
     <PackageReference Include="libse" Version="3.6.10" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="7.0.0" />
@@ -32,7 +31,7 @@
 
   <!-- Code Analyzers-->
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.3">
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>

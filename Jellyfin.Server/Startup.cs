@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
+using Jellyfin.Api.Middleware;
 using Jellyfin.MediaEncoding.Hls.Extensions;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Server.Extensions;
@@ -12,7 +13,6 @@ using Jellyfin.Server.HealthChecks;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Extensions;
 using Jellyfin.Server.Infrastructure;
-using Jellyfin.Server.Middleware;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -119,7 +119,7 @@ namespace Jellyfin.Server
                 .ConfigurePrimaryHttpMessageHandler(defaultHttpClientHandlerDelegate);
 
             services.AddHealthChecks()
-                .AddCheck<DbContextFactoryHealthCheck<JellyfinDb>>(nameof(JellyfinDb));
+                .AddCheck<DbContextFactoryHealthCheck<JellyfinDbContext>>(nameof(JellyfinDbContext));
 
             services.AddHlsPlaylistGenerator();
         }

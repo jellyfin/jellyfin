@@ -123,5 +123,6 @@
     "TaskOptimizeDatabase": "Оптимизирай базата данни",
     "TaskKeyframeExtractorDescription": "Извличат се ключови кадри от видеофайловете ,за да се създаде по точен ХЛС списък . Задачата може да отнеме много време.",
     "TaskKeyframeExtractor": "Извличане на ключови кадри",
-    "External": "Външен"
+    "External": "Външен",
+    "HearingImpaired": "Увреден слух"
 }

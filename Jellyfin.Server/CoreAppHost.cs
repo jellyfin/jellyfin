@@ -107,7 +107,7 @@ namespace Jellyfin.Server
             yield return typeof(CoreAppHost).Assembly;
 
             // Jellyfin.Server.Implementations
-            yield return typeof(JellyfinDb).Assembly;
+            yield return typeof(JellyfinDbContext).Assembly;
         }
 
         /// <inheritdoc />

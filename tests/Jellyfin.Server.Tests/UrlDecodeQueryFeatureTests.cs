@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using Jellyfin.Server.Middleware;
+using Jellyfin.Api.Middleware;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;

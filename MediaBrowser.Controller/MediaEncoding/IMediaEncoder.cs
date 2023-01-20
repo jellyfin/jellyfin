@@ -187,13 +187,5 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="path">The path.</param>
         /// <param name="pathType">The type of path.</param>
         void UpdateEncoderPath(string path, string pathType);
-
-        /// <summary>
-        /// Gets the primary playlist of .vob files.
-        /// </summary>
-        /// <param name="path">The to the .vob files.</param>
-        /// <param name="titleNumber">The title number to start with.</param>
-        /// <returns>A playlist.</returns>
-        IEnumerable<string> GetPrimaryPlaylistVobFiles(string path, uint? titleNumber);
     }
 }
