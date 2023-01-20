@@ -371,6 +371,7 @@ namespace Jellyfin.Server.Implementations.Users
                     EnablePublicSharing = user.HasPermission(PermissionKind.EnablePublicSharing),
                     AccessSchedules = user.AccessSchedules.ToArray(),
                     BlockedTags = user.GetPreference(PreferenceKind.BlockedTags),
+                    AllowedTags = user.GetPreference(PreferenceKind.AllowedTags),
                     EnabledChannels = user.GetPreferenceValues<Guid>(PreferenceKind.EnabledChannels),
                     EnabledDevices = user.GetPreference(PreferenceKind.EnabledDevices),
                     EnabledFolders = user.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders),
@@ -696,6 +697,7 @@ namespace Jellyfin.Server.Implementations.Users
                 // TODO: fix this at some point
                 user.SetPreference(PreferenceKind.BlockUnratedItems, policy.BlockUnratedItems ?? Array.Empty<UnratedItem>());
                 user.SetPreference(PreferenceKind.BlockedTags, policy.BlockedTags);
+                user.SetPreference(PreferenceKind.AllowedTags, policy.AllowedTags);
                 user.SetPreference(PreferenceKind.EnabledChannels, policy.EnabledChannels);
                 user.SetPreference(PreferenceKind.EnabledDevices, policy.EnabledDevices);
                 user.SetPreference(PreferenceKind.EnabledFolders, policy.EnabledFolders);

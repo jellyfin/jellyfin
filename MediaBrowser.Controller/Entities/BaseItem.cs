@@ -1607,6 +1607,11 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
+            if (user.GetPreference(PreferenceKind.AllowedTags).Any() && !user.GetPreference(PreferenceKind.AllowedTags).Any(i => Tags.Contains(i, StringComparison.OrdinalIgnoreCase)))
+            {
+                return false;
+            }
+
             return true;
         }
 
