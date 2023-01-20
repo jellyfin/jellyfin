@@ -22,7 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BDInfo"/>
     <PackageReference Include="libse" />
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="System.Text.Encoding.CodePages" />
