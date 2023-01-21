@@ -7,7 +7,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Emby.Naming\Emby.Naming.csproj" />
-    <ProjectReference Include="..\Emby.Notifications\Emby.Notifications.csproj" />
     <ProjectReference Include="..\Jellyfin.Api\Jellyfin.Api.csproj" />
     <ProjectReference Include="..\Jellyfin.Server.Implementations\Jellyfin.Server.Implementations.csproj" />
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />

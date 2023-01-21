@@ -1,6 +1,6 @@
+using System;
 using System.Collections.Generic;
 using Jellyfin.Api.Constants;
-using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Notifications;
 using Microsoft.AspNetCore.Authorization;
@@ -15,17 +15,6 @@ namespace Jellyfin.Api.Controllers
     [Authorize(Policy = Policies.DefaultAuthorization)]
     public class NotificationsController : BaseJellyfinApiController
     {
-        private readonly INotificationManager _notificationManager;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="NotificationsController" /> class.
-        /// </summary>
-        /// <param name="notificationManager">The notification manager.</param>
-        public NotificationsController(INotificationManager notificationManager)
-        {
-            _notificationManager = notificationManager;
-        }
-
         /// <summary>
         /// Gets notification types.
         /// </summary>
@@ -33,9 +22,10 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <cref see="OkResult"/> containing a list of all notification types.</returns>
         [HttpGet("Types")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [Obsolete("Notifications API is a no-op.")]
         public IEnumerable<NotificationTypeInfo> GetNotificationTypes()
         {
-            return _notificationManager.GetNotificationTypes();
+            return Array.Empty<NotificationTypeInfo>();
         }
 
         /// <summary>
@@ -45,9 +35,10 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <cref see="OkResult"/> containing a list of all notification services.</returns>
         [HttpGet("Services")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [Obsolete("Notifications API is a no-op.")]
         public IEnumerable<NameIdPair> GetNotificationServices()
         {
-            return _notificationManager.GetNotificationServices();
+            return Array.Empty<NameIdPair>();
         }
     }
 }

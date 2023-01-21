@@ -19,7 +19,6 @@ using Emby.Dlna;
 using Emby.Dlna.Main;
 using Emby.Dlna.Ssdp;
 using Emby.Naming.Common;
-using Emby.Notifications;
 using Emby.Photos;
 using Emby.Server.Implementations.Channels;
 using Emby.Server.Implementations.Collections;
@@ -70,7 +69,6 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Plugins;
@@ -615,8 +613,6 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IUserViewManager, UserViewManager>();
 
-            serviceCollection.AddSingleton<INotificationManager, NotificationManager>();
-
             serviceCollection.AddSingleton<IDeviceDiscovery, DeviceDiscovery>();
 
             serviceCollection.AddSingleton<IChapterManager, ChapterManager>();
@@ -791,8 +787,6 @@ namespace Emby.Server.Implementations
             Resolve<IChannelManager>().AddParts(GetExports<IChannel>());
 
             Resolve<IMediaSourceManager>().AddParts(GetExports<IMediaSourceProvider>());
-
-            Resolve<INotificationManager>().AddParts(GetExports<INotificationService>(), GetExports<INotificationTypeFactory>());
         }
 
         /// <summary>
@@ -990,9 +984,6 @@ namespace Emby.Server.Implementations
 
             // Local metadata
             yield return typeof(BoxSetXmlSaver).Assembly;
-
-            // Notifications
-            yield return typeof(NotificationManager).Assembly;
 
             // Xbmc
             yield return typeof(ArtistNfoProvider).Assembly;
