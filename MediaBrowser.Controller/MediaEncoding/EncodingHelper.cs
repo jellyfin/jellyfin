@@ -2890,8 +2890,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
             else if (hasGraphicalSubs)
             {
-                // [0:s]scale=expr
-                var subSwScaleFilter = GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH);
+                // [0:s]scale=s=1280x720
+                var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                 subFilters.Add(subSwScaleFilter);
                 overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
             }
@@ -3077,9 +3077,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = isSwDecoder
-                        ? GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH)
-                        : GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
                     overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
                 }
@@ -3279,9 +3277,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = isSwDecoder
-                        ? GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH)
-                        : GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
                     overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
                 }
@@ -3533,9 +3529,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = isSwDecoder
-                        ? GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH)
-                        : GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
                     overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
                 }
@@ -3744,9 +3738,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = isSwDecoder
-                        ? GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH)
-                        : GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
                     overlayFilters.Add("overlay=eof_action=pass:shortest=1:repeatlast=0");
                 }
@@ -3993,9 +3985,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = isSwDecoder
-                        ? GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH)
-                        : GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
                     overlayFilters.Add("overlay=eof_action=pass:shortest=1:repeatlast=0");
 
@@ -4170,9 +4160,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = isSwDecoder
-                        ? GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH)
-                        : GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
                     overlayFilters.Add("overlay=eof_action=pass:shortest=1:repeatlast=0");
 
