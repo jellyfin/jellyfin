@@ -5785,6 +5785,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
+            if(encodingOptions.EnableReplayGain){
+                audioTranscodeParams.Add("-af volume=replaygain=track ");
+            }
+
             var threads = GetNumberOfThreads(state, encodingOptions, null);
 
             var inputModifier = GetInputModifier(state, encodingOptions, null);

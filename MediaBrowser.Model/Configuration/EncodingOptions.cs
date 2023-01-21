@@ -48,6 +48,8 @@ public class EncodingOptions
         EnableSubtitleExtraction = true;
         AllowOnDemandMetadataBasedKeyframeExtractionForExtensions = new[] { "mkv" };
         HardwareDecodingCodecs = new string[] { "h264", "vc1" };
+        EnableReplayGain = false;
+        EnableAlwaysAudioTranscode = false;
     }
 
     /// <summary>
@@ -244,4 +246,14 @@ public class EncodingOptions
     /// Gets or sets the file extensions on-demand metadata based keyframe extraction is enabled for.
     /// </summary>
     public string[] AllowOnDemandMetadataBasedKeyframeExtractionForExtensions { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether replaygain should be enabled for transcoded audio.
+    /// </summary>
+    public bool EnableReplayGain { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether audio transcode should always be enabled.
+    /// </summary>
+    public bool EnableAlwaysAudioTranscode { get; set; }
 }

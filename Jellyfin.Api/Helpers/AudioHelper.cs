@@ -149,7 +149,7 @@ namespace Jellyfin.Api.Helpers
             StreamingHelpers.AddDlnaHeaders(state, _httpContextAccessor.HttpContext.Response.Headers, streamingRequest.Static || isTranscodeCached, streamingRequest.StartTimeTicks, _httpContextAccessor.HttpContext.Request, _dlnaManager);
 
             // Static stream
-            if (streamingRequest.Static)
+            if (streamingRequest.Static && !_serverConfigurationManager.GetEncodingOptions().EnableAlwaysAudioTranscode)
             {
                 var contentType = state.GetMimeType("." + state.OutputContainer, false) ?? state.GetMimeType(state.MediaPath);
 
