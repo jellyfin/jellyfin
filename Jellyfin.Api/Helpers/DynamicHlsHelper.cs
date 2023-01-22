@@ -204,6 +204,7 @@ namespace Jellyfin.Api.Helpers
                 {
                     builder.Append(flacWaPlaylist);
                 }
+
                 var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
 
                 // Provide SDR HEVC entrance for backward compatibility.
