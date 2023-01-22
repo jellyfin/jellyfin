@@ -248,10 +248,10 @@ namespace Jellyfin.Api.Controllers
         {
             var item = _libraryManager.GetItemById(itemId);
             _logger.LogInformation(
-                "Setting provider id's to item {0}-{1}: {2}",
+                "Setting provider id's to item {ItemId}-{ItemName}: {@ProviderIds}",
                 item.Id,
                 item.Name,
-                JsonSerializer.Serialize(searchResult.ProviderIds));
+                searchResult.ProviderIds);
 
             // Since the refresh process won't erase provider Ids, we need to set this explicitly now.
             item.ProviderIds = searchResult.ProviderIds;
