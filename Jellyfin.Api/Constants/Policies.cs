@@ -74,5 +74,15 @@ namespace Jellyfin.Api.Constants
         /// Policy name for accessing a SyncPlay group.
         /// </summary>
         public const string SyncPlayIsInGroup = "SyncPlayIsInGroup";
+
+        /// <summary>
+        /// Policy name for accessing LiveTV.
+        /// </summary>
+        public const string LiveTvAccess = "LiveTvAccess";
+
+        /// <summary>
+        /// Policy name for managing LiveTV.
+        /// </summary>
+        public const string LiveTvManagement = "LiveTvManagement";
     }
 }

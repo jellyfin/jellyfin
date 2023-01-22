@@ -43,12 +43,16 @@ namespace Jellyfin.Api.Auth
         /// <param name="ignoreSchedule">Whether to ignore parental control.</param>
         /// <param name="localAccessOnly">Whether access is to be allowed locally only.</param>
         /// <param name="requiredDownloadPermission">Whether validation requires download permission.</param>
+        /// <param name="requireLiveTvManagementPermission">Whether validation requires LiveTV management permission.</param>
+        /// <param name="requireLiveTvAccessPermission">Whether validation requires LiveTV management permission.</param>
         /// <returns>Validated claim status.</returns>
         protected bool ValidateClaims(
             ClaimsPrincipal claimsPrincipal,
             bool ignoreSchedule = false,
             bool localAccessOnly = false,
-            bool requiredDownloadPermission = false)
+            bool requiredDownloadPermission = false,
+            bool requireLiveTvManagementPermission = false,
+            bool requireLiveTvAccessPermission = false)
         {
             // ApiKey is currently global admin, always allow.
             var isApiKey = ClaimHelpers.GetIsApiKey(claimsPrincipal);
@@ -102,6 +106,20 @@ namespace Jellyfin.Api.Auth
             // User attempting to download without permission.
             if (requiredDownloadPermission
                 && !user.HasPermission(PermissionKind.EnableContentDownloading))
+            {
+                return false;
+            }
+
+            // User attempting to access LiveTV without permission.
+            if (requireLiveTvAccessPermission
+                && !user.HasPermission(PermissionKind.EnableLiveTvAccess))
+            {
+                return false;
+            }
+
+            // User attempting to manage LiveTV without permission.
+            if (requireLiveTvManagementPermission
+                && !user.HasPermission(PermissionKind.EnableLiveTvManagement))
             {
                 return false;
             }
