@@ -42,7 +42,8 @@ namespace MediaBrowser.Model.System
         /// Gets or sets the display name of the operating system.
         /// </summary>
         /// <value>The display name of the operating system.</value>
-        public string OperatingSystemDisplayName { get; set; }
+        [Obsolete("This is no longer set")]
+        public string OperatingSystemDisplayName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the package name.
@@ -137,6 +138,7 @@ namespace MediaBrowser.Model.System
         [Obsolete("This isn't set correctly anymore")]
         public FFmpegLocation EncoderLocation { get; set; }
 
+        [Obsolete("This is no longer set")]
         public Architecture SystemArchitecture { get; set; }
     }
 }
