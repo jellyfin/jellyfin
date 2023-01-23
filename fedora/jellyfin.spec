@@ -16,10 +16,9 @@ URL:            https://jellyfin.org
 Source0:        jellyfin-server-%{version}.tar.gz
 Source11:       jellyfin.service
 Source12:       jellyfin.env
-Source13:       jellyfin.sudoers
-Source14:       jellyfin.override.conf
-Source15:       jellyfin-firewalld.xml
-Source16:       jellyfin-server-lowports.conf
+Source13:       jellyfin.override.conf
+Source14:       jellyfin-firewalld.xml
+Source15:       jellyfin-server-lowports.conf
 
 %{?systemd_requires}
 BuildRequires:  systemd
@@ -43,7 +42,7 @@ Jellyfin is a free software media system that puts you in control of managing an
 Summary:        The Free Software Media System Server backend
 Requires(pre):  shadow-utils
 Requires:       ffmpeg
-Requires:       libcurl, fontconfig, freetype, openssl, glibc, libicu, at, sudo
+Requires:       libcurl, fontconfig, freetype, openssl, glibc, libicu
 
 %description server
 The Jellyfin media server backend.
@@ -81,9 +80,8 @@ ln -srf %{_libdir}/jellyfin/jellyfin %{buildroot}%{_bindir}/jellyfin
 %{__install} -D %{SOURCE12} %{buildroot}%{_sysconfdir}/sysconfig/jellyfin
 
 # system config
-%{__install} -D %{SOURCE15} %{buildroot}%{_prefix}/lib/firewalld/services/jellyfin.xml
-%{__install} -D %{SOURCE13} %{buildroot}%{_sysconfdir}/sudoers.d/jellyfin-sudoers
-%{__install} -D %{SOURCE14} %{buildroot}%{_sysconfdir}/systemd/system/jellyfin.service.d/override.conf
+%{__install} -D %{SOURCE14} %{buildroot}%{_prefix}/lib/firewalld/services/jellyfin.xml
+%{__install} -D %{SOURCE13} %{buildroot}%{_sysconfdir}/systemd/system/jellyfin.service.d/override.conf
 %{__install} -D %{SOURCE11} %{buildroot}%{_unitdir}/jellyfin.service
 
 # empty directories
@@ -93,7 +91,7 @@ ln -srf %{_libdir}/jellyfin/jellyfin %{buildroot}%{_bindir}/jellyfin
 %{__mkdir} -p %{buildroot}%{_var}/log/jellyfin
 
 # jellyfin-server-lowports subpackage
-%{__install} -D -m 0644 %{SOURCE16} %{buildroot}%{_unitdir}/jellyfin.service.d/jellyfin-server-lowports.conf
+%{__install} -D -m 0644 %{SOURCE15} %{buildroot}%{_unitdir}/jellyfin.service.d/jellyfin-server-lowports.conf
 
 
 %files
@@ -116,7 +114,6 @@ ln -srf %{_libdir}/jellyfin/jellyfin %{buildroot}%{_bindir}/jellyfin
 # system config
 %{_prefix}/lib/firewalld/services/jellyfin.xml
 %{_unitdir}/jellyfin.service
-%config(noreplace) %attr(600,root,root) %{_sysconfdir}/sudoers.d/jellyfin-sudoers
 %config(noreplace) %{_sysconfdir}/systemd/system/jellyfin.service.d/override.conf
 
 # empty directories
