@@ -64,21 +64,21 @@ namespace Jellyfin.Api.WebSocketListeners
             base.Dispose(dispose);
         }
 
-        private void OnTaskCompleted(object? sender, TaskCompletionEventArgs e)
+        private async void OnTaskCompleted(object? sender, TaskCompletionEventArgs e)
         {
-            SendData(true);
             e.Task.TaskProgress -= OnTaskProgress;
+            await SendData(true).ConfigureAwait(false);
         }
 
-        private void OnTaskExecuting(object? sender, GenericEventArgs<IScheduledTaskWorker> e)
+        private async void OnTaskExecuting(object? sender, GenericEventArgs<IScheduledTaskWorker> e)
         {
-            SendData(true);
+            await SendData(true).ConfigureAwait(false);
             e.Argument.TaskProgress += OnTaskProgress;
         }
 
-        private void OnTaskProgress(object? sender, GenericEventArgs<double> e)
+        private async void OnTaskProgress(object? sender, GenericEventArgs<double> e)
         {
-            SendData(false);
+            await SendData(false).ConfigureAwait(false);
         }
     }
 }
