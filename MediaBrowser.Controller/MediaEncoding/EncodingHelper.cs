@@ -38,7 +38,10 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly ISubtitleEncoder _subtitleEncoder;
         private readonly IConfiguration _config;
         private readonly Version _minKernelVersionAmdVkFmtModifier = new Version(5, 15);
-        private readonly Version _minKernelVersioni915Hang = new Version(5, 18);
+        // i915 hang was fixed by linux 6.2 (3f882f2)
+        private readonly Version _minKerneli915Hang = new Version(5, 18);
+        private readonly Version _maxKerneli915Hang = new Version(6, 1, 3);
+        private readonly Version _minFixedKernel60i915Hang = new Version(6, 0, 18);
 
         private static readonly string[] _videoProfilesH264 = new[]
         {
@@ -1336,7 +1339,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // which will reduce overhead in performance intensive tasks such as 4k transcoding and tonemapping.
             var intelLowPowerHwEncoding = false;
 
-            // Workaround for linux 5.18+ i915 hang at cost of performance.
+            // Workaround for linux 5.18 to 6.1.3 i915 hang at cost of performance.
             // https://github.com/intel/media-driver/issues/1456
             var enableWaFori915Hang = false;
 
@@ -1355,18 +1358,25 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
             else if (string.Equals(encodingOptions.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
             {
-                if (OperatingSystem.IsLinux() && Environment.OSVersion.Version >= _minKernelVersioni915Hang)
+                if (OperatingSystem.IsLinux())
                 {
-                    var vidDecoder = GetHardwareVideoDecoder(state, encodingOptions) ?? string.Empty;
-                    var isIntelDecoder = vidDecoder.Contains("qsv", StringComparison.OrdinalIgnoreCase)
-                                         || vidDecoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase);
-                    var doOclTonemap = _mediaEncoder.SupportsHwaccel("qsv")
-                        && IsVaapiSupported(state)
-                        && IsOpenclFullSupported()
-                        && !IsVaapiVppTonemapAvailable(state, encodingOptions)
-                        && IsHwTonemapAvailable(state, encodingOptions);
+                    var ver = Environment.OSVersion.Version;
+                    var isFixedKernel60 = ver.Major == 6 && ver.Minor == 0 && ver >= _minFixedKernel60i915Hang;
+                    var isUnaffectedKernel = ver < _minKerneli915Hang || ver > _maxKerneli915Hang;
 
-                    enableWaFori915Hang = isIntelDecoder && doOclTonemap;
+                    if (!(isUnaffectedKernel || isFixedKernel60))
+                    {
+                        var vidDecoder = GetHardwareVideoDecoder(state, encodingOptions) ?? string.Empty;
+                        var isIntelDecoder = vidDecoder.Contains("qsv", StringComparison.OrdinalIgnoreCase)
+                                             || vidDecoder.Contains("vaapi", StringComparison.OrdinalIgnoreCase);
+                        var doOclTonemap = _mediaEncoder.SupportsHwaccel("qsv")
+                            && IsVaapiSupported(state)
+                            && IsOpenclFullSupported()
+                            && !IsVaapiVppTonemapAvailable(state, encodingOptions)
+                            && IsHwTonemapAvailable(state, encodingOptions);
+
+                        enableWaFori915Hang = isIntelDecoder && doOclTonemap;
+                    }
                 }
 
                 if (string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase))
@@ -2939,8 +2949,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
             else if (hasGraphicalSubs)
             {
-                // [0:s]scale=expr
-                var subSwScaleFilter = GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH);
+                // [0:s]scale=s=1280x720
+                var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                 subFilters.Add(subSwScaleFilter);
                 overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
             }
@@ -3126,9 +3136,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = isSwDecoder
-                        ? GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH)
-                        : GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
                     overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
                 }
@@ -3328,9 +3336,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = isSwDecoder
-                        ? GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH)
-                        : GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
                     overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
                 }
@@ -3582,9 +3588,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = isSwDecoder
-                        ? GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH)
-                        : GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
                     overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
                 }
@@ -3793,9 +3797,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = isSwDecoder
-                        ? GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH)
-                        : GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
                     overlayFilters.Add("overlay=eof_action=pass:shortest=1:repeatlast=0");
                 }
@@ -4054,9 +4056,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = isSwDecoder
-                        ? GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH)
-                        : GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
                     overlayFilters.Add("overlay=eof_action=pass:shortest=1:repeatlast=0");
 
@@ -4428,9 +4428,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (hasGraphicalSubs)
                 {
-                    var subSwScaleFilter = isSwDecoder
-                        ? GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH)
-                        : GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+                    var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
                     overlayFilters.Add("overlay=eof_action=pass:shortest=1:repeatlast=0");
 

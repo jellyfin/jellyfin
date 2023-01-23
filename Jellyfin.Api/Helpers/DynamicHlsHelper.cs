@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Models.StreamingDtos;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -204,8 +205,11 @@ namespace Jellyfin.Api.Helpers
                     builder.Append(flacWaPlaylist);
                 }
 
+                var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
+
                 // Provide SDR HEVC entrance for backward compatibility.
-                if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
+                if (encodingOptions.AllowHevcEncoding
+                    && EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
                     && !string.IsNullOrEmpty(state.VideoStream.VideoRange)
                     && string.Equals(state.VideoStream.VideoRange, "HDR", StringComparison.OrdinalIgnoreCase)
                     && string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase))
