@@ -1174,7 +1174,6 @@ namespace MediaBrowser.Model.Dlna
                         var reason = a & flag;
                         if (reason != 0)
                         {
-                            a = reason;
                             return index;
                         }
 
@@ -1183,6 +1182,8 @@ namespace MediaBrowser.Model.Dlna
 
                     return index;
                 };
+
+            var containerSupported = false;
 
             // Check DirectPlay profiles to see if it can be direct played
             var analyzedProfiles = profile.DirectPlayProfiles
@@ -1196,6 +1197,10 @@ namespace MediaBrowser.Model.Dlna
                     if (!directPlayProfile.SupportsContainer(container))
                     {
                         directPlayProfileReasons |= TranscodeReason.ContainerNotSupported;
+                    }
+                    else
+                    {
+                        containerSupported = true;
                     }
 
                     // Check video codec
@@ -1239,7 +1244,7 @@ namespace MediaBrowser.Model.Dlna
                     {
                         playMethod = PlayMethod.DirectPlay;
                     }
-                    else if (directStreamFailureReasons == 0 && isEligibleForDirectStream && mediaSource.SupportsDirectStream && directPlayProfile is not null)
+                    else if (directStreamFailureReasons == 0 && isEligibleForDirectStream && mediaSource.SupportsDirectStream)
                     {
                         playMethod = PlayMethod.DirectStream;
                     }
@@ -1261,7 +1266,10 @@ namespace MediaBrowser.Model.Dlna
                 return profileMatch;
             }
 
-            var failureReasons = analyzedProfiles[false].Select(analysis => analysis.Result).FirstOrDefault().TranscodeReason;
+            var failureReasons = analyzedProfiles[false]
+                .Select(analysis => analysis.Result)
+                .Where(result => !containerSupported || (result.TranscodeReason & TranscodeReason.ContainerNotSupported) == 0)
+                .FirstOrDefault().TranscodeReason;
             if (failureReasons == 0)
             {
                 failureReasons = TranscodeReason.DirectPlayError;
