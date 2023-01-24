@@ -33,137 +33,55 @@ public static class StartupHelpers
     /// <returns><see cref="ServerApplicationPaths" />.</returns>
     public static ServerApplicationPaths CreateApplicationPaths(StartupOptions options)
     {
-        // dataDir
-        // IF      --datadir
-        // ELSE IF $JELLYFIN_DATA_DIR
-        // ELSE IF windows, use <%APPDATA%>/jellyfin
-        // ELSE IF $XDG_DATA_HOME then use $XDG_DATA_HOME/jellyfin
-        // ELSE    use $HOME/.local/share/jellyfin
-        var dataDir = options.DataDir;
-        if (string.IsNullOrEmpty(dataDir))
-        {
-            dataDir = Environment.GetEnvironmentVariable("JELLYFIN_DATA_DIR");
+        // LocalApplicationData
+        // Windows: %LocalAppData%
+        // macOS: NSApplicationSupportDirectory
+        // UNIX: $XDG_DATA_HOME
+        var dataDir = options.DataDir
+            ?? Environment.GetEnvironmentVariable("JELLYFIN_DATA_DIR")
+            ?? Path.Join(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "jellyfin");
 
-            if (string.IsNullOrEmpty(dataDir))
+        var configDir = options.ConfigDir ?? Environment.GetEnvironmentVariable("JELLYFIN_CONFIG_DIR");
+        if (configDir is null)
+        {
+            configDir = Path.Join(dataDir, "config");
+            if (options.DataDir is null
+                && !Directory.Exists(configDir)
+                && !OperatingSystem.IsWindows()
+                && !OperatingSystem.IsMacOS())
             {
-                // LocalApplicationData follows the XDG spec on unix machines
-                dataDir = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                // UNIX: $XDG_CONFIG_HOME
+                configDir = Path.Join(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                     "jellyfin");
             }
         }
 
-        // configDir
-        // IF      --configdir
-        // ELSE IF $JELLYFIN_CONFIG_DIR
-        // ELSE IF --datadir, use <datadir>/config (assume portable run)
-        // ELSE IF <datadir>/config exists, use that
-        // ELSE IF windows, use <datadir>/config
-        // ELSE IF $XDG_CONFIG_HOME use $XDG_CONFIG_HOME/jellyfin
-        // ELSE    $HOME/.config/jellyfin
-        var configDir = options.ConfigDir;
-        if (string.IsNullOrEmpty(configDir))
+        var cacheDir = options.CacheDir ?? Environment.GetEnvironmentVariable("JELLYFIN_CACHE_DIR");
+        if (cacheDir is null)
         {
-            configDir = Environment.GetEnvironmentVariable("JELLYFIN_CONFIG_DIR");
-
-            if (string.IsNullOrEmpty(configDir))
+            if (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS())
             {
-                if (options.DataDir is not null
-                    || Directory.Exists(Path.Combine(dataDir, "config"))
-                    || OperatingSystem.IsWindows())
-                {
-                    // Hang config folder off already set dataDir
-                    configDir = Path.Combine(dataDir, "config");
-                }
-                else
-                {
-                    // $XDG_CONFIG_HOME defines the base directory relative to which
-                    // user specific configuration files should be stored.
-                    configDir = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME");
-
-                    // If $XDG_CONFIG_HOME is either not set or empty,
-                    // a default equal to $HOME /.config should be used.
-                    if (string.IsNullOrEmpty(configDir))
-                    {
-                        configDir = Path.Combine(
-                            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                            ".config");
-                    }
-
-                    configDir = Path.Combine(configDir, "jellyfin");
-                }
+                cacheDir = Path.Join(dataDir, "cache");
+            }
+            else
+            {
+                cacheDir = Path.Join(GetXdgCacheHome(), "jellyfin");
             }
         }
 
-        // cacheDir
-        // IF      --cachedir
-        // ELSE IF $JELLYFIN_CACHE_DIR
-        // ELSE IF windows, use <datadir>/cache
-        // ELSE IF XDG_CACHE_HOME, use $XDG_CACHE_HOME/jellyfin
-        // ELSE    HOME/.cache/jellyfin
-        var cacheDir = options.CacheDir;
-        if (string.IsNullOrEmpty(cacheDir))
+        var webDir = options.WebDir ?? Environment.GetEnvironmentVariable("JELLYFIN_WEB_DIR");
+        if (webDir is null)
         {
-            cacheDir = Environment.GetEnvironmentVariable("JELLYFIN_CACHE_DIR");
-
-            if (string.IsNullOrEmpty(cacheDir))
-            {
-                if (OperatingSystem.IsWindows())
-                {
-                    // Hang cache folder off already set dataDir
-                    cacheDir = Path.Combine(dataDir, "cache");
-                }
-                else
-                {
-                    // $XDG_CACHE_HOME defines the base directory relative to which
-                    // user specific non-essential data files should be stored.
-                    cacheDir = Environment.GetEnvironmentVariable("XDG_CACHE_HOME");
-
-                    // If $XDG_CACHE_HOME is either not set or empty,
-                    // a default equal to $HOME/.cache should be used.
-                    if (string.IsNullOrEmpty(cacheDir))
-                    {
-                        cacheDir = Path.Combine(
-                            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                            ".cache");
-                    }
-
-                    cacheDir = Path.Combine(cacheDir, "jellyfin");
-                }
-            }
+            webDir = Path.Join(AppContext.BaseDirectory, "jellyfin-web");
         }
 
-        // webDir
-        // IF      --webdir
-        // ELSE IF $JELLYFIN_WEB_DIR
-        // ELSE    <bindir>/jellyfin-web
-        var webDir = options.WebDir;
-        if (string.IsNullOrEmpty(webDir))
+        var logDir = options.LogDir ?? Environment.GetEnvironmentVariable("JELLYFIN_LOG_DIR");
+        if (logDir is null)
         {
-            webDir = Environment.GetEnvironmentVariable("JELLYFIN_WEB_DIR");
-
-            if (string.IsNullOrEmpty(webDir))
-            {
-                // Use default location under ResourcesPath
-                webDir = Path.Combine(AppContext.BaseDirectory, "jellyfin-web");
-            }
-        }
-
-        // logDir
-        // IF      --logdir
-        // ELSE IF $JELLYFIN_LOG_DIR
-        // ELSE IF --datadir, use <datadir>/log (assume portable run)
-        // ELSE    <datadir>/log
-        var logDir = options.LogDir;
-        if (string.IsNullOrEmpty(logDir))
-        {
-            logDir = Environment.GetEnvironmentVariable("JELLYFIN_LOG_DIR");
-
-            if (string.IsNullOrEmpty(logDir))
-            {
-                // Hang log folder off already set dataDir
-                logDir = Path.Combine(dataDir, "log");
-            }
+            logDir = Path.Join(dataDir, "log");
         }
 
         // Normalize paths. Only possible with GetFullPath for now - https://github.com/dotnet/runtime/issues/2162
@@ -191,6 +109,24 @@ public static class StartupHelpers
         return new ServerApplicationPaths(dataDir, logDir, configDir, cacheDir, webDir);
     }
 
+    private static string GetXdgCacheHome()
+    {
+        // $XDG_CACHE_HOME defines the base directory relative to which
+        // user specific non-essential data files should be stored.
+        var cacheHome = Environment.GetEnvironmentVariable("XDG_CACHE_HOME");
+
+        // If $XDG_CACHE_HOME is either not set or a relative path,
+        // a default equal to $HOME/.cache should be used.
+        if (cacheHome is null || !cacheHome.StartsWith('/'))
+        {
+            cacheHome = Path.Join(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                ".cache");
+        }
+
+        return cacheHome;
+    }
+
     /// <summary>
     /// Gets the path for the unix socket Kestrel should bind to.
     /// </summary>
@@ -203,16 +139,17 @@ public static class StartupHelpers
 
         if (string.IsNullOrEmpty(socketPath))
         {
+            const string SocketFile = "jellyfin.sock";
+
             var xdgRuntimeDir = Environment.GetEnvironmentVariable("XDG_RUNTIME_DIR");
-            var socketFile = "jellyfin.sock";
             if (xdgRuntimeDir is null)
             {
                 // Fall back to config dir
-                socketPath = Path.Join(appPaths.ConfigurationDirectoryPath, socketFile);
+                socketPath = Path.Join(appPaths.ConfigurationDirectoryPath, SocketFile);
             }
             else
             {
-                socketPath = Path.Join(xdgRuntimeDir, socketFile);
+                socketPath = Path.Join(xdgRuntimeDir, SocketFile);
             }
         }
 
