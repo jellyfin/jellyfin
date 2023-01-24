@@ -1662,8 +1662,8 @@ namespace Jellyfin.Api.Controllers
                 startNumber.ToString(CultureInfo.InvariantCulture),
                 baseUrlParam,
                 isEventPlaylist ? "event" : "vod",
-                outputTsArg,
-                outputPath).Trim();
+                outputTsArg.Replace("\"", "\\\"", StringComparison.Ordinal),
+                outputPath.Replace("\"", "\\\"", StringComparison.Ordinal)).Trim();
         }
 
         /// <summary>

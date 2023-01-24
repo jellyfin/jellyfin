@@ -317,10 +317,10 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
             var processArgs = string.Format(
                 CultureInfo.InvariantCulture,
-                "-dump_attachment:{1} {2} -i {0} -t 0 -f null null",
+                "-dump_attachment:{1} \"{2}\" -i {0} -t 0 -f null null",
                 inputPath,
                 attachmentStreamIndex,
-                outputPath);
+                outputPath.Replace("\"", "\\\"", StringComparison.Ordinal));
 
             int exitCode;
 
