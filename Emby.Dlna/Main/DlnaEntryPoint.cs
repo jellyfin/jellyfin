@@ -263,7 +263,7 @@ namespace Emby.Dlna.Main
             {
                 _publisher = new SsdpDevicePublisher(
                     _communicationsServer,
-                    RuntimeInformation.OSDescription,
+                    Environment.OSVersion.Platform.ToString(),
                     Environment.OSVersion.VersionString,
                     _config.GetDlnaConfiguration().SendOnlyMatchedHost)
                 {

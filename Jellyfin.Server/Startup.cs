@@ -109,7 +109,7 @@ namespace Jellyfin.Server
                         string.Format(
                             CultureInfo.InvariantCulture,
                             "{0}/{1} UPnP/1.0 {2}/{3}",
-                            RuntimeInformation.OSDescription,
+                            Environment.OSVersion.Platform,
                             Environment.OSVersion,
                             _serverApplicationHost.Name,
                             _serverApplicationHost.ApplicationVersionString));
