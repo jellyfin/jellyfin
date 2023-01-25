@@ -65,7 +65,8 @@ namespace MediaBrowser.MediaEncoding.Probing
             "K/DA",
             "22/7",
             "諭吉佳作/men",
-            "//dARTH nULL"
+            "//dARTH nULL",
+            "Phantom/Ghost",
         };
 
         public MediaInfo GetMediaInfo(InternalMediaInfoResult data, VideoType? videoType, bool isAudio, string path, MediaProtocol protocol)
