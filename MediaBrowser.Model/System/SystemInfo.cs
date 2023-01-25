@@ -139,6 +139,6 @@ namespace MediaBrowser.Model.System
         public FFmpegLocation EncoderLocation { get; set; }
 
         [Obsolete("This is no longer set")]
-        public Architecture SystemArchitecture { get; set; }
+        public Architecture SystemArchitecture { get; set; } = Architecture.X64;
     }
 }
