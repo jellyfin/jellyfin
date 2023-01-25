@@ -49,8 +49,8 @@ namespace Emby.Server.Implementations.Data
 
         private const string SaveItemCommandText =
             @"replace into TypedBaseItems
-            (guid,type,data,Path,StartDate,EndDate,ChannelId,IsMovie,IsSeries,EpisodeTitle,IsRepeat,CommunityRating,CustomRating,IndexNumber,IsLocked,Name,OfficialRating,MediaType,Overview,ParentIndexNumber,PremiereDate,ProductionYear,ParentId,Genres,InheritedParentalRatingValue,SortName,ForcedSortName,RunTimeTicks,Size,DateCreated,DateModified,PreferredMetadataLanguage,PreferredMetadataCountryCode,Width,Height,DateLastRefreshed,DateLastSaved,IsInMixedFolder,LockedFields,Studios,Audio,ExternalServiceId,Tags,IsFolder,UnratedType,TopParentId,TrailerTypes,CriticRating,CleanName,PresentationUniqueKey,OriginalTitle,PrimaryVersionId,DateLastMediaAdded,Album,IsVirtualItem,SeriesName,UserDataKey,SeasonName,SeasonId,SeriesId,ExternalSeriesId,Tagline,ProviderIds,Images,ProductionLocations,ExtraIds,TotalBitrate,ExtraType,Artists,AlbumArtists,ExternalId,SeriesPresentationUniqueKey,ShowId,OwnerId)
-            values (@guid,@type,@data,@Path,@StartDate,@EndDate,@ChannelId,@IsMovie,@IsSeries,@EpisodeTitle,@IsRepeat,@CommunityRating,@CustomRating,@IndexNumber,@IsLocked,@Name,@OfficialRating,@MediaType,@Overview,@ParentIndexNumber,@PremiereDate,@ProductionYear,@ParentId,@Genres,@InheritedParentalRatingValue,@SortName,@ForcedSortName,@RunTimeTicks,@Size,@DateCreated,@DateModified,@PreferredMetadataLanguage,@PreferredMetadataCountryCode,@Width,@Height,@DateLastRefreshed,@DateLastSaved,@IsInMixedFolder,@LockedFields,@Studios,@Audio,@ExternalServiceId,@Tags,@IsFolder,@UnratedType,@TopParentId,@TrailerTypes,@CriticRating,@CleanName,@PresentationUniqueKey,@OriginalTitle,@PrimaryVersionId,@DateLastMediaAdded,@Album,@IsVirtualItem,@SeriesName,@UserDataKey,@SeasonName,@SeasonId,@SeriesId,@ExternalSeriesId,@Tagline,@ProviderIds,@Images,@ProductionLocations,@ExtraIds,@TotalBitrate,@ExtraType,@Artists,@AlbumArtists,@ExternalId,@SeriesPresentationUniqueKey,@ShowId,@OwnerId)";
+            (guid,type,data,Path,StartDate,EndDate,ChannelId,IsMovie,IsSeries,EpisodeTitle,IsRepeat,CommunityRating,CustomRating,IndexNumber,IsLocked,Name,OfficialRating,MediaType,Overview,ParentIndexNumber,PremiereDate,ProductionYear,ParentId,Genres,InheritedParentalRatingValue,SortName,ForcedSortName,RunTimeTicks,Size,DateCreated,DateModified,PreferredMetadataLanguage,PreferredMetadataCountryCode,Width,Height,DateLastRefreshed,DateLastSaved,IsInMixedFolder,LockedFields,Studios,Audio,ExternalServiceId,Tags,IsFolder,UnratedType,TopParentId,TrailerTypes,CriticRating,CleanName,PresentationUniqueKey,OriginalTitle,PrimaryVersionId,DateLastMediaAdded,Album,Normalization,IsVirtualItem,SeriesName,UserDataKey,SeasonName,SeasonId,SeriesId,ExternalSeriesId,Tagline,ProviderIds,Images,ProductionLocations,ExtraIds,TotalBitrate,ExtraType,Artists,AlbumArtists,ExternalId,SeriesPresentationUniqueKey,ShowId,OwnerId)
+            values (@guid,@type,@data,@Path,@StartDate,@EndDate,@ChannelId,@IsMovie,@IsSeries,@EpisodeTitle,@IsRepeat,@CommunityRating,@CustomRating,@IndexNumber,@IsLocked,@Name,@OfficialRating,@MediaType,@Overview,@ParentIndexNumber,@PremiereDate,@ProductionYear,@ParentId,@Genres,@InheritedParentalRatingValue,@SortName,@ForcedSortName,@RunTimeTicks,@Size,@DateCreated,@DateModified,@PreferredMetadataLanguage,@PreferredMetadataCountryCode,@Width,@Height,@DateLastRefreshed,@DateLastSaved,@IsInMixedFolder,@LockedFields,@Studios,@Audio,@ExternalServiceId,@Tags,@IsFolder,@UnratedType,@TopParentId,@TrailerTypes,@CriticRating,@CleanName,@PresentationUniqueKey,@OriginalTitle,@PrimaryVersionId,@DateLastMediaAdded,@Album,@Normalization,@IsVirtualItem,@SeriesName,@UserDataKey,@SeasonName,@SeasonId,@SeriesId,@ExternalSeriesId,@Tagline,@ProviderIds,@Images,@ProductionLocations,@ExtraIds,@TotalBitrate,@ExtraType,@Artists,@AlbumArtists,@ExternalId,@SeriesPresentationUniqueKey,@ShowId,@OwnerId)";
 
         private readonly IServerConfigurationManager _config;
         private readonly IServerApplicationHost _appHost;
@@ -110,6 +110,7 @@ namespace Emby.Server.Implementations.Data
             "PrimaryVersionId",
             "DateLastMediaAdded",
             "Album",
+            "Normalization",
             "CriticRating",
             "IsVirtualItem",
             "SeriesName",
@@ -488,6 +489,7 @@ namespace Emby.Server.Implementations.Data
                         AddColumn(db, "TypedBaseItems", "PrimaryVersionId", "Text", existingColumnNames);
                         AddColumn(db, "TypedBaseItems", "DateLastMediaAdded", "DATETIME", existingColumnNames);
                         AddColumn(db, "TypedBaseItems", "Album", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "Normalization", "Text", existingColumnNames);
                         AddColumn(db, "TypedBaseItems", "IsVirtualItem", "BIT", existingColumnNames);
                         AddColumn(db, "TypedBaseItems", "SeriesName", "Text", existingColumnNames);
                         AddColumn(db, "TypedBaseItems", "UserDataKey", "Text", existingColumnNames);
@@ -911,6 +913,7 @@ namespace Emby.Server.Implementations.Data
             }
 
             saveItemStatement.TryBind("@Album", item.Album);
+            saveItemStatement.TryBind("@Normalization", item.Normalization);
             saveItemStatement.TryBind("@IsVirtualItem", item.IsVirtualItem);
 
             if (item is IHasSeries hasSeriesName)
@@ -1747,6 +1750,11 @@ namespace Emby.Server.Implementations.Data
             if (reader.TryGetString(index++, out var album))
             {
                 item.Album = album;
+            }
+
+            if (reader.TryGetString(index++, out var Normalization))
+            {
+                item.Normalization = Normalization;
             }
 
             if (reader.TryGetSingle(index++, out var criticRating))
@@ -3044,6 +3052,11 @@ namespace Emby.Server.Implementations.Data
                 return ItemSortBy.Album;
             }
 
+            if (string.Equals(name, ItemSortBy.Normalization, StringComparison.OrdinalIgnoreCase))
+            {
+                return ItemSortBy.Normalization;
+            }
+
             if (string.Equals(name, ItemSortBy.DateCreated, StringComparison.OrdinalIgnoreCase))
             {
                 return ItemSortBy.DateCreated;
@@ -3871,6 +3884,27 @@ namespace Emby.Server.Implementations.Data
                     if (statement is not null)
                     {
                         statement.TryBind(paramName, albumId);
+                    }
+
+                    index++;
+                }
+
+                var clause = "(" + string.Join(" OR ", clauses) + ")";
+                whereClauses.Add(clause);
+            }
+
+            if (query.NormalizationIds.Length > 0)
+            {
+                var clauses = new List<string>();
+                var index = 0;
+                foreach (var NormalizationId in query.NormalizationIds)
+                {
+                    var paramName = "@NormalizationIds" + index;
+
+                    clauses.Add("Normalization in (select Name from typedbaseitems where guid=" + paramName + ")");
+                    if (statement is not null)
+                    {
+                        statement.TryBind(paramName, NormalizationId);
                     }
 
                     index++;

@@ -129,6 +129,13 @@ namespace MediaBrowser.Controller.Entities
         public string Album { get; set; }
 
         /// <summary>
+        /// Gets or sets the normalization gain.
+        /// </summary>
+        /// <value>The gain.</value>
+        [JsonIgnore]
+        public string Normalization { get; set; }
+
+        /// <summary>
         /// Gets or sets the channel identifier.
         /// </summary>
         /// <value>The channel identifier.</value>
