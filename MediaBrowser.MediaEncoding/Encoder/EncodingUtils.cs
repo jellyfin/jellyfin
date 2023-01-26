@@ -56,7 +56,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>System.String.</returns>
-        private static string NormalizePath(string path)
+        public static string NormalizePath(string path)
         {
             // Quotes are valid path characters in linux and they need to be escaped here with a leading \
             return path.Replace("\"", "\\\"", StringComparison.Ordinal);
