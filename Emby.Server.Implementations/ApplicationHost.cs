@@ -690,7 +690,7 @@ namespace Emby.Server.Implementations
 
             logger.LogInformation("Environment Variables: {EnvVars}", relevantEnvVars);
             logger.LogInformation("Arguments: {Args}", commandLineArgs);
-            logger.LogInformation("Operating system: {OS}", MediaBrowser.Common.System.OperatingSystem.Name);
+            logger.LogInformation("Operating system: {OS}", RuntimeInformation.OSDescription);
             logger.LogInformation("Architecture: {Architecture}", RuntimeInformation.OSArchitecture);
             logger.LogInformation("64-Bit Process: {Is64Bit}", Environment.Is64BitProcess);
             logger.LogInformation("User Interactive: {IsUserInteractive}", Environment.UserInteractive);
@@ -1032,14 +1032,11 @@ namespace Emby.Server.Implementations
                 ItemsByNamePath = ApplicationPaths.InternalMetadataPath,
                 InternalMetadataPath = ApplicationPaths.InternalMetadataPath,
                 CachePath = ApplicationPaths.CachePath,
-                OperatingSystem = MediaBrowser.Common.System.OperatingSystem.Id.ToString(),
-                OperatingSystemDisplayName = MediaBrowser.Common.System.OperatingSystem.Name,
                 CanLaunchWebBrowser = CanLaunchWebBrowser,
                 TranscodingTempPath = ConfigurationManager.GetTranscodePath(),
                 ServerName = FriendlyName,
                 LocalAddress = GetSmartApiUrl(request),
                 SupportsLibraryMonitor = true,
-                SystemArchitecture = RuntimeInformation.OSArchitecture,
                 PackageName = _startupOptions.PackageName
             };
         }
@@ -1051,7 +1048,6 @@ namespace Emby.Server.Implementations
                 Version = ApplicationVersionString,
                 ProductName = ApplicationProductName,
                 Id = SystemId,
-                OperatingSystem = MediaBrowser.Common.System.OperatingSystem.Id.ToString(),
                 ServerName = FriendlyName,
                 LocalAddress = GetSmartApiUrl(request),
                 StartupWizardCompleted = ConfigurationManager.CommonConfiguration.IsStartupWizardCompleted

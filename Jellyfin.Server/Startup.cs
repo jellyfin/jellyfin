@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
+using System.Runtime.InteropServices;
 using System.Text;
 using Jellyfin.Api.Middleware;
 using Jellyfin.MediaEncoding.Hls.Extensions;
@@ -108,7 +109,7 @@ namespace Jellyfin.Server
                         string.Format(
                             CultureInfo.InvariantCulture,
                             "{0}/{1} UPnP/1.0 {2}/{3}",
-                            MediaBrowser.Common.System.OperatingSystem.Name,
+                            Environment.OSVersion.Platform,
                             Environment.OSVersion,
                             _serverApplicationHost.Name,
                             _serverApplicationHost.ApplicationVersionString));
