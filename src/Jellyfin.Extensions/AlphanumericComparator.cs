@@ -86,47 +86,12 @@ namespace Jellyfin.Extensions
                     {
                         return 1;
                     }
-                    else if (span1Len >= 20) // Number is probably too big for a ulong
-                    {
-                        // Trim all the first digits that are the same
-                        int i = 0;
-                        while (i < span1Len && span1[i] == span2[i])
-                        {
-                            i++;
-                        }
-
-                        // If there are no more digits it's the same number
-                        if (i == span1Len)
-                        {
-                            continue;
-                        }
-
-                        // Only need to compare the most significant digit
-                        span1 = span1.Slice(i, 1);
-                        span2 = span2.Slice(i, 1);
-                    }
-
-                    if (!ulong.TryParse(span1, out var num1)
-                        || !ulong.TryParse(span2, out var num2))
-                    {
-                        return 0;
-                    }
-                    else if (num1 < num2)
-                    {
-                        return -1;
-                    }
-                    else if (num1 > num2)
-                    {
-                        return 1;
-                    }
                 }
-                else
+
+                int result = span1.CompareTo(span2, StringComparison.InvariantCulture);
+                if (result != 0)
                 {
-                    int result = span1.CompareTo(span2, StringComparison.InvariantCulture);
-                    if (result != 0)
-                    {
-                        return result;
-                    }
+                    return result;
                 }
             } while (pos1 < len1 && pos2 < len2);
 
