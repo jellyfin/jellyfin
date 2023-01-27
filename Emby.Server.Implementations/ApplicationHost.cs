@@ -728,8 +728,6 @@ namespace Emby.Server.Implementations
 
             Resolve<ILiveTvManager>().AddParts(GetExports<ILiveTvService>(), GetExports<ITunerHost>(), GetExports<IListingsProvider>());
 
-            Resolve<ISubtitleManager>().AddParts(GetExports<ISubtitleProvider>());
-
             Resolve<IChannelManager>().AddParts(GetExports<IChannel>());
 
             Resolve<IMediaSourceManager>().AddParts(GetExports<IMediaSourceProvider>());
