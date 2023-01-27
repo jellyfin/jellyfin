@@ -11,7 +11,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -115,11 +114,6 @@ namespace Emby.Server.Implementations
     /// </summary>
     public abstract class ApplicationHost : IServerApplicationHost, IAsyncDisposable, IDisposable
     {
-        /// <summary>
-        /// The environment variable prefixes to log at server startup.
-        /// </summary>
-        private static readonly string[] _relevantEnvVarPrefixes = { "JELLYFIN_", "DOTNET_", "ASPNETCORE_" };
-
         /// <summary>
         /// The disposable parts.
         /// </summary>
@@ -668,36 +662,6 @@ namespace Emby.Server.Implementations
             ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize(userDataRepo, Resolve<IUserManager>());
 
             FindParts();
-        }
-
-        public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths)
-        {
-            // Distinct these to prevent users from reporting problems that aren't actually problems
-            var commandLineArgs = Environment
-                .GetCommandLineArgs()
-                .Distinct();
-
-            // Get all relevant environment variables
-            var allEnvVars = Environment.GetEnvironmentVariables();
-            var relevantEnvVars = new Dictionary<object, object>();
-            foreach (var key in allEnvVars.Keys)
-            {
-                if (_relevantEnvVarPrefixes.Any(prefix => key.ToString().StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
-                {
-                    relevantEnvVars.Add(key, allEnvVars[key]);
-                }
-            }
-
-            logger.LogInformation("Environment Variables: {EnvVars}", relevantEnvVars);
-            logger.LogInformation("Arguments: {Args}", commandLineArgs);
-            logger.LogInformation("Operating system: {OS}", RuntimeInformation.OSDescription);
-            logger.LogInformation("Architecture: {Architecture}", RuntimeInformation.OSArchitecture);
-            logger.LogInformation("64-Bit Process: {Is64Bit}", Environment.Is64BitProcess);
-            logger.LogInformation("User Interactive: {IsUserInteractive}", Environment.UserInteractive);
-            logger.LogInformation("Processor count: {ProcessorCount}", Environment.ProcessorCount);
-            logger.LogInformation("Program data path: {ProgramDataPath}", appPaths.ProgramDataPath);
-            logger.LogInformation("Web resources path: {WebPath}", appPaths.WebPath);
-            logger.LogInformation("Application directory: {ApplicationPath}", appPaths.ProgramSystemPath);
         }
 
         private X509Certificate2 GetCertificate(string path, string password)
