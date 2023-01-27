@@ -118,6 +118,7 @@ namespace Emby.Server.Implementations
         /// The disposable parts.
         /// </summary>
         private readonly ConcurrentDictionary<IDisposable, byte> _disposableParts = new();
+        private readonly DeviceId _deviceId;
 
         private readonly IFileSystem _fileSystemManager;
         private readonly IConfiguration _startupConfig;
@@ -134,8 +135,6 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <value>All concrete types.</value>
         private Type[] _allConcreteTypes;
-
-        private DeviceId _deviceId;
 
         private bool _disposed = false;
 
@@ -160,6 +159,7 @@ namespace Emby.Server.Implementations
 
             Logger = LoggerFactory.CreateLogger<ApplicationHost>();
             _fileSystemManager.AddShortcutHandler(new MbLinkShortcutHandler(_fileSystemManager));
+            _deviceId = new DeviceId(ApplicationPaths, LoggerFactory);
 
             ApplicationVersion = typeof(ApplicationHost).Assembly.GetName().Version;
             ApplicationVersionString = ApplicationVersion.ToString(3);
@@ -280,15 +280,7 @@ namespace Emby.Server.Implementations
         /// <value>The application name.</value>
         public string ApplicationProductName { get; } = FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).ProductName;
 
-        public string SystemId
-        {
-            get
-            {
-                _deviceId ??= new DeviceId(ApplicationPaths, LoggerFactory);
-
-                return _deviceId.Value;
-            }
-        }
+        public string SystemId => _deviceId.Value;
 
         /// <inheritdoc/>
         public string Name => ApplicationProductName;
