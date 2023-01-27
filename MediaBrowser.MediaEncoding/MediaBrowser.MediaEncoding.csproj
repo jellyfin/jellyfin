@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AsyncKeyedLock" Version="6.1.0" />
+    <PackageReference Include="AsyncKeyedLock" Version="6.1.1" />
     <PackageReference Include="libse" Version="3.6.10" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="7.0.0" />
