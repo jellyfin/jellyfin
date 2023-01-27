@@ -297,30 +297,17 @@ namespace Emby.Server.Implementations.Localization
             }
 
             // Try splitting by : to handle "Germany: FSK 18"
-            var index = rating.IndexOf(':', StringComparison.Ordinal);
-            if (index != -1)
+            if (rating.Contains(':', StringComparison.OrdinalIgnoreCase))
             {
-                var trimmedRating = rating.AsSpan(index).TrimStart(':').Trim();
-
-                if (!trimmedRating.IsEmpty)
-                {
-                    return GetRatingLevel(trimmedRating.ToString());
-                }
+                return GetRatingLevel(rating.AsSpan().RightPart(':').ToString());
             }
 
             // Remove prefix country code to handle "DE-18"
-            index = rating.IndexOf('-', StringComparison.Ordinal);
-            if (index != -1)
+            if (rating.Contains('-', StringComparison.OrdinalIgnoreCase))
             {
-                var trimmedRating = rating.AsSpan(index).TrimStart('-').Trim();
-
-                if (!trimmedRating.IsEmpty)
-                {
-                    return GetRatingLevel(trimmedRating.ToString());
-                }
+                return GetRatingLevel(rating.AsSpan().RightPart('-').ToString());
             }
 
-            // TODO: Further improve when necessary
             return null;
         }
 

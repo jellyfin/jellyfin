@@ -27,7 +27,7 @@ namespace Jellyfin.Server.Migrations.Routines
         public Guid Id => Guid.Parse("{67445D54-B895-4B24-9F4C-35CE0690EA07}");
 
         /// <inheritdoc/>
-        public string Name => "RemoveDuplicateExtras";
+        public string Name => "MigrateRatingLevels";
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => false;
