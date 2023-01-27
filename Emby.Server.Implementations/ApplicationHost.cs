@@ -187,23 +187,9 @@ namespace Emby.Server.Implementations
 
         public bool CoreStartupHasCompleted { get; private set; }
 
-        public virtual bool CanLaunchWebBrowser
-        {
-            get
-            {
-                if (!Environment.UserInteractive)
-                {
-                    return false;
-                }
-
-                if (_startupOptions.IsService)
-                {
-                    return false;
-                }
-
-                return OperatingSystem.IsWindows() || OperatingSystem.IsMacOS();
-            }
-        }
+        public virtual bool CanLaunchWebBrowser => Environment.UserInteractive
+            && !_startupOptions.IsService
+            && (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS());
 
         /// <summary>
         /// Gets the <see cref="INetworkManager"/> singleton instance.
