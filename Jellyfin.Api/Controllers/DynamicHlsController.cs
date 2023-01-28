@@ -21,6 +21,7 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.IO;
@@ -1662,8 +1663,8 @@ namespace Jellyfin.Api.Controllers
                 startNumber.ToString(CultureInfo.InvariantCulture),
                 baseUrlParam,
                 isEventPlaylist ? "event" : "vod",
-                outputTsArg,
-                outputPath).Trim();
+                EncodingUtils.NormalizePath(outputTsArg),
+                EncodingUtils.NormalizePath(outputPath)).Trim();
         }
 
         /// <summary>
