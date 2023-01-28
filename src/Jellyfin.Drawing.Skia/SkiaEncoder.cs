@@ -399,7 +399,7 @@ public class SkiaEncoder : IImageEncoder
         var hasBackgroundColor = !string.IsNullOrWhiteSpace(options.BackgroundColor);
         var hasForegroundColor = !string.IsNullOrWhiteSpace(options.ForegroundLayer);
         var blur = options.Blur ?? 0;
-        var hasIndicator = options.AddPlayedIndicator || options.UnplayedCount.HasValue || !options.PercentPlayed.Equals(0);
+        var hasIndicator = options.UnplayedCount.HasValue || !options.PercentPlayed.Equals(0);
 
         using var bitmap = GetBitmap(inputPath, autoOrient, orientation);
         if (bitmap is null)
@@ -522,11 +522,7 @@ public class SkiaEncoder : IImageEncoder
         {
             var currentImageSize = new ImageDimensions(imageWidth, imageHeight);
 
-            if (options.AddPlayedIndicator)
-            {
-                PlayedIndicatorDrawer.DrawPlayedIndicator(canvas, currentImageSize);
-            }
-            else if (options.UnplayedCount.HasValue)
+            if (options.UnplayedCount.HasValue)
             {
                 UnplayedCountIndicator.DrawUnplayedCountIndicator(canvas, currentImageSize, options.UnplayedCount.Value);
             }
