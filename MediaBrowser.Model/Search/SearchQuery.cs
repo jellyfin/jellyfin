@@ -2,6 +2,7 @@
 #pragma warning disable CS1591
 
 using System;
+using Jellyfin.Data.Dtos;
 using Jellyfin.Data.Enums;
 
 namespace MediaBrowser.Model.Search
@@ -16,6 +17,7 @@ namespace MediaBrowser.Model.Search
             IncludePeople = true;
             IncludeStudios = true;
 
+            SearchTerm = new SearchTermDto();
             MediaTypes = Array.Empty<string>();
             IncludeItemTypes = Array.Empty<BaseItemKind>();
             ExcludeItemTypes = Array.Empty<BaseItemKind>();
@@ -31,7 +33,13 @@ namespace MediaBrowser.Model.Search
         /// Gets or sets the search term.
         /// </summary>
         /// <value>The search term.</value>
-        public string SearchTerm { get; set; }
+        public SearchTermDto SearchTerm { get; set; }
+
+        /// <summary>
+        /// Gets or sets the search types.
+        /// </summary>
+        /// <value>The search types.</value>
+        public FullTextSearchType? SearchType { get; set; }
 
         /// <summary>
         /// Gets or sets the start index. Used for paging.

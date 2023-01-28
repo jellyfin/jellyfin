@@ -5,6 +5,7 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
+using Jellyfin.Data.Dtos;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
@@ -51,7 +52,8 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
-        /// <param name="searchTerm">The search term.</param>
+        /// <param name="searchTerm">Optional. Filter based on a full text search using this search term.</param>
+        /// <param name="searchType">Optional. Set the type of full text search to do. Defaults to "Prefix".</param>
         /// <param name="parentId">Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
         /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="excludeItemTypes">Optional. If specified, results will be filtered out based on item type. This allows multiple, comma delimited.</param>
@@ -74,7 +76,8 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<QueryResult<BaseItemDto>> GetGenres(
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
-            [FromQuery] string? searchTerm,
+            [FromQuery] SearchTermDto? searchTerm,
+            [FromQuery] FullTextSearchType? searchType,
             [FromQuery] Guid? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] excludeItemTypes,
@@ -112,7 +115,8 @@ namespace Jellyfin.Api.Controllers
                 NameStartsWith = nameStartsWith,
                 NameStartsWithOrGreater = nameStartsWithOrGreater,
                 DtoOptions = dtoOptions,
-                SearchTerm = searchTerm,
+                SearchTerm = searchTerm ?? new SearchTermDto(),
+                SearchType = searchType,
                 EnableTotalRecordCount = enableTotalRecordCount,
                 OrderBy = RequestHelpers.GetOrderBy(sortBy, sortOrder)
             };

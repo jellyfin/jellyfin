@@ -159,5 +159,10 @@ namespace MediaBrowser.Model.Querying
         /// The search score.
         /// </summary>
         public const string SearchScore = "SearchScore";
+
+        /// <summary>
+        /// The full text search rank.
+        /// </summary>
+        public const string Rank = "Rank";
     }
 }

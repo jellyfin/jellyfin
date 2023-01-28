@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Data.Dtos;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
@@ -42,6 +43,7 @@ namespace MediaBrowser.Controller.Entities
             PersonIds = Array.Empty<Guid>();
             PersonTypes = Array.Empty<string>();
             PresetViews = Array.Empty<string>();
+            SearchTerm = new SearchTermDto();
             SeriesStatuses = Array.Empty<SeriesStatus>();
             SourceTypes = Array.Empty<SourceType>();
             StudioIds = Array.Empty<Guid>();
@@ -351,7 +353,9 @@ namespace MediaBrowser.Controller.Entities
 
         public int? MinWidth { get; set; }
 
-        public string? SearchTerm { get; set; }
+        public SearchTermDto SearchTerm { get; set; }
+
+        public FullTextSearchType? SearchType { get; set; }
 
         public string? SeriesTimerId { get; set; }
 

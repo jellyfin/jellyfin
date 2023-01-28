@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.ModelBinders;
+using Jellyfin.Data.Dtos;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -67,7 +68,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <param name="recursive">When searching within folders, this determines whether or not the search will be recursive. true/false.</param>
-        /// <param name="searchTerm">Optional. Filter based on a search term.</param>
+        /// <param name="searchTerm">Optional. Filter based on a full text search using this search term.</param>
+        /// <param name="searchType">Optional. Set the type of full text search to do. Defaults to "Prefix".</param>
         /// <param name="sortOrder">Sort Order - Ascending, Descending.</param>
         /// <param name="parentId">Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
         /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
@@ -155,7 +157,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] bool? recursive,
-            [FromQuery] string? searchTerm,
+            [FromQuery] SearchTermDto? searchTerm,
+            [FromQuery] FullTextSearchType? searchType,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] SortOrder[] sortOrder,
             [FromQuery] Guid? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
@@ -245,6 +248,7 @@ namespace Jellyfin.Api.Controllers
                     limit,
                     recursive,
                     searchTerm,
+                    searchType,
                     sortOrder,
                     parentId,
                     fields,

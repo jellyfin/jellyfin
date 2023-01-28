@@ -12,6 +12,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Emby.Server.Implementations.Playlists;
 using Jellyfin.Data.Enums;
@@ -134,7 +135,7 @@ namespace Emby.Server.Implementations.Data
             "OwnerId"
         };
 
-        private static readonly string _retrieveItemColumnsSelectQuery = $"select {string.Join(',', _retrieveItemColumns)} from TypedBaseItems where guid = @guid";
+        private static readonly string _retrieveItemColumnsSelectQuery = $"select {string.Join(',', _retrieveItemColumns)} from TypedBaseItems A where guid = @guid";
 
         private static readonly string[] _mediaStreamSaveColumns =
         {
@@ -295,6 +296,11 @@ namespace Emby.Server.Implementations.Data
             { BaseItemKind.Year, typeof(Year).FullName }
         };
 
+        private static HashSet<string> _fullTextSearchColumns = new HashSet<string>()
+        {
+            "guid", "Name", "OriginalTitle", "ProviderIds"
+        };
+
         static SqliteItemRepository()
         {
             var queryPrefixText = new StringBuilder();
@@ -357,6 +363,10 @@ namespace Emby.Server.Implementations.Data
             const string CreateMediaAttachmentsTableCommand
                     = "create table if not exists mediaattachments (ItemId GUID, AttachmentIndex INT, Codec TEXT, CodecTag TEXT NULL, Comment TEXT NULL, Filename TEXT NULL, MIMEType TEXT NULL, PRIMARY KEY (ItemId, AttachmentIndex))";
 
+            string fullTextSearchColumnsStr = JoinQueryColumns(_fullTextSearchColumns);
+            string fullTextSearchNewColumnsStr = JoinQueryColumns(_fullTextSearchColumns, "new");
+            string fullTextSearchAssignColumnsStr = JoinQueryColumns(_fullTextSearchColumns, "new", true);
+
             string[] queries =
             {
                 "create table if not exists TypedBaseItems (guid GUID primary key NOT NULL, type TEXT NOT NULL, data BLOB NULL, ParentId GUID NULL, Path TEXT NULL)",
@@ -377,6 +387,12 @@ namespace Emby.Server.Implementations.Data
 
                 CreateMediaStreamsTableCommand,
                 CreateMediaAttachmentsTableCommand,
+
+                // Full text search
+                $"CREATE VIRTUAL TABLE IF NOT EXISTS TypedBaseItemsFts USING fts5({fullTextSearchColumnsStr})",
+                $"CREATE TRIGGER IF NOT EXISTS TypedBaseItems_ai AFTER INSERT ON TypedBaseItems BEGIN INSERT INTO TypedBaseItemsFts({fullTextSearchColumnsStr}) VALUES ({fullTextSearchNewColumnsStr}); END",
+                $"CREATE TRIGGER IF NOT EXISTS TypedBaseItems_ad AFTER DELETE ON TypedBaseItems BEGIN DELETE FROM TypedBaseItemsFts WHERE guid=old.guid; END",
+                $"CREATE TRIGGER IF NOT EXISTS TypedBaseItems_au AFTER UPDATE ON TypedBaseItems BEGIN UPDATE TypedBaseItemsFts SET {fullTextSearchAssignColumnsStr} WHERE guid=old.guid; END",
 
                 "pragma shrink_memory"
             };
@@ -550,6 +566,14 @@ namespace Emby.Server.Implementations.Data
                     TransactionMode);
 
                 connection.RunQueries(postQueries);
+
+                // If the FTS index is empty, seed it with data from TypedBaseItems. Triggers will take care of keeping it up to date after this.
+                var query = connection.Query("SELECT EXISTS(SELECT 1 FROM TypedBaseItemsFts WHERE name MATCH NOT '')");
+                if (query.SelectScalarInt().First() == 0)
+                {
+                    Logger.LogInformation("Full text search index is empty, seeding it with data...");
+                    connection.ExecuteAll($"INSERT INTO TypedBaseItemsFts ({fullTextSearchColumnsStr}) SELECT {fullTextSearchColumnsStr} FROM TypedBaseItems");
+                }
             }
 
             userDataRepo.Initialize(userManager, WriteLock, WriteConnection);
@@ -618,6 +642,23 @@ namespace Emby.Server.Implementations.Data
                     },
                     TransactionMode);
             }
+        }
+
+        private string JoinQueryColumns(IEnumerable<string> columns, string prefix = null, bool assign = false)
+        {
+            if (!string.IsNullOrEmpty(prefix))
+            {
+                if (assign)
+                {
+                    columns = columns.Select(column => $"{column}={prefix}.{column}");
+                }
+                else
+                {
+                    columns = columns.Select(column => $"{prefix}.{column}");
+                }
+            }
+
+            return string.Join(", ", columns);
         }
 
         private void SaveItemsInTransaction(IDatabaseConnection db, IEnumerable<(BaseItem Item, List<Guid> AncestorIds, BaseItem TopParent, string UserDataKey, List<string> InheritedTags)> tuples)
@@ -2424,23 +2465,18 @@ namespace Emby.Server.Implementations.Data
                 query.ExcludeProviderIds = item.ProviderIds;
             }
 
-            if (!string.IsNullOrEmpty(query.SearchTerm))
+            if (!query.SearchTerm.IsNullOrEmpty())
             {
-                var builder = new StringBuilder();
-                builder.Append('(');
-
-                builder.Append("((CleanName like @SearchTermStartsWith or (OriginalTitle not null and OriginalTitle like @SearchTermStartsWith)) * 10)");
-                builder.Append("+ ((CleanName = @SearchTermStartsWith COLLATE NOCASE or (OriginalTitle not null and OriginalTitle = @SearchTermStartsWith COLLATE NOCASE)) * 10)");
-
-                if (query.SearchTerm.Length > 1)
+                // Disambiguate the columns that are also in the FTS table
+                for (int ii = 0; ii < columns.Count; ++ii)
                 {
-                    builder.Append("+ ((CleanName like @SearchTermContains or (OriginalTitle not null and OriginalTitle like @SearchTermContains)) * 10)");
-                    builder.Append("+ ((Tags not null and Tags like @SearchTermContains) * 5)");
+                    if (_fullTextSearchColumns.Contains(columns[ii]))
+                    {
+                        columns[ii] = $"A.{columns[ii]}";
+                    }
                 }
 
-                builder.Append(") as SearchScore");
-
-                columns.Add(builder.ToString());
+                columns.Add("FTS.rank");
             }
         }
 
@@ -2448,23 +2484,23 @@ namespace Emby.Server.Implementations.Data
         {
             var searchTerm = query.SearchTerm;
 
-            if (string.IsNullOrEmpty(searchTerm))
+            if (searchTerm.IsNullOrEmpty())
             {
                 return;
             }
 
-            searchTerm = FixUnicodeChars(searchTerm);
-            searchTerm = GetCleanValue(searchTerm);
-
-            var commandText = statement.SQL;
-            if (commandText.Contains("@SearchTermStartsWith", StringComparison.OrdinalIgnoreCase))
+            switch (query.SearchType)
             {
-                statement.TryBind("@SearchTermStartsWith", searchTerm + "%");
-            }
-
-            if (commandText.Contains("@SearchTermContains", StringComparison.OrdinalIgnoreCase))
-            {
-                statement.TryBind("@SearchTermContains", "%" + searchTerm + "%");
+                case null:
+                case FullTextSearchType.Prefix:
+                    statement.TryBind("@SearchTerm", $"\"{searchTerm.Value}\"*");
+                    break;
+                case FullTextSearchType.Phrase:
+                    statement.TryBind("@SearchTerm", $"\"{searchTerm.Value}\"");
+                    break;
+                case FullTextSearchType.Keyword:
+                    statement.TryBind("@SearchTerm", searchTerm.Value);
+                    break;
             }
         }
 
@@ -2498,6 +2534,16 @@ namespace Emby.Server.Implementations.Data
             {
                 statement.TryBind("@InheritedParentalRatingValue", item.InheritedParentalRatingValue);
             }
+        }
+
+        private string GetJoinFullTextSearch(InternalItemsQuery query)
+        {
+            if (query.SearchTerm.IsNullOrEmpty())
+            {
+                return string.Empty;
+            }
+
+            return " JOIN TypedBaseItemsFts FTS ON A.guid = FTS.guid";
         }
 
         private string GetJoinUserDataText(InternalItemsQuery query)
@@ -2548,6 +2594,7 @@ namespace Emby.Server.Implementations.Data
             var commandTextBuilder = new StringBuilder("select ", 256)
                 .AppendJoin(',', columns)
                 .Append(FromText)
+                .Append(GetJoinFullTextSearch(query))
                 .Append(GetJoinUserDataText(query));
 
             var whereClauses = GetWhereClauses(query, null);
@@ -2595,6 +2642,7 @@ namespace Emby.Server.Implementations.Data
             var commandTextBuilder = new StringBuilder("select ", 1024)
                 .AppendJoin(',', columns)
                 .Append(FromText)
+                .Append(GetJoinFullTextSearch(query))
                 .Append(GetJoinUserDataText(query));
 
             var whereClauses = GetWhereClauses(query, null);
@@ -2757,6 +2805,7 @@ namespace Emby.Server.Implementations.Data
             var commandTextBuilder = new StringBuilder("select ", 512)
                 .AppendJoin(',', columns)
                 .Append(FromText)
+                .Append(GetJoinFullTextSearch(query))
                 .Append(GetJoinUserDataText(query));
 
             var whereClauses = GetWhereClauses(query, null);
@@ -2824,6 +2873,7 @@ namespace Emby.Server.Implementations.Data
 
                 commandTextBuilder.AppendJoin(',', columnsToSelect)
                     .Append(FromText)
+                    .Append(GetJoinFullTextSearch(query))
                     .Append(GetJoinUserDataText(query));
                 if (!string.IsNullOrEmpty(whereText))
                 {
@@ -2911,14 +2961,14 @@ namespace Emby.Server.Implementations.Data
         {
             var orderBy = query.OrderBy;
             bool hasSimilar = query.SimilarTo is not null;
-            bool hasSearch = !string.IsNullOrEmpty(query.SearchTerm);
+            bool hasSearch = !query.SearchTerm.IsNullOrEmpty();
 
             if (hasSimilar || hasSearch)
             {
                 List<(string, SortOrder)> prepend = new List<(string, SortOrder)>(4);
                 if (hasSearch)
                 {
-                    prepend.Add(("SearchScore", SortOrder.Descending));
+                    prepend.Add((ItemSortBy.Rank, SortOrder.Ascending));
                     prepend.Add((ItemSortBy.SortName, SortOrder.Ascending));
                 }
 
@@ -3104,6 +3154,11 @@ namespace Emby.Server.Implementations.Data
                 return ItemSortBy.SearchScore;
             }
 
+            if (string.Equals(name, ItemSortBy.Rank, StringComparison.OrdinalIgnoreCase))
+            {
+                return "FTS.rank";
+            }
+
             // Unknown SortBy, just sort by the SortName.
             return ItemSortBy.SortName;
         }
@@ -3119,6 +3174,7 @@ namespace Emby.Server.Implementations.Data
             var commandTextBuilder = new StringBuilder("select ", 256)
                 .AppendJoin(',', columns)
                 .Append(FromText)
+                .Append(GetJoinFullTextSearch(query))
                 .Append(GetJoinUserDataText(query));
 
             var whereClauses = GetWhereClauses(query, null);
@@ -3341,9 +3397,9 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add("SimilarityScore > " + (query.MinSimilarityScore - 1).ToString(CultureInfo.InvariantCulture));
             }
 
-            if (!string.IsNullOrEmpty(query.SearchTerm))
+            if (!query.SearchTerm.IsNullOrEmpty())
             {
-                whereClauses.Add("SearchScore > 0");
+                whereClauses.Add($"TypedBaseItemsFts MATCH @SearchTerm");
             }
 
             if (query.IsFolder.HasValue)
@@ -3673,7 +3729,7 @@ namespace Emby.Server.Implementations.Data
             var nameContains = query.NameContains;
             if (!string.IsNullOrWhiteSpace(nameContains))
             {
-                whereClauses.Add("(CleanName like @NameContains or OriginalTitle like @NameContains)");
+                whereClauses.Add("(CleanName like @NameContains or A.OriginalTitle like @NameContains)");
                 if (statement is not null)
                 {
                     nameContains = FixUnicodeChars(nameContains);
@@ -4282,7 +4338,7 @@ namespace Emby.Server.Implementations.Data
                     }
 
                     var paramName = "@ExcludeProviderId" + index;
-                    excludeIds.Add("(ProviderIds is null or ProviderIds not like " + paramName + ")");
+                    excludeIds.Add("(A.ProviderIds is null or A.ProviderIds not like " + paramName + ")");
                     if (statement is not null)
                     {
                         statement.TryBind(paramName, "%" + pair.Key + "=" + pair.Value + "%");
@@ -4323,7 +4379,7 @@ namespace Emby.Server.Implementations.Data
                     var paramName = "@HasAnyProviderId" + index;
 
                     // this is a search for the placeholder
-                    hasProviderIds.Add("ProviderIds like " + paramName);
+                    hasProviderIds.Add("A.ProviderIds like " + paramName);
 
                     // this replaces the placeholder with a value, here: %key=val%
                     if (statement is not null)
@@ -4598,7 +4654,7 @@ namespace Emby.Server.Implementations.Data
         {
             return string.Format(
                 CultureInfo.InvariantCulture,
-                "ProviderIds {0} like '%{1}=%'",
+                "A.ProviderIds {0} like '%{1}=%'",
                 includeResults ? string.Empty : "not",
                 provider);
         }
@@ -5224,13 +5280,14 @@ AND Type = @InternalPersonType)");
             stringBuilder.Append("select ")
                 .AppendJoin(',', columns)
                 .Append(FromText)
+                .Append(GetJoinFullTextSearch(query))
                 .Append(GetJoinUserDataText(query))
                 .Append(whereText)
                 .Append(" group by PresentationUniqueKey");
 
             if (query.OrderBy.Count != 0
                 || query.SimilarTo is not null
-                || !string.IsNullOrEmpty(query.SearchTerm))
+                || !query.SearchTerm.IsNullOrEmpty())
             {
                 stringBuilder.Append(GetOrderByText(query));
             }
@@ -5274,6 +5331,7 @@ AND Type = @InternalPersonType)");
                 stringBuilder.Append("select ")
                     .AppendJoin(',', columnsToSelect)
                     .Append(FromText)
+                    .Append(GetJoinFullTextSearch(query))
                     .Append(GetJoinUserDataText(query))
                     .Append(whereText);
 

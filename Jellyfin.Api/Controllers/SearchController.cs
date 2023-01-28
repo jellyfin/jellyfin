@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.ModelBinders;
+using Jellyfin.Data.Dtos;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Drawing;
@@ -59,7 +60,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <param name="userId">Optional. Supply a user id to search within a user's library or omit to search all.</param>
-        /// <param name="searchTerm">The search term to filter on.</param>
+        /// <param name="searchTerm">Filter based on a full text search using this search term.</param>
+        /// <param name="searchType">Optional. Set the type of full text search to do. Defaults to "Prefix".</param>
         /// <param name="includeItemTypes">If specified, only results with the specified item types are returned. This allows multiple, comma delimited.</param>
         /// <param name="excludeItemTypes">If specified, results with these item types are filtered out. This allows multiple, comma delimited.</param>
         /// <param name="mediaTypes">If specified, only results with the specified media types are returned. This allows multiple, comma delimited.</param>
@@ -83,7 +85,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] Guid? userId,
-            [FromQuery, Required] string searchTerm,
+            [FromQuery, Required] SearchTermDto searchTerm,
+            [FromQuery] FullTextSearchType? searchType,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] excludeItemTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes,
@@ -103,6 +106,7 @@ namespace Jellyfin.Api.Controllers
             {
                 Limit = limit,
                 SearchTerm = searchTerm,
+                SearchType = searchType,
                 IncludeArtists = includeArtists,
                 IncludeGenres = includeGenres,
                 IncludeMedia = includeMedia,

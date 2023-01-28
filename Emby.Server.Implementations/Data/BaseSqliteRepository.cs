@@ -154,6 +154,8 @@ namespace Emby.Server.Implementations.Data
 
             WriteConnection.Execute("PRAGMA temp_store=" + (int)TempStore);
 
+            WriteConnection.Execute("PRAGMA recursive_triggers = ON");
+
             // Configuration and pragmas can affect VACUUM so it needs to be last.
             WriteConnection.Execute("VACUUM");
 

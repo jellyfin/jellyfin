@@ -4,6 +4,7 @@ using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.ModelBinders;
+using Jellyfin.Data.Dtos;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -47,7 +48,7 @@ namespace Jellyfin.Api.Controllers
         /// Gets all persons.
         /// </summary>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
-        /// <param name="searchTerm">The search term.</param>
+        /// <param name="searchTerm">Optional. The search term.</param>
         /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="filters">Optional. Specify additional filters to apply.</param>
         /// <param name="isFavorite">Optional filter by items that are marked as favorite, or not. userId is required.</param>

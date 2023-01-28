@@ -73,9 +73,7 @@ namespace Emby.Server.Implementations.Library
         {
             var searchTerm = query.SearchTerm;
 
-            ArgumentException.ThrowIfNullOrEmpty(searchTerm);
-
-            searchTerm = searchTerm.Trim().RemoveDiacritics();
+            ArgumentException.ThrowIfNullOrEmpty(searchTerm.Value);
 
             var excludeItemTypes = query.ExcludeItemTypes.ToList();
             var includeItemTypes = (query.IncludeItemTypes ?? Array.Empty<BaseItemKind>()).ToList();
@@ -146,6 +144,7 @@ namespace Emby.Server.Implementations.Library
             var searchQuery = new InternalItemsQuery(user)
             {
                 SearchTerm = searchTerm,
+                SearchType = query.SearchType,
                 ExcludeItemTypes = excludeItemTypes.ToArray(),
                 IncludeItemTypes = includeItemTypes.ToArray(),
                 Limit = query.Limit,
