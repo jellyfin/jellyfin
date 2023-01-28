@@ -5762,7 +5762,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 audioTranscodeParams.Add("-ac " + state.OutputAudioChannels.Value.ToString(CultureInfo.InvariantCulture));
             }
 
-            audioTranscodeParams.Add("-acodec " + state.OutputAudioCodec);
+            if (!string.IsNullOrEmpty(state.OutputAudioCodec))
+            {
+                audioTranscodeParams.Add("-acodec " + state.OutputAudioCodec);
+            }
 
             if (!string.Equals(state.OutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase))
             {
