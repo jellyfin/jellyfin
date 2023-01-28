@@ -5764,7 +5764,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (!string.IsNullOrEmpty(state.OutputAudioCodec))
             {
-                audioTranscodeParams.Add("-acodec " + state.OutputAudioCodec);
+                audioTranscodeParams.Add("-acodec " + GetAudioEncoder(state));
             }
 
             if (!string.Equals(state.OutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase))
