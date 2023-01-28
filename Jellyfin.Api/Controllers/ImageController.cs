@@ -505,7 +505,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="tag">Optional. Supply the cache tag from the item object to receive strong caching headers.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
         /// <param name="format">Optional. The <see cref="ImageFormat"/> of the returned image.</param>
-        /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="percentPlayed">Optional. Percent to render for the percent played overlay.</param>
         /// <param name="unplayedCount">Optional. Unplayed count overlay to render.</param>
         /// <param name="blur">Optional. Blur image.</param>
@@ -536,7 +535,6 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? tag,
             [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] ImageFormat? format,
-            [FromQuery] bool? addPlayedIndicator,
             [FromQuery] double? percentPlayed,
             [FromQuery] int? unplayedCount,
             [FromQuery] int? blur,
@@ -565,7 +563,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    addPlayedIndicator,
                     blur,
                     backgroundColor,
                     foregroundLayer,
@@ -589,7 +586,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="tag">Optional. Supply the cache tag from the item object to receive strong caching headers.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
         /// <param name="format">Optional. The <see cref="ImageFormat"/> of the returned image.</param>
-        /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="percentPlayed">Optional. Percent to render for the percent played overlay.</param>
         /// <param name="unplayedCount">Optional. Unplayed count overlay to render.</param>
         /// <param name="blur">Optional. Blur image.</param>
@@ -620,7 +616,6 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? tag,
             [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] ImageFormat? format,
-            [FromQuery] bool? addPlayedIndicator,
             [FromQuery] double? percentPlayed,
             [FromQuery] int? unplayedCount,
             [FromQuery] int? blur,
@@ -648,7 +643,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    addPlayedIndicator,
                     blur,
                     backgroundColor,
                     foregroundLayer,
@@ -671,7 +665,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="tag">Optional. Supply the cache tag from the item object to receive strong caching headers.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
         /// <param name="format">Determines the output format of the image - original,gif,jpg,png.</param>
-        /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="percentPlayed">Optional. Percent to render for the percent played overlay.</param>
         /// <param name="unplayedCount">Optional. Unplayed count overlay to render.</param>
         /// <param name="blur">Optional. Blur image.</param>
@@ -702,7 +695,6 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string tag,
             [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromRoute, Required] ImageFormat format,
-            [FromQuery] bool? addPlayedIndicator,
             [FromRoute, Required] double percentPlayed,
             [FromRoute, Required] int unplayedCount,
             [FromQuery] int? blur,
@@ -731,7 +723,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    addPlayedIndicator,
                     blur,
                     backgroundColor,
                     foregroundLayer,
@@ -756,7 +747,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="fillWidth">Width of box to fill.</param>
         /// <param name="fillHeight">Height of box to fill.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
-        /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="blur">Optional. Blur image.</param>
         /// <param name="backgroundColor">Optional. Apply a background color for transparent images.</param>
         /// <param name="foregroundLayer">Optional. Apply a foreground layer on top of the image.</param>
@@ -787,7 +777,6 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? fillWidth,
             [FromQuery] int? fillHeight,
             [FromQuery, ParameterObsolete] bool? cropWhitespace,
-            [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
@@ -814,7 +803,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    addPlayedIndicator,
                     blur,
                     backgroundColor,
                     foregroundLayer,
@@ -839,7 +827,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="fillWidth">Width of box to fill.</param>
         /// <param name="fillHeight">Height of box to fill.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
-        /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="blur">Optional. Blur image.</param>
         /// <param name="backgroundColor">Optional. Apply a background color for transparent images.</param>
         /// <param name="foregroundLayer">Optional. Apply a foreground layer on top of the image.</param>
@@ -870,7 +857,6 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? fillWidth,
             [FromQuery] int? fillHeight,
             [FromQuery, ParameterObsolete] bool? cropWhitespace,
-            [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
@@ -897,7 +883,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    addPlayedIndicator,
                     blur,
                     backgroundColor,
                     foregroundLayer,
@@ -923,7 +908,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="fillWidth">Width of box to fill.</param>
         /// <param name="fillHeight">Height of box to fill.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
-        /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="blur">Optional. Blur image.</param>
         /// <param name="backgroundColor">Optional. Apply a background color for transparent images.</param>
         /// <param name="foregroundLayer">Optional. Apply a foreground layer on top of the image.</param>
@@ -954,7 +938,6 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? fillWidth,
             [FromQuery] int? fillHeight,
             [FromQuery, ParameterObsolete] bool? cropWhitespace,
-            [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer)
@@ -980,7 +963,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    addPlayedIndicator,
                     blur,
                     backgroundColor,
                     foregroundLayer,
@@ -1005,7 +987,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="fillWidth">Width of box to fill.</param>
         /// <param name="fillHeight">Height of box to fill.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
-        /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="blur">Optional. Blur image.</param>
         /// <param name="backgroundColor">Optional. Apply a background color for transparent images.</param>
         /// <param name="foregroundLayer">Optional. Apply a foreground layer on top of the image.</param>
@@ -1036,7 +1017,6 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? fillWidth,
             [FromQuery] int? fillHeight,
             [FromQuery, ParameterObsolete] bool? cropWhitespace,
-            [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
@@ -1063,7 +1043,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    addPlayedIndicator,
                     blur,
                     backgroundColor,
                     foregroundLayer,
@@ -1089,7 +1068,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="fillWidth">Width of box to fill.</param>
         /// <param name="fillHeight">Height of box to fill.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
-        /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="blur">Optional. Blur image.</param>
         /// <param name="backgroundColor">Optional. Apply a background color for transparent images.</param>
         /// <param name="foregroundLayer">Optional. Apply a foreground layer on top of the image.</param>
@@ -1120,7 +1098,6 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? fillWidth,
             [FromQuery] int? fillHeight,
             [FromQuery, ParameterObsolete] bool? cropWhitespace,
-            [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer)
@@ -1146,7 +1123,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    addPlayedIndicator,
                     blur,
                     backgroundColor,
                     foregroundLayer,
@@ -1171,7 +1147,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="fillWidth">Width of box to fill.</param>
         /// <param name="fillHeight">Height of box to fill.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
-        /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="blur">Optional. Blur image.</param>
         /// <param name="backgroundColor">Optional. Apply a background color for transparent images.</param>
         /// <param name="foregroundLayer">Optional. Apply a foreground layer on top of the image.</param>
@@ -1202,7 +1177,6 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? fillWidth,
             [FromQuery] int? fillHeight,
             [FromQuery, ParameterObsolete] bool? cropWhitespace,
-            [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
@@ -1229,7 +1203,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    addPlayedIndicator,
                     blur,
                     backgroundColor,
                     foregroundLayer,
@@ -1255,7 +1228,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="fillWidth">Width of box to fill.</param>
         /// <param name="fillHeight">Height of box to fill.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
-        /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="blur">Optional. Blur image.</param>
         /// <param name="backgroundColor">Optional. Apply a background color for transparent images.</param>
         /// <param name="foregroundLayer">Optional. Apply a foreground layer on top of the image.</param>
@@ -1286,7 +1258,6 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? fillWidth,
             [FromQuery] int? fillHeight,
             [FromQuery, ParameterObsolete] bool? cropWhitespace,
-            [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer)
@@ -1312,7 +1283,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    addPlayedIndicator,
                     blur,
                     backgroundColor,
                     foregroundLayer,
@@ -1337,7 +1307,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="fillWidth">Width of box to fill.</param>
         /// <param name="fillHeight">Height of box to fill.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
-        /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="blur">Optional. Blur image.</param>
         /// <param name="backgroundColor">Optional. Apply a background color for transparent images.</param>
         /// <param name="foregroundLayer">Optional. Apply a foreground layer on top of the image.</param>
@@ -1368,7 +1337,6 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? fillWidth,
             [FromQuery] int? fillHeight,
             [FromQuery, ParameterObsolete] bool? cropWhitespace,
-            [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
@@ -1395,7 +1363,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    addPlayedIndicator,
                     blur,
                     backgroundColor,
                     foregroundLayer,
@@ -1421,7 +1388,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="fillWidth">Width of box to fill.</param>
         /// <param name="fillHeight">Height of box to fill.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
-        /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="blur">Optional. Blur image.</param>
         /// <param name="backgroundColor">Optional. Apply a background color for transparent images.</param>
         /// <param name="foregroundLayer">Optional. Apply a foreground layer on top of the image.</param>
@@ -1452,7 +1418,6 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? fillWidth,
             [FromQuery] int? fillHeight,
             [FromQuery, ParameterObsolete] bool? cropWhitespace,
-            [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer)
@@ -1478,7 +1443,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    addPlayedIndicator,
                     blur,
                     backgroundColor,
                     foregroundLayer,
@@ -1503,7 +1467,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="fillWidth">Width of box to fill.</param>
         /// <param name="fillHeight">Height of box to fill.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
-        /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="blur">Optional. Blur image.</param>
         /// <param name="backgroundColor">Optional. Apply a background color for transparent images.</param>
         /// <param name="foregroundLayer">Optional. Apply a foreground layer on top of the image.</param>
@@ -1534,7 +1497,6 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? fillWidth,
             [FromQuery] int? fillHeight,
             [FromQuery, ParameterObsolete] bool? cropWhitespace,
-            [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
@@ -1578,7 +1540,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    addPlayedIndicator,
                     blur,
                     backgroundColor,
                     foregroundLayer,
@@ -1605,7 +1566,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="fillWidth">Width of box to fill.</param>
         /// <param name="fillHeight">Height of box to fill.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
-        /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="blur">Optional. Blur image.</param>
         /// <param name="backgroundColor">Optional. Apply a background color for transparent images.</param>
         /// <param name="foregroundLayer">Optional. Apply a foreground layer on top of the image.</param>
@@ -1636,7 +1596,6 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? fillWidth,
             [FromQuery] int? fillHeight,
             [FromQuery, ParameterObsolete] bool? cropWhitespace,
-            [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer)
@@ -1679,7 +1638,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    addPlayedIndicator,
                     blur,
                     backgroundColor,
                     foregroundLayer,
@@ -1924,7 +1882,6 @@ namespace Jellyfin.Api.Controllers
             int? quality,
             int? fillWidth,
             int? fillHeight,
-            bool? addPlayedIndicator,
             int? blur,
             string? backgroundColor,
             string? foregroundLayer,
@@ -1940,7 +1897,6 @@ namespace Jellyfin.Api.Controllers
                 else if (percentPlayed.Value >= 100)
                 {
                     percentPlayed = null;
-                    addPlayedIndicator = true;
                 }
             }
 
@@ -1997,7 +1953,6 @@ namespace Jellyfin.Api.Controllers
                 FillWidth = fillWidth,
                 Quality = quality ?? 100,
                 Width = width,
-                AddPlayedIndicator = addPlayedIndicator ?? false,
                 PercentPlayed = percentPlayed ?? 0,
                 UnplayedCount = unplayedCount,
                 Blur = blur,
