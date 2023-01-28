@@ -127,7 +127,6 @@ namespace Emby.Server.Implementations
         private readonly IPluginManager _pluginManager;
 
         private List<Type> _creatingInstances;
-        private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
 
         /// <summary>
@@ -419,7 +418,7 @@ namespace Emby.Server.Implementations
             ConfigurationManager.ConfigurationUpdated += OnConfigurationUpdated;
             ConfigurationManager.NamedConfigurationUpdated += OnConfigurationUpdated;
 
-            _mediaEncoder.SetFFmpegPath();
+            Resolve<IMediaEncoder>().SetFFmpegPath();
 
             Logger.LogInformation("ServerId: {ServerId}", SystemId);
 
@@ -631,7 +630,6 @@ namespace Emby.Server.Implementations
             var localizationManager = (LocalizationManager)Resolve<ILocalizationManager>();
             await localizationManager.LoadAll().ConfigureAwait(false);
 
-            _mediaEncoder = Resolve<IMediaEncoder>();
             _sessionManager = Resolve<ISessionManager>();
 
             SetStaticProperties();
