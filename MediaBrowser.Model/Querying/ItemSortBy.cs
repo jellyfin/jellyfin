@@ -18,7 +18,7 @@ namespace MediaBrowser.Model.Querying
         /// <summary>
         /// The normalization.
         /// </summary>
-        public const string Normalization = "Album";
+        public const string Normalization = "Normalization";
 
         /// <summary>
         /// The album artist.

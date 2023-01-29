@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -88,6 +89,23 @@ namespace MediaBrowser.Providers.MediaInfo
                 Fetch(item, result, cancellationToken);
             }
 
+            String args = "-c \"/usr/lib/jellyfin-ffmpeg/ffmpeg -i \\\"";
+
+            args += path;
+            args += "\\\" -af ebur128=framelog=verbose -f null - 2>&1 | awk \'/I:/{printf $2}\'\"";
+
+            ProcessStartInfo r128gain = new ProcessStartInfo("bash");
+
+            System.Diagnostics.Process proc = new System.Diagnostics.Process();
+            proc.StartInfo = r128gain;
+            proc.StartInfo.RedirectStandardOutput = true;
+            r128gain.Arguments = args;
+            proc.Start();
+            String output = await proc.StandardOutput.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+
+            cancellationToken.ThrowIfCancellationRequested();
+            item.Normalization = output;
+
             return ItemUpdateType.MetadataImport;
         }
 
@@ -104,7 +122,6 @@ namespace MediaBrowser.Providers.MediaInfo
 
             audio.RunTimeTicks = mediaInfo.RunTimeTicks;
             audio.Size = mediaInfo.Size;
-
             FetchDataFromTags(audio);
 
             _itemRepo.SaveMediaStreams(audio.Id, mediaInfo.MediaStreams, cancellationToken);
@@ -192,6 +209,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 audio.Album = tags.Album;
                 audio.IndexNumber = Convert.ToInt32(tags.Track);
                 audio.ParentIndexNumber = Convert.ToInt32(tags.Disc);
+
                 if (tags.Year != 0)
                 {
                     var year = Convert.ToInt32(tags.Year);
