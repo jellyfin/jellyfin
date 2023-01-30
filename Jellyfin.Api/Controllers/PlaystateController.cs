@@ -7,6 +7,7 @@ using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
@@ -65,9 +66,11 @@ namespace Jellyfin.Api.Controllers
         /// <param name="itemId">Item id.</param>
         /// <param name="datePlayed">Optional. The date the item was played.</param>
         /// <response code="200">Item marked as played.</response>
-        /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
+        /// <response code="404">Item not found.</response>
+        /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>, or a <see cref="NotFoundResult"/> if item was not found.</returns>
         [HttpPost("Users/{userId}/PlayedItems/{itemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<UserItemDataDto>> MarkPlayedItem(
             [FromRoute, Required] Guid userId,
             [FromRoute, Required] Guid itemId,
@@ -75,11 +78,18 @@ namespace Jellyfin.Api.Controllers
         {
             var user = _userManager.GetUserById(userId);
             var session = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
-            var dto = UpdatePlayedStatus(user, itemId, true, datePlayed);
+
+            var item = _libraryManager.GetItemById(itemId);
+            if (item is null)
+            {
+                return NotFound();
+            }
+
+            var dto = UpdatePlayedStatus(user, item, true, datePlayed);
             foreach (var additionalUserInfo in session.AdditionalUsers)
             {
                 var additionalUser = _userManager.GetUserById(additionalUserInfo.UserId);
-                UpdatePlayedStatus(additionalUser, itemId, true, datePlayed);
+                UpdatePlayedStatus(additionalUser, item, true, datePlayed);
             }
 
             return dto;
@@ -91,18 +101,27 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userId">User id.</param>
         /// <param name="itemId">Item id.</param>
         /// <response code="200">Item marked as unplayed.</response>
-        /// <returns>A <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
+        /// <response code="404">Item not found.</response>
+        /// <returns>A <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>, or a <see cref="NotFoundResult"/> if item was not found.</returns>
         [HttpDelete("Users/{userId}/PlayedItems/{itemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<UserItemDataDto>> MarkUnplayedItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
         {
             var user = _userManager.GetUserById(userId);
             var session = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
-            var dto = UpdatePlayedStatus(user, itemId, false, null);
+            var item = _libraryManager.GetItemById(itemId);
+
+            if (item is null)
+            {
+                return NotFound();
+            }
+
+            var dto = UpdatePlayedStatus(user, item, false, null);
             foreach (var additionalUserInfo in session.AdditionalUsers)
             {
                 var additionalUser = _userManager.GetUserById(additionalUserInfo.UserId);
-                UpdatePlayedStatus(additionalUser, itemId, false, null);
+                UpdatePlayedStatus(additionalUser, item, false, null);
             }
 
             return dto;
@@ -328,14 +347,12 @@ namespace Jellyfin.Api.Controllers
         /// Updates the played status.
         /// </summary>
         /// <param name="user">The user.</param>
-        /// <param name="itemId">The item id.</param>
+        /// <param name="item">The item.</param>
         /// <param name="wasPlayed">if set to <c>true</c> [was played].</param>
         /// <param name="datePlayed">The date played.</param>
         /// <returns>Task.</returns>
-        private UserItemDataDto UpdatePlayedStatus(User user, Guid itemId, bool wasPlayed, DateTime? datePlayed)
+        private UserItemDataDto UpdatePlayedStatus(User user, BaseItem item, bool wasPlayed, DateTime? datePlayed)
         {
-            var item = _libraryManager.GetItemById(itemId);
-
             if (wasPlayed)
             {
                 item.MarkPlayed(user, datePlayed, true);
