@@ -908,6 +908,7 @@ namespace Emby.Server.Implementations.Dto
             // Add audio info
             if (item is Audio audio)
             {
+                dto.Normalization = audio.Normalization;
                 dto.Album = audio.Album;
                 if (audio.ExtraType.HasValue)
                 {

@@ -780,6 +780,12 @@ namespace MediaBrowser.Model.Dto
         public string TimerId { get; set; }
 
         /// <summary>
+        /// Gets or sets the normalization value.
+        /// </summary>
+        /// <value>The timer identifier.</value>
+        public string Normalization { get; set; }
+
+        /// <summary>
         /// Gets or sets the current program.
         /// </summary>
         /// <value>The current program.</value>

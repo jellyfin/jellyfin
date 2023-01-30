@@ -1752,9 +1752,9 @@ namespace Emby.Server.Implementations.Data
                 item.Album = album;
             }
 
-            if (reader.TryGetString(index++, out var Normalization))
+            if (reader.TryGetString(index++, out var normalization))
             {
-                item.Normalization = Normalization;
+                item.Normalization = normalization;
             }
 
             if (reader.TryGetSingle(index++, out var criticRating))
@@ -3893,26 +3893,6 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add(clause);
             }
 
-            if (query.NormalizationIds.Length > 0)
-            {
-                var clauses = new List<string>();
-                var index = 0;
-                foreach (var NormalizationId in query.NormalizationIds)
-                {
-                    var paramName = "@NormalizationIds" + index;
-
-                    clauses.Add("Normalization in (select Name from typedbaseitems where guid=" + paramName + ")");
-                    if (statement is not null)
-                    {
-                        statement.TryBind(paramName, NormalizationId);
-                    }
-
-                    index++;
-                }
-
-                var clause = "(" + string.Join(" OR ", clauses) + ")";
-                whereClauses.Add(clause);
-            }
 
             if (query.ExcludeArtistIds.Length > 0)
             {
