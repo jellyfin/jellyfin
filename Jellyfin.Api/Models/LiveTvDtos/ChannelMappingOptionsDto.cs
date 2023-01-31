@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 

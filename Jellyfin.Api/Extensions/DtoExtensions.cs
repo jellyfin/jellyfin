@@ -5,7 +5,6 @@ using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using Microsoft.AspNetCore.Http;
 
 namespace Jellyfin.Api.Extensions;
 
