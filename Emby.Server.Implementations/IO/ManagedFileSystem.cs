@@ -294,7 +294,9 @@ namespace Emby.Server.Implementations.IO
         /// <exception cref="ArgumentNullException">The filename is null.</exception>
         public string GetValidFilename(string filename)
         {
-            var invalid = Path.GetInvalidFileNameChars();
+            //necessary because (as per the doc) GetInvalidFileNameChars is not exhaustive and may not return all invalid chars, which creates issues
+            char[] genericInvalidChars = {':'};
+            var invalid = Path.GetInvalidFileNameChars().Concat(genericInvalidChars).ToArray();
             var first = filename.IndexOfAny(invalid);
             if (first == -1)
             {
