@@ -77,7 +77,7 @@ namespace MediaBrowser.Providers.MediaInfo
             NamingOptions namingOptions)
         {
             _logger = loggerFactory.CreateLogger<ProbeProvider>();
-            _audioProber = new AudioFileProber(mediaSourceManager, mediaEncoder, itemRepo, libraryManager);
+            _audioProber = new AudioFileProber(mediaSourceManager, mediaEncoder, itemRepo, libraryManager, config);
             _audioResolver = new AudioResolver(loggerFactory.CreateLogger<AudioResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
             _subtitleResolver = new SubtitleResolver(loggerFactory.CreateLogger<SubtitleResolver>(), localization, mediaEncoder, fileSystem, namingOptions);
             _videoProber = new FFProbeVideoInfo(

@@ -2,14 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -27,6 +31,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IItemRepository _itemRepo;
         private readonly ILibraryManager _libraryManager;
         private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AudioFileProber"/> class.
@@ -35,16 +40,19 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
         /// <param name="itemRepo">Instance of the <see cref="IItemRepository"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+        /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         public AudioFileProber(
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
             IItemRepository itemRepo,
-            ILibraryManager libraryManager)
+            ILibraryManager libraryManager,
+            IServerConfigurationManager serverConfigurationManager)
         {
             _mediaEncoder = mediaEncoder;
             _itemRepo = itemRepo;
             _libraryManager = libraryManager;
             _mediaSourceManager = mediaSourceManager;
+            _serverConfigurationManager = serverConfigurationManager;
         }
 
         /// <summary>
@@ -89,22 +97,33 @@ namespace MediaBrowser.Providers.MediaInfo
                 Fetch(item, result, cancellationToken);
             }
 
-            string args = "-c \"/usr/lib/jellyfin-ffmpeg/ffmpeg -i \\\"";
-
+            string ffmpeg_path = _serverConfigurationManager.GetEncodingOptions().EncoderAppPathDisplay;
+            string args = "-i \"";
             args += path;
-            args += "\\\" -af ebur128=framelog=verbose -f null - 2>&1 | awk \'/I:/{printf $2}\'\"";
+            args += "\" -af ebur128=framelog=verbose -f null -";
 
-            ProcessStartInfo r128gain = new ProcessStartInfo("bash");
+            ProcessStartInfo ffmpeg = new ProcessStartInfo(ffmpeg_path);
 
             System.Diagnostics.Process proc = new System.Diagnostics.Process();
-            proc.StartInfo = r128gain;
-            proc.StartInfo.RedirectStandardOutput = true;
-            r128gain.Arguments = args;
+            proc.StartInfo = ffmpeg;
+            proc.StartInfo.RedirectStandardOutput = false;
+            proc.StartInfo.RedirectStandardError = true;
+            ffmpeg.Arguments = args;
             proc.Start();
-            string output = await proc.StandardOutput.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+            string output = await proc.StandardError.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
-            item.Normalization = output;
+
+            MatchCollection split = Regex.Matches(output, @"I:\s+(.*?)\s+LUFS");
+
+            if (split.Count != 0)
+            {
+                item.Normalization = split[0].Groups[1].ToString();
+            }
+            else
+            {
+                item.Normalization = "0";
+            }
 
             return ItemUpdateType.MetadataImport;
         }

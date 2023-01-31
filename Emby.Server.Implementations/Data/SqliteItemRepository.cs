@@ -3893,7 +3893,6 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add(clause);
             }
 
-
             if (query.ExcludeArtistIds.Length > 0)
             {
                 var clauses = new List<string>();
