@@ -199,6 +199,11 @@ namespace MediaBrowser.Providers.MediaInfo
                     audio.PremiereDate = new DateTime(year, 01, 01);
                 }
 
+                if (!string.IsNullOrWhiteSpace(tags.Lyrics))
+                {
+                    audio.EmbeddedLyrics = tags.Lyrics;
+                }
+
                 if (!audio.LockedFields.Contains(MetadataField.Genres))
                 {
                     audio.Genres = tags.Genres.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();

@@ -37,6 +37,8 @@ namespace MediaBrowser.Controller.Entities.Audio
         [JsonIgnore]
         public IReadOnlyList<string> AlbumArtists { get; set; }
 
+        public string EmbeddedLyrics { get; set; }
+
         [JsonIgnore]
         public override bool SupportsPlayedStatus => true;
 

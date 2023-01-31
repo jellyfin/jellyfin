@@ -147,7 +147,7 @@ namespace Emby.Server.Implementations.Dto
             }
             else if (item is Audio)
             {
-                dto.HasLyrics = _lyricManager.HasLyricFile(item);
+                dto.HasLyrics = _lyricManager.HasLyricFile(item) || !string.IsNullOrWhiteSpace(((Audio)item).EmbeddedLyrics);
             }
 
             if (item is IItemByName itemByName

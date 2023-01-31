@@ -1361,10 +1361,6 @@ namespace Emby.Server.Implementations.Data
             {
                 return false;
             }
-            else if (type == typeof(Audio))
-            {
-                return false;
-            }
             else if (type == typeof(MusicAlbum))
             {
                 return false;
@@ -1391,7 +1387,7 @@ namespace Emby.Server.Implementations.Data
 
             BaseItem item = null;
 
-            if (TypeRequiresDeserialization(type))
+            if (TypeRequiresDeserialization(type) && reader[1].ToBlob() != null)
             {
                 try
                 {

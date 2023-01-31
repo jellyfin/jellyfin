@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using LrcParser.Model;
 using LrcParser.Parser;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Resolvers;
 using Microsoft.Extensions.Logging;
@@ -47,27 +48,44 @@ public class LrcLyricProvider : ILyricProvider
     public IReadOnlyCollection<string> SupportedMediaTypes { get; } = new[] { "lrc", "elrc" };
 
     /// <summary>
-    /// Opens lyric file for the requested item, and processes it for API return.
+    /// Retrieves the synchronized lyrics of the requested item from the lyric file or the embedded tags, and processes them for API return.
     /// </summary>
     /// <param name="item">The item to to process.</param>
     /// <returns>If provider can determine lyrics, returns a <see cref="LyricResponse"/> with or without metadata; otherwise, null.</returns>
     public async Task<LyricResponse?> GetLyrics(BaseItem item)
     {
         string? lyricFilePath = this.GetLyricFilePath(item.Path);
+        string? lrcContent = null;
 
         if (string.IsNullOrEmpty(lyricFilePath))
+        {
+            if (item is Audio)
+            {
+                var audioItem = item as Audio;
+
+                if (audioItem != null && !string.IsNullOrEmpty(audioItem.EmbeddedLyrics))
+                {
+                    lrcContent = audioItem.EmbeddedLyrics;
+                }
+            }
+        }
+        else
+        {
+            lrcContent = await File.ReadAllTextAsync(lyricFilePath).ConfigureAwait(false);
+        }
+
+        if (string.IsNullOrEmpty(lrcContent))
         {
             return null;
         }
 
         var fileMetaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        string lrcFileContent = await File.ReadAllTextAsync(lyricFilePath).ConfigureAwait(false);
 
         Song lyricData;
 
         try
         {
-            lyricData = _lrcLyricParser.Decode(lrcFileContent);
+            lyricData = _lrcLyricParser.Decode(lrcContent);
         }
         catch (Exception ex)
         {
