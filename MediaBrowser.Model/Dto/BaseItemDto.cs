@@ -780,10 +780,10 @@ namespace MediaBrowser.Model.Dto
         public string TimerId { get; set; }
 
         /// <summary>
-        /// Gets or sets the normalization value.
+        /// Gets or sets the LUFS value.
         /// </summary>
         /// <value>The timer identifier.</value>
-        public string Normalization { get; set; }
+        public string LUFS { get; set; }
 
         /// <summary>
         /// Gets or sets the current program.

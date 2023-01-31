@@ -118,11 +118,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (split.Count != 0)
             {
-                item.Normalization = split[0].Groups[1].ToString();
+                item.LUFS = split[0].Groups[1].ToString();
             }
             else
             {
-                item.Normalization = "0";
+                item.LUFS = "0";
             }
 
             return ItemUpdateType.MetadataImport;

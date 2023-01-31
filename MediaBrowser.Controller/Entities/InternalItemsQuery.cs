@@ -16,7 +16,6 @@ namespace MediaBrowser.Controller.Entities
         {
             AlbumArtistIds = Array.Empty<Guid>();
             AlbumIds = Array.Empty<Guid>();
-            NormalizationIds = Array.Empty<Guid>();
             AncestorIds = Array.Empty<Guid>();
             ArtistIds = Array.Empty<Guid>();
             BlockUnratedItems = Array.Empty<UnratedItem>();
@@ -259,8 +258,6 @@ namespace MediaBrowser.Controller.Entities
         public string? ExternalId { get; set; }
 
         public Guid[] AlbumIds { get; set; }
-
-        public Guid[] NormalizationIds { get; set; }
 
         public Guid[] ArtistIds { get; set; }
 

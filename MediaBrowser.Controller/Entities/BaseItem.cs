@@ -129,11 +129,11 @@ namespace MediaBrowser.Controller.Entities
         public string Album { get; set; }
 
         /// <summary>
-        /// Gets or sets the normalization gain.
+        /// Gets or sets the LUFS value.
         /// </summary>
         /// <value>The gain.</value>
         [JsonIgnore]
-        public string Normalization { get; set; }
+        public string LUFS { get; set; }
 
         /// <summary>
         /// Gets or sets the channel identifier.
