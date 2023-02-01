@@ -33,7 +33,7 @@ public class Dvd
     public Dvd(string path)
     {
         Titles = new List<Title>();
-        var allFiles = new DirectoryInfo(path).GetFiles(path, SearchOption.AllDirectories);
+        var allFiles = new DirectoryInfo(path).GetFiles("*", SearchOption.AllDirectories);
 
         var vmgPath = allFiles.FirstOrDefault(i => string.Equals(i.Name, "VIDEO_TS.IFO", StringComparison.OrdinalIgnoreCase)) ??
             allFiles.FirstOrDefault(i => string.Equals(i.Name, "VIDEO_TS.BUP", StringComparison.OrdinalIgnoreCase));

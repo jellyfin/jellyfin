@@ -85,7 +85,27 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!item.IsShortcut || options.EnableRemoteContentProbe)
             {
-                mediaInfoResult = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
+                if (item.VideoType == VideoType.Dvd)
+                {
+                    var streamFileNames = FetchFromDvdLib(item);
+
+                    if (streamFileNames.Length == 0)
+                    {
+                        _logger.LogError("No playable vobs found in dvd structure, skipping ffprobe.");
+                        return ItemUpdateType.MetadataImport;
+                    }
+
+                    var tmpItem = new Video
+                        {
+                            Path = streamFileNames.First()
+                        };
+
+                    mediaInfoResult = await GetMediaInfo(tmpItem, cancellationToken).ConfigureAwait(false);
+                }
+                else if (item.VideoType == VideoType.BluRay)
+                {
+                    mediaInfoResult = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
+                }
 
                 cancellationToken.ThrowIfCancellationRequested();
             }
@@ -558,6 +578,32 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             return chapters;
+        }
+
+        private string[] FetchFromDvdLib(Video item)
+        {
+            var path = item.Path;
+            var dvd = new Dvd(path);
+
+            var primaryTitle = dvd.Titles.OrderByDescending(GetRuntime).FirstOrDefault();
+
+            byte? titleNumber = null;
+
+            if (primaryTitle is not null)
+            {
+                titleNumber = primaryTitle.VideoTitleSetNumber;
+                item.RunTimeTicks = GetRuntime(primaryTitle);
+            }
+
+            return _mediaEncoder.GetPrimaryPlaylistVobFiles(item.Path, titleNumber).ToArray();
+        }
+
+        private long GetRuntime(Title title)
+        {
+            return title.ProgramChains
+                    .Select(i => (TimeSpan)i.PlaybackTime)
+                    .Select(i => i.Ticks)
+                    .Sum();
         }
     }
 }
