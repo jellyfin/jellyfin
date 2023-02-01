@@ -98,8 +98,6 @@ public class ProgramChain
         _prevProgramNumber = br.ReadUInt16();
         _goupProgramNumber = br.ReadUInt16();
 
-        StillTime = br.ReadByte();
-
         byte pbMode = br.ReadByte();
         if (pbMode == 0)
         {
@@ -112,6 +110,7 @@ public class ProgramChain
 
         ProgramCount = (uint)(pbMode & 0x7F);
 
+        StillTime = br.ReadByte();
         Palette = br.ReadBytes(64);
         _commandTableOffset = br.ReadUInt16();
         _programMapOffset = br.ReadUInt16();

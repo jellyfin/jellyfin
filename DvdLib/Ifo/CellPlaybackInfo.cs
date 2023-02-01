@@ -1,4 +1,5 @@
 using DvdLib.Enums;
+using System.Collections;
 using System.IO;
 
 namespace DvdLib.Ifo;
@@ -9,20 +10,20 @@ namespace DvdLib.Ifo;
 public class CellPlaybackInfo
 {
     /// <summary>
-    /// The block mode.
+    /// The cell type.
     /// </summary>
-    public readonly BlockMode Mode;
+    public readonly CellType CellType;
 
     /// <summary>
     /// The block type.
     /// </summary>
-    public readonly BlockType Type;
+    public readonly BlockType BlockType;
 
     /// <summary>
-    /// A value indicating whether this <see cref="Cell" /> supports seamless playback.
+    /// A value indicating whether this <see cref="Cell" /> uses seamless multiplex.
     /// </summary>
-    /// <value><c>true</c> if the cell supports it; otherwise, <c>false</c>.</value>
-    public readonly bool SeamlessPlay;
+    /// <value><c>true</c> if the cell uses it; otherwise, <c>false</c>.</value>
+    public readonly bool SeamlessMultiplex;
 
     /// <summary>
     /// A value indicating whether this <see cref="Cell" /> is interleaved.
@@ -31,15 +32,15 @@ public class CellPlaybackInfo
     public readonly bool Interleaved;
 
     /// <summary>
-    /// A value indicating whether this <see cref="Cell" /> supports seamless playback.
+    /// A value indicating whether this <see cref="Cell" /> uses SCR discontinuity.
     /// </summary>
-    /// <value><c>true</c> if the cell supports it; otherwise, <c>false</c>.</value>
-    public readonly bool STCDiscontinuity;
+    /// <value><c>true</c> if the cell uses it; otherwise, <c>false</c>.</value>
+    public readonly bool SCRDiscontinuity;
 
     /// <summary>
-    /// A value indicating whether this <see cref="Cell" /> supports seamless playback.
+    /// A value indicating whether this <see cref="Cell" /> has seamless angle linked in DSI.
     /// </summary>
-    /// <value><c>true</c> if the cell supports it; otherwise, <c>false</c>.</value>
+    /// <value><c>true</c> if the cell has it; otherwise, <c>false</c>.</value>
     public readonly bool SeamlessAngle;
 
     /// <summary>
@@ -52,6 +53,12 @@ public class CellPlaybackInfo
     /// </summary>
     /// <value><c>true</c> if the cell is restricted; otherwise, <c>false</c>.</value>
     public readonly bool Restricted;
+
+    /// <summary>
+    /// A value indicating whether this <see cref="Cell" /> uses VOBU still mode.
+    /// </summary>
+    /// <value><c>true</c> if the cell does; otherwise, <c>false</c>.</value>
+    public readonly bool VOBUStillMode;
 
     /// <summary>
     /// The still time.
@@ -69,29 +76,53 @@ public class CellPlaybackInfo
     public readonly DvdTime PlaybackTime;
 
     /// <summary>
-    /// The first sector.
+    /// The first VOBU sector.
     /// </summary>
-    public readonly uint FirstSector;
+    public readonly uint FirstVOBUStartSector;
 
     /// <summary>
-    /// The first ILV end sector.
+    /// The first ILVU end sector.
     /// </summary>
     public readonly uint FirstILVUEndSector;
 
     /// <summary>
-    /// The last VOB start sector.
+    /// The last VOBU start sector.
     /// </summary>
     public readonly uint LastVOBUStartSector;
 
     /// <summary>
-    /// The last sector.
+    /// The last VOBU end sector.
     /// </summary>
-    public readonly uint LastSector;
+    public readonly uint LastVOBUEndSector;
 
     internal CellPlaybackInfo(BinaryReader br)
     {
-        br.BaseStream.Seek(0x4, SeekOrigin.Current);
+        // Read cell category bytes and extract information (beware endianess)
+        var cellCategory = br.ReadBytes(4);
+        var bitArray = new BitArray(new byte[] {cellCategory[0]});
+        SeamlessAngle = bitArray[0];
+        SCRDiscontinuity = bitArray[1];
+        Interleaved = bitArray[2];
+        SeamlessMultiplex = bitArray[3];
+        BlockType = (BlockType) (bitArray[5] ? 1 : 0); // Skip second bit because it is not relevant
+        CellType = (CellType) ((bitArray[6] ? 1 : 0) + (bitArray[7] ? 1 : 0) * 2);
+
+        bitArray = new BitArray(new byte[] {cellCategory[1]});
+        // Skip karaoke application cell type handling
+        Restricted = bitArray[5];
+        VOBUStillMode = bitArray[6];
+        // Skip reserved bit
+
+        StillTime = cellCategory[2];
+        CommandNumber = cellCategory[3];
+
         PlaybackTime = new DvdTime(br.ReadBytes(4));
-        br.BaseStream.Seek(0x10, SeekOrigin.Current);
+        FirstVOBUStartSector = br.ReadByte();
+        FirstILVUEndSector = br.ReadByte();
+        FirstVOBUStartSector = br.ReadByte();
+        LastVOBUEndSector = br.ReadByte();
+
+        // Seek to the end of the cell playback information table
+        br.BaseStream.Seek(0x14, SeekOrigin.Current);
     }
 }

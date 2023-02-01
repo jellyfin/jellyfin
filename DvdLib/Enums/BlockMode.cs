@@ -23,5 +23,5 @@ public enum BlockMode
     /// <summary>
     /// Last cell.
     /// </summary>
-    LastCell = 3,
+    LastCell = 3
 }

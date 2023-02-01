@@ -35,11 +35,12 @@ public class Dvd
         Titles = new List<Title>();
         var allFiles = new DirectoryInfo(path).GetFiles("*", SearchOption.AllDirectories);
 
-        var vmgPath = allFiles.FirstOrDefault(i => string.Equals(i.Name, "VIDEO_TS.IFO", StringComparison.OrdinalIgnoreCase)) ??
-            allFiles.FirstOrDefault(i => string.Equals(i.Name, "VIDEO_TS.BUP", StringComparison.OrdinalIgnoreCase));
+        var vmgPath = allFiles.FirstOrDefault(i => string.Equals(i.Name, "VIDEO_TS.IFO", StringComparison.OrdinalIgnoreCase))
+            ?? allFiles.FirstOrDefault(i => string.Equals(i.Name, "VIDEO_TS.BUP", StringComparison.OrdinalIgnoreCase));
 
         if (vmgPath == null)
         {
+            // Check all files for IFOs
             foreach (var ifo in allFiles)
             {
                 if (!string.Equals(ifo.Extension, ".ifo", StringComparison.OrdinalIgnoreCase))
@@ -47,9 +48,11 @@ public class Dvd
                     continue;
                 }
 
+                // Extract IFO number
                 var nums = ifo.Name.Split('_', StringSplitOptions.RemoveEmptyEntries);
                 if (nums.Length >= 2 && ushort.TryParse(nums[1], out var ifoNumber))
                 {
+                    // Read VTS IFO
                     ReadVTS(ifoNumber, ifo.FullName);
                 }
             }
@@ -60,17 +63,22 @@ public class Dvd
             {
                 using (var vmgRead = new BigEndianBinaryReader(vmgFs))
                 {
+                    // Seek to title count
                     vmgFs.Seek(0x3E, SeekOrigin.Begin);
+                    // Read title count
                     _titleSetCount = vmgRead.ReadUInt16();
-
-                    // read address of TT_SRPT
+                    // Seek to title table sector pointer (TT_SRPT)
                     vmgFs.Seek(0xC4, SeekOrigin.Begin);
+                    // Read TT_SRPT
                     uint ttSectorPtr = vmgRead.ReadUInt32();
+                    // Seek to title table
                     vmgFs.Seek(ttSectorPtr * 2048, SeekOrigin.Begin);
+                    // Parse title table
                     ReadTT_SRPT(vmgRead);
                 }
             }
 
+            // Read all VTS IFOs
             for (ushort titleSetNum = 1; titleSetNum <= _titleSetCount; titleSetNum++)
             {
                 ReadVTS(titleSetNum, allFiles);
@@ -84,9 +92,7 @@ public class Dvd
         read.BaseStream.Seek(6, SeekOrigin.Current);
         for (uint titleNum = 1; titleNum <= _titleCount; titleNum++)
         {
-            var t = new Title(titleNum);
-            t.ParseTT_SRPT(read);
-            Titles.Add(t);
+            Titles.Add(new Title(titleNum, read));
         }
     }
 
@@ -113,31 +119,39 @@ public class Dvd
         {
             using (var vtsRead = new BigEndianBinaryReader(vtsFs))
             {
-                // Read VTS_PTT_SRPT
                 vtsFs.Seek(0xC8, SeekOrigin.Begin);
+                // Seek to VTS_PTT_SRPT
                 uint vtsPttSrptSecPtr = vtsRead.ReadUInt32();
                 uint baseAddr = (vtsPttSrptSecPtr * 2048);
                 vtsFs.Seek(baseAddr, SeekOrigin.Begin);
 
+                // Read VTS_PTT_SRPT
+                // Read number of titles (PTTs)
                 ushort numTitles = vtsRead.ReadUInt16();
+                // Skip reserved bytes
                 vtsRead.ReadUInt16();
+                // Read end address
                 uint endaddr = vtsRead.ReadUInt32();
+                // Calculate title offsets
                 uint[] offsets = new uint[numTitles];
                 for (ushort titleNum = 0; titleNum < numTitles; titleNum++)
                 {
                     offsets[titleNum] = vtsRead.ReadUInt32();
                 }
-
+                // Add chapters to titles
                 for (uint titleNum = 0; titleNum < numTitles; titleNum++)
                 {
                     uint chapNum = 1;
+                    // Seek to title
                     vtsFs.Seek(baseAddr + offsets[titleNum], SeekOrigin.Begin);
+                    // Get matching title object
                     var t = Titles.FirstOrDefault(vtst => vtst.IsVTSTitle(vtsNum, titleNum + 1));
                     if (t == null)
                     {
                         continue;
                     }
 
+                    // Add all chapters
                     do
                     {
                         t.Chapters.Add(new Chapter(vtsRead.ReadUInt16(), vtsRead.ReadUInt16(), chapNum));
@@ -151,15 +165,16 @@ public class Dvd
                     while (vtsFs.Position < (baseAddr + endaddr));
                 }
 
-                // Read VTS_PGCI
                 vtsFs.Seek(0xCC, SeekOrigin.Begin);
+                // Seek to VTS_PGCI
                 uint vtsPgciSecPtr = vtsRead.ReadUInt32();
                 vtsFs.Seek(vtsPgciSecPtr * 2048, SeekOrigin.Begin);
-
+                // Read VTS_PGCI
                 long startByte = vtsFs.Position;
-
+                // Read number of program chains (PGCs)
                 ushort numPgcs = vtsRead.ReadUInt16();
                 vtsFs.Seek(6, SeekOrigin.Current);
+                // Add all PGCs to titles
                 for (ushort pgcNum = 1; pgcNum <= numPgcs; pgcNum++)
                 {
                     byte pgcCat = vtsRead.ReadByte();
@@ -172,7 +187,7 @@ public class Dvd
                     var t = Titles.FirstOrDefault(vtst => vtst.IsVTSTitle(vtsNum, titleNum));
                     if (t != null)
                     {
-                        t.AddPgc(vtsRead, startByte + vtsPgcOffset, entryPgc, pgcNum);
+                        t.AddProgramChains(vtsRead, startByte + vtsPgcOffset, entryPgc, pgcNum);
                     }
                 }
             }

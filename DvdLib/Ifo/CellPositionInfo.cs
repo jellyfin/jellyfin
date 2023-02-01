@@ -19,8 +19,13 @@ public class CellPositionInfo
 
     internal CellPositionInfo(BinaryReader br)
     {
+        // Read VOB id
         VOBId = br.ReadUInt16();
+
+        // Skip reserved byte
         br.ReadByte();
+
+        // Read cell id
         CellId = br.ReadByte();
     }
 }

@@ -13,5 +13,5 @@ public enum BlockType
     /// <summary>
     /// Angle.
     /// </summary>
-    Angle = 1,
+    Angle = 1
 }

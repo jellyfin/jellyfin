@@ -11,7 +11,7 @@ public enum PlaybackMode
     Normal = 0,
 
     /// <summary>
-    /// Still after each VOB.
+    /// Still after each VOBU.
     /// </summary>
-    StillAfterEachVOBU = 1,
+    StillAfterEachVOBU = 1
 }

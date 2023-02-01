@@ -14,14 +14,14 @@ public enum UserOperation
     None = 0,
 
     /// <summary>
-    /// Title or time play.
+    /// Time play or search.
     /// </summary>
-    TitleOrTimePlay = 1,
+    TimePlayOrSearch = 1,
 
     /// <summary>
-    /// Chapter search or play.
+    /// PTT play or search.
     /// </summary>
-    ChapterSearchOrPlay = 2,
+    PTTPlayOrSearch = 2,
 
     /// <summary>
     /// Title play.
@@ -39,14 +39,14 @@ public enum UserOperation
     GoUp = 16,
 
     /// <summary>
-    /// Time or chapter search.
+    /// Time or PTT search.
     /// </summary>
-    TimeOrChapterSearch = 32,
+    TimeOrPTTSearch = 32,
 
     /// <summary>
-    /// Previous or top program search.
+    /// Top or previous program search.
     /// </summary>
-    PrevOrTopProgramSearch = 64,
+    TopOrPrevProgramSearch = 64,
 
     /// <summary>
     /// Next program search.
@@ -136,5 +136,5 @@ public enum UserOperation
     /// <summary>
     /// Video presentation mode change.
     /// </summary>
-    VideoPresentationModeChange = 16777216,
+    VideoPresentationModeChange = 16777216
 }

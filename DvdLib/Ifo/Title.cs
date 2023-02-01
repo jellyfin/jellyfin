@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -18,14 +19,19 @@ public class Title
     public uint TitleNumber { get; private set; }
 
     /// <summary>
+    /// The title number.
+    /// </summary>
+    public TitleType TitleType { get; private set; }
+
+    /// <summary>
     /// The angle count.
     /// </summary>
-    public uint AngleCount { get; private set; }
+    public uint NumberOfAngles { get; private set; }
 
     /// <summary>
     /// The chapter count.
     /// </summary>
-    public ushort ChapterCount { get; private set; }
+    public ushort NumberOfChapters { get; private set; }
 
     /// <summary>
     /// The video title set number.
@@ -51,13 +57,14 @@ public class Title
     /// Initializes a new instance of the <see cref="Title"/> class.
     /// </summary>
     /// <param name="titleNum">The title number.</param>
+    /// <param name="br">The binary reader.</param>
     /// <returns>The <see cref="Title"/>.</returns>
-    public Title(uint titleNum)
+    public Title(uint titleNum, BinaryReader br)
     {
+        TitleNumber = titleNum;
+        ParseTT_SRPT(br);
         ProgramChains = new List<ProgramChain>();
         Chapters = new List<Chapter>();
-        Chapters = new List<Chapter>();
-        TitleNumber = titleNum;
     }
 
     /// <summary>
@@ -71,20 +78,18 @@ public class Title
         return (vtsNum == VideoTitleSetNumber && vtsTitleNum == _titleNumberInVTS);
     }
 
-    internal void ParseTT_SRPT(BinaryReader br)
+    private void ParseTT_SRPT(BinaryReader br)
     {
-        byte titleType = br.ReadByte();
-        // TODO parse Title Type
-
-        AngleCount = br.ReadByte();
-        ChapterCount = br.ReadUInt16();
+        TitleType = new TitleType(br);
+        NumberOfAngles = br.ReadByte();
+        NumberOfChapters = br.ReadUInt16();
         _parentalManagementMask = br.ReadUInt16();
         VideoTitleSetNumber = br.ReadByte();
         _titleNumberInVTS = br.ReadByte();
         _vtsStartSector = br.ReadUInt32();
     }
 
-    internal void AddPgc(BinaryReader br, long startByte, bool entryPgc, uint pgcNum)
+    internal void AddProgramChains(BinaryReader br, long startByte, bool entryPgc, uint pgcNum)
     {
         long curPos = br.BaseStream.Position;
         br.BaseStream.Seek(startByte, SeekOrigin.Begin);
