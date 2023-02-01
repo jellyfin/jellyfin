@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using Jellyfin.Extensions.Json;
+using Jellyfin.Extensions.Json.Converters;
 using MediaBrowser.MediaEncoding.Probing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
@@ -15,8 +16,14 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
 {
     public class ProbeResultNormalizerTests
     {
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+        private readonly JsonSerializerOptions _jsonOptions;
         private readonly ProbeResultNormalizer _probeResultNormalizer = new ProbeResultNormalizer(new NullLogger<EncoderValidatorTests>(), null);
+
+        public ProbeResultNormalizerTests()
+        {
+            _jsonOptions = new JsonSerializerOptions(JsonDefaults.Options);
+            _jsonOptions.Converters.Add(new JsonBoolStringConverter());
+        }
 
         [Theory]
         [InlineData("2997/125", 23.976f)]
@@ -146,6 +153,19 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Equal("mov_text", res.MediaStreams[5].Codec);
             Assert.Equal("Commentary", res.MediaStreams[5].Title);
             Assert.False(res.MediaStreams[5].IsHearingImpaired);
+        }
+
+        [Fact]
+        public void GetMediaInfo_TS_Success()
+        {
+            var bytes = File.ReadAllBytes("Test Data/Probing/video_ts.json");
+            var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
+
+            MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "Test Data/Probing/video_metadata.mkv", MediaProtocol.File);
+
+            Assert.Equal(2, res.MediaStreams.Count);
+
+            Assert.False(res.MediaStreams[0].IsAVC);
         }
 
         [Fact]
