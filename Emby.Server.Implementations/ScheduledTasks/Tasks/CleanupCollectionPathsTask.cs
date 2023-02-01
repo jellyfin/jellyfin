@@ -65,16 +65,16 @@ public class CleanupCollectionPathsTask : IScheduledTask
     /// <inheritdoc />
     public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
-        var collectionsFolder = await _collectionManager.GetCollectionsFolder(true).ConfigureAwait(false);
+        var collectionsFolder = await _collectionManager.GetCollectionsFolder(false).ConfigureAwait(false);
         if (collectionsFolder is null)
         {
             _logger.LogInformation("There is no collection folder to be found.");
             return;
         }
 
-        var collections = collectionsFolder.Children.OfType<BoxSet>()
-            .ToArray();
+        var collections = collectionsFolder.Children.OfType<BoxSet>().ToArray();
         _logger.LogTrace("Found {CollectionLength} Boxsets.", collections.Length);
+        
         for (var index = 0; index < collections.Length; index++)
         {
             var collection = collections[index];
@@ -84,7 +84,7 @@ public class CleanupCollectionPathsTask : IScheduledTask
             {
                 if (!File.Exists(collectionLinkedChild.Path))
                 {
-                    _logger.LogInformation("Item in boxset {0} cannot be found at {1}.", collection.Name, collectionLinkedChild.Path);
+                    _logger.LogInformation("Item in boxset {CollectionName} cannot be found at {ItemPath}.", collection.Name, collectionLinkedChild.Path);
                     itemsToRemove.Add(collectionLinkedChild);
                 }
             }
@@ -113,6 +113,5 @@ public class CleanupCollectionPathsTask : IScheduledTask
     public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
     {
         return new[] { new TaskTriggerInfo() { Type = TaskTriggerInfo.TriggerStartup } };
-        // return Enumerable.Empty<TaskTriggerInfo>();
     }
 }
