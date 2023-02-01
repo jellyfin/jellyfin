@@ -74,7 +74,7 @@ public class CleanupCollectionPathsTask : IScheduledTask
 
         var collections = collectionsFolder.Children.OfType<BoxSet>().ToArray();
         _logger.LogTrace("Found {CollectionLength} Boxsets.", collections.Length);
-        
+
         for (var index = 0; index < collections.Length; index++)
         {
             var collection = collections[index];
