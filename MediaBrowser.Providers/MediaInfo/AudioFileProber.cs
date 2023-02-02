@@ -122,7 +122,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
             else
             {
-                item.LUFS = "0";
+                item.LUFS = null;
             }
 
             return ItemUpdateType.MetadataImport;
