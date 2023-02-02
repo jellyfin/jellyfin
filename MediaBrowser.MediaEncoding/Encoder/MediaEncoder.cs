@@ -882,82 +882,44 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <inheritdoc />
         public IEnumerable<string> GetPrimaryPlaylistVobFiles(string path, uint? titleNumber)
         {
-            // Minimum size 450 MB
-            const long MinPlayableSize = 471859200;
-
-            // Try to eliminate menus and intros by skipping all files at the front of the list that are less than the minimum size
-            // Once we reach a file that is at least the minimum, return all subsequent ones
+            // Eliminate menus and intros by omitting VIDEO_TS.VOB and all subsequent title VOBs ending with _0.VOB
             var allVobs = _fileSystem.GetFiles(path, true)
-                .Where(file => string.Equals(file.Extension, ".vob", StringComparison.OrdinalIgnoreCase))
+                .Where(file => string.Equals(file.Extension, ".VOB", StringComparison.OrdinalIgnoreCase))
                 .Where(file => !string.Equals(file.Name, "VIDEO_TS.VOB", StringComparison.OrdinalIgnoreCase))
-                .Where(file => !file.Name.EndsWith("_0.vob", StringComparison.OrdinalIgnoreCase))
+                .Where(file => !file.Name.EndsWith("_0.VOB", StringComparison.OrdinalIgnoreCase))
                 .OrderBy(i => i.FullName)
                 .ToList();
 
-            // If we didn't find any satisfying the min length, just take them all
-            if (allVobs.Count == 0)
-            {
-                _logger.LogWarning("No vobs found in dvd structure.");
-                return Enumerable.Empty<string>();
-            }
-
             if (titleNumber.HasValue)
             {
-                var prefix = string.Format(
-                    CultureInfo.InvariantCulture,
-                    titleNumber.Value >= 10 ? "VTS_{0}_" : "VTS_0{0}_",
-                    titleNumber.Value);
+                var prefix = string.Format(CultureInfo.InvariantCulture, "VTS_{0:D2}_", titleNumber.Value);
                 var vobs = allVobs.Where(i => i.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)).ToList();
 
                 if (vobs.Count > 0)
                 {
-                    var minSizeVobs = vobs
-                        .SkipWhile(f => f.Length < MinPlayableSize)
-                        .ToList();
-
-                    return minSizeVobs.Count == 0 ? vobs.Select(i => i.FullName) : minSizeVobs.Select(i => i.FullName);
+                    return vobs.Select(i => i.FullName);
                 }
 
-                _logger.LogWarning("Could not determine vob file list for {Path} using DvdLib. Will scan using file sizes.", path);
+                _logger.LogWarning("Could not determine VOB file list for title {Title} of {Path}.", titleNumber, path);
             }
 
-            var files = allVobs
-                .SkipWhile(f => f.Length < MinPlayableSize)
-                .ToList();
-
-            // If we didn't find any satisfying the min length, just take them all
-            if (files.Count == 0)
+            // Use all files matching the prefix (title number) of the first VOB
+            var parts = _fileSystem.GetFileNameWithoutExtension(allVobs[0]).Split('_');
+            if (parts.Length == 3)
             {
-                _logger.LogWarning("Vob size filter resulted in zero matches. Taking all vobs.");
-                files = allVobs;
-            }
+                var title = parts[1];
 
-            // Assuming they're named "vts_05_01", take all files whose second part matches that of the first file
-            if (files.Count > 0)
-            {
-                var parts = _fileSystem.GetFileNameWithoutExtension(files[0]).Split('_');
-
-                if (parts.Length == 3)
+                return allVobs.TakeWhile(f =>
                 {
-                    var title = parts[1];
+                    var fileParts = _fileSystem.GetFileNameWithoutExtension(f).Split('_');
 
-                    files = files.TakeWhile(f =>
-                    {
-                        var fileParts = _fileSystem.GetFileNameWithoutExtension(f).Split('_');
-
-                        return fileParts.Length == 3 && string.Equals(title, fileParts[1], StringComparison.OrdinalIgnoreCase);
-                    }).ToList();
-
-                    // If this resulted in not getting any vobs, just take them all
-                    if (files.Count == 0)
-                    {
-                        _logger.LogWarning("Vob filename filter resulted in zero matches. Taking all vobs.");
-                        files = allVobs;
-                    }
-                }
+                    return fileParts.Length == 3 && string.Equals(title, fileParts[1], StringComparison.OrdinalIgnoreCase);
+                })
+                .Select(i => i.FullName);
             }
 
-            return files.Select(i => i.FullName);
+            _logger.LogWarning("Could not determine VOB file list for first title, taking all VOBs.");
+            return allVobs.Select(i => i.FullName);
         }
 
         public bool CanExtractSubtitles(string codec)

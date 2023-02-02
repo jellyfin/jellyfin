@@ -96,13 +96,13 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
 
                     var tmpItem = new Video
-                        {
-                            Path = streamFileNames.First()
-                        };
+                    {
+                        Path = streamFileNames.First()
+                    };
 
                     mediaInfoResult = await GetMediaInfo(tmpItem, cancellationToken).ConfigureAwait(false);
                 }
-                else if (item.VideoType == VideoType.BluRay)
+                else
                 {
                     mediaInfoResult = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
                 }
@@ -600,10 +600,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private long GetRuntime(Title title)
         {
-            return title.ProgramChains
-                    .Select(i => (TimeSpan)i.PlaybackTime)
-                    .Select(i => i.Ticks)
-                    .Sum();
+            return title.ProgramChains.Sum(i => ((TimeSpan)i.PlaybackTime).Ticks);
         }
     }
 }
