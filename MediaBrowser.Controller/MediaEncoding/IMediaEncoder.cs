@@ -154,6 +154,14 @@ namespace MediaBrowser.Controller.MediaEncoding
         string GetInputArgument(string inputFile, MediaSourceInfo mediaSource);
 
         /// <summary>
+        /// Gets the input argument.
+        /// </summary>
+        /// <param name="inputFiles">The input files.</param>
+        /// <param name="mediaSource">The mediaSource.</param>
+        /// <returns>System.String.</returns>
+        string GetInputArgument(IReadOnlyList<string> inputFiles, MediaSourceInfo mediaSource);
+
+        /// <summary>
         /// Gets the input argument for an external subtitle file.
         /// </summary>
         /// <param name="inputFile">The input file.</param>

@@ -117,16 +117,22 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <inheritdoc />
         public string ProbePath => _ffprobePath;
 
+        /// <inheritdoc />
         public Version EncoderVersion => _ffmpegVersion;
 
+        /// <inheritdoc />
         public bool IsPkeyPauseSupported => _isPkeyPauseSupported;
 
+        /// <inheritdoc />
         public bool IsVaapiDeviceAmd => _isVaapiDeviceAmd;
 
+        /// <inheritdoc />
         public bool IsVaapiDeviceInteliHD => _isVaapiDeviceInteliHD;
 
+        /// <inheritdoc />
         public bool IsVaapiDeviceInteli965 => _isVaapiDeviceInteli965;
 
+        /// <inheritdoc />
         public bool IsVaapiDeviceSupportVulkanFmtModifier => _isVaapiDeviceSupportVulkanFmtModifier;
 
         /// <summary>
@@ -344,26 +350,31 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _ffmpegVersion = validator.GetFFmpegVersion();
         }
 
+        /// <inheritdoc />
         public bool SupportsEncoder(string encoder)
         {
             return _encoders.Contains(encoder, StringComparer.OrdinalIgnoreCase);
         }
 
+        /// <inheritdoc />
         public bool SupportsDecoder(string decoder)
         {
             return _decoders.Contains(decoder, StringComparer.OrdinalIgnoreCase);
         }
 
+        /// <inheritdoc />
         public bool SupportsHwaccel(string hwaccel)
         {
             return _hwaccels.Contains(hwaccel, StringComparer.OrdinalIgnoreCase);
         }
 
+        /// <inheritdoc />
         public bool SupportsFilter(string filter)
         {
             return _filters.Contains(filter, StringComparer.OrdinalIgnoreCase);
         }
 
+        /// <inheritdoc />
         public bool SupportsFilterWithOption(FilterOptionType option)
         {
             if (_filtersWithOption.TryGetValue((int)option, out var val))
@@ -394,16 +405,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return true;
         }
 
-        /// <summary>
-        /// Gets the media info.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
+        /// <inheritdoc />
         public Task<MediaInfo> GetMediaInfo(MediaInfoRequest request, CancellationToken cancellationToken)
         {
             var extractChapters = request.MediaType == DlnaProfileType.Video && request.ExtractChapters;
-            var inputFile = request.MediaSource.Path;
+            var inputFiles = request.MediaSource.VideoType == VideoType.Dvd
+                ? GetPrimaryPlaylistVobFiles(request.MediaSource.Path, null).ToList()
+                : new List<string> { request.MediaSource.Path };
 
             string analyzeDuration = string.Empty;
             string ffmpegAnalyzeDuration = _config.GetFFmpegAnalyzeDuration() ?? string.Empty;
@@ -419,7 +427,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             return GetMediaInfoInternal(
-                GetInputArgument(inputFile, request.MediaSource),
+                GetInputArgument(inputFiles, request.MediaSource),
                 request.MediaSource.Path,
                 request.MediaSource.Protocol,
                 extractChapters,
@@ -429,13 +437,20 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 cancellationToken);
         }
 
-        /// <summary>
-        /// Gets the input argument.
-        /// </summary>
-        /// <param name="inputFile">The input file.</param>
-        /// <param name="mediaSource">The mediaSource.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentException">Unrecognized InputType.</exception>
+        /// <inheritdoc />
+        public string GetInputArgument(IReadOnlyList<string> inputFiles, MediaSourceInfo mediaSource)
+        {
+            var prefix = "file";
+            if (mediaSource.VideoType == VideoType.BluRay
+                || mediaSource.IsoType == IsoType.BluRay)
+            {
+                prefix = "bluray";
+            }
+
+            return EncodingUtils.GetInputArgument(prefix, inputFiles, mediaSource.Protocol);
+        }
+
+        /// <inheritdoc />
         public string GetInputArgument(string inputFile, MediaSourceInfo mediaSource)
         {
             var prefix = "file";
@@ -445,20 +460,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 prefix = "bluray";
             }
 
-            return EncodingUtils.GetInputArgument(prefix, inputFile, mediaSource.Protocol);
+            return EncodingUtils.GetInputArgument(prefix, new List<string>() { inputFile }, mediaSource.Protocol);
         }
 
-        /// <summary>
-        /// Gets the input argument for an external subtitle file.
-        /// </summary>
-        /// <param name="inputFile">The input file.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentException">Unrecognized InputType.</exception>
+        /// <inheritdoc />
         public string GetExternalSubtitleInputArgument(string inputFile)
         {
             const string Prefix = "file";
 
-            return EncodingUtils.GetInputArgument(Prefix, inputFile, MediaProtocol.File);
+            return EncodingUtils.GetInputArgument(Prefix, new List<string> { inputFile }, MediaProtocol.File);
         }
 
         /// <summary>
@@ -549,6 +559,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
+        /// <inheritdoc />
         public Task<string> ExtractAudioImage(string path, int? imageStreamIndex, CancellationToken cancellationToken)
         {
             var mediaSource = new MediaSourceInfo
@@ -559,11 +570,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return ExtractImage(path, null, null, imageStreamIndex, mediaSource, true, null, null, ImageFormat.Jpg, cancellationToken);
         }
 
+        /// <inheritdoc />
         public Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream videoStream, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken)
         {
             return ExtractImage(inputFile, container, videoStream, null, mediaSource, false, threedFormat, offset, ImageFormat.Jpg, cancellationToken);
         }
 
+        /// <inheritdoc />
         public Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream imageStream, int? imageStreamIndex, ImageFormat? targetFormat, CancellationToken cancellationToken)
         {
             return ExtractImage(inputFile, container, imageStream, imageStreamIndex, mediaSource, false, null, null, targetFormat, cancellationToken);
@@ -581,7 +594,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             ImageFormat? targetFormat,
             CancellationToken cancellationToken)
         {
-            var inputArgument = GetInputArgument(inputFile, mediaSource);
+            var inputArgument = GetInputArgument(new List<string> { inputFile }, mediaSource);
 
             if (!isAudio)
             {
@@ -767,6 +780,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
+        /// <inheritdoc />
         public string GetTimeParameter(long ticks)
         {
             var time = TimeSpan.FromTicks(ticks);
@@ -875,6 +889,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Once we reach a file that is at least the minimum, return all subsequent ones
             var allVobs = _fileSystem.GetFiles(path, true)
                 .Where(file => string.Equals(file.Extension, ".vob", StringComparison.OrdinalIgnoreCase))
+                .Where(file => !string.Equals(file.Name, "VIDEO_TS.VOB", StringComparison.OrdinalIgnoreCase))
+                .Where(file => !file.Name.EndsWith("_0.vob", StringComparison.OrdinalIgnoreCase))
                 .OrderBy(i => i.FullName)
                 .ToList();
 
