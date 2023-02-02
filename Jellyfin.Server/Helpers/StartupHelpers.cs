@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,6 +25,43 @@ namespace Jellyfin.Server.Helpers;
 /// </summary>
 public static class StartupHelpers
 {
+    private static readonly string[] _relevantEnvVarPrefixes = { "JELLYFIN_", "DOTNET_", "ASPNETCORE_" };
+
+    /// <summary>
+    /// Logs relevant environment variables and information about the host.
+    /// </summary>
+    /// <param name="logger">The logger to use.</param>
+    /// <param name="appPaths">The application paths to use.</param>
+    public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths)
+    {
+        // Distinct these to prevent users from reporting problems that aren't actually problems
+        var commandLineArgs = Environment
+            .GetCommandLineArgs()
+            .Distinct();
+
+        // Get all relevant environment variables
+        var allEnvVars = Environment.GetEnvironmentVariables();
+        var relevantEnvVars = new Dictionary<object, object>();
+        foreach (var key in allEnvVars.Keys)
+        {
+            if (_relevantEnvVarPrefixes.Any(prefix => key.ToString()!.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+            {
+                relevantEnvVars.Add(key, allEnvVars[key]!);
+            }
+        }
+
+        logger.LogInformation("Environment Variables: {EnvVars}", relevantEnvVars);
+        logger.LogInformation("Arguments: {Args}", commandLineArgs);
+        logger.LogInformation("Operating system: {OS}", RuntimeInformation.OSDescription);
+        logger.LogInformation("Architecture: {Architecture}", RuntimeInformation.OSArchitecture);
+        logger.LogInformation("64-Bit Process: {Is64Bit}", Environment.Is64BitProcess);
+        logger.LogInformation("User Interactive: {IsUserInteractive}", Environment.UserInteractive);
+        logger.LogInformation("Processor count: {ProcessorCount}", Environment.ProcessorCount);
+        logger.LogInformation("Program data path: {ProgramDataPath}", appPaths.ProgramDataPath);
+        logger.LogInformation("Web resources path: {WebPath}", appPaths.WebPath);
+        logger.LogInformation("Application directory: {ApplicationPath}", appPaths.ProgramSystemPath);
+    }
+
     /// <summary>
     /// Create the data, config and log paths from the variety of inputs(command line args,
     /// environment variables) or decide on what default to use. For Windows it's %AppPath%

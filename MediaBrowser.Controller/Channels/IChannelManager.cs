@@ -16,12 +16,6 @@ namespace MediaBrowser.Controller.Channels
     public interface IChannelManager
     {
         /// <summary>
-        /// Adds the parts.
-        /// </summary>
-        /// <param name="channels">The channels.</param>
-        void AddParts(IEnumerable<IChannel> channels);
-
-        /// <summary>
         /// Gets the channel features.
         /// </summary>
         /// <param name="id">The identifier.</param>
