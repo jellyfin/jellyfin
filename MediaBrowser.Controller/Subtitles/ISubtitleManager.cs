@@ -20,12 +20,6 @@ namespace MediaBrowser.Controller.Subtitles
         event EventHandler<SubtitleDownloadFailureEventArgs> SubtitleDownloadFailure;
 
         /// <summary>
-        /// Adds the parts.
-        /// </summary>
-        /// <param name="subtitleProviders">The subtitle providers.</param>
-        void AddParts(IEnumerable<ISubtitleProvider> subtitleProviders);
-
-        /// <summary>
         /// Searches the subtitles.
         /// </summary>
         /// <param name="video">The video.</param>

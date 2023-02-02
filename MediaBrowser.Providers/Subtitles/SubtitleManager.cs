@@ -35,32 +35,28 @@ namespace MediaBrowser.Providers.Subtitles
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly ILocalizationManager _localization;
 
-        private ISubtitleProvider[] _subtitleProviders;
+        private readonly ISubtitleProvider[] _subtitleProviders;
 
         public SubtitleManager(
             ILogger<SubtitleManager> logger,
             IFileSystem fileSystem,
             ILibraryMonitor monitor,
             IMediaSourceManager mediaSourceManager,
-            ILocalizationManager localizationManager)
+            ILocalizationManager localizationManager,
+            IEnumerable<ISubtitleProvider> subtitleProviders)
         {
             _logger = logger;
             _fileSystem = fileSystem;
             _monitor = monitor;
             _mediaSourceManager = mediaSourceManager;
             _localization = localizationManager;
-        }
-
-        /// <inheritdoc />
-        public event EventHandler<SubtitleDownloadFailureEventArgs> SubtitleDownloadFailure;
-
-        /// <inheritdoc />
-        public void AddParts(IEnumerable<ISubtitleProvider> subtitleProviders)
-        {
             _subtitleProviders = subtitleProviders
                 .OrderBy(i => i is IHasOrder hasOrder ? hasOrder.Order : 0)
                 .ToArray();
         }
+
+        /// <inheritdoc />
+        public event EventHandler<SubtitleDownloadFailureEventArgs> SubtitleDownloadFailure;
 
         /// <inheritdoc />
         public async Task<RemoteSubtitleInfo[]> SearchSubtitles(SubtitleSearchRequest request, CancellationToken cancellationToken)

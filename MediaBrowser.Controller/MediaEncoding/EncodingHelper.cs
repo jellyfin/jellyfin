@@ -5762,6 +5762,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 audioTranscodeParams.Add("-ac " + state.OutputAudioChannels.Value.ToString(CultureInfo.InvariantCulture));
             }
 
+            if (!string.IsNullOrEmpty(state.OutputAudioCodec))
+            {
+                audioTranscodeParams.Add("-acodec " + GetAudioEncoder(state));
+            }
+
             if (!string.Equals(state.OutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase))
             {
                 // opus only supports specific sampling rates

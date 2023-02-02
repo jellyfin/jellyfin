@@ -277,7 +277,7 @@ namespace Jellyfin.Api.Controllers
             }
             else
             {
-                if (!User.IsInRole(UserRoles.Administrator))
+                if (!User.IsInRole(UserRoles.Administrator) || User.GetUserId().Equals(userId))
                 {
                     var success = await _userManager.AuthenticateUser(
                         user.Username,
