@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
+using Jellyfin.Extensions.Json.Converters;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -105,7 +106,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _config = config;
             _serverConfig = serverConfig;
             _startupOptionFFmpegPath = config.GetValue<string>(Controller.Extensions.ConfigurationExtensions.FfmpegPathKey) ?? string.Empty;
-            _jsonSerializerOptions = JsonDefaults.Options;
+
+            _jsonSerializerOptions = new JsonSerializerOptions(JsonDefaults.Options);
+            _jsonSerializerOptions.Converters.Add(new JsonBoolStringConverter());
         }
 
         /// <inheritdoc />
