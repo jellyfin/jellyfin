@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.XbmcMetadata.Configuration;
 using Microsoft.Extensions.Logging;
@@ -48,6 +49,12 @@ namespace MediaBrowser.XbmcMetadata.Savers
         /// <inheritdoc />
         public override bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
             => item.SupportsLocalMetadata && item is Episode && updateType >= MinimumUpdateType;
+
+         /// <inheritdoc />
+        protected override MetadataProvider? GetDefaultProvider()
+        {
+            return MetadataProvider.Tvdb;
+        }
 
         /// <inheritdoc />
         protected override void WriteCustomElements(BaseItem item, XmlWriter writer)

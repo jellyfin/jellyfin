@@ -49,6 +49,12 @@ namespace MediaBrowser.XbmcMetadata.Savers
         public override bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
             => item.SupportsLocalMetadata && item is Series && updateType >= MinimumUpdateType;
 
+         /// <inheritdoc />
+        protected override MetadataProvider? GetDefaultProvider()
+        {
+            return MetadataProvider.Tvdb;
+        }
+
         /// <inheritdoc />
         protected override void WriteCustomElements(BaseItem item, XmlWriter writer)
         {
@@ -58,8 +64,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             if (!string.IsNullOrEmpty(tvdb))
             {
-                writer.WriteElementString("id", tvdb);
-
                 writer.WriteStartElement("episodeguide");
 
                 var language = item.GetPreferredMetadataLanguage();
