@@ -535,6 +535,16 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             var mediaPath = state.MediaPath ?? string.Empty;
 
+            if (state.MediaSource.VideoType == VideoType.Dvd)
+            {
+                return _mediaEncoder.GetInputArgument(_mediaEncoder.GetPrimaryPlaylistVobFiles(state.MediaPath, null).ToList(), state.MediaSource);
+            }
+
+            if (state.MediaSource.VideoType == VideoType.BluRay)
+            {
+                return _mediaEncoder.GetInputArgument(_mediaEncoder.GetPrimaryPlaylistM2TsFiles(state.MediaPath, null).ToList(), state.MediaSource);
+            }
+
             return _mediaEncoder.GetInputArgument(mediaPath, state.MediaSource);
         }
 

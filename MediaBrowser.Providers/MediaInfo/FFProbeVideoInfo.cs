@@ -90,36 +90,49 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!item.IsShortcut || options.EnableRemoteContentProbe)
             {
-                string[] streamFileNames = null;
-
                 if (item.VideoType == VideoType.Dvd)
                 {
-                    streamFileNames = FetchFromDvdLib(item);
+                    // Fetch metadata of first VOB
+                    var vobs = _mediaEncoder.GetPrimaryPlaylistVobFiles(item.Path, null).ToList();
+                    mediaInfoResult = await GetMediaInfo(
+                        new Video
+                        {
+                            Path = vobs.First()
+                        },
+                        cancellationToken).ConfigureAwait(false);
 
-                    if (streamFileNames.Length == 0)
+                    // Remove first VOB
+                    vobs.RemoveAt(0);
+
+                    // Add runtime from all other VOBs
+                    foreach (var vob in vobs)
                     {
-                        _logger.LogError("No playable vobs found in dvd structure, skipping ffprobe.");
-                        return ItemUpdateType.MetadataImport;
+                        var tmpMediaInfo = await GetMediaInfo(
+                                new Video
+                                {
+                                    Path = vob
+                                },
+                                cancellationToken).ConfigureAwait(false);
+
+                        mediaInfoResult.RunTimeTicks += tmpMediaInfo.RunTimeTicks;
                     }
                 }
-                else if (item.VideoType == VideoType.BluRay)
+                else
                 {
-                    var inputPath = item.Path;
-
-                    blurayDiscInfo = GetBDInfo(inputPath);
-
-                    streamFileNames = blurayDiscInfo.Files;
-
-                    if (streamFileNames.Length == 0)
+                    if (item.VideoType == VideoType.BluRay)
                     {
-                        _logger.LogError("No playable vobs found in bluray structure, skipping ffprobe.");
-                        return ItemUpdateType.MetadataImport;
+                        blurayDiscInfo = GetBDInfo(item.Path);
+
+                        if (blurayDiscInfo.Files.Length == 0)
+                        {
+                            _logger.LogError("No playable vobs found in bluray structure, skipping ffprobe.");
+                            return ItemUpdateType.MetadataImport;
+                        }
                     }
+
+                    mediaInfoResult = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
+                    cancellationToken.ThrowIfCancellationRequested();
                 }
-
-                streamFileNames ??= Array.Empty<string>();
-
-                mediaInfoResult = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
 
                 cancellationToken.ThrowIfCancellationRequested();
             }
@@ -189,19 +202,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
 
                 mediaAttachments = mediaInfo.MediaAttachments;
-
                 video.TotalBitrate = mediaInfo.Bitrate;
-                // video.FormatName = (mediaInfo.Container ?? string.Empty)
-                //    .Replace("matroska", "mkv", StringComparison.OrdinalIgnoreCase);
-
-                // For DVDs this may not always be accurate, so don't set the runtime if the item already has one
-                var needToSetRuntime = video.VideoType != VideoType.Dvd || video.RunTimeTicks is null || video.RunTimeTicks.Value == 0;
-
-                if (needToSetRuntime)
-                {
-                    video.RunTimeTicks = mediaInfo.RunTimeTicks;
-                }
-
+                video.RunTimeTicks = mediaInfo.RunTimeTicks;
                 video.Size = mediaInfo.Size;
 
                 if (video.VideoType == VideoType.VideoFile)
@@ -320,8 +322,6 @@ namespace MediaBrowser.Providers.MediaInfo
         private void FetchBdInfo(BaseItem item, ref ChapterInfo[] chapters, List<MediaStream> mediaStreams, BlurayDiscInfo blurayInfo)
         {
             var video = (Video)item;
-
-            // video.PlayableStreamFileNames = blurayInfo.Files.ToList();
 
             // Use BD Info if it has multiple m2ts. Otherwise, treat it like a video file and rely more on ffprobe output
             if (blurayInfo.Files.Length > 1)

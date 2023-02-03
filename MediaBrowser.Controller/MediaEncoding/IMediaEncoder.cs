@@ -154,6 +154,14 @@ namespace MediaBrowser.Controller.MediaEncoding
         string GetInputArgument(string inputFile, MediaSourceInfo mediaSource);
 
         /// <summary>
+        /// Gets the input argument.
+        /// </summary>
+        /// <param name="inputFiles">The input files.</param>
+        /// <param name="mediaSource">The mediaSource.</param>
+        /// <returns>System.String.</returns>
+        string GetInputArgument(IReadOnlyList<string> inputFiles, MediaSourceInfo mediaSource);
+
+        /// <summary>
         /// Gets the input argument for an external subtitle file.
         /// </summary>
         /// <param name="inputFile">The input file.</param>
@@ -195,5 +203,13 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="titleNumber">The title number to start with.</param>
         /// <returns>A playlist.</returns>
         IEnumerable<string> GetPrimaryPlaylistVobFiles(string path, uint? titleNumber);
+
+        /// <summary>
+        /// Gets the primary playlist of .m2ts files.
+        /// </summary>
+        /// <param name="path">The to the .m2ts files.</param>
+        /// <param name="titleNumber">The title number to start with.</param>
+        /// <returns>A playlist.</returns>
+        IEnumerable<string> GetPrimaryPlaylistM2TsFiles(string path, uint? titleNumber);
     }
 }
