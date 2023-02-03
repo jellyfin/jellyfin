@@ -211,5 +211,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="titleNumber">The title number to start with.</param>
         /// <returns>A playlist.</returns>
         IEnumerable<string> GetPrimaryPlaylistM2TsFiles(string path, uint? titleNumber);
+
+        /// <summary>
+        /// Generates a FFmpeg concat config for the source.
+        /// </summary>
+        /// <param name="source">The <see cref="MediaSourceInfo"/>.</param>
+        /// <param name="concatFilePath">The path the config should be written to.</param>
+        void GenerateConcatConfig(MediaSourceInfo source, string concatFilePath);
     }
 }

@@ -918,6 +918,46 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 .Select(f => f.FullName);
         }
 
+        public void GenerateConcatConfig(MediaSourceInfo source, string concatFilePath)
+        {
+            var files = new List<string>();
+            var videoType = source.VideoType;
+            if (videoType == VideoType.Dvd)
+            {
+                files = GetPrimaryPlaylistVobFiles(source.Path, null).ToList();
+            }
+            else if (videoType == VideoType.BluRay)
+            {
+                files = GetPrimaryPlaylistM2TsFiles(source.Path, null).ToList();
+            }
+
+            var lines = new List<string>();
+
+            foreach (var path in files)
+            {
+                var fileinfo = _fileSystem.GetFileInfo(path);
+                var mediaInfoResult = GetMediaInfo(
+                    new MediaInfoRequest
+                    {
+                        MediaType = DlnaProfileType.Video,
+                        MediaSource = new MediaSourceInfo
+                        {
+                            Path = path,
+                            Protocol = MediaProtocol.File,
+                            VideoType = videoType
+                        }
+                    },
+                    CancellationToken.None).GetAwaiter().GetResult();
+
+                var duration = TimeSpan.FromTicks(mediaInfoResult.RunTimeTicks.Value).TotalSeconds;
+
+                lines.Add("file " + "'" + path + "'");
+                lines.Add("duration " + duration);
+            }
+
+            File.WriteAllLinesAsync(concatFilePath, lines, CancellationToken.None).GetAwaiter().GetResult();
+        }
+
         public bool CanExtractSubtitles(string codec)
         {
             // TODO is there ever a case when a subtitle can't be extracted??

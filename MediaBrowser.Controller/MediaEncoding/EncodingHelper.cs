@@ -941,8 +941,18 @@ namespace MediaBrowser.Controller.MediaEncoding
                 arg.Append(canvasArgs);
             }
 
-            arg.Append(" -i ")
-                .Append(GetInputPathArgument(state));
+            if (state.MediaSource.VideoType == VideoType.Dvd || state.MediaSource.VideoType == VideoType.BluRay)
+            {
+                var tmpConcatPath = options.TranscodingTempPath + "/" + state.MediaSource.Id + ".concat";
+                _mediaEncoder.GenerateConcatConfig(state.MediaSource, tmpConcatPath);
+                arg.Append(" -f concat -safe 0 ");
+                arg.Append(" -i " + tmpConcatPath + " ");
+            }
+            else
+            {
+                arg.Append(" -i ")
+                    .Append(GetInputPathArgument(state));
+            }
 
             // sub2video for external graphical subtitles
             if (state.SubtitleStream is not null
