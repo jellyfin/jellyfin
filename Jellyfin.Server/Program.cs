@@ -148,7 +148,7 @@ namespace Jellyfin.Server
                 "Jellyfin version: {Version}",
                 Assembly.GetEntryAssembly()!.GetName().Version!.ToString(3));
 
-            ApplicationHost.LogEnvironmentInfo(_logger, appPaths);
+            StartupHelpers.LogEnvironmentInfo(_logger, appPaths);
 
             // If hosting the web client, validate the client content path
             if (startupConfig.HostWebClient())
