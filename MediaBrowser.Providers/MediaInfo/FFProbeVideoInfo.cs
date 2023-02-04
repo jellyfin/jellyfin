@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using DvdLib.Ifo;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
@@ -688,34 +687,6 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             return chapters;
-        }
-
-        private string[] FetchFromDvdLib(Video item)
-        {
-            var path = item.Path;
-            var dvd = new Dvd(path);
-
-            var primaryTitle = dvd.Titles.OrderByDescending(GetRuntime).FirstOrDefault();
-
-            byte? titleNumber = null;
-
-            if (primaryTitle is not null)
-            {
-                titleNumber = primaryTitle.VideoTitleSetNumber;
-                item.RunTimeTicks = GetRuntime(primaryTitle);
-            }
-
-            return _mediaEncoder.GetPrimaryPlaylistVobFiles(item.Path, titleNumber)
-                .Select(Path.GetFileName)
-                .ToArray();
-        }
-
-        private long GetRuntime(Title title)
-        {
-            return title.ProgramChains
-                    .Select(i => (TimeSpan)i.PlaybackTime)
-                    .Select(i => i.Ticks)
-                    .Sum();
         }
     }
 }

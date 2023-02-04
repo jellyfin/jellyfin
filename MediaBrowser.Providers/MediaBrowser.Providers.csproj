@@ -8,7 +8,6 @@
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
-    <ProjectReference Include="..\DvdLib\DvdLib.csproj" />
   </ItemGroup>
 
   <ItemGroup>
