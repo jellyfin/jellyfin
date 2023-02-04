@@ -5581,7 +5581,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && state.BaseRequest.Context == EncodingContext.Streaming)
             {
                 // Comparison: https://github.com/jansmolders86/mediacenterjs/blob/master/lib/transcoding/desktop.js
-                format = " -f mp4 -movflags empty_moov+delay_moov";
+                format = " -f mp4 -movflags frag_keyframe+empty_moov+delay_moov";
             }
 
             var threads = GetNumberOfThreads(state, encodingOptions, videoCodec);
@@ -5800,7 +5800,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (mp4ContainerNames.Contains(state.OutputContainer.ToLower()))
             {
-                audioTranscodeParams.Add("-movflags frag_keyframe+empty_moov+delay_moov");
+                audioTranscodeParams.Add("-movflags empty_moov+delay_moov");
             }
 
             var threads = GetNumberOfThreads(state, encodingOptions, null);
