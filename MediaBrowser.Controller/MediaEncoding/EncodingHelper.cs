@@ -61,6 +61,16 @@ namespace MediaBrowser.Controller.MediaEncoding
             "Main10"
         };
 
+        private static readonly HashSet<string> _mp4ContainerNames = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "mp4",
+            "m4a",
+            "m4p",
+            "m4b",
+            "m4r",
+            "m4v",
+        };
+
         public EncodingHelper(
             IApplicationPaths appPaths,
             IMediaEncoder mediaEncoder,
@@ -5788,17 +5798,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // Copy the movflags from GetProgressiveVideoFullCommandLine
             // See #9248 and the associated PR for why this is needed
-            var mp4ContainerNames = new HashSet<string>
-            {
-                "mp4",
-                "m4a",
-                "m4p",
-                "m4b",
-                "m4r",
-                "m4v",
-            };
-
-            if (mp4ContainerNames.Contains(state.OutputContainer.ToLower()))
+            if (_mp4ContainerNames.Contains(state.OutputContainer))
             {
                 audioTranscodeParams.Add("-movflags empty_moov+delay_moov");
             }
