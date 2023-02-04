@@ -67,11 +67,23 @@ namespace Emby.Server.Implementations.Library.Resolvers
                     {
                         if (IsDvdDirectory(child.FullName, filename, args.DirectoryService))
                         {
-                            videoType = VideoType.Dvd;
+                            var videoTmp = new TVideoType
+                            {
+                                Path = args.Path,
+                                VideoType = VideoType.Dvd
+                            };
+                            Set3DFormat(videoTmp);
+                            return videoTmp;
                         }
                         else if (IsBluRayDirectory(filename))
                         {
-                            videoType = VideoType.BluRay;
+                            var videoTmp = new TVideoType
+                            {
+                                Path = args.Path,
+                                VideoType = VideoType.BluRay
+                            };
+                            Set3DFormat(videoTmp);
+                            return videoTmp;
                         }
                     }
                     else if (IsDvdFile(filename))

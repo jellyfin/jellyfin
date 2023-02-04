@@ -117,19 +117,25 @@ namespace MediaBrowser.Providers.MediaInfo
                         mediaInfoResult.RunTimeTicks += tmpMediaInfo.RunTimeTicks;
                     }
                 }
+                else if (item.VideoType == VideoType.BluRay)
+                {
+                    blurayDiscInfo = GetBDInfo(item.Path);
+                    var m2ts = _mediaEncoder.GetPrimaryPlaylistM2TsFiles(item.Path, null).ToList();
+                    mediaInfoResult = await GetMediaInfo(
+                        new Video
+                        {
+                            Path = m2ts.First()
+                        },
+                        cancellationToken).ConfigureAwait(false);
+
+                    if (blurayDiscInfo.Files.Length == 0)
+                    {
+                        _logger.LogError("No playable vobs found in bluray structure, skipping ffprobe.");
+                        return ItemUpdateType.MetadataImport;
+                    }
+                }
                 else
                 {
-                    if (item.VideoType == VideoType.BluRay)
-                    {
-                        blurayDiscInfo = GetBDInfo(item.Path);
-
-                        if (blurayDiscInfo.Files.Length == 0)
-                        {
-                            _logger.LogError("No playable vobs found in bluray structure, skipping ffprobe.");
-                            return ItemUpdateType.MetadataImport;
-                        }
-                    }
-
                     mediaInfoResult = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
                     cancellationToken.ThrowIfCancellationRequested();
                 }
