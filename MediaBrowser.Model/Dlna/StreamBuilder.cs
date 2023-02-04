@@ -635,6 +635,13 @@ namespace MediaBrowser.Model.Dlna
             var isEligibleForDirectStream = options.EnableDirectStream && (options.ForceDirectStream || !bitrateLimitExceeded);
             TranscodeReason transcodeReasons = 0;
 
+            // Force transcode or remux for BD/DVD folders
+            if (item.VideoType == VideoType.Dvd || item.VideoType == VideoType.BluRay)
+            {
+                isEligibleForDirectPlay = false;
+                isEligibleForDirectStream = false;
+            }
+
             if (bitrateLimitExceeded)
             {
                 transcodeReasons = TranscodeReason.ContainerBitrateExceedsLimit;
