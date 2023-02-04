@@ -67,6 +67,16 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         }
 
         [Fact]
+        [Priority(-1)]
+        public async Task Me_Valid_Success()
+        {
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+
+            _ = await AuthHelper.GetUserDtoAsync(client).ConfigureAwait(false);
+        }
+
+        [Fact]
         [Priority(0)]
         public async Task New_Valid_Success()
         {
@@ -108,7 +118,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
 
             var createRequest = new CreateUserByName()
             {
-                Name = username
+                Name = username!
             };
 
             using var response = await CreateUserByName(client, createRequest).ConfigureAwait(false);

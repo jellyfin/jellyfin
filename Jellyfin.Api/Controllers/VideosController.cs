@@ -155,7 +155,12 @@ public class VideosController : BaseJellyfinApiController
 
         if (video.LinkedAlternateVersions.Length == 0)
         {
-            video = (Video)_libraryManager.GetItemById(video.PrimaryVersionId);
+            video = (Video?)_libraryManager.GetItemById(video.PrimaryVersionId);
+        }
+
+        if (video is null)
+        {
+            return NotFound();
         }
 
         foreach (var link in video.GetLinkedAlternateVersions())

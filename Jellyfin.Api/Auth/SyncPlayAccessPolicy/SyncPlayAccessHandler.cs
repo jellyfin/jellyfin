@@ -2,6 +2,7 @@
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.SyncPlay;
@@ -47,6 +48,10 @@ namespace Jellyfin.Api.Auth.SyncPlayAccessPolicy
 
             var userId = context.User.GetUserId();
             var user = _userManager.GetUserById(userId);
+            if (user is null)
+            {
+                throw new ResourceNotFoundException();
+            }
 
             if (requirement.RequiredAccess == SyncPlayAccessRequirementType.HasAccess)
             {

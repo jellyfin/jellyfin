@@ -452,6 +452,10 @@ public class LibraryController : BaseJellyfinApiController
             if (user is not null)
             {
                 parent = TranslateParentItem(parent, user);
+                if (parent is null)
+                {
+                    break;
+                }
             }
 
             baseItemDtos.Add(_dtoService.GetBaseItemDto(parent, dtoOptions, user));

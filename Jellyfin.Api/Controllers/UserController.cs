@@ -147,6 +147,11 @@ public class UserController : BaseJellyfinApiController
     public async Task<ActionResult> DeleteUser([FromRoute, Required] Guid userId)
     {
         var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
         await _sessionManager.RevokeUserTokens(user.Id, null).ConfigureAwait(false);
         await _userManager.DeleteUserAsync(userId).ConfigureAwait(false);
         return NoContent();
@@ -281,8 +286,8 @@ public class UserController : BaseJellyfinApiController
             {
                 var success = await _userManager.AuthenticateUser(
                     user.Username,
-                    request.CurrentPw,
-                    request.CurrentPw,
+                    request.CurrentPw ?? string.Empty,
+                    request.CurrentPw ?? string.Empty,
                     HttpContext.GetNormalizedRemoteIp().ToString(),
                     false).ConfigureAwait(false);
 
@@ -292,7 +297,7 @@ public class UserController : BaseJellyfinApiController
                 }
             }
 
-            await _userManager.ChangePassword(user, request.NewPw).ConfigureAwait(false);
+            await _userManager.ChangePassword(user, request.NewPw ?? string.Empty).ConfigureAwait(false);
 
             var currentToken = User.GetToken();
 
@@ -338,7 +343,7 @@ public class UserController : BaseJellyfinApiController
         }
         else
         {
-            await _userManager.ChangeEasyPassword(user, request.NewPw, request.NewPassword).ConfigureAwait(false);
+            await _userManager.ChangeEasyPassword(user, request.NewPw ?? string.Empty, request.NewPassword ?? string.Empty).ConfigureAwait(false);
         }
 
         return NoContent();
@@ -362,12 +367,16 @@ public class UserController : BaseJellyfinApiController
         [FromRoute, Required] Guid userId,
         [FromBody, Required] UserDto updateUser)
     {
+        var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
         if (!RequestHelpers.AssertCanUpdateUser(_userManager, User, userId, true))
         {
             return StatusCode(StatusCodes.Status403Forbidden, "User update not allowed.");
         }
-
-        var user = _userManager.GetUserById(userId);
 
         if (!string.Equals(user.Username, updateUser.Name, StringComparison.Ordinal))
         {
@@ -398,6 +407,10 @@ public class UserController : BaseJellyfinApiController
         [FromBody, Required] UserPolicy newPolicy)
     {
         var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
 
         // If removing admin access
         if (!newPolicy.IsAdministrator && user.HasPermission(PermissionKind.IsAdministrator))

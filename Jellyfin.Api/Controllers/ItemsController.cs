@@ -815,6 +815,11 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery] bool excludeActiveSessions = false)
     {
         var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
         var parentIdGuid = parentId ?? Guid.Empty;
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)

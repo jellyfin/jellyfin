@@ -75,6 +75,10 @@ public class SessionController : BaseJellyfinApiController
             result = result.Where(i => i.SupportsRemoteControl);
 
             var user = _userManager.GetUserById(controllableByUserId.Value);
+            if (user is null)
+            {
+                return NotFound();
+            }
 
             if (!user.HasPermission(PermissionKind.EnableRemoteControlOfOtherUsers))
             {
