@@ -5788,7 +5788,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // Copy the movflags from GetProgressiveVideoFullCommandLine
             // See #9248 and the associated PR for why this is needed
-            var mp4ContainerNames = new HashSet<String>
+            var mp4ContainerNames = new HashSet<string>
             {
                 "mp4",
                 "m4a",
