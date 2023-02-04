@@ -5464,13 +5464,19 @@ namespace MediaBrowser.Controller.MediaEncoding
             var supportedVideoCodecs = state.SupportedVideoCodecs;
             if (request is not null && supportedVideoCodecs is not null && supportedVideoCodecs.Length > 0)
             {
-                var supportedVideoCodecsList = supportedVideoCodecs.ToList();
-
-                ShiftVideoCodecsIfNeeded(supportedVideoCodecsList, encodingOptions);
-
-                state.SupportedVideoCodecs = supportedVideoCodecsList.ToArray();
-
-                request.VideoCodec = state.SupportedVideoCodecs.FirstOrDefault();
+                if (state.VideoStream != null && supportedVideoCodecs.Contains(state.VideoStream.Codec))
+                {
+                    request.VideoCodec = state.VideoStream.Codec;
+                }
+                else if (!encodingOptions.AllowHevcEncoding)
+                {
+                    var hevcCodecStrings = new string[] { "h265", "hevc" };
+                    request.VideoCodec = supportedVideoCodecs.Except(hevcCodecStrings).FirstOrDefault();
+                }
+                else
+                {
+                    request.VideoCodec = supportedVideoCodecs.FirstOrDefault();
+                }
             }
         }
 
@@ -5501,34 +5507,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var removed = shiftAudioCodecs[0];
                 audioCodecs.RemoveAt(0);
                 audioCodecs.Add(removed);
-            }
-        }
-
-        private void ShiftVideoCodecsIfNeeded(List<string> videoCodecs, EncodingOptions encodingOptions)
-        {
-            // Shift hevc/h265 to the end of list if hevc encoding is not allowed.
-            if (encodingOptions.AllowHevcEncoding)
-            {
-                return;
-            }
-
-            // No need to shift if there is only one supported video codec.
-            if (videoCodecs.Count < 2)
-            {
-                return;
-            }
-
-            var shiftVideoCodecs = new[] { "hevc", "h265" };
-            if (videoCodecs.All(i => shiftVideoCodecs.Contains(i, StringComparison.OrdinalIgnoreCase)))
-            {
-                return;
-            }
-
-            while (shiftVideoCodecs.Contains(videoCodecs[0], StringComparison.OrdinalIgnoreCase))
-            {
-                var removed = shiftVideoCodecs[0];
-                videoCodecs.RemoveAt(0);
-                videoCodecs.Add(removed);
             }
         }
 
