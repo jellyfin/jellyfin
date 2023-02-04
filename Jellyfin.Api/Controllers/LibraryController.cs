@@ -283,6 +283,11 @@ public class LibraryController : BaseJellyfinApiController
             userId,
             inheritFromParent);
 
+        if (themeSongs.Result is NotFoundObjectResult || themeVideos.Result is NotFoundObjectResult)
+        {
+            return NotFound();
+        }
+
         return new AllThemeMediaResult
         {
             ThemeSongsResult = themeSongs?.Value,
@@ -675,6 +680,11 @@ public class LibraryController : BaseJellyfinApiController
                 ? _libraryManager.RootFolder
                 : _libraryManager.GetUserRootFolder())
             : _libraryManager.GetItemById(itemId);
+
+        if (item is null)
+        {
+            return NotFound();
+        }
 
         if (item is Episode || (item is IItemByName && item is not MusicArtist))
         {

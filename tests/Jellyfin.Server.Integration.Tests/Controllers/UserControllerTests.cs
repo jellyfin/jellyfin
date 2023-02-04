@@ -126,6 +126,19 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         }
 
         [Fact]
+        [Priority(0)]
+        public async Task Delete_DoesntExist_NotFound()
+        {
+            var client = _factory.CreateClient();
+
+            // access token can't be null here as the previous test populated it
+            client.DefaultRequestHeaders.AddAuthHeader(_accessToken!);
+
+            using var response = await client.DeleteAsync($"User/{Guid.NewGuid()}").ConfigureAwait(false);
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
         [Priority(1)]
         public async Task UpdateUserPassword_Valid_Success()
         {
