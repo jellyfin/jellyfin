@@ -5786,6 +5786,22 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
+            // Copy the movflags from GetProgressiveVideoFullCommandLine
+            // See # for explanation on why this is needed
+            var mp4ContainerNames = new HashSet<String> {
+                "mp4",
+                "m4a",
+                "m4p",
+                "m4b",
+                "m4r",
+                "m4v",
+            };
+
+            if (mp4ContainerNames.Contains(state.OutputContainer.ToLower()))
+            {
+                audioTranscodeParams.Add("-movflags frag_keyframe+empty_moov+delay_moov");
+            }
+
             var threads = GetNumberOfThreads(state, encodingOptions, null);
 
             var inputModifier = GetInputModifier(state, encodingOptions, null);
