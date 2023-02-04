@@ -444,7 +444,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <inheritdoc />
         public string GetInputArgument(string inputFile, MediaSourceInfo mediaSource)
         {
-            return EncodingUtils.GetInputArgument("file", new List<string>() { inputFile }, mediaSource.Protocol);
+            var prefix = "file";
+            if (mediaSource.IsoType == IsoType.BluRay)
+            {
+                prefix = "bluray";
+            }
+
+            return EncodingUtils.GetInputArgument(prefix, new List<string>() { inputFile }, mediaSource.Protocol);
         }
 
         /// <inheritdoc />
