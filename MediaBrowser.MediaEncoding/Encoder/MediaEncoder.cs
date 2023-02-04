@@ -450,7 +450,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 prefix = "bluray";
             }
 
-            return EncodingUtils.GetInputArgument(prefix, new List<string>() { inputFile }, mediaSource.Protocol);
+            return EncodingUtils.GetInputArgument(prefix, new[] { inputFile }, mediaSource.Protocol);
         }
 
         /// <inheritdoc />
@@ -458,7 +458,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             const string Prefix = "file";
 
-            return EncodingUtils.GetInputArgument(Prefix, new List<string> { inputFile }, MediaProtocol.File);
+            return EncodingUtils.GetInputArgument(Prefix, new[] { inputFile }, MediaProtocol.File);
         }
 
         /// <summary>

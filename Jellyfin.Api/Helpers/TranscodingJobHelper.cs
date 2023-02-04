@@ -325,7 +325,7 @@ public class TranscodingJobHelper : IDisposable
             await DeletePartialStreamFiles(job.Path!, job.Type, 0, 1500).ConfigureAwait(false);
             if (job.MediaSource?.VideoType == VideoType.Dvd || job.MediaSource?.VideoType == VideoType.BluRay)
             {
-                var path = Path.GetDirectoryName(job.Path) + "/" + job.MediaSource.Id + ".concat";
+                var path = Path.Join(job.Path, "/" + job.MediaSource.Id + ".concat");
                 File.Delete(path);
             }
         }

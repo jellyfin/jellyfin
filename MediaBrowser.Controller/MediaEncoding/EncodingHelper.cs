@@ -943,10 +943,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (state.MediaSource.VideoType == VideoType.Dvd || state.MediaSource.VideoType == VideoType.BluRay)
             {
-                var tmpConcatPath = options.TranscodingTempPath + "/" + state.MediaSource.Id + ".concat";
+                var tmpConcatPath = Path.Join(options.TranscodingTempPath, "/" + state.MediaSource.Id + ".concat");
                 _mediaEncoder.GenerateConcatConfig(state.MediaSource, tmpConcatPath);
-                arg.Append(" -f concat -safe 0 ");
-                arg.Append(" -i " + tmpConcatPath + " ");
+                arg.Append(" -f concat -safe 0 ")
+                    .Append(" -i ")
+                    .Append(tmpConcatPath)
+                    .Append(' ');
             }
             else
             {
