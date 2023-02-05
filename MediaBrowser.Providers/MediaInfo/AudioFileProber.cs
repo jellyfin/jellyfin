@@ -98,9 +98,9 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             string ffmpeg_path = _serverConfigurationManager.GetEncodingOptions().EncoderAppPathDisplay;
-            string args = "-i \"";
+            string args = "-hide_banner -i \"";
             args += path;
-            args += "\" -af ebur128=framelog=verbose -f null -";
+            args += "\" -af aformat=sample_fmts=\"s16\":sample_rates=\"48000\":channel_layouts=\"stereo\",ebur128=framelog=verbose -f null -";
 
             ProcessStartInfo ffmpeg = new ProcessStartInfo(ffmpeg_path);
 
