@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Extensions.Json.Converters;
 using MediaBrowser.Common;
@@ -896,7 +897,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Check for multiple big titles (> 900 MB)
             var titles = allVobs
                 .Where(vob => vob.Length >= 900 * 1024 * 1024)
-                .Select(vob => _fileSystem.GetFileNameWithoutExtension(vob).Split('_')[1])
+                .Select(vob => _fileSystem.GetFileNameWithoutExtension(vob).AsSpan().RightPart('_').ToString())
                 .GroupBy(x => x)
                 .Select(y => y.First())
                 .ToList();
@@ -904,12 +905,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Fall back to first title if no big title is found
             if (titles.FirstOrDefault() == null)
             {
-                titles.Add(_fileSystem.GetFileNameWithoutExtension(allVobs[0]).Split('_')[1]);
+                titles.Add(_fileSystem.GetFileNameWithoutExtension(allVobs[0]).AsSpan().RightPart('_').ToString());
             }
 
             // Aggregate all VOBs of the titles
             return allVobs
-                .Where(vob => titles.Contains(_fileSystem.GetFileNameWithoutExtension(vob).Split('_')[1]))
+                .Where(vob => titles.Contains(_fileSystem.GetFileNameWithoutExtension(vob).AsSpan().RightPart('_').ToString()))
                 .Select(i => i.FullName)
                 .ToList();
         }
@@ -917,7 +918,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public IEnumerable<string> GetPrimaryPlaylistM2TsFiles(string path, uint? titleNumber)
         {
             var validPlaybackFiles = _blurayExaminer.GetDiscInfo(path).Files;
-            var directoryFiles = _fileSystem.GetFiles(path + "/BDMV/STREAM/");
+            var directoryFiles = _fileSystem.GetFiles(Path.Join(path, "BDMV", "STREAM"));
 
             return directoryFiles
                 .Where(f => validPlaybackFiles.Contains(f.Name, StringComparer.OrdinalIgnoreCase))
@@ -941,7 +942,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             foreach (var path in files)
             {
-                var fileinfo = _fileSystem.GetFileInfo(path);
                 var mediaInfoResult = GetMediaInfo(
                     new MediaInfoRequest
                     {
@@ -961,7 +961,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 lines.Add("duration " + duration);
             }
 
-            File.WriteAllLinesAsync(concatFilePath, lines, CancellationToken.None).GetAwaiter().GetResult();
+            File.WriteAllLines(concatFilePath, lines);
         }
 
         public bool CanExtractSubtitles(string codec)

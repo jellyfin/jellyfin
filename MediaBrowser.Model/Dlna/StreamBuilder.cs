@@ -639,7 +639,6 @@ namespace MediaBrowser.Model.Dlna
             if (item.VideoType == VideoType.Dvd || item.VideoType == VideoType.BluRay)
             {
                 isEligibleForDirectPlay = false;
-                isEligibleForDirectStream = false;
             }
 
             if (bitrateLimitExceeded)

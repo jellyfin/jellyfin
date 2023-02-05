@@ -328,54 +328,56 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var video = (Video)item;
 
-            // Use BD Info if it has multiple m2ts. Otherwise, treat it like a video file and rely more on ffprobe output
-            if (blurayInfo.Files.Length > 1)
+            if (blurayInfo.Files.Length <= 1)
             {
-                int? currentHeight = null;
-                int? currentWidth = null;
-                int? currentBitRate = null;
+                return;
+            }
 
-                var videoStream = mediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
+            // Use BD Info if it has multiple m2ts. Otherwise, treat it like a video file and rely more on ffprobe output
+            int? currentHeight = null;
+            int? currentWidth = null;
+            int? currentBitRate = null;
 
-                // Grab the values that ffprobe recorded
-                if (videoStream is not null)
+            var videoStream = mediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
+
+            // Grab the values that ffprobe recorded
+            if (videoStream is not null)
+            {
+                currentBitRate = videoStream.BitRate;
+                currentWidth = videoStream.Width;
+                currentHeight = videoStream.Height;
+            }
+
+            // Fill video properties from the BDInfo result
+            mediaStreams.Clear();
+            mediaStreams.AddRange(blurayInfo.MediaStreams);
+
+            if (blurayInfo.RunTimeTicks.HasValue && blurayInfo.RunTimeTicks.Value > 0)
+            {
+                video.RunTimeTicks = blurayInfo.RunTimeTicks;
+            }
+
+            if (blurayInfo.Chapters is not null)
+            {
+                double[] brChapter = blurayInfo.Chapters;
+                chapters = new ChapterInfo[brChapter.Length];
+                for (int i = 0; i < brChapter.Length; i++)
                 {
-                    currentBitRate = videoStream.BitRate;
-                    currentWidth = videoStream.Width;
-                    currentHeight = videoStream.Height;
-                }
-
-                // Fill video properties from the BDInfo result
-                mediaStreams.Clear();
-                mediaStreams.AddRange(blurayInfo.MediaStreams);
-
-                if (blurayInfo.RunTimeTicks.HasValue && blurayInfo.RunTimeTicks.Value > 0)
-                {
-                    video.RunTimeTicks = blurayInfo.RunTimeTicks;
-                }
-
-                if (blurayInfo.Chapters is not null)
-                {
-                    double[] brChapter = blurayInfo.Chapters;
-                    chapters = new ChapterInfo[brChapter.Length];
-                    for (int i = 0; i < brChapter.Length; i++)
+                    chapters[i] = new ChapterInfo
                     {
-                        chapters[i] = new ChapterInfo
-                        {
-                            StartPositionTicks = TimeSpan.FromSeconds(brChapter[i]).Ticks
-                        };
-                    }
+                        StartPositionTicks = TimeSpan.FromSeconds(brChapter[i]).Ticks
+                    };
                 }
+            }
 
-                videoStream = mediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
+            videoStream = mediaStreams.FirstOrDefault(s => s.Type == MediaStreamType.Video);
 
-                // Use the ffprobe values if these are empty
-                if (videoStream is not null)
-                {
-                    videoStream.BitRate = IsEmpty(videoStream.BitRate) ? currentBitRate : videoStream.BitRate;
-                    videoStream.Width = IsEmpty(videoStream.Width) ? currentWidth : videoStream.Width;
-                    videoStream.Height = IsEmpty(videoStream.Height) ? currentHeight : videoStream.Height;
-                }
+            // Use the ffprobe values if these are empty
+            if (videoStream is not null)
+            {
+                videoStream.BitRate = IsEmpty(videoStream.BitRate) ? currentBitRate : videoStream.BitRate;
+                videoStream.Width = IsEmpty(videoStream.Width) ? currentWidth : videoStream.Width;
+                videoStream.Height = IsEmpty(videoStream.Height) ? currentHeight : videoStream.Height;
             }
         }
 
@@ -391,10 +393,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <returns>VideoStream.</returns>
         private BlurayDiscInfo GetBDInfo(string path)
         {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(path);
 
             try
             {
