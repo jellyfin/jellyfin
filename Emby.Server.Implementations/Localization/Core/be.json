@@ -50,5 +50,6 @@
     "User": "Карыстальнік",
     "UserDeletedWithName": "Карыстальнік {0} быў выдалены",
     "UserDownloadingItemWithValues": "{0} спампоўваецца {1}",
-    "TaskOptimizeDatabase": "Аптымізацыя базы дадзеных"
+    "TaskOptimizeDatabase": "Аптымізацыя базы дадзеных",
+    "Artists": "Артысты"
 }
