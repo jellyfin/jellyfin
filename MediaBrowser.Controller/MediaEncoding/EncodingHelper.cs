@@ -61,6 +61,16 @@ namespace MediaBrowser.Controller.MediaEncoding
             "Main10"
         };
 
+        private static readonly HashSet<string> _mp4ContainerNames = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "mp4",
+            "m4a",
+            "m4p",
+            "m4b",
+            "m4r",
+            "m4v",
+        };
+
         public EncodingHelper(
             IApplicationPaths appPaths,
             IMediaEncoder mediaEncoder,
@@ -5767,6 +5777,13 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     audioTranscodeParams.Add("-ar " + sampleRateValue.ToString(CultureInfo.InvariantCulture));
                 }
+            }
+
+            // Copy the movflags from GetProgressiveVideoFullCommandLine
+            // See #9248 and the associated PR for why this is needed
+            if (_mp4ContainerNames.Contains(state.OutputContainer))
+            {
+                audioTranscodeParams.Add("-movflags empty_moov+delay_moov");
             }
 
             var threads = GetNumberOfThreads(state, encodingOptions, null);

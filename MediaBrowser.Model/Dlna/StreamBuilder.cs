@@ -118,7 +118,7 @@ namespace MediaBrowser.Model.Dlna
             var transcodeReasons = directPlayInfo.TranscodeReasons;
 
             var inputAudioChannels = audioStream?.Channels;
-            var inputAudioBitrate = audioStream?.BitDepth;
+            var inputAudioBitrate = audioStream?.BitRate;
             var inputAudioSampleRate = audioStream?.SampleRate;
             var inputAudioBitDepth = audioStream?.BitDepth;
 
@@ -143,7 +143,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 if (tcProfile.Type == playlistItem.MediaType
                     && tcProfile.Context == options.Context
-                    && _transcoderSupport.CanEncodeToAudioCodec(transcodingProfile.AudioCodec ?? tcProfile.Container))
+                    && _transcoderSupport.CanEncodeToAudioCodec(tcProfile.AudioCodec ?? tcProfile.Container))
                 {
                     transcodingProfile = tcProfile;
                     break;
