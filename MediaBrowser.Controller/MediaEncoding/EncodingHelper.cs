@@ -542,7 +542,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (state.MediaSource.VideoType == VideoType.BluRay)
             {
-                return _mediaEncoder.GetInputArgument(_mediaEncoder.GetPrimaryPlaylistM2TsFiles(state.MediaPath, null).ToList(), state.MediaSource);
+                return _mediaEncoder.GetInputArgument(_mediaEncoder.GetPrimaryPlaylistM2tsFiles(state.MediaPath).ToList(), state.MediaSource);
             }
 
             return _mediaEncoder.GetInputArgument(mediaPath, state.MediaSource);

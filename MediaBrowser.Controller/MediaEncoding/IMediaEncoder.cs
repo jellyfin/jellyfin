@@ -208,9 +208,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// Gets the primary playlist of .m2ts files.
         /// </summary>
         /// <param name="path">The to the .m2ts files.</param>
-        /// <param name="titleNumber">The title number to start with.</param>
         /// <returns>A playlist.</returns>
-        IEnumerable<string> GetPrimaryPlaylistM2TsFiles(string path, uint? titleNumber);
+        IEnumerable<string> GetPrimaryPlaylistM2tsFiles(string path);
 
         /// <summary>
         /// Generates a FFmpeg concat config for the source.
