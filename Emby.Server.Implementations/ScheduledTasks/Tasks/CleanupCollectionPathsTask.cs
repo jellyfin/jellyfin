@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Emby.Server.Implementations.Collections;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -68,30 +67,30 @@ public class CleanupCollectionPathsTask : IScheduledTask
         var collectionsFolder = await _collectionManager.GetCollectionsFolder(false).ConfigureAwait(false);
         if (collectionsFolder is null)
         {
-            _logger.LogInformation("There is no collection folder to be found.");
+            _logger.LogDebug("There is no collection folder to be found");
             return;
         }
 
         var collections = collectionsFolder.Children.OfType<BoxSet>().ToArray();
-        _logger.LogTrace("Found {CollectionLength} Boxsets.", collections.Length);
+        _logger.LogTrace("Found {CollectionLength} Boxsets", collections.Length);
 
         for (var index = 0; index < collections.Length; index++)
         {
             var collection = collections[index];
-            _logger.LogTrace("Check Boxset {CollectionName}.", collection.Name);
+            _logger.LogDebug("Check Boxset {CollectionName}", collection.Name);
             var itemsToRemove = new List<LinkedChild>();
             foreach (var collectionLinkedChild in collection.LinkedChildren.ToArray())
             {
                 if (!File.Exists(collectionLinkedChild.Path))
                 {
-                    _logger.LogInformation("Item in boxset {CollectionName} cannot be found at {ItemPath}.", collection.Name, collectionLinkedChild.Path);
+                    _logger.LogInformation("Item in boxset {CollectionName} cannot be found at {ItemPath}", collection.Name, collectionLinkedChild.Path);
                     itemsToRemove.Add(collectionLinkedChild);
                 }
             }
 
             if (itemsToRemove.Any())
             {
-                _logger.LogTrace("Update Boxset {CollectionName}.", collection.Name);
+                _logger.LogDebug("Update Boxset {CollectionName}", collection.Name);
                 collection.LinkedChildren = collection.LinkedChildren.Except(itemsToRemove).ToArray();
                 await collection.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken)
                     .ConfigureAwait(false);
