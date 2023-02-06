@@ -2204,7 +2204,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <returns>System.Nullable{System.Int32}.</returns>
         public int? GetNumAudioChannelsParam(EncodingJobInfo state, MediaStream audioStream, string outputAudioCodec)
         {
-            if (audioStream is null)
+            if (audioStream == null)
             {
                 return null;
             }
@@ -2231,6 +2231,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // libmp3lame currently only supports two channel output
                 transcoderChannelLimit = 2;
             }
+            else if (codec.IndexOf("aac", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                // aac is able to handle 8ch(7.1 layout)
+                transcoderChannelLimit = 8;
+            }
             else
             {
                 // If we don't have any media info then limit it to 8 to prevent encoding errors due to asking for too many channels
@@ -2250,15 +2255,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (isTranscodingAudio)
             {
-                // Set resultChannels to minimum between TranscodingMaxAudioChannels,resultChannels,transcoderChannelLimit
                 resultChannels = resultChannels.HasValue
-                    ? Math.Min(
-                        request.TranscodingMaxAudioChannels.HasValue
-                            ? Math.Min(resultChannels.Value, request.TranscodingMaxAudioChannels.Value)
-                            : resultChannels.Value,
-                        transcoderChannelLimit.Value)
-                    : request.TranscodingMaxAudioChannels.HasValue
-                        ? Math.Min(transcoderChannelLimit.Value, request.TranscodingMaxAudioChannels.Value)
+                    ? Math.Min(resultChannels.Value, request.TranscodingMaxAudioChannels.HasValue 
+                               ? Math.Min(request.TranscodingMaxAudioChannels.Value, transcoderChannelLimit.Value) 
+                               : transcoderChannelLimit.Value)
+                    : request.TranscodingMaxAudioChannels.HasValue 
+                        ? Math.Min(request.TranscodingMaxAudioChannels.Value, transcoderChannelLimit.Value) 
                         : transcoderChannelLimit.Value;
             }
 
