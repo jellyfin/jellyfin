@@ -2204,7 +2204,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <returns>System.Nullable{System.Int32}.</returns>
         public int? GetNumAudioChannelsParam(EncodingJobInfo state, MediaStream audioStream, string outputAudioCodec)
         {
-            if (audioStream == null)
+            if (audioStream is null)
             {
                 return null;
             }
