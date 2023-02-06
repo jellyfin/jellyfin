@@ -2211,85 +2211,57 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var request = state.BaseRequest;
 
-            var inputChannels = audioStream.Channels;
-
-            if (inputChannels <= 0)
-            {
-                inputChannels = null;
-            }
-
             var codec = outputAudioCodec ?? string.Empty;
 
-            int? transcoderChannelLimit;
-            if (codec.IndexOf("wma", StringComparison.OrdinalIgnoreCase) != -1)
+            int? resultChannels = state.GetRequestedAudioChannels(codec);
+
+            var inputChannels = audioStream.Channels;
+
+            if (inputChannels > 0)
             {
-                // wmav2 currently only supports two channel output
-                transcoderChannelLimit = 2;
-            }
-            else if (codec.IndexOf("mp3", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                // libmp3lame currently only supports two channel output
-                transcoderChannelLimit = 2;
-            }
-            else if (codec.IndexOf("aac", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                // aac is able to handle 8ch(7.1 layout)
-                transcoderChannelLimit = 8;
-            }
-            else
-            {
-                // If we don't have any media info then limit it to 6 to prevent encoding errors due to asking for too many channels
-                transcoderChannelLimit = 6;
+                resultChannels = inputChannels < resultChannels ? inputChannels : resultChannels ?? inputChannels;
             }
 
             var isTranscodingAudio = !IsCopyCodec(codec);
 
-            int? resultChannels = state.GetRequestedAudioChannels(codec);
             if (isTranscodingAudio)
             {
-                resultChannels = GetMinValue(request.TranscodingMaxAudioChannels, resultChannels);
-            }
+                // Set max transcoding channels for encoders that can't handle more than a set amount of channels
+                // AAC, FLAC, ALAC, libopus, libvorbis encoders all support at least 8 channels
+                int transcoderChannelLimit = GetAudioEncoder(state) switch
+                {
+                    string audioEncoder when audioEncoder.Equals("wmav2", StringComparison.OrdinalIgnoreCase)
+                                          || audioEncoder.Equals("libmp3lame", StringComparison.OrdinalIgnoreCase) => 2,
+                    string audioEncoder when audioEncoder.Equals("libfdk_aac", StringComparison.OrdinalIgnoreCase)
+                                          || audioEncoder.Equals("aac_at", StringComparison.OrdinalIgnoreCase)
+                                          || audioEncoder.Equals("ac3", StringComparison.OrdinalIgnoreCase)
+                                          || audioEncoder.Equals("eac3", StringComparison.OrdinalIgnoreCase)
+                                          || audioEncoder.Equals("dts", StringComparison.OrdinalIgnoreCase)
+                                          || audioEncoder.Equals("mlp", StringComparison.OrdinalIgnoreCase)
+                                          || audioEncoder.Equals("truehd", StringComparison.OrdinalIgnoreCase) => 6,
+                    // Set default max transcoding channels to 8 to prevent encoding errors due to asking for too many channels
+                    _ => 8,
+                };
 
-            if (inputChannels.HasValue)
-            {
-                resultChannels = resultChannels.HasValue
-                    ? Math.Min(resultChannels.Value, inputChannels.Value)
-                    : inputChannels.Value;
-            }
+                // Set resultChannels to minimum between resultChannels, TranscodingMaxAudioChannels, transcoderChannelLimit
 
-            if (isTranscodingAudio && transcoderChannelLimit.HasValue)
-            {
-                resultChannels = resultChannels.HasValue
-                    ? Math.Min(resultChannels.Value, transcoderChannelLimit.Value)
-                    : transcoderChannelLimit.Value;
-            }
+                resultChannels = transcoderChannelLimit < resultChannels ? transcoderChannelLimit : resultChannels ?? transcoderChannelLimit;
 
-            // Avoid transcoding to audio channels other than 1ch, 2ch, 6ch (5.1 layout) and 8ch (7.1 layout).
-            // https://developer.apple.com/documentation/http_live_streaming/hls_authoring_specification_for_apple_devices
-            if (isTranscodingAudio
-                && state.TranscodingType != TranscodingJobType.Progressive
-                && resultChannels.HasValue
-                && ((resultChannels.Value > 2 && resultChannels.Value < 6) || resultChannels.Value == 7))
-            {
-                resultChannels = 2;
+                if (request.TranscodingMaxAudioChannels < resultChannels)
+                {
+                    resultChannels = request.TranscodingMaxAudioChannels;
+                }
+
+                // Avoid transcoding to audio channels other than 1ch, 2ch, 6ch (5.1 layout) and 8ch (7.1 layout).
+                // https://developer.apple.com/documentation/http_live_streaming/hls_authoring_specification_for_apple_devices
+                if (state.TranscodingType != TranscodingJobType.Progressive
+                    && ((resultChannels > 2 && resultChannels < 6) || resultChannels == 7))
+                {
+                    resultChannels = 2;
+                }
             }
 
             return resultChannels;
-        }
-
-        private int? GetMinValue(int? val1, int? val2)
-        {
-            if (!val1.HasValue)
-            {
-                return val2;
-            }
-
-            if (!val2.HasValue)
-            {
-                return val1;
-            }
-
-            return Math.Min(val1.Value, val2.Value);
         }
 
         /// <summary>
