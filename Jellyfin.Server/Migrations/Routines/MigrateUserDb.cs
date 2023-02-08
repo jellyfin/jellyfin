@@ -170,7 +170,6 @@ namespace Jellyfin.Server.Migrations.Routines
                     }
 
                     user.SetPreference(PreferenceKind.BlockedTags, policy.BlockedTags);
-                    user.SetPreference(PreferenceKind.AllowedTags, policy.AllowedTags);
                     user.SetPreference(PreferenceKind.EnabledChannels, policy.EnabledChannels);
                     user.SetPreference(PreferenceKind.EnabledDevices, policy.EnabledDevices);
                     user.SetPreference(PreferenceKind.EnabledFolders, policy.EnabledFolders);
