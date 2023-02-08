@@ -88,7 +88,7 @@ public class ImageController : BaseJellyfinApiController
     /// <response code="403">User does not have permission to delete the image.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Users/{userId}/Images/{imageType}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [AcceptsImageFile]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -137,7 +137,7 @@ public class ImageController : BaseJellyfinApiController
     /// <response code="403">User does not have permission to delete the image.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Users/{userId}/Images/{imageType}/{index}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [AcceptsImageFile]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -186,7 +186,7 @@ public class ImageController : BaseJellyfinApiController
     /// <response code="403">User does not have permission to delete the image.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("Users/{userId}/Images/{imageType}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -230,7 +230,7 @@ public class ImageController : BaseJellyfinApiController
     /// <response code="403">User does not have permission to delete the image.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("Users/{userId}/Images/{imageType}/{index}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -432,7 +432,7 @@ public class ImageController : BaseJellyfinApiController
     /// <response code="404">Item not found.</response>
     /// <returns>The list of image infos on success, or <see cref="NotFoundResult"/> if item not found.</returns>
     [HttpGet("Items/{itemId}/Images")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IEnumerable<ImageInfo>>> GetItemImageInfos([FromRoute, Required] Guid itemId)
@@ -1930,10 +1930,10 @@ public class ImageController : BaseJellyfinApiController
         }
 
         var responseHeaders = new Dictionary<string, string>
-            {
-                { "transferMode.dlna.org", "Interactive" },
-                { "realTimeInfo.dlna.org", "DLNA.ORG_TLAG=*" }
-            };
+        {
+            { "transferMode.dlna.org", "Interactive" },
+            { "realTimeInfo.dlna.org", "DLNA.ORG_TLAG=*" }
+        };
 
         if (!imageInfo.IsLocalFile && item is not null)
         {

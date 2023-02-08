@@ -1,19 +1,16 @@
 ﻿using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
-using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.SyncPlay;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 
 namespace Jellyfin.Api.Auth.SyncPlayAccessPolicy
 {
     /// <summary>
     /// Default authorization handler.
     /// </summary>
-    public class SyncPlayAccessHandler : BaseAuthorizationHandler<SyncPlayAccessRequirement>
+    public class SyncPlayAccessHandler : AuthorizationHandler<SyncPlayAccessRequirement>
     {
         private readonly ISyncPlayManager _syncPlayManager;
         private readonly IUserManager _userManager;
@@ -23,14 +20,9 @@ namespace Jellyfin.Api.Auth.SyncPlayAccessPolicy
         /// </summary>
         /// <param name="syncPlayManager">Instance of the <see cref="ISyncPlayManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-        /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
-        /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
         public SyncPlayAccessHandler(
             ISyncPlayManager syncPlayManager,
-            IUserManager userManager,
-            INetworkManager networkManager,
-            IHttpContextAccessor httpContextAccessor)
-            : base(userManager, networkManager, httpContextAccessor)
+            IUserManager userManager)
         {
             _syncPlayManager = syncPlayManager;
             _userManager = userManager;
@@ -39,26 +31,15 @@ namespace Jellyfin.Api.Auth.SyncPlayAccessPolicy
         /// <inheritdoc />
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, SyncPlayAccessRequirement requirement)
         {
-            if (!ValidateClaims(context.User))
-            {
-                context.Fail();
-                return Task.CompletedTask;
-            }
-
             var userId = context.User.GetUserId();
             var user = _userManager.GetUserById(userId);
 
             if (requirement.RequiredAccess == SyncPlayAccessRequirementType.HasAccess)
             {
-                if (user.SyncPlayAccess == SyncPlayUserAccessType.CreateAndJoinGroups
-                    || user.SyncPlayAccess == SyncPlayUserAccessType.JoinGroups
+                if (user.SyncPlayAccess is SyncPlayUserAccessType.CreateAndJoinGroups or SyncPlayUserAccessType.JoinGroups
                     || _syncPlayManager.IsUserActive(userId))
                 {
                     context.Succeed(requirement);
-                }
-                else
-                {
-                    context.Fail();
                 }
             }
             else if (requirement.RequiredAccess == SyncPlayAccessRequirementType.CreateGroup)
@@ -66,10 +47,6 @@ namespace Jellyfin.Api.Auth.SyncPlayAccessPolicy
                 if (user.SyncPlayAccess == SyncPlayUserAccessType.CreateAndJoinGroups)
                 {
                     context.Succeed(requirement);
-                }
-                else
-                {
-                    context.Fail();
                 }
             }
             else if (requirement.RequiredAccess == SyncPlayAccessRequirementType.JoinGroup)
@@ -79,10 +56,6 @@ namespace Jellyfin.Api.Auth.SyncPlayAccessPolicy
                 {
                     context.Succeed(requirement);
                 }
-                else
-                {
-                    context.Fail();
-                }
             }
             else if (requirement.RequiredAccess == SyncPlayAccessRequirementType.IsInGroup)
             {
@@ -90,14 +63,6 @@ namespace Jellyfin.Api.Auth.SyncPlayAccessPolicy
                 {
                     context.Succeed(requirement);
                 }
-                else
-                {
-                    context.Fail();
-                }
-            }
-            else
-            {
-                context.Fail();
             }
 
             return Task.CompletedTask;

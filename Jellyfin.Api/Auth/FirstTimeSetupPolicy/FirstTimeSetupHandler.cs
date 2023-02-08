@@ -1,38 +1,35 @@
 using System.Threading.Tasks;
+using Jellyfin.Api.Constants;
+using Jellyfin.Api.Extensions;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 
-namespace Jellyfin.Api.Auth.FirstTimeSetupOrDefaultPolicy
+namespace Jellyfin.Api.Auth.FirstTimeSetupPolicy
 {
     /// <summary>
     /// Authorization handler for requiring first time setup or default privileges.
     /// </summary>
-    public class FirstTimeSetupOrDefaultHandler : BaseAuthorizationHandler<FirstTimeSetupOrDefaultRequirement>
+    public class FirstTimeSetupHandler : AuthorizationHandler<FirstTimeSetupRequirement>
     {
         private readonly IConfigurationManager _configurationManager;
+        private readonly IUserManager _userManager;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FirstTimeSetupOrDefaultHandler" /> class.
+        /// Initializes a new instance of the <see cref="FirstTimeSetupHandler" /> class.
         /// </summary>
         /// <param name="configurationManager">Instance of the <see cref="IConfigurationManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-        /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
-        /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
-        public FirstTimeSetupOrDefaultHandler(
+        public FirstTimeSetupHandler(
             IConfigurationManager configurationManager,
-            IUserManager userManager,
-            INetworkManager networkManager,
-            IHttpContextAccessor httpContextAccessor)
-            : base(userManager, networkManager, httpContextAccessor)
+            IUserManager userManager)
         {
             _configurationManager = configurationManager;
+            _userManager = userManager;
         }
 
         /// <inheritdoc />
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, FirstTimeSetupOrDefaultRequirement requirement)
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, FirstTimeSetupRequirement requirement)
         {
             if (!_configurationManager.CommonConfiguration.IsStartupWizardCompleted)
             {
@@ -40,14 +37,22 @@ namespace Jellyfin.Api.Auth.FirstTimeSetupOrDefaultPolicy
                 return Task.CompletedTask;
             }
 
-            var validated = ValidateClaims(context.User);
-            if (validated)
-            {
-                context.Succeed(requirement);
-            }
-            else
+            if (requirement.RequireAdmin && !context.User.IsInRole(UserRoles.Administrator))
             {
                 context.Fail();
+                return Task.CompletedTask;
+            }
+
+            if (!requirement.ValidateParentalSchedule)
+            {
+                context.Succeed(requirement);
+                return Task.CompletedTask;
+            }
+
+            var user = _userManager.GetUserById(context.User.GetUserId());
+            if (user.IsParentalScheduleAllowed())
+            {
+                context.Succeed(requirement);
             }
 
             return Task.CompletedTask;

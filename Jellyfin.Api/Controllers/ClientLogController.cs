@@ -1,7 +1,6 @@
 ﻿using System.Net.Mime;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Models.ClientLogDtos;
 using MediaBrowser.Controller.ClientEvent;
@@ -15,7 +14,7 @@ namespace Jellyfin.Api.Controllers;
 /// <summary>
 /// Client log controller.
 /// </summary>
-[Authorize(Policy = Policies.DefaultAuthorization)]
+[Authorize]
 public class ClientLogController : BaseJellyfinApiController
 {
     private const int MaxDocumentSize = 1_000_000;

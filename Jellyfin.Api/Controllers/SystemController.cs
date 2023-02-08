@@ -172,7 +172,7 @@ public class SystemController : BaseJellyfinApiController
     /// <response code="200">Information retrieved.</response>
     /// <returns><see cref="EndPointInfo"/> with information about the endpoint.</returns>
     [HttpGet("Endpoint")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<EndPointInfo> GetEndpointInfo()
     {
@@ -210,7 +210,7 @@ public class SystemController : BaseJellyfinApiController
     /// <response code="200">Information retrieved.</response>
     /// <returns>An <see cref="IEnumerable{WakeOnLanInfo}"/> with the WakeOnLan infos.</returns>
     [HttpGet("WakeOnLanInfo")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [Obsolete("This endpoint is obsolete.")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<IEnumerable<WakeOnLanInfo>> GetWakeOnLanInfo()

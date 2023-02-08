@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
@@ -26,7 +25,7 @@ namespace Jellyfin.Api.Controllers;
 /// Search controller.
 /// </summary>
 [Route("Search/Hints")]
-[Authorize(Policy = Policies.DefaultAuthorization)]
+[Authorize]
 public class SearchController : BaseJellyfinApiController
 {
     private readonly ISearchEngine _searchEngine;

@@ -17,7 +17,7 @@ namespace Jellyfin.Api.Controllers;
 /// Package Controller.
 /// </summary>
 [Route("")]
-[Authorize(Policy = Policies.DefaultAuthorization)]
+[Authorize]
 public class PackageController : BaseJellyfinApiController
 {
     private readonly IInstallationManager _installationManager;

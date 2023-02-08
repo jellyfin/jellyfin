@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
@@ -18,7 +17,7 @@ namespace Jellyfin.Api.Controllers;
 /// Filters controller.
 /// </summary>
 [Route("")]
-[Authorize(Policy = Policies.DefaultAuthorization)]
+[Authorize]
 public class FilterController : BaseJellyfinApiController
 {
     private readonly ILibraryManager _libraryManager;

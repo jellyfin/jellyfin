@@ -56,7 +56,7 @@ public class RemoteImageController : BaseJellyfinApiController
     /// <response code="404">Item not found.</response>
     /// <returns>Remote Image Result.</returns>
     [HttpGet("Items/{itemId}/RemoteImages")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<RemoteImageResult>> GetRemoteImages(
@@ -121,7 +121,7 @@ public class RemoteImageController : BaseJellyfinApiController
     /// <response code="404">Item not found.</response>
     /// <returns>List of remote image providers.</returns>
     [HttpGet("Items/{itemId}/RemoteImages/Providers")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<IEnumerable<ImageProviderInfo>> GetRemoteImageProviders([FromRoute, Required] Guid itemId)

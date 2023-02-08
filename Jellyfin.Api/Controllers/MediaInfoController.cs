@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.MediaInfoDtos;
@@ -25,7 +24,7 @@ namespace Jellyfin.Api.Controllers;
 /// The media info controller.
 /// </summary>
 [Route("")]
-[Authorize(Policy = Policies.DefaultAuthorization)]
+[Authorize]
 public class MediaInfoController : BaseJellyfinApiController
 {
     private readonly IMediaSourceManager _mediaSourceManager;

@@ -4,7 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
@@ -80,7 +79,7 @@ public class HlsSegmentController : BaseJellyfinApiController
     /// <response code="200">Hls video playlist returned.</response>
     /// <returns>A <see cref="FileStreamResult"/> containing the playlist.</returns>
     [HttpGet("Videos/{itemId}/hls/{playlistId}/stream.m3u8")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesPlaylistFile]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "itemId", Justification = "Required for ServiceStack")]
@@ -106,7 +105,7 @@ public class HlsSegmentController : BaseJellyfinApiController
     /// <response code="204">Encoding stopped successfully.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpDelete("Videos/ActiveEncodings")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult StopEncodingProcess(
         [FromQuery, Required] string deviceId,

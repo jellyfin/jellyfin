@@ -111,7 +111,7 @@ public class QuickConnectController : BaseJellyfinApiController
     /// <response code="403">Unknown user id.</response>
     /// <returns>Boolean indicating if the authorization was successful.</returns>
     [HttpPost("Authorize")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<bool>> AuthorizeQuickConnect([FromQuery, Required] string code, [FromQuery] Guid? userId = null)

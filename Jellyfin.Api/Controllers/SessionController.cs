@@ -56,7 +56,7 @@ public class SessionController : BaseJellyfinApiController
     /// <response code="200">List of sessions returned.</response>
     /// <returns>An <see cref="IEnumerable{SessionInfo}"/> with the available sessions.</returns>
     [HttpGet("Sessions")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<IEnumerable<SessionInfo>> GetSessions(
         [FromQuery] Guid? controllableByUserId,
@@ -119,7 +119,7 @@ public class SessionController : BaseJellyfinApiController
     /// <response code="204">Instruction sent to session.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Sessions/{sessionId}/Viewing")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> DisplayContent(
         [FromRoute, Required] string sessionId,
@@ -158,7 +158,7 @@ public class SessionController : BaseJellyfinApiController
     /// <response code="204">Instruction sent to session.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Sessions/{sessionId}/Playing")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> Play(
         [FromRoute, Required] string sessionId,
@@ -201,7 +201,7 @@ public class SessionController : BaseJellyfinApiController
     /// <response code="204">Playstate command sent to session.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Sessions/{sessionId}/Playing/{command}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> SendPlaystateCommand(
         [FromRoute, Required] string sessionId,
@@ -232,7 +232,7 @@ public class SessionController : BaseJellyfinApiController
     /// <response code="204">System command sent to session.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Sessions/{sessionId}/System/{command}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> SendSystemCommand(
         [FromRoute, Required] string sessionId,
@@ -258,7 +258,7 @@ public class SessionController : BaseJellyfinApiController
     /// <response code="204">General command sent to session.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Sessions/{sessionId}/Command/{command}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> SendGeneralCommand(
         [FromRoute, Required] string sessionId,
@@ -286,7 +286,7 @@ public class SessionController : BaseJellyfinApiController
     /// <response code="204">Full general command sent to session.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Sessions/{sessionId}/Command")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> SendFullGeneralCommand(
         [FromRoute, Required] string sessionId,
@@ -316,7 +316,7 @@ public class SessionController : BaseJellyfinApiController
     /// <response code="204">Message sent.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Sessions/{sessionId}/Message")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> SendMessageCommand(
         [FromRoute, Required] string sessionId,
@@ -345,7 +345,7 @@ public class SessionController : BaseJellyfinApiController
     /// <response code="204">User added to session.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Sessions/{sessionId}/User/{userId}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult AddUserToSession(
         [FromRoute, Required] string sessionId,
@@ -363,7 +363,7 @@ public class SessionController : BaseJellyfinApiController
     /// <response code="204">User removed from session.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("Sessions/{sessionId}/User/{userId}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult RemoveUserFromSession(
         [FromRoute, Required] string sessionId,
@@ -385,7 +385,7 @@ public class SessionController : BaseJellyfinApiController
     /// <response code="204">Capabilities posted.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Sessions/Capabilities")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> PostCapabilities(
         [FromQuery] string? id,
@@ -419,7 +419,7 @@ public class SessionController : BaseJellyfinApiController
     /// <response code="204">Capabilities updated.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Sessions/Capabilities/Full")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> PostFullCapabilities(
         [FromQuery] string? id,
@@ -443,7 +443,7 @@ public class SessionController : BaseJellyfinApiController
     /// <response code="204">Session reported to server.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Sessions/Viewing")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> ReportViewing(
         [FromQuery] string? sessionId,
@@ -461,7 +461,7 @@ public class SessionController : BaseJellyfinApiController
     /// <response code="204">Session end reported to server.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Sessions/Logout")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> ReportSessionEnded()
     {

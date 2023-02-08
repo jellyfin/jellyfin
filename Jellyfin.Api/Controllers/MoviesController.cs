@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Entities;
@@ -23,7 +22,7 @@ namespace Jellyfin.Api.Controllers;
 /// <summary>
 /// Movies controller.
 /// </summary>
-[Authorize(Policy = Policies.DefaultAuthorization)]
+[Authorize]
 public class MoviesController : BaseJellyfinApiController
 {
     private readonly IUserManager _userManager;

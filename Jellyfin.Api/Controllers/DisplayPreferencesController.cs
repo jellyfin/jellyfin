@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
-using Jellyfin.Api.Constants;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
@@ -19,7 +18,7 @@ namespace Jellyfin.Api.Controllers;
 /// <summary>
 /// Display Preferences Controller.
 /// </summary>
-[Authorize(Policy = Policies.DefaultAuthorization)]
+[Authorize]
 public class DisplayPreferencesController : BaseJellyfinApiController
 {
     private readonly IDisplayPreferencesManager _displayPreferencesManager;
