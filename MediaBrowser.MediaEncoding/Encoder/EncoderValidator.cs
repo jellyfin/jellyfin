@@ -56,6 +56,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "libvpx",
             "libvpx-vp9",
             "aac",
+            "aac_at",
             "libfdk_aac",
             "ac3",
             "libmp3lame",
@@ -106,7 +107,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // vulkan
             "libplacebo",
             "scale_vulkan",
-            "overlay_vulkan"
+            "overlay_vulkan",
+            "hwupload_vaapi",
+            // videotoolbox
+            "yadif_videotoolbox"
         };
 
         private static readonly IReadOnlyDictionary<int, string[]> _filterOptionsDict = new Dictionary<int, string[]>
