@@ -38,13 +38,6 @@ namespace Jellyfin.Api.Auth.DefaultAuthorizationPolicy
         /// <inheritdoc />
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, DefaultAuthorizationRequirement requirement)
         {
-            // Admins can do everything
-            if (context.User.GetIsApiKey() || context.User.IsInRole(UserRoles.Administrator))
-            {
-                context.Succeed(requirement);
-                return Task.CompletedTask;
-            }
-
             var userId = context.User.GetUserId();
             // This likely only happens during the wizard, so skip the default checks and let any other handlers do it
             if (userId.Equals(default))
@@ -59,6 +52,13 @@ namespace Jellyfin.Api.Auth.DefaultAuthorizationPolicy
             if (!isInLocalNetwork && !user.HasPermission(PermissionKind.EnableRemoteAccess))
             {
                 context.Fail();
+                return Task.CompletedTask;
+            }
+
+            // Admins can do everything
+            if (context.User.GetIsApiKey() || context.User.IsInRole(UserRoles.Administrator))
+            {
+                context.Succeed(requirement);
                 return Task.CompletedTask;
             }
 
