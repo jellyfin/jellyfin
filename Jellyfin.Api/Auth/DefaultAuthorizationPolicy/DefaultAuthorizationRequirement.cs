@@ -19,6 +19,6 @@ namespace Jellyfin.Api.Auth.DefaultAuthorizationPolicy
         /// <summary>
         /// Gets a value indicating whether to ignore parental schedule.
         /// </summary>
-        public bool ValidateParentalSchedule { get; init; }
+        public bool ValidateParentalSchedule { get; }
     }
 }

@@ -12,9 +12,8 @@ namespace Jellyfin.Api.Auth.FirstTimeSetupPolicy
         /// </summary>
         /// <param name="validateParentalSchedule">A value indicating whether to ignore parental schedule.</param>
         /// <param name="requireAdmin">A value indicating whether administrator role is required.</param>
-        public FirstTimeSetupRequirement(bool validateParentalSchedule = false, bool requireAdmin = true)
+        public FirstTimeSetupRequirement(bool validateParentalSchedule = false, bool requireAdmin = true) : base(validateParentalSchedule)
         {
-            ValidateParentalSchedule = validateParentalSchedule;
             RequireAdmin = requireAdmin;
         }
 
