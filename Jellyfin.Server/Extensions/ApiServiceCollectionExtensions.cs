@@ -63,7 +63,7 @@ namespace Jellyfin.Server.Extensions
             {
                 options.DefaultPolicy = new AuthorizationPolicyBuilder()
                     .AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication)
-                    .RequireAuthenticatedUser()
+                    .AddRequirements(new DefaultAuthorizationRequirement())
                     .Build();
 
                 options.AddPolicy(Policies.Download, new UserPermissionRequirement(PermissionKind.EnableContentDownloading));
