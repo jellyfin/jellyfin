@@ -23,7 +23,7 @@ namespace Jellyfin.Data
             return dynamicDayOfWeek switch
             {
                 DynamicDayOfWeek.Everyday => true,
-                DynamicDayOfWeek.Weekday => dayOfWeek is > DayOfWeek.Sunday and <= DayOfWeek.Friday,
+                DynamicDayOfWeek.Weekday => dayOfWeek is >= DayOfWeek.Monday and <= DayOfWeek.Friday,
                 DynamicDayOfWeek.Weekend => dayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday,
                 _ => (DayOfWeek)dynamicDayOfWeek == dayOfWeek
             };
