@@ -123,41 +123,64 @@ namespace Emby.Server.Implementations.Plugins
                     continue;
                 }
 
+                var assemblyLoadContext = new PluginLoadContext(plugin.Path);
+                _assemblyLoadContexts.Add(assemblyLoadContext);
+
+                var assemblies = new List<Assembly>(plugin.DllFiles.Count);
+                var loadedAll = true;
+
                 foreach (var file in plugin.DllFiles)
                 {
-                    Assembly assembly;
                     try
                     {
-                        var assemblyLoadContext = new PluginLoadContext(file);
-                        _assemblyLoadContexts.Add(assemblyLoadContext);
-
-                        assembly = assemblyLoadContext.LoadFromAssemblyPath(file);
-
-                        // Load all required types to verify that the plugin will load
-                        assembly.GetTypes();
+                        assemblies.Add(assemblyLoadContext.LoadFromAssemblyPath(file));
                     }
                     catch (FileLoadException ex)
                     {
-                        _logger.LogError(ex, "Failed to load assembly {Path}. Disabling plugin.", file);
+                        _logger.LogError(ex, "Failed to load assembly {Path}. Disabling plugin", file);
                         ChangePluginState(plugin, PluginStatus.Malfunctioned);
-                        continue;
-                    }
-                    catch (SystemException ex) when (ex is TypeLoadException or ReflectionTypeLoadException) // Undocumented exception
-                    {
-                        _logger.LogError(ex, "Failed to load assembly {Path}. This error occurs when a plugin references an incompatible version of one of the shared libraries. Disabling plugin.", file);
-                        ChangePluginState(plugin, PluginStatus.NotSupported);
-                        continue;
+                        loadedAll = false;
+                        break;
                     }
 #pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
                     {
-                        _logger.LogError(ex, "Failed to load assembly {Path}. Unknown exception was thrown. Disabling plugin.", file);
+                        _logger.LogError(ex, "Failed to load assembly {Path}. Unknown exception was thrown. Disabling plugin", file);
                         ChangePluginState(plugin, PluginStatus.Malfunctioned);
-                        continue;
+                        loadedAll = false;
+                        break;
+                    }
+                }
+
+                if (!loadedAll)
+                {
+                    continue;
+                }
+
+                foreach (var assembly in assemblies)
+                {
+                    try
+                    {
+                        // Load all required types to verify that the plugin will load
+                        assembly.GetTypes();
+                    }
+                    catch (SystemException ex) when (ex is TypeLoadException or ReflectionTypeLoadException) // Undocumented exception
+                    {
+                        _logger.LogError(ex, "Failed to load assembly {Path}. This error occurs when a plugin references an incompatible version of one of the shared libraries. Disabling plugin", assembly.Location);
+                        ChangePluginState(plugin, PluginStatus.NotSupported);
+                        break;
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types
+                    catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                    {
+                        _logger.LogError(ex, "Failed to load assembly {Path}. Unknown exception was thrown. Disabling plugin", assembly.Location);
+                        ChangePluginState(plugin, PluginStatus.Malfunctioned);
+                        break;
                     }
 
-                    _logger.LogInformation("Loaded assembly {Assembly} from {Path}", assembly.FullName, file);
+                    _logger.LogInformation("Loaded assembly {Assembly} from {Path}", assembly.FullName, assembly.Location);
                     yield return assembly;
                 }
             }
