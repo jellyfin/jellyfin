@@ -78,5 +78,10 @@ namespace MediaBrowser.Controller.Providers
 
             return filePaths;
         }
+
+        public bool IsAccessible(string path)
+        {
+            return _fileSystem.GetFileSystemEntryPaths(path).Any();
+        }
     }
 }
