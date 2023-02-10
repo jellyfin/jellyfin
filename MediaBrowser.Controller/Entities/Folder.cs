@@ -440,7 +440,6 @@ namespace MediaBrowser.Controller.Entities
                     }
                 }
 
-                // If any items were added or removed....
                 if (newItems.Count > 0)
                 {
                     LibraryManager.CreateItems(newItems, this, cancellationToken);
