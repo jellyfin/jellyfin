@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -34,7 +35,7 @@ namespace Emby.Server.Implementations.Metrics
         /// <summary>
         /// Initializes a new instance of the <see cref="PrometheusMetricsCollector" /> class.
         /// </summary>
-        /// <param name="libraryManager">The library manager</param>
+        /// <param name="libraryManager">The library manager. </param>
         public PrometheusMetricsCollector(ILibraryManager libraryManager)
         {
             _libraryManager = libraryManager;
@@ -53,9 +54,11 @@ namespace Emby.Server.Implementations.Metrics
         {
             foreach (var type in _metricTypes)
             {
+                BaseItemKind item;
+                Enum.TryParse(type, out item);
                 var query = new InternalItemsQuery
                 {
-                    IncludeItemTypes = new[] { type }
+                    IncludeItemTypes = new[] { item }
                 };
                 int count = _libraryManager.GetCount(query);
                 _itemCountGauge.WithLabels(type).Set(count);

@@ -466,7 +466,7 @@ namespace Emby.Server.Implementations
 
             ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
 
-            NetManager = new NetworkManager(ConfigurationManager, LoggerFactory.CreateLogger<NetworkManager>()); 
+            NetManager = new NetworkManager(ConfigurationManager, LoggerFactory.CreateLogger<NetworkManager>());
 
             var networkConfiguration = ConfigurationManager.GetNetworkConfiguration();
             HttpPort = networkConfiguration.HttpServerPortNumber;
@@ -600,6 +600,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddScoped<DynamicHlsHelper>();
             serviceCollection.AddScoped<IClientEventLogger, ClientEventLogger>();
             serviceCollection.AddSingleton<IDirectoryService, DirectoryService>();
+            serviceCollection.AddSingleton<IMetricsCollector, PrometheusMetricsCollector>();
         }
 
         /// <summary>
