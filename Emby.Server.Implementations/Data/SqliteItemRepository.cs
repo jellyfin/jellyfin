@@ -5440,6 +5440,9 @@ AND Type = @InternalPersonType)");
 
             list.AddRange(inheritedTags.Select(i => (6, i)));
 
+            // Remove all invalid values.
+            list.RemoveAll(i => string.IsNullOrEmpty(i.Item2));
+
             return list;
         }
 
