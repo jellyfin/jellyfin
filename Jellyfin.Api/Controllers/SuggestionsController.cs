@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
@@ -19,7 +18,7 @@ namespace Jellyfin.Api.Controllers;
 /// The suggestions controller.
 /// </summary>
 [Route("")]
-[Authorize(Policy = Policies.DefaultAuthorization)]
+[Authorize]
 public class SuggestionsController : BaseJellyfinApiController
 {
     private readonly IDtoService _dtoService;

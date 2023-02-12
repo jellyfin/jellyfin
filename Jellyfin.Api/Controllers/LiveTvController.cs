@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
@@ -95,7 +94,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// </returns>
     [HttpGet("Info")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     public ActionResult<LiveTvInfo> GetLiveTvInfo()
     {
         return _liveTvManager.GetLiveTvInfo(CancellationToken.None);
@@ -131,7 +130,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// </returns>
     [HttpGet("Channels")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     public ActionResult<QueryResult<BaseItemDto>> GetLiveTvChannels(
         [FromQuery] ChannelType? type,
         [FromQuery] Guid? userId,
@@ -210,7 +209,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the live tv channel.</returns>
     [HttpGet("Channels/{channelId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     public ActionResult<BaseItemDto> GetChannel([FromRoute, Required] Guid channelId, [FromQuery] Guid? userId)
     {
         var user = userId is null || userId.Value.Equals(default)
@@ -251,7 +250,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the live tv recordings.</returns>
     [HttpGet("Recordings")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     public ActionResult<QueryResult<BaseItemDto>> GetRecordings(
         [FromQuery] string? channelId,
         [FromQuery] Guid? userId,
@@ -322,7 +321,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the live tv recordings.</returns>
     [HttpGet("Recordings/Series")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [Obsolete("This endpoint is obsolete.")]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "channelId", Justification = "Imported from ServiceStack")]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Imported from ServiceStack")]
@@ -365,7 +364,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the recording groups.</returns>
     [HttpGet("Recordings/Groups")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [Obsolete("This endpoint is obsolete.")]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Imported from ServiceStack")]
     public ActionResult<QueryResult<BaseItemDto>> GetRecordingGroups([FromQuery] Guid? userId)
@@ -381,7 +380,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the recording folders.</returns>
     [HttpGet("Recordings/Folders")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     public ActionResult<QueryResult<BaseItemDto>> GetRecordingFolders([FromQuery] Guid? userId)
     {
         var user = userId is null || userId.Value.Equals(default)
@@ -403,7 +402,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the live tv recording.</returns>
     [HttpGet("Recordings/{recordingId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     public ActionResult<BaseItemDto> GetRecording([FromRoute, Required] Guid recordingId, [FromQuery] Guid? userId)
     {
         var user = userId is null || userId.Value.Equals(default)
@@ -425,7 +424,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Tuners/{tunerId}/Reset")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     public async Task<ActionResult> ResetTuner([FromRoute, Required] string tunerId)
     {
         await AssertUserCanManageLiveTv().ConfigureAwait(false);
@@ -443,7 +442,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// </returns>
     [HttpGet("Timers/{timerId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     public async Task<ActionResult<TimerInfoDto>> GetTimer([FromRoute, Required] string timerId)
     {
         return await _liveTvManager.GetTimer(timerId, CancellationToken.None).ConfigureAwait(false);
@@ -459,7 +458,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// </returns>
     [HttpGet("Timers/Defaults")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     public async Task<ActionResult<SeriesTimerInfoDto>> GetDefaultTimer([FromQuery] string? programId)
     {
         return string.IsNullOrEmpty(programId)
@@ -479,7 +478,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// </returns>
     [HttpGet("Timers")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     public async Task<ActionResult<QueryResult<TimerInfoDto>>> GetTimers(
         [FromQuery] string? channelId,
         [FromQuery] string? seriesTimerId,
@@ -533,7 +532,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// </returns>
     [HttpGet("Programs")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     public async Task<ActionResult<QueryResult<BaseItemDto>>> GetLiveTvPrograms(
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] channelIds,
         [FromQuery] Guid? userId,
@@ -616,7 +615,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// </returns>
     [HttpPost("Programs")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     public async Task<ActionResult<QueryResult<BaseItemDto>>> GetPrograms([FromBody] GetProgramsDto body)
     {
         var user = body.UserId.Equals(default) ? null : _userManager.GetUserById(body.UserId);
@@ -682,7 +681,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="200">Recommended epgs returned.</response>
     /// <returns>A <see cref="OkResult"/> containing the queryresult of recommended epgs.</returns>
     [HttpGet("Programs/Recommended")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<QueryResult<BaseItemDto>>> GetRecommendedPrograms(
         [FromQuery] Guid? userId,
@@ -734,7 +733,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="200">Program returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the livetv program.</returns>
     [HttpGet("Programs/{programId}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<BaseItemDto>> GetProgram(
         [FromRoute, Required] string programId,
@@ -755,7 +754,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if item not found.</returns>
     [HttpDelete("Recordings/{recordingId}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DeleteRecording([FromRoute, Required] Guid recordingId)
@@ -783,7 +782,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="204">Timer deleted.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("Timers/{timerId}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> CancelTimer([FromRoute, Required] string timerId)
     {
@@ -800,7 +799,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="204">Timer updated.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Timers/{timerId}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "timerId", Justification = "Imported from ServiceStack")]
     public async Task<ActionResult> UpdateTimer([FromRoute, Required] string timerId, [FromBody] TimerInfoDto timerInfo)
@@ -817,7 +816,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="204">Timer created.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Timers")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> CreateTimer([FromBody] TimerInfoDto timerInfo)
     {
@@ -834,7 +833,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="404">Series timer not found.</response>
     /// <returns>A <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if timer not found.</returns>
     [HttpGet("SeriesTimers/{timerId}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<SeriesTimerInfoDto>> GetSeriesTimer([FromRoute, Required] string timerId)
@@ -856,7 +855,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="200">Timers returned.</response>
     /// <returns>An <see cref="OkResult"/> of live tv series timers.</returns>
     [HttpGet("SeriesTimers")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<QueryResult<SeriesTimerInfoDto>>> GetSeriesTimers([FromQuery] string? sortBy, [FromQuery] SortOrder? sortOrder)
     {
@@ -876,7 +875,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="204">Timer cancelled.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("SeriesTimers/{timerId}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> CancelSeriesTimer([FromRoute, Required] string timerId)
     {
@@ -893,7 +892,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="204">Series timer updated.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("SeriesTimers/{timerId}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "timerId", Justification = "Imported from ServiceStack")]
     public async Task<ActionResult> UpdateSeriesTimer([FromRoute, Required] string timerId, [FromBody] SeriesTimerInfoDto seriesTimerInfo)
@@ -910,7 +909,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="204">Series timer info created.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("SeriesTimers")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> CreateSeriesTimer([FromBody] SeriesTimerInfoDto seriesTimerInfo)
     {
@@ -925,7 +924,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <param name="groupId">Group id.</param>
     /// <returns>A <see cref="NotFoundResult"/>.</returns>
     [HttpGet("Recordings/Groups/{groupId}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Obsolete("This endpoint is obsolete.")]
     public ActionResult<BaseItemDto> GetRecordingGroup([FromRoute, Required] Guid groupId)
@@ -939,7 +938,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="200">Guid info returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the guide info.</returns>
     [HttpGet("GuideInfo")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<GuideInfo> GetGuideInfo()
     {
@@ -953,7 +952,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="200">Created tuner host returned.</response>
     /// <returns>A <see cref="OkResult"/> containing the created tuner host.</returns>
     [HttpPost("TunerHosts")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<TunerHostInfo>> AddTunerHost([FromBody] TunerHostInfo tunerHostInfo)
     {
@@ -967,7 +966,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="204">Tuner host deleted.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("TunerHosts")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult DeleteTunerHost([FromQuery] string? id)
     {
@@ -983,7 +982,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="200">Default listings provider info returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the default listings provider info.</returns>
     [HttpGet("ListingProviders/Default")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<ListingsProviderInfo> GetDefaultListingProvider()
     {
@@ -1000,7 +999,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="200">Created listings provider returned.</response>
     /// <returns>A <see cref="OkResult"/> containing the created listings provider.</returns>
     [HttpPost("ListingProviders")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [SuppressMessage("Microsoft.Performance", "CA5350:RemoveSha1", MessageId = "AddListingProvider", Justification = "Imported from ServiceStack")]
     public async Task<ActionResult<ListingsProviderInfo>> AddListingProvider(
@@ -1026,7 +1025,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="204">Listing provider deleted.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("ListingProviders")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult DeleteListingProvider([FromQuery] string? id)
     {
@@ -1044,7 +1043,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="200">Available lineups returned.</response>
     /// <returns>A <see cref="OkResult"/> containing the available lineups.</returns>
     [HttpGet("ListingProviders/Lineups")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<NameIdPair>>> GetLineups(
         [FromQuery] string? id,
@@ -1061,7 +1060,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="200">Available countries returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the available countries.</returns>
     [HttpGet("ListingProviders/SchedulesDirect/Countries")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesFile(MediaTypeNames.Application.Json)]
     public async Task<ActionResult> GetSchedulesDirectCountries()
@@ -1082,7 +1081,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="200">Channel mapping options returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the channel mapping options.</returns>
     [HttpGet("ChannelMappingOptions")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<ChannelMappingOptionsDto>> GetChannelMappingOptions([FromQuery] string? providerId)
     {
@@ -1120,7 +1119,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="200">Created channel mapping returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the created channel mapping.</returns>
     [HttpPost("ChannelMappings")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<TunerChannelMapping>> SetChannelMapping([FromBody, Required] SetChannelMappingDto setChannelMappingDto)
     {
@@ -1133,7 +1132,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <response code="200">Tuner host types returned.</response>
     /// <returns>An <see cref="OkResult"/> containing the tuner host types.</returns>
     [HttpGet("TunerHosts/Types")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<IEnumerable<NameIdPair>> GetTunerHostTypes()
     {
@@ -1148,7 +1147,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the tuners.</returns>
     [HttpGet("Tuners/Discvover", Name = "DiscvoverTuners")]
     [HttpGet("Tuners/Discover")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<TunerHostInfo>>> DiscoverTuners([FromQuery] bool newDevicesOnly = false)
     {

@@ -6,11 +6,6 @@ namespace Jellyfin.Api.Constants;
 public static class Policies
 {
     /// <summary>
-    /// Policy name for default authorization.
-    /// </summary>
-    public const string DefaultAuthorization = "DefaultAuthorization";
-
-    /// <summary>
     /// Policy name for requiring first time setup or elevated privileges.
     /// </summary>
     public const string FirstTimeSetupOrElevated = "FirstTimeSetupOrElevated";

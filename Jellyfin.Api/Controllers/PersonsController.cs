@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Entities;
@@ -20,7 +19,7 @@ namespace Jellyfin.Api.Controllers;
 /// <summary>
 /// Persons controller.
 /// </summary>
-[Authorize(Policy = Policies.DefaultAuthorization)]
+[Authorize]
 public class PersonsController : BaseJellyfinApiController
 {
     private readonly ILibraryManager _libraryManager;

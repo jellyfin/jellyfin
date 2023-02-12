@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.PlaybackDtos;
 using Jellyfin.Api.Models.StreamingDtos;
@@ -36,7 +35,7 @@ namespace Jellyfin.Api.Controllers;
 /// Dynamic hls controller.
 /// </summary>
 [Route("")]
-[Authorize(Policy = Policies.DefaultAuthorization)]
+[Authorize]
 public class DynamicHlsController : BaseJellyfinApiController
 {
     private const string DefaultVodEncoderPreset = "veryfast";

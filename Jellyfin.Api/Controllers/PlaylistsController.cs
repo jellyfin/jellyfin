@@ -4,7 +4,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.PlaylistDtos;
@@ -25,7 +24,7 @@ namespace Jellyfin.Api.Controllers;
 /// <summary>
 /// Playlists controller.
 /// </summary>
-[Authorize(Policy = Policies.DefaultAuthorization)]
+[Authorize]
 public class PlaylistsController : BaseJellyfinApiController
 {
     private readonly IPlaylistManager _playlistManager;

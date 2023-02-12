@@ -100,7 +100,7 @@ public class VideosController : BaseJellyfinApiController
     /// <response code="200">Additional parts returned.</response>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the parts.</returns>
     [HttpGet("{itemId}/AdditionalParts")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetAdditionalPart([FromRoute, Required] Guid itemId, [FromQuery] Guid? userId)
     {

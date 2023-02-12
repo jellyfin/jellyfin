@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
@@ -25,7 +24,7 @@ namespace Jellyfin.Api.Controllers;
 /// The tv shows controller.
 /// </summary>
 [Route("Shows")]
-[Authorize(Policy = Policies.DefaultAuthorization)]
+[Authorize]
 public class TvShowsController : BaseJellyfinApiController
 {
     private readonly IUserManager _userManager;

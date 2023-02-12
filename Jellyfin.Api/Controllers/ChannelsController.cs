@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
@@ -23,7 +22,7 @@ namespace Jellyfin.Api.Controllers;
 /// <summary>
 /// Channels Controller.
 /// </summary>
-[Authorize(Policy = Policies.DefaultAuthorization)]
+[Authorize]
 public class ChannelsController : BaseJellyfinApiController
 {
     private readonly IChannelManager _channelManager;

@@ -21,7 +21,7 @@ namespace Jellyfin.Api.Controllers;
 /// <summary>
 /// Plugins controller.
 /// </summary>
-[Authorize(Policy = Policies.DefaultAuthorization)]
+[Authorize]
 public class PluginsController : BaseJellyfinApiController
 {
     private readonly IInstallationManager _installationManager;

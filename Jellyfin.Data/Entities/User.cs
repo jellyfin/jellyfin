@@ -525,8 +525,9 @@ namespace Jellyfin.Data.Entities
         {
             var localTime = date.ToLocalTime();
             var hour = localTime.TimeOfDay.TotalHours;
+            var currentDayOfWeek = localTime.DayOfWeek;
 
-            return DayOfWeekHelper.GetDaysOfWeek(schedule.DayOfWeek).Contains(localTime.DayOfWeek)
+            return schedule.DayOfWeek.Contains(currentDayOfWeek)
                    && hour >= schedule.StartHour
                    && hour <= schedule.EndHour;
         }

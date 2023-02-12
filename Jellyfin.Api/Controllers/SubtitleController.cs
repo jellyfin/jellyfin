@@ -114,7 +114,7 @@ public class SubtitleController : BaseJellyfinApiController
     /// <response code="200">Subtitles retrieved.</response>
     /// <returns>An array of <see cref="RemoteSubtitleInfo"/>.</returns>
     [HttpGet("Items/{itemId}/RemoteSearch/Subtitles/{language}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<RemoteSubtitleInfo>>> SearchRemoteSubtitles(
         [FromRoute, Required] Guid itemId,
@@ -134,7 +134,7 @@ public class SubtitleController : BaseJellyfinApiController
     /// <response code="204">Subtitle downloaded.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Items/{itemId}/RemoteSearch/Subtitles/{subtitleId}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> DownloadRemoteSubtitles(
         [FromRoute, Required] Guid itemId,
@@ -164,7 +164,7 @@ public class SubtitleController : BaseJellyfinApiController
     /// <response code="200">File returned.</response>
     /// <returns>A <see cref="FileStreamResult"/> with the subtitle file.</returns>
     [HttpGet("Providers/Subtitles/Subtitles/{id}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Produces(MediaTypeNames.Application.Octet)]
     [ProducesFile("text/*")]
@@ -322,7 +322,7 @@ public class SubtitleController : BaseJellyfinApiController
     /// <response code="200">Subtitle playlist retrieved.</response>
     /// <returns>A <see cref="FileContentResult"/> with the HLS subtitle playlist.</returns>
     [HttpGet("Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/subtitles.m3u8")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesPlaylistFile]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
@@ -463,7 +463,7 @@ public class SubtitleController : BaseJellyfinApiController
     /// <response code="200">Information retrieved.</response>
     /// <returns>An array of <see cref="FontFile"/> with the available font files.</returns>
     [HttpGet("FallbackFont/Fonts")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public IEnumerable<FontFile> GetFallbackFontList()
     {
@@ -514,7 +514,7 @@ public class SubtitleController : BaseJellyfinApiController
     /// <response code="200">Fallback font file retrieved.</response>
     /// <returns>The fallback font file.</returns>
     [HttpGet("FallbackFont/Fonts/{name}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesFile("font/*")]
     public ActionResult GetFallbackFont([FromRoute, Required] string name)
