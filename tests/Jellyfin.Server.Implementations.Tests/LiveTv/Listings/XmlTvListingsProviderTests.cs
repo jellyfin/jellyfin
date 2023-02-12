@@ -83,7 +83,7 @@ public class XmlTvListingsProviderTests
         var programsList = programs.ToList();
         Assert.Single(programsList);
         var program = programsList[0];
-        Assert.DoesNotContain(program.Genres, g => string.Equals(g, string.Empty, StringComparison.Ordinal));
+        Assert.DoesNotContain(program.Genres, g => string.IsNullOrEmpty(g));
         Assert.Equal("3297", program.ChannelId);
     }
 }
