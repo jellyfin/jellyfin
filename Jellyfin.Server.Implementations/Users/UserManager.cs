@@ -11,6 +11,9 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.Data.Events.Users;
+using Jellyfin.Data.Mediator;
+using Jellyfin.Data.Users;
+using Jellyfin.Data.Users.Notifications;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -35,6 +38,7 @@ namespace Jellyfin.Server.Implementations.Users
     {
         private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
         private readonly IEventManager _eventManager;
+        private readonly IMediator _mediator;
         private readonly ICryptoProvider _cryptoProvider;
         private readonly INetworkManager _networkManager;
         private readonly IApplicationHost _appHost;
@@ -53,6 +57,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// </summary>
         /// <param name="dbProvider">The database provider.</param>
         /// <param name="eventManager">The event manager.</param>
+        /// <param name="mediator">The mediator.</param>
         /// <param name="cryptoProvider">The cryptography provider.</param>
         /// <param name="networkManager">The network manager.</param>
         /// <param name="appHost">The application host.</param>
@@ -61,6 +66,7 @@ namespace Jellyfin.Server.Implementations.Users
         public UserManager(
             IDbContextFactory<JellyfinDbContext> dbProvider,
             IEventManager eventManager,
+            IMediator mediator,
             ICryptoProvider cryptoProvider,
             INetworkManager networkManager,
             IApplicationHost appHost,
@@ -69,6 +75,7 @@ namespace Jellyfin.Server.Implementations.Users
         {
             _dbProvider = dbProvider;
             _eventManager = eventManager;
+            _mediator = mediator;
             _cryptoProvider = cryptoProvider;
             _networkManager = networkManager;
             _appHost = appHost;
@@ -218,7 +225,7 @@ namespace Jellyfin.Server.Implementations.Users
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
 
-            await _eventManager.PublishAsync(new UserCreatedEventArgs(newUser)).ConfigureAwait(false);
+            await _mediator.Publish(new UserCreatedNotification(newUser)).ConfigureAwait(false);
 
             return newUser;
         }
@@ -641,6 +648,7 @@ namespace Jellyfin.Server.Implementations.Users
             await using (dbContext.ConfigureAwait(false))
             {
                 var user = dbContext.Users
+                               .AsSplitQuery()
                                .Include(u => u.Permissions)
                                .Include(u => u.Preferences)
                                .Include(u => u.AccessSchedules)

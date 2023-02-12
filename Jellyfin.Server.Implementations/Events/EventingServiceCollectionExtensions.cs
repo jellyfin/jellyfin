@@ -1,12 +1,17 @@
 ﻿using Jellyfin.Data.Events;
 using Jellyfin.Data.Events.System;
 using Jellyfin.Data.Events.Users;
+using Jellyfin.Data.Mediator;
+using Jellyfin.Data.Users;
+using Jellyfin.Data.Users.Notifications;
+using Jellyfin.Server.Implementations.Activity.Handlers;
 using Jellyfin.Server.Implementations.Events.Consumers.Library;
 using Jellyfin.Server.Implementations.Events.Consumers.Security;
 using Jellyfin.Server.Implementations.Events.Consumers.Session;
 using Jellyfin.Server.Implementations.Events.Consumers.System;
 using Jellyfin.Server.Implementations.Events.Consumers.Updates;
 using Jellyfin.Server.Implementations.Events.Consumers.Users;
+using Jellyfin.Server.Implementations.Mediator;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Events;
@@ -31,6 +36,8 @@ namespace Jellyfin.Server.Implementations.Events
         /// <param name="collection">The service collection.</param>
         public static void AddEventServices(this IServiceCollection collection)
         {
+            collection.AddSingleton<IMediator, JellyfinMediator>();
+
             // Library consumers
             collection.AddScoped<IEventConsumer<SubtitleDownloadFailureEventArgs>, SubtitleDownloadFailureLogger>();
 
@@ -61,7 +68,7 @@ namespace Jellyfin.Server.Implementations.Events
             collection.AddScoped<IEventConsumer<PluginUpdatedEventArgs>, PluginUpdatedLogger>();
 
             // User consumers
-            collection.AddScoped<IEventConsumer<UserCreatedEventArgs>, UserCreatedLogger>();
+            collection.AddTransient<INotificationHandler<UserCreatedNotification>, UserCreatedLogger>();
             collection.AddScoped<IEventConsumer<UserDeletedEventArgs>, UserDeletedLogger>();
             collection.AddScoped<IEventConsumer<UserDeletedEventArgs>, UserDeletedNotifier>();
             collection.AddScoped<IEventConsumer<UserLockedOutEventArgs>, UserLockedOutLogger>();
