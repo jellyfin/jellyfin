@@ -81,6 +81,11 @@ public static class RequestHelpers
         }
 
         var user = userManager.GetUserById(userId);
+        if (user is null)
+        {
+            throw new ResourceNotFoundException();
+        }
+
         return user.EnableUserPreferenceAccess;
     }
 
@@ -98,7 +103,7 @@ public static class RequestHelpers
 
         if (session is null)
         {
-            throw new ArgumentException("Session not found.");
+            throw new ResourceNotFoundException("Session not found.");
         }
 
         return session;

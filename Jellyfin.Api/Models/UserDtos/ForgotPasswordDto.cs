@@ -11,5 +11,5 @@ public class ForgotPasswordDto
     /// Gets or sets the entered username to have its password reset.
     /// </summary>
     [Required]
-    public string? EnteredUsername { get; set; }
+    required public string EnteredUsername { get; set; }
 }
