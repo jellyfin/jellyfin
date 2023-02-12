@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.SyncPlay;
 using Microsoft.AspNetCore.Authorization;
@@ -33,6 +34,10 @@ namespace Jellyfin.Api.Auth.SyncPlayAccessPolicy
         {
             var userId = context.User.GetUserId();
             var user = _userManager.GetUserById(userId);
+            if (user is null)
+            {
+                throw new ResourceNotFoundException();
+            }
 
             if (requirement.RequiredAccess == SyncPlayAccessRequirementType.HasAccess)
             {

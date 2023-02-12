@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Jellyfin.Api.Auth.DownloadPolicy;
 using Jellyfin.Api.Extensions;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Authorization;
 
@@ -26,6 +27,11 @@ namespace Jellyfin.Api.Auth.UserPermissionPolicy
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, UserPermissionRequirement requirement)
         {
             var user = _userManager.GetUserById(context.User.GetUserId());
+            if (user is null)
+            {
+                throw new ResourceNotFoundException();
+            }
+
             if (user.HasPermission(requirement.RequiredPermission))
             {
                 context.Succeed(requirement);

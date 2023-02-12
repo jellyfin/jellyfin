@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Authorization;
 
@@ -50,6 +51,11 @@ namespace Jellyfin.Api.Auth.FirstTimeSetupPolicy
             }
 
             var user = _userManager.GetUserById(context.User.GetUserId());
+            if (user is null)
+            {
+                throw new ResourceNotFoundException();
+            }
+
             if (user.IsParentalScheduleAllowed())
             {
                 context.Succeed(requirement);

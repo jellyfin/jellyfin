@@ -49,6 +49,11 @@ namespace Jellyfin.Api.Auth.DefaultAuthorizationPolicy
             var isInLocalNetwork = _httpContextAccessor.HttpContext is not null
                                    && _networkManager.IsInLocalNetwork(_httpContextAccessor.HttpContext.GetNormalizedRemoteIp());
             var user = _userManager.GetUserById(userId);
+            if (user is null)
+            {
+                throw new ResourceNotFoundException();
+            }
+
             // User cannot access remotely and user is remote
             if (!isInLocalNetwork && !user.HasPermission(PermissionKind.EnableRemoteAccess))
             {
