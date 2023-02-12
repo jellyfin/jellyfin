@@ -99,12 +99,17 @@ public class ImageController : BaseJellyfinApiController
         [FromRoute, Required] ImageType imageType,
         [FromQuery] int? index = null)
     {
+        var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
         if (!RequestHelpers.AssertCanUpdateUser(_userManager, HttpContext.User, userId, true))
         {
             return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the image.");
         }
 
-        var user = _userManager.GetUserById(userId);
         var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
         await using (memoryStream.ConfigureAwait(false))
         {
@@ -148,12 +153,17 @@ public class ImageController : BaseJellyfinApiController
         [FromRoute, Required] ImageType imageType,
         [FromRoute] int index)
     {
+        var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
         if (!RequestHelpers.AssertCanUpdateUser(_userManager, HttpContext.User, userId, true))
         {
             return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the image.");
         }
 
-        var user = _userManager.GetUserById(userId);
         var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
         await using (memoryStream.ConfigureAwait(false))
         {

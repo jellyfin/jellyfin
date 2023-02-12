@@ -76,6 +76,11 @@ public class PlaystateController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(LegacyDateTimeModelBinder))] DateTime? datePlayed)
     {
         var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
         var session = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
 
         var item = _libraryManager.GetItemById(itemId);
@@ -88,6 +93,11 @@ public class PlaystateController : BaseJellyfinApiController
         foreach (var additionalUserInfo in session.AdditionalUsers)
         {
             var additionalUser = _userManager.GetUserById(additionalUserInfo.UserId);
+            if (additionalUser is null)
+            {
+                return NotFound();
+            }
+
             UpdatePlayedStatus(additionalUser, item, true, datePlayed);
         }
 
@@ -108,6 +118,11 @@ public class PlaystateController : BaseJellyfinApiController
     public async Task<ActionResult<UserItemDataDto>> MarkUnplayedItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
     {
         var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
         var session = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
         var item = _libraryManager.GetItemById(itemId);
 
@@ -120,6 +135,11 @@ public class PlaystateController : BaseJellyfinApiController
         foreach (var additionalUserInfo in session.AdditionalUsers)
         {
             var additionalUser = _userManager.GetUserById(additionalUserInfo.UserId);
+            if (additionalUser is null)
+            {
+                return NotFound();
+            }
+
             UpdatePlayedStatus(additionalUser, item, false, null);
         }
 

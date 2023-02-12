@@ -157,6 +157,11 @@ public class MusicGenresController : BaseJellyfinApiController
             item = _libraryManager.GetMusicGenre(genreName);
         }
 
+        if (item is null)
+        {
+            return NotFound();
+        }
+
         if (userId.HasValue && !userId.Value.Equals(default))
         {
             var user = _userManager.GetUserById(userId.Value);

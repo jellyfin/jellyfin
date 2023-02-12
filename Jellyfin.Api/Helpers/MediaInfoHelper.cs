@@ -200,7 +200,7 @@ public class MediaInfoHelper
             options.SubtitleStreamIndex = subtitleStreamIndex;
         }
 
-        var user = _userManager.GetUserById(userId);
+        var user = _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException();
 
         if (!enableDirectPlay)
         {

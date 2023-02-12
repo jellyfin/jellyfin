@@ -1210,7 +1210,7 @@ public class LiveTvController : BaseJellyfinApiController
 
     private async Task AssertUserCanManageLiveTv()
     {
-        var user = _userManager.GetUserById(User.GetUserId());
+        var user = _userManager.GetUserById(User.GetUserId()) ?? throw new ResourceNotFoundException();
         var session = await _sessionManager.LogSessionActivity(
             User.GetClient(),
             User.GetVersion(),

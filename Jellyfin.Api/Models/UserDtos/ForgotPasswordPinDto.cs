@@ -11,5 +11,5 @@ public class ForgotPasswordPinDto
     /// Gets or sets the entered pin to have the password reset.
     /// </summary>
     [Required]
-    public string? Pin { get; set; }
+    required public string Pin { get; set; }
 }

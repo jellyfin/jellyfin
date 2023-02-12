@@ -35,6 +35,7 @@ namespace MediaBrowser.Model.Users
             EnableSharedDeviceControl = true;
 
             BlockedTags = Array.Empty<string>();
+            AllowedTags = Array.Empty<string>();
             BlockUnratedItems = Array.Empty<UnratedItem>();
 
             EnableUserPreferenceAccess = true;
@@ -85,6 +86,8 @@ namespace MediaBrowser.Model.Users
         public int? MaxParentalRating { get; set; }
 
         public string[] BlockedTags { get; set; }
+
+        public string[] AllowedTags { get; set; }
 
         public bool EnableUserPreferenceAccess { get; set; }
 
