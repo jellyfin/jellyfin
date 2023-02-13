@@ -74,4 +74,14 @@ public static class Policies
     /// Policy name for accessing collection management.
     /// </summary>
     public const string CollectionManagement = "CollectionManagement";
+
+    /// <summary>
+    /// Policy name for accessing LiveTV.
+    /// </summary>
+    public const string LiveTvAccess = "LiveTvAccess";
+
+    /// <summary>
+    /// Policy name for managing LiveTV.
+    /// </summary>
+    public const string LiveTvManagement = "LiveTvManagement";
 }
