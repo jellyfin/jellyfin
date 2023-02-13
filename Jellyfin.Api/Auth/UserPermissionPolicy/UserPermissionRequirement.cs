@@ -1,7 +1,7 @@
 ﻿using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
 using Jellyfin.Data.Enums;
 
-namespace Jellyfin.Api.Auth.DownloadPolicy
+namespace Jellyfin.Api.Auth.UserPermissionPolicy
 {
     /// <summary>
     /// The user permission requirement.

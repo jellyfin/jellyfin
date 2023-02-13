@@ -13,6 +13,7 @@ namespace MediaBrowser.Model.Users
         public UserPolicy()
         {
             IsHidden = true;
+            EnableCollectionManagement = false;
 
             EnableContentDeletion = false;
             EnableContentDeletionFromFolders = Array.Empty<string>();
@@ -72,6 +73,12 @@ namespace MediaBrowser.Model.Users
         /// </summary>
         /// <value><c>true</c> if this instance is hidden; otherwise, <c>false</c>.</value>
         public bool IsHidden { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can manage collections.
+        /// </summary>
+        /// <value><c>true</c> if this instance is hidden; otherwise, <c>false</c>.</value>
+        public bool EnableCollectionManagement { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is disabled.

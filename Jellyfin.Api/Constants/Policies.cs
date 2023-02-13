@@ -69,4 +69,9 @@ public static class Policies
     /// Policy name for accessing a SyncPlay group.
     /// </summary>
     public const string SyncPlayIsInGroup = "SyncPlayIsInGroup";
+
+    /// <summary>
+    /// Policy name for accessing collection management.
+    /// </summary>
+    public const string CollectionManagement = "CollectionManagement";
 }

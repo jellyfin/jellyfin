@@ -108,6 +108,11 @@ namespace Jellyfin.Data.Enums
         /// <summary>
         /// Whether the server should force transcoding on remote connections for the user.
         /// </summary>
-        ForceRemoteSourceTranscoding = 20
+        ForceRemoteSourceTranscoding = 20,
+
+        /// <summary>
+        /// Whether the user can create, modify and delete collections.
+        /// </summary>
+        EnableCollectionManagement = 21
     }
 }

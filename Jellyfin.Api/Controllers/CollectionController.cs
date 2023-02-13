@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
+using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.ModelBinders;
 using MediaBrowser.Controller.Collections;
@@ -16,7 +17,7 @@ namespace Jellyfin.Api.Controllers;
 /// The collection controller.
 /// </summary>
 [Route("Collections")]
-[Authorize]
+[Authorize(Policy = Policies.CollectionManagement)]
 public class CollectionController : BaseJellyfinApiController
 {
     private readonly ICollectionManager _collectionManager;
