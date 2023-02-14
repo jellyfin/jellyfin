@@ -37,14 +37,18 @@ namespace Jellyfin.Api.Auth.LocalAccessOrRequiresElevationPolicy
             if (ip is null || _networkManager.IsInLocalNetwork(ip))
             {
                 context.Succeed(requirement);
+
+                return Task.CompletedTask;
             }
 
             if (context.User.IsInRole(UserRoles.Administrator))
             {
                 context.Succeed(requirement);
             }
-
-            context.Fail();
+            else
+            {
+                context.Fail();
+            }
 
             return Task.CompletedTask;
         }
