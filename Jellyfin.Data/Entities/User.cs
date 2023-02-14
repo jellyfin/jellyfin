@@ -508,6 +508,7 @@ namespace Jellyfin.Data.Entities
             Permissions.Add(new Permission(PermissionKind.EnableVideoPlaybackTranscoding, true));
             Permissions.Add(new Permission(PermissionKind.ForceRemoteSourceTranscoding, false));
             Permissions.Add(new Permission(PermissionKind.EnableRemoteControlOfOtherUsers, false));
+            Permissions.Add(new Permission(PermissionKind.EnableCollectionManagement, false));
         }
 
         /// <summary>

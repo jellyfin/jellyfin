@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Jellyfin.Api.Auth.DownloadPolicy;
 using Jellyfin.Api.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Library;
@@ -8,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace Jellyfin.Api.Auth.UserPermissionPolicy
 {
     /// <summary>
-    /// Download authorization handler.
+    /// User permission authorization handler.
     /// </summary>
     public class UserPermissionHandler : AuthorizationHandler<UserPermissionRequirement>
     {
