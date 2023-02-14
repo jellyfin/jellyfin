@@ -167,6 +167,11 @@ namespace MediaBrowser.Common.Net
                 address = address.MapToIPv4();
             }
 
+            if (address.AddressFamily != AddressFamily)
+            {
+                return false;
+            }
+
             var (altAddress, altPrefix) = NetworkAddressOf(address, PrefixLength);
             return NetworkAddress.Address.Equals(altAddress) && NetworkAddress.PrefixLength >= altPrefix;
         }
