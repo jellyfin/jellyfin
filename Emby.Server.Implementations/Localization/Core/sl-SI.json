@@ -123,5 +123,6 @@
     "TaskOptimizeDatabase": "Optimiziraj bazo podatkov",
     "TaskKeyframeExtractor": "Ekstraktor ključnih sličic",
     "External": "Zunanji",
-    "TaskKeyframeExtractorDescription": "Iz video datoteke Izvleče ključne sličice, da ustvari bolj natančne sezname predvajanja HLS. Proces lahko traja dolgo časa."
+    "TaskKeyframeExtractorDescription": "Iz video datoteke Izvleče ključne sličice, da ustvari bolj natančne sezname predvajanja HLS. Proces lahko traja dolgo časa.",
+    "HearingImpaired": "Oslabljen sluh"
 }
