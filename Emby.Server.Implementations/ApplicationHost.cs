@@ -1184,10 +1184,13 @@ namespace Emby.Server.Implementations
                 }
             }
 
-            // used for closing websockets
-            foreach (var session in _sessionManager.Sessions)
+            if (_sessionManager != null)
             {
-                await session.DisposeAsync().ConfigureAwait(false);
+                // used for closing websockets
+                foreach (var session in _sessionManager.Sessions)
+                {
+                    await session.DisposeAsync().ConfigureAwait(false);
+                }
             }
         }
     }
