@@ -59,10 +59,16 @@ namespace MediaBrowser.Common.Net
         {
             get
             {
-                return Address.Equals(IPAddress.None)
-                    ? (Subnet.Prefix.AddressFamily.Equals(IPAddress.None)
-                        ? AddressFamily.Unspecified : Subnet.Prefix.AddressFamily)
-                    : Address.AddressFamily;
+                if (Address.Equals(IPAddress.None))
+                {
+                    return Subnet.Prefix.AddressFamily.Equals(IPAddress.None)
+                        ? AddressFamily.Unspecified
+                        : Subnet.Prefix.AddressFamily;
+                }
+                else
+                {
+                    return Address.AddressFamily;
+                }
             }
         }
     }
