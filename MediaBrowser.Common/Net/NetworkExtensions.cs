@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
@@ -170,36 +171,9 @@ namespace MediaBrowser.Common.Net
 
             for (int a = 0; a < values.Length; a++)
             {
-                string[] v = values[a].Trim().Split("/");
-
-                var address = IPAddress.None;
-                if (negated && v[0].StartsWith('!'))
+                if (TryParseToSubnet(values[a], out var innerResult, negated))
                 {
-                    _ = IPAddress.TryParse(v[0][1..], out address);
-                }
-                else if (!negated)
-                {
-                    _ = IPAddress.TryParse(v[0][0..], out address);
-                }
-
-                if (address != IPAddress.None && address is not null)
-                {
-                    if (v.Length > 1 && int.TryParse(v[1], out var netmask))
-                    {
-                        result.Add(new IPNetwork(address, netmask));
-                    }
-                    else if (v.Length > 1 && IPAddress.TryParse(v[1], out var netmaskAddress))
-                    {
-                        result.Add(new IPNetwork(address, NetworkExtensions.MaskToCidr(netmaskAddress)));
-                    }
-                    else if (address.AddressFamily == AddressFamily.InterNetwork)
-                    {
-                        result.Add(new IPNetwork(address, 32));
-                    }
-                    else if (address.AddressFamily == AddressFamily.InterNetworkV6)
-                    {
-                        result.Add(new IPNetwork(address, 128));
-                    }
+                    result.Add(innerResult);
                 }
             }
 
@@ -228,27 +202,32 @@ namespace MediaBrowser.Common.Net
                 return false;
             }
 
-            string[] v = value.Trim().Split("/");
+            var splitString = value.Trim().Split("/");
+            var ipBlock = splitString[0];
 
             var address = IPAddress.None;
-            if (negated && v[0].StartsWith('!'))
+            if (negated && ipBlock.StartsWith('!') && IPAddress.TryParse(ipBlock[1..], out var tmpAddress))
             {
-                _ = IPAddress.TryParse(v[0][1..], out address);
+                address = tmpAddress;
             }
-            else if (!negated)
+            else if (!negated && IPAddress.TryParse(ipBlock, out tmpAddress))
             {
-                _ = IPAddress.TryParse(v[0][0..], out address);
+                address = tmpAddress;
             }
 
             if (address != IPAddress.None && address is not null)
             {
-                if (v.Length > 1 && int.TryParse(v[1], out var netmask))
+                if (splitString.Length > 1)
                 {
-                    result = new IPNetwork(address, netmask);
-                }
-                else if (v.Length > 1 && IPAddress.TryParse(v[1], out var netmaskAddress))
-                {
-                    result = new IPNetwork(address, NetworkExtensions.MaskToCidr(netmaskAddress));
+                    var subnetBlock = splitString[1];
+                    if (int.TryParse(subnetBlock, out var netmask))
+                    {
+                        result = new IPNetwork(address, netmask);
+                    }
+                    else if (IPAddress.TryParse(subnetBlock, out var netmaskAddress))
+                    {
+                        result = new IPNetwork(address, NetworkExtensions.MaskToCidr(netmaskAddress));
+                    }
                 }
                 else if (address.AddressFamily == AddressFamily.InterNetwork)
                 {
@@ -353,7 +332,13 @@ namespace MediaBrowser.Common.Net
         /// <returns>The broadcast address.</returns>
         public static IPAddress GetBroadcastAddress(IPNetwork network)
         {
-            uint ipAddress = BitConverter.ToUInt32(network.Prefix.GetAddressBytes(), 0);
+            var addressBytes = network.Prefix.GetAddressBytes();
+            if (BitConverter.IsLittleEndian)
+            {
+                addressBytes.Reverse();
+            }
+
+            uint ipAddress = BitConverter.ToUInt32(addressBytes, 0);
             uint ipMaskV4 = BitConverter.ToUInt32(CidrToMask(network.PrefixLength, AddressFamily.InterNetwork).GetAddressBytes(), 0);
             uint broadCastIpAddress = ipAddress | ~ipMaskV4;
 

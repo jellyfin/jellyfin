@@ -367,7 +367,7 @@ namespace Jellyfin.Server.Extensions
 
         private static void AddIpAddress(NetworkConfiguration config, ForwardedHeadersOptions options, IPAddress addr, int prefixLength)
         {
-            if ((!config.EnableIPV4 && addr.AddressFamily == AddressFamily.InterNetwork) || (!config.EnableIPV6 && addr.AddressFamily == AddressFamily.InterNetworkV6))
+            if ((!config.EnableIPv4 && addr.AddressFamily == AddressFamily.InterNetwork) || (!config.EnableIPv6 && addr.AddressFamily == AddressFamily.InterNetworkV6))
             {
                 return;
             }

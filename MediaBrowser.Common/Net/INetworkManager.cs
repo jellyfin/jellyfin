@@ -19,12 +19,12 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Gets a value indicating whether IPv4 is enabled.
         /// </summary>
-        bool IsIpv4Enabled { get; }
+        bool IsIPv4Enabled { get; }
 
         /// <summary>
         /// Gets a value indicating whether IPv6 is enabled.
         /// </summary>
-        bool IsIpv6Enabled { get; }
+        bool IsIPv6Enabled { get; }
 
         /// <summary>
         /// Calculates the list of interfaces to use for Kestrel.
@@ -119,7 +119,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="intf">Interface name.</param>
         /// <param name="result">Resulting object's IP addresses, if successful.</param>
         /// <returns>Success of the operation.</returns>
-        bool TryParseInterface(string intf, out List<IPData>? result);
+        bool TryParseInterface(string intf, out List<IPData> result);
 
         /// <summary>
         /// Returns all internal (LAN) bind interface addresses.

@@ -102,7 +102,10 @@ namespace Emby.Server.Implementations.EntryPoints
                     _udpServers.Add(new UdpServer(_logger, _appHost, _config, System.Net.IPAddress.Any, PortNumber));
                 }
 
-                _udpServers.ForEach(u => u.Start(_cancellationTokenSource.Token));
+                foreach (var server in _udpServers)
+                {
+                    server.Start(_cancellationTokenSource.Token);
+                }
             }
             catch (SocketException ex)
             {

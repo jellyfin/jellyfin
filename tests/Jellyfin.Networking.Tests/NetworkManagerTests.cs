@@ -23,8 +23,8 @@ namespace Jellyfin.Networking.Tests
             var ip = IPAddress.Parse(value);
             var conf = new NetworkConfiguration()
             {
-                EnableIPV6 = true,
-                EnableIPV4 = true,
+                EnableIPv6 = true,
+                EnableIPv4 = true,
                 LocalNetworkSubnets = network.Split(',')
             };
 
@@ -50,8 +50,8 @@ namespace Jellyfin.Networking.Tests
             var ip = IPAddress.Parse(value);
             var conf = new NetworkConfiguration()
             {
-                EnableIPV6 = true,
-                EnableIPV4 = true,
+                EnableIPv6 = true,
+                EnableIPv4 = true,
                 LocalNetworkSubnets = network.Split(',')
             };
 

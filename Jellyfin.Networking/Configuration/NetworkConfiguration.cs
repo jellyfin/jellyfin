@@ -115,12 +115,12 @@ namespace Jellyfin.Networking.Configuration
         /// <summary>
         /// Gets or sets a value indicating whether IPv6 is enabled or not.
         /// </summary>
-        public bool EnableIPV4 { get; set; } = true;
+        public bool EnableIPv4 { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether IPv6 is enabled or not.
         /// </summary>
-        public bool EnableIPV6 { get; set; }
+        public bool EnableIPv6 { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether access outside of the LAN is permitted.

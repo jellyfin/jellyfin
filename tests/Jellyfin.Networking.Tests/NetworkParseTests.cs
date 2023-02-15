@@ -47,8 +47,8 @@ namespace Jellyfin.Networking.Tests
         {
             var conf = new NetworkConfiguration()
             {
-                EnableIPV6 = true,
-                EnableIPV4 = true,
+                EnableIPv6 = true,
+                EnableIPv4 = true,
                 LocalNetworkSubnets = lan?.Split(';') ?? throw new ArgumentNullException(nameof(lan))
             };
 
@@ -107,7 +107,7 @@ namespace Jellyfin.Networking.Tests
         [InlineData("10.128.240.50/30", "10.128.240.51")]
         [InlineData("10.128.240.50/255.255.255.252", "10.128.240.51")]
         [InlineData("127.0.0.1/8", "127.0.0.1")]
-        public void IpV4SubnetMaskMatchesValidIpAddress(string netMask, string ipAddress)
+        public void IPv4SubnetMaskMatchesValidIPAddress(string netMask, string ipAddress)
         {
             var ipa = IPAddress.Parse(ipAddress);
             Assert.True(NetworkExtensions.TryParseToSubnet(netMask, out var subnet) && subnet.Contains(IPAddress.Parse(ipAddress)));
@@ -127,7 +127,7 @@ namespace Jellyfin.Networking.Tests
         [InlineData("10.128.240.50/30", "10.128.239.50")]
         [InlineData("10.128.240.50/30", "10.127.240.51")]
         [InlineData("10.128.240.50/255.255.255.252", "10.127.240.51")]
-        public void IpV4SubnetMaskDoesNotMatchInvalidIpAddress(string netMask, string ipAddress)
+        public void IPv4SubnetMaskDoesNotMatchInvalidIPAddress(string netMask, string ipAddress)
         {
             var ipa = IPAddress.Parse(ipAddress);
             Assert.False(NetworkExtensions.TryParseToSubnet(netMask, out var subnet) && subnet.Contains(IPAddress.Parse(ipAddress)));
@@ -144,7 +144,7 @@ namespace Jellyfin.Networking.Tests
         [InlineData("2001:db8:abcd:0012::0/64", "2001:0DB8:ABCD:0012:0001:0000:0000:0000")]
         [InlineData("2001:db8:abcd:0012::0/64", "2001:0DB8:ABCD:0012:FFFF:FFFF:FFFF:FFF0")]
         [InlineData("2001:db8:abcd:0012::0/128", "2001:0DB8:ABCD:0012:0000:0000:0000:0000")]
-        public void IpV6SubnetMaskMatchesValidIpAddress(string netMask, string ipAddress)
+        public void IPv6SubnetMaskMatchesValidIPAddress(string netMask, string ipAddress)
         {
             Assert.True(NetworkExtensions.TryParseToSubnet(netMask, out var subnet) && subnet.Contains(IPAddress.Parse(ipAddress)));
         }
@@ -155,7 +155,7 @@ namespace Jellyfin.Networking.Tests
         [InlineData("2001:db8:abcd:0012::0/64", "2001:0DB8:ABCD:0013:0001:0000:0000:0000")]
         [InlineData("2001:db8:abcd:0012::0/64", "2001:0DB8:ABCD:0011:FFFF:FFFF:FFFF:FFF0")]
         [InlineData("2001:db8:abcd:0012::0/128", "2001:0DB8:ABCD:0012:0000:0000:0000:0001")]
-        public void IpV6SubnetMaskDoesNotMatchInvalidIpAddress(string netMask, string ipAddress)
+        public void IPv6SubnetMaskDoesNotMatchInvalidIPAddress(string netMask, string ipAddress)
         {
             Assert.False(NetworkExtensions.TryParseToSubnet(netMask, out var subnet) && subnet.Contains(IPAddress.Parse(ipAddress)));
         }
@@ -194,8 +194,8 @@ namespace Jellyfin.Networking.Tests
             var conf = new NetworkConfiguration()
             {
                 LocalNetworkAddresses = bindAddresses.Split(','),
-                EnableIPV6 = ipv6enabled,
-                EnableIPV4 = true
+                EnableIPv6 = ipv6enabled,
+                EnableIPv4 = true
             };
 
             NetworkManager.MockNetworkSettings = "192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11";
@@ -256,8 +256,8 @@ namespace Jellyfin.Networking.Tests
             {
                 LocalNetworkSubnets = lan.Split(','),
                 LocalNetworkAddresses = bindAddresses.Split(','),
-                EnableIPV6 = ipv6enabled,
-                EnableIPV4 = true,
+                EnableIPv6 = ipv6enabled,
+                EnableIPv4 = true,
                 PublishedServerUriBySubnet = new string[] { publishedServers }
             };
 
@@ -281,13 +281,13 @@ namespace Jellyfin.Networking.Tests
         [InlineData("185.10.10.10", "185.10.10.10", false)]
         [InlineData("", "100.100.100.100", false)]
 
-        public void HasRemoteAccess_GivenWhitelist_AllowsOnlyIpsInWhitelist(string addresses, string remoteIp, bool denied)
+        public void HasRemoteAccess_GivenWhitelist_AllowsOnlyIPsInWhitelist(string addresses, string remoteIp, bool denied)
         {
             // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
             // If left blank, all remote addresses will be allowed.
             var conf = new NetworkConfiguration()
             {
-                EnableIPV4 = true,
+                EnableIPv4 = true,
                 RemoteIPFilter = addresses.Split(','),
                 IsRemoteIPFilterBlacklist = false
             };
@@ -301,13 +301,13 @@ namespace Jellyfin.Networking.Tests
         [InlineData("185.10.10.10", "185.10.10.10", true)]
         [InlineData("", "100.100.100.100", false)]
 
-        public void HasRemoteAccess_GivenBlacklist_BlacklistTheIps(string addresses, string remoteIp, bool denied)
+        public void HasRemoteAccess_GivenBlacklist_BlacklistTheIPs(string addresses, string remoteIp, bool denied)
         {
             // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
             // If left blank, all remote addresses will be allowed.
             var conf = new NetworkConfiguration()
             {
-                EnableIPV4 = true,
+                EnableIPv4 = true,
                 RemoteIPFilter = addresses.Split(','),
                 IsRemoteIPFilterBlacklist = true
             };
@@ -326,7 +326,7 @@ namespace Jellyfin.Networking.Tests
         {
             var conf = new NetworkConfiguration
             {
-                EnableIPV4 = true,
+                EnableIPv4 = true,
                 LocalNetworkSubnets = lan.Split(','),
                 LocalNetworkAddresses = bind.Split(',')
             };
@@ -350,7 +350,7 @@ namespace Jellyfin.Networking.Tests
         {
             var conf = new NetworkConfiguration
             {
-                EnableIPV4 = true,
+                EnableIPv4 = true,
                 LocalNetworkSubnets = lan.Split(','),
                 LocalNetworkAddresses = bind.Split(',')
             };
