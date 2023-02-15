@@ -82,13 +82,13 @@ public class PlaylistsController : BaseJellyfinApiController
             ids = createPlaylistRequest?.Ids ?? Array.Empty<Guid>();
         }
 
-            userId ??= createPlaylistRequest?.UserId ?? default;
-            userId = RequestHelpers.GetUserId(User, userId);
+        userId ??= createPlaylistRequest?.UserId ?? default;
+        userId = RequestHelpers.GetUserId(User, userId);
         var result = await _playlistManager.CreatePlaylist(new PlaylistCreationRequest
         {
             Name = name ?? createPlaylistRequest?.Name,
             ItemIdList = ids,
-                UserId = userId.Value,
+            UserId = userId.Value,
             MediaType = mediaType ?? createPlaylistRequest?.MediaType
         }).ConfigureAwait(false);
 
@@ -110,8 +110,8 @@ public class PlaylistsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids,
         [FromQuery] Guid? userId)
     {
-            userId = RequestHelpers.GetUserId(User, userId);
-            await _playlistManager.AddToPlaylistAsync(playlistId, ids, userId.Value).ConfigureAwait(false);
+        userId = RequestHelpers.GetUserId(User, userId);
+        await _playlistManager.AddToPlaylistAsync(playlistId, ids, userId.Value).ConfigureAwait(false);
         return NoContent();
     }
 

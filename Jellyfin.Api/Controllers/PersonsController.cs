@@ -78,12 +78,12 @@ public class PersonsController : BaseJellyfinApiController
         [FromQuery] Guid? userId,
         [FromQuery] bool? enableImages = true)
     {
-            userId = RequestHelpers.GetUserId(User, userId);
+        userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
-            User? user = userId.Value.Equals(default)
+        User? user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -119,7 +119,7 @@ public class PersonsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<BaseItemDto> GetPerson([FromRoute, Required] string name, [FromQuery] Guid? userId)
     {
-            userId = RequestHelpers.GetUserId(User, userId);
+        userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions()
             .AddClientFields(User);
 
@@ -129,7 +129,7 @@ public class PersonsController : BaseJellyfinApiController
             return NotFound();
         }
 
-            if (!userId.Value.Equals(default))
+        if (!userId.Value.Equals(default))
         {
             var user = _userManager.GetUserById(userId.Value);
             return _dtoService.GetBaseItemDto(item, dtoOptions, user);

@@ -75,8 +75,8 @@ public class InstantMixController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
     {
         var item = _libraryManager.GetItemById(id);
-            userId = RequestHelpers.GetUserId(User, userId);
-            var user = userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
         var dtoOptions = new DtoOptions { Fields = fields }
@@ -112,8 +112,8 @@ public class InstantMixController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
     {
         var album = _libraryManager.GetItemById(id);
-            userId = RequestHelpers.GetUserId(User, userId);
-            var user = userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
         var dtoOptions = new DtoOptions { Fields = fields }
@@ -149,8 +149,8 @@ public class InstantMixController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
     {
         var playlist = (Playlist)_libraryManager.GetItemById(id);
-            userId = RequestHelpers.GetUserId(User, userId);
-            var user = userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
         var dtoOptions = new DtoOptions { Fields = fields }
@@ -185,8 +185,8 @@ public class InstantMixController : BaseJellyfinApiController
         [FromQuery] int? imageTypeLimit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
     {
-            userId = RequestHelpers.GetUserId(User, userId);
-            var user = userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
         var dtoOptions = new DtoOptions { Fields = fields }
@@ -222,8 +222,8 @@ public class InstantMixController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
     {
         var item = _libraryManager.GetItemById(id);
-            userId = RequestHelpers.GetUserId(User, userId);
-            var user = userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
         var dtoOptions = new DtoOptions { Fields = fields }
@@ -259,8 +259,8 @@ public class InstantMixController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
     {
         var item = _libraryManager.GetItemById(id);
-            userId = RequestHelpers.GetUserId(User, userId);
-            var user = userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
         var dtoOptions = new DtoOptions { Fields = fields }
@@ -333,8 +333,8 @@ public class InstantMixController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
     {
         var item = _libraryManager.GetItemById(id);
-            userId = RequestHelpers.GetUserId(User, userId);
-            var user = userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
         var dtoOptions = new DtoOptions { Fields = fields }

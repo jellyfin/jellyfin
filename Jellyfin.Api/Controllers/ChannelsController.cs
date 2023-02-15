@@ -60,12 +60,12 @@ public class ChannelsController : BaseJellyfinApiController
         [FromQuery] bool? supportsMediaDeletion,
         [FromQuery] bool? isFavorite)
     {
-            userId = RequestHelpers.GetUserId(User, userId);
+        userId = RequestHelpers.GetUserId(User, userId);
         return _channelManager.GetChannels(new ChannelQuery
         {
             Limit = limit,
             StartIndex = startIndex,
-                UserId = userId.Value,
+            UserId = userId.Value,
             SupportsLatestItems = supportsLatestItems,
             SupportsMediaDeletion = supportsMediaDeletion,
             IsFavorite = isFavorite
@@ -125,8 +125,8 @@ public class ChannelsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] sortBy,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields)
     {
-            userId = RequestHelpers.GetUserId(User, userId);
-            var user = userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -200,8 +200,8 @@ public class ChannelsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] channelIds)
     {
-            userId = RequestHelpers.GetUserId(User, userId);
-            var user = userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 

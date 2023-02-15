@@ -85,12 +85,12 @@ public class YearsController : BaseJellyfinApiController
         [FromQuery] bool recursive = true,
         [FromQuery] bool? enableImages = true)
     {
-            userId = RequestHelpers.GetUserId(User, userId);
+        userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
-            User? user = userId.Value.Equals(default)
+        User? user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
         BaseItem parentItem = _libraryManager.GetParentItem(parentId, userId);
@@ -172,7 +172,7 @@ public class YearsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<BaseItemDto> GetYear([FromRoute, Required] int year, [FromQuery] Guid? userId)
     {
-            userId = RequestHelpers.GetUserId(User, userId);
+        userId = RequestHelpers.GetUserId(User, userId);
         var item = _libraryManager.GetYear(year);
         if (item is null)
         {
@@ -182,7 +182,7 @@ public class YearsController : BaseJellyfinApiController
         var dtoOptions = new DtoOptions()
             .AddClientFields(User);
 
-            if (!userId.Value.Equals(default))
+        if (!userId.Value.Equals(default))
         {
             var user = _userManager.GetUserById(userId.Value);
             return _dtoService.GetBaseItemDto(item, dtoOptions, user);

@@ -118,7 +118,7 @@ public class ArtistsController : BaseJellyfinApiController
         [FromQuery] bool? enableImages = true,
         [FromQuery] bool enableTotalRecordCount = true)
     {
-            userId = RequestHelpers.GetUserId(User, userId);
+        userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
@@ -126,7 +126,7 @@ public class ArtistsController : BaseJellyfinApiController
         User? user = null;
         BaseItem parentItem = _libraryManager.GetParentItem(parentId, userId);
 
-            if (!userId.Value.Equals(default))
+        if (!userId.Value.Equals(default))
         {
             user = _userManager.GetUserById(userId.Value);
         }
@@ -322,7 +322,7 @@ public class ArtistsController : BaseJellyfinApiController
         [FromQuery] bool? enableImages = true,
         [FromQuery] bool enableTotalRecordCount = true)
     {
-            userId = RequestHelpers.GetUserId(User, userId);
+        userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
@@ -330,7 +330,7 @@ public class ArtistsController : BaseJellyfinApiController
         User? user = null;
         BaseItem parentItem = _libraryManager.GetParentItem(parentId, userId);
 
-            if (!userId.Value.Equals(default))
+        if (!userId.Value.Equals(default))
         {
             user = _userManager.GetUserById(userId.Value);
         }
@@ -464,12 +464,12 @@ public class ArtistsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<BaseItemDto> GetArtistByName([FromRoute, Required] string name, [FromQuery] Guid? userId)
     {
-            userId = RequestHelpers.GetUserId(User, userId);
+        userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions().AddClientFields(User);
 
         var item = _libraryManager.GetArtist(name, dtoOptions);
 
-            if (!userId.Value.Equals(default))
+        if (!userId.Value.Equals(default))
         {
             var user = _userManager.GetUserById(userId.Value);
 

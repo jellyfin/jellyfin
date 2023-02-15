@@ -86,12 +86,12 @@ public class StudiosController : BaseJellyfinApiController
         [FromQuery] bool? enableImages = true,
         [FromQuery] bool enableTotalRecordCount = true)
     {
-            userId = RequestHelpers.GetUserId(User, userId);
+        userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
-            User? user = userId.Value.Equals(default)
+        User? user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -140,11 +140,11 @@ public class StudiosController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<BaseItemDto> GetStudio([FromRoute, Required] string name, [FromQuery] Guid? userId)
     {
-            userId = RequestHelpers.GetUserId(User, userId);
+        userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions().AddClientFields(User);
 
         var item = _libraryManager.GetStudio(name);
-            if (!userId.Equals(default))
+        if (!userId.Equals(default))
         {
             var user = _userManager.GetUserById(userId.Value);
 

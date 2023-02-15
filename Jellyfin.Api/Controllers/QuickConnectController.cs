@@ -117,11 +117,11 @@ public class QuickConnectController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<bool>> AuthorizeQuickConnect([FromQuery, Required] string code, [FromQuery] Guid? userId = null)
     {
-            userId = RequestHelpers.GetUserId(User, userId);
+        userId = RequestHelpers.GetUserId(User, userId);
 
         try
         {
-                return await _quickConnect.AuthorizeRequest(userId.Value, code).ConfigureAwait(false);
+            return await _quickConnect.AuthorizeRequest(userId.Value, code).ConfigureAwait(false);
         }
         catch (AuthenticationException)
         {

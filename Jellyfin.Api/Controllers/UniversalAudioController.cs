@@ -106,7 +106,7 @@ public class UniversalAudioController : BaseJellyfinApiController
         [FromQuery] bool enableRedirection = true)
     {
         var deviceProfile = GetDeviceProfile(container, transcodingContainer, audioCodec, transcodingProtocol, breakOnNonKeyFrames, transcodingAudioChannels, maxAudioSampleRate, maxAudioBitDepth, maxAudioChannels);
-            userId = RequestHelpers.GetUserId(User, userId);
+        userId = RequestHelpers.GetUserId(User, userId);
 
         _logger.LogInformation("GetPostedPlaybackInfo profile: {@Profile}", deviceProfile);
 

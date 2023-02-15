@@ -100,7 +100,7 @@ public class SearchController : BaseJellyfinApiController
         [FromQuery] bool includeStudios = true,
         [FromQuery] bool includeArtists = true)
     {
-            userId = RequestHelpers.GetUserId(User, userId);
+        userId = RequestHelpers.GetUserId(User, userId);
         var result = _searchEngine.GetSearchHints(new SearchQuery
         {
             Limit = limit,
@@ -111,7 +111,7 @@ public class SearchController : BaseJellyfinApiController
             IncludePeople = includePeople,
             IncludeStudios = includeStudios,
             StartIndex = startIndex,
-                UserId = userId.Value,
+            UserId = userId.Value,
             IncludeItemTypes = includeItemTypes,
             ExcludeItemTypes = excludeItemTypes,
             MediaTypes = mediaTypes,

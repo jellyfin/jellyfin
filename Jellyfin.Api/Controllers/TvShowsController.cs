@@ -88,7 +88,7 @@ public class TvShowsController : BaseJellyfinApiController
         [FromQuery] bool disableFirstEpisode = false,
         [FromQuery] bool enableRewatching = false)
     {
-            userId = RequestHelpers.GetUserId(User, userId);
+        userId = RequestHelpers.GetUserId(User, userId);
         var options = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
@@ -100,7 +100,7 @@ public class TvShowsController : BaseJellyfinApiController
                 ParentId = parentId,
                 SeriesId = seriesId,
                 StartIndex = startIndex,
-                    UserId = userId.Value,
+                UserId = userId.Value,
                 EnableTotalRecordCount = enableTotalRecordCount,
                 DisableFirstEpisode = disableFirstEpisode,
                 NextUpDateCutoff = nextUpDateCutoff ?? DateTime.MinValue,
@@ -108,7 +108,7 @@ public class TvShowsController : BaseJellyfinApiController
             },
             options);
 
-            var user = userId.Value.Equals(default)
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -146,8 +146,8 @@ public class TvShowsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
         [FromQuery] bool? enableUserData)
     {
-            userId = RequestHelpers.GetUserId(User, userId);
-            var user = userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -218,8 +218,8 @@ public class TvShowsController : BaseJellyfinApiController
         [FromQuery] bool? enableUserData,
         [FromQuery] string? sortBy)
     {
-            userId = RequestHelpers.GetUserId(User, userId);
-            var user = userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -335,8 +335,8 @@ public class TvShowsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
         [FromQuery] bool? enableUserData)
     {
-            userId = RequestHelpers.GetUserId(User, userId);
-            var user = userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 

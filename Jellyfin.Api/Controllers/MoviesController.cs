@@ -68,8 +68,8 @@ public class MoviesController : BaseJellyfinApiController
         [FromQuery] int categoryLimit = 5,
         [FromQuery] int itemLimit = 8)
     {
-            userId = RequestHelpers.GetUserId(User, userId);
-            var user = userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
         var dtoOptions = new DtoOptions { Fields = fields }

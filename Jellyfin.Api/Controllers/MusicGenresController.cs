@@ -90,12 +90,12 @@ public class MusicGenresController : BaseJellyfinApiController
         [FromQuery] bool? enableImages = true,
         [FromQuery] bool enableTotalRecordCount = true)
     {
-            userId = RequestHelpers.GetUserId(User, userId);
+        userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, false, imageTypeLimit, enableImageTypes);
 
-            User? user = userId.Value.Equals(default)
+        User? user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 

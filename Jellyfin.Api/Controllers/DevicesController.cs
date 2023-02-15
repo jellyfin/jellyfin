@@ -49,7 +49,7 @@ public class DevicesController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<QueryResult<DeviceInfo>>> GetDevices([FromQuery] bool? supportsSync, [FromQuery] Guid? userId)
     {
-            userId = RequestHelpers.GetUserId(User, userId);
+        userId = RequestHelpers.GetUserId(User, userId);
         return await _deviceManager.GetDevicesForUser(userId, supportsSync).ConfigureAwait(false);
     }
 
