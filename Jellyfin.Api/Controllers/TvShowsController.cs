@@ -72,7 +72,7 @@ public class TvShowsController : BaseJellyfinApiController
     [HttpGet("NextUp")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetNextUp(
-        [FromQuery] Guid? userId,
+        [FromQuery, Required] Guid userId,
         [FromQuery] int? startIndex,
         [FromQuery] int? limit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
@@ -98,7 +98,7 @@ public class TvShowsController : BaseJellyfinApiController
                 ParentId = parentId,
                 SeriesId = seriesId,
                 StartIndex = startIndex,
-                UserId = userId ?? Guid.Empty,
+                UserId = userId,
                 EnableTotalRecordCount = enableTotalRecordCount,
                 DisableFirstEpisode = disableFirstEpisode,
                 NextUpDateCutoff = nextUpDateCutoff ?? DateTime.MinValue,
@@ -106,9 +106,9 @@ public class TvShowsController : BaseJellyfinApiController
             },
             options);
 
-        var user = userId is null || userId.Value.Equals(default)
+        var user = userId.Equals(default)
             ? null
-            : _userManager.GetUserById(userId.Value);
+            : _userManager.GetUserById(userId);
 
         var returnItems = _dtoService.GetBaseItemDtos(result.Items, options, user);
 
