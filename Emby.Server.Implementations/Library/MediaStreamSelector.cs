@@ -89,17 +89,7 @@ namespace Emby.Server.Implementations.Library
             // Give some preference to external text subs for better performance
             return streams
                 .Where(i => i.Type == type)
-                .OrderBy(i =>
-                {
-                    var index = languagePreferences.FindIndex(x => string.Equals(x, i.Language, StringComparison.OrdinalIgnoreCase));
-
-                    return index == -1 ? 100 : index;
-                })
-                .ThenBy(i => GetBooleanOrderBy(i.IsDefault))
-                .ThenBy(i => GetBooleanOrderBy(i.SupportsExternalStream))
-                .ThenBy(i => GetBooleanOrderBy(i.IsTextSubtitleStream))
-                .ThenBy(i => GetBooleanOrderBy(i.IsExternal))
-                .ThenBy(i => i.Index);
+                .OrderByDescending(i => GetStreamScore(i, languagePreferences));
         }
 
         public static void SetSubtitleStreamScores(
@@ -113,9 +103,9 @@ namespace Emby.Server.Implementations.Library
                 return;
             }
 
-            var sortedStreams = GetSortedStreams(streams, MediaStreamType.Subtitle, preferredLanguages);
+            var sortedStreams = GetSortedStreams(streams, MediaStreamType.Subtitle, preferredLanguages).ToList();
 
-            var filteredStreams = new List<MediaStream>();
+            List<MediaStream>? filteredStreams = null;
 
             if (mode == SubtitlePlaybackMode.Default)
             {
@@ -144,46 +134,26 @@ namespace Emby.Server.Implementations.Library
             }
 
             // load forced subs if we have found no suitable full subtitles
-            var iterStreams = filteredStreams.Count == 0
+            var iterStreams = filteredStreams is null || filteredStreams.Count == 0
                 ? sortedStreams.Where(s => s.IsForced && string.Equals(s.Language, audioTrackLanguage, StringComparison.OrdinalIgnoreCase))
                 : filteredStreams;
 
             foreach (var stream in iterStreams)
             {
-                stream.Score = GetSubtitleScore(stream, preferredLanguages);
+                stream.Score = GetStreamScore(stream, preferredLanguages);
             }
         }
 
-        private static int GetSubtitleScore(MediaStream stream, IReadOnlyList<string> languagePreferences)
+        internal static int GetStreamScore(MediaStream stream, IReadOnlyList<string> languagePreferences)
         {
-            var values = new List<int>();
-
             var index = languagePreferences.FindIndex(x => string.Equals(x, stream.Language, StringComparison.OrdinalIgnoreCase));
-
-            values.Add(index == -1 ? 0 : 100 - index);
-
-            values.Add(stream.IsForced ? 1 : 0);
-            values.Add(stream.IsDefault ? 1 : 0);
-            values.Add(stream.SupportsExternalStream ? 1 : 0);
-            values.Add(stream.IsTextSubtitleStream ? 1 : 0);
-            values.Add(stream.IsExternal ? 1 : 0);
-
-            values.Reverse();
-            var scale = 1;
-            var score = 0;
-
-            foreach (var value in values)
-            {
-                score += scale * (value + 1);
-                scale *= 10;
-            }
-
+            var score = index == -1 ? 1 : 101 - index;
+            score = (score * 10) + (stream.IsForced ? 2 : 1);
+            score = (score * 10) + (stream.IsDefault ? 2 : 1);
+            score = (score * 10) + (stream.SupportsExternalStream ? 2 : 1);
+            score = (score * 10) + (stream.IsTextSubtitleStream ? 2 : 1);
+            score = (score * 10) + (stream.IsExternal ? 2 : 1);
             return score;
-        }
-
-        private static int GetBooleanOrderBy(bool value)
-        {
-            return value ? 0 : 1;
         }
     }
 }

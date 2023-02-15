@@ -27,7 +27,7 @@ namespace Jellyfin.Server.Implementations.Tests.Sorting
             Assert.Equal(-expected, cmp.Compare(y, x));
         }
 
-        private class EpisodeBadData : TheoryData<BaseItem?, BaseItem?>
+        private sealed class EpisodeBadData : TheoryData<BaseItem?, BaseItem?>
         {
             public EpisodeBadData()
             {
@@ -36,7 +36,7 @@ namespace Jellyfin.Server.Implementations.Tests.Sorting
             }
         }
 
-        private class EpisodeTestData : TheoryData<BaseItem, BaseItem, int>
+        private sealed class EpisodeTestData : TheoryData<BaseItem, BaseItem, int>
         {
             public EpisodeTestData()
             {

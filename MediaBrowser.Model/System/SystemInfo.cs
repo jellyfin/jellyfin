@@ -42,7 +42,8 @@ namespace MediaBrowser.Model.System
         /// Gets or sets the display name of the operating system.
         /// </summary>
         /// <value>The display name of the operating system.</value>
-        public string OperatingSystemDisplayName { get; set; }
+        [Obsolete("This is no longer set")]
+        public string OperatingSystemDisplayName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the package name.
@@ -79,8 +80,9 @@ namespace MediaBrowser.Model.System
         /// <summary>
         /// Gets or sets a value indicating whether this instance can self restart.
         /// </summary>
-        /// <value><c>true</c> if this instance can self restart; otherwise, <c>false</c>.</value>
-        public bool CanSelfRestart { get; set; }
+        /// <value><c>true</c>.</value>
+        [Obsolete("This is always true")]
+        public bool CanSelfRestart { get; set; } = true;
 
         public bool CanLaunchWebBrowser { get; set; }
 
@@ -136,6 +138,7 @@ namespace MediaBrowser.Model.System
         [Obsolete("This isn't set correctly anymore")]
         public FFmpegLocation EncoderLocation { get; set; }
 
-        public Architecture SystemArchitecture { get; set; }
+        [Obsolete("This is no longer set")]
+        public Architecture SystemArchitecture { get; set; } = Architecture.X64;
     }
 }

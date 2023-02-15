@@ -33,7 +33,7 @@ namespace Jellyfin.Server.Implementations.Users
     /// </summary>
     public class UserManager : IUserManager
     {
-        private readonly IDbContextFactory<JellyfinDb> _dbProvider;
+        private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
         private readonly IEventManager _eventManager;
         private readonly ICryptoProvider _cryptoProvider;
         private readonly INetworkManager _networkManager;
@@ -59,7 +59,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <param name="imageProcessor">The image processor.</param>
         /// <param name="logger">The logger.</param>
         public UserManager(
-            IDbContextFactory<JellyfinDb> dbProvider,
+            IDbContextFactory<JellyfinDbContext> dbProvider,
             IEventManager eventManager,
             ICryptoProvider cryptoProvider,
             INetworkManager networkManager,
@@ -85,6 +85,7 @@ namespace Jellyfin.Server.Implementations.Users
             _users = new ConcurrentDictionary<Guid, User>();
             using var dbContext = _dbProvider.CreateDbContext();
             foreach (var user in dbContext.Users
+                .AsSplitQuery()
                 .Include(user => user.Permissions)
                 .Include(user => user.Preferences)
                 .Include(user => user.AccessSchedules)
@@ -143,7 +144,6 @@ namespace Jellyfin.Server.Implementations.Users
             await using (dbContext.ConfigureAwait(false))
             {
                 if (await dbContext.Users
-                        .AsQueryable()
                         .AnyAsync(u => u.Username == newName && !u.Id.Equals(user.Id))
                         .ConfigureAwait(false))
                 {
@@ -157,7 +157,9 @@ namespace Jellyfin.Server.Implementations.Users
                 await UpdateUserInternalAsync(dbContext, user).ConfigureAwait(false);
             }
 
-            OnUserUpdated?.Invoke(this, new GenericEventArgs<User>(user));
+            var eventArgs = new UserUpdatedEventArgs(user);
+            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
+            OnUserUpdated?.Invoke(this, eventArgs);
         }
 
         /// <inheritdoc/>
@@ -170,7 +172,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
         }
 
-        internal async Task<User> CreateUserInternalAsync(string name, JellyfinDb dbContext)
+        internal async Task<User> CreateUserInternalAsync(string name, JellyfinDbContext dbContext)
         {
             // TODO: Remove after user item data is migrated.
             var max = await dbContext.Users.AsQueryable().AnyAsync().ConfigureAwait(false)
@@ -367,8 +369,10 @@ namespace Jellyfin.Server.Implementations.Users
                     EnablePlaybackRemuxing = user.HasPermission(PermissionKind.EnablePlaybackRemuxing),
                     ForceRemoteSourceTranscoding = user.HasPermission(PermissionKind.ForceRemoteSourceTranscoding),
                     EnablePublicSharing = user.HasPermission(PermissionKind.EnablePublicSharing),
+                    EnableCollectionManagement = user.HasPermission(PermissionKind.EnableCollectionManagement),
                     AccessSchedules = user.AccessSchedules.ToArray(),
                     BlockedTags = user.GetPreference(PreferenceKind.BlockedTags),
+                    AllowedTags = user.GetPreference(PreferenceKind.AllowedTags),
                     EnabledChannels = user.GetPreferenceValues<Guid>(PreferenceKind.EnabledChannels),
                     EnabledDevices = user.GetPreference(PreferenceKind.EnabledDevices),
                     EnabledFolders = user.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders),
@@ -682,6 +686,7 @@ namespace Jellyfin.Server.Implementations.Users
                 user.SetPermission(PermissionKind.EnableAllFolders, policy.EnableAllFolders);
                 user.SetPermission(PermissionKind.EnableRemoteControlOfOtherUsers, policy.EnableRemoteControlOfOtherUsers);
                 user.SetPermission(PermissionKind.EnablePlaybackRemuxing, policy.EnablePlaybackRemuxing);
+                user.SetPermission(PermissionKind.EnableCollectionManagement, policy.EnableCollectionManagement);
                 user.SetPermission(PermissionKind.ForceRemoteSourceTranscoding, policy.ForceRemoteSourceTranscoding);
                 user.SetPermission(PermissionKind.EnablePublicSharing, policy.EnablePublicSharing);
 
@@ -694,6 +699,7 @@ namespace Jellyfin.Server.Implementations.Users
                 // TODO: fix this at some point
                 user.SetPreference(PreferenceKind.BlockUnratedItems, policy.BlockUnratedItems ?? Array.Empty<UnratedItem>());
                 user.SetPreference(PreferenceKind.BlockedTags, policy.BlockedTags);
+                user.SetPreference(PreferenceKind.AllowedTags, policy.AllowedTags);
                 user.SetPreference(PreferenceKind.EnabledChannels, policy.EnabledChannels);
                 user.SetPreference(PreferenceKind.EnabledDevices, policy.EnabledDevices);
                 user.SetPreference(PreferenceKind.EnabledFolders, policy.EnabledFolders);
@@ -884,7 +890,7 @@ namespace Jellyfin.Server.Implementations.Users
             await UpdateUserAsync(user).ConfigureAwait(false);
         }
 
-        private async Task UpdateUserInternalAsync(JellyfinDb dbContext, User user)
+        private async Task UpdateUserInternalAsync(JellyfinDbContext dbContext, User user)
         {
             dbContext.Users.Update(user);
             _users[user.Id] = user;

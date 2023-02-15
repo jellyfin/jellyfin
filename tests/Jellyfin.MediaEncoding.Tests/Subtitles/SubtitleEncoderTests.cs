@@ -26,7 +26,13 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
                     Path = "/media/sub.ass",
                     IsExternal = true
                 },
-                new SubtitleEncoder.SubtitleInfo("/media/sub.ass", MediaProtocol.File, "ass", true));
+                new SubtitleEncoder.SubtitleInfo()
+                {
+                    Path = "/media/sub.ass",
+                    Protocol = MediaProtocol.File,
+                    Format = "ass",
+                    IsExternal = true
+                });
 
             data.Add(
                 new MediaSourceInfo()
@@ -38,7 +44,13 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
                     Path = "/media/sub.ssa",
                     IsExternal = true
                 },
-                new SubtitleEncoder.SubtitleInfo("/media/sub.ssa", MediaProtocol.File, "ssa", true));
+                new SubtitleEncoder.SubtitleInfo()
+                {
+                    Path = "/media/sub.ssa",
+                    Protocol = MediaProtocol.File,
+                    Format = "ssa",
+                    IsExternal = true
+                });
 
             data.Add(
                 new MediaSourceInfo()
@@ -50,7 +62,13 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
                     Path = "/media/sub.srt",
                     IsExternal = true
                 },
-                new SubtitleEncoder.SubtitleInfo("/media/sub.srt", MediaProtocol.File, "srt", true));
+                new SubtitleEncoder.SubtitleInfo()
+                {
+                    Path = "/media/sub.srt",
+                    Protocol = MediaProtocol.File,
+                    Format = "srt",
+                    IsExternal = true
+                });
 
             data.Add(
                 new MediaSourceInfo()
@@ -62,14 +80,20 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
                     Path = "/media/sub.ass",
                     IsExternal = true
                 },
-                new SubtitleEncoder.SubtitleInfo("/media/sub.ass", MediaProtocol.File, "ass", true));
+                new SubtitleEncoder.SubtitleInfo()
+                {
+                    Path = "/media/sub.ass",
+                    Protocol = MediaProtocol.File,
+                    Format = "ass",
+                    IsExternal = true
+                });
 
             return data;
         }
 
         [Theory]
         [MemberData(nameof(GetReadableFile_Valid_TestData))]
-        internal async Task GetReadableFile_Valid_Success(MediaSourceInfo mediaSource, MediaStream subtitleStream, SubtitleEncoder.SubtitleInfo subtitleInfo)
+        public async Task GetReadableFile_Valid_Success(MediaSourceInfo mediaSource, MediaStream subtitleStream, SubtitleEncoder.SubtitleInfo subtitleInfo)
         {
             var fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
             var subtitleEncoder = fixture.Create<SubtitleEncoder>();

@@ -5,9 +5,11 @@
 using System;
 using System.Buffers.Text;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -357,8 +359,6 @@ namespace Emby.Server.Implementations.Data
 
             string[] queries =
             {
-                "PRAGMA locking_mode=EXCLUSIVE",
-
                 "create table if not exists TypedBaseItems (guid GUID primary key NOT NULL, type TEXT NOT NULL, data BLOB NULL, ParentId GUID NULL, Path TEXT NULL)",
 
                 "create table if not exists AncestorIds (ItemId GUID NOT NULL, AncestorId GUID NOT NULL, AncestorIdText TEXT NOT NULL, PRIMARY KEY (ItemId, AncestorId))",
@@ -383,39 +383,6 @@ namespace Emby.Server.Implementations.Data
 
             string[] postQueries =
             {
-                // obsolete
-                "drop index if exists idx_TypedBaseItems",
-                "drop index if exists idx_mediastreams",
-                "drop index if exists idx_mediastreams1",
-                "drop index if exists idx_" + ChaptersTableName,
-                "drop index if exists idx_UserDataKeys1",
-                "drop index if exists idx_UserDataKeys2",
-                "drop index if exists idx_TypeTopParentId3",
-                "drop index if exists idx_TypeTopParentId2",
-                "drop index if exists idx_TypeTopParentId4",
-                "drop index if exists idx_Type",
-                "drop index if exists idx_TypeTopParentId",
-                "drop index if exists idx_GuidType",
-                "drop index if exists idx_TopParentId",
-                "drop index if exists idx_TypeTopParentId6",
-                "drop index if exists idx_ItemValues2",
-                "drop index if exists Idx_ProviderIds",
-                "drop index if exists idx_ItemValues3",
-                "drop index if exists idx_ItemValues4",
-                "drop index if exists idx_ItemValues5",
-                "drop index if exists idx_UserDataKeys3",
-                "drop table if exists UserDataKeys",
-                "drop table if exists ProviderIds",
-                "drop index if exists Idx_ProviderIds1",
-                "drop table if exists Images",
-                "drop index if exists idx_Images",
-                "drop index if exists idx_TypeSeriesPresentationUniqueKey",
-                "drop index if exists idx_SeriesPresentationUniqueKey",
-                "drop index if exists idx_TypeSeriesPresentationUniqueKey2",
-                "drop index if exists idx_AncestorIds3",
-                "drop index if exists idx_AncestorIds4",
-                "drop index if exists idx_AncestorIds2",
-
                 "create index if not exists idx_PathTypedBaseItems on TypedBaseItems(Path)",
                 "create index if not exists idx_ParentIdTypedBaseItems on TypedBaseItems(ParentId)",
 
@@ -456,6 +423,9 @@ namespace Emby.Server.Implementations.Data
 
                 // Used to update inherited tags
                 "create index if not exists idx_ItemValues8 on ItemValues(Type, ItemId, Value)",
+
+                "CREATE INDEX IF NOT EXISTS idx_TypedBaseItemsUserDataKeyType ON TypedBaseItems(UserDataKey, Type)",
+                "CREATE INDEX IF NOT EXISTS idx_PeopleNameListOrder ON People(Name, ListOrder)"
             };
 
             using (var connection = GetConnection())
@@ -2399,13 +2369,17 @@ namespace Emby.Server.Implementations.Data
                 var builder = new StringBuilder();
                 builder.Append('(');
 
-                if (string.IsNullOrEmpty(item.OfficialRating))
+                if (item.InheritedParentalRatingValue == 0)
                 {
-                    builder.Append("(OfficialRating is null * 10)");
+                    builder.Append("((InheritedParentalRatingValue=0) * 10)");
                 }
                 else
                 {
-                    builder.Append("(OfficialRating=@ItemOfficialRating * 10)");
+                    builder.Append(
+                        @"(SELECT CASE WHEN InheritedParentalRatingValue=0
+                                THEN 0
+                                ELSE 10.0 / (1.0 + ABS(InheritedParentalRatingValue - @InheritedParentalRatingValue))
+                                END)");
                 }
 
                 if (item.ProductionYear.HasValue)
@@ -2461,6 +2435,7 @@ namespace Emby.Server.Implementations.Data
                 if (query.SearchTerm.Length > 1)
                 {
                     builder.Append("+ ((CleanName like @SearchTermContains or (OriginalTitle not null and OriginalTitle like @SearchTermContains)) * 10)");
+                    builder.Append("+ ((Tags not null and Tags like @SearchTermContains) * 5)");
                 }
 
                 builder.Append(") as SearchScore");
@@ -2518,6 +2493,11 @@ namespace Emby.Server.Implementations.Data
             {
                 statement.TryBind("@SimilarItemId", item.Id);
             }
+
+            if (commandText.Contains("@InheritedParentalRatingValue", StringComparison.OrdinalIgnoreCase))
+            {
+                statement.TryBind("@InheritedParentalRatingValue", item.InheritedParentalRatingValue);
+            }
         }
 
         private string GetJoinUserDataText(InternalItemsQuery query)
@@ -2557,8 +2537,6 @@ namespace Emby.Server.Implementations.Data
 
             CheckDisposed();
 
-            var now = DateTime.UtcNow;
-
             // Hack for right now since we currently don't support filtering out these duplicates within a query
             if (query.Limit.HasValue && query.EnableGroupByMetadataKey)
             {
@@ -2580,28 +2558,24 @@ namespace Emby.Server.Implementations.Data
             }
 
             var commandText = commandTextBuilder.ToString();
-            int count;
+
+            using (new QueryTimeLogger(Logger, commandText))
             using (var connection = GetConnection(true))
+            using (var statement = PrepareStatement(connection, commandText))
             {
-                using (var statement = PrepareStatement(connection, commandText))
+                if (EnableJoinUserData(query))
                 {
-                    if (EnableJoinUserData(query))
-                    {
-                        statement.TryBind("@UserId", query.User.InternalId);
-                    }
-
-                    BindSimilarParams(query, statement);
-                    BindSearchParams(query, statement);
-
-                    // Running this again will bind the params
-                    GetWhereClauses(query, statement);
-
-                    count = statement.ExecuteQuery().SelectScalarInt().First();
+                    statement.TryBind("@UserId", query.User.InternalId);
                 }
-            }
 
-            LogQueryTime("GetCount", commandText, now);
-            return count;
+                BindSimilarParams(query, statement);
+                BindSearchParams(query, statement);
+
+                // Running this again will bind the params
+                GetWhereClauses(query, statement);
+
+                return statement.ExecuteQuery().SelectScalarInt().First();
+            }
         }
 
         public List<BaseItem> GetItemList(InternalItemsQuery query)
@@ -2609,8 +2583,6 @@ namespace Emby.Server.Implementations.Data
             ArgumentNullException.ThrowIfNull(query);
 
             CheckDisposed();
-
-            var now = DateTime.UtcNow;
 
             // Hack for right now since we currently don't support filtering out these duplicates within a query
             if (query.Limit.HasValue && query.EnableGroupByMetadataKey)
@@ -2655,61 +2627,58 @@ namespace Emby.Server.Implementations.Data
 
             var commandText = commandTextBuilder.ToString();
             var items = new List<BaseItem>();
+            using (new QueryTimeLogger(Logger, commandText))
             using (var connection = GetConnection(true))
+            using (var statement = PrepareStatement(connection, commandText))
             {
-                using (var statement = PrepareStatement(connection, commandText))
+                if (EnableJoinUserData(query))
                 {
-                    if (EnableJoinUserData(query))
-                    {
-                        statement.TryBind("@UserId", query.User.InternalId);
-                    }
-
-                    BindSimilarParams(query, statement);
-                    BindSearchParams(query, statement);
-
-                    // Running this again will bind the params
-                    GetWhereClauses(query, statement);
-
-                    var hasEpisodeAttributes = HasEpisodeAttributes(query);
-                    var hasServiceName = HasServiceName(query);
-                    var hasProgramAttributes = HasProgramAttributes(query);
-                    var hasStartDate = HasStartDate(query);
-                    var hasTrailerTypes = HasTrailerTypes(query);
-                    var hasArtistFields = HasArtistFields(query);
-                    var hasSeriesFields = HasSeriesFields(query);
-
-                    foreach (var row in statement.ExecuteQuery())
-                    {
-                        var item = GetItem(row, query, hasProgramAttributes, hasEpisodeAttributes, hasServiceName, hasStartDate, hasTrailerTypes, hasArtistFields, hasSeriesFields);
-                        if (item is not null)
-                        {
-                            items.Add(item);
-                        }
-                    }
+                    statement.TryBind("@UserId", query.User.InternalId);
                 }
 
-                // Hack for right now since we currently don't support filtering out these duplicates within a query
-                if (query.EnableGroupByMetadataKey)
+                BindSimilarParams(query, statement);
+                BindSearchParams(query, statement);
+
+                // Running this again will bind the params
+                GetWhereClauses(query, statement);
+
+                var hasEpisodeAttributes = HasEpisodeAttributes(query);
+                var hasServiceName = HasServiceName(query);
+                var hasProgramAttributes = HasProgramAttributes(query);
+                var hasStartDate = HasStartDate(query);
+                var hasTrailerTypes = HasTrailerTypes(query);
+                var hasArtistFields = HasArtistFields(query);
+                var hasSeriesFields = HasSeriesFields(query);
+
+                foreach (var row in statement.ExecuteQuery())
                 {
-                    var limit = query.Limit ?? int.MaxValue;
-                    limit -= 4;
-                    var newList = new List<BaseItem>();
-
-                    foreach (var item in items)
+                    var item = GetItem(row, query, hasProgramAttributes, hasEpisodeAttributes, hasServiceName, hasStartDate, hasTrailerTypes, hasArtistFields, hasSeriesFields);
+                    if (item is not null)
                     {
-                        AddItem(newList, item);
-
-                        if (newList.Count >= limit)
-                        {
-                            break;
-                        }
+                        items.Add(item);
                     }
-
-                    items = newList;
                 }
             }
 
-            LogQueryTime("GetItemList", commandText, now);
+            // Hack for right now since we currently don't support filtering out these duplicates within a query
+            if (query.EnableGroupByMetadataKey)
+            {
+                var limit = query.Limit ?? int.MaxValue;
+                limit -= 4;
+                var newList = new List<BaseItem>();
+
+                foreach (var item in items)
+                {
+                    AddItem(newList, item);
+
+                    if (newList.Count >= limit)
+                    {
+                        break;
+                    }
+                }
+
+                items = newList;
+            }
 
             return items;
         }
@@ -2762,26 +2731,6 @@ namespace Emby.Server.Implementations.Data
             items.Add(newItem);
         }
 
-        private void LogQueryTime(string methodName, string commandText, DateTime startDate)
-        {
-            var elapsed = (DateTime.UtcNow - startDate).TotalMilliseconds;
-
-#if DEBUG
-            const int SlowThreshold = 100;
-#else
-            const int SlowThreshold = 10;
-#endif
-
-            if (elapsed >= SlowThreshold)
-            {
-                Logger.LogDebug(
-                    "{Method} query time (slow): {ElapsedMs}ms. Query: {Query}",
-                    methodName,
-                    elapsed,
-                    commandText);
-            }
-        }
-
         public QueryResult<BaseItem> GetItems(InternalItemsQuery query)
         {
             ArgumentNullException.ThrowIfNull(query);
@@ -2796,8 +2745,6 @@ namespace Emby.Server.Implementations.Data
                     returnList.Count,
                     returnList);
             }
-
-            var now = DateTime.UtcNow;
 
             // Hack for right now since we currently don't support filtering out these duplicates within a query
             if (query.Limit.HasValue && query.EnableGroupByMetadataKey)
@@ -2899,6 +2846,7 @@ namespace Emby.Server.Implementations.Data
 
                         if (!isReturningZeroItems)
                         {
+                            using (new QueryTimeLogger(Logger, itemQuery, "GetItems.ItemQuery"))
                             using (var statement = itemQueryStatement)
                             {
                                 if (EnableJoinUserData(query))
@@ -2929,13 +2877,11 @@ namespace Emby.Server.Implementations.Data
                                     }
                                 }
                             }
-
-                            LogQueryTime("GetItems.ItemQuery", itemQuery, now);
                         }
 
-                        now = DateTime.UtcNow;
                         if (query.EnableTotalRecordCount)
                         {
+                            using (new QueryTimeLogger(Logger, totalRecordCountQuery, "GetItems.TotalRecordCount"))
                             using (var statement = totalRecordCountQueryStatement)
                             {
                                 if (EnableJoinUserData(query))
@@ -2951,8 +2897,6 @@ namespace Emby.Server.Implementations.Data
 
                                 result.TotalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
                             }
-
-                            LogQueryTime("GetItems.TotalRecordCount", totalRecordCountQuery, now);
                         }
                     },
                     ReadTransactionMode);
@@ -3170,8 +3114,6 @@ namespace Emby.Server.Implementations.Data
 
             CheckDisposed();
 
-            var now = DateTime.UtcNow;
-
             var columns = new List<string> { "guid" };
             SetFinalColumnsToSelect(query, columns);
             var commandTextBuilder = new StringBuilder("select ", 256)
@@ -3208,29 +3150,27 @@ namespace Emby.Server.Implementations.Data
 
             var commandText = commandTextBuilder.ToString();
             var list = new List<Guid>();
+            using (new QueryTimeLogger(Logger, commandText))
             using (var connection = GetConnection(true))
+            using (var statement = PrepareStatement(connection, commandText))
             {
-                using (var statement = PrepareStatement(connection, commandText))
+                if (EnableJoinUserData(query))
                 {
-                    if (EnableJoinUserData(query))
-                    {
-                        statement.TryBind("@UserId", query.User.InternalId);
-                    }
+                    statement.TryBind("@UserId", query.User.InternalId);
+                }
 
-                    BindSimilarParams(query, statement);
-                    BindSearchParams(query, statement);
+                BindSimilarParams(query, statement);
+                BindSearchParams(query, statement);
 
-                    // Running this again will bind the params
-                    GetWhereClauses(query, statement);
+                // Running this again will bind the params
+                GetWhereClauses(query, statement);
 
-                    foreach (var row in statement.ExecuteQuery())
-                    {
-                        list.Add(row[0].ReadGuidFromBlob());
-                    }
+                foreach (var row in statement.ExecuteQuery())
+                {
+                    list.Add(row[0].ReadGuidFromBlob());
                 }
             }
 
-            LogQueryTime("GetItemList", commandText, now);
             return list;
         }
 
@@ -4537,6 +4477,24 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
+            if (query.IncludeInheritedTags.Length > 0)
+            {
+                var paramName = "@IncludeInheritedTags";
+                if (statement is null)
+                {
+                    int index = 0;
+                    string includedTags = string.Join(',', query.IncludeInheritedTags.Select(_ => paramName + index++));
+                    whereClauses.Add("((select CleanValue from ItemValues where ItemId=Guid and Type=6 and cleanvalue in (" + includedTags + ")) is not null)");
+                }
+                else
+                {
+                    for (int index = 0; index < query.IncludeInheritedTags.Length; index++)
+                    {
+                        statement.TryBind(paramName + index, GetCleanValue(query.IncludeInheritedTags[index]));
+                    }
+                }
+            }
+
             if (query.SeriesStatuses.Length > 0)
             {
                 var statuses = new List<string>();
@@ -5111,8 +5069,6 @@ AND Type = @InternalPersonType)");
         {
             CheckDisposed();
 
-            var now = DateTime.UtcNow;
-
             var stringBuilder = new StringBuilder("Select Value From ItemValues where Type", 128);
             if (itemValueTypes.Length == 1)
             {
@@ -5144,6 +5100,7 @@ AND Type = @InternalPersonType)");
             var commandText = stringBuilder.ToString();
 
             var list = new List<string>();
+            using (new QueryTimeLogger(Logger, commandText))
             using (var connection = GetConnection(true))
             using (var statement = PrepareStatement(connection, commandText))
             {
@@ -5156,7 +5113,6 @@ AND Type = @InternalPersonType)");
                 }
             }
 
-            LogQueryTime("GetItemValueNames", commandText, now);
             return list;
         }
 
@@ -5170,8 +5126,6 @@ AND Type = @InternalPersonType)");
             }
 
             CheckDisposed();
-
-            var now = DateTime.UtcNow;
 
             var typeClause = itemValueTypes.Length == 1 ?
                 ("Type=" + itemValueTypes[0]) :
@@ -5346,6 +5300,7 @@ AND Type = @InternalPersonType)");
 
             var list = new List<(BaseItem, ItemCounts)>();
             var result = new QueryResult<(BaseItem, ItemCounts)>();
+            using (new QueryTimeLogger(Logger, commandText))
             using (var connection = GetConnection(true))
             {
                 connection.RunInTransaction(
@@ -5418,8 +5373,6 @@ AND Type = @InternalPersonType)");
                     },
                     ReadTransactionMode);
             }
-
-            LogQueryTime("GetItemValues", commandText, now);
 
             if (result.TotalRecordCount == 0)
             {
@@ -5504,6 +5457,9 @@ AND Type = @InternalPersonType)");
             // keywords was 5
 
             list.AddRange(inheritedTags.Select(i => (6, i)));
+
+            // Remove all invalid values.
+            list.RemoveAll(i => string.IsNullOrEmpty(i.Item2));
 
             return list;
         }
@@ -6244,6 +6200,49 @@ AND Type = @InternalPersonType)");
             }
 
             return item;
+        }
+
+#nullable enable
+
+        private readonly struct QueryTimeLogger : IDisposable
+        {
+            private readonly ILogger _logger;
+            private readonly string _commandText;
+            private readonly string _methodName;
+            private readonly long _startTimestamp;
+
+            public QueryTimeLogger(ILogger logger, string commandText, [CallerMemberName] string methodName = "")
+            {
+                _logger = logger;
+                _commandText = commandText;
+                _methodName = methodName;
+                _startTimestamp = logger.IsEnabled(LogLevel.Debug) ? Stopwatch.GetTimestamp() : -1;
+            }
+
+            public void Dispose()
+            {
+                if (_startTimestamp == -1)
+                {
+                    return;
+                }
+
+                var elapsedMs = Stopwatch.GetElapsedTime(_startTimestamp).TotalMilliseconds;
+
+#if DEBUG
+                const int SlowThreshold = 100;
+#else
+                const int SlowThreshold = 10;
+#endif
+
+                if (elapsedMs >= SlowThreshold)
+                {
+                    _logger.LogDebug(
+                        "{Method} query time (slow): {ElapsedMs}ms. Query: {Query}",
+                        _methodName,
+                        elapsedMs,
+                        _commandText);
+                }
+            }
         }
     }
 }

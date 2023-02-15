@@ -1175,7 +1175,7 @@ namespace Emby.Server.Implementations.Library
                         }
                     })
                     .Where(i => i is not null)
-                    .OrderBy(i => i)
+                    .Order()
                     .ToArray(),
 
                 CollectionType = GetCollectionType(dir)
@@ -1999,38 +1999,35 @@ namespace Emby.Server.Implementations.Library
 
         public List<Folder> GetCollectionFolders(BaseItem item)
         {
-            while (item is not null)
-            {
-                var parent = item.GetParent();
-
-                if (parent is null || parent is AggregateFolder)
-                {
-                    break;
-                }
-
-                item = parent;
-            }
-
-            if (item is null)
-            {
-                return new List<Folder>();
-            }
-
-            return GetCollectionFoldersInternal(item, GetUserRootFolder().Children.OfType<Folder>());
+            return GetCollectionFolders(item, GetUserRootFolder().Children.OfType<Folder>());
         }
 
-        public List<Folder> GetCollectionFolders(BaseItem item, List<Folder> allUserRootChildren)
+        public List<Folder> GetCollectionFolders(BaseItem item, IEnumerable<Folder> allUserRootChildren)
         {
             while (item is not null)
             {
                 var parent = item.GetParent();
 
-                if (parent is null || parent is AggregateFolder)
+                if (parent is AggregateFolder)
                 {
                     break;
                 }
 
-                item = parent;
+                if (parent is null)
+                {
+                    var owner = item.GetOwner();
+
+                    if (owner is null)
+                    {
+                        break;
+                    }
+
+                    item = owner;
+                }
+                else
+                {
+                    item = parent;
+                }
             }
 
             if (item is null)

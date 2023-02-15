@@ -4,12 +4,16 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using Emby.Server.Implementations;
+using Jellyfin.Server.Extensions;
+using Jellyfin.Server.Helpers;
 using MediaBrowser.Common;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
 using Serilog.Extensions.Logging;
 
@@ -32,7 +36,7 @@ namespace Jellyfin.Server.Integration.Tests
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
                 .CreateLogger();
-            Program.PerformStaticInitialization();
+            StartupHelpers.PerformStaticInitialization();
         }
 
         /// <inheritdoc/>
@@ -62,7 +66,7 @@ namespace Jellyfin.Server.Integration.Tests
 
             // Create the logging config file
             // TODO: We shouldn't need to do this since we are only logging to console
-            Program.InitLoggingConfigFile(appPaths).GetAwaiter().GetResult();
+            StartupHelpers.InitLoggingConfigFile(appPaths).GetAwaiter().GetResult();
 
             // Create a copy of the application configuration to use for startup
             var startupConfig = Program.CreateAppConfiguration(commandLineOpts, appPaths);
@@ -78,11 +82,17 @@ namespace Jellyfin.Server.Integration.Tests
                 commandLineOpts,
                 startupConfig);
             _disposableComponents.Add(appHost);
-            var serviceCollection = new ServiceCollection();
-            appHost.Init(serviceCollection);
 
-            // Configure the web host builder
-            Program.ConfigureWebHostBuilder(builder, appHost, serviceCollection, commandLineOpts, startupConfig, appPaths);
+            builder.ConfigureServices(services => appHost.Init(services))
+                .ConfigureWebHostBuilder(appHost, startupConfig, appPaths, NullLogger.Instance)
+                .ConfigureAppConfiguration((context, builder) =>
+                {
+                    builder
+                        .SetBasePath(appPaths.ConfigurationDirectoryPath)
+                        .AddInMemoryCollection(ConfigurationOptions.DefaultConfiguration)
+                        .AddEnvironmentVariables("JELLYFIN_")
+                        .AddInMemoryCollection(commandLineOpts.ConvertToConfig());
+                });
         }
 
         /// <inheritdoc/>

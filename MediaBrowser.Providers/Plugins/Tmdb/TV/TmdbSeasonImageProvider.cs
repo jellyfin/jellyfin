@@ -80,11 +80,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 return Enumerable.Empty<RemoteImageInfo>();
             }
 
-            var remoteImages = new List<RemoteImageInfo>(posters.Count);
-
-            _tmdbClientManager.ConvertPostersToRemoteImageInfo(posters, language, remoteImages);
-
-            return remoteImages;
+            return _tmdbClientManager.ConvertPostersToRemoteImageInfo(posters, language);
         }
 
         /// <inheritdoc />

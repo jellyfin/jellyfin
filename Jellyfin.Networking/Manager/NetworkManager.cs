@@ -375,7 +375,7 @@ namespace Jellyfin.Networking.Manager
 
                 if (MatchesPublishedServerUrl(source, isExternal, out string res, out port))
                 {
-                    _logger.LogInformation("{Source}: Using BindAddress {Address}:{Port}", source, res, port);
+                    _logger.LogDebug("{Source}: Using BindAddress {Address}:{Port}", source, res, port);
                     return res;
                 }
             }
@@ -1301,7 +1301,8 @@ namespace Jellyfin.Networking.Manager
             var extResult = _interfaceAddresses
                 .Exclude(_bindExclusions, false)
                 .Where(p => !IsInLocalNetwork(p))
-                .OrderBy(p => p.Tag);
+                .OrderBy(p => p.Tag)
+                .ToList();
 
             if (extResult.Any())
             {

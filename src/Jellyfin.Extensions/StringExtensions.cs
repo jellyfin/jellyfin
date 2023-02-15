@@ -20,23 +20,8 @@ namespace Jellyfin.Extensions
         /// <param name="text">The string to act on.</param>
         /// <returns>The string without diacritics character.</returns>
         public static string RemoveDiacritics(this string text)
-        {
-            string withDiactritics = _nonConformingUnicode
-                .Replace(text, string.Empty)
-                .Normalize(NormalizationForm.FormD);
-
-            var withoutDiactritics = new StringBuilder();
-            foreach (char c in withDiactritics)
-            {
-                UnicodeCategory uc = CharUnicodeInfo.GetUnicodeCategory(c);
-                if (uc != UnicodeCategory.NonSpacingMark)
-                {
-                    withoutDiactritics.Append(c);
-                }
-            }
-
-            return withoutDiactritics.ToString().Normalize(NormalizationForm.FormC);
-        }
+            => Diacritics.Extensions.StringExtensions.RemoveDiacritics(
+                _nonConformingUnicode.Replace(text, string.Empty));
 
         /// <summary>
         /// Checks whether or not the specified string has diacritics in it.
@@ -44,9 +29,8 @@ namespace Jellyfin.Extensions
         /// <param name="text">The string to check.</param>
         /// <returns>True if the string has diacritics, false otherwise.</returns>
         public static bool HasDiacritics(this string text)
-        {
-            return !string.Equals(text, text.RemoveDiacritics(), StringComparison.Ordinal);
-        }
+            => Diacritics.Extensions.StringExtensions.HasDiacritics(text)
+                || _nonConformingUnicode.IsMatch(text);
 
         /// <summary>
         /// Counts the number of occurrences of [needle] in the string.

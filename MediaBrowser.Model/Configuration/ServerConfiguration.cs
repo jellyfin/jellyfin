@@ -194,7 +194,7 @@ namespace MediaBrowser.Model.Configuration
 
         public string[] CodecsUsed { get; set; } = Array.Empty<string>();
 
-        public List<RepositoryInfo> PluginRepositories { get; set; } = new List<RepositoryInfo>();
+        public RepositoryInfo[] PluginRepositories { get; set; } = Array.Empty<RepositoryInfo>();
 
         public bool EnableExternalContentInSuggestions { get; set; } = true;
 
@@ -259,5 +259,11 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The chapter image resolution.</value>
         public ImageResolution ChapterImageResolution { get; set; } = ImageResolution.MatchSource;
+
+        /// <summary>
+        /// Gets or sets the limit for parallel image encoding.
+        /// </summary>
+        /// <value>The limit for parallel image encoding.</value>
+        public int ParallelImageEncodingLimit { get; set; } = 0;
     }
 }

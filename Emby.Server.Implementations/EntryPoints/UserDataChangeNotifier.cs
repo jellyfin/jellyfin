@@ -123,8 +123,7 @@ namespace Emby.Server.Implementations.EntryPoints
             var user = _userManager.GetUserById(userId);
 
             var dtoList = changedItems
-                .GroupBy(x => x.Id)
-                .Select(x => x.First())
+                .DistinctBy(x => x.Id)
                 .Select(i =>
                 {
                     var dto = _userDataManager.GetUserDataDto(i, user);

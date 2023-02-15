@@ -1,18 +1,20 @@
-﻿namespace Jellyfin.Api.Models.UserDtos
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Jellyfin.Api.Models.UserDtos;
+
+/// <summary>
+/// The create user by name request body.
+/// </summary>
+public class CreateUserByName
 {
     /// <summary>
-    /// The create user by name request body.
+    /// Gets or sets the username.
     /// </summary>
-    public class CreateUserByName
-    {
-        /// <summary>
-        /// Gets or sets the username.
-        /// </summary>
-        public string? Name { get; set; }
+    [Required]
+    required public string Name { get; set; }
 
-        /// <summary>
-        /// Gets or sets the password.
-        /// </summary>
-        public string? Password { get; set; }
-    }
+    /// <summary>
+    /// Gets or sets the password.
+    /// </summary>
+    public string? Password { get; set; }
 }

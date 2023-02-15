@@ -61,10 +61,21 @@ namespace Emby.Server.Implementations.Data
         protected virtual int? CacheSize => null;
 
         /// <summary>
+        /// Gets the locking mode. <see href="https://www.sqlite.org/pragma.html#pragma_locking_mode" />.
+        /// </summary>
+        protected virtual string LockingMode => "EXCLUSIVE";
+
+        /// <summary>
         /// Gets the journal mode. <see href="https://www.sqlite.org/pragma.html#pragma_journal_mode" />.
         /// </summary>
         /// <value>The journal mode.</value>
-        protected virtual string JournalMode => "TRUNCATE";
+        protected virtual string JournalMode => "WAL";
+
+        /// <summary>
+        /// Gets the journal size limit. <see href="https://www.sqlite.org/pragma.html#pragma_journal_size_limit" />.
+        /// </summary>
+        /// <value>The journal size limit.</value>
+        protected virtual int? JournalSizeLimit => 0;
 
         /// <summary>
         /// Gets the page size.
@@ -84,7 +95,7 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <value>The synchronous mode or null.</value>
         /// <see cref="SynchronousMode"/>
-        protected virtual SynchronousMode? Synchronous => null;
+        protected virtual SynchronousMode? Synchronous => SynchronousMode.Normal;
 
         /// <summary>
         /// Gets or sets the write lock.
@@ -116,9 +127,19 @@ namespace Emby.Server.Implementations.Data
                 WriteConnection.Execute("PRAGMA cache_size=" + CacheSize.Value);
             }
 
+            if (!string.IsNullOrWhiteSpace(LockingMode))
+            {
+                WriteConnection.Execute("PRAGMA locking_mode=" + LockingMode);
+            }
+
             if (!string.IsNullOrWhiteSpace(JournalMode))
             {
                 WriteConnection.Execute("PRAGMA journal_mode=" + JournalMode);
+            }
+
+            if (JournalSizeLimit.HasValue)
+            {
+                WriteConnection.Execute("PRAGMA journal_size_limit=" + (int)JournalSizeLimit.Value);
             }
 
             if (Synchronous.HasValue)

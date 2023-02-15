@@ -8,7 +8,7 @@ set -o xtrace
 # Version variables
 NSSM_VERSION="nssm-2.24-101-g897c7ad"
 NSSM_URL="http://files.evilt.win/nssm/${NSSM_VERSION}.zip"
-FFMPEG_URL="https://repo.jellyfin.org/releases/server/windows/ffmpeg/jellyfin-ffmpeg.zip";
+FFMPEG_URL="https://repo.jellyfin.org/releases/server/windows/ffmpeg/jellyfin-ffmpeg-portable_win64.zip";
 
 # Move to source directory
 pushd ${SOURCE_DIR}

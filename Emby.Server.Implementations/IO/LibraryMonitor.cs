@@ -131,7 +131,7 @@ namespace Emby.Server.Implementations.IO
                 .OfType<Folder>()
                 .SelectMany(f => f.PhysicalLocations)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .OrderBy(i => i);
+                .Order();
 
             foreach (var path in paths)
             {

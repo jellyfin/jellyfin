@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SharpFuzz" Version="2.0.0" />
+    <PackageReference Include="SharpFuzz" />
   </ItemGroup>
 
 </Project>

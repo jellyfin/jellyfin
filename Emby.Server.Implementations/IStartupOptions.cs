@@ -21,16 +21,6 @@ namespace Emby.Server.Implementations
         string? PackageName { get; }
 
         /// <summary>
-        /// Gets the value of the --restartpath command line option.
-        /// </summary>
-        string? RestartPath { get; }
-
-        /// <summary>
-        /// Gets the value of the --restartargs command line option.
-        /// </summary>
-        string? RestartArgs { get; }
-
-        /// <summary>
         /// Gets the value of the --published-server-url command line option.
         /// </summary>
         string? PublishedServerUrl { get; }

@@ -226,7 +226,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 await ExtractTextSubtitle(mediaSource, subtitleStream, outputCodec, outputPath, cancellationToken)
                         .ConfigureAwait(false);
 
-                return new SubtitleInfo(outputPath, MediaProtocol.File, outputFormat, false);
+                return new SubtitleInfo()
+                {
+                    Path = outputPath,
+                    Protocol = MediaProtocol.File,
+                    Format = outputFormat,
+                    IsExternal = false
+                };
             }
 
             var currentFormat = (Path.GetExtension(subtitleStream.Path) ?? subtitleStream.Codec)
@@ -240,11 +246,23 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 await ConvertTextSubtitleToSrt(subtitleStream, mediaSource, outputPath, cancellationToken).ConfigureAwait(false);
 
-                return new SubtitleInfo(outputPath, MediaProtocol.File, "srt", true);
+                return new SubtitleInfo()
+                {
+                    Path = outputPath,
+                    Protocol = MediaProtocol.File,
+                    Format = "srt",
+                    IsExternal = true
+                };
             }
 
             // It's possible that the subtitleStream and mediaSource don't share the same protocol (e.g. .STRM file with local subs)
-            return new SubtitleInfo(subtitleStream.Path, _mediaSourceManager.GetPathProtocol(subtitleStream.Path), currentFormat, true);
+            return new SubtitleInfo()
+            {
+                Path = subtitleStream.Path,
+                Protocol = _mediaSourceManager.GetPathProtocol(subtitleStream.Path),
+                Format = currentFormat,
+                IsExternal = true
+            };
         }
 
         private bool TryGetWriter(string format, [NotNullWhen(true)] out ISubtitleWriter? value)
@@ -728,23 +746,17 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
         }
 
-        public readonly struct SubtitleInfo
+#pragma warning disable CA1034 // Nested types should not be visible
+        // Only public for the unit tests
+        public readonly record struct SubtitleInfo
         {
-            public SubtitleInfo(string path, MediaProtocol protocol, string format, bool isExternal)
-            {
-                Path = path;
-                Protocol = protocol;
-                Format = format;
-                IsExternal = isExternal;
-            }
+            public string Path { get; init; }
 
-            public string Path { get; }
+            public MediaProtocol Protocol { get; init; }
 
-            public MediaProtocol Protocol { get; }
+            public string Format { get; init; }
 
-            public string Format { get; }
-
-            public bool IsExternal { get; }
+            public bool IsExternal { get; init; }
         }
     }
 }

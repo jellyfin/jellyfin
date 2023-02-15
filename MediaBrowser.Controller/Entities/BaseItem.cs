@@ -56,6 +56,7 @@ namespace MediaBrowser.Controller.Entities
             ".srt",
             ".vtt",
             ".sub",
+            ".sup",
             ".idx",
             ".txt",
             ".edl",
@@ -1606,6 +1607,12 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
+            var allowedTagsPreference = user.GetPreference(PreferenceKind.AllowedTags);
+            if (allowedTagsPreference.Any() && !allowedTagsPreference.Any(i => Tags.Contains(i, StringComparison.OrdinalIgnoreCase)))
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -2449,6 +2456,11 @@ namespace MediaBrowser.Controller.Entities
             if (video is null)
             {
                 return Task.FromResult(true);
+            }
+
+            if (video.OwnerId.Equals(default))
+            {
+                video.OwnerId = this.Id;
             }
 
             return RefreshMetadataForOwnedItem(video, copyTitleMetadata, newOptions, cancellationToken);

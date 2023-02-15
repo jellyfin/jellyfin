@@ -4,14 +4,16 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
+using System.Runtime.InteropServices;
 using System.Text;
+using Jellyfin.Api.Middleware;
 using Jellyfin.MediaEncoding.Hls.Extensions;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Server.Extensions;
+using Jellyfin.Server.HealthChecks;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Extensions;
 using Jellyfin.Server.Infrastructure;
-using Jellyfin.Server.Middleware;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -34,20 +36,17 @@ namespace Jellyfin.Server
     /// </summary>
     public class Startup
     {
-        private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly IServerApplicationHost _serverApplicationHost;
+        private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Startup" /> class.
         /// </summary>
-        /// <param name="serverConfigurationManager">The server configuration manager.</param>
-        /// <param name="serverApplicationHost">The server application host.</param>
-        public Startup(
-            IServerConfigurationManager serverConfigurationManager,
-            IServerApplicationHost serverApplicationHost)
+        /// <param name="appHost">The server application host.</param>
+        public Startup(CoreAppHost appHost)
         {
-            _serverConfigurationManager = serverConfigurationManager;
-            _serverApplicationHost = serverApplicationHost;
+            _serverApplicationHost = appHost;
+            _serverConfigurationManager = appHost.ConfigurationManager;
         }
 
         /// <summary>
@@ -86,8 +85,7 @@ namespace Jellyfin.Server
                 RequestHeaderEncodingSelector = (_, _) => Encoding.UTF8
             };
 
-            services
-                .AddHttpClient(NamedClient.Default, c =>
+            services.AddHttpClient(NamedClient.Default, c =>
                 {
                     c.DefaultRequestHeaders.UserAgent.Add(productHeader);
                     c.DefaultRequestHeaders.Accept.Add(acceptJsonHeader);
@@ -111,7 +109,7 @@ namespace Jellyfin.Server
                         string.Format(
                             CultureInfo.InvariantCulture,
                             "{0}/{1} UPnP/1.0 {2}/{3}",
-                            MediaBrowser.Common.System.OperatingSystem.Name,
+                            Environment.OSVersion.Platform,
                             Environment.OSVersion,
                             _serverApplicationHost.Name,
                             _serverApplicationHost.ApplicationVersionString));
@@ -122,7 +120,7 @@ namespace Jellyfin.Server
                 .ConfigurePrimaryHttpMessageHandler(defaultHttpClientHandlerDelegate);
 
             services.AddHealthChecks()
-                .AddDbContextCheck<JellyfinDb>();
+                .AddCheck<DbContextFactoryHealthCheck<JellyfinDbContext>>(nameof(JellyfinDbContext));
 
             services.AddHlsPlaylistGenerator();
         }
@@ -207,7 +205,7 @@ namespace Jellyfin.Server
                     endpoints.MapControllers();
                     if (_serverConfigurationManager.Configuration.EnableMetrics)
                     {
-                        endpoints.MapMetrics("/metrics");
+                        endpoints.MapMetrics();
                     }
 
                     endpoints.MapHealthChecks("/health");

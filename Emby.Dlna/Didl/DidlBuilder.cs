@@ -195,7 +195,7 @@ namespace Emby.Dlna.Didl
             {
                 var sources = _mediaSourceManager.GetStaticMediaSources(video, true, _user);
 
-                streamInfo = new StreamBuilder(_mediaEncoder, _logger).BuildVideoItem(new VideoOptions
+                streamInfo = new StreamBuilder(_mediaEncoder, _logger).GetOptimalVideoStream(new MediaOptions
                 {
                     ItemId = video.Id,
                     MediaSources = sources.ToArray(),
@@ -537,7 +537,7 @@ namespace Emby.Dlna.Didl
             {
                 var sources = _mediaSourceManager.GetStaticMediaSources(audio, true, _user);
 
-                streamInfo = new StreamBuilder(_mediaEncoder, _logger).BuildAudioItem(new AudioOptions
+                streamInfo = new StreamBuilder(_mediaEncoder, _logger).GetOptimalAudioStream(new MediaOptions
                 {
                     ItemId = audio.Id,
                     MediaSources = sources.ToArray(),
