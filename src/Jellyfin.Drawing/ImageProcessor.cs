@@ -38,7 +38,6 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
     private readonly IFileSystem _fileSystem;
     private readonly IServerApplicationPaths _appPaths;
     private readonly IImageEncoder _imageEncoder;
-    private readonly IMediaEncoder _mediaEncoder;
 
     private readonly SemaphoreSlim _parallelEncodingLimit;
 
@@ -64,7 +63,6 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
         _logger = logger;
         _fileSystem = fileSystem;
         _imageEncoder = imageEncoder;
-        _mediaEncoder = mediaEncoder;
         _appPaths = appPaths;
 
         var semaphoreCount = config.Configuration.ParallelImageEncodingLimit;
@@ -202,7 +200,6 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
             quality,
             dateModified,
             outputFormat,
-            options.AddPlayedIndicator,
             options.PercentPlayed,
             options.UnplayedCount,
             options.Blur,
@@ -295,7 +292,6 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
         int quality,
         DateTime dateModified,
         ImageFormat format,
-        bool addPlayedIndicator,
         double percentPlayed,
         int? unwatchedCount,
         int? blur,
@@ -348,11 +344,6 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
         {
             filename.Append(",fillheight=");
             filename.Append(fillHeight.Value);
-        }
-
-        if (addPlayedIndicator)
-        {
-            filename.Append(",pl=true");
         }
 
         if (percentPlayed > 0)

@@ -66,6 +66,7 @@ namespace Emby.Server.Implementations.Channels
         /// <param name="userDataManager">The user data manager.</param>
         /// <param name="providerManager">The provider manager.</param>
         /// <param name="memoryCache">The memory cache.</param>
+        /// <param name="channels">The channels.</param>
         public ChannelManager(
             IUserManager userManager,
             IDtoService dtoService,
@@ -75,7 +76,8 @@ namespace Emby.Server.Implementations.Channels
             IFileSystem fileSystem,
             IUserDataManager userDataManager,
             IProviderManager providerManager,
-            IMemoryCache memoryCache)
+            IMemoryCache memoryCache,
+            IEnumerable<IChannel> channels)
         {
             _userManager = userManager;
             _dtoService = dtoService;
@@ -86,17 +88,12 @@ namespace Emby.Server.Implementations.Channels
             _userDataManager = userDataManager;
             _providerManager = providerManager;
             _memoryCache = memoryCache;
-        }
-
-        internal IChannel[] Channels { get; private set; }
-
-        private static TimeSpan CacheLength => TimeSpan.FromHours(3);
-
-        /// <inheritdoc />
-        public void AddParts(IEnumerable<IChannel> channels)
-        {
             Channels = channels.ToArray();
         }
+
+        internal IChannel[] Channels { get; }
+
+        private static TimeSpan CacheLength => TimeSpan.FromHours(3);
 
         /// <inheritdoc />
         public bool EnableMediaSourceDisplay(BaseItem item)

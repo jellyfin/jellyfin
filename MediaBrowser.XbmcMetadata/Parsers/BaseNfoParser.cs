@@ -266,11 +266,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
             var nfoConfiguration = _config.GetNfoConfiguration();
             UserItemData? userData = null;
-            if (!string.IsNullOrWhiteSpace(nfoConfiguration.UserId))
-            {
-                var user = _userManager.GetUserById(Guid.Parse(nfoConfiguration.UserId));
-                userData = _userDataManager.GetUserData(user, item);
-            }
 
             switch (reader.Name)
             {
@@ -370,9 +365,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var val = reader.ReadElementContentAsBoolean();
 
-                        if (userData is not null)
+                        if (!string.IsNullOrWhiteSpace(nfoConfiguration.UserId))
                         {
+                            var user = _userManager.GetUserById(Guid.Parse(nfoConfiguration.UserId));
+                            userData = _userDataManager.GetUserData(user, item);
                             userData.Played = val;
+                            _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
                         }
 
                         break;
@@ -381,11 +379,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 case "playcount":
                     {
                         var val = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(val) && userData is not null)
+                        if (!string.IsNullOrWhiteSpace(val) && !string.IsNullOrWhiteSpace(nfoConfiguration.UserId))
                         {
                             if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var count))
                             {
+                                var user = _userManager.GetUserById(Guid.Parse(nfoConfiguration.UserId));
+                                userData = _userDataManager.GetUserData(user, item);
                                 userData.PlayCount = count;
+                                _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
                             }
                         }
 
@@ -395,12 +396,15 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 case "lastplayed":
                     {
                         var val = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(val) && userData is not null)
+                        if (!string.IsNullOrWhiteSpace(val) && !string.IsNullOrWhiteSpace(nfoConfiguration.UserId))
                         {
                             if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var added))
                             {
+                                var user = _userManager.GetUserById(Guid.Parse(nfoConfiguration.UserId));
+                                userData = _userDataManager.GetUserData(user, item);
                                 userData.LastPlayedDate = added;
-                            }
+                                _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                           }
                             else
                             {
                                 Logger.LogWarning("Invalid lastplayed value found: {Value}", val);

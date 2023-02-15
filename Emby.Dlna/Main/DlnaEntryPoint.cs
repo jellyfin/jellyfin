@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Emby.Dlna.PlayTo;
 using Emby.Dlna.Ssdp;
@@ -262,7 +263,7 @@ namespace Emby.Dlna.Main
             {
                 _publisher = new SsdpDevicePublisher(
                     _communicationsServer,
-                    MediaBrowser.Common.System.OperatingSystem.Name,
+                    Environment.OSVersion.Platform.ToString(),
                     Environment.OSVersion.VersionString,
                     _config.GetDlnaConfiguration().SendOnlyMatchedHost)
                 {

@@ -13,6 +13,7 @@ namespace MediaBrowser.Model.Users
         public UserPolicy()
         {
             IsHidden = true;
+            EnableCollectionManagement = false;
 
             EnableContentDeletion = false;
             EnableContentDeletionFromFolders = Array.Empty<string>();
@@ -35,6 +36,7 @@ namespace MediaBrowser.Model.Users
             EnableSharedDeviceControl = true;
 
             BlockedTags = Array.Empty<string>();
+            AllowedTags = Array.Empty<string>();
             BlockUnratedItems = Array.Empty<UnratedItem>();
 
             EnableUserPreferenceAccess = true;
@@ -73,6 +75,12 @@ namespace MediaBrowser.Model.Users
         public bool IsHidden { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance can manage collections.
+        /// </summary>
+        /// <value><c>true</c> if this instance is hidden; otherwise, <c>false</c>.</value>
+        public bool EnableCollectionManagement { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is disabled.
         /// </summary>
         /// <value><c>true</c> if this instance is disabled; otherwise, <c>false</c>.</value>
@@ -85,6 +93,8 @@ namespace MediaBrowser.Model.Users
         public int? MaxParentalRating { get; set; }
 
         public string[] BlockedTags { get; set; }
+
+        public string[] AllowedTags { get; set; }
 
         public bool EnableUserPreferenceAccess { get; set; }
 

@@ -334,6 +334,12 @@ namespace MediaBrowser.Providers.Manager
                 updateType |= UpdateCumulativeRunTimeTicks(item, children);
                 updateType |= UpdateDateLastMediaAdded(item, children);
 
+                // don't update user-changeable metadata for locked items
+                if (item.IsLocked)
+                {
+                    return updateType;
+                }
+
                 if (EnableUpdatingPremiereDateFromChildren)
                 {
                     updateType |= UpdatePremiereDate(item, children);
@@ -375,7 +381,7 @@ namespace MediaBrowser.Providers.Manager
                 if (!folder.RunTimeTicks.HasValue || folder.RunTimeTicks.Value != ticks)
                 {
                     folder.RunTimeTicks = ticks;
-                    return ItemUpdateType.MetadataEdit;
+                    return ItemUpdateType.MetadataImport;
                 }
             }
 

@@ -4,30 +4,29 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 
-namespace Jellyfin.Api.Formatters
+namespace Jellyfin.Api.Formatters;
+
+/// <summary>
+/// Xml output formatter.
+/// </summary>
+public class XmlOutputFormatter : TextOutputFormatter
 {
     /// <summary>
-    /// Xml output formatter.
+    /// Initializes a new instance of the <see cref="XmlOutputFormatter"/> class.
     /// </summary>
-    public class XmlOutputFormatter : TextOutputFormatter
+    public XmlOutputFormatter()
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="XmlOutputFormatter"/> class.
-        /// </summary>
-        public XmlOutputFormatter()
-        {
-            SupportedMediaTypes.Clear();
-            SupportedMediaTypes.Add(MediaTypeNames.Text.Xml);
+        SupportedMediaTypes.Clear();
+        SupportedMediaTypes.Add(MediaTypeNames.Text.Xml);
 
-            SupportedEncodings.Add(Encoding.UTF8);
-            SupportedEncodings.Add(Encoding.Unicode);
-        }
+        SupportedEncodings.Add(Encoding.UTF8);
+        SupportedEncodings.Add(Encoding.Unicode);
+    }
 
-        /// <inheritdoc />
-        public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
-        {
-            var stringResponse = context.Object?.ToString();
-            return stringResponse is null ? Task.CompletedTask : context.HttpContext.Response.WriteAsync(stringResponse);
-        }
+    /// <inheritdoc />
+    public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
+    {
+        var stringResponse = context.Object?.ToString();
+        return stringResponse is null ? Task.CompletedTask : context.HttpContext.Response.WriteAsync(stringResponse);
     }
 }

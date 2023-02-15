@@ -141,7 +141,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
             audio.RunTimeTicks = mediaInfo.RunTimeTicks;
             audio.Size = mediaInfo.Size;
-            FetchDataFromTags(audio);
+
+            if (!audio.IsLocked)
+            {
+                FetchDataFromTags(audio);
+            }
 
             _itemRepo.SaveMediaStreams(audio.Id, mediaInfo.MediaStreams, cancellationToken);
         }
