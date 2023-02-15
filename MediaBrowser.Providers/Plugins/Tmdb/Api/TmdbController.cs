@@ -11,7 +11,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Api
     /// The TMDb API controller.
     /// </summary>
     [ApiController]
-    [Authorize(Policy = "DefaultAuthorization")]
+    [Authorize]
     [Route("[controller]")]
     [Produces(MediaTypeNames.Application.Json)]
     public class TmdbController : ControllerBase

@@ -58,6 +58,7 @@
  - [HelloWorld017](https://github.com/HelloWorld017)
  - [ikomhoog](https://github.com/ikomhoog)
  - [jftuga](https://github.com/jftuga)
+ - [jmshrv](https://github.com/jmshrv)
  - [joern-h](https://github.com/joern-h)
  - [joshuaboniface](https://github.com/joshuaboniface)
  - [JustAMan](https://github.com/JustAMan)
@@ -231,3 +232,4 @@
  - [Matthew Jones](https://github.com/matthew-jones-uk)
  - [Jakob Kukla](https://github.com/jakobkukla)
  - [Utku Özdemir](https://github.com/utkuozdemir)
+ - [JPUC1143](https://github.com/Jpuc1143/)

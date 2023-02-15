@@ -54,6 +54,12 @@ namespace MediaBrowser.Providers.Music
         {
             var updateType = base.UpdateMetadataFromChildren(item, children, isFullRefresh, currentUpdateType);
 
+            // don't update user-changeable metadata for locked items
+            if (item.IsLocked)
+            {
+                return updateType;
+            }
+
             if (isFullRefresh || currentUpdateType > ItemUpdateType.None)
             {
                 if (!item.LockedFields.Contains(MetadataField.Name))
