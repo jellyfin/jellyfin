@@ -325,8 +325,12 @@ public class TranscodingJobHelper : IDisposable
             await DeletePartialStreamFiles(job.Path!, job.Type, 0, 1500).ConfigureAwait(false);
             if (job.MediaSource?.VideoType == VideoType.Dvd || job.MediaSource?.VideoType == VideoType.BluRay)
             {
-                var path = Path.Join(job.Path, job.MediaSource.Id + ".concat");
-                File.Delete(path);
+                var concatFilePath = Path.Join(_serverConfigurationManager.GetTranscodePath(), job.MediaSource.Id + ".concat");
+                if (File.Exists(concatFilePath))
+                {
+                    _logger.LogInformation("Deleting ffmpeg concat configuration at {Path}", concatFilePath);
+                    _fileSystem.DeleteFile(concatFilePath);
+                }
             }
         }
 
