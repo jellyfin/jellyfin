@@ -126,9 +126,13 @@ namespace MediaBrowser.Model.Session
 
             set
             {
-                if (value > 10 || value < 0.1)
+                if (value > 10)
                 {
-                    throw new InvalidOperationException("PlaybackSpeed must be between 0.1 and 10.0");
+                    _playbackSpeed = 10;
+                }
+                else if (value < 0.1)
+                {
+                    _playbackSpeed = 0.1;
                 }
 
                 _playbackSpeed = value;
