@@ -134,8 +134,10 @@ namespace MediaBrowser.Model.Session
                 {
                     _playbackSpeed = 0.1;
                 }
-
-                _playbackSpeed = value;
+                else
+                {
+                    _playbackSpeed = value;
+                }
             }
         }
     }
