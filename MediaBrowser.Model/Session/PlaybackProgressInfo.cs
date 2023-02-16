@@ -11,6 +11,8 @@ namespace MediaBrowser.Model.Session
     /// </summary>
     public class PlaybackProgressInfo
     {
+        private double _playbackSpeed = 1.0;
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance can seek.
         /// </summary>
@@ -110,5 +112,27 @@ namespace MediaBrowser.Model.Session
         public QueueItem[] NowPlayingQueue { get; set; }
 
         public string PlaylistItemId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the playback speed.
+        /// </summary>
+        /// <value>The playback speed.</value>
+        public double PlaybackSpeed
+        {
+            get
+            {
+                return _playbackSpeed;
+            }
+
+            set
+            {
+                if (value > 10 || value < 0.1)
+                {
+                    throw new InvalidOperationException("PlaybackSpeed must be between 0.1 and 10.0");
+                }
+
+                _playbackSpeed = value;
+            }
+        }
     }
 }

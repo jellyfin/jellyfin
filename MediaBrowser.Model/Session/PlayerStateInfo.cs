@@ -1,10 +1,14 @@
 #nullable disable
 #pragma warning disable CS1591
 
+using System;
+
 namespace MediaBrowser.Model.Session
 {
     public class PlayerStateInfo
     {
+        private double _playbackSpeed = 1.0;
+
         /// <summary>
         /// Gets or sets the now playing position ticks.
         /// </summary>
@@ -70,5 +74,27 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value>The live stream identifier.</value>
         public string LiveStreamId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the playback speed.
+        /// </summary>
+        /// <value>The playback speed.</value>
+        public double PlaybackSpeed
+        {
+            get
+            {
+                return _playbackSpeed;
+            }
+
+            set
+            {
+                if (value > 10 || value < 0.1)
+                {
+                    throw new InvalidOperationException("PlaybackSpeed must be between 0.1 and 10.0");
+                }
+
+                _playbackSpeed = value;
+            }
+        }
     }
 }
