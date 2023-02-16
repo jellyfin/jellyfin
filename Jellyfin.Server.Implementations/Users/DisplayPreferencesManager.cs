@@ -103,11 +103,11 @@ namespace Jellyfin.Server.Implementations.Users
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                var existingPrefs = dbContext.CustomItemDisplayPreferences
+                await dbContext.CustomItemDisplayPreferences
                     .Where(prefs => prefs.UserId.Equals(userId)
                                     && prefs.ItemId.Equals(itemId)
-                                    && string.Equals(prefs.Client, client));
-                dbContext.CustomItemDisplayPreferences.RemoveRange(existingPrefs);
+                                    && string.Equals(prefs.Client, client))
+                    .ExecuteDeleteAsync().ConfigureAwait(false);
 
                 foreach (var (key, value) in customPreferences)
                 {
