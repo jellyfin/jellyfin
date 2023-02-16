@@ -49,4 +49,9 @@ public class PluginConfiguration : BasePluginConfiguration
     /// Gets or sets a value indicating whether to replace the artist name.
     /// </summary>
     public bool ReplaceArtistName { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to retrieve missing track information from the service.
+    /// </summary>
+    public bool GetMissingTrackInfo { get; set; }
 }

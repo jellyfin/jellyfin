@@ -255,6 +255,53 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
                 result.Item.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, releaseGroupId);
             }
         }
+        if (Plugin.Instance!.Configuration.GetMissingTrackInfo)
+        {
+            if (result.Item.Children.Any(s => s is Audio && s.IndexNumber == null))
+            {
+                var release = _musicBrainzQuery.LookupRelease(new Guid(releaseId), Include.Recordings);
+
+                var tracks = release.Media.SelectMany(m => m.Tracks);
+
+                foreach (var c in result.Item.Children.Where(x =>
+                    x is Audio &&
+                    result.Item.Children.Any(p => Guid.Equals(p.Id, x.ParentId)) &&
+                    string.Equals(x.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) &&
+                    x.RunTimeTicks == null))
+                {
+                    var newlength = tracks.Where(t => string.Equals(t.Title, c.Name, StringComparison.OrdinalIgnoreCase)).FirstOrDefault()?.Length;
+                    if (newlength != null)
+                    {
+                        c.RunTimeTicks = newlength?.Ticks;
+                        var parent = result.Item.Children.Where(p => Guid.Equals(p.Id, c.ParentId)).FirstOrDefault() as MusicAlbum;
+                        if (parent != null)
+                        {
+                            parent.AddChild(c);
+                            result.Item.AddChild(parent);
+                        }
+                    }
+                }
+
+                foreach (var c in result.Item.Children.Where(x =>
+                    x is Audio &&
+                    result.Item.Children.Any(p => Guid.Equals(p.Id, x.ParentId)) &&
+                    string.Equals(x.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) &&
+                    x.IndexNumber == null))
+                {
+                    var newindex = tracks.Where(t => string.Equals(t.Title, c.Name, StringComparison.OrdinalIgnoreCase)).FirstOrDefault()?.Position;
+                    if (newindex != null)
+                    {
+                        c.IndexNumber = newindex;
+                        var parent = result.Item.Children.Where(p => Guid.Equals(p.Id, c.ParentId)).FirstOrDefault() as MusicAlbum;
+                        if (parent != null)
+                        {
+                            parent.AddChild(c);
+                            result.Item.AddChild(parent);
+                        }
+                    }
+                }
+            }
+        }
 
         return result;
     }
