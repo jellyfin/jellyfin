@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
+using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Common.Net
@@ -70,27 +71,28 @@ namespace MediaBrowser.Common.Net
         /// <param name="source">Source of the request.</param>
         /// <param name="port">Optional port returned, if it's part of an override.</param>
         /// <returns>IP address to use, or loopback address if all else fails.</returns>
-        string GetBindInterface(HttpRequest source, out int? port);
+        string GetBindAddress(HttpRequest source, out int? port);
 
         /// <summary>
         /// Retrieves the bind address to use in system URLs. (Server Discovery, PlayTo, LiveTV, SystemInfo)
         /// If no bind addresses are specified, an internal interface address is selected.
-        /// (See <see cref="GetBindAddress(IPAddress, out int?)"/>.
+        /// (See <see cref="GetBindAddress(IPAddress, out int?, bool)"/>.
         /// </summary>
         /// <param name="source">IP address of the request.</param>
         /// <param name="port">Optional port returned, if it's part of an override.</param>
+        /// <param name="skipOverrides">Optional boolean denoting if published server overrides should be ignored. Defaults to false.</param>
         /// <returns>IP address to use, or loopback address if all else fails.</returns>
-        string GetBindAddress(IPAddress source, out int? port);
+        string GetBindAddress(IPAddress source, out int? port, bool skipOverrides = false);
 
         /// <summary>
         /// Retrieves the bind address to use in system URLs. (Server Discovery, PlayTo, LiveTV, SystemInfo)
         /// If no bind addresses are specified, an internal interface address is selected.
-        /// (See <see cref="GetBindAddress(IPAddress, out int?)"/>.
+        /// (See <see cref="GetBindAddress(IPAddress, out int?, bool)"/>.
         /// </summary>
         /// <param name="source">Source of the request.</param>
         /// <param name="port">Optional port returned, if it's part of an override.</param>
         /// <returns>IP address to use, or loopback address if all else fails.</returns>
-        string GetBindInterface(string source, out int? port);
+        string GetBindAddress(string source, out int? port);
 
         /// <summary>
         /// Get a list of all the MAC addresses associated with active interfaces.

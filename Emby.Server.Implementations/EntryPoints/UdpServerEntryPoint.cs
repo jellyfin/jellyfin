@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -80,31 +82,26 @@ namespace Emby.Server.Implementations.EntryPoints
                 if (_enableMultiSocketBinding)
                 {
                     // Add global broadcast socket
-                    _udpServers.Add(new UdpServer(_logger, _appHost, _config, System.Net.IPAddress.Broadcast, PortNumber));
+                    _udpServers.Add(new UdpServer(_logger, _appHost, _config, IPAddress.Broadcast, PortNumber));
 
                     // Add bind address specific broadcast sockets
-                    foreach (var bindAddress in _networkManager.GetInternalBindAddresses())
+                    // IPv6 is currently unsupported
+                    var validInterfaces = _networkManager.GetInternalBindAddresses().Where(i => i.AddressFamily == AddressFamily.InterNetwork);
+                    foreach (var intf in validInterfaces)
                     {
-                        if (bindAddress.AddressFamily == AddressFamily.InterNetworkV6)
-                        {
-                            // Not supporting IPv6 right now
-                            continue;
-                        }
-
-                        var broadcastAddress = NetworkExtensions.GetBroadcastAddress(bindAddress.Subnet);
+                        var broadcastAddress = NetworkExtensions.GetBroadcastAddress(intf.Subnet);
                         _logger.LogDebug("Binding UDP server to {Address} on port {PortNumber}", broadcastAddress.ToString(), PortNumber);
 
-                        _udpServers.Add(new UdpServer(_logger, _appHost, _config, broadcastAddress, PortNumber));
+                        var server = new UdpServer(_logger, _appHost, _config, broadcastAddress, PortNumber);
+                        server.Start(_cancellationTokenSource.Token);
+                        _udpServers.Add(server);
                     }
                 }
                 else
                 {
-                    _udpServers.Add(new UdpServer(_logger, _appHost, _config, System.Net.IPAddress.Any, PortNumber));
-                }
-
-                foreach (var server in _udpServers)
-                {
+                    var server = new UdpServer(_logger, _appHost, _config, IPAddress.Any, PortNumber);
                     server.Start(_cancellationTokenSource.Token);
+                    _udpServers.Add(server);
                 }
             }
             catch (SocketException ex)
@@ -133,9 +130,12 @@ namespace Emby.Server.Implementations.EntryPoints
 
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource.Dispose();
-            _udpServers.ForEach(s => s.Dispose());
-            _udpServers.Clear();
+            foreach (var server in _udpServers)
+            {
+                server.Dispose();
+            }
 
+            _udpServers.Clear();
             _disposed = true;
         }
     }

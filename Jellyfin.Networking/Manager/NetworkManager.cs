@@ -9,6 +9,7 @@ using System.Threading;
 using Jellyfin.Networking.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Logging;
@@ -699,7 +700,7 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public string GetBindInterface(string source, out int? port)
+        public string GetBindAddress(string source, out int? port)
         {
             if (!NetworkExtensions.TryParseHost(source, out var addresses, IsIPv4Enabled, IsIPv6Enabled))
             {
@@ -711,16 +712,16 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public string GetBindInterface(HttpRequest source, out int? port)
+        public string GetBindAddress(HttpRequest source, out int? port)
         {
-            var result = GetBindInterface(source.Host.Host, out port);
+            var result = GetBindAddress(source.Host.Host, out port);
             port ??= source.Host.Port;
 
             return result;
         }
 
         /// <inheritdoc/>
-        public string GetBindAddress(IPAddress? source, out int? port)
+        public string GetBindAddress(IPAddress? source, out int? port, bool skipOverrides = false)
         {
             port = null;
 
@@ -741,7 +742,7 @@ namespace Jellyfin.Networking.Manager
                 bool isExternal = !_lanSubnets.Any(network => network.Contains(source));
                 _logger.LogDebug("Trying to get bind address for source {Source} - External: {IsExternal}", source, isExternal);
 
-                if (MatchesPublishedServerUrl(source, isExternal, out result))
+                if (!skipOverrides && MatchesPublishedServerUrl(source, isExternal, out result))
                 {
                     return result;
                 }

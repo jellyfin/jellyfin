@@ -6,6 +6,7 @@ using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -210,7 +211,7 @@ namespace Jellyfin.Networking.Tests
             if (resultObj is not null && host.Length > 0)
             {
                 result = resultObj.First().Address.ToString();
-                var intf = nm.GetBindInterface(source, out _);
+                var intf = nm.GetBindAddress(source, out _);
 
                 Assert.Equal(intf, result);
             }
@@ -271,7 +272,7 @@ namespace Jellyfin.Networking.Tests
                 result = resultObj.First().Address.ToString();
             }
 
-            var intf = nm.GetBindInterface(source, out int? _);
+            var intf = nm.GetBindAddress(source, out int? _);
 
             Assert.Equal(result, intf);
         }
@@ -334,7 +335,7 @@ namespace Jellyfin.Networking.Tests
             NetworkManager.MockNetworkSettings = interfaces;
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
-            var interfaceToUse = nm.GetBindInterface(string.Empty, out _);
+            var interfaceToUse = nm.GetBindAddress(string.Empty, out _);
 
             Assert.Equal(result, interfaceToUse);
         }
@@ -358,7 +359,7 @@ namespace Jellyfin.Networking.Tests
             NetworkManager.MockNetworkSettings = interfaces;
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
-            var interfaceToUse = nm.GetBindInterface(source, out _);
+            var interfaceToUse = nm.GetBindAddress(source, out _);
 
             Assert.Equal(result, interfaceToUse);
         }

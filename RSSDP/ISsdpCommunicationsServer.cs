@@ -23,12 +23,12 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Causes the server to begin listening for multicast messages, being SSDP search requests and notifications.
         /// </summary>
-        void BeginListeningForBroadcasts();
+        void BeginListeningForMulticast();
 
         /// <summary>
         /// Causes the server to stop listening for multicast messages, being SSDP search requests and notifications.
         /// </summary>
-        void StopListeningForBroadcasts();
+        void StopListeningForMulticast();
 
         /// <summary>
         /// Sends a message to a particular address (uni or multicast) and port.

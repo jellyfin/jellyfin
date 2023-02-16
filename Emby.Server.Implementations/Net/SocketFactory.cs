@@ -10,61 +10,63 @@ namespace Emby.Server.Implementations.Net
     public class SocketFactory : ISocketFactory
     {
         /// <inheritdoc />
-        public ISocket CreateUdpBroadcastSocket(int localPort)
+        public Socket CreateUdpBroadcastSocket(int localPort)
         {
             if (localPort < 0)
             {
                 throw new ArgumentException("localPort cannot be less than zero.", nameof(localPort));
             }
 
-            var retVal = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             try
             {
-                retVal.EnableBroadcast = true;
-                retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 1);
+                socket.EnableBroadcast = true;
+                socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 1);
+                socket.Bind(new IPEndPoint(IPAddress.Any, localPort));
 
-                return new UdpSocket(retVal, localPort, IPAddress.Any);
+                return socket;
             }
             catch
             {
-                retVal?.Dispose();
+                socket?.Dispose();
 
                 throw;
             }
         }
 
         /// <inheritdoc />
-        public ISocket CreateSsdpUdpSocket(IPAddress localIp, int localPort)
+        public Socket CreateSsdpUdpSocket(IPData bindInterface, int localPort)
         {
+            ArgumentNullException.ThrowIfNull(bindInterface.Address);
+
             if (localPort < 0)
             {
                 throw new ArgumentException("localPort cannot be less than zero.", nameof(localPort));
             }
 
-            var retVal = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             try
             {
-                retVal.EnableBroadcast = true;
-                retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 4);
+                socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                socket.Bind(new IPEndPoint(bindInterface.Address, localPort));
 
-                retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(IPAddress.Parse("239.255.255.250"), localIp));
-                return new UdpSocket(retVal, localPort, localIp);
+                return socket;
             }
             catch
             {
-                retVal?.Dispose();
+                socket?.Dispose();
 
                 throw;
             }
         }
 
         /// <inheritdoc />
-        public ISocket CreateUdpMulticastSocket(IPAddress ipAddress, IPAddress bindIpAddress, int multicastTimeToLive, int localPort)
+        public Socket CreateUdpMulticastSocket(IPAddress multicastAddress, IPData bindInterface, int multicastTimeToLive, int localPort)
         {
-            ArgumentNullException.ThrowIfNull(ipAddress);
-            ArgumentNullException.ThrowIfNull(bindIpAddress);
+            var bindIPAddress = bindInterface.Address;
+            ArgumentNullException.ThrowIfNull(multicastAddress);
+            ArgumentNullException.ThrowIfNull(bindIPAddress);
 
             if (multicastTimeToLive <= 0)
             {
@@ -76,34 +78,25 @@ namespace Emby.Server.Implementations.Net
                 throw new ArgumentException("localPort cannot be less than zero.", nameof(localPort));
             }
 
-            var retVal = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-
-            retVal.ExclusiveAddressUse = false;
+            var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
             try
             {
-                // seeing occasional exceptions thrown on qnap
-                // System.Net.Sockets.SocketException (0x80004005): Protocol not available
-                retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            }
-            catch (SocketException)
-            {
-            }
+                var interfaceIndex = (int)IPAddress.HostToNetworkOrder(bindInterface.Index);
 
-            try
-            {
-                retVal.EnableBroadcast = true;
-                // retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
-                retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, multicastTimeToLive);
+                socket.MulticastLoopback = false;
+                socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.PacketInformation, true);
+                socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, multicastTimeToLive);
+                socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastInterface, interfaceIndex);
+                socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(multicastAddress, interfaceIndex));
+                socket.Bind(new IPEndPoint(multicastAddress, localPort));
 
-                retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(ipAddress, bindIpAddress));
-                retVal.MulticastLoopback = true;
-
-                return new UdpSocket(retVal, localPort, bindIpAddress);
+                return socket;
             }
             catch
             {
-                retVal?.Dispose();
+                socket?.Dispose();
 
                 throw;
             }

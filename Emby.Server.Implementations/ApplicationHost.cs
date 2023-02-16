@@ -1025,7 +1025,7 @@ namespace Emby.Server.Implementations
                 return PublishedServerUrl.Trim('/');
             }
 
-            string smart = NetManager.GetBindInterface(hostname, out var port);
+            string smart = NetManager.GetBindAddress(hostname, out var port);
             return GetLocalApiUrl(smart.Trim('/'), null, port);
         }
 
@@ -1033,7 +1033,7 @@ namespace Emby.Server.Implementations
         public string GetApiUrlForLocalAccess(IPAddress ipAddress = null, bool allowHttps = true)
         {
             // With an empty source, the port will be null
-            var smart = NetManager.GetBindAddress(ipAddress, out _);
+            var smart = NetManager.GetBindAddress(ipAddress, out _, true);
             var scheme = !allowHttps ? Uri.UriSchemeHttp : null;
             int? port = !allowHttps ? HttpPort : null;
             return GetLocalApiUrl(smart, scheme, port);

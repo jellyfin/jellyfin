@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-
 namespace Rssdp.Infrastructure
 {
     /// <summary>
@@ -19,19 +19,48 @@ namespace Rssdp.Infrastructure
         private Timer _BroadcastTimer;
         private object _timerLock = new object();
 
+        private string _OSName;
+
+        private string _OSVersion;
+
         private readonly TimeSpan DefaultSearchWaitTime = TimeSpan.FromSeconds(4);
         private readonly TimeSpan OneSecond = TimeSpan.FromSeconds(1);
 
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public SsdpDeviceLocator(ISsdpCommunicationsServer communicationsServer)
+        public SsdpDeviceLocator(
+            ISsdpCommunicationsServer communicationsServer,
+            string osName,
+            string osVersion)
         {
-            if (communicationsServer == null)
+            if (communicationsServer is null)
             {
                 throw new ArgumentNullException(nameof(communicationsServer));
             }
 
+            if (osName is null)
+            {
+                throw new ArgumentNullException(nameof(osName));
+            }
+
+            if (osName.Length == 0)
+            {
+                throw new ArgumentException("osName cannot be an empty string.", nameof(osName));
+            }
+
+            if (osVersion is null)
+            {
+                throw new ArgumentNullException(nameof(osVersion));
+            }
+
+            if (osVersion.Length == 0)
+            {
+                throw new ArgumentException("osVersion cannot be an empty string.", nameof(osName));
+            }
+
+            _OSName = osName;
+            _OSVersion = osVersion;
             _CommunicationsServer = communicationsServer;
             _CommunicationsServer.ResponseReceived += CommsServer_ResponseReceived;
 
@@ -72,7 +101,7 @@ namespace Rssdp.Infrastructure
         {
             lock (_timerLock)
             {
-                if (_BroadcastTimer == null)
+                if (_BroadcastTimer is null)
                 {
                     _BroadcastTimer = new Timer(OnBroadcastTimerCallback, null, dueTime, period);
                 }
@@ -87,7 +116,7 @@ namespace Rssdp.Infrastructure
         {
             lock (_timerLock)
             {
-                if (_BroadcastTimer != null)
+                if (_BroadcastTimer is not null)
                 {
                     _BroadcastTimer.Dispose();
                     _BroadcastTimer = null;
@@ -148,7 +177,7 @@ namespace Rssdp.Infrastructure
 
         private Task SearchAsync(string searchTarget, TimeSpan searchWaitTime, CancellationToken cancellationToken)
         {
-            if (searchTarget == null)
+            if (searchTarget is null)
             {
                 throw new ArgumentNullException(nameof(searchTarget));
             }
@@ -187,7 +216,7 @@ namespace Rssdp.Infrastructure
         {
             _CommunicationsServer.RequestReceived -= CommsServer_RequestReceived;
             _CommunicationsServer.RequestReceived += CommsServer_RequestReceived;
-            _CommunicationsServer.BeginListeningForBroadcasts();
+            _CommunicationsServer.BeginListeningForMulticast();
         }
 
         /// <summary>
@@ -219,7 +248,7 @@ namespace Rssdp.Infrastructure
             }
 
             var handlers = this.DeviceAvailable;
-            if (handlers != null)
+            if (handlers is not null)
             {
                 handlers(this, new DeviceAvailableEventArgs(device, isNewDevice)
                 {
@@ -242,7 +271,7 @@ namespace Rssdp.Infrastructure
             }
 
             var handlers = this.DeviceUnavailable;
-            if (handlers != null)
+            if (handlers is not null)
             {
                 handlers(this, new DeviceUnavailableEventArgs(device, expired));
             }
@@ -281,7 +310,7 @@ namespace Rssdp.Infrastructure
 
                 var commsServer = _CommunicationsServer;
                 _CommunicationsServer = null;
-                if (commsServer != null)
+                if (commsServer is not null)
                 {
                     commsServer.ResponseReceived -= this.CommsServer_ResponseReceived;
                     commsServer.RequestReceived -= this.CommsServer_RequestReceived;
@@ -295,7 +324,7 @@ namespace Rssdp.Infrastructure
             lock (_Devices)
             {
                 var existingDevice = FindExistingDeviceNotification(_Devices, device.NotificationType, device.Usn);
-                if (existingDevice == null)
+                if (existingDevice is null)
                 {
                     _Devices.Add(device);
                     isNewDevice = true;
@@ -329,12 +358,13 @@ namespace Rssdp.Infrastructure
 
         private Task BroadcastDiscoverMessage(string serviceType, TimeSpan mxValue, CancellationToken cancellationToken)
         {
+            const string header = "M-SEARCH * HTTP/1.1";
+
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             values["HOST"] = "239.255.255.250:1900";
             values["USER-AGENT"] = "UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2";
-            // values["X-EMBY-SERVERID"] = _appHost.SystemId;
-
+            values["USER-AGENT"] = string.Format(CultureInfo.InvariantCulture, "{0}/{1} UPnP/1.0 RSSDP/{2}", _OSName, _OSVersion, SsdpConstants.ServerVersion);
             values["MAN"] = "\"ssdp:discover\"";
 
             // Search target
@@ -342,8 +372,6 @@ namespace Rssdp.Infrastructure
 
             // Seconds to delay response
             values["MX"] = "3";
-
-            var header = "M-SEARCH * HTTP/1.1";
 
             var message = BuildMessage(header, values);
 
@@ -358,7 +386,7 @@ namespace Rssdp.Infrastructure
             }
 
             var location = GetFirstHeaderUriValue("Location", message);
-            if (location != null)
+            if (location is not null)
             {
                 var device = new DiscoveredSsdpDevice()
                 {
@@ -395,7 +423,7 @@ namespace Rssdp.Infrastructure
         private void ProcessAliveNotification(HttpRequestMessage message, IPAddress IpAddress)
         {
             var location = GetFirstHeaderUriValue("Location", message);
-            if (location != null)
+            if (location is not null)
             {
                 var device = new DiscoveredSsdpDevice()
                 {
@@ -445,7 +473,7 @@ namespace Rssdp.Infrastructure
             if (message.Headers.Contains(headerName))
             {
                 message.Headers.TryGetValues(headerName, out values);
-                if (values != null)
+                if (values is not null)
                 {
                     retVal = values.FirstOrDefault();
                 }
@@ -461,7 +489,7 @@ namespace Rssdp.Infrastructure
             if (message.Headers.Contains(headerName))
             {
                 message.Headers.TryGetValues(headerName, out values);
-                if (values != null)
+                if (values is not null)
                 {
                     retVal = values.FirstOrDefault();
                 }
@@ -477,7 +505,7 @@ namespace Rssdp.Infrastructure
             if (request.Headers.Contains(headerName))
             {
                 request.Headers.TryGetValues(headerName, out values);
-                if (values != null)
+                if (values is not null)
                 {
                     value = values.FirstOrDefault();
                 }
@@ -495,7 +523,7 @@ namespace Rssdp.Infrastructure
             if (response.Headers.Contains(headerName))
             {
                 response.Headers.TryGetValues(headerName, out values);
-                if (values != null)
+                if (values is not null)
                 {
                     value = values.FirstOrDefault();
                 }
@@ -508,7 +536,7 @@ namespace Rssdp.Infrastructure
 
         private TimeSpan CacheAgeFromHeader(System.Net.Http.Headers.CacheControlHeaderValue headerValue)
         {
-            if (headerValue == null)
+            if (headerValue is null)
             {
                 return TimeSpan.Zero;
             }
@@ -565,7 +593,7 @@ namespace Rssdp.Infrastructure
                 }
             }
 
-            if (existingDevices != null && existingDevices.Count > 0)
+            if (existingDevices is not null && existingDevices.Count > 0)
             {
                 foreach (var removedDevice in existingDevices)
                 {

@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.HttpOverrides;
 
-namespace MediaBrowser.Common.Net
+namespace MediaBrowser.Model.Net
 {
     /// <summary>
     /// Base network object class.

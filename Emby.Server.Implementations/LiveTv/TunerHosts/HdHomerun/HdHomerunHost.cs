@@ -661,16 +661,16 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 // Need a way to set the Receive timeout on the socket otherwise this might never timeout?
                 try
                 {
-                    await udpClient.SendToAsync(discBytes, 0, discBytes.Length, new IPEndPoint(IPAddress.Parse("255.255.255.255"), 65001), cancellationToken).ConfigureAwait(false);
+                    await udpClient.SendToAsync(discBytes, new IPEndPoint(IPAddress.Parse("255.255.255.255"), 65001), cancellationToken).ConfigureAwait(false);
                     var receiveBuffer = new byte[8192];
 
                     while (!cancellationToken.IsCancellationRequested)
                     {
-                        var response = await udpClient.ReceiveAsync(receiveBuffer, 0, receiveBuffer.Length, cancellationToken).ConfigureAwait(false);
-                        var deviceIp = response.RemoteEndPoint.Address.ToString();
+                        var response = await udpClient.ReceiveMessageFromAsync(receiveBuffer, new IPEndPoint(IPAddress.Any, 0), cancellationToken).ConfigureAwait(false);
+                        var deviceIp = ((IPEndPoint)response.RemoteEndPoint).Address.ToString();
 
-                        // check to make sure we have enough bytes received to be a valid message and make sure the 2nd byte is the discover reply byte
-                        if (response.ReceivedBytes > 13 && response.Buffer[1] == 3)
+                        // Check to make sure we have enough bytes received to be a valid message and make sure the 2nd byte is the discover reply byte
+                        if (response.ReceivedBytes > 13 && receiveBuffer[1] == 3)
                         {
                             var deviceAddress = "http://" + deviceIp;
 

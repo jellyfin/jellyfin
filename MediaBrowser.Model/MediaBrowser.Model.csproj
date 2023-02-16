@@ -58,6 +58,7 @@
     <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="../Jellyfin.Data/Jellyfin.Data.csproj" />
     <ProjectReference Include="../src/Jellyfin.Extensions/Jellyfin.Extensions.csproj" />
   </ItemGroup>

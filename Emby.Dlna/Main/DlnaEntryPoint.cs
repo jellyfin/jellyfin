@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Emby.Dlna.PlayTo;
 using Emby.Dlna.Ssdp;
@@ -201,8 +200,7 @@ namespace Emby.Dlna.Main
             {
                 if (_communicationsServer is null)
                 {
-                    var enableMultiSocketBinding = OperatingSystem.IsWindows() ||
-                                                   OperatingSystem.IsLinux();
+                    var enableMultiSocketBinding = OperatingSystem.IsWindows() || OperatingSystem.IsLinux();
 
                     _communicationsServer = new SsdpCommunicationsServer(_socketFactory, _networkManager, _logger, enableMultiSocketBinding)
                     {
@@ -248,11 +246,6 @@ namespace Emby.Dlna.Main
 
         public void StartDevicePublisher(Configuration.DlnaOptions options)
         {
-            if (!options.BlastAliveMessages)
-            {
-                return;
-            }
-
             if (_publisher is not null)
             {
                 return;
@@ -263,7 +256,8 @@ namespace Emby.Dlna.Main
                 _publisher = new SsdpDevicePublisher(
                     _communicationsServer,
                     Environment.OSVersion.Platform.ToString(),
-                    Environment.OSVersion.VersionString,
+                    // Can not use VersionString here since that includes OS and version
+                    Environment.OSVersion.Version.ToString(),
                     _config.GetDlnaConfiguration().SendOnlyMatchedHost)
                 {
                     LogFunction = (msg) => _logger.LogDebug("{Msg}", msg),
@@ -272,7 +266,10 @@ namespace Emby.Dlna.Main
 
                 RegisterServerEndpoints();
 
-                _publisher.StartBroadcastingAliveMessages(TimeSpan.FromSeconds(options.BlastAliveMessageIntervalSeconds));
+                if (options.BlastAliveMessages)
+                {
+                    _publisher.StartSendingAliveNotifications(TimeSpan.FromSeconds(options.BlastAliveMessageIntervalSeconds));
+                }
             }
             catch (Exception ex)
             {
@@ -286,38 +283,32 @@ namespace Emby.Dlna.Main
             var descriptorUri = "/dlna/" + udn + "/description.xml";
 
             // Only get bind addresses in LAN
-            var bindAddresses = _networkManager
-                .GetInternalBindAddresses()
-                .Where(i => i.Address.AddressFamily == AddressFamily.InterNetwork
-                    || (i.AddressFamily == AddressFamily.InterNetworkV6 && i.Address.ScopeId != 0))
+            // IPv6 is currently unsupported
+            var validInterfaces = _networkManager.GetInternalBindAddresses()
+                .Where(x => x.Address is not null)
+                .Where(x => x.AddressFamily != AddressFamily.InterNetworkV6)
                 .ToList();
 
-            if (bindAddresses.Count == 0)
+            if (validInterfaces.Count == 0)
             {
-                // No interfaces returned, so use loopback.
-                bindAddresses = _networkManager.GetLoopbacks().ToList();
+                // No interfaces returned, fall back to loopback
+                validInterfaces = _networkManager.GetLoopbacks().ToList();
             }
 
-            foreach (var address in bindAddresses)
+            foreach (var intf in validInterfaces)
             {
-                if (address.AddressFamily == AddressFamily.InterNetworkV6)
-                {
-                    // Not supporting IPv6 right now
-                    continue;
-                }
-
                 var fullService = "urn:schemas-upnp-org:device:MediaServer:1";
 
-                _logger.LogInformation("Registering publisher for {ResourceName} on {DeviceAddress}", fullService, address.Address);
+                _logger.LogInformation("Registering publisher for {ResourceName} on {DeviceAddress}", fullService, intf.Address);
 
-                var uri = new UriBuilder(_appHost.GetApiUrlForLocalAccess(address.Address, false) + descriptorUri);
+                var uri = new UriBuilder(_appHost.GetApiUrlForLocalAccess(intf.Address, false) + descriptorUri);
 
                 var device = new SsdpRootDevice
                 {
                     CacheLifetime = TimeSpan.FromSeconds(1800), // How long SSDP clients can cache this info.
                     Location = uri.Uri, // Must point to the URL that serves your devices UPnP description document.
-                    Address = address.Address,
-                    PrefixLength = NetworkExtensions.MaskToCidr(address.Subnet.Prefix),
+                    Address = intf.Address,
+                    PrefixLength = NetworkExtensions.MaskToCidr(intf.Subnet.Prefix),
                     FriendlyName = "Jellyfin",
                     Manufacturer = "Jellyfin",
                     ModelName = "Jellyfin Server",

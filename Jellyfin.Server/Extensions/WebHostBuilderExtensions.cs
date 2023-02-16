@@ -41,7 +41,7 @@ public static class WebHostBuilderExtensions
                 bool flagged = false;
                 foreach (var netAdd in addresses)
                 {
-                    logger.LogInformation("Kestrel listening on {Address}", IPAddress.IPv6Any.Equals(netAdd.Address) ? "All Addresses" : netAdd);
+                    logger.LogInformation("Kestrel is listening on {Address}", IPAddress.IPv6Any.Equals(netAdd.Address) ? "All IPv6 addresses" : netAdd.Address);
                     options.Listen(netAdd.Address, appHost.HttpPort);
                     if (appHost.ListenWithHttps)
                     {
