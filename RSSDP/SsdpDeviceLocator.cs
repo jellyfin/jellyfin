@@ -240,7 +240,7 @@ namespace Rssdp.Infrastructure
         /// Raises the <see cref="DeviceAvailable"/> event.
         /// </summary>
         /// <seealso cref="DeviceAvailable"/>
-        protected virtual void OnDeviceAvailable(DiscoveredSsdpDevice device, bool isNewDevice, IPAddress IpAddress)
+        protected virtual void OnDeviceAvailable(DiscoveredSsdpDevice device, bool isNewDevice, IPAddress IPAddress)
         {
             if (this.IsDisposed)
             {
@@ -252,7 +252,7 @@ namespace Rssdp.Infrastructure
             {
                 handlers(this, new DeviceAvailableEventArgs(device, isNewDevice)
                 {
-                    RemoteIpAddress = IpAddress
+                    RemoteIPAddress = IPAddress
                 });
             }
         }
@@ -318,7 +318,7 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        private void AddOrUpdateDiscoveredDevice(DiscoveredSsdpDevice device, IPAddress IpAddress)
+        private void AddOrUpdateDiscoveredDevice(DiscoveredSsdpDevice device, IPAddress IPAddress)
         {
             bool isNewDevice = false;
             lock (_Devices)
@@ -336,17 +336,17 @@ namespace Rssdp.Infrastructure
                 }
             }
 
-            DeviceFound(device, isNewDevice, IpAddress);
+            DeviceFound(device, isNewDevice, IPAddress);
         }
 
-        private void DeviceFound(DiscoveredSsdpDevice device, bool isNewDevice, IPAddress IpAddress)
+        private void DeviceFound(DiscoveredSsdpDevice device, bool isNewDevice, IPAddress IPAddress)
         {
             if (!NotificationTypeMatchesFilter(device))
             {
                 return;
             }
 
-            OnDeviceAvailable(device, isNewDevice, IpAddress);
+            OnDeviceAvailable(device, isNewDevice, IPAddress);
         }
 
         private bool NotificationTypeMatchesFilter(DiscoveredSsdpDevice device)
@@ -378,7 +378,7 @@ namespace Rssdp.Infrastructure
             return _CommunicationsServer.SendMulticastMessage(message, null, cancellationToken);
         }
 
-        private void ProcessSearchResponseMessage(HttpResponseMessage message, IPAddress IpAddress)
+        private void ProcessSearchResponseMessage(HttpResponseMessage message, IPAddress IPAddress)
         {
             if (!message.IsSuccessStatusCode)
             {
@@ -398,11 +398,11 @@ namespace Rssdp.Infrastructure
                     ResponseHeaders = message.Headers
                 };
 
-                AddOrUpdateDiscoveredDevice(device, IpAddress);
+                AddOrUpdateDiscoveredDevice(device, IPAddress);
             }
         }
 
-        private void ProcessNotificationMessage(HttpRequestMessage message, IPAddress IpAddress)
+        private void ProcessNotificationMessage(HttpRequestMessage message, IPAddress IPAddress)
         {
             if (String.Compare(message.Method.Method, "Notify", StringComparison.OrdinalIgnoreCase) != 0)
             {
@@ -412,7 +412,7 @@ namespace Rssdp.Infrastructure
             var notificationType = GetFirstHeaderStringValue("NTS", message);
             if (String.Compare(notificationType, SsdpConstants.SsdpKeepAliveNotification, StringComparison.OrdinalIgnoreCase) == 0)
             {
-                ProcessAliveNotification(message, IpAddress);
+                ProcessAliveNotification(message, IPAddress);
             }
             else if (String.Compare(notificationType, SsdpConstants.SsdpByeByeNotification, StringComparison.OrdinalIgnoreCase) == 0)
             {
@@ -420,7 +420,7 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        private void ProcessAliveNotification(HttpRequestMessage message, IPAddress IpAddress)
+        private void ProcessAliveNotification(HttpRequestMessage message, IPAddress IPAddress)
         {
             var location = GetFirstHeaderUriValue("Location", message);
             if (location is not null)
@@ -435,7 +435,7 @@ namespace Rssdp.Infrastructure
                     ResponseHeaders = message.Headers
                 };
 
-                AddOrUpdateDiscoveredDevice(device, IpAddress);
+                AddOrUpdateDiscoveredDevice(device, IPAddress);
             }
         }
 
@@ -651,7 +651,7 @@ namespace Rssdp.Infrastructure
 
         private void CommsServer_ResponseReceived(object sender, ResponseReceivedEventArgs e)
         {
-            ProcessSearchResponseMessage(e.Message, e.LocalIpAddress);
+            ProcessSearchResponseMessage(e.Message, e.LocalIPAddress);
         }
 
         private void CommsServer_RequestReceived(object sender, RequestReceivedEventArgs e)

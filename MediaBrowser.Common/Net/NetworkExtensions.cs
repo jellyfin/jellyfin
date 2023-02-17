@@ -126,11 +126,11 @@ namespace MediaBrowser.Common.Net
 
         /// <summary>
         /// Converts an IPAddress into a string.
-        /// Ipv6 addresses are returned in [ ], with their scope removed.
+        /// IPv6 addresses are returned in [ ], with their scope removed.
         /// </summary>
         /// <param name="address">Address to convert.</param>
         /// <returns>URI safe conversion of the address.</returns>
-        public static string FormatIpString(IPAddress? address)
+        public static string FormatIPString(IPAddress? address)
         {
             if (address is null)
             {
@@ -252,10 +252,10 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="host">Host name to parse.</param>
         /// <param name="addresses">Object representing the string, if it has successfully been parsed.</param>
-        /// <param name="isIpv4Enabled"><c>true</c> if IPv4 is enabled.</param>
-        /// <param name="isIpv6Enabled"><c>true</c> if IPv6 is enabled.</param>
+        /// <param name="isIPv4Enabled"><c>true</c> if IPv4 is enabled.</param>
+        /// <param name="isIPv6Enabled"><c>true</c> if IPv6 is enabled.</param>
         /// <returns><c>true</c> if the parsing is successful, <c>false</c> if not.</returns>
-        public static bool TryParseHost(string host, [NotNullWhen(true)] out IPAddress[] addresses, bool isIpv4Enabled = true, bool isIpv6Enabled = false)
+        public static bool TryParseHost(string host, [NotNullWhen(true)] out IPAddress[] addresses, bool isIPv4Enabled = true, bool isIPv6Enabled = false)
         {
             if (string.IsNullOrWhiteSpace(host))
             {
@@ -302,8 +302,8 @@ namespace MediaBrowser.Common.Net
 
                 if (IPAddress.TryParse(host, out var address))
                 {
-                    if (((address.AddressFamily == AddressFamily.InterNetwork) && (!isIpv4Enabled && isIpv6Enabled)) ||
-                        ((address.AddressFamily == AddressFamily.InterNetworkV6) && (isIpv4Enabled && !isIpv6Enabled)))
+                    if (((address.AddressFamily == AddressFamily.InterNetwork) && (!isIPv4Enabled && isIPv6Enabled)) ||
+                        ((address.AddressFamily == AddressFamily.InterNetworkV6) && (isIPv4Enabled && !isIPv6Enabled)))
                     {
                         addresses = Array.Empty<IPAddress>();
                         return false;
@@ -338,11 +338,11 @@ namespace MediaBrowser.Common.Net
                 addressBytes.Reverse();
             }
 
-            uint ipAddress = BitConverter.ToUInt32(addressBytes, 0);
+            uint iPAddress = BitConverter.ToUInt32(addressBytes, 0);
             uint ipMaskV4 = BitConverter.ToUInt32(CidrToMask(network.PrefixLength, AddressFamily.InterNetwork).GetAddressBytes(), 0);
-            uint broadCastIpAddress = ipAddress | ~ipMaskV4;
+            uint broadCastIPAddress = iPAddress | ~ipMaskV4;
 
-            return new IPAddress(BitConverter.GetBytes(broadCastIpAddress));
+            return new IPAddress(BitConverter.GetBytes(broadCastIPAddress));
         }
     }
 }

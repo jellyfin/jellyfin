@@ -190,7 +190,7 @@ namespace Jellyfin.Server
                 mainApp.UseAuthorization();
 
                 mainApp.UseLanFiltering();
-                mainApp.UseIpBasedAccessValidation();
+                mainApp.UseIPBasedAccessValidation();
                 mainApp.UseWebSocketHandler();
                 mainApp.UseServerStartupMessage();
 

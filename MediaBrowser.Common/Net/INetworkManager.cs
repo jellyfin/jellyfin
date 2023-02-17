@@ -130,10 +130,10 @@ namespace MediaBrowser.Common.Net
         IReadOnlyList<IPData> GetInternalBindAddresses();
 
         /// <summary>
-        /// Checks if <paramref name="remoteIp"/> has access to the server.
+        /// Checks if <paramref name="remoteIP"/> has access to the server.
         /// </summary>
-        /// <param name="remoteIp">IP address of the client.</param>
+        /// <param name="remoteIP">IP address of the client.</param>
         /// <returns><b>True</b> if it has access, otherwise <b>false</b>.</returns>
-        bool HasRemoteAccess(IPAddress remoteIp);
+        bool HasRemoteAccess(IPAddress remoteIP);
     }
 }

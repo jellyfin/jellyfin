@@ -179,7 +179,7 @@ public class SystemController : BaseJellyfinApiController
         return new EndPointInfo
         {
             IsLocal = HttpContext.IsLocal(),
-            IsInNetwork = _network.IsInLocalNetwork(HttpContext.GetNormalizedRemoteIp())
+            IsInNetwork = _network.IsInLocalNetwork(HttpContext.GetNormalizedRemoteIP())
         };
     }
 

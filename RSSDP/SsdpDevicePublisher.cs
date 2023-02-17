@@ -224,7 +224,7 @@ namespace Rssdp.Infrastructure
             string mx,
             string searchTarget,
             IPEndPoint remoteEndPoint,
-            IPAddress receivedOnlocalIpAddress,
+            IPAddress receivedOnlocalIPAddress,
             CancellationToken cancellationToken)
         {
             if (String.IsNullOrEmpty(searchTarget))
@@ -297,9 +297,9 @@ namespace Rssdp.Infrastructure
                     {
                         var root = device.ToRootDevice();
 
-                        if (!_sendOnlyMatchedHost || root.Address.Equals(receivedOnlocalIpAddress))
+                        if (!_sendOnlyMatchedHost || root.Address.Equals(receivedOnlocalIPAddress))
                         {
-                            SendDeviceSearchResponses(device, remoteEndPoint, receivedOnlocalIpAddress, cancellationToken);
+                            SendDeviceSearchResponses(device, remoteEndPoint, receivedOnlocalIPAddress, cancellationToken);
                         }
                     }
                 }
@@ -314,22 +314,22 @@ namespace Rssdp.Infrastructure
         private void SendDeviceSearchResponses(
             SsdpDevice device,
             IPEndPoint endPoint,
-            IPAddress receivedOnlocalIpAddress,
+            IPAddress receivedOnlocalIPAddress,
             CancellationToken cancellationToken)
         {
             bool isRootDevice = (device as SsdpRootDevice) is not null;
             if (isRootDevice)
             {
-                SendSearchResponse(SsdpConstants.UpnpDeviceTypeRootDevice, device, GetUsn(device.Udn, SsdpConstants.UpnpDeviceTypeRootDevice), endPoint, receivedOnlocalIpAddress, cancellationToken);
+                SendSearchResponse(SsdpConstants.UpnpDeviceTypeRootDevice, device, GetUsn(device.Udn, SsdpConstants.UpnpDeviceTypeRootDevice), endPoint, receivedOnlocalIPAddress, cancellationToken);
                 if (this.SupportPnpRootDevice)
                 {
-                    SendSearchResponse(SsdpConstants.PnpDeviceTypeRootDevice, device, GetUsn(device.Udn, SsdpConstants.PnpDeviceTypeRootDevice), endPoint, receivedOnlocalIpAddress, cancellationToken);
+                    SendSearchResponse(SsdpConstants.PnpDeviceTypeRootDevice, device, GetUsn(device.Udn, SsdpConstants.PnpDeviceTypeRootDevice), endPoint, receivedOnlocalIPAddress, cancellationToken);
                 }
             }
 
-            SendSearchResponse(device.Udn, device, device.Udn, endPoint, receivedOnlocalIpAddress, cancellationToken);
+            SendSearchResponse(device.Udn, device, device.Udn, endPoint, receivedOnlocalIPAddress, cancellationToken);
 
-            SendSearchResponse(device.FullDeviceType, device, GetUsn(device.Udn, device.FullDeviceType), endPoint, receivedOnlocalIpAddress, cancellationToken);
+            SendSearchResponse(device.FullDeviceType, device, GetUsn(device.Udn, device.FullDeviceType), endPoint, receivedOnlocalIPAddress, cancellationToken);
         }
 
         private string GetUsn(string udn, string fullDeviceType)
@@ -342,7 +342,7 @@ namespace Rssdp.Infrastructure
             SsdpDevice device,
             string uniqueServiceName,
             IPEndPoint endPoint,
-            IPAddress receivedOnlocalIpAddress,
+            IPAddress receivedOnlocalIPAddress,
             CancellationToken cancellationToken)
         {
             const string header = "HTTP/1.1 200 OK";
@@ -366,7 +366,7 @@ namespace Rssdp.Infrastructure
                 await _CommsServer.SendMessage(
                         Encoding.UTF8.GetBytes(message),
                         endPoint,
-                        receivedOnlocalIpAddress,
+                        receivedOnlocalIPAddress,
                         cancellationToken)
                     .ConfigureAwait(false);
             }
@@ -625,7 +625,7 @@ namespace Rssdp.Infrastructure
                 // else if (!e.Message.Headers.Contains("MAN"))
                 //    WriteTrace("Ignoring search request - missing MAN header.");
                 // else
-                ProcessSearchRequest(GetFirstHeaderValue(e.Message.Headers, "MX"), GetFirstHeaderValue(e.Message.Headers, "ST"), e.ReceivedFrom, e.LocalIpAddress, CancellationToken.None);
+                ProcessSearchRequest(GetFirstHeaderValue(e.Message.Headers, "MX"), GetFirstHeaderValue(e.Message.Headers, "ST"), e.ReceivedFrom, e.LocalIPAddress, CancellationToken.None);
             }
         }
 

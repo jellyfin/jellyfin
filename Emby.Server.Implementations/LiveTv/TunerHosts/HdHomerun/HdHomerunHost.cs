@@ -667,12 +667,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     while (!cancellationToken.IsCancellationRequested)
                     {
                         var response = await udpClient.ReceiveMessageFromAsync(receiveBuffer, new IPEndPoint(IPAddress.Any, 0), cancellationToken).ConfigureAwait(false);
-                        var deviceIp = ((IPEndPoint)response.RemoteEndPoint).Address.ToString();
+                        var deviceIP = ((IPEndPoint)response.RemoteEndPoint).Address.ToString();
 
                         // Check to make sure we have enough bytes received to be a valid message and make sure the 2nd byte is the discover reply byte
                         if (response.ReceivedBytes > 13 && receiveBuffer[1] == 3)
                         {
-                            var deviceAddress = "http://" + deviceIp;
+                            var deviceAddress = "http://" + deviceIP;
 
                             var info = await TryGetTunerHostInfo(deviceAddress, cancellationToken).ConfigureAwait(false);
 

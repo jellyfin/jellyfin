@@ -271,26 +271,26 @@ namespace Jellyfin.Server.Extensions
             {
                 if (IPAddress.TryParse(allowedProxies[i], out var addr))
                 {
-                    AddIpAddress(config, options, addr, addr.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);
+                    AddIPAddress(config, options, addr, addr.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);
                 }
                 else if (NetworkExtensions.TryParseToSubnet(allowedProxies[i], out var subnet))
                 {
                     if (subnet != null)
                     {
-                        AddIpAddress(config, options, subnet.Prefix, subnet.PrefixLength);
+                        AddIPAddress(config, options, subnet.Prefix, subnet.PrefixLength);
                     }
                 }
                 else if (NetworkExtensions.TryParseHost(allowedProxies[i], out var addresses))
                 {
                     foreach (var address in addresses)
                     {
-                        AddIpAddress(config, options, address, address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);
+                        AddIPAddress(config, options, address, address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);
                     }
                 }
             }
         }
 
-        private static void AddIpAddress(NetworkConfiguration config, ForwardedHeadersOptions options, IPAddress addr, int prefixLength)
+        private static void AddIPAddress(NetworkConfiguration config, ForwardedHeadersOptions options, IPAddress addr, int prefixLength)
         {
             if ((!config.EnableIPv4 && addr.AddressFamily == AddressFamily.InterNetwork) || (!config.EnableIPv6 && addr.AddressFamily == AddressFamily.InterNetworkV6))
             {

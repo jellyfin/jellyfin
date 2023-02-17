@@ -110,7 +110,7 @@ namespace Emby.Dlna.Ssdp
                 {
                     Location = e.DiscoveredDevice.DescriptionLocation,
                     Headers = headers,
-                    RemoteIpAddress = e.RemoteIpAddress
+                    RemoteIPAddress = e.RemoteIPAddress
                 });
 
             DeviceDiscoveredInternal?.Invoke(this, args);

@@ -47,7 +47,7 @@ namespace Jellyfin.Api.Auth.DefaultAuthorizationPolicy
             }
 
             var isInLocalNetwork = _httpContextAccessor.HttpContext is not null
-                                   && _networkManager.IsInLocalNetwork(_httpContextAccessor.HttpContext.GetNormalizedRemoteIp());
+                                   && _networkManager.IsInLocalNetwork(_httpContextAccessor.HttpContext.GetNormalizedRemoteIP());
             var user = _userManager.GetUserById(userId);
             if (user is null)
             {

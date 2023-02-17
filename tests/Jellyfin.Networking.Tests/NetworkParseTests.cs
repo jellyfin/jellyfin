@@ -97,7 +97,7 @@ namespace Jellyfin.Networking.Tests
         /// Checks if IPv4 address is within a defined subnet.
         /// </summary>
         /// <param name="netMask">Network mask.</param>
-        /// <param name="ipAddress">IP Address.</param>
+        /// <param name="IPAddress">IP Address.</param>
         [Theory]
         [InlineData("192.168.5.85/24", "192.168.5.1")]
         [InlineData("192.168.5.85/24", "192.168.5.254")]
@@ -282,7 +282,7 @@ namespace Jellyfin.Networking.Tests
         [InlineData("185.10.10.10", "185.10.10.10", false)]
         [InlineData("", "100.100.100.100", false)]
 
-        public void HasRemoteAccess_GivenWhitelist_AllowsOnlyIPsInWhitelist(string addresses, string remoteIp, bool denied)
+        public void HasRemoteAccess_GivenWhitelist_AllowsOnlyIPsInWhitelist(string addresses, string remoteIP, bool denied)
         {
             // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
             // If left blank, all remote addresses will be allowed.
@@ -294,7 +294,7 @@ namespace Jellyfin.Networking.Tests
             };
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
-            Assert.NotEqual(nm.HasRemoteAccess(IPAddress.Parse(remoteIp)), denied);
+            Assert.NotEqual(nm.HasRemoteAccess(IPAddress.Parse(remoteIP)), denied);
         }
 
         [Theory]
@@ -302,7 +302,7 @@ namespace Jellyfin.Networking.Tests
         [InlineData("185.10.10.10", "185.10.10.10", true)]
         [InlineData("", "100.100.100.100", false)]
 
-        public void HasRemoteAccess_GivenBlacklist_BlacklistTheIPs(string addresses, string remoteIp, bool denied)
+        public void HasRemoteAccess_GivenBlacklist_BlacklistTheIPs(string addresses, string remoteIP, bool denied)
         {
             // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
             // If left blank, all remote addresses will be allowed.
@@ -315,7 +315,7 @@ namespace Jellyfin.Networking.Tests
 
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
-            Assert.NotEqual(nm.HasRemoteAccess(IPAddress.Parse(remoteIp)), denied);
+            Assert.NotEqual(nm.HasRemoteAccess(IPAddress.Parse(remoteIP)), denied);
         }
 
         [Theory]

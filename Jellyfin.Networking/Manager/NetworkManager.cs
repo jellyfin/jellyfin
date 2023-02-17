@@ -122,7 +122,7 @@ namespace Jellyfin.Networking.Manager
         /// <summary>
         /// Gets a value indicating whether is all IPv6 interfaces are trusted as internal.
         /// </summary>
-        public bool TrustAllIpv6Interfaces { get; private set; }
+        public bool TrustAllIPv6Interfaces { get; private set; }
 
         /// <summary>
         /// Gets the Published server override list.
@@ -596,17 +596,17 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public bool HasRemoteAccess(IPAddress remoteIp)
+        public bool HasRemoteAccess(IPAddress remoteIP)
         {
             var config = _configurationManager.GetNetworkConfiguration();
             if (config.EnableRemoteAccess)
             {
                 // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
                 // If left blank, all remote addresses will be allowed.
-                if (_remoteAddressFilter.Any() && !_lanSubnets.Any(x => x.Contains(remoteIp)))
+                if (_remoteAddressFilter.Any() && !_lanSubnets.Any(x => x.Contains(remoteIP)))
                 {
                     // remoteAddressFilter is a whitelist or blacklist.
-                    var matches = _remoteAddressFilter.Count(remoteNetwork => remoteNetwork.Contains(remoteIp));
+                    var matches = _remoteAddressFilter.Count(remoteNetwork => remoteNetwork.Contains(remoteIP));
                     if ((!config.IsRemoteIPFilterBlacklist && matches > 0)
                         || (config.IsRemoteIPFilterBlacklist && matches == 0))
                     {
@@ -616,7 +616,7 @@ namespace Jellyfin.Networking.Manager
                     return false;
                 }
             }
-            else if (!_lanSubnets.Any(x => x.Contains(remoteIp)))
+            else if (!_lanSubnets.Any(x => x.Contains(remoteIP)))
             {
                 // Remote not enabled. So everyone should be LAN.
                 return false;
@@ -771,7 +771,7 @@ namespace Jellyfin.Networking.Manager
                 // If no source address is given, use the preferred (first) interface
                 if (source is null)
                 {
-                    result = NetworkExtensions.FormatIpString(availableInterfaces.First().Address);
+                    result = NetworkExtensions.FormatIPString(availableInterfaces.First().Address);
                     _logger.LogDebug("{Source}: Using first internal interface as bind address: {Result}", source, result);
                     return result;
                 }
@@ -782,14 +782,14 @@ namespace Jellyfin.Networking.Manager
                 {
                     if (intf.Subnet.Contains(source))
                     {
-                        result = NetworkExtensions.FormatIpString(intf.Address);
+                        result = NetworkExtensions.FormatIPString(intf.Address);
                         _logger.LogDebug("{Source}: Found interface with matching subnet, using it as bind address: {Result}", source, result);
                         return result;
                     }
                 }
 
                 // Fallback to first available interface
-                result = NetworkExtensions.FormatIpString(availableInterfaces[0].Address);
+                result = NetworkExtensions.FormatIPString(availableInterfaces[0].Address);
                 _logger.LogDebug("{Source}: No matching interfaces found, using preferred interface as bind address: {Result}", source, result);
                 return result;
             }
@@ -842,7 +842,7 @@ namespace Jellyfin.Networking.Manager
             ArgumentNullException.ThrowIfNull(address);
 
             // See conversation at https://github.com/jellyfin/jellyfin/pull/3515.
-            if ((TrustAllIpv6Interfaces && address.AddressFamily == AddressFamily.InterNetworkV6)
+            if ((TrustAllIPv6Interfaces && address.AddressFamily == AddressFamily.InterNetworkV6)
                 || address.Equals(IPAddress.Loopback)
                 || address.Equals(IPAddress.IPv6Loopback))
             {
@@ -995,7 +995,7 @@ namespace Jellyfin.Networking.Manager
 
                     if (bindAddress is not null)
                     {
-                        result = NetworkExtensions.FormatIpString(bindAddress);
+                        result = NetworkExtensions.FormatIPString(bindAddress);
                         _logger.LogDebug("{Source}: External request received, matching external bind address found: {Result}", source, result);
                         return true;
                     }
@@ -1015,7 +1015,7 @@ namespace Jellyfin.Networking.Manager
 
                 if (bindAddress is not null)
                 {
-                    result = NetworkExtensions.FormatIpString(bindAddress);
+                    result = NetworkExtensions.FormatIPString(bindAddress);
                     _logger.LogDebug("{Source}: Internal request received, matching internal bind address found: {Result}", source, result);
                     return true;
                 }
@@ -1049,14 +1049,14 @@ namespace Jellyfin.Networking.Manager
             {
                 if (!IsInLocalNetwork(intf.Address) && intf.Subnet.Contains(source))
                 {
-                    result = NetworkExtensions.FormatIpString(intf.Address);
+                    result = NetworkExtensions.FormatIPString(intf.Address);
                     _logger.LogDebug("{Source}: Found external interface with matching subnet, using it as bind address: {Result}", source, result);
                     return true;
                 }
             }
 
             // Fallback to first external interface.
-            result = NetworkExtensions.FormatIpString(extResult.First().Address);
+            result = NetworkExtensions.FormatIPString(extResult.First().Address);
             _logger.LogDebug("{Source}: Using first external interface as bind address: {Result}", source, result);
             return true;
         }
