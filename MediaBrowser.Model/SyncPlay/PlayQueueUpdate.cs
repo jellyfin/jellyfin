@@ -20,7 +20,7 @@ namespace MediaBrowser.Model.SyncPlay
         /// <param name="shuffleMode">The shuffle mode.</param>
         /// <param name="repeatMode">The repeat mode.</param>
         /// <param name="playbackSpeed">The playback speed.</param>
-        public PlayQueueUpdate(PlayQueueUpdateReason reason, DateTime lastUpdate, IReadOnlyList<QueueItem> playlist, int playingItemIndex, long startPositionTicks, bool isPlaying, GroupShuffleMode shuffleMode, GroupRepeatMode repeatMode, double playbackSpeed)
+        public PlayQueueUpdate(PlayQueueUpdateReason reason, DateTime lastUpdate, IReadOnlyList<QueueItem> playlist, int playingItemIndex, long startPositionTicks, bool isPlaying, GroupShuffleMode shuffleMode, GroupRepeatMode repeatMode, double? playbackSpeed)
         {
             Reason = reason;
             LastUpdate = lastUpdate;
@@ -82,7 +82,7 @@ namespace MediaBrowser.Model.SyncPlay
         public GroupRepeatMode RepeatMode { get; }
 
         /// <summary>
-        /// Gets the PlaybackSpeed
+        /// Gets the PlaybackSpeed.
         /// </summary>
         /// <value>The playback speed.</value>
         public double? PlaybackSpeed { get; }

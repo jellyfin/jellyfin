@@ -62,6 +62,11 @@ namespace Emby.Server.Implementations.SyncPlay
         private IGroupState _state;
 
         /// <summary>
+        /// The internal playback speed.
+        /// </summary>
+        private double? _playbackSpeed = 1.0;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="Group" /> class.
         /// </summary>
         /// <param name="loggerFactory">The logger factory.</param>
@@ -136,6 +141,30 @@ namespace Emby.Server.Implementations.SyncPlay
         /// </summary>
         /// <value>The last activity.</value>
         public DateTime LastActivity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the playback speed.
+        /// </summary>
+        /// <value>The playback speed.</value>
+        public double? PlaybackSpeed
+        {
+            get
+            {
+                return _playbackSpeed;
+            }
+
+            set
+            {
+                if (value is null)
+                {
+                    _playbackSpeed = null;
+                }
+                else
+                {
+                    _playbackSpeed = Math.Clamp((double)value, 0.1, 10.0);
+                }
+            }
+        }
 
         /// <summary>
         /// Adds the session to the group.
@@ -682,7 +711,8 @@ namespace Emby.Server.Implementations.SyncPlay
                 startPositionTicks,
                 isPlaying,
                 PlayQueue.ShuffleMode,
-                PlayQueue.RepeatMode);
+                PlayQueue.RepeatMode,
+                PlaybackSpeed);
         }
     }
 }
