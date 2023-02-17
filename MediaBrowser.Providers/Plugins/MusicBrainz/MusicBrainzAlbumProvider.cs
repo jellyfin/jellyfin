@@ -266,11 +266,17 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
 
                 if (rspobj.Media != null)
                 {
-                    foreach (var t in rspobj.Media.SelectMany(m => m.Tracks))
+                    foreach (var m in rspobj.Media)
                     {
-                        if (t != null)
+                        if (m.Tracks != null)
                         {
-                            tracks.Add(t);
+                            foreach (var t in m.Tracks)
+                            {
+                                if (t != null)
+                                {
+                                    tracks.Add(t);
+                                }
+                            }
                         }
                     }
                 }
