@@ -82,13 +82,14 @@ namespace Emby.Server.Implementations.Net
 
             try
             {
-                var interfaceIndex = (int)IPAddress.HostToNetworkOrder(bindInterface.Index);
+                var interfaceIndex = bindInterface.Index;
+                var interfaceIndexSwapped = (int)IPAddress.HostToNetworkOrder(interfaceIndex);
 
                 socket.MulticastLoopback = false;
                 socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                 socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.PacketInformation, true);
                 socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, multicastTimeToLive);
-                socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastInterface, interfaceIndex);
+                socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastInterface, interfaceIndexSwapped);
                 socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(multicastAddress, interfaceIndex));
                 socket.Bind(new IPEndPoint(multicastAddress, localPort));
 

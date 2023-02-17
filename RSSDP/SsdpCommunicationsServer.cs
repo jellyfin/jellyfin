@@ -428,12 +428,12 @@ namespace Rssdp.Infrastructure
                     if (result.ReceivedBytes > 0)
                     {
                         var remoteEndpoint = (IPEndPoint)result.RemoteEndPoint;
-                        var localEndpointAddress = result.PacketInformation.Address;
+                        var localEndpointAdapter = _networkManager.GetAllBindInterfaces().Where(a => a.Index == result.PacketInformation.Interface).First();
 
                         ProcessMessage(
                             UTF8Encoding.UTF8.GetString(receiveBuffer, 0, result.ReceivedBytes),
                             remoteEndpoint,
-                            localEndpointAddress);
+                            localEndpointAdapter.Address);
                     }
                 }
                 catch (ObjectDisposedException)
