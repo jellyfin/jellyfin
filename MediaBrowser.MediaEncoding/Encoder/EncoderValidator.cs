@@ -277,7 +277,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (match.Success)
             {
-                if (Version.TryParse(match.Groups[1].Value, out var result))
+                if (Version.TryParse(match.Groups[1].ValueSpan, out var result))
                 {
                     return result;
                 }
@@ -327,8 +327,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 RegexOptions.Multiline))
             {
                 var version = new Version(
-                    int.Parse(match.Groups["major"].Value, CultureInfo.InvariantCulture),
-                    int.Parse(match.Groups["minor"].Value, CultureInfo.InvariantCulture));
+                    int.Parse(match.Groups["major"].ValueSpan, CultureInfo.InvariantCulture),
+                    int.Parse(match.Groups["minor"].ValueSpan, CultureInfo.InvariantCulture));
 
                 map.Add(match.Groups["name"].Value, version);
             }

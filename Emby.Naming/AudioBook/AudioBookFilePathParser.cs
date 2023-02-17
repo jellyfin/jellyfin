@@ -40,7 +40,7 @@ namespace Emby.Naming.AudioBook
                         var value = match.Groups["chapter"];
                         if (value.Success)
                         {
-                            if (int.TryParse(value.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intValue))
+                            if (int.TryParse(value.ValueSpan, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intValue))
                             {
                                 result.ChapterNumber = intValue;
                             }
@@ -52,7 +52,7 @@ namespace Emby.Naming.AudioBook
                         var value = match.Groups["part"];
                         if (value.Success)
                         {
-                            if (int.TryParse(value.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intValue))
+                            if (int.TryParse(value.ValueSpan, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intValue))
                             {
                                 result.PartNumber = intValue;
                             }

@@ -740,7 +740,7 @@ namespace Jellyfin.Server.Implementations.Users
             throw new ArgumentException("Usernames can contain unicode symbols, numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)", nameof(name));
         }
 
-        private static bool IsValidUsername(string name)
+        private static bool IsValidUsername(ReadOnlySpan<char> name)
         {
             // This is some regex that matches only on unicode "word" characters, as well as -, _ and @
             // In theory this will cut out most if not all 'control' characters which should help minimize any weirdness
