@@ -338,7 +338,15 @@ namespace Emby.Naming.Common
                     }
                 },
 
-                // This isn't a Kodi naming rule, but the expression below causes false positives,
+                // This isn't a Kodi naming rule, but the expression below causes false episode numbers for
+                // Title Season X Episode X naming schemes.
+                // "Series Season X Episode X - Title.avi", "Series S03 E09.avi", "s3 e9 - Title.avi"
+                new EpisodeExpression(@".*[\\\/]((?<seriesname>[^\\/]+?)\s)?[Ss](?:eason)?\s*(?<seasonnumber>[0-9]+)\s+[Ee](?:pisode)?\s*(?<epnumber>[0-9]+).*$")
+                {
+                    IsNamed = true
+                },
+
+                // Not a Kodi rule as well, but the expression below also causes false positives,
                 // so we make sure this one gets tested first.
                 // "Foo Bar 889"
                 new EpisodeExpression(@".*[\\\/](?![Ee]pisode)(?<seriesname>[\w\s]+?)\s(?<epnumber>[0-9]{1,4})(-(?<endingepnumber>[0-9]{2,4}))*[^\\\/x]*$")
