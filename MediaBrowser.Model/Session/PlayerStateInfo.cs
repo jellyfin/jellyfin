@@ -88,17 +88,13 @@ namespace MediaBrowser.Model.Session
 
             set
             {
-                if (value > 10)
+                if (value is null)
                 {
-                    _playbackSpeed = 10;
-                }
-                else if (value < 0.1)
-                {
-                    _playbackSpeed = 0.1;
+                    _playbackSpeed = null;
                 }
                 else
                 {
-                    _playbackSpeed = value;
+                    _playbackSpeed = Math.Clamp((double)value, 0.1, 10.0);
                 }
             }
         }
