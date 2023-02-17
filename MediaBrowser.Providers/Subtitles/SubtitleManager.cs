@@ -193,43 +193,43 @@ namespace MediaBrowser.Providers.Subtitles
                     await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
                     memoryStream.Position = 0;
                 }
-            }
 
-            var savePaths = new List<string>();
-            var saveFileName = Path.GetFileNameWithoutExtension(video.Path) + "." + response.Language.ToLowerInvariant();
+                var savePaths = new List<string>();
+                var saveFileName = Path.GetFileNameWithoutExtension(video.Path) + "." + response.Language.ToLowerInvariant();
 
-            if (response.IsForced)
-            {
-                saveFileName += ".forced";
-            }
-
-            saveFileName += "." + response.Format.ToLowerInvariant();
-
-            if (saveInMediaFolder)
-            {
-                var mediaFolderPath = Path.GetFullPath(Path.Combine(video.ContainingFolderPath, saveFileName));
-                // TODO: Add some error handling to the API user: return BadRequest("Could not save subtitle, bad path.");
-                if (mediaFolderPath.StartsWith(video.ContainingFolderPath, StringComparison.Ordinal))
+                if (response.IsForced)
                 {
-                    savePaths.Add(mediaFolderPath);
+                    saveFileName += ".forced";
                 }
-            }
 
-            var internalPath = Path.GetFullPath(Path.Combine(video.GetInternalMetadataPath(), saveFileName));
+                saveFileName += "." + response.Format.ToLowerInvariant();
 
-            // TODO: Add some error to the user: return BadRequest("Could not save subtitle, bad path.");
-            if (internalPath.StartsWith(video.GetInternalMetadataPath(), StringComparison.Ordinal))
-            {
-                savePaths.Add(internalPath);
-            }
+                if (saveInMediaFolder)
+                {
+                    var mediaFolderPath = Path.GetFullPath(Path.Combine(video.ContainingFolderPath, saveFileName));
+                    // TODO: Add some error handling to the API user: return BadRequest("Could not save subtitle, bad path.");
+                    if (mediaFolderPath.StartsWith(video.ContainingFolderPath, StringComparison.Ordinal))
+                    {
+                        savePaths.Add(mediaFolderPath);
+                    }
+                }
 
-            if (savePaths.Count > 0)
-            {
-                await TrySaveToFiles(memoryStream, savePaths).ConfigureAwait(false);
-            }
-            else
-            {
-                _logger.LogError("An uploaded subtitle could not be saved because the resulting paths were invalid.");
+                var internalPath = Path.GetFullPath(Path.Combine(video.GetInternalMetadataPath(), saveFileName));
+
+                // TODO: Add some error to the user: return BadRequest("Could not save subtitle, bad path.");
+                if (internalPath.StartsWith(video.GetInternalMetadataPath(), StringComparison.Ordinal))
+                {
+                    savePaths.Add(internalPath);
+                }
+
+                if (savePaths.Count > 0)
+                {
+                    await TrySaveToFiles(memoryStream, savePaths).ConfigureAwait(false);
+                }
+                else
+                {
+                    _logger.LogError("An uploaded subtitle could not be saved because the resulting paths were invalid.");
+                }
             }
         }
 
