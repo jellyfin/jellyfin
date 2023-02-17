@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LibraryDtos;
 using Jellyfin.Data.Entities;
@@ -142,12 +143,13 @@ public class LibraryController : BaseJellyfinApiController
         [FromQuery] Guid? userId,
         [FromQuery] bool inheritFromParent = false)
     {
-        var user = userId is null || userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 
         var item = itemId.Equals(default)
-            ? (userId is null || userId.Value.Equals(default)
+            ? (userId.Value.Equals(default)
                 ? _libraryManager.RootFolder
                 : _libraryManager.GetUserRootFolder())
             : _libraryManager.GetItemById(itemId);
@@ -208,12 +210,13 @@ public class LibraryController : BaseJellyfinApiController
         [FromQuery] Guid? userId,
         [FromQuery] bool inheritFromParent = false)
     {
-        var user = userId is null || userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 
         var item = itemId.Equals(default)
-            ? (userId is null || userId.Value.Equals(default)
+            ? (userId.Value.Equals(default)
                 ? _libraryManager.RootFolder
                 : _libraryManager.GetUserRootFolder())
             : _libraryManager.GetItemById(itemId);
@@ -403,7 +406,8 @@ public class LibraryController : BaseJellyfinApiController
         [FromQuery] Guid? userId,
         [FromQuery] bool? isFavorite)
     {
-        var user = userId is null || userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -437,6 +441,7 @@ public class LibraryController : BaseJellyfinApiController
     public ActionResult<IEnumerable<BaseItemDto>> GetAncestors([FromRoute, Required] Guid itemId, [FromQuery] Guid? userId)
     {
         var item = _libraryManager.GetItemById(itemId);
+        userId = RequestHelpers.GetUserId(User, userId);
 
         if (item is null)
         {
@@ -445,7 +450,7 @@ public class LibraryController : BaseJellyfinApiController
 
         var baseItemDtos = new List<BaseItemDto>();
 
-        var user = userId is null || userId.Value.Equals(default)
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -675,8 +680,9 @@ public class LibraryController : BaseJellyfinApiController
         [FromQuery] int? limit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields)
     {
+        userId = RequestHelpers.GetUserId(User, userId);
         var item = itemId.Equals(default)
-            ? (userId is null || userId.Value.Equals(default)
+            ? (userId.Value.Equals(default)
                 ? _libraryManager.RootFolder
                 : _libraryManager.GetUserRootFolder())
             : _libraryManager.GetItemById(itemId);
@@ -691,7 +697,7 @@ public class LibraryController : BaseJellyfinApiController
             return new QueryResult<BaseItemDto>();
         }
 
-        var user = userId is null || userId.Value.Equals(default)
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
         var dtoOptions = new DtoOptions { Fields = fields }
