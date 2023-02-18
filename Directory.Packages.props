@@ -24,6 +24,7 @@
     <PackageVersion Include="LrcParser" Version="2022.529.1" />
     <PackageVersion Include="MetaBrainz.MusicBrainz" Version="5.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="7.0.3" />
+    <PackageVersion Include="Microsoft.AspNetCore.HttpOverrides" Version="2.2.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="7.0.3" />
     <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.4" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.3" />
