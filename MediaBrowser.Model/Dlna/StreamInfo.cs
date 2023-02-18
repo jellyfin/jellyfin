@@ -107,11 +107,8 @@ namespace MediaBrowser.Model.Dlna
 
         public string MediaSourceId => MediaSource?.Id;
 
-        public bool IsDirectStream =>
-            !(MediaSource?.VideoType == VideoType.Dvd
-                || MediaSource?.VideoType == VideoType.BluRay)
-            && (PlayMethod == PlayMethod.DirectStream
-                || PlayMethod == PlayMethod.DirectPlay);
+        public bool IsDirectStream => MediaSource?.VideoType is not (VideoType.Dvd or VideoType.BluRay)
+            && PlayMethod is PlayMethod.DirectStream or PlayMethod.DirectPlay;
 
         /// <summary>
         /// Gets the audio stream that will be used.

@@ -92,7 +92,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 if (item.VideoType == VideoType.Dvd)
                 {
                     // Get list of playable .vob files
-                    var vobs = _mediaEncoder.GetPrimaryPlaylistVobFiles(item.Path, null).ToList();
+                    var vobs = _mediaEncoder.GetPrimaryPlaylistVobFiles(item.Path, null);
 
                     // Return if no playable .vob files are found
                     if (vobs.Count == 0)
@@ -105,22 +105,19 @@ namespace MediaBrowser.Providers.MediaInfo
                     mediaInfoResult = await GetMediaInfo(
                         new Video
                         {
-                            Path = vobs.First()
+                            Path = vobs[0]
                         },
                         cancellationToken).ConfigureAwait(false);
 
-                    // Remove first .vob file
-                    vobs.RemoveAt(0);
-
-                    // Sum up the runtime of all .vob files
-                    foreach (var vob in vobs)
+                    // Sum up the runtime of all .vob files skipping the first .vob
+                    for (var i = 1; i < vobs.Count; i++)
                     {
                         var tmpMediaInfo = await GetMediaInfo(
-                                new Video
-                                {
-                                    Path = vob
-                                },
-                                cancellationToken).ConfigureAwait(false);
+                            new Video
+                            {
+                                Path = vobs[i]
+                            },
+                            cancellationToken).ConfigureAwait(false);
 
                         mediaInfoResult.RunTimeTicks += tmpMediaInfo.RunTimeTicks;
                     }
@@ -131,7 +128,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     blurayDiscInfo = GetBDInfo(item.Path);
 
                     // Get playable .m2ts files
-                    var m2ts = _mediaEncoder.GetPrimaryPlaylistM2tsFiles(item.Path).ToList();
+                    var m2ts = _mediaEncoder.GetPrimaryPlaylistM2tsFiles(item.Path);
 
                     // Return if no playable .m2ts files are found
                     if (blurayDiscInfo.Files.Length == 0 || m2ts.Count == 0)
@@ -144,14 +141,13 @@ namespace MediaBrowser.Providers.MediaInfo
                     mediaInfoResult = await GetMediaInfo(
                         new Video
                         {
-                            Path = m2ts.First()
+                            Path = m2ts[0]
                         },
                         cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
                     mediaInfoResult = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
-                    cancellationToken.ThrowIfCancellationRequested();
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -339,10 +335,8 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
-        private void FetchBdInfo(BaseItem item, ref ChapterInfo[] chapters, List<MediaStream> mediaStreams, BlurayDiscInfo blurayInfo)
+        private void FetchBdInfo(Video video, ref ChapterInfo[] chapters, List<MediaStream> mediaStreams, BlurayDiscInfo blurayInfo)
         {
-            var video = (Video)item;
-
             if (blurayInfo.Files.Length <= 1)
             {
                 return;

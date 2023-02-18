@@ -202,14 +202,14 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="path">The to the .vob files.</param>
         /// <param name="titleNumber">The title number to start with.</param>
         /// <returns>A playlist.</returns>
-        IEnumerable<string> GetPrimaryPlaylistVobFiles(string path, uint? titleNumber);
+        IReadOnlyList<string> GetPrimaryPlaylistVobFiles(string path, uint? titleNumber);
 
         /// <summary>
         /// Gets the primary playlist of .m2ts files.
         /// </summary>
         /// <param name="path">The to the .m2ts files.</param>
         /// <returns>A playlist.</returns>
-        IEnumerable<string> GetPrimaryPlaylistM2tsFiles(string path);
+        IReadOnlyList<string> GetPrimaryPlaylistM2tsFiles(string path);
 
         /// <summary>
         /// Generates a FFmpeg concat config for the source.

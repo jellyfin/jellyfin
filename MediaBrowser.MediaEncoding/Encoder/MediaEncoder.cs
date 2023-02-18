@@ -871,7 +871,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         /// <inheritdoc />
-        public IEnumerable<string> GetPrimaryPlaylistVobFiles(string path, uint? titleNumber)
+        public IReadOnlyList<string> GetPrimaryPlaylistVobFiles(string path, uint? titleNumber)
         {
             // Eliminate menus and intros by omitting VIDEO_TS.VOB and all subsequent title .vob files ending with _0.VOB
             var allVobs = _fileSystem.GetFiles(path, true)
@@ -888,7 +888,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 if (vobs.Count > 0)
                 {
-                    return vobs.Select(i => i.FullName);
+                    return vobs.Select(i => i.FullName).ToList();
                 }
 
                 _logger.LogWarning("Could not determine .vob files for title {Title} of {Path}.", titleNumber, path);
@@ -898,12 +898,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var titles = allVobs
                 .Where(vob => vob.Length >= 900 * 1024 * 1024)
                 .Select(vob => _fileSystem.GetFileNameWithoutExtension(vob).AsSpan().RightPart('_').ToString())
-                .GroupBy(x => x)
-                .Select(y => y.First())
+                .Distinct()
                 .ToList();
 
             // Fall back to first title if no big title is found
-            if (titles.FirstOrDefault() == null)
+            if (titles.Count == 0)
             {
                 titles.Add(_fileSystem.GetFileNameWithoutExtension(allVobs[0]).AsSpan().RightPart('_').ToString());
             }
@@ -915,7 +914,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 .ToList();
         }
 
-        public IEnumerable<string> GetPrimaryPlaylistM2tsFiles(string path)
+        /// <inheritdoc />
+        public IReadOnlyList<string> GetPrimaryPlaylistM2tsFiles(string path)
         {
             // Get all playable .m2ts files
             var validPlaybackFiles = _blurayExaminer.GetDiscInfo(path).Files;
@@ -926,51 +926,56 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Only return playable local .m2ts files
             return directoryFiles
                 .Where(f => validPlaybackFiles.Contains(f.Name, StringComparer.OrdinalIgnoreCase))
-                .Select(f => f.FullName);
+                .Select(f => f.FullName)
+                .ToList();
         }
 
+        /// <inheritdoc />
         public void GenerateConcatConfig(MediaSourceInfo source, string concatFilePath)
         {
             // Get all playable files
-            var files = new List<string>();
+            IReadOnlyList<string> files;
             var videoType = source.VideoType;
             if (videoType == VideoType.Dvd)
             {
-                files = GetPrimaryPlaylistVobFiles(source.Path, null).ToList();
+                files = GetPrimaryPlaylistVobFiles(source.Path, null);
             }
             else if (videoType == VideoType.BluRay)
             {
-                files = GetPrimaryPlaylistM2tsFiles(source.Path).ToList();
+                files = GetPrimaryPlaylistM2tsFiles(source.Path);
             }
-
-            // Generate concat configuration entries for each file
-            var lines = new List<string>();
-            foreach (var path in files)
+            else
             {
-                var mediaInfoResult = GetMediaInfo(
-                    new MediaInfoRequest
-                    {
-                        MediaType = DlnaProfileType.Video,
-                        MediaSource = new MediaSourceInfo
-                        {
-                            Path = path,
-                            Protocol = MediaProtocol.File,
-                            VideoType = videoType
-                        }
-                    },
-                    CancellationToken.None).GetAwaiter().GetResult();
-
-                var duration = TimeSpan.FromTicks(mediaInfoResult.RunTimeTicks.Value).TotalSeconds;
-
-                // Add file path stanza to concat configuration
-                lines.Add("file " + "'" + path + "'");
-
-                // Add duration stanza to concat configuration
-                lines.Add("duration " + duration);
+                return;
             }
 
-            // Write concat configuration
-            File.WriteAllLines(concatFilePath, lines);
+            // Generate concat configuration entries for each file and write to file
+            using (StreamWriter sw = new StreamWriter(concatFilePath))
+            {
+                foreach (var path in files)
+                {
+                    var mediaInfoResult = GetMediaInfo(
+                        new MediaInfoRequest
+                        {
+                            MediaType = DlnaProfileType.Video,
+                            MediaSource = new MediaSourceInfo
+                            {
+                                Path = path,
+                                Protocol = MediaProtocol.File,
+                                VideoType = videoType
+                            }
+                        },
+                        CancellationToken.None).GetAwaiter().GetResult();
+
+                    var duration = TimeSpan.FromTicks(mediaInfoResult.RunTimeTicks.Value).TotalSeconds;
+
+                    // Add file path stanza to concat configuration
+                    sw.WriteLine("file '{0}'", path);
+
+                    // Add duration stanza to concat configuration
+                    sw.WriteLine("duration {0}", duration);
+                }
+            }
         }
 
         public bool CanExtractSubtitles(string codec)

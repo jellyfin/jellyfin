@@ -533,19 +533,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string GetInputPathArgument(EncodingJobInfo state)
         {
-            var mediaPath = state.MediaPath ?? string.Empty;
-
-            if (state.MediaSource.VideoType == VideoType.Dvd)
+            return state.MediaSource.VideoType switch
             {
-                return _mediaEncoder.GetInputArgument(_mediaEncoder.GetPrimaryPlaylistVobFiles(state.MediaPath, null).ToList(), state.MediaSource);
-            }
-
-            if (state.MediaSource.VideoType == VideoType.BluRay)
-            {
-                return _mediaEncoder.GetInputArgument(_mediaEncoder.GetPrimaryPlaylistM2tsFiles(state.MediaPath).ToList(), state.MediaSource);
-            }
-
-            return _mediaEncoder.GetInputArgument(mediaPath, state.MediaSource);
+                VideoType.Dvd => _mediaEncoder.GetInputArgument(_mediaEncoder.GetPrimaryPlaylistVobFiles(state.MediaPath, null).ToList(), state.MediaSource),
+                VideoType.BluRay => _mediaEncoder.GetInputArgument(_mediaEncoder.GetPrimaryPlaylistM2tsFiles(state.MediaPath).ToList(), state.MediaSource),
+                _ => _mediaEncoder.GetInputArgument(state.MediaPath, state.MediaSource)
+            };
         }
 
         /// <summary>
@@ -945,10 +938,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 var tmpConcatPath = Path.Join(options.TranscodingTempPath, state.MediaSource.Id + ".concat");
                 _mediaEncoder.GenerateConcatConfig(state.MediaSource, tmpConcatPath);
-                arg.Append(" -f concat -safe 0 ")
-                    .Append(" -i ")
-                    .Append(tmpConcatPath)
-                    .Append(' ');
+                arg.Append(" -f concat -safe 0 -i ")
+                    .Append(tmpConcatPath);
             }
             else
             {

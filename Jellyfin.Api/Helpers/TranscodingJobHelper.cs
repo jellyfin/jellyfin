@@ -329,7 +329,7 @@ public class TranscodingJobHelper : IDisposable
                 if (File.Exists(concatFilePath))
                 {
                     _logger.LogInformation("Deleting ffmpeg concat configuration at {Path}", concatFilePath);
-                    _fileSystem.DeleteFile(concatFilePath);
+                    File.Delete(concatFilePath);
                 }
             }
         }
