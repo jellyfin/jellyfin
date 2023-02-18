@@ -176,16 +176,15 @@ namespace Emby.Naming.Video
             }
 
             // There are no span overloads for regex unfortunately
-            var tmpTestFilename = testFilename.ToString();
-            if (CleanStringParser.TryClean(tmpTestFilename, namingOptions.CleanStringRegexes, out var cleanName))
+            if (CleanStringParser.TryClean(testFilename.ToString(), namingOptions.CleanStringRegexes, out var cleanName))
             {
-                tmpTestFilename = cleanName.Trim();
+                testFilename = cleanName.AsSpan().Trim();
             }
 
             // The CleanStringParser should have removed common keywords etc.
-            return string.IsNullOrEmpty(tmpTestFilename)
+            return testFilename.IsEmpty
                    || testFilename[0] == '-'
-                   || Regex.IsMatch(tmpTestFilename, @"^\[([^]]*)\]", RegexOptions.Compiled);
+                   || Regex.IsMatch(testFilename, @"^\[([^]]*)\]", RegexOptions.Compiled);
         }
     }
 }

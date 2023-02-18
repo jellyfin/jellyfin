@@ -453,16 +453,6 @@ namespace Emby.Naming.Common
                 },
             };
 
-            EpisodeWithoutSeasonExpressions = new[]
-            {
-                @"[/\._ \-]()([0-9]+)(-[0-9]+)?"
-            };
-
-            EpisodeMultiPartExpressions = new[]
-            {
-                @"^[-_ex]+([0-9]+(?:(?:[a-i]|\\.[1-9])(?![0-9]))?)"
-            };
-
             VideoExtraRules = new[]
             {
                 new ExtraRule(
@@ -798,16 +788,6 @@ namespace Emby.Naming.Common
         public EpisodeExpression[] EpisodeExpressions { get; set; }
 
         /// <summary>
-        /// Gets or sets list of raw episode without season regular expressions strings.
-        /// </summary>
-        public string[] EpisodeWithoutSeasonExpressions { get; set; }
-
-        /// <summary>
-        /// Gets or sets list of raw multi-part episodes regular expressions strings.
-        /// </summary>
-        public string[] EpisodeMultiPartExpressions { get; set; }
-
-        /// <summary>
         /// Gets or sets list of video file extensions.
         /// </summary>
         public string[] VideoFileExtensions { get; set; }
@@ -878,24 +858,12 @@ namespace Emby.Naming.Common
         public Regex[] CleanStringRegexes { get; private set; } = Array.Empty<Regex>();
 
         /// <summary>
-        /// Gets list of episode without season regular expressions.
-        /// </summary>
-        public Regex[] EpisodeWithoutSeasonRegexes { get; private set; } = Array.Empty<Regex>();
-
-        /// <summary>
-        /// Gets list of multi-part episode regular expressions.
-        /// </summary>
-        public Regex[] EpisodeMultiPartRegexes { get; private set; } = Array.Empty<Regex>();
-
-        /// <summary>
         /// Compiles raw regex strings into regexes.
         /// </summary>
         public void Compile()
         {
             CleanDateTimeRegexes = CleanDateTimes.Select(Compile).ToArray();
             CleanStringRegexes = CleanStrings.Select(Compile).ToArray();
-            EpisodeWithoutSeasonRegexes = EpisodeWithoutSeasonExpressions.Select(Compile).ToArray();
-            EpisodeMultiPartRegexes = EpisodeMultiPartExpressions.Select(Compile).ToArray();
         }
 
         private Regex Compile(string exp)
