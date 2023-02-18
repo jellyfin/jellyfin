@@ -81,22 +81,8 @@ namespace MediaBrowser.Model.Session
         /// <value>The playback speed.</value>
         public double? PlaybackSpeed
         {
-            get
-            {
-                return _playbackSpeed;
-            }
-
-            set
-            {
-                if (value is null)
-                {
-                    _playbackSpeed = null;
-                }
-                else
-                {
-                    _playbackSpeed = Math.Clamp((double)value, 0.1, 10.0);
-                }
-            }
+            get => _playbackSpeed;
+            set => _playbackSpeed = value is null ? null : Math.Clamp(value.Value, 0.1, 10.0);
         }
     }
 }
