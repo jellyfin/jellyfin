@@ -14,6 +14,8 @@ namespace Emby.Naming.Video
     /// </summary>
     public static class VideoListResolver
     {
+        private static readonly Regex _resolutionRegex = new Regex("[0-9]{2}[0-9]+[ip]", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
         /// <summary>
         /// Resolves alternative versions and extras from list of video files.
         /// </summary>
@@ -127,17 +129,20 @@ namespace Emby.Naming.Video
                 }
             }
 
-            var groups = videos.GroupBy(x => Regex.IsMatch(x.Files[0].FileNameWithoutExtension, "[0-9]{2}[0-9]+[ip]", RegexOptions.IgnoreCase)).ToList();
-            videos.Clear();
-            foreach (var group in groups)
+            if (videos.Count > 1)
             {
-                if (group.Key)
+                var groups = videos.GroupBy(x => _resolutionRegex.IsMatch(x.Files[0].FileNameWithoutExtension)).ToList();
+                videos.Clear();
+                foreach (var group in groups)
                 {
-                    videos.InsertRange(0, group.OrderByDescending(x => x.Files[0].FileNameWithoutExtension.ToString(), new AlphanumericComparator()));
-                }
-                else
-                {
-                    videos.AddRange(group.OrderBy(x => x.Files[0].FileNameWithoutExtension.ToString(), new AlphanumericComparator()));
+                    if (group.Key)
+                    {
+                        videos.InsertRange(0, group.OrderByDescending(x => x.Files[0].FileNameWithoutExtension.ToString(), new AlphanumericComparator()));
+                    }
+                    else
+                    {
+                        videos.AddRange(group.OrderBy(x => x.Files[0].FileNameWithoutExtension.ToString(), new AlphanumericComparator()));
+                    }
                 }
             }
 
