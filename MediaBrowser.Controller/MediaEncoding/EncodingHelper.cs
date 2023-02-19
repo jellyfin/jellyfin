@@ -3214,7 +3214,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 // OUTPUT nv12 surface(memory)
                 // prefer hwmap to hwdownload on opencl.
-                var hwTransferFilter = hasGraphicalSubs ? "hwdownload" : "hwmap";
+                var hwTransferFilter = hasGraphicalSubs ? "hwdownload" : "hwmap=mode=read";
                 mainFilters.Add(hwTransferFilter);
                 mainFilters.Add("format=nv12");
             }
@@ -3457,7 +3457,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // OUTPUT nv12 surface(memory)
                 // prefer hwmap to hwdownload on opencl.
                 // qsv hwmap is not fully implemented for the time being.
-                mainFilters.Add(isHwmapUsable ? "hwmap" : "hwdownload");
+                mainFilters.Add(isHwmapUsable ? "hwmap=mode=read" : "hwdownload");
                 mainFilters.Add("format=nv12");
             }
 
@@ -3668,7 +3668,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // OUTPUT nv12 surface(memory)
                 // prefer hwmap to hwdownload on opencl/vaapi.
                 // qsv hwmap is not fully implemented for the time being.
-                mainFilters.Add(isHwmapUsable ? "hwmap" : "hwdownload");
+                mainFilters.Add(isHwmapUsable ? "hwmap=mode=read" : "hwdownload");
                 mainFilters.Add("format=nv12");
             }
 
@@ -3933,7 +3933,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 // OUTPUT nv12 surface(memory)
                 // prefer hwmap to hwdownload on opencl/vaapi.
-                mainFilters.Add(isHwmapNotUsable ? "hwdownload" : "hwmap");
+                mainFilters.Add(isHwmapNotUsable ? "hwdownload" : "hwmap=mode=read");
                 mainFilters.Add("format=nv12");
             }
 
