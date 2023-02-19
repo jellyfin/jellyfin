@@ -13,8 +13,8 @@
                         <div class="fieldDescription">This can be a mirror of the official server or even a custom server.</div>
                     </div>
                     <div class="inputContainer">
-                        <input is="emby-input" type="number" id="rateLimit" pattern="[0-9]*" required min="0" max="10000" label="Rate Limit" />
-                        <div class="fieldDescription">Span of time between requests in milliseconds. The official server is limited to one request every two seconds.</div>
+                        <input is="emby-input" type="number" id="rateLimit" required pattern="[0-9]*" min="0" max="10" step=".01" label="Rate Limit" />
+                        <div class="fieldDescription">Span of time between requests in seconds. The official server is limited to one request every seconds.</div>
                     </div>
                     <label class="checkboxContainer">
                         <input is="emby-checkbox" type="checkbox" id="replaceArtistName" />
@@ -49,7 +49,7 @@
                             bubbles: true,
                             cancelable: false
                         }));
-                        
+
                         document.querySelector('#replaceArtistName').checked = config.ReplaceArtistName;
 
                         Dashboard.hideLoadingMsg();
