@@ -141,7 +141,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 foreach (var singleConditionString in condition.Value.AsSpan().Split('|'))
                 {
-                    if (int.TryParse(singleConditionString, NumberStyles.Any, CultureInfo.InvariantCulture, out int conditionValue)
+                    if (int.TryParse(singleConditionString, NumberStyles.Integer, CultureInfo.InvariantCulture, out int conditionValue)
                         && conditionValue.Equals(currentValue))
                     {
                         return true;
@@ -151,7 +151,7 @@ namespace MediaBrowser.Model.Dlna
                 return false;
             }
 
-            if (int.TryParse(condition.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var expected))
+            if (int.TryParse(condition.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var expected))
             {
                 switch (conditionType)
                 {
@@ -231,7 +231,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 foreach (var singleConditionString in condition.Value.AsSpan().Split('|'))
                 {
-                    if (double.TryParse(singleConditionString, NumberStyles.Any, CultureInfo.InvariantCulture, out double conditionValue)
+                    if (double.TryParse(singleConditionString, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out double conditionValue)
                         && conditionValue.Equals(currentValue))
                     {
                         return true;
@@ -241,7 +241,7 @@ namespace MediaBrowser.Model.Dlna
                 return false;
             }
 
-            if (double.TryParse(condition.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var expected))
+            if (double.TryParse(condition.Value, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var expected))
             {
                 switch (conditionType)
                 {
