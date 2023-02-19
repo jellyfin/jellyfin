@@ -76,13 +76,13 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
 
         if (!string.IsNullOrEmpty(releaseId))
         {
-            var releaseResult = await _musicBrainzQuery.LookupReleaseAsync(new Guid(releaseId), Include.ReleaseGroups, cancellationToken).ConfigureAwait(false);
+            var releaseResult = await _musicBrainzQuery.LookupReleaseAsync(new Guid(releaseId), Include.Artists | Include.ReleaseGroups, cancellationToken).ConfigureAwait(false);
             return GetReleaseResult(releaseResult).SingleItemAsEnumerable();
         }
 
         if (!string.IsNullOrEmpty(releaseGroupId))
         {
-            var releaseGroupResult = await _musicBrainzQuery.LookupReleaseGroupAsync(new Guid(releaseGroupId), Include.None, null, cancellationToken).ConfigureAwait(false);
+            var releaseGroupResult = await _musicBrainzQuery.LookupReleaseGroupAsync(new Guid(releaseGroupId), Include.Releases, null, cancellationToken).ConfigureAwait(false);
             return GetReleaseGroupResult(releaseGroupResult.Releases);
         }
 
@@ -137,7 +137,9 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
 
         foreach (var result in releaseSearchResults)
         {
-            yield return GetReleaseResult(result);
+            // Fetch full release info, otherwise artists are missing
+            var fullResult = _musicBrainzQuery.LookupRelease(result.Id, Include.Artists | Include.ReleaseGroups);
+            yield return GetReleaseResult(fullResult);
         }
     }
 
@@ -147,21 +149,33 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
         {
             Name = releaseSearchResult.Title,
             ProductionYear = releaseSearchResult.Date?.Year,
-            PremiereDate = releaseSearchResult.Date?.NearestDate
+            PremiereDate = releaseSearchResult.Date?.NearestDate,
+            SearchProviderName = Name
         };
 
-        if (releaseSearchResult.ArtistCredit?.Count > 0)
+        // Add artists and use first as album artist
+        var artists = releaseSearchResult.ArtistCredit;
+        if (artists is not null && artists.Count > 0)
         {
-            searchResult.AlbumArtist = new RemoteSearchResult
-            {
-                SearchProviderName = Name,
-                Name = releaseSearchResult.ArtistCredit[0].Name
-            };
+            var artistResults = new List<RemoteSearchResult>();
 
-            if (releaseSearchResult.ArtistCredit[0].Artist?.Id is not null)
+            foreach (var artist in artists)
             {
-                searchResult.AlbumArtist.SetProviderId(MetadataProvider.MusicBrainzArtist, releaseSearchResult.ArtistCredit[0].Artist!.Id.ToString());
+                var artistResult = new RemoteSearchResult
+                {
+                    Name = artist.Name
+                };
+
+                if (artist.Artist?.Id is not null)
+                {
+                    artistResult.SetProviderId(MetadataProvider.MusicBrainzArtist, artist.Artist!.Id.ToString());
+                }
+
+                artistResults.Add(artistResult);
             }
+
+            searchResult.AlbumArtist = artistResults[0];
+            searchResult.Artists = artistResults.ToArray();
         }
 
         searchResult.SetProviderId(MetadataProvider.MusicBrainzAlbum, releaseSearchResult.Id.ToString());

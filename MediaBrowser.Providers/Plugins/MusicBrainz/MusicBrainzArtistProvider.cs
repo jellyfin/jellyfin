@@ -116,7 +116,8 @@ public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, Ar
         {
             Name = artist.Name,
             ProductionYear = artist.LifeSpan?.Begin?.Year,
-            PremiereDate = artist.LifeSpan?.Begin?.NearestDate
+            PremiereDate = artist.LifeSpan?.Begin?.NearestDate,
+            SearchProviderName = Name,
         };
 
         searchResult.SetProviderId(MetadataProvider.MusicBrainzArtist, artist.Id.ToString());
