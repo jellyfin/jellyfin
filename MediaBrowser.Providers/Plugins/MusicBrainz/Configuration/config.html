@@ -1,13 +1,9 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>MusicBrainz</title>
-</head>
-<body>
-    <div data-role="page" class="page type-interior pluginConfigurationPage musicBrainzConfigPage" data-require="emby-input,emby-button,emby-checkbox">
-        <div data-role="content">
-            <div class="content-primary">
-                <form class="musicBrainzConfigForm">
+﻿<div id="musicBrainzConfigurationPage" data-role="page"
+    class="page type-interior pluginConfigurationPage musicBrainzConfigurationPage" data-require="emby-input,emby-button,emby-checkbox">
+    <div data-role="content">
+        <div class="content-primary">
+            <h1>MusicBrainz</h1>
+                <form class="musicBrainzConfigurationForm">
                     <div class="inputContainer">
                         <input is="emby-input" type="text" id="server" required label="Server" />
                         <div class="fieldDescription">This can be a mirror of the official server or even a custom server.</div>
@@ -32,7 +28,7 @@
                 uniquePluginId: "8c95c4d2-e50c-4fb0-a4f3-6c06ff0f9a1a"
             };
 
-            document.querySelector('.musicBrainzConfigPage')
+            document.querySelector('.musicBrainzConfigurationPage')
                 .addEventListener('pageshow', function () {
                     Dashboard.showLoadingMsg();
                     ApiClient.getPluginConfiguration(MusicBrainzPluginConfig.uniquePluginId).then(function (config) {
@@ -56,7 +52,7 @@
                     });
                 });
 
-            document.querySelector('.musicBrainzConfigForm')
+            document.querySelector('.musicBrainzConfigurationForm')
                 .addEventListener('submit', function (e) {
                     Dashboard.showLoadingMsg();
 
