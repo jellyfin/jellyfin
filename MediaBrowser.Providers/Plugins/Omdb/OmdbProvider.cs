@@ -98,8 +98,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 // item.VoteCount = voteCount;
             }
 
-            if (!string.IsNullOrEmpty(result.imdbRating)
-                && float.TryParse(result.imdbRating, NumberStyles.Any, CultureInfo.InvariantCulture, out var imdbRating)
+            if (float.TryParse(result.imdbRating, CultureInfo.InvariantCulture, out var imdbRating)
                 && imdbRating >= 0)
             {
                 item.CommunityRating = imdbRating;
@@ -209,8 +208,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 // item.VoteCount = voteCount;
             }
 
-            if (!string.IsNullOrEmpty(result.imdbRating)
-                && float.TryParse(result.imdbRating, NumberStyles.Any, CultureInfo.InvariantCulture, out var imdbRating)
+            if (float.TryParse(result.imdbRating, CultureInfo.InvariantCulture, out var imdbRating)
                 && imdbRating >= 0)
             {
                 item.CommunityRating = imdbRating;
@@ -552,7 +550,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     if (rating?.Value is not null)
                     {
                         var value = rating.Value.TrimEnd('%');
-                        if (float.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var score))
+                        if (float.TryParse(value, CultureInfo.InvariantCulture, out var score))
                         {
                             return score;
                         }

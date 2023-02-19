@@ -97,12 +97,9 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 info.Container = NormalizeFormat(data.Format.FormatName);
 
-                if (!string.IsNullOrEmpty(data.Format.BitRate))
+                if (int.TryParse(data.Format.BitRate, CultureInfo.InvariantCulture, out var value))
                 {
-                    if (int.TryParse(data.Format.BitRate, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
-                    {
-                        info.Bitrate = value;
-                    }
+                    info.Bitrate = value;
                 }
             }
 
@@ -561,8 +558,8 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
             }
 
-            if (string.IsNullOrWhiteSpace(name) ||
-                string.IsNullOrWhiteSpace(value))
+            if (string.IsNullOrWhiteSpace(name)
+                || string.IsNullOrWhiteSpace(value))
             {
                 return null;
             }
@@ -674,9 +671,9 @@ namespace MediaBrowser.MediaEncoding.Probing
 
                 stream.Channels = streamInfo.Channels;
 
-                if (int.TryParse(streamInfo.SampleRate, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
+                if (int.TryParse(streamInfo.SampleRate, CultureInfo.InvariantCulture, out var sampleRate))
                 {
-                    stream.SampleRate = value;
+                    stream.SampleRate = sampleRate;
                 }
 
                 stream.ChannelLayout = ParseChannelLayout(streamInfo.ChannelLayout);
@@ -853,22 +850,18 @@ namespace MediaBrowser.MediaEncoding.Probing
             // Get stream bitrate
             var bitrate = 0;
 
-            if (!string.IsNullOrEmpty(streamInfo.BitRate))
+            if (int.TryParse(streamInfo.BitRate, CultureInfo.InvariantCulture, out var value))
             {
-                if (int.TryParse(streamInfo.BitRate, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
-                {
-                    bitrate = value;
-                }
+                bitrate = value;
             }
 
             // The bitrate info of FLAC musics and some videos is included in formatInfo.
             if (bitrate == 0
                 && formatInfo is not null
-                && !string.IsNullOrEmpty(formatInfo.BitRate)
                 && (stream.Type == MediaStreamType.Video || (isAudio && stream.Type == MediaStreamType.Audio)))
             {
                 // If the stream info doesn't have a bitrate get the value from the media format info
-                if (int.TryParse(formatInfo.BitRate, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
+                if (int.TryParse(formatInfo.BitRate, CultureInfo.InvariantCulture, out value))
                 {
                     bitrate = value;
                 }
@@ -972,8 +965,8 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             var parts = (original ?? string.Empty).Split(':');
             if (!(parts.Length == 2
-                    && int.TryParse(parts[0], NumberStyles.Any, CultureInfo.InvariantCulture, out var width)
-                    && int.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out var height)
+                    && int.TryParse(parts[0], CultureInfo.InvariantCulture, out var width)
+                    && int.TryParse(parts[1], CultureInfo.InvariantCulture, out var height)
                     && width > 0
                     && height > 0))
             {
@@ -1117,7 +1110,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
 
             var duration = GetDictionaryValue(streamInfo.Tags, "DURATION-eng") ?? GetDictionaryValue(streamInfo.Tags, "DURATION");
-            if (!string.IsNullOrEmpty(duration) && TimeSpan.TryParse(duration, out var parsedDuration))
+            if (TimeSpan.TryParse(duration, out var parsedDuration))
             {
                 return parsedDuration.TotalSeconds;
             }
@@ -1446,7 +1439,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             // Limit accuracy to milliseconds to match xml saving
             var secondsString = chapter.StartTime;
 
-            if (double.TryParse(secondsString, NumberStyles.Any, CultureInfo.InvariantCulture, out var seconds))
+            if (double.TryParse(secondsString, CultureInfo.InvariantCulture, out var seconds))
             {
                 var ms = Math.Round(TimeSpan.FromSeconds(seconds).TotalMilliseconds);
                 info.StartPositionTicks = TimeSpan.FromMilliseconds(ms).Ticks;

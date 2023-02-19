@@ -136,7 +136,7 @@ namespace MediaBrowser.Model.Dlna
                 return !condition.IsRequired;
             }
 
-            if (int.TryParse(condition.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var expected))
+            if (int.TryParse(condition.Value, CultureInfo.InvariantCulture, out var expected))
             {
                 switch (condition.Condition)
                 {
@@ -212,7 +212,7 @@ namespace MediaBrowser.Model.Dlna
                 return !condition.IsRequired;
             }
 
-            if (double.TryParse(condition.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var expected))
+            if (double.TryParse(condition.Value, CultureInfo.InvariantCulture, out var expected))
             {
                 switch (condition.Condition)
                 {

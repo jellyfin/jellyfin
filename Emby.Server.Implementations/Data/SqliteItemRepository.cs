@@ -1195,7 +1195,7 @@ namespace Emby.Server.Implementations.Data
                 Path = RestorePath(path.ToString())
             };
 
-            if (long.TryParse(dateModified, NumberStyles.Any, CultureInfo.InvariantCulture, out var ticks)
+            if (long.TryParse(dateModified, CultureInfo.InvariantCulture, out var ticks)
                 && ticks >= DateTime.MinValue.Ticks
                 && ticks <= DateTime.MaxValue.Ticks)
             {
