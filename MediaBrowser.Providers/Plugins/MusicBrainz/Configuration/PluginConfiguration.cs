@@ -1,5 +1,4 @@
 using MediaBrowser.Model.Plugins;
-using MetaBrainz.MusicBrainz;
 
 namespace MediaBrowser.Providers.Plugins.MusicBrainz.Configuration;
 

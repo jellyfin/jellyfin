@@ -1,20 +1,16 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <title>MusicBrainz</title>
-</head>
-<body>
-    <div data-role="page" class="page type-interior pluginConfigurationPage musicBrainzConfigPage" data-require="emby-input,emby-button,emby-checkbox">
-        <div data-role="content">
-            <div class="content-primary">
-                <form class="musicBrainzConfigForm">
+﻿<div id="musicBrainzConfigurationPage" data-role="page"
+    class="page type-interior pluginConfigurationPage musicBrainzConfigurationPage" data-require="emby-input,emby-button,emby-checkbox">
+    <div data-role="content">
+        <div class="content-primary">
+            <h1>MusicBrainz</h1>
+                <form class="musicBrainzConfigurationForm">
                     <div class="inputContainer">
                         <input is="emby-input" type="text" id="server" required label="Server" />
                         <div class="fieldDescription">This can be a mirror of the official server or even a custom server.</div>
                     </div>
                     <div class="inputContainer">
-                        <input is="emby-input" type="number" id="rateLimit" pattern="[0-9]*" required min="0" max="10000" label="Rate Limit" />
-                        <div class="fieldDescription">Span of time between requests in milliseconds. The official server is limited to one request every two seconds.</div>
+                        <input is="emby-input" type="number" id="rateLimit" required pattern="[0-9]*" min="0" max="10" step=".01" label="Rate Limit" />
+                        <div class="fieldDescription">Span of time between requests in seconds. The official server is limited to one request every seconds.</div>
                     </div>
                     <label class="checkboxContainer">
                         <input is="emby-checkbox" type="checkbox" id="replaceArtistName" />
@@ -32,7 +28,7 @@
                 uniquePluginId: "8c95c4d2-e50c-4fb0-a4f3-6c06ff0f9a1a"
             };
 
-            document.querySelector('.musicBrainzConfigPage')
+            document.querySelector('.musicBrainzConfigurationPage')
                 .addEventListener('pageshow', function () {
                     Dashboard.showLoadingMsg();
                     ApiClient.getPluginConfiguration(MusicBrainzPluginConfig.uniquePluginId).then(function (config) {
@@ -49,14 +45,14 @@
                             bubbles: true,
                             cancelable: false
                         }));
-                        
+
                         document.querySelector('#replaceArtistName').checked = config.ReplaceArtistName;
 
                         Dashboard.hideLoadingMsg();
                     });
                 });
 
-            document.querySelector('.musicBrainzConfigForm')
+            document.querySelector('.musicBrainzConfigurationForm')
                 .addEventListener('submit', function (e) {
                     Dashboard.showLoadingMsg();
 
