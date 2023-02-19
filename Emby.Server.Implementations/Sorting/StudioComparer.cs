@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System;
@@ -24,10 +22,9 @@ namespace Emby.Server.Implementations.Sorting
         /// <param name="x">The x.</param>
         /// <param name="y">The y.</param>
         /// <returns>System.Int32.</returns>
-        public int Compare(BaseItem x, BaseItem y)
+        public int Compare(BaseItem? x, BaseItem? y)
         {
             ArgumentNullException.ThrowIfNull(x);
-
             ArgumentNullException.ThrowIfNull(y);
 
             return AlphanumericComparator.CompareValues(x.Studios.FirstOrDefault(), y.Studios.FirstOrDefault());

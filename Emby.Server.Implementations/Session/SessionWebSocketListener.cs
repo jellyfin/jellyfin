@@ -1,5 +1,3 @@
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -58,7 +56,7 @@ namespace Emby.Server.Implementations.Session
         /// <summary>
         /// The KeepAlive cancellation token.
         /// </summary>
-        private CancellationTokenSource _keepAliveCancellationToken;
+        private CancellationTokenSource? _keepAliveCancellationToken;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SessionWebSocketListener" /> class.
@@ -105,7 +103,7 @@ namespace Emby.Server.Implementations.Session
             }
         }
 
-        private async Task<SessionInfo> GetSession(HttpContext httpContext, string remoteEndpoint)
+        private async Task<SessionInfo?> GetSession(HttpContext httpContext, string? remoteEndpoint)
         {
             if (!httpContext.User.Identity?.IsAuthenticated ?? false)
             {
@@ -138,8 +136,13 @@ namespace Emby.Server.Implementations.Session
         /// </summary>
         /// <param name="sender">The WebSocket.</param>
         /// <param name="e">The event arguments.</param>
-        private void OnWebSocketClosed(object sender, EventArgs e)
+        private void OnWebSocketClosed(object? sender, EventArgs e)
         {
+            if (sender is null)
+            {
+                return;
+            }
+
             var webSocket = (IWebSocketConnection)sender;
             _logger.LogDebug("WebSocket {0} is closed.", webSocket);
             RemoveWebSocket(webSocket);
