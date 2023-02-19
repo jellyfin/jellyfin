@@ -136,12 +136,26 @@ namespace MediaBrowser.Model.Dlna
                 return !condition.IsRequired;
             }
 
+            var conditionType = condition.Condition;
+            if (condition.Condition == ProfileConditionType.EqualsAny)
+            {
+                foreach (var singleConditionString in condition.Value.AsSpan().Split('|'))
+                {
+                    if (int.TryParse(singleConditionString, NumberStyles.Any, CultureInfo.InvariantCulture, out int conditionValue)
+                        && conditionValue.Equals(currentValue))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
             if (int.TryParse(condition.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var expected))
             {
-                switch (condition.Condition)
+                switch (conditionType)
                 {
                     case ProfileConditionType.Equals:
-                    case ProfileConditionType.EqualsAny:
                         return currentValue.Value.Equals(expected);
                     case ProfileConditionType.GreaterThanEqual:
                         return currentValue.Value >= expected;
@@ -212,9 +226,24 @@ namespace MediaBrowser.Model.Dlna
                 return !condition.IsRequired;
             }
 
+            var conditionType = condition.Condition;
+            if (condition.Condition == ProfileConditionType.EqualsAny)
+            {
+                foreach (var singleConditionString in condition.Value.AsSpan().Split('|'))
+                {
+                    if (double.TryParse(singleConditionString, NumberStyles.Any, CultureInfo.InvariantCulture, out double conditionValue)
+                        && conditionValue.Equals(currentValue))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
             if (double.TryParse(condition.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var expected))
             {
-                switch (condition.Condition)
+                switch (conditionType)
                 {
                     case ProfileConditionType.Equals:
                         return currentValue.Value.Equals(expected);
