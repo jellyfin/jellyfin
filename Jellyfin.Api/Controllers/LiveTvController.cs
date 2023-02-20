@@ -153,6 +153,7 @@ public class LiveTvController : BaseJellyfinApiController
         [FromQuery] bool enableFavoriteSorting = false,
         [FromQuery] bool addCurrentProgram = true)
     {
+        userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
@@ -161,7 +162,7 @@ public class LiveTvController : BaseJellyfinApiController
             new LiveTvChannelQuery
             {
                 ChannelType = type,
-                UserId = userId ?? Guid.Empty,
+                UserId = userId.Value,
                 StartIndex = startIndex,
                 Limit = limit,
                 IsFavorite = isFavorite,
@@ -180,7 +181,7 @@ public class LiveTvController : BaseJellyfinApiController
             dtoOptions,
             CancellationToken.None);
 
-        var user = userId is null || userId.Value.Equals(default)
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -211,7 +212,8 @@ public class LiveTvController : BaseJellyfinApiController
     [Authorize(Policy = Policies.LiveTvAccess)]
     public ActionResult<BaseItemDto> GetChannel([FromRoute, Required] Guid channelId, [FromQuery] Guid? userId)
     {
-        var user = userId is null || userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
         var item = channelId.Equals(default)
@@ -271,6 +273,7 @@ public class LiveTvController : BaseJellyfinApiController
         [FromQuery] bool? isLibraryItem,
         [FromQuery] bool enableTotalRecordCount = true)
     {
+        userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
@@ -279,7 +282,7 @@ public class LiveTvController : BaseJellyfinApiController
             new RecordingQuery
             {
                 ChannelId = channelId,
-                UserId = userId ?? Guid.Empty,
+                UserId = userId.Value,
                 StartIndex = startIndex,
                 Limit = limit,
                 Status = status,
@@ -382,7 +385,8 @@ public class LiveTvController : BaseJellyfinApiController
     [Authorize(Policy = Policies.LiveTvAccess)]
     public ActionResult<QueryResult<BaseItemDto>> GetRecordingFolders([FromQuery] Guid? userId)
     {
-        var user = userId is null || userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
         var folders = _liveTvManager.GetRecordingFolders(user);
@@ -404,7 +408,8 @@ public class LiveTvController : BaseJellyfinApiController
     [Authorize(Policy = Policies.LiveTvAccess)]
     public ActionResult<BaseItemDto> GetRecording([FromRoute, Required] Guid recordingId, [FromQuery] Guid? userId)
     {
-        var user = userId is null || userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
         var item = recordingId.Equals(default) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(recordingId);
@@ -560,7 +565,8 @@ public class LiveTvController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
         [FromQuery] bool enableTotalRecordCount = true)
     {
-        var user = userId is null || userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -699,7 +705,8 @@ public class LiveTvController : BaseJellyfinApiController
         [FromQuery] bool? enableUserData,
         [FromQuery] bool enableTotalRecordCount = true)
     {
-        var user = userId is null || userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -737,7 +744,8 @@ public class LiveTvController : BaseJellyfinApiController
         [FromRoute, Required] string programId,
         [FromQuery] Guid? userId)
     {
-        var user = userId is null || userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 

@@ -132,6 +132,7 @@ public class MediaInfoController : BaseJellyfinApiController
         // Copy params from posted body
         // TODO clean up when breaking API compatibility.
         userId ??= playbackInfoDto?.UserId;
+        userId = RequestHelpers.GetUserId(User, userId);
         maxStreamingBitrate ??= playbackInfoDto?.MaxStreamingBitrate;
         startTimeTicks ??= playbackInfoDto?.StartTimeTicks;
         audioStreamIndex ??= playbackInfoDto?.AudioStreamIndex;
@@ -253,10 +254,12 @@ public class MediaInfoController : BaseJellyfinApiController
         [FromQuery] bool? enableDirectPlay,
         [FromQuery] bool? enableDirectStream)
     {
+        userId ??= openLiveStreamDto?.UserId;
+        userId = RequestHelpers.GetUserId(User, userId);
         var request = new LiveStreamRequest
         {
             OpenToken = openToken ?? openLiveStreamDto?.OpenToken,
-            UserId = userId ?? openLiveStreamDto?.UserId ?? Guid.Empty,
+            UserId = userId.Value,
             PlaySessionId = playSessionId ?? openLiveStreamDto?.PlaySessionId,
             MaxStreamingBitrate = maxStreamingBitrate ?? openLiveStreamDto?.MaxStreamingBitrate,
             StartTimeTicks = startTimeTicks ?? openLiveStreamDto?.StartTimeTicks,

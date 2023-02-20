@@ -324,6 +324,25 @@ namespace Jellyfin.Naming.Tests.Video
         }
 
         [Fact]
+        public void TestMultiVersion12()
+        {
+            var files = new[]
+            {
+                @"/movies/X-Men Apocalypse (2016)/X-Men Apocalypse (2016) - 1080p.mkv",
+                @"/movies/X-Men Apocalypse (2016)/X-Men Apocalypse (2016).mkv"
+            };
+
+            var result = VideoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
+                _namingOptions).ToList();
+
+            Assert.Single(result);
+            Assert.Equal("/movies/X-Men Apocalypse (2016)/X-Men Apocalypse (2016).mkv", result[0].Files[0].Path);
+            Assert.Single(result[0].AlternateVersions);
+            Assert.Equal("/movies/X-Men Apocalypse (2016)/X-Men Apocalypse (2016) - 1080p.mkv", result[0].AlternateVersions[0].Path);
+        }
+
+        [Fact]
         public void Resolve_GivenFolderNameWithBracketsAndHyphens_GroupsBasedOnFolderName()
         {
             var files = new[]

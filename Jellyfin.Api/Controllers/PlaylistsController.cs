@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.PlaylistDtos;
 using MediaBrowser.Controller.Dto;
@@ -81,11 +82,13 @@ public class PlaylistsController : BaseJellyfinApiController
             ids = createPlaylistRequest?.Ids ?? Array.Empty<Guid>();
         }
 
+        userId ??= createPlaylistRequest?.UserId ?? default;
+        userId = RequestHelpers.GetUserId(User, userId);
         var result = await _playlistManager.CreatePlaylist(new PlaylistCreationRequest
         {
             Name = name ?? createPlaylistRequest?.Name,
             ItemIdList = ids,
-            UserId = userId ?? createPlaylistRequest?.UserId ?? default,
+            UserId = userId.Value,
             MediaType = mediaType ?? createPlaylistRequest?.MediaType
         }).ConfigureAwait(false);
 
@@ -107,7 +110,8 @@ public class PlaylistsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids,
         [FromQuery] Guid? userId)
     {
-        await _playlistManager.AddToPlaylistAsync(playlistId, ids, userId ?? Guid.Empty).ConfigureAwait(false);
+        userId = RequestHelpers.GetUserId(User, userId);
+        await _playlistManager.AddToPlaylistAsync(playlistId, ids, userId.Value).ConfigureAwait(false);
         return NoContent();
     }
 

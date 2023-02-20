@@ -315,12 +315,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var text = reader.ReadElementContentAsString();
 
-                        if (!string.IsNullOrEmpty(text))
+                        if (float.TryParse(text, CultureInfo.InvariantCulture, out var value))
                         {
-                            if (float.TryParse(text, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
-                            {
-                                item.CriticRating = value;
-                            }
+                            item.CriticRating = value;
                         }
 
                         break;

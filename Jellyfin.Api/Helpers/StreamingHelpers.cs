@@ -337,10 +337,10 @@ public static class StreamingHelpers
         value = index == -1
             ? value.Slice(npt.Length)
             : value.Slice(npt.Length, index - npt.Length);
-        if (value.IndexOf(':') == -1)
+        if (!value.Contains(':'))
         {
             // Parses npt times in the format of '417.33'
-            if (double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var seconds))
+            if (double.TryParse(value, CultureInfo.InvariantCulture, out var seconds))
             {
                 return TimeSpan.FromSeconds(seconds).Ticks;
             }

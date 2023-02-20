@@ -54,9 +54,9 @@
     <PackageVersion Include="NEbml" Version="0.11.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageVersion Include="PlaylistsNET" Version="1.3.1" />
-    <PackageVersion Include="prometheus-net.AspNetCore" Version="7.0.0" />
+    <PackageVersion Include="prometheus-net.AspNetCore" Version="8.0.0" />
     <PackageVersion Include="prometheus-net.DotNetRuntime" Version="4.4.0" />
-    <PackageVersion Include="prometheus-net" Version="7.0.0" />
+    <PackageVersion Include="prometheus-net" Version="8.0.0" />
     <PackageVersion Include="Serilog.AspNetCore" Version="6.1.0" />
     <PackageVersion Include="Serilog.Enrichers.Thread" Version="3.1.0" />
     <PackageVersion Include="Serilog.Settings.Configuration" Version="3.4.0" />

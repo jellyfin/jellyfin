@@ -106,6 +106,7 @@ namespace Emby.Naming.Video
             }
 
             // Cannot use Span inside local functions and delegates thus we cannot use LINQ here nor merge with the above [if]
+            VideoInfo? primary = null;
             for (var i = 0; i < videos.Count; i++)
             {
                 var video = videos[i];
@@ -118,25 +119,24 @@ namespace Emby.Naming.Video
                 {
                     return videos;
                 }
+
+                if (folderName.Equals(Path.GetFileNameWithoutExtension(video.Files[0].Path.AsSpan()), StringComparison.Ordinal))
+                {
+                    primary = video;
+                }
             }
 
             // The list is created and overwritten in the caller, so we are allowed to do in-place sorting
             videos.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.Ordinal));
+            primary ??= videos[0];
+            videos.Remove(primary);
 
             var list = new List<VideoInfo>
             {
-                videos[0]
+                primary
             };
 
-            var alternateVersionsLen = videos.Count - 1;
-            var alternateVersions = new VideoFileInfo[alternateVersionsLen];
-            for (int i = 0; i < alternateVersionsLen; i++)
-            {
-                var video = videos[i + 1];
-                alternateVersions[i] = video.Files[0];
-            }
-
-            list[0].AlternateVersions = alternateVersions;
+            list[0].AlternateVersions = videos.Select(x => x.Files[0]).ToArray();
             list[0].Name = folderName.ToString();
 
             return list;
@@ -176,16 +176,15 @@ namespace Emby.Naming.Video
             }
 
             // There are no span overloads for regex unfortunately
-            var tmpTestFilename = testFilename.ToString();
-            if (CleanStringParser.TryClean(tmpTestFilename, namingOptions.CleanStringRegexes, out var cleanName))
+            if (CleanStringParser.TryClean(testFilename.ToString(), namingOptions.CleanStringRegexes, out var cleanName))
             {
-                tmpTestFilename = cleanName.Trim();
+                testFilename = cleanName.AsSpan().Trim();
             }
 
             // The CleanStringParser should have removed common keywords etc.
-            return string.IsNullOrEmpty(tmpTestFilename)
+            return testFilename.IsEmpty
                    || testFilename[0] == '-'
-                   || Regex.IsMatch(tmpTestFilename, @"^\[([^]]*)\]", RegexOptions.Compiled);
+                   || Regex.IsMatch(testFilename, @"^\[([^]]*)\]", RegexOptions.Compiled);
         }
     }
 }

@@ -457,8 +457,7 @@ public class TranscodingJobHelper : IDisposable
             var videoCodec = state.ActualOutputVideoCodec;
             var hardwareAccelerationTypeString = _serverConfigurationManager.GetEncodingOptions().HardwareAccelerationType;
             HardwareEncodingType? hardwareAccelerationType = null;
-            if (!string.IsNullOrEmpty(hardwareAccelerationTypeString)
-                && Enum.TryParse<HardwareEncodingType>(hardwareAccelerationTypeString, out var parsedHardwareAccelerationType))
+            if (Enum.TryParse<HardwareEncodingType>(hardwareAccelerationTypeString, out var parsedHardwareAccelerationType))
             {
                 hardwareAccelerationType = parsedHardwareAccelerationType;
             }

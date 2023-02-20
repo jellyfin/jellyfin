@@ -1,5 +1,4 @@
 using MediaBrowser.Model.Plugins;
-using MetaBrainz.MusicBrainz;
 
 namespace MediaBrowser.Providers.Plugins.MusicBrainz.Configuration;
 
@@ -8,7 +7,7 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz.Configuration;
 /// </summary>
 public class PluginConfiguration : BasePluginConfiguration
 {
-    private const string DefaultServer = "musicbrainz.org";
+    private const string DefaultServer = "https://musicbrainz.org";
 
     private const double DefaultRateLimit = 1.0;
 
