@@ -3964,19 +3964,19 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add(clause);
             }
 
-            var ratingClause = "(";
+            var ratingClauseBuilder = new StringBuilder("(");
             if (query.HasParentalRating ?? false)
             {
-                ratingClause += "InheritedParentalRatingValue not null";
+                ratingClauseBuilder.Append("InheritedParentalRatingValue not null");
                 if (query.MinParentalRating.HasValue)
                 {
-                    ratingClause += " AND InheritedParentalRatingValue >= @MinParentalRating";
+                    ratingClauseBuilder.Append(" AND InheritedParentalRatingValue >= @MinParentalRating");
                     statement?.TryBind("@MinParentalRating", query.MinParentalRating.Value);
                 }
 
                 if (query.MaxParentalRating.HasValue)
                 {
-                    ratingClause += " AND InheritedParentalRatingValue <= @MaxParentalRating";
+                    ratingClauseBuilder.Append(" AND InheritedParentalRatingValue <= @MaxParentalRating");
                     statement?.TryBind("@MaxParentalRating", query.MaxParentalRating.Value);
                 }
             }
@@ -3985,7 +3985,7 @@ namespace Emby.Server.Implementations.Data
                 var paramName = "@UnratedType";
                 var index = 0;
                 string blockedUnratedItems = string.Join(',', query.BlockUnratedItems.Select(_ => paramName + index++));
-                ratingClause += "(InheritedParentalRatingValue is null AND UnratedType not in (" + blockedUnratedItems + "))";
+                ratingClauseBuilder.Append("(InheritedParentalRatingValue is null AND UnratedType not in (" + blockedUnratedItems + "))");
 
                 if (statement is not null)
                 {
@@ -3997,12 +3997,12 @@ namespace Emby.Server.Implementations.Data
 
                 if (query.MinParentalRating.HasValue || query.MaxParentalRating.HasValue)
                 {
-                    ratingClause += " OR (";
+                    ratingClauseBuilder.Append(" OR (");
                 }
 
                 if (query.MinParentalRating.HasValue)
                 {
-                    ratingClause += "InheritedParentalRatingValue >= @MinParentalRating";
+                    ratingClauseBuilder.Append("InheritedParentalRatingValue >= @MinParentalRating");
                     statement?.TryBind("@MinParentalRating", query.MinParentalRating.Value);
                 }
 
@@ -4010,49 +4010,50 @@ namespace Emby.Server.Implementations.Data
                 {
                     if (query.MinParentalRating.HasValue)
                     {
-                        ratingClause += " AND ";
+                        ratingClauseBuilder.Append(" AND ");
                     }
 
-                    ratingClause += "InheritedParentalRatingValue <= @MaxParentalRating";
+                    ratingClauseBuilder.Append("InheritedParentalRatingValue <= @MaxParentalRating");
                     statement?.TryBind("@MaxParentalRating", query.MaxParentalRating.Value);
                 }
 
                 if (query.MinParentalRating.HasValue || query.MaxParentalRating.HasValue)
                 {
-                    ratingClause += ")";
+                    ratingClauseBuilder.Append(")");
                 }
 
                 if (!(query.MinParentalRating.HasValue || query.MaxParentalRating.HasValue))
                 {
-                    ratingClause += " OR InheritedParentalRatingValue not null";
+                    ratingClauseBuilder.Append(" OR InheritedParentalRatingValue not null");
                 }
             }
             else if (query.MinParentalRating.HasValue)
             {
-                ratingClause += "InheritedParentalRatingValue is null OR (InheritedParentalRatingValue >= @MinParentalRating";
+                ratingClauseBuilder.Append("InheritedParentalRatingValue is null OR (InheritedParentalRatingValue >= @MinParentalRating");
                 statement?.TryBind("@MinParentalRating", query.MinParentalRating.Value);
 
                 if (query.MaxParentalRating.HasValue)
                 {
-                    ratingClause += " AND InheritedParentalRatingValue <= @MaxParentalRating";
+                    ratingClauseBuilder.Append(" AND InheritedParentalRatingValue <= @MaxParentalRating");
                     statement?.TryBind("@MaxParentalRating", query.MaxParentalRating.Value);
                 }
 
-                ratingClause += ")";
+                ratingClauseBuilder.Append(")");
             }
             else if (query.MaxParentalRating.HasValue)
             {
-                ratingClause += "InheritedParentalRatingValue is null OR InheritedParentalRatingValue <= @MaxParentalRating";
+                ratingClauseBuilder.Append("InheritedParentalRatingValue is null OR InheritedParentalRatingValue <= @MaxParentalRating");
                 statement?.TryBind("@MaxParentalRating", query.MaxParentalRating.Value);
             }
             else if (!query.HasParentalRating ?? false)
             {
-                ratingClause += "InheritedParentalRatingValue is null";
+                ratingClauseBuilder.Append("InheritedParentalRatingValue is null");
             }
 
-            if (!string.Equals(ratingClause, "(", StringComparison.OrdinalIgnoreCase))
+            var ratingClauseString = ratingClauseBuilder.ToString();
+            if (!string.Equals(ratingClauseString, "(", StringComparison.OrdinalIgnoreCase))
             {
-                whereClauses.Add(ratingClause + ")");
+                whereClauses.Add(ratingClauseString + ")");
             }
 
             if (query.HasOfficialRating.HasValue)
