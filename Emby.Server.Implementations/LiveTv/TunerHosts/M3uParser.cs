@@ -308,8 +308,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         {
             var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            var reg = new Regex(@"([a-z0-9\-_]+)=\""([^""]+)\""", RegexOptions.IgnoreCase);
-            var matches = reg.Matches(line);
+            var matches = Regex.Matches(line, @"([a-z0-9\-_]+)=\""([^""]+)\""", RegexOptions.IgnoreCase);
 
             remaining = line;
 

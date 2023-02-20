@@ -188,8 +188,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"/movies/Iron Man/Iron Man-bluray.mkv",
                 @"/movies/Iron Man/Iron Man-3d.mkv",
                 @"/movies/Iron Man/Iron Man-3d-hsbs.mkv",
-                @"/movies/Iron Man/Iron Man-3d.hsbs.mkv",
-                @"/movies/Iron Man/Iron Man[test].mkv",
+                @"/movies/Iron Man/Iron Man[test].mkv"
             };
 
             var result = VideoListResolver.Resolve(
@@ -197,10 +196,14 @@ namespace Jellyfin.Naming.Tests.Video
                 _namingOptions).ToList();
 
             Assert.Single(result);
-            Assert.Equal(7, result[0].AlternateVersions.Count);
-            Assert.False(result[0].AlternateVersions[2].Is3D);
-            Assert.True(result[0].AlternateVersions[3].Is3D);
-            Assert.True(result[0].AlternateVersions[4].Is3D);
+            Assert.Equal("/movies/Iron Man/Iron Man.mkv", result[0].Files[0].Path);
+            Assert.Equal(6, result[0].AlternateVersions.Count);
+            Assert.Equal("/movies/Iron Man/Iron Man-720p.mkv", result[0].AlternateVersions[0].Path);
+            Assert.Equal("/movies/Iron Man/Iron Man-3d.mkv", result[0].AlternateVersions[1].Path);
+            Assert.Equal("/movies/Iron Man/Iron Man-3d-hsbs.mkv", result[0].AlternateVersions[2].Path);
+            Assert.Equal("/movies/Iron Man/Iron Man-bluray.mkv", result[0].AlternateVersions[3].Path);
+            Assert.Equal("/movies/Iron Man/Iron Man-test.mkv", result[0].AlternateVersions[4].Path);
+            Assert.Equal("/movies/Iron Man/Iron Man[test].mkv", result[0].AlternateVersions[5].Path);
         }
 
         [Fact]
@@ -214,7 +217,6 @@ namespace Jellyfin.Naming.Tests.Video
                 @"/movies/Iron Man/Iron Man - bluray.mkv",
                 @"/movies/Iron Man/Iron Man - 3d.mkv",
                 @"/movies/Iron Man/Iron Man - 3d-hsbs.mkv",
-                @"/movies/Iron Man/Iron Man - 3d.hsbs.mkv",
                 @"/movies/Iron Man/Iron Man [test].mkv"
             };
 
@@ -223,10 +225,14 @@ namespace Jellyfin.Naming.Tests.Video
                 _namingOptions).ToList();
 
             Assert.Single(result);
-            Assert.Equal(7, result[0].AlternateVersions.Count);
-            Assert.False(result[0].AlternateVersions[3].Is3D);
-            Assert.True(result[0].AlternateVersions[4].Is3D);
-            Assert.True(result[0].AlternateVersions[5].Is3D);
+            Assert.Equal("/movies/Iron Man/Iron Man.mkv", result[0].Files[0].Path);
+            Assert.Equal(6, result[0].AlternateVersions.Count);
+            Assert.Equal("/movies/Iron Man/Iron Man - 720p.mkv", result[0].AlternateVersions[0].Path);
+            Assert.Equal("/movies/Iron Man/Iron Man - 3d.mkv", result[0].AlternateVersions[1].Path);
+            Assert.Equal("/movies/Iron Man/Iron Man - 3d-hsbs.mkv", result[0].AlternateVersions[2].Path);
+            Assert.Equal("/movies/Iron Man/Iron Man - bluray.mkv", result[0].AlternateVersions[3].Path);
+            Assert.Equal("/movies/Iron Man/Iron Man - test.mkv", result[0].AlternateVersions[4].Path);
+            Assert.Equal("/movies/Iron Man/Iron Man [test].mkv", result[0].AlternateVersions[5].Path);
         }
 
         [Fact]
@@ -328,8 +334,12 @@ namespace Jellyfin.Naming.Tests.Video
         {
             var files = new[]
             {
+                @"/movies/X-Men Apocalypse (2016)/X-Men Apocalypse (2016) - Theatrical Release.mkv",
+                @"/movies/X-Men Apocalypse (2016)/X-Men Apocalypse (2016) - Directors Cut.mkv",
                 @"/movies/X-Men Apocalypse (2016)/X-Men Apocalypse (2016) - 1080p.mkv",
-                @"/movies/X-Men Apocalypse (2016)/X-Men Apocalypse (2016).mkv"
+                @"/movies/X-Men Apocalypse (2016)/X-Men Apocalypse (2016) - 2160p.mkv",
+                @"/movies/X-Men Apocalypse (2016)/X-Men Apocalypse (2016) - 720p.mkv",
+                @"/movies/X-Men Apocalypse (2016)/X-Men Apocalypse (2016).mkv",
             };
 
             var result = VideoListResolver.Resolve(
@@ -338,8 +348,12 @@ namespace Jellyfin.Naming.Tests.Video
 
             Assert.Single(result);
             Assert.Equal("/movies/X-Men Apocalypse (2016)/X-Men Apocalypse (2016).mkv", result[0].Files[0].Path);
-            Assert.Single(result[0].AlternateVersions);
-            Assert.Equal("/movies/X-Men Apocalypse (2016)/X-Men Apocalypse (2016) - 1080p.mkv", result[0].AlternateVersions[0].Path);
+            Assert.Equal(5, result[0].AlternateVersions.Count);
+            Assert.Equal("/movies/X-Men Apocalypse (2016)/X-Men Apocalypse (2016) - 2160p.mkv", result[0].AlternateVersions[0].Path);
+            Assert.Equal("/movies/X-Men Apocalypse (2016)/X-Men Apocalypse (2016) - 1080p.mkv", result[0].AlternateVersions[1].Path);
+            Assert.Equal("/movies/X-Men Apocalypse (2016)/X-Men Apocalypse (2016) - 720p.mkv", result[0].AlternateVersions[2].Path);
+            Assert.Equal("/movies/X-Men Apocalypse (2016)/X-Men Apocalypse (2016) - Directors Cut.mkv", result[0].AlternateVersions[3].Path);
+            Assert.Equal("/movies/X-Men Apocalypse (2016)/X-Men Apocalypse (2016) - Theatrical Release.mkv", result[0].AlternateVersions[4].Path);
         }
 
         [Fact]
