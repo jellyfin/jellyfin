@@ -76,7 +76,6 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Retrieves the bind address to use in system URLs. (Server Discovery, PlayTo, LiveTV, SystemInfo)
         /// If no bind addresses are specified, an internal interface address is selected.
-        /// (See <see cref="GetBindAddress(IPAddress, out int?, bool)"/>.
         /// </summary>
         /// <param name="source">IP address of the request.</param>
         /// <param name="port">Optional port returned, if it's part of an override.</param>

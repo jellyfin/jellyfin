@@ -34,30 +34,9 @@ namespace Rssdp.Infrastructure
             string osName,
             string osVersion)
         {
-            if (communicationsServer is null)
-            {
-                throw new ArgumentNullException(nameof(communicationsServer));
-            }
-
-            if (osName is null)
-            {
-                throw new ArgumentNullException(nameof(osName));
-            }
-
-            if (osName.Length == 0)
-            {
-                throw new ArgumentException("osName cannot be an empty string.", nameof(osName));
-            }
-
-            if (osVersion is null)
-            {
-                throw new ArgumentNullException(nameof(osVersion));
-            }
-
-            if (osVersion.Length == 0)
-            {
-                throw new ArgumentException("osVersion cannot be an empty string.", nameof(osName));
-            }
+            ArgumentNullException.ThrowIfNull(communicationsServer);
+            ArgumentNullException.ThrowIfNullOrEmpty(osName);
+            ArgumentNullException.ThrowIfNullOrEmpty(osVersion);
 
             _OSName = osName;
             _OSVersion = osVersion;
@@ -363,7 +342,6 @@ namespace Rssdp.Infrastructure
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             values["HOST"] = "239.255.255.250:1900";
-            values["USER-AGENT"] = "UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2";
             values["USER-AGENT"] = string.Format(CultureInfo.InvariantCulture, "{0}/{1} UPnP/1.0 RSSDP/{2}", _OSName, _OSVersion, SsdpConstants.ServerVersion);
             values["MAN"] = "\"ssdp:discover\"";
 

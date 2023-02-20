@@ -40,30 +40,9 @@ namespace Rssdp.Infrastructure
             string osVersion,
             bool sendOnlyMatchedHost)
         {
-            if (communicationsServer is null)
-            {
-                throw new ArgumentNullException(nameof(communicationsServer));
-            }
-
-            if (osName is null)
-            {
-                throw new ArgumentNullException(nameof(osName));
-            }
-
-            if (osName.Length == 0)
-            {
-                throw new ArgumentException("osName cannot be an empty string.", nameof(osName));
-            }
-
-            if (osVersion is null)
-            {
-                throw new ArgumentNullException(nameof(osVersion));
-            }
-
-            if (osVersion.Length == 0)
-            {
-                throw new ArgumentException("osVersion cannot be an empty string.", nameof(osName));
-            }
+            ArgumentNullException.ThrowIfNull(communicationsServer);
+            ArgumentNullException.ThrowIfNullOrEmpty(osName);
+            ArgumentNullException.ThrowIfNullOrEmpty(osVersion);
 
             _SupportPnpRootDevice = true;
             _Devices = new List<SsdpRootDevice>();
