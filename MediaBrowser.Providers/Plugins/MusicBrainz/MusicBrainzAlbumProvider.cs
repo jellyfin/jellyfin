@@ -58,7 +58,7 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
         {
             // Fallback to official server
             _logger.LogWarning("Invalid MusicBrainz server specified, falling back to official server");
-            var defaultServer = new Uri(configuration.Server);
+            var defaultServer = new Uri(PluginConfiguration.DefaultServer);
             Query.DefaultServer = defaultServer.Host;
             Query.DefaultPort = defaultServer.Port;
             Query.DefaultUrlScheme = defaultServer.Scheme;
