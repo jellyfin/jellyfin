@@ -428,7 +428,7 @@ namespace Rssdp.Infrastructure
                     if (result.ReceivedBytes > 0)
                     {
                         var remoteEndpoint = (IPEndPoint)result.RemoteEndPoint;
-                        var localEndpointAdapter = _networkManager.GetAllBindInterfaces().Where(a => a.Index == result.PacketInformation.Interface).First();
+                        var localEndpointAdapter = _networkManager.GetAllBindInterfaces().First(a => a.Index == result.PacketInformation.Interface);
 
                         ProcessMessage(
                             UTF8Encoding.UTF8.GetString(receiveBuffer, 0, result.ReceivedBytes),

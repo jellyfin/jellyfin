@@ -30,7 +30,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Calculates the list of interfaces to use for Kestrel.
         /// </summary>
-        /// <returns>A List{IPData} object containing all the interfaces to bind.
+        /// <returns>A IReadOnlyList{IPData} object containing all the interfaces to bind.
         /// If all the interfaces are specified, and none are excluded, it returns zero items
         /// to represent any address.</returns>
         /// <param name="individualInterfaces">When false, return <see cref="IPAddress.Any"/> or <see cref="IPAddress.IPv6Any"/> for all interfaces.</param>
@@ -39,7 +39,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Returns a list containing the loopback interfaces.
         /// </summary>
-        /// <returns>List{IPData}.</returns>
+        /// <returns>IReadOnlyList{IPData}.</returns>
         IReadOnlyList<IPData> GetLoopbacks();
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="intf">Interface name.</param>
         /// <param name="result">Resulting object's IP addresses, if successful.</param>
         /// <returns>Success of the operation.</returns>
-        bool TryParseInterface(string intf, out List<IPData> result);
+        bool TryParseInterface(string intf, out IReadOnlyList<IPData> result);
 
         /// <summary>
         /// Returns all internal (LAN) bind interface addresses.

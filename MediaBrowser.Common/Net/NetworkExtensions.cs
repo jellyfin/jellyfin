@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
+using Jellyfin.Extensions;
 using Microsoft.AspNetCore.HttpOverrides;
 
 namespace MediaBrowser.Common.Net
@@ -193,71 +194,64 @@ namespace MediaBrowser.Common.Net
         /// <param name="result">An <see cref="IPNetwork"/>.</param>
         /// <param name="negated">Boolean signaling if negated or not negated values should be parsed.</param>
         /// <returns><c>True</c> if parsing was successful.</returns>
-        public static bool TryParseToSubnet(string value, out IPNetwork result, bool negated = false)
+        public static bool TryParseToSubnet(ReadOnlySpan<char> value, out IPNetwork result, bool negated = false)
         {
             result = new IPNetwork(IPAddress.None, 32);
-
-            if (string.IsNullOrEmpty(value))
+            var splitString = value.Trim().Split('/');
+            if (splitString.MoveNext())
             {
-                return false;
-            }
-
-            var splitString = value.Trim().Split("/");
-            var ipBlock = splitString[0];
-
-            var address = IPAddress.None;
-            if (negated && ipBlock.StartsWith('!') && IPAddress.TryParse(ipBlock[1..], out var tmpAddress))
-            {
-                address = tmpAddress;
-            }
-            else if (!negated && IPAddress.TryParse(ipBlock, out tmpAddress))
-            {
-                address = tmpAddress;
-            }
-
-            if (address != IPAddress.None && address is not null)
-            {
-                if (splitString.Length > 1)
+                var ipBlock = splitString.Current;
+                var address = IPAddress.None;
+                if (negated && ipBlock.StartsWith("!") && IPAddress.TryParse(ipBlock[1..], out var tmpAddress))
                 {
-                    var subnetBlock = splitString[1];
-                    if (int.TryParse(subnetBlock, out var netmask))
+                    address = tmpAddress;
+                }
+                else if (!negated && IPAddress.TryParse(ipBlock, out tmpAddress))
+                {
+                    address = tmpAddress;
+                }
+
+                if (address != IPAddress.None)
+                {
+                    if (splitString.MoveNext())
                     {
-                        result = new IPNetwork(address, netmask);
+                        var subnetBlock = splitString.Current;
+                        if (int.TryParse(subnetBlock, out var netmask))
+                        {
+                            result = new IPNetwork(address, netmask);
+                        }
+                        else if (IPAddress.TryParse(subnetBlock, out var netmaskAddress))
+                        {
+                            result = new IPNetwork(address, NetworkExtensions.MaskToCidr(netmaskAddress));
+                        }
                     }
-                    else if (IPAddress.TryParse(subnetBlock, out var netmaskAddress))
+                    else if (address.AddressFamily == AddressFamily.InterNetwork)
                     {
-                        result = new IPNetwork(address, NetworkExtensions.MaskToCidr(netmaskAddress));
+                        result = new IPNetwork(address, 32);
                     }
-                }
-                else if (address.AddressFamily == AddressFamily.InterNetwork)
-                {
-                    result = new IPNetwork(address, 32);
-                }
-                else if (address.AddressFamily == AddressFamily.InterNetworkV6)
-                {
-                    result = new IPNetwork(address, 128);
-                }
-            }
+                    else if (address.AddressFamily == AddressFamily.InterNetworkV6)
+                    {
+                        result = new IPNetwork(address, 128);
+                    }
 
-            if (!result.Prefix.Equals(IPAddress.None))
-            {
-                return true;
+                    return true;
+                }
             }
 
             return false;
         }
 
         /// <summary>
-        /// Attempts to parse a host string.
+        /// Attempts to parse a host span.
         /// </summary>
         /// <param name="host">Host name to parse.</param>
-        /// <param name="addresses">Object representing the string, if it has successfully been parsed.</param>
+        /// <param name="addresses">Object representing the span, if it has successfully been parsed.</param>
         /// <param name="isIPv4Enabled"><c>true</c> if IPv4 is enabled.</param>
         /// <param name="isIPv6Enabled"><c>true</c> if IPv6 is enabled.</param>
         /// <returns><c>true</c> if the parsing is successful, <c>false</c> if not.</returns>
-        public static bool TryParseHost(string host, [NotNullWhen(true)] out IPAddress[] addresses, bool isIPv4Enabled = true, bool isIPv6Enabled = false)
+        public static bool TryParseHost(ReadOnlySpan<char> host, [NotNullWhen(true)] out IPAddress[] addresses, bool isIPv4Enabled = true, bool isIPv6Enabled = false)
         {
-            if (string.IsNullOrWhiteSpace(host))
+            if (host.IsEmpty)
             {
                 addresses = Array.Empty<IPAddress>();
                 return false;
@@ -268,19 +262,24 @@ namespace MediaBrowser.Common.Net
             // See if it's an IPv6 with port address e.g. [::1] or [::1]:120.
             if (host[0] == '[')
             {
-                int i = host.IndexOf(']', StringComparison.Ordinal);
+                int i = host.IndexOf("]", StringComparison.Ordinal);
                 if (i != -1)
                 {
-                    return TryParseHost(host.Remove(i)[1..], out addresses);
+                    return TryParseHost(host[1..(i - 1)], out addresses);
                 }
 
                 addresses = Array.Empty<IPAddress>();
                 return false;
             }
 
-            var hosts = host.Split(':');
+            var hosts = new List<string>();
+            var splitSpan = host.Split(':');
+            while (splitSpan.MoveNext())
+            {
+                hosts.Add(splitSpan.Current.ToString());
+            }
 
-            if (hosts.Length <= 2)
+            if (hosts.Count <= 2)
             {
                 // Is hostname or hostname:port
                 if (_fqdnRegex.IsMatch(hosts[0]))
@@ -315,10 +314,14 @@ namespace MediaBrowser.Common.Net
                     return true;
                 }
             }
-            else if (hosts.Length <= 9 && IPAddress.TryParse(host.Split('/')[0], out var address)) // 8 octets + port
+            else if (hosts.Count <= 9) // 8 octets + port
             {
-                addresses = new[] { address };
-                return true;
+                splitSpan = host.Split('/');
+                if (splitSpan.MoveNext() && IPAddress.TryParse(splitSpan.Current, out var address))
+                {
+                    addresses = new[] { address };
+                    return true;
+                }
             }
 
             addresses = Array.Empty<IPAddress>();
