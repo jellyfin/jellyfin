@@ -2,11 +2,12 @@ using System;
 using System.Globalization;
 using System.IO;
 
+using Emby.Server.Implementations;
 using MediaBrowser.Controller;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
 
-namespace Jellyfin.Server.Migrations.Routines
+namespace Jellyfin.Server.Migrations.PreStartupRoutines
 {
     /// <summary>
     /// Migrate rating levels to new rating level system.
@@ -15,12 +16,12 @@ namespace Jellyfin.Server.Migrations.Routines
     {
         private const string DbFilename = "library.db";
         private readonly ILogger<MigrateRatingLevels> _logger;
-        private readonly IServerApplicationPaths _paths;
+        private readonly IServerApplicationPaths _applicationPaths;
 
-        public MigrateRatingLevels(ILogger<MigrateRatingLevels> logger, IServerApplicationPaths paths)
+        public MigrateRatingLevels(ServerApplicationPaths applicationPaths, ILoggerFactory loggerFactory)
         {
-            _logger = logger;
-            _paths = paths;
+            _applicationPaths = applicationPaths;
+            _logger = loggerFactory.CreateLogger<MigrateRatingLevels>();
         }
 
         /// <inheritdoc/>
@@ -35,7 +36,7 @@ namespace Jellyfin.Server.Migrations.Routines
         /// <inheritdoc/>
         public void Perform()
         {
-            var dataPath = _paths.DataPath;
+            var dataPath = _applicationPaths.DataPath;
             var dbPath = Path.Combine(dataPath, DbFilename);
             using (var connection = SQLite3.Open(
                 dbPath,
