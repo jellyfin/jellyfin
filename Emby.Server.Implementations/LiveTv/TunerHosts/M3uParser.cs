@@ -252,8 +252,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         private static bool IsValidChannelNumber(string numberString)
         {
             if (string.IsNullOrWhiteSpace(numberString)
-                || string.Equals(numberString, "-1", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(numberString, "0", StringComparison.OrdinalIgnoreCase))
+                || string.Equals(numberString, "-1", StringComparison.Ordinal)
+                || string.Equals(numberString, "0", StringComparison.Ordinal))
             {
                 return false;
             }
