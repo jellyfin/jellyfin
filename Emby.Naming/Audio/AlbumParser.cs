@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using Emby.Naming.Common;
+using Jellyfin.Extensions;
 
 namespace Emby.Naming.Audio
 {
@@ -58,13 +59,7 @@ namespace Emby.Naming.Audio
 
                 var tmp = trimmedFilename.Slice(prefix.Length).Trim();
 
-                int index = tmp.IndexOf(' ');
-                if (index != -1)
-                {
-                    tmp = tmp.Slice(0, index);
-                }
-
-                if (int.TryParse(tmp, NumberStyles.Integer, CultureInfo.InvariantCulture, out _))
+                if (int.TryParse(tmp.LeftPart(' '), CultureInfo.InvariantCulture, out _))
                 {
                     return true;
                 }
