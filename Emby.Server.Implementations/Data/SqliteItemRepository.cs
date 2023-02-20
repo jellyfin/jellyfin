@@ -3623,8 +3623,12 @@ namespace Emby.Server.Implementations.Data
                     clauseBuilder.Append("(guid in (select itemid from People where Name = (select Name from TypedBaseItems where guid=")
                         .Append(paramName)
                         .Append("))) OR ");
-                    query.PersonIds[i].TryWriteBytes(idBytes);
-                    statement?.TryBind(paramName, idBytes);
+
+                    if (statement is not null)
+                    {
+                        query.PersonIds[i].TryWriteBytes(idBytes);
+                        statement.TryBind(paramName, idBytes);
+                    }
                 }
 
                 // Remove last " OR "
