@@ -13,6 +13,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
     /// </summary>
     public static class TmdbUtils
     {
+        private const int MaxYearDifference = 3;
         private static readonly Regex _nonWords = new(@"[\W_]+", RegexOptions.Compiled);
         private static readonly Regex _fileSystemInvalid = new("[<>:;?*\\/\"]", RegexOptions.Compiled);
 
@@ -242,7 +243,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                     DateTime? searchResultYear = (s as SearchMovie)?.ReleaseDate
                         ?? (s as SearchTv)?.FirstAirDate;
                     return searchResultYear.HasValue
-                        && searchResultYear.Value.Year == year;
+                        && Math.Abs(searchResultYear.Value.Year - year) < MaxYearDifference;
                 });
                 if (yearFiltered.Any())
                 {
