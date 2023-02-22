@@ -67,5 +67,11 @@
     "Plugin": "प्लग-इन",
     "Playlists": "प्लेलिस्ट",
     "Photos": "तस्वीरें",
-    "External": "बाहरी"
+    "External": "बाहरी",
+    "PluginUpdatedWithName": "{0} अपडेट हुए",
+    "ScheduledTaskStartedWithName": "{0} शुरू हुए",
+    "Songs": "गाने",
+    "UserStartedPlayingItemWithValues": "{0} {2} पर {1} खेल रहे हैं",
+    "UserStoppedPlayingItemWithValues": "{0} ने {2} पर {1} खेलना खत्म किया",
+    "StartupEmbyServerIsLoading": "जेलीफ़िन सर्वर लोड हो रहा है। कृपया शीघ्र ही पुन: प्रयास करें।"
 }
