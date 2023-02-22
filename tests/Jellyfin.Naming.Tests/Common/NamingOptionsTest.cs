@@ -12,8 +12,6 @@ namespace Jellyfin.Naming.Tests.Common
 
             Assert.NotEmpty(options.CleanDateTimeRegexes);
             Assert.NotEmpty(options.CleanStringRegexes);
-            Assert.NotEmpty(options.EpisodeWithoutSeasonRegexes);
-            Assert.NotEmpty(options.EpisodeMultiPartRegexes);
         }
 
         [Fact]

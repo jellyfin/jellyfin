@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
@@ -23,7 +22,7 @@ namespace Jellyfin.Api.Controllers;
 /// <summary>
 /// The genres controller.
 /// </summary>
-[Authorize(Policy = Policies.DefaultAuthorization)]
+[Authorize]
 public class GenresController : BaseJellyfinApiController
 {
     private readonly IUserManager _userManager;
@@ -91,11 +90,12 @@ public class GenresController : BaseJellyfinApiController
         [FromQuery] bool? enableImages = true,
         [FromQuery] bool enableTotalRecordCount = true)
     {
+        userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, false, imageTypeLimit, enableImageTypes);
 
-        User? user = userId is null || userId.Value.Equals(default)
+        User? user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -132,7 +132,7 @@ public class GenresController : BaseJellyfinApiController
         QueryResult<(BaseItem, ItemCounts)> result;
         if (parentItem is ICollectionFolder parentCollectionFolder
             && (string.Equals(parentCollectionFolder.CollectionType, CollectionType.Music, StringComparison.Ordinal)
-            || string.Equals(parentCollectionFolder.CollectionType, CollectionType.MusicVideos, StringComparison.Ordinal)))
+                || string.Equals(parentCollectionFolder.CollectionType, CollectionType.MusicVideos, StringComparison.Ordinal)))
         {
             result = _libraryManager.GetMusicGenres(query);
         }
@@ -156,6 +156,7 @@ public class GenresController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<BaseItemDto> GetGenre([FromRoute, Required] string genreName, [FromQuery] Guid? userId)
     {
+        userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions()
             .AddClientFields(User);
 
@@ -171,7 +172,7 @@ public class GenresController : BaseJellyfinApiController
 
         item ??= new Genre();
 
-        if (userId is null || userId.Value.Equals(default))
+        if (userId.Value.Equals(default))
         {
             return _dtoService.GetBaseItemDto(item, dtoOptions);
         }

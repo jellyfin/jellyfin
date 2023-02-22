@@ -81,7 +81,7 @@ public class UserController : BaseJellyfinApiController
     /// <response code="200">Users returned.</response>
     /// <returns>An <see cref="IEnumerable{UserDto}"/> containing the users.</returns>
     [HttpGet]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<IEnumerable<UserDto>> GetUsers(
         [FromQuery] bool? isHidden,
@@ -147,6 +147,11 @@ public class UserController : BaseJellyfinApiController
     public async Task<ActionResult> DeleteUser([FromRoute, Required] Guid userId)
     {
         var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
         await _sessionManager.RevokeUserTokens(user.Id, null).ConfigureAwait(false);
         await _userManager.DeleteUserAsync(userId).ConfigureAwait(false);
         return NoContent();
@@ -251,7 +256,7 @@ public class UserController : BaseJellyfinApiController
     /// <response code="404">User not found.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="ForbidResult"/> or a <see cref="NotFoundResult"/> on failure.</returns>
     [HttpPost("{userId}/Password")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -281,8 +286,8 @@ public class UserController : BaseJellyfinApiController
             {
                 var success = await _userManager.AuthenticateUser(
                     user.Username,
-                    request.CurrentPw,
-                    request.CurrentPw,
+                    request.CurrentPw ?? string.Empty,
+                    request.CurrentPw ?? string.Empty,
                     HttpContext.GetNormalizedRemoteIp().ToString(),
                     false).ConfigureAwait(false);
 
@@ -292,7 +297,7 @@ public class UserController : BaseJellyfinApiController
                 }
             }
 
-            await _userManager.ChangePassword(user, request.NewPw).ConfigureAwait(false);
+            await _userManager.ChangePassword(user, request.NewPw ?? string.Empty).ConfigureAwait(false);
 
             var currentToken = User.GetToken();
 
@@ -312,7 +317,7 @@ public class UserController : BaseJellyfinApiController
     /// <response code="404">User not found.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="ForbidResult"/> or a <see cref="NotFoundResult"/> on failure.</returns>
     [HttpPost("{userId}/EasyPassword")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -338,7 +343,7 @@ public class UserController : BaseJellyfinApiController
         }
         else
         {
-            await _userManager.ChangeEasyPassword(user, request.NewPw, request.NewPassword).ConfigureAwait(false);
+            await _userManager.ChangeEasyPassword(user, request.NewPw ?? string.Empty, request.NewPassword ?? string.Empty).ConfigureAwait(false);
         }
 
         return NoContent();
@@ -354,7 +359,7 @@ public class UserController : BaseJellyfinApiController
     /// <response code="403">User update forbidden.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="BadRequestResult"/> or a <see cref="ForbidResult"/> on failure.</returns>
     [HttpPost("{userId}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -362,12 +367,16 @@ public class UserController : BaseJellyfinApiController
         [FromRoute, Required] Guid userId,
         [FromBody, Required] UserDto updateUser)
     {
+        var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
         if (!RequestHelpers.AssertCanUpdateUser(_userManager, User, userId, true))
         {
             return StatusCode(StatusCodes.Status403Forbidden, "User update not allowed.");
         }
-
-        var user = _userManager.GetUserById(userId);
 
         if (!string.Equals(user.Username, updateUser.Name, StringComparison.Ordinal))
         {
@@ -398,6 +407,10 @@ public class UserController : BaseJellyfinApiController
         [FromBody, Required] UserPolicy newPolicy)
     {
         var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
 
         // If removing admin access
         if (!newPolicy.IsAdministrator && user.HasPermission(PermissionKind.IsAdministrator))
@@ -440,7 +453,7 @@ public class UserController : BaseJellyfinApiController
     /// <response code="403">User configuration update forbidden.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     [HttpPost("{userId}/Configuration")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> UpdateUserConfiguration(
@@ -526,7 +539,7 @@ public class UserController : BaseJellyfinApiController
     /// <response code="400">Token is not owned by a user.</response>
     /// <returns>A <see cref="UserDto"/> for the authenticated user.</returns>
     [HttpGet("Me")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public ActionResult<UserDto> GetCurrentUser()

@@ -11,6 +11,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
@@ -56,6 +57,32 @@ public static class RequestHelpers
     }
 
     /// <summary>
+    /// Checks if the user can access a user.
+    /// </summary>
+    /// <param name="claimsPrincipal">The <see cref="ClaimsPrincipal"/> for the current request.</param>
+    /// <param name="userId">The user id.</param>
+    /// <returns>A <see cref="bool"/> whether the user can access the user.</returns>
+    internal static Guid GetUserId(ClaimsPrincipal claimsPrincipal, Guid? userId)
+    {
+        var authenticatedUserId = claimsPrincipal.GetUserId();
+
+        // UserId not provided, fall back to authenticated user id.
+        if (userId is null || userId.Value.Equals(default))
+        {
+            return authenticatedUserId;
+        }
+
+        // User must be administrator to access another user.
+        var isAdministrator = claimsPrincipal.IsInRole(UserRoles.Administrator);
+        if (!userId.Value.Equals(authenticatedUserId) && !isAdministrator)
+        {
+            throw new SecurityException("Forbidden");
+        }
+
+        return userId.Value;
+    }
+
+    /// <summary>
     /// Checks if the user can update an entry.
     /// </summary>
     /// <param name="userManager">An instance of the <see cref="IUserManager"/> interface.</param>
@@ -81,6 +108,11 @@ public static class RequestHelpers
         }
 
         var user = userManager.GetUserById(userId);
+        if (user is null)
+        {
+            throw new ResourceNotFoundException();
+        }
+
         return user.EnableUserPreferenceAccess;
     }
 
@@ -98,7 +130,7 @@ public static class RequestHelpers
 
         if (session is null)
         {
-            throw new ArgumentException("Session not found.");
+            throw new ResourceNotFoundException("Session not found.");
         }
 
         return session;

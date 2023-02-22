@@ -5,19 +5,15 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Security.Claims;
 using Emby.Server.Implementations;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.AnonymousLanAccessPolicy;
 using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
-using Jellyfin.Api.Auth.DownloadPolicy;
-using Jellyfin.Api.Auth.FirstTimeOrIgnoreParentalControlSetupPolicy;
-using Jellyfin.Api.Auth.FirstTimeSetupOrDefaultPolicy;
-using Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy;
-using Jellyfin.Api.Auth.IgnoreParentalControlPolicy;
+using Jellyfin.Api.Auth.FirstTimeSetupPolicy;
 using Jellyfin.Api.Auth.LocalAccessOrRequiresElevationPolicy;
-using Jellyfin.Api.Auth.LocalAccessPolicy;
-using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Auth.SyncPlayAccessPolicy;
+using Jellyfin.Api.Auth.UserPermissionPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
 using Jellyfin.Api.Formatters;
@@ -56,117 +52,38 @@ namespace Jellyfin.Server.Extensions
         /// <returns>The updated service collection.</returns>
         public static IServiceCollection AddJellyfinApiAuthorization(this IServiceCollection serviceCollection)
         {
+            // The default handler must be first so that it is evaluated first
             serviceCollection.AddSingleton<IAuthorizationHandler, DefaultAuthorizationHandler>();
-            serviceCollection.AddSingleton<IAuthorizationHandler, DownloadHandler>();
-            serviceCollection.AddSingleton<IAuthorizationHandler, FirstTimeSetupOrDefaultHandler>();
-            serviceCollection.AddSingleton<IAuthorizationHandler, FirstTimeSetupOrElevatedHandler>();
-            serviceCollection.AddSingleton<IAuthorizationHandler, IgnoreParentalControlHandler>();
-            serviceCollection.AddSingleton<IAuthorizationHandler, FirstTimeOrIgnoreParentalControlSetupHandler>();
-            serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, UserPermissionHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, FirstTimeSetupHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, AnonymousLanAccessHandler>();
-            serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessOrRequiresElevationHandler>();
-            serviceCollection.AddSingleton<IAuthorizationHandler, RequiresElevationHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, SyncPlayAccessHandler>();
+
             return serviceCollection.AddAuthorizationCore(options =>
             {
-                options.AddPolicy(
-                    Policies.DefaultAuthorization,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new DefaultAuthorizationRequirement());
-                    });
-                options.AddPolicy(
-                    Policies.Download,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new DownloadRequirement());
-                    });
-                options.AddPolicy(
-                    Policies.FirstTimeSetupOrDefault,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new FirstTimeSetupOrDefaultRequirement());
-                    });
-                options.AddPolicy(
-                    Policies.FirstTimeSetupOrElevated,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new FirstTimeSetupOrElevatedRequirement());
-                    });
-                options.AddPolicy(
-                    Policies.IgnoreParentalControl,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new IgnoreParentalControlRequirement());
-                    });
-                options.AddPolicy(
-                    Policies.FirstTimeSetupOrIgnoreParentalControl,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new FirstTimeOrIgnoreParentalControlSetupRequirement());
-                    });
-                options.AddPolicy(
-                    Policies.LocalAccessOnly,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new LocalAccessRequirement());
-                    });
-                options.AddPolicy(
-                    Policies.LocalAccessOrRequiresElevation,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new LocalAccessOrRequiresElevationRequirement());
-                    });
+                options.DefaultPolicy = new AuthorizationPolicyBuilder()
+                    .AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication)
+                    .AddRequirements(new DefaultAuthorizationRequirement())
+                    .Build();
+
+                options.AddPolicy(Policies.AnonymousLanAccessPolicy, new AnonymousLanAccessRequirement());
+                options.AddPolicy(Policies.CollectionManagement, new UserPermissionRequirement(PermissionKind.EnableCollectionManagement));
+                options.AddPolicy(Policies.Download, new UserPermissionRequirement(PermissionKind.EnableContentDownloading));
+                options.AddPolicy(Policies.FirstTimeSetupOrDefault, new FirstTimeSetupRequirement(requireAdmin: false));
+                options.AddPolicy(Policies.FirstTimeSetupOrElevated, new FirstTimeSetupRequirement());
+                options.AddPolicy(Policies.FirstTimeSetupOrIgnoreParentalControl, new FirstTimeSetupRequirement(false, false));
+                options.AddPolicy(Policies.IgnoreParentalControl, new DefaultAuthorizationRequirement(validateParentalSchedule: false));
+                options.AddPolicy(Policies.LiveTvAccess, new UserPermissionRequirement(PermissionKind.EnableLiveTvAccess));
+                options.AddPolicy(Policies.LiveTvManagement, new UserPermissionRequirement(PermissionKind.EnableLiveTvManagement));
+                options.AddPolicy(Policies.LocalAccessOrRequiresElevation, new LocalAccessOrRequiresElevationRequirement());
+                options.AddPolicy(Policies.SyncPlayHasAccess, new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.HasAccess));
+                options.AddPolicy(Policies.SyncPlayCreateGroup, new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.CreateGroup));
+                options.AddPolicy(Policies.SyncPlayJoinGroup, new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.JoinGroup));
+                options.AddPolicy(Policies.SyncPlayIsInGroup, new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.IsInGroup));
                 options.AddPolicy(
                     Policies.RequiresElevation,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new RequiresElevationRequirement());
-                    });
-                options.AddPolicy(
-                    Policies.SyncPlayHasAccess,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.HasAccess));
-                    });
-                options.AddPolicy(
-                    Policies.SyncPlayCreateGroup,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.CreateGroup));
-                    });
-                options.AddPolicy(
-                    Policies.SyncPlayJoinGroup,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.JoinGroup));
-                    });
-                options.AddPolicy(
-                    Policies.SyncPlayIsInGroup,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.IsInGroup));
-                    });
-                options.AddPolicy(
-                    Policies.AnonymousLanAccessPolicy,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new AnonymousLanAccessRequirement());
-                    });
+                    policy => policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication)
+                        .RequireClaim(ClaimTypes.Role, UserRoles.Administrator));
             });
         }
 
@@ -331,6 +248,14 @@ namespace Jellyfin.Server.Extensions
                 c.OperationFilter<FileRequestFilter>();
                 c.OperationFilter<ParameterObsoleteFilter>();
                 c.DocumentFilter<AdditionalModelFilter>();
+            });
+        }
+
+        private static void AddPolicy(this AuthorizationOptions authorizationOptions, string policyName, IAuthorizationRequirement authorizationRequirement)
+        {
+            authorizationOptions.AddPolicy(policyName, policy =>
+            {
+                policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication).AddRequirements(authorizationRequirement);
             });
         }
 

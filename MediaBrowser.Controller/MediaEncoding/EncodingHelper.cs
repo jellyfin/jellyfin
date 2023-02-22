@@ -559,6 +559,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (string.Equals(codec, "aac", StringComparison.OrdinalIgnoreCase))
             {
+                // Use Apple's aac encoder if available as it provides best audio quality
+                if (_mediaEncoder.SupportsEncoder("aac_at"))
+                {
+                    return "aac_at";
+                }
+
                 // Use libfdk_aac for better audio quality if using custom build of FFmpeg which has fdk_aac support
                 if (_mediaEncoder.SupportsEncoder("libfdk_aac"))
                 {
@@ -1137,7 +1143,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public static string NormalizeTranscodingLevel(EncodingJobInfo state, string level)
         {
-            if (double.TryParse(level, NumberStyles.Any, CultureInfo.InvariantCulture, out double requestLevel))
+            if (double.TryParse(level, CultureInfo.InvariantCulture, out double requestLevel))
             {
                 if (string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase))
@@ -1731,7 +1737,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 else if (string.Equals(videoEncoder, "hevc_qsv", StringComparison.OrdinalIgnoreCase))
                 {
                     // hevc_qsv use -level 51 instead of -level 153.
-                    if (double.TryParse(level, NumberStyles.Any, CultureInfo.InvariantCulture, out double hevcLevel))
+                    if (double.TryParse(level, CultureInfo.InvariantCulture, out double hevcLevel))
                     {
                         param += " -level " + (hevcLevel / 3);
                     }
@@ -1910,8 +1916,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // If a specific level was requested, the source must match or be less than
             var level = state.GetRequestedLevel(videoStream.Codec);
-            if (!string.IsNullOrEmpty(level)
-                && double.TryParse(level, NumberStyles.Any, CultureInfo.InvariantCulture, out var requestLevel))
+            if (double.TryParse(level, CultureInfo.InvariantCulture, out var requestLevel))
             {
                 if (!videoStream.Level.HasValue)
                 {
@@ -2211,85 +2216,57 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var request = state.BaseRequest;
 
-            var inputChannels = audioStream.Channels;
-
-            if (inputChannels <= 0)
-            {
-                inputChannels = null;
-            }
-
             var codec = outputAudioCodec ?? string.Empty;
 
-            int? transcoderChannelLimit;
-            if (codec.IndexOf("wma", StringComparison.OrdinalIgnoreCase) != -1)
+            int? resultChannels = state.GetRequestedAudioChannels(codec);
+
+            var inputChannels = audioStream.Channels;
+
+            if (inputChannels > 0)
             {
-                // wmav2 currently only supports two channel output
-                transcoderChannelLimit = 2;
-            }
-            else if (codec.IndexOf("mp3", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                // libmp3lame currently only supports two channel output
-                transcoderChannelLimit = 2;
-            }
-            else if (codec.IndexOf("aac", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                // aac is able to handle 8ch(7.1 layout)
-                transcoderChannelLimit = 8;
-            }
-            else
-            {
-                // If we don't have any media info then limit it to 6 to prevent encoding errors due to asking for too many channels
-                transcoderChannelLimit = 6;
+                resultChannels = inputChannels < resultChannels ? inputChannels : resultChannels ?? inputChannels;
             }
 
             var isTranscodingAudio = !IsCopyCodec(codec);
 
-            int? resultChannels = state.GetRequestedAudioChannels(codec);
             if (isTranscodingAudio)
             {
-                resultChannels = GetMinValue(request.TranscodingMaxAudioChannels, resultChannels);
-            }
+                // Set max transcoding channels for encoders that can't handle more than a set amount of channels
+                // AAC, FLAC, ALAC, libopus, libvorbis encoders all support at least 8 channels
+                int transcoderChannelLimit = GetAudioEncoder(state) switch
+                {
+                    string audioEncoder when audioEncoder.Equals("wmav2", StringComparison.OrdinalIgnoreCase)
+                                          || audioEncoder.Equals("libmp3lame", StringComparison.OrdinalIgnoreCase) => 2,
+                    string audioEncoder when audioEncoder.Equals("libfdk_aac", StringComparison.OrdinalIgnoreCase)
+                                          || audioEncoder.Equals("aac_at", StringComparison.OrdinalIgnoreCase)
+                                          || audioEncoder.Equals("ac3", StringComparison.OrdinalIgnoreCase)
+                                          || audioEncoder.Equals("eac3", StringComparison.OrdinalIgnoreCase)
+                                          || audioEncoder.Equals("dts", StringComparison.OrdinalIgnoreCase)
+                                          || audioEncoder.Equals("mlp", StringComparison.OrdinalIgnoreCase)
+                                          || audioEncoder.Equals("truehd", StringComparison.OrdinalIgnoreCase) => 6,
+                    // Set default max transcoding channels to 8 to prevent encoding errors due to asking for too many channels
+                    _ => 8,
+                };
 
-            if (inputChannels.HasValue)
-            {
-                resultChannels = resultChannels.HasValue
-                    ? Math.Min(resultChannels.Value, inputChannels.Value)
-                    : inputChannels.Value;
-            }
+                // Set resultChannels to minimum between resultChannels, TranscodingMaxAudioChannels, transcoderChannelLimit
 
-            if (isTranscodingAudio && transcoderChannelLimit.HasValue)
-            {
-                resultChannels = resultChannels.HasValue
-                    ? Math.Min(resultChannels.Value, transcoderChannelLimit.Value)
-                    : transcoderChannelLimit.Value;
-            }
+                resultChannels = transcoderChannelLimit < resultChannels ? transcoderChannelLimit : resultChannels ?? transcoderChannelLimit;
 
-            // Avoid transcoding to audio channels other than 1ch, 2ch, 6ch (5.1 layout) and 8ch (7.1 layout).
-            // https://developer.apple.com/documentation/http_live_streaming/hls_authoring_specification_for_apple_devices
-            if (isTranscodingAudio
-                && state.TranscodingType != TranscodingJobType.Progressive
-                && resultChannels.HasValue
-                && ((resultChannels.Value > 2 && resultChannels.Value < 6) || resultChannels.Value == 7))
-            {
-                resultChannels = 2;
+                if (request.TranscodingMaxAudioChannels < resultChannels)
+                {
+                    resultChannels = request.TranscodingMaxAudioChannels;
+                }
+
+                // Avoid transcoding to audio channels other than 1ch, 2ch, 6ch (5.1 layout) and 8ch (7.1 layout).
+                // https://developer.apple.com/documentation/http_live_streaming/hls_authoring_specification_for_apple_devices
+                if (state.TranscodingType != TranscodingJobType.Progressive
+                    && ((resultChannels > 2 && resultChannels < 6) || resultChannels == 7))
+                {
+                    resultChannels = 2;
+                }
             }
 
             return resultChannels;
-        }
-
-        private int? GetMinValue(int? val1, int? val2)
-        {
-            if (!val1.HasValue)
-            {
-                return val2;
-            }
-
-            if (!val2.HasValue)
-            {
-                return val1;
-            }
-
-            return Math.Min(val1.Value, val2.Value);
         }
 
         /// <summary>
@@ -2813,6 +2790,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             else if (hwDeintSuffix.Contains("qsv", StringComparison.OrdinalIgnoreCase))
             {
                 return "deinterlace_qsv=mode=2";
+            }
+            else if (hwDeintSuffix.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase))
+            {
+                return string.Format(
+                    CultureInfo.InvariantCulture,
+                    "yadif_videotoolbox={0}:-1:0",
+                    doubleRateDeint ? "1" : "0");
             }
 
             return string.Empty;
@@ -4451,6 +4435,75 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
+        /// Gets the parameter of Apple VideoToolBox filter chain.
+        /// </summary>
+        /// <param name="state">Encoding state.</param>
+        /// <param name="options">Encoding options.</param>
+        /// <param name="vidEncoder">Video encoder to use.</param>
+        /// <returns>The tuple contains three lists: main, sub and overlay filters.</returns>
+        public (List<string> MainFilters, List<string> SubFilters, List<string> OverlayFilters) GetAppleVidFilterChain(
+            EncodingJobInfo state,
+            EncodingOptions options,
+            string vidEncoder)
+        {
+            if (!string.Equals(options.HardwareAccelerationType, "videotoolbox", StringComparison.OrdinalIgnoreCase))
+            {
+                return (null, null, null);
+            }
+
+            var swFilterChain = GetSwVidFilterChain(state, options, vidEncoder);
+
+            if (!options.EnableHardwareEncoding)
+            {
+                return swFilterChain;
+            }
+
+            if (_mediaEncoder.EncoderVersion.CompareTo(new Version("5.0.0")) < 0)
+            {
+                // All features used here requires ffmpeg 5.0 or later, fallback to software filters if using an old ffmpeg
+                return swFilterChain;
+            }
+
+            var doDeintH264 = state.DeInterlace("h264", true) || state.DeInterlace("avc", true);
+            var doDeintHevc = state.DeInterlace("h265", true) || state.DeInterlace("hevc", true);
+            var doDeintH2645 = doDeintH264 || doDeintHevc;
+            var inW = state.VideoStream?.Width;
+            var inH = state.VideoStream?.Height;
+            var reqW = state.BaseRequest.Width;
+            var reqH = state.BaseRequest.Height;
+            var reqMaxW = state.BaseRequest.MaxWidth;
+            var reqMaxH = state.BaseRequest.MaxHeight;
+            var threeDFormat = state.MediaSource.Video3DFormat;
+            var newfilters = new List<string>();
+            var noOverlay = swFilterChain.OverlayFilters.Count == 0;
+            var supportsHwDeint = _mediaEncoder.SupportsFilter("yadif_videotoolbox");
+            // fallback to software filters if we are using filters not supported by hardware yet.
+            var useHardwareFilters = noOverlay && (!doDeintH2645 || supportsHwDeint);
+
+            if (!useHardwareFilters)
+            {
+                return swFilterChain;
+            }
+
+            // ffmpeg cannot use videotoolbox to scale
+            var swScaleFilter = GetSwScaleFilter(state, options, vidEncoder, inW, inH, threeDFormat, reqW, reqH, reqMaxW, reqMaxH);
+            newfilters.Add(swScaleFilter);
+
+            // hwupload on videotoolbox encoders can automatically convert AVFrame into its CVPixelBuffer equivalent
+            // videotoolbox will automatically convert the CVPixelBuffer to a pixel format the encoder supports, so we don't have to set a pixel format explicitly here
+            // This will reduce CPU usage significantly on UHD videos with 10 bit colors because we bypassed the ffmpeg pixel format conversion
+            newfilters.Add("hwupload");
+
+            if (doDeintH2645)
+            {
+                var deintFilter = GetHwDeinterlaceFilter(state, options, "videotoolbox");
+                newfilters.Add(deintFilter);
+            }
+
+            return (newfilters, swFilterChain.SubFilters, swFilterChain.OverlayFilters);
+        }
+
+        /// <summary>
         /// Gets the parameter of video processing filters.
         /// </summary>
         /// <param name="state">Encoding state.</param>
@@ -4491,6 +4544,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             else if (string.Equals(options.HardwareAccelerationType, "amf", StringComparison.OrdinalIgnoreCase))
             {
                 (mainFilters, subFilters, overlayFilters) = GetAmdVidFilterChain(state, options, outputVideoCodec);
+            }
+            else if (string.Equals(options.HardwareAccelerationType, "videotoolbox", StringComparison.OrdinalIgnoreCase))
+            {
+                (mainFilters, subFilters, overlayFilters) = GetAppleVidFilterChain(state, options, outputVideoCodec);
             }
             else
             {

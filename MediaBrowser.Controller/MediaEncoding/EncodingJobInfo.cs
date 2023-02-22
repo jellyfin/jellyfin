@@ -250,8 +250,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 var level = GetRequestedLevel(ActualOutputVideoCodec);
-                if (!string.IsNullOrEmpty(level)
-                    && double.TryParse(level, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+                if (double.TryParse(level, CultureInfo.InvariantCulture, out var result))
                 {
                     return result;
                 }
@@ -645,8 +644,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (!string.IsNullOrEmpty(codec))
             {
                 var value = BaseRequest.GetOption(codec, "maxrefframes");
-                if (!string.IsNullOrEmpty(value)
-                    && int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+                if (int.TryParse(value, CultureInfo.InvariantCulture, out var result))
                 {
                     return result;
                 }
@@ -665,8 +663,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (!string.IsNullOrEmpty(codec))
             {
                 var value = BaseRequest.GetOption(codec, "videobitdepth");
-                if (!string.IsNullOrEmpty(value)
-                    && int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+                if (int.TryParse(value, CultureInfo.InvariantCulture, out var result))
                 {
                     return result;
                 }
@@ -685,8 +682,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (!string.IsNullOrEmpty(codec))
             {
                 var value = BaseRequest.GetOption(codec, "audiobitdepth");
-                if (!string.IsNullOrEmpty(value)
-                    && int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+                if (int.TryParse(value, CultureInfo.InvariantCulture, out var result))
                 {
                     return result;
                 }
@@ -700,8 +696,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (!string.IsNullOrEmpty(codec))
             {
                 var value = BaseRequest.GetOption(codec, "audiochannels");
-                if (!string.IsNullOrEmpty(value)
-                    && int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+                if (int.TryParse(value, CultureInfo.InvariantCulture, out var result))
                 {
                     return result;
                 }

@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
@@ -23,7 +22,7 @@ namespace Jellyfin.Api.Controllers;
 /// The artists controller.
 /// </summary>
 [Route("Artists")]
-[Authorize(Policy = Policies.DefaultAuthorization)]
+[Authorize]
 public class ArtistsController : BaseJellyfinApiController
 {
     private readonly ILibraryManager _libraryManager;
@@ -119,6 +118,7 @@ public class ArtistsController : BaseJellyfinApiController
         [FromQuery] bool? enableImages = true,
         [FromQuery] bool enableTotalRecordCount = true)
     {
+        userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
@@ -126,7 +126,7 @@ public class ArtistsController : BaseJellyfinApiController
         User? user = null;
         BaseItem parentItem = _libraryManager.GetParentItem(parentId, userId);
 
-        if (userId.HasValue && !userId.Equals(default))
+        if (!userId.Value.Equals(default))
         {
             user = _userManager.GetUserById(userId.Value);
         }
@@ -322,6 +322,7 @@ public class ArtistsController : BaseJellyfinApiController
         [FromQuery] bool? enableImages = true,
         [FromQuery] bool enableTotalRecordCount = true)
     {
+        userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
@@ -329,7 +330,7 @@ public class ArtistsController : BaseJellyfinApiController
         User? user = null;
         BaseItem parentItem = _libraryManager.GetParentItem(parentId, userId);
 
-        if (userId.HasValue && !userId.Equals(default))
+        if (!userId.Value.Equals(default))
         {
             user = _userManager.GetUserById(userId.Value);
         }
@@ -463,11 +464,12 @@ public class ArtistsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<BaseItemDto> GetArtistByName([FromRoute, Required] string name, [FromQuery] Guid? userId)
     {
+        userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions().AddClientFields(User);
 
         var item = _libraryManager.GetArtist(name, dtoOptions);
 
-        if (userId.HasValue && !userId.Value.Equals(default))
+        if (!userId.Value.Equals(default))
         {
             var user = _userManager.GetUserById(userId.Value);
 

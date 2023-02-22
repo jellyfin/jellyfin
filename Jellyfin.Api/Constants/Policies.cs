@@ -6,11 +6,6 @@ namespace Jellyfin.Api.Constants;
 public static class Policies
 {
     /// <summary>
-    /// Policy name for default authorization.
-    /// </summary>
-    public const string DefaultAuthorization = "DefaultAuthorization";
-
-    /// <summary>
     /// Policy name for requiring first time setup or elevated privileges.
     /// </summary>
     public const string FirstTimeSetupOrElevated = "FirstTimeSetupOrElevated";
@@ -74,4 +69,19 @@ public static class Policies
     /// Policy name for accessing a SyncPlay group.
     /// </summary>
     public const string SyncPlayIsInGroup = "SyncPlayIsInGroup";
+
+    /// <summary>
+    /// Policy name for accessing collection management.
+    /// </summary>
+    public const string CollectionManagement = "CollectionManagement";
+
+    /// <summary>
+    /// Policy name for accessing LiveTV.
+    /// </summary>
+    public const string LiveTvAccess = "LiveTvAccess";
+
+    /// <summary>
+    /// Policy name for managing LiveTV.
+    /// </summary>
+    public const string LiveTvManagement = "LiveTvManagement";
 }

@@ -168,28 +168,24 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             string numberString = null;
             string attributeValue;
 
-            if (attributes.TryGetValue("tvg-chno", out attributeValue))
+            if (attributes.TryGetValue("tvg-chno", out attributeValue)
+                && double.TryParse(attributeValue, CultureInfo.InvariantCulture, out _))
             {
-                if (double.TryParse(attributeValue, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
-                {
-                    numberString = attributeValue;
-                }
+                numberString = attributeValue;
             }
 
             if (!IsValidChannelNumber(numberString))
             {
                 if (attributes.TryGetValue("tvg-id", out attributeValue))
                 {
-                    if (double.TryParse(attributeValue, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
+                    if (double.TryParse(attributeValue, CultureInfo.InvariantCulture, out _))
                     {
                         numberString = attributeValue;
                     }
-                    else if (attributes.TryGetValue("channel-id", out attributeValue))
+                    else if (attributes.TryGetValue("channel-id", out attributeValue)
+                        && double.TryParse(attributeValue, CultureInfo.InvariantCulture, out _))
                     {
-                        if (double.TryParse(attributeValue, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
-                        {
-                            numberString = attributeValue;
-                        }
+                        numberString = attributeValue;
                     }
                 }
 
@@ -207,7 +203,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                         {
                             var numberPart = nameInExtInf.Slice(0, numberIndex).Trim(new[] { ' ', '.' });
 
-                            if (double.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
+                            if (double.TryParse(numberPart, CultureInfo.InvariantCulture, out _))
                             {
                                 numberString = numberPart.ToString();
                             }
@@ -255,19 +251,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         private static bool IsValidChannelNumber(string numberString)
         {
-            if (string.IsNullOrWhiteSpace(numberString) ||
-                string.Equals(numberString, "-1", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(numberString, "0", StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(numberString)
+                || string.Equals(numberString, "-1", StringComparison.Ordinal)
+                || string.Equals(numberString, "0", StringComparison.Ordinal))
             {
                 return false;
             }
 
-            if (!double.TryParse(numberString, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
-            {
-                return false;
-            }
-
-            return true;
+            return double.TryParse(numberString, CultureInfo.InvariantCulture, out _);
         }
 
         private static string GetChannelName(string extInf, Dictionary<string, string> attributes)
@@ -285,7 +276,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 {
                     var numberPart = nameInExtInf.Substring(0, numberIndex).Trim(new[] { ' ', '.' });
 
-                    if (double.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
+                    if (double.TryParse(numberPart, CultureInfo.InvariantCulture, out _))
                     {
                         // channel.Number = number.ToString();
                         nameInExtInf = nameInExtInf.Substring(numberIndex + 1).Trim(new[] { ' ', '-' });
@@ -317,8 +308,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         {
             var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            var reg = new Regex(@"([a-z0-9\-_]+)=\""([^""]+)\""", RegexOptions.IgnoreCase);
-            var matches = reg.Matches(line);
+            var matches = Regex.Matches(line, @"([a-z0-9\-_]+)=\""([^""]+)\""", RegexOptions.IgnoreCase);
 
             remaining = line;
 

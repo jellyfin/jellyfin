@@ -4,7 +4,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
@@ -28,7 +27,7 @@ namespace Jellyfin.Api.Controllers;
 /// User library controller.
 /// </summary>
 [Route("")]
-[Authorize(Policy = Policies.DefaultAuthorization)]
+[Authorize]
 public class UserLibraryController : BaseJellyfinApiController
 {
     private readonly IUserManager _userManager;
@@ -79,10 +78,18 @@ public class UserLibraryController : BaseJellyfinApiController
     public async Task<ActionResult<BaseItemDto>> GetItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
     {
         var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
 
         var item = itemId.Equals(default)
             ? _libraryManager.GetUserRootFolder()
             : _libraryManager.GetItemById(itemId);
+        if (item is null)
+        {
+            return NotFound();
+        }
 
         await RefreshItemOnDemandIfNeeded(item).ConfigureAwait(false);
 
@@ -102,6 +109,11 @@ public class UserLibraryController : BaseJellyfinApiController
     public ActionResult<BaseItemDto> GetRootFolder([FromRoute, Required] Guid userId)
     {
         var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
         var item = _libraryManager.GetUserRootFolder();
         var dtoOptions = new DtoOptions().AddClientFields(User);
         return _dtoService.GetBaseItemDto(item, dtoOptions, user);
@@ -119,10 +131,18 @@ public class UserLibraryController : BaseJellyfinApiController
     public async Task<ActionResult<QueryResult<BaseItemDto>>> GetIntros([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
     {
         var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
 
         var item = itemId.Equals(default)
             ? _libraryManager.GetUserRootFolder()
             : _libraryManager.GetItemById(itemId);
+        if (item is null)
+        {
+            return NotFound();
+        }
 
         var items = await _libraryManager.GetIntros(item, user).ConfigureAwait(false);
         var dtoOptions = new DtoOptions().AddClientFields(User);
@@ -200,10 +220,18 @@ public class UserLibraryController : BaseJellyfinApiController
     public ActionResult<IEnumerable<BaseItemDto>> GetLocalTrailers([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
     {
         var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
 
         var item = itemId.Equals(default)
             ? _libraryManager.GetUserRootFolder()
             : _libraryManager.GetItemById(itemId);
+        if (item is null)
+        {
+            return NotFound();
+        }
 
         var dtoOptions = new DtoOptions().AddClientFields(User);
 
@@ -230,10 +258,18 @@ public class UserLibraryController : BaseJellyfinApiController
     public ActionResult<IEnumerable<BaseItemDto>> GetSpecialFeatures([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
     {
         var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
 
         var item = itemId.Equals(default)
             ? _libraryManager.GetUserRootFolder()
             : _libraryManager.GetItemById(itemId);
+        if (item is null)
+        {
+            return NotFound();
+        }
 
         var dtoOptions = new DtoOptions().AddClientFields(User);
 
@@ -275,6 +311,10 @@ public class UserLibraryController : BaseJellyfinApiController
         [FromQuery] bool groupItems = true)
     {
         var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
 
         if (!isPlayed.HasValue)
         {

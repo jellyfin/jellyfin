@@ -1195,7 +1195,7 @@ namespace Emby.Server.Implementations.Data
                 Path = RestorePath(path.ToString())
             };
 
-            if (long.TryParse(dateModified, NumberStyles.Any, CultureInfo.InvariantCulture, out var ticks)
+            if (long.TryParse(dateModified, CultureInfo.InvariantCulture, out var ticks)
                 && ticks >= DateTime.MinValue.Ticks
                 && ticks <= DateTime.MaxValue.Ticks)
             {
@@ -4477,6 +4477,24 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
+            if (query.IncludeInheritedTags.Length > 0)
+            {
+                var paramName = "@IncludeInheritedTags";
+                if (statement is null)
+                {
+                    int index = 0;
+                    string includedTags = string.Join(',', query.IncludeInheritedTags.Select(_ => paramName + index++));
+                    whereClauses.Add("((select CleanValue from ItemValues where ItemId=Guid and Type=6 and cleanvalue in (" + includedTags + ")) is not null)");
+                }
+                else
+                {
+                    for (int index = 0; index < query.IncludeInheritedTags.Length; index++)
+                    {
+                        statement.TryBind(paramName + index, GetCleanValue(query.IncludeInheritedTags[index]));
+                    }
+                }
+            }
+
             if (query.SeriesStatuses.Length > 0)
             {
                 var statuses = new List<string>();
@@ -5439,6 +5457,9 @@ AND Type = @InternalPersonType)");
             // keywords was 5
 
             list.AddRange(inheritedTags.Select(i => (6, i)));
+
+            // Remove all invalid values.
+            list.RemoveAll(i => string.IsNullOrEmpty(i.Item2));
 
             return list;
         }

@@ -313,13 +313,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             return result;
         }
 
-        private static bool IsIgnored(string filename)
-        {
-            // Ignore samples
-            Match m = Regex.Match(filename, @"\bsample\b", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
-            return m.Success;
-        }
+        private static bool IsIgnored(ReadOnlySpan<char> filename)
+            => Regex.IsMatch(filename, @"\bsample\b", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         private static bool ContainsFile(IReadOnlyList<VideoInfo> result, FileSystemMetadata file)
         {

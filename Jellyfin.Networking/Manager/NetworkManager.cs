@@ -316,7 +316,7 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public string GetBindInterface(string source, out int? port)
         {
-            if (!string.IsNullOrEmpty(source) && IPHost.TryParse(source, out IPHost host))
+            if (IPHost.TryParse(source, out IPHost host))
             {
                 return GetBindInterface(host, out port);
             }

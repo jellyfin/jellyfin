@@ -13,8 +13,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         public LegacyHdHomerunChannelCommands(string url)
         {
             // parse url for channel and program
-            var regExp = new Regex(@"\/ch([0-9]+)-?([0-9]*)");
-            var match = regExp.Match(url);
+            var match = Regex.Match(url, @"\/ch([0-9]+)-?([0-9]*)");
             if (match.Success)
             {
                 _channel = match.Groups[1].Value;

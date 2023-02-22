@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LibraryDtos;
 using Jellyfin.Data.Entities;
@@ -95,7 +96,7 @@ public class LibraryController : BaseJellyfinApiController
     /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="FileStreamResult"/> with the original file.</returns>
     [HttpGet("Items/{itemId}/File")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesFile("video/*", "audio/*")]
@@ -116,7 +117,7 @@ public class LibraryController : BaseJellyfinApiController
     /// <response code="200">Critic reviews returned.</response>
     /// <returns>The list of critic reviews.</returns>
     [HttpGet("Items/{itemId}/CriticReviews")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [Obsolete("This endpoint is obsolete.")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetCriticReviews()
@@ -134,7 +135,7 @@ public class LibraryController : BaseJellyfinApiController
     /// <response code="404">Item not found.</response>
     /// <returns>The item theme songs.</returns>
     [HttpGet("Items/{itemId}/ThemeSongs")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<ThemeMediaResult> GetThemeSongs(
@@ -142,12 +143,13 @@ public class LibraryController : BaseJellyfinApiController
         [FromQuery] Guid? userId,
         [FromQuery] bool inheritFromParent = false)
     {
-        var user = userId is null || userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 
         var item = itemId.Equals(default)
-            ? (userId is null || userId.Value.Equals(default)
+            ? (userId.Value.Equals(default)
                 ? _libraryManager.RootFolder
                 : _libraryManager.GetUserRootFolder())
             : _libraryManager.GetItemById(itemId);
@@ -200,7 +202,7 @@ public class LibraryController : BaseJellyfinApiController
     /// <response code="404">Item not found.</response>
     /// <returns>The item theme videos.</returns>
     [HttpGet("Items/{itemId}/ThemeVideos")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<ThemeMediaResult> GetThemeVideos(
@@ -208,12 +210,13 @@ public class LibraryController : BaseJellyfinApiController
         [FromQuery] Guid? userId,
         [FromQuery] bool inheritFromParent = false)
     {
-        var user = userId is null || userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 
         var item = itemId.Equals(default)
-            ? (userId is null || userId.Value.Equals(default)
+            ? (userId.Value.Equals(default)
                 ? _libraryManager.RootFolder
                 : _libraryManager.GetUserRootFolder())
             : _libraryManager.GetItemById(itemId);
@@ -266,7 +269,7 @@ public class LibraryController : BaseJellyfinApiController
     /// <response code="404">Item not found.</response>
     /// <returns>The item theme videos.</returns>
     [HttpGet("Items/{itemId}/ThemeMedia")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<AllThemeMediaResult> GetThemeMedia(
         [FromRoute, Required] Guid itemId,
@@ -282,6 +285,11 @@ public class LibraryController : BaseJellyfinApiController
             itemId,
             userId,
             inheritFromParent);
+
+        if (themeSongs.Result is NotFoundObjectResult || themeVideos.Result is NotFoundObjectResult)
+        {
+            return NotFound();
+        }
 
         return new AllThemeMediaResult
         {
@@ -321,7 +329,7 @@ public class LibraryController : BaseJellyfinApiController
     /// <response code="401">Unauthorized access.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("Items/{itemId}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public ActionResult DeleteItem(Guid itemId)
@@ -350,7 +358,7 @@ public class LibraryController : BaseJellyfinApiController
     /// <response code="401">Unauthorized access.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("Items")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public ActionResult DeleteItems([FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids)
@@ -392,13 +400,14 @@ public class LibraryController : BaseJellyfinApiController
     /// <response code="200">Item counts returned.</response>
     /// <returns>Item counts.</returns>
     [HttpGet("Items/Counts")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<ItemCounts> GetItemCounts(
         [FromQuery] Guid? userId,
         [FromQuery] bool? isFavorite)
     {
-        var user = userId is null || userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -426,12 +435,13 @@ public class LibraryController : BaseJellyfinApiController
     /// <response code="404">Item not found.</response>
     /// <returns>Item parents.</returns>
     [HttpGet("Items/{itemId}/Ancestors")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<IEnumerable<BaseItemDto>> GetAncestors([FromRoute, Required] Guid itemId, [FromQuery] Guid? userId)
     {
         var item = _libraryManager.GetItemById(itemId);
+        userId = RequestHelpers.GetUserId(User, userId);
 
         if (item is null)
         {
@@ -440,7 +450,7 @@ public class LibraryController : BaseJellyfinApiController
 
         var baseItemDtos = new List<BaseItemDto>();
 
-        var user = userId is null || userId.Value.Equals(default)
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -452,6 +462,10 @@ public class LibraryController : BaseJellyfinApiController
             if (user is not null)
             {
                 parent = TranslateParentItem(parent, user);
+                if (parent is null)
+                {
+                    break;
+                }
             }
 
             baseItemDtos.Add(_dtoService.GetBaseItemDto(parent, dtoOptions, user));
@@ -509,7 +523,7 @@ public class LibraryController : BaseJellyfinApiController
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Library/Series/Added", Name = "PostAddedSeries")]
     [HttpPost("Library/Series/Updated")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult PostUpdatedSeries([FromQuery] string? tvdbId)
     {
@@ -539,7 +553,7 @@ public class LibraryController : BaseJellyfinApiController
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Library/Movies/Added", Name = "PostAddedMovies")]
     [HttpPost("Library/Movies/Updated")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult PostUpdatedMovies([FromQuery] string? tmdbId, [FromQuery] string? imdbId)
     {
@@ -580,7 +594,7 @@ public class LibraryController : BaseJellyfinApiController
     /// <response code="204">Report success.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Library/Media/Updated")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult PostUpdatedMedia([FromBody, Required] MediaUpdateInfoDto dto)
     {
@@ -657,7 +671,7 @@ public class LibraryController : BaseJellyfinApiController
     [HttpGet("Shows/{itemId}/Similar", Name = "GetSimilarShows")]
     [HttpGet("Movies/{itemId}/Similar", Name = "GetSimilarMovies")]
     [HttpGet("Trailers/{itemId}/Similar", Name = "GetSimilarTrailers")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetSimilarItems(
         [FromRoute, Required] Guid itemId,
@@ -666,18 +680,24 @@ public class LibraryController : BaseJellyfinApiController
         [FromQuery] int? limit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields)
     {
+        userId = RequestHelpers.GetUserId(User, userId);
         var item = itemId.Equals(default)
-            ? (userId is null || userId.Value.Equals(default)
+            ? (userId.Value.Equals(default)
                 ? _libraryManager.RootFolder
                 : _libraryManager.GetUserRootFolder())
             : _libraryManager.GetItemById(itemId);
+
+        if (item is null)
+        {
+            return NotFound();
+        }
 
         if (item is Episode || (item is IItemByName && item is not MusicArtist))
         {
             return new QueryResult<BaseItemDto>();
         }
 
-        var user = userId is null || userId.Value.Equals(default)
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
         var dtoOptions = new DtoOptions { Fields = fields }
@@ -802,32 +822,32 @@ public class LibraryController : BaseJellyfinApiController
                 Type = type,
 
                 MetadataFetchers = plugins
-                .Where(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase))
-                .SelectMany(i => i.Plugins.Where(p => p.Type == MetadataPluginType.MetadataFetcher))
-                .Select(i => new LibraryOptionInfoDto
-                {
-                    Name = i.Name,
-                    DefaultEnabled = IsMetadataFetcherEnabledByDefault(i.Name, type, isNewLibrary)
-                })
-                .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
-                .ToArray(),
+                    .Where(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase))
+                    .SelectMany(i => i.Plugins.Where(p => p.Type == MetadataPluginType.MetadataFetcher))
+                    .Select(i => new LibraryOptionInfoDto
+                    {
+                        Name = i.Name,
+                        DefaultEnabled = IsMetadataFetcherEnabledByDefault(i.Name, type, isNewLibrary)
+                    })
+                    .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                    .ToArray(),
 
                 ImageFetchers = plugins
-                .Where(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase))
-                .SelectMany(i => i.Plugins.Where(p => p.Type == MetadataPluginType.ImageFetcher))
-                .Select(i => new LibraryOptionInfoDto
-                {
-                    Name = i.Name,
-                    DefaultEnabled = IsImageFetcherEnabledByDefault(i.Name, type, isNewLibrary)
-                })
-                .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
-                .ToArray(),
+                    .Where(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase))
+                    .SelectMany(i => i.Plugins.Where(p => p.Type == MetadataPluginType.ImageFetcher))
+                    .Select(i => new LibraryOptionInfoDto
+                    {
+                        Name = i.Name,
+                        DefaultEnabled = IsImageFetcherEnabledByDefault(i.Name, type, isNewLibrary)
+                    })
+                    .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                    .ToArray(),
 
                 SupportedImageTypes = plugins
-                .Where(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase))
-                .SelectMany(i => i.SupportedImageTypes ?? Array.Empty<ImageType>())
-                .Distinct()
-                .ToArray(),
+                    .Where(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase))
+                    .SelectMany(i => i.SupportedImageTypes ?? Array.Empty<ImageType>())
+                    .Distinct()
+                    .ToArray(),
 
                 DefaultImageOptions = defaultImageOptions ?? Array.Empty<ImageOption>()
             });
@@ -920,13 +940,13 @@ public class LibraryController : BaseJellyfinApiController
             if (string.Equals(name, "TheMovieDb", StringComparison.OrdinalIgnoreCase))
             {
                 return !(string.Equals(type, "Season", StringComparison.OrdinalIgnoreCase)
-                     || string.Equals(type, "Episode", StringComparison.OrdinalIgnoreCase)
-                     || string.Equals(type, "MusicVideo", StringComparison.OrdinalIgnoreCase));
+                         || string.Equals(type, "Episode", StringComparison.OrdinalIgnoreCase)
+                         || string.Equals(type, "MusicVideo", StringComparison.OrdinalIgnoreCase));
             }
 
             return string.Equals(name, "TheTVDB", StringComparison.OrdinalIgnoreCase)
-               || string.Equals(name, "TheAudioDB", StringComparison.OrdinalIgnoreCase)
-               || string.Equals(name, "MusicBrainz", StringComparison.OrdinalIgnoreCase);
+                   || string.Equals(name, "TheAudioDB", StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(name, "MusicBrainz", StringComparison.OrdinalIgnoreCase);
         }
 
         var metadataOptions = _serverConfigurationManager.Configuration.MetadataOptions
@@ -934,7 +954,7 @@ public class LibraryController : BaseJellyfinApiController
             .ToArray();
 
         return metadataOptions.Length == 0
-           || metadataOptions.Any(i => !i.DisabledMetadataFetchers.Contains(name, StringComparison.OrdinalIgnoreCase));
+               || metadataOptions.Any(i => !i.DisabledMetadataFetchers.Contains(name, StringComparison.OrdinalIgnoreCase));
     }
 
     private bool IsImageFetcherEnabledByDefault(string name, string type, bool isNewLibrary)

@@ -67,4 +67,23 @@ public class XmlTvListingsProviderTests
         Assert.Equal("https://domain.tld/image.png", program.ImageUrl);
         Assert.Equal("3297", program.ChannelId);
     }
+
+    [Theory]
+    [InlineData("Test Data/LiveTv/Listings/XmlTv/emptycategory.xml")]
+    [InlineData("https://example.com/emptycategory.xml")]
+    public async Task GetProgramsAsync_EmptyCategories_Success(string path)
+    {
+        var info = new ListingsProviderInfo()
+        {
+            Path = path
+        };
+
+        var startDate = new DateTime(2022, 11, 4);
+        var programs = await _xmlTvListingsProvider.GetProgramsAsync(info, "3297", startDate, startDate.AddDays(1), CancellationToken.None);
+        var programsList = programs.ToList();
+        Assert.Single(programsList);
+        var program = programsList[0];
+        Assert.DoesNotContain(program.Genres, g => string.IsNullOrEmpty(g));
+        Assert.Equal("3297", program.ChannelId);
+    }
 }

@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System;
@@ -43,9 +41,9 @@ namespace Emby.Server.Implementations.ScheduledTasks
             ScheduledTasks = Array.Empty<IScheduledTaskWorker>();
         }
 
-        public event EventHandler<GenericEventArgs<IScheduledTaskWorker>> TaskExecuting;
+        public event EventHandler<GenericEventArgs<IScheduledTaskWorker>>? TaskExecuting;
 
-        public event EventHandler<TaskCompletionEventArgs> TaskCompleted;
+        public event EventHandler<TaskCompletionEventArgs>? TaskCompleted;
 
         /// <summary>
         /// Gets the list of Scheduled Tasks.
