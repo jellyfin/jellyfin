@@ -1058,6 +1058,11 @@ namespace Emby.Server.Implementations.Dto
                     dto.Chapters = _itemRepo.GetChapters(item);
                 }
 
+                if (options.ContainsField(ItemFields.Trickplay))
+                {
+                    dto.Trickplay = _itemRepo.GetTrickplayManifest(item);
+                }
+
                 if (video.ExtraType.HasValue)
                 {
                     dto.ExtraType = video.ExtraType.Value.ToString();

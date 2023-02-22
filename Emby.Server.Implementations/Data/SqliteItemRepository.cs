@@ -48,6 +48,7 @@ namespace Emby.Server.Implementations.Data
     {
         private const string FromText = " from TypedBaseItems A";
         private const string ChaptersTableName = "Chapters2";
+        private const string TrickplayTableName = "Trickplay";
 
         private const string SaveItemCommandText =
             @"replace into TypedBaseItems
@@ -382,6 +383,8 @@ namespace Emby.Server.Implementations.Data
                 "create index if not exists idxPeopleName on People(Name)",
 
                 "create table if not exists " + ChaptersTableName + " (ItemId GUID, ChapterIndex INT NOT NULL, StartPositionTicks BIGINT NOT NULL, Name TEXT, ImagePath TEXT, PRIMARY KEY (ItemId, ChapterIndex))",
+
+                "create table if not exists " + TrickplayTableName + " (ItemId GUID, Width INT NOT NULL, Height INT NOT NULL, TileWidth INT NOT NULL, TileHeight INT NOT NULL, TileCount INT NOT NULL, Interval INT NOT NULL, Bandwidth INT NOT NULL, PRIMARY KEY (ItemId, Width))",
 
                 CreateMediaStreamsTableCommand,
                 CreateMediaAttachmentsTableCommand,
@@ -2133,6 +2136,126 @@ namespace Emby.Server.Implementations.Data
                 startIndex += limit;
                 insertText.Length = StartInsertText.Length;
             }
+        }
+
+        /// <inheritdoc />
+        public Dictionary<int, TrickplayTilesInfo> GetTilesResolutions(Guid itemId)
+        {
+            CheckDisposed();
+
+            var tilesResolutions = new Dictionary<int, TrickplayTilesInfo>();
+            using (var connection = GetConnection(true))
+            {
+                using (var statement = PrepareStatement(connection, "select Width,Height,TileWidth,TileHeight,TileCount,Interval,Bandwidth from " + TrickplayTableName + " where ItemId = @ItemId order by Width asc"))
+                {
+                    statement.TryBind("@ItemId", itemId);
+
+                    foreach (var row in statement.ExecuteQuery())
+                    {
+                        TrickplayTilesInfo tilesInfo = GetTrickplayTilesInfo(row);
+                        tilesResolutions[tilesInfo.Width] = tilesInfo;
+                    }
+                }
+            }
+
+            return tilesResolutions;
+        }
+
+        /// <inheritdoc />
+        public void SaveTilesInfo(Guid itemId, TrickplayTilesInfo tilesInfo)
+        {
+            CheckDisposed();
+
+            ArgumentNullException.ThrowIfNull(tilesInfo);
+
+            var idBlob = itemId.ToByteArray();
+            using (var connection = GetConnection(false))
+            {
+                connection.RunInTransaction(
+                    db =>
+                    {
+                        // Delete old tiles info
+                        db.Execute("delete from " + TrickplayTableName + " where ItemId=@ItemId and Width=@Width", idBlob, tilesInfo.Width);
+                        db.Execute(
+                            "insert into " + TrickplayTableName + " values (@ItemId, @Width, @Height, @TileWidth, @TileHeight, @TileCount, @Interval, @Bandwidth)",
+                            idBlob,
+                            tilesInfo.Width,
+                            tilesInfo.Height,
+                            tilesInfo.TileWidth,
+                            tilesInfo.TileHeight,
+                            tilesInfo.TileCount,
+                            tilesInfo.Interval,
+                            tilesInfo.Bandwidth);
+                    },
+                    TransactionMode);
+            }
+        }
+
+        /// <inheritdoc />
+        public Dictionary<Guid, Dictionary<int, TrickplayTilesInfo>> GetTrickplayManifest(BaseItem item)
+        {
+            CheckDisposed();
+
+            var trickplayManifest = new Dictionary<Guid, Dictionary<int, TrickplayTilesInfo>>();
+            foreach (var mediaSource in item.GetMediaSources(false))
+            {
+                var mediaSourceId = Guid.Parse(mediaSource.Id);
+                var tilesResolutions = GetTilesResolutions(mediaSourceId);
+
+                if (tilesResolutions.Count > 0)
+                {
+                    trickplayManifest[mediaSourceId] = tilesResolutions;
+                }
+            }
+
+            return trickplayManifest;
+        }
+
+        /// <summary>
+        /// Gets the trickplay tiles info.
+        /// </summary>
+        /// <param name="reader">The reader.</param>
+        /// <returns>TrickplayTilesInfo.</returns>
+        private TrickplayTilesInfo GetTrickplayTilesInfo(IReadOnlyList<ResultSetValue> reader)
+        {
+            var tilesInfo = new TrickplayTilesInfo();
+
+            if (reader.TryGetInt32(0, out var width))
+            {
+                tilesInfo.Width = width;
+            }
+
+            if (reader.TryGetInt32(1, out var height))
+            {
+                tilesInfo.Height = height;
+            }
+
+            if (reader.TryGetInt32(2, out var tileWidth))
+            {
+                tilesInfo.TileWidth = tileWidth;
+            }
+
+            if (reader.TryGetInt32(3, out var tileHeight))
+            {
+                tilesInfo.TileHeight = tileHeight;
+            }
+
+            if (reader.TryGetInt32(4, out var tileCount))
+            {
+                tilesInfo.TileCount = tileCount;
+            }
+
+            if (reader.TryGetInt32(5, out var interval))
+            {
+                tilesInfo.Interval = interval;
+            }
+
+            if (reader.TryGetInt32(6, out var bandwidth))
+            {
+                tilesInfo.Bandwidth = bandwidth;
+            }
+
+            return tilesInfo;
         }
 
         private static bool EnableJoinUserData(InternalItemsQuery query)

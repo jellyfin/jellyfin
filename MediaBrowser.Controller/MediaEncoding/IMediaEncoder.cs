@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
@@ -136,6 +137,32 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="cancellationToken">CancellationToken to use for operation.</param>
         /// <returns>Location of video image.</returns>
         Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream imageStream, int? imageStreamIndex, ImageFormat? targetFormat, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Extracts the video images on interval.
+        /// </summary>
+        /// <param name="inputFile">Input file.</param>
+        /// <param name="container">Video container type.</param>
+        /// <param name="mediaSource">Media source information.</param>
+        /// <param name="imageStream">Media stream information.</param>
+        /// <param name="interval">The interval.</param>
+        /// <param name="maxWidth">The maximum width.</param>
+        /// <param name="allowHwAccel">Allow for hardware acceleration.</param>
+        /// <param name="allowHwEncode">Allow for hardware encoding. allowHwAccel must also be true.</param>
+        /// <param name="encodingHelper">EncodingHelper instance.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Directory where images where extracted. A given image made before another will always be named with a lower number.</returns>
+        Task<string> ExtractVideoImagesOnIntervalAccelerated(
+            string inputFile,
+            string container,
+            MediaSourceInfo mediaSource,
+            MediaStream imageStream,
+            TimeSpan interval,
+            int maxWidth,
+            bool allowHwAccel,
+            bool allowHwEncode,
+            EncodingHelper encodingHelper,
+            CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the media info.

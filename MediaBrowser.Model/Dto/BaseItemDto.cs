@@ -569,6 +569,12 @@ namespace MediaBrowser.Model.Dto
         public List<ChapterInfo> Chapters { get; set; }
 
         /// <summary>
+        /// Gets or sets the trickplay manifest.
+        /// </summary>
+        /// <value>The trickplay manifest.</value>
+        public Dictionary<Guid, Dictionary<int, TrickplayTilesInfo>> Trickplay { get; set; }
+
+        /// <summary>
         /// Gets or sets the type of the location.
         /// </summary>
         /// <value>The type of the location.</value>

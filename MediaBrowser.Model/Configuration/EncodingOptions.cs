@@ -48,7 +48,9 @@ public class EncodingOptions
         EnableIntelLowPowerH264HwEncoder = false;
         EnableIntelLowPowerHevcHwEncoder = false;
         EnableHardwareEncoding = true;
+        EnableTrickplayHwAccel = false;
         AllowHevcEncoding = false;
+        AllowMjpegEncoding = false;
         EnableSubtitleExtraction = true;
         AllowOnDemandMetadataBasedKeyframeExtractionForExtensions = new[] { "mkv" };
         HardwareDecodingCodecs = new string[] { "h264", "vc1" };
@@ -245,9 +247,19 @@ public class EncodingOptions
     public bool EnableHardwareEncoding { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether hardware acceleration is enabled for trickplay generation.
+    /// </summary>
+    public bool EnableTrickplayHwAccel { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether HEVC encoding is enabled.
     /// </summary>
     public bool AllowHevcEncoding { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether MJPEG encoding is enabled.
+    /// </summary>
+    public bool AllowMjpegEncoding { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether subtitle extraction is enabled.

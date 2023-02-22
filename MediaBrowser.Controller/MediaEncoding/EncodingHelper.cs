@@ -149,6 +149,36 @@ namespace MediaBrowser.Controller.MediaEncoding
             return defaultEncoder;
         }
 
+        private string GetMjpegEncoder(EncodingJobInfo state, EncodingOptions encodingOptions)
+        {
+            var defaultEncoder = "mjpeg";
+
+            if (state.VideoType == VideoType.VideoFile)
+            {
+                var hwType = encodingOptions.HardwareAccelerationType;
+
+                var codecMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    { "vaapi",                  defaultEncoder + "_vaapi" },
+                    { "qsv",                defaultEncoder + "_qsv" }
+                };
+
+                if (!string.IsNullOrEmpty(hwType)
+                    && encodingOptions.EnableHardwareEncoding
+                    && codecMap.ContainsKey(hwType))
+                {
+                    var preferredEncoder = codecMap[hwType];
+
+                    if (_mediaEncoder.SupportsEncoder(preferredEncoder))
+                    {
+                        return preferredEncoder;
+                    }
+                }
+            }
+
+            return defaultEncoder;
+        }
+
         private bool IsVaapiSupported(EncodingJobInfo state)
         {
             // vaapi will throw an error with this input
@@ -275,6 +305,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (string.Equals(codec, "h264", StringComparison.OrdinalIgnoreCase))
                 {
                     return GetH264Encoder(state, encodingOptions);
+                }
+
+                if (string.Equals(codec, "mjpeg", StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetMjpegEncoder(state, encodingOptions);
                 }
 
                 if (string.Equals(codec, "vp8", StringComparison.OrdinalIgnoreCase)

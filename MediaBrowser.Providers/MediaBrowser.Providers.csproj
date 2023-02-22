@@ -22,6 +22,7 @@
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="PlaylistsNET" />
+    <PackageReference Include="SkiaSharp" />
     <PackageReference Include="TagLibSharp" />
     <PackageReference Include="TMDbLib" />
   </ItemGroup>
