@@ -8,7 +8,7 @@
   <ItemGroup Label="Package Dependencies">
     <PackageVersion Include="AutoFixture.AutoMoq" Version="4.17.0" />
     <PackageVersion Include="AutoFixture.Xunit2" Version="4.17.0" />
-    <PackageVersion Include="AutoFixture" Version="4.17.0" />
+    <PackageVersion Include="AutoFixture" Version="4.18.0" />
     <PackageVersion Include="BDInfo" Version="0.7.6.2" />
     <PackageVersion Include="BlurHashSharp.SkiaSharp" Version="1.2.0" />
     <PackageVersion Include="BlurHashSharp" Version="1.2.0" />
