@@ -351,9 +351,9 @@ namespace Jellyfin.Model.Tests
             if (playMethod == PlayMethod.DirectPlay)
             {
                 // Check expected container
-                var containers = ContainerProfile.SplitValue(mediaSource.Container);
+                var containers = mediaSource.Container.Split(",");
+                Assert.Contains(uri.Extension, containers);
                 // TODO: Test transcode too
-                // Assert.Contains(uri.Extension, containers);
 
                 // Check expected video codec (1)
                 Assert.Contains(targetVideoStream?.Codec, streamInfo.TargetVideoCodec);
