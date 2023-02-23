@@ -1029,25 +1029,6 @@ public class DynamicHlsController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Gets an image tiles playlist for trickplay.
-    /// </summary>
-    /// <param name="itemId">The item id.</param>
-    /// <param name="width">The width of a single tile.</param>
-    /// <param name="mediaSourceId">The media version id.</param>
-    /// <response code="200">Tiles stream returned.</response>
-    /// <returns>A <see cref="FileResult"/> containing the trickplay tiles file.</returns>
-    [HttpGet("Videos/{itemId}/tiles.m3u8")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesPlaylistFile]
-    public ActionResult GetTrickplayTilesHlsPlaylist(
-        [FromRoute, Required] Guid itemId,
-        [FromQuery, Required] int width,
-        [FromQuery, Required] string mediaSourceId)
-    {
-        return _dynamicHlsHelper.GetTilesHlsPlaylist(width, mediaSourceId);
-    }
-
-    /// <summary>
     /// Gets a video stream using HTTP live streaming.
     /// </summary>
     /// <param name="itemId">The item id.</param>

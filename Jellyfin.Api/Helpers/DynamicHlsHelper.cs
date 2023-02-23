@@ -118,81 +118,6 @@ public class DynamicHlsHelper
             cancellationTokenSource).ConfigureAwait(false);
     }
 
-    /// <summary>
-    /// Get trickplay tiles hls playlist.
-    /// </summary>
-    /// <param name="width">The width of a single tile.</param>
-    /// <param name="mediaSourceId">The media version id.</param>
-    /// <returns>The resulting <see cref="ActionResult"/>.</returns>
-    public ActionResult GetTilesHlsPlaylist(int width, string mediaSourceId)
-    {
-        if (_httpContextAccessor.HttpContext is null)
-        {
-            throw new ResourceNotFoundException(nameof(_httpContextAccessor.HttpContext));
-        }
-
-        var tilesResolutions = _trickplayManager.GetTilesResolutions(Guid.Parse(mediaSourceId));
-        if (tilesResolutions is not null && tilesResolutions.ContainsKey(width))
-        {
-            var builder = new StringBuilder(128);
-            var tilesInfo = tilesResolutions[width];
-
-            if (tilesInfo.TileCount > 0)
-            {
-                const string urlFormat = "{0}/Trickplay/{1}/{2}.jpg?&api_key={3}";
-                const string decimalFormat = "{0:0.###}";
-
-                var resolution = tilesInfo.Width.ToString(CultureInfo.InvariantCulture) + "x" + tilesInfo.Height.ToString(CultureInfo.InvariantCulture);
-                var layout = tilesInfo.TileWidth.ToString(CultureInfo.InvariantCulture) + "x" + tilesInfo.TileHeight.ToString(CultureInfo.InvariantCulture);
-                var tilesPerGrid = tilesInfo.TileWidth * tilesInfo.TileHeight;
-                var tileDuration = (decimal)tilesInfo.Interval / 1000;
-                var tileGridCount = (int)Math.Ceiling((decimal)tilesInfo.TileCount / tilesPerGrid);
-
-                builder.AppendLine("#EXTM3U");
-                builder.Append("#EXT-X-TARGETDURATION:").AppendLine(tileGridCount.ToString(CultureInfo.InvariantCulture));
-                builder.AppendLine("#EXT-X-VERSION:7");
-                builder.AppendLine("#EXT-X-MEDIA-SEQUENCE:1");
-                builder.AppendLine("#EXT-X-PLAYLIST-TYPE:VOD");
-                builder.AppendLine("#EXT-X-IMAGES-ONLY");
-
-                for (int i = 0; i < tileGridCount; i++)
-                {
-                    // All tile grids before the last one must contain full amount of tiles.
-                    // The final grid will be 0 < count <= maxTiles
-                    if (i == tileGridCount - 1)
-                    {
-                        tilesPerGrid = tilesInfo.TileCount - (i * tilesPerGrid);
-                    }
-
-                    var infDuration = tileDuration * tilesPerGrid;
-                    var url = string.Format(
-                        CultureInfo.InvariantCulture,
-                        urlFormat,
-                        mediaSourceId,
-                        width.ToString(CultureInfo.InvariantCulture),
-                        i.ToString(CultureInfo.InvariantCulture),
-                        _httpContextAccessor.HttpContext.User.GetToken());
-
-                    // EXTINF
-                    builder.Append("#EXTINF:").Append(string.Format(CultureInfo.InvariantCulture, decimalFormat, infDuration))
-                        .AppendLine(",");
-
-                    // EXT-X-TILES
-                    builder.Append("#EXT-X-TILES:RESOLUTION=").Append(resolution).Append(",LAYOUT=").Append(layout).Append(",DURATION=")
-                        .AppendLine(string.Format(CultureInfo.InvariantCulture, decimalFormat, tileDuration));
-
-                    // URL
-                    builder.AppendLine(url);
-                }
-
-                builder.AppendLine("#EXT-X-ENDLIST");
-                return new FileContentResult(Encoding.UTF8.GetBytes(builder.ToString()), MimeTypes.GetMimeType("playlist.m3u8"));
-            }
-        }
-
-        return new FileContentResult(Array.Empty<byte>(), MimeTypes.GetMimeType("playlist.m3u8"));
-    }
-
     private async Task<ActionResult> GetMasterPlaylistInternal(
         StreamingRequestDto streamingRequest,
         bool isHeadRequest,
@@ -633,7 +558,7 @@ public class DynamicHlsHelper
 
             var url = string.Format(
                 CultureInfo.InvariantCulture,
-                "tiles.m3u8?Width={0}&MediaSourceId={1}&api_key={2}",
+                "Trickplay/{0}/tiles.m3u8?MediaSourceId={1}&api_key={2}",
                 width.ToString(CultureInfo.InvariantCulture),
                 state.Request.MediaSourceId,
                 user.GetToken());
