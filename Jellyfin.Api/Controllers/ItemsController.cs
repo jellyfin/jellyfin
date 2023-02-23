@@ -411,6 +411,13 @@ public class ItemsController : BaseJellyfinApiController
                 query.SeriesStatuses = seriesStatus;
             }
 
+            // Exclude Blocked Unrated Items
+            var blockedUnratedItems = user?.GetPreferenceValues<UnratedItem>(PreferenceKind.BlockUnratedItems);
+            if (blockedUnratedItems is not null)
+            {
+                query.BlockUnratedItems = blockedUnratedItems;
+            }
+
             // ExcludeLocationTypes
             if (excludeLocationTypes.Any(t => t == LocationType.Virtual))
             {

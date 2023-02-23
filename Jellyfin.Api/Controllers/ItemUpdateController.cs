@@ -98,7 +98,7 @@ public class ItemUpdateController : BaseJellyfinApiController
                 }).ToList());
         }
 
-        UpdateItem(request, item);
+        await UpdateItem(request, item).ConfigureAwait(false);
 
         item.OnMetadataChanged();
 
@@ -147,7 +147,7 @@ public class ItemUpdateController : BaseJellyfinApiController
 
         var info = new MetadataEditorInfo
         {
-            ParentalRatingOptions = _localizationManager.GetParentalRatings().ToArray(),
+            ParentalRatingOptions = _localizationManager.GetParentalRatings().ToList(),
             ExternalIdInfos = _providerManager.GetExternalIdInfos(item).ToArray(),
             Countries = _localizationManager.GetCountries().ToArray(),
             Cultures = _localizationManager.GetCultures().ToArray()
@@ -224,7 +224,7 @@ public class ItemUpdateController : BaseJellyfinApiController
         return NoContent();
     }
 
-    private void UpdateItem(BaseItemDto request, BaseItem item)
+    private async Task UpdateItem(BaseItemDto request, BaseItem item)
     {
         item.Name = request.Name;
         item.ForcedSortName = request.ForcedSortName;
@@ -266,8 +266,49 @@ public class ItemUpdateController : BaseJellyfinApiController
         item.EndDate = request.EndDate.HasValue ? NormalizeDateTime(request.EndDate.Value) : null;
         item.PremiereDate = request.PremiereDate.HasValue ? NormalizeDateTime(request.PremiereDate.Value) : null;
         item.ProductionYear = request.ProductionYear;
-        item.OfficialRating = string.IsNullOrWhiteSpace(request.OfficialRating) ? null : request.OfficialRating;
+
+        request.OfficialRating = string.IsNullOrWhiteSpace(request.OfficialRating) ? null : request.OfficialRating;
+        item.OfficialRating = request.OfficialRating;
         item.CustomRating = request.CustomRating;
+
+        if (item is Series rseries)
+        {
+            foreach (Season season in rseries.Children)
+            {
+                season.OfficialRating = request.OfficialRating;
+                season.CustomRating = request.CustomRating;
+                season.OnMetadataChanged();
+                await season.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+
+                foreach (Episode ep in season.Children)
+                {
+                    ep.OfficialRating = request.OfficialRating;
+                    ep.CustomRating = request.CustomRating;
+                    ep.OnMetadataChanged();
+                    await ep.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+                }
+            }
+        }
+        else if (item is Season season)
+        {
+            foreach (Episode ep in season.Children)
+            {
+                ep.OfficialRating = request.OfficialRating;
+                ep.CustomRating = request.CustomRating;
+                ep.OnMetadataChanged();
+                await ep.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            }
+        }
+        else if (item is MusicAlbum album)
+        {
+            foreach (BaseItem track in album.Children)
+            {
+                track.OfficialRating = request.OfficialRating;
+                track.CustomRating = request.CustomRating;
+                track.OnMetadataChanged();
+                await track.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            }
+        }
 
         if (request.ProductionLocations is not null)
         {
