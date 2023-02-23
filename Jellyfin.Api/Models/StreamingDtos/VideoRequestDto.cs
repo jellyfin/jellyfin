@@ -1,4 +1,4 @@
-﻿namespace Jellyfin.Api.Models.StreamingDtos;
+namespace Jellyfin.Api.Models.StreamingDtos;
 
 /// <summary>
 /// The video request dto.
@@ -15,4 +15,9 @@ public class VideoRequestDto : StreamingRequestDto
     /// Gets or sets a value indicating whether to enable subtitles in the manifest.
     /// </summary>
     public bool EnableSubtitlesInManifest { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to enable trickplay images.
+    /// </summary>
+    public bool EnableTrickplay { get; set; }
 }

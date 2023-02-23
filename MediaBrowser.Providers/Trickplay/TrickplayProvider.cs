@@ -97,7 +97,6 @@ namespace MediaBrowser.Providers.Trickplay
 
         private async Task<ItemUpdateType> FetchInternal(Video item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
-            // TODO: will "search for missing metadata" always trigger this?
             // TODO: implement all config options -->
             // TODO: this is always blocking for metadata collection, make non-blocking option
             await _trickplayManager.RefreshTrickplayData(item, options.ReplaceAllImages, cancellationToken).ConfigureAwait(false);

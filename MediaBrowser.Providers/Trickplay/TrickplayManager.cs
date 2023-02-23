@@ -9,7 +9,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Trickplay;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
@@ -66,7 +65,7 @@ namespace MediaBrowser.Providers.Trickplay
 
         private async Task RefreshTrickplayData(Video video, bool replace, int width, int interval, int tileWidth, int tileHeight, bool doHwAccel, bool doHwEncode, CancellationToken cancellationToken)
         {
-            if (!CanGenerateTrickplay(video))
+            if (!CanGenerateTrickplay(video, interval))
             {
                 return;
             }
@@ -78,7 +77,7 @@ namespace MediaBrowser.Providers.Trickplay
             {
                 await _resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-                if (!replace && Directory.Exists(outputDir))
+                if (!replace && Directory.Exists(outputDir) && GetTilesResolutions(video.Id).ContainsKey(width))
                 {
                     _logger.LogDebug("Found existing trickplay files for {ItemId}. Exiting.", video.Id);
                     return;
@@ -177,7 +176,7 @@ namespace MediaBrowser.Providers.Trickplay
                 Interval = interval,
                 TileWidth = tileWidth,
                 TileHeight = tileHeight,
-                TileCount = (int)Math.Ceiling((decimal)images.Count / tileWidth / tileHeight),
+                TileCount = 0,
                 Bandwidth = 0
             };
 
@@ -201,7 +200,6 @@ namespace MediaBrowser.Providers.Trickplay
             while (i < images.Count)
             {
                 var tileGrid = new SKBitmap(tilesInfo.Width * tilesInfo.TileWidth, tilesInfo.Height * tilesInfo.TileHeight);
-                var tileCount = 0;
 
                 using (var canvas = new SKCanvas(tileGrid))
                 {
@@ -231,7 +229,7 @@ namespace MediaBrowser.Providers.Trickplay
                             }
 
                             canvas.DrawBitmap(img, x * tilesInfo.Width, y * tilesInfo.Height);
-                            tileCount++;
+                            tilesInfo.TileCount++;
                             i++;
                         }
                     }
@@ -266,7 +264,7 @@ namespace MediaBrowser.Providers.Trickplay
             return tilesInfo;
         }
 
-        private bool CanGenerateTrickplay(Video video)
+        private bool CanGenerateTrickplay(Video video, int interval)
         {
             var videoType = video.VideoType;
             if (videoType == VideoType.Iso || videoType == VideoType.Dvd || videoType == VideoType.BluRay)
@@ -275,6 +273,16 @@ namespace MediaBrowser.Providers.Trickplay
             }
 
             if (video.IsPlaceHolder)
+            {
+                return false;
+            }
+
+            if (video.IsShortcut)
+            {
+                return false;
+            }
+
+            if (!video.IsCompleteMedia)
             {
                 return false;
             }
@@ -294,14 +302,7 @@ namespace MediaBrowser.Providers.Trickplay
             }
             */
 
-            // TODO: media length is shorter than configured interval
-
-            if (video.IsShortcut)
-            {
-                return false;
-            }
-
-            if (!video.IsCompleteMedia)
+            if (!video.RunTimeTicks.HasValue || video.RunTimeTicks.Value < TimeSpan.FromMilliseconds(interval).Ticks)
             {
                 return false;
             }
