@@ -82,7 +82,9 @@ namespace Emby.Server.Implementations.EntryPoints
                 if (_enableMultiSocketBinding)
                 {
                     // Add global broadcast socket
-                    _udpServers.Add(new UdpServer(_logger, _appHost, _config, IPAddress.Broadcast, PortNumber));
+                    var server = new UdpServer(_logger, _appHost, _config, IPAddress.Broadcast, PortNumber);
+                    server.Start(_cancellationTokenSource.Token);
+                    _udpServers.Add(server);
 
                     // Add bind address specific broadcast sockets
                     // IPv6 is currently unsupported
@@ -90,9 +92,9 @@ namespace Emby.Server.Implementations.EntryPoints
                     foreach (var intf in validInterfaces)
                     {
                         var broadcastAddress = NetworkExtensions.GetBroadcastAddress(intf.Subnet);
-                        _logger.LogDebug("Binding UDP server to {Address} on port {PortNumber}", broadcastAddress.ToString(), PortNumber);
+                        _logger.LogDebug("Binding UDP server to {Address} on port {PortNumber}", broadcastAddress, PortNumber);
 
-                        var server = new UdpServer(_logger, _appHost, _config, broadcastAddress, PortNumber);
+                        server = new UdpServer(_logger, _appHost, _config, broadcastAddress, PortNumber);
                         server.Start(_cancellationTokenSource.Token);
                         _udpServers.Add(server);
                     }
