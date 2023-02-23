@@ -1,5 +1,3 @@
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -87,7 +85,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 return metadataResult;
             }
 
-            info.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out string tmdbId);
+            info.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out string? tmdbId);
 
             var seriesTmdbId = Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture);
             if (seriesTmdbId <= 0)
