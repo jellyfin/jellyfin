@@ -806,7 +806,7 @@ namespace MediaBrowser.Model.Dlna
                 if (RequireNonAnamorphic)
                 {
                     sb.Append("&RequireNonAnamorphic=");
-                    sb.Append(RequireNonAnamorphic.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
+                    sb.Append(RequireNonAnamorphic.ToString(CultureInfo.InvariantCulture));
                 }
 
                 if (TranscodingMaxAudioChannels.HasValue)
@@ -890,12 +890,7 @@ namespace MediaBrowser.Model.Dlna
             return sb.ToString();
         }
 
-        public List<SubtitleStreamInfo> GetExternalSubtitles(ITranscoderSupport transcoderSupport, bool includeSelectedTrackOnly, string baseUrl, string accessToken)
-        {
-            return GetExternalSubtitles(transcoderSupport, includeSelectedTrackOnly, false, baseUrl, accessToken);
-        }
-
-        public List<SubtitleStreamInfo> GetExternalSubtitles(ITranscoderSupport transcoderSupport, bool includeSelectedTrackOnly, bool enableAllProfiles, string baseUrl, string accessToken)
+        private List<SubtitleStreamInfo> GetExternalSubtitles(ITranscoderSupport transcoderSupport, bool includeSelectedTrackOnly, bool enableAllProfiles, string baseUrl, string accessToken)
         {
             var list = GetSubtitleProfiles(transcoderSupport, includeSelectedTrackOnly, enableAllProfiles, baseUrl, accessToken);
             var newList = new List<SubtitleStreamInfo>();

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Jellyfin.Extensions;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Session;
@@ -224,7 +225,7 @@ public class LegacyStreamInfo : StreamInfo
 
         if (!item.IsDirectStream)
         {
-            list.Add(new NameValuePair("TranscodeReasons", string.Join(',', item.TranscodeReasons.ToString())));
+            list.Add(new NameValuePair("TranscodeReasons", string.Join(',', item.TranscodeReasons.GetIndividualFlags())));
         }
 
         return list;

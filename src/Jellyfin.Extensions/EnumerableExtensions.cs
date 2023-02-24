@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 
 namespace Jellyfin.Extensions;
 
@@ -54,5 +56,85 @@ public static class EnumerableExtensions
     public static IEnumerable<T> SingleItemAsEnumerable<T>(this T item)
     {
         yield return item;
+    }
+
+    /// <summary>
+    /// Gets all flags from an enum.
+    /// </summary>
+    /// <param name="value">The enum.</param>
+    /// <returns>The IEnumerable{Enum} containing all flags.</returns>
+    public static IEnumerable<Enum> GetFlags(this Enum value)
+    {
+        return GetFlags(value, Enum.GetValues(value.GetType()).Cast<Enum>().ToArray());
+    }
+
+    /// <summary>
+    /// Gets all individual flags from an enum.
+    /// </summary>
+    /// <param name="value">The enum.</param>
+    /// <returns>The IEnumerable{Enum} containeing all individual flags.</returns>
+    public static IEnumerable<Enum> GetIndividualFlags(this Enum value)
+    {
+        return GetFlags(value, GetFlagValues(value.GetType()).ToArray());
+    }
+
+    private static IEnumerable<Enum> GetFlags(Enum value, Enum[] values)
+    {
+        long bits = Convert.ToInt64(value, CultureInfo.InvariantCulture);
+        List<Enum> results = new List<Enum>();
+        for (int i = values.Length - 1; i >= 0; i--)
+        {
+            long mask = Convert.ToInt64(values[i], CultureInfo.InvariantCulture);
+            if (i == 0 && mask == 0L)
+            {
+                break;
+            }
+
+            if ((bits & mask) == mask)
+            {
+                results.Add(values[i]);
+                bits -= mask;
+            }
+        }
+
+        if (bits != 0L)
+        {
+            return Enumerable.Empty<Enum>();
+        }
+
+        if (Convert.ToInt64(value, CultureInfo.InvariantCulture) != 0L)
+        {
+            return results.Reverse<Enum>();
+        }
+
+        if (bits == Convert.ToInt64(value, CultureInfo.InvariantCulture) && values.Length > 0 && Convert.ToInt64(values[0], CultureInfo.InvariantCulture) == 0L)
+        {
+            return values.Take(1);
+        }
+
+        return Enumerable.Empty<Enum>();
+    }
+
+    private static IEnumerable<Enum> GetFlagValues(Type enumType)
+    {
+        long flag = 0x1;
+        foreach (var value in Enum.GetValues(enumType).Cast<Enum>())
+        {
+            long bits = Convert.ToInt64(value, CultureInfo.InvariantCulture);
+            if (bits == 0L)
+            {
+                continue;
+            }
+
+            while (flag < bits)
+            {
+                flag <<= 1;
+            }
+
+            if (flag == bits)
+            {
+                yield return value;
+            }
+        }
     }
 }
