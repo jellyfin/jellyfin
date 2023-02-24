@@ -2146,7 +2146,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (audioBitRate.HasValue && (string.Equals(audioCodec, "flac", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(audioCodec, "alac", StringComparison.OrdinalIgnoreCase)))
             {
-                if ((audioStream.Channels ?? 0) >= 6)
+                if (inputChannels >= 6)
                 {
                     return Math.Min(3584000, audioBitRate.Value);
                 }
@@ -2155,9 +2155,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // Empty bitrate area is not allow on iOS
-            // Default audio bitrate to 128K if it is not being requested
+            // Default audio bitrate to 128K per channel if it is not being requested
             // https://ffmpeg.org/ffmpeg-codecs.html#toc-Codec-Options
-            return 128000;
+            return 128000 * (outputAudioChannels ?? audioStream.Channels ?? 1);
         }
 
         public string GetAudioVbrModeParam(string encoder, int bitratePerChannel)
