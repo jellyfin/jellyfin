@@ -172,12 +172,9 @@ public class GenresController : BaseJellyfinApiController
 
         item ??= new Genre();
 
-        if (userId.Value.Equals(default))
-        {
-            return _dtoService.GetBaseItemDto(item, dtoOptions);
-        }
-
-        var user = _userManager.GetUserById(userId.Value);
+        var user = userId.Value.Equals(default)
+            ? null
+            : _userManager.GetUserById(userId.Value);
 
         return _dtoService.GetBaseItemDto(item, dtoOptions, user);
     }

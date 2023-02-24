@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System;
@@ -56,7 +54,7 @@ namespace MediaBrowser.Providers.Subtitles
         }
 
         /// <inheritdoc />
-        public event EventHandler<SubtitleDownloadFailureEventArgs> SubtitleDownloadFailure;
+        public event EventHandler<SubtitleDownloadFailureEventArgs>? SubtitleDownloadFailure;
 
         /// <inheritdoc />
         public async Task<RemoteSubtitleInfo[]> SearchSubtitles(SubtitleSearchRequest request, CancellationToken cancellationToken)
@@ -235,7 +233,7 @@ namespace MediaBrowser.Providers.Subtitles
 
         private async Task TrySaveToFiles(Stream stream, List<string> savePaths)
         {
-            List<Exception> exs = null;
+            List<Exception>? exs = null;
 
             foreach (var savePath in savePaths)
             {
@@ -245,7 +243,7 @@ namespace MediaBrowser.Providers.Subtitles
 
                 try
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(savePath));
+                    Directory.CreateDirectory(Path.GetDirectoryName(savePath) ?? throw new InvalidOperationException("Path can't be a root directory."));
 
                     var fileOptions = AsyncFile.WriteOptions;
                     fileOptions.Mode = FileMode.CreateNew;
