@@ -81,7 +81,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             { "aac_at", 6 },
             { "ac3", 6 },
             { "eac3", 6 },
-            { "dts", 6 },
+            { "dca", 6 },
             { "mlp", 6 },
             { "truehd", 6 },
         };
