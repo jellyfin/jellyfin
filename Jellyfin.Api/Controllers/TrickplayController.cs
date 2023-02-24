@@ -128,6 +128,7 @@ public class TrickplayController : BaseJellyfinApiController
                 var layout = tilesInfo.TileWidth.ToString(CultureInfo.InvariantCulture) + "x" + tilesInfo.TileHeight.ToString(CultureInfo.InvariantCulture);
                 var tilesPerGrid = tilesInfo.TileWidth * tilesInfo.TileHeight;
                 var tileDuration = (decimal)tilesInfo.Interval / 1000;
+                var infDuration = tileDuration * tilesPerGrid;
                 var tileGridCount = (int)Math.Ceiling((decimal)tilesInfo.TileCount / tilesPerGrid);
 
                 builder.AppendLine("#EXTM3U");
@@ -144,9 +145,9 @@ public class TrickplayController : BaseJellyfinApiController
                     if (i == tileGridCount - 1)
                     {
                         tilesPerGrid = tilesInfo.TileCount - (i * tilesPerGrid);
+                        infDuration = tileDuration * tilesPerGrid;
                     }
 
-                    var infDuration = tileDuration * tilesPerGrid;
                     var url = string.Format(
                         CultureInfo.InvariantCulture,
                         urlFormat,

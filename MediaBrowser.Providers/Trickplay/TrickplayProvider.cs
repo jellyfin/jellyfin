@@ -107,14 +107,12 @@ namespace MediaBrowser.Providers.Trickplay
 
             if (options.IsAutomated && !enableDuringScan.GetValueOrDefault(false))
             {
-                _logger.LogDebug("exit refresh: automated - {0} enable scan - {1}", options.IsAutomated, enableDuringScan.GetValueOrDefault(false));
                 return ItemUpdateType.None;
             }
 
             // TODO: this is always blocking for metadata collection, make non-blocking option
             if (true)
             {
-                _logger.LogDebug("called refresh");
                 await _trickplayManager.RefreshTrickplayData(video, replace, cancellationToken).ConfigureAwait(false);
             }
 

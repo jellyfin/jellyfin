@@ -127,7 +127,7 @@ namespace MediaBrowser.Providers.Trickplay
 
                 // Create tiles
                 var tilesTempDir = Path.Combine(imgTempDir, Guid.NewGuid().ToString("N"));
-                var tilesInfo = CreateTiles(images, width, interval, tileWidth, tileHeight, tilesTempDir, outputDir);
+                var tilesInfo = CreateTiles(images, width, interval, tileWidth, tileHeight, 100/* todo _config.JpegQuality*/, tilesTempDir, outputDir);
 
                 // Save tiles info
                 try
@@ -166,7 +166,7 @@ namespace MediaBrowser.Providers.Trickplay
             }
         }
 
-        private TrickplayTilesInfo CreateTiles(List<FileSystemMetadata> images, int width, int interval, int tileWidth, int tileHeight, string workDir, string outputDir)
+        private TrickplayTilesInfo CreateTiles(List<FileSystemMetadata> images, int width, int interval, int tileWidth, int tileHeight, int quality, string workDir, string outputDir)
         {
             if (images.Count == 0)
             {
@@ -244,7 +244,7 @@ namespace MediaBrowser.Providers.Trickplay
                 var tileGridPath = Path.Combine(workDir, $"{imgNo}.jpg");
                 using (var stream = File.OpenWrite(tileGridPath))
                 {
-                    tileGrid.Encode(stream, SKEncodedImageFormat.Jpeg, 100/* todo _config.JpegQuality*/);
+                    tileGrid.Encode(stream, SKEncodedImageFormat.Jpeg, quality);
                 }
 
                 var bitrate = (int)Math.Ceiling((decimal)new FileInfo(tileGridPath).Length * 8 / tilesInfo.TileWidth / tilesInfo.TileHeight / (tilesInfo.Interval / 1000));
