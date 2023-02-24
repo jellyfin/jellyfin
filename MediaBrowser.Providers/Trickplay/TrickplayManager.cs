@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Trickplay;
@@ -26,6 +27,7 @@ namespace MediaBrowser.Providers.Trickplay
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IFileSystem _fileSystem;
         private readonly EncodingHelper _encodingHelper;
+        private readonly ILibraryManager _libraryManager;
 
         private static readonly SemaphoreSlim _resourcePool = new(1, 1);
 
@@ -37,18 +39,21 @@ namespace MediaBrowser.Providers.Trickplay
         /// <param name="mediaEncoder">The media encoder.</param>
         /// <param name="fileSystem">The file systen.</param>
         /// <param name="encodingHelper">The encoding helper.</param>
+        /// <param name="libraryManager">The library manager.</param>
         public TrickplayManager(
             ILogger<TrickplayManager> logger,
             IItemRepository itemRepo,
             IMediaEncoder mediaEncoder,
             IFileSystem fileSystem,
-            EncodingHelper encodingHelper)
+            EncodingHelper encodingHelper,
+            ILibraryManager libraryManager)
         {
             _logger = logger;
             _itemRepo = itemRepo;
             _mediaEncoder = mediaEncoder;
             _fileSystem = fileSystem;
             _encodingHelper = encodingHelper;
+            _libraryManager = libraryManager;
         }
 
         /// <inheritdoc />
@@ -287,22 +292,20 @@ namespace MediaBrowser.Providers.Trickplay
                 return false;
             }
 
-            /* TODO config options
+            if (!video.RunTimeTicks.HasValue || video.RunTimeTicks.Value < TimeSpan.FromMilliseconds(interval).Ticks)
+            {
+                return false;
+            }
+
             var libraryOptions = _libraryManager.GetLibraryOptions(video);
             if (libraryOptions is not null)
             {
-                if (!libraryOptions.EnableChapterImageExtraction)
+                if (!libraryOptions.EnableTrickplayImageExtraction)
                 {
                     return false;
                 }
             }
             else
-            {
-                return false;
-            }
-            */
-
-            if (!video.RunTimeTicks.HasValue || video.RunTimeTicks.Value < TimeSpan.FromMilliseconds(interval).Ticks)
             {
                 return false;
             }

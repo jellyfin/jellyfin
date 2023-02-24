@@ -27,6 +27,7 @@ namespace MediaBrowser.Providers.Trickplay
         private readonly ILogger<TrickplayProvider> _logger;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly ITrickplayManager _trickplayManager;
+        private readonly ILibraryManager _libraryManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TrickplayProvider"/> class.
@@ -34,21 +35,24 @@ namespace MediaBrowser.Providers.Trickplay
         /// <param name="logger">The logger.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="trickplayManager">The trickplay manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
         public TrickplayProvider(
             ILogger<TrickplayProvider> logger,
             IServerConfigurationManager configurationManager,
-            ITrickplayManager trickplayManager)
+            ITrickplayManager trickplayManager,
+            ILibraryManager libraryManager)
         {
             _logger = logger;
             _configurationManager = configurationManager;
             _trickplayManager = trickplayManager;
+            _libraryManager = libraryManager;
         }
 
         /// <inheritdoc />
-        public string Name => "Trickplay Preview";
+        public string Name => "Trickplay Provider";
 
         /// <inheritdoc />
-        public int Order => 1000;
+        public int Order => 100;
 
         /// <inheritdoc />
         public bool HasChanged(BaseItem item, IDirectoryService directoryService)
@@ -95,11 +99,24 @@ namespace MediaBrowser.Providers.Trickplay
             return FetchInternal(item, options, cancellationToken);
         }
 
-        private async Task<ItemUpdateType> FetchInternal(Video item, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        private async Task<ItemUpdateType> FetchInternal(Video video, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
-            // TODO: implement all config options -->
+            var libraryOptions = _libraryManager.GetLibraryOptions(video);
+            bool? enableDuringScan = libraryOptions?.ExtractTrickplayImagesDuringLibraryScan;
+            bool replace = options.ReplaceAllImages;
+
+            if (options.IsAutomated && !enableDuringScan.GetValueOrDefault(false))
+            {
+                _logger.LogDebug("exit refresh: automated - {0} enable scan - {1}", options.IsAutomated, enableDuringScan.GetValueOrDefault(false));
+                return ItemUpdateType.None;
+            }
+
             // TODO: this is always blocking for metadata collection, make non-blocking option
-            await _trickplayManager.RefreshTrickplayData(item, options.ReplaceAllImages, cancellationToken).ConfigureAwait(false);
+            if (true)
+            {
+                _logger.LogDebug("called refresh");
+                await _trickplayManager.RefreshTrickplayData(video, replace, cancellationToken).ConfigureAwait(false);
+            }
 
             // The core doesn't need to trigger any save operations over this
             return ItemUpdateType.None;

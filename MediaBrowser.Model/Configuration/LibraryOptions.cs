@@ -36,6 +36,10 @@ namespace MediaBrowser.Model.Configuration
 
         public bool ExtractChapterImagesDuringLibraryScan { get; set; }
 
+        public bool EnableTrickplayImageExtraction { get; set; }
+
+        public bool ExtractTrickplayImagesDuringLibraryScan { get; set; }
+
         public MediaPathInfo[] PathInfos { get; set; }
 
         public bool SaveLocalMetadata { get; set; }

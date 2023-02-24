@@ -48,7 +48,6 @@ public class EncodingOptions
         EnableIntelLowPowerH264HwEncoder = false;
         EnableIntelLowPowerHevcHwEncoder = false;
         EnableHardwareEncoding = true;
-        EnableTrickplayHwAccel = false;
         AllowHevcEncoding = false;
         AllowMjpegEncoding = false;
         EnableSubtitleExtraction = true;
@@ -245,11 +244,6 @@ public class EncodingOptions
     /// Gets or sets a value indicating whether hardware encoding is enabled.
     /// </summary>
     public bool EnableHardwareEncoding { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether hardware acceleration is enabled for trickplay generation.
-    /// </summary>
-    public bool EnableTrickplayHwAccel { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether HEVC encoding is enabled.
