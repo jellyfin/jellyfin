@@ -2130,37 +2130,60 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var inputChannels = audioStream.Channels ?? 0;
             var outputChannels = outputAudioChannels ?? 0;
+            var bitrate = audioBitRate.HasValue ? audioBitRate.Value : int.MaxValue;
 
-            if (audioBitRate.HasValue && (string.IsNullOrEmpty(audioCodec)
+            if (string.IsNullOrEmpty(audioCodec)
                 || string.Equals(audioCodec, "aac", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(audioCodec, "mp3", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(audioCodec, "opus", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(audioCodec, "vorbis", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(audioCodec, "ac3", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(audioCodec, "eac3", StringComparison.OrdinalIgnoreCase)))
+                || string.Equals(audioCodec, "eac3", StringComparison.OrdinalIgnoreCase))
             {
                 return (inputChannels, outputChannels) switch
                 {
-                    (>= 6, >= 6 or 0) => Math.Min(640000, audioBitRate.Value),
-                    (> 0, > 0) => Math.Min(outputChannels * 128000, audioBitRate.Value),
-                    (> 0, _) => Math.Min(inputChannels * 128000, audioBitRate.Value),
-                    (_, _) => Math.Min(384000, audioBitRate.Value)
+                    (>= 6, >= 6 or 0) => Math.Min(640000, bitrate),
+                    (> 0, > 0) => Math.Min(outputChannels * 128000, bitrate),
+                    (> 0, _) => Math.Min(inputChannels * 128000, bitrate),
+                    (_, _) => Math.Min(384000, bitrate)
                 };
             }
 
-            if (audioBitRate.HasValue && (string.Equals(audioCodec, "flac", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(audioCodec, "alac", StringComparison.OrdinalIgnoreCase)))
+            if (string.Equals(audioCodec, "flac", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(audioCodec, "alac", StringComparison.OrdinalIgnoreCase))
             {
                 if (inputChannels >= 6)
                 {
-                    return Math.Min(3584000, audioBitRate.Value);
+                    return Math.Min(3584000, bitrate);
                 }
 
-                return Math.Min(1536000, audioBitRate.Value);
+                return Math.Min(1536000, bitrate);
+            }
+
+            if (string.Equals(audioCodec, "dts", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(audioCodec, "dca", StringComparison.OrdinalIgnoreCase))
+            {
+                return (inputChannels, outputChannels) switch
+                {
+                    (>= 6, >= 6 or 0) => Math.Min(768000, bitrate),
+                    (> 0, > 0) => Math.Min(outputChannels * 136000, bitrate),
+                    (> 0, _) => Math.Min(inputChannels * 136000, bitrate),
+                    (_, _) => Math.Min(672000, bitrate)
+                };
+            }
+
+            if (string.Equals(audioCodec, "truehd", StringComparison.OrdinalIgnoreCase))
+            {
+                return (inputChannels, outputChannels) switch
+                {
+                    (> 0, > 0) => Math.Min(outputChannels * 768000, bitrate),
+                    (> 0, _) => Math.Min(inputChannels * 768000, bitrate),
+                    (_, _) => Math.Min(768000, bitrate)
+                };
             }
 
             // Empty bitrate area is not allow on iOS
-            // Default audio bitrate to 128K per channel if it is not being requested
+            // Default audio bitrate to 128K per channel if we don't have codec specific defaults
             // https://ffmpeg.org/ffmpeg-codecs.html#toc-Codec-Options
             return 128000 * (outputAudioChannels ?? audioStream.Channels ?? 1);
         }
