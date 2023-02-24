@@ -853,9 +853,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 filterParam = "-vf \"" + fps + "\"";
             }
-            else
+            else if (filterParam.IndexOf("\"", StringComparison.Ordinal) != -1)
             {
                 filterParam = filterParam.Insert(filterParam.IndexOf("\"", StringComparison.Ordinal) + 1, fps + ",");
+            }
+            else
+            {
+                filterParam += fps + ",";
             }
 
             var targetDirectory = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString("N"));
