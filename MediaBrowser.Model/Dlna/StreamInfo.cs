@@ -629,9 +629,7 @@ namespace MediaBrowser.Model.Dlna
         /// <returns>A querystring representation of this object.</returns>
         public string ToUrl(string baseUrl, string? accessToken, string query = null)
         {
-            ArgumentException.ThrowIfNullOrEmpty(baseUrl);
-
-            var sb = new StringBuilder(2000);
+            var sb = new StringBuilder();
 
             if (!string.IsNullOrEmpty(baseUrl))
             {
