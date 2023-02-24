@@ -614,6 +614,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return "flac";
             }
 
+            if (string.Equals(codec, "dts", StringComparison.OrdinalIgnoreCase))
+            {
+                return "dca";
+            }
+
             return codec.ToLowerInvariant();
         }
 
