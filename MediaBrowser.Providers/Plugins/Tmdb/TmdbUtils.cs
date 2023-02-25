@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using MediaBrowser.Model.Entities;
 using TMDbLib.Objects.General;
@@ -128,7 +129,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// </summary>
         /// <param name="language">The language code.</param>
         /// <returns>The normalized language code.</returns>
-        public static string NormalizeLanguage(string language)
+        [return: NotNullIfNotNull(nameof(language))]
+        public static string? NormalizeLanguage(string? language)
         {
             if (string.IsNullOrEmpty(language))
             {

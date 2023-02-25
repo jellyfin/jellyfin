@@ -105,6 +105,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
             if (personTmdbId > 0)
             {
                 var person = await _tmdbClientManager.GetPersonAsync(personTmdbId, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                if (person is null)
+                {
+                    return result;
+                }
 
                 result.HasMetadata = true;
 
