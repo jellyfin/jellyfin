@@ -5,11 +5,13 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Trickplay;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
@@ -28,6 +30,7 @@ namespace MediaBrowser.Providers.Trickplay
         private readonly IFileSystem _fileSystem;
         private readonly EncodingHelper _encodingHelper;
         private readonly ILibraryManager _libraryManager;
+        private readonly IServerConfigurationManager _config;
 
         private static readonly SemaphoreSlim _resourcePool = new(1, 1);
 
@@ -40,13 +43,15 @@ namespace MediaBrowser.Providers.Trickplay
         /// <param name="fileSystem">The file systen.</param>
         /// <param name="encodingHelper">The encoding helper.</param>
         /// <param name="libraryManager">The library manager.</param>
+        /// <param name="config">The server configuration manager.</param>
         public TrickplayManager(
             ILogger<TrickplayManager> logger,
             IItemRepository itemRepo,
             IMediaEncoder mediaEncoder,
             IFileSystem fileSystem,
             EncodingHelper encodingHelper,
-            ILibraryManager libraryManager)
+            ILibraryManager libraryManager,
+            IServerConfigurationManager config)
         {
             _logger = logger;
             _itemRepo = itemRepo;
@@ -54,6 +59,7 @@ namespace MediaBrowser.Providers.Trickplay
             _fileSystem = fileSystem;
             _encodingHelper = encodingHelper;
             _libraryManager = libraryManager;
+            _config = config;
         }
 
         /// <inheritdoc />
@@ -61,16 +67,27 @@ namespace MediaBrowser.Providers.Trickplay
         {
             _logger.LogDebug("Trickplay refresh for {ItemId} (replace existing: {Replace})", video.Id, replace);
 
-            foreach (var width in new int[] { 320 } /*todo conf*/)
+            var options = _config.Configuration.TrickplayOptions;
+            foreach (var width in options.WidthResolutions)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await RefreshTrickplayData(video, replace, width, 10000/*todo conf*/, 10/*todo conf*/, 10/*todo conf*/, true/*todo conf*/, true/*todo conf*/, cancellationToken).ConfigureAwait(false);
+                await RefreshTrickplayDataInternal(
+                    video,
+                    replace,
+                    width,
+                    options,
+                    cancellationToken).ConfigureAwait(false);
             }
         }
 
-        private async Task RefreshTrickplayData(Video video, bool replace, int width, int interval, int tileWidth, int tileHeight, bool doHwAccel, bool doHwEncode, CancellationToken cancellationToken)
+        private async Task RefreshTrickplayDataInternal(
+            Video video,
+            bool replace,
+            int width,
+            TrickplayOptions options,
+            CancellationToken cancellationToken)
         {
-            if (!CanGenerateTrickplay(video, interval))
+            if (!CanGenerateTrickplay(video, options.Interval))
             {
                 return;
             }
@@ -108,10 +125,12 @@ namespace MediaBrowser.Providers.Trickplay
                     container,
                     mediaSource,
                     mediaStream,
-                    TimeSpan.FromMilliseconds(interval),
                     width,
-                    doHwAccel,
-                    doHwEncode,
+                    TimeSpan.FromMilliseconds(options.Interval),
+                    options.EnableHwAcceleration,
+                    options.ProcessThreads,
+                    options.Qscale,
+                    options.ProcessPriority,
                     _encodingHelper,
                     cancellationToken).ConfigureAwait(false);
 
@@ -127,7 +146,7 @@ namespace MediaBrowser.Providers.Trickplay
 
                 // Create tiles
                 var tilesTempDir = Path.Combine(imgTempDir, Guid.NewGuid().ToString("N"));
-                var tilesInfo = CreateTiles(images, width, interval, tileWidth, tileHeight, 100/* todo _config.JpegQuality*/, tilesTempDir, outputDir);
+                var tilesInfo = CreateTiles(images, width, options, tilesTempDir, outputDir);
 
                 // Save tiles info
                 try
@@ -166,7 +185,7 @@ namespace MediaBrowser.Providers.Trickplay
             }
         }
 
-        private TrickplayTilesInfo CreateTiles(List<FileSystemMetadata> images, int width, int interval, int tileWidth, int tileHeight, int quality, string workDir, string outputDir)
+        private TrickplayTilesInfo CreateTiles(List<FileSystemMetadata> images, int width, TrickplayOptions options, string workDir, string outputDir)
         {
             if (images.Count == 0)
             {
@@ -178,9 +197,9 @@ namespace MediaBrowser.Providers.Trickplay
             var tilesInfo = new TrickplayTilesInfo
             {
                 Width = width,
-                Interval = interval,
-                TileWidth = tileWidth,
-                TileHeight = tileHeight,
+                Interval = options.Interval,
+                TileWidth = options.TileWidth,
+                TileHeight = options.TileHeight,
                 TileCount = 0,
                 Bandwidth = 0
             };
@@ -244,7 +263,7 @@ namespace MediaBrowser.Providers.Trickplay
                 var tileGridPath = Path.Combine(workDir, $"{imgNo}.jpg");
                 using (var stream = File.OpenWrite(tileGridPath))
                 {
-                    tileGrid.Encode(stream, SKEncodedImageFormat.Jpeg, quality);
+                    tileGrid.Encode(stream, SKEncodedImageFormat.Jpeg, options.JpegQuality);
                 }
 
                 var bitrate = (int)Math.Ceiling((decimal)new FileInfo(tileGridPath).Length * 8 / tilesInfo.TileWidth / tilesInfo.TileHeight / (tilesInfo.Interval / 1000));
@@ -351,7 +370,7 @@ namespace MediaBrowser.Providers.Trickplay
             {
                 Directory.Move(source, destination);
             }
-            catch (System.IO.IOException)
+            catch (IOException)
             {
                 // Cross device move requires a copy
                 Directory.CreateDirectory(destination);

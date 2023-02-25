@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Configuration;
@@ -145,10 +146,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="container">Video container type.</param>
         /// <param name="mediaSource">Media source information.</param>
         /// <param name="imageStream">Media stream information.</param>
-        /// <param name="interval">The interval.</param>
         /// <param name="maxWidth">The maximum width.</param>
+        /// <param name="interval">The interval.</param>
         /// <param name="allowHwAccel">Allow for hardware acceleration.</param>
-        /// <param name="allowHwEncode">Allow for hardware encoding. allowHwAccel must also be true.</param>
+        /// <param name="threads">The input/output thread count for ffmpeg.</param>
+        /// <param name="qualityScale">The qscale value for ffmpeg.</param>
+        /// <param name="priority">The process priority for the ffmpeg process.</param>
         /// <param name="encodingHelper">EncodingHelper instance.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Directory where images where extracted. A given image made before another will always be named with a lower number.</returns>
@@ -157,10 +160,12 @@ namespace MediaBrowser.Controller.MediaEncoding
             string container,
             MediaSourceInfo mediaSource,
             MediaStream imageStream,
-            TimeSpan interval,
             int maxWidth,
+            TimeSpan interval,
             bool allowHwAccel,
-            bool allowHwEncode,
+            int? threads,
+            int? qualityScale,
+            ProcessPriorityClass? priority,
             EncodingHelper encodingHelper,
             CancellationToken cancellationToken);
 

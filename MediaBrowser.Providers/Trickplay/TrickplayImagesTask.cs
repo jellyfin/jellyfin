@@ -22,7 +22,6 @@ namespace MediaBrowser.Providers.Trickplay
         private readonly ILogger<TrickplayImagesTask> _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localization;
-        private readonly IServerConfigurationManager _configurationManager;
         private readonly ITrickplayManager _trickplayManager;
 
         /// <summary>
@@ -31,19 +30,16 @@ namespace MediaBrowser.Providers.Trickplay
         /// <param name="logger">The logger.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="localization">The localization manager.</param>
-        /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="trickplayManager">The trickplay manager.</param>
         public TrickplayImagesTask(
             ILogger<TrickplayImagesTask> logger,
             ILibraryManager libraryManager,
             ILocalizationManager localization,
-            IServerConfigurationManager configurationManager,
             ITrickplayManager trickplayManager)
         {
             _libraryManager = libraryManager;
             _logger = logger;
             _localization = localization;
-            _configurationManager = configurationManager;
             _trickplayManager = trickplayManager;
         }
 
@@ -77,6 +73,14 @@ namespace MediaBrowser.Providers.Trickplay
         public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
         {
             // TODO: libraryoptions dont run on libraries with trickplay disabled
+            /* will this still get all sub-items? should recursive be true?
+             * from chapterimagestask
+             *                 DtoOptions = new DtoOptions(false)
+                {
+                    EnableImages = false
+                },
+                SourceTypes = new SourceType[] { SourceType.Library },
+             */
             var items = _libraryManager.GetItemList(new InternalItemsQuery
             {
                 MediaTypes = new[] { MediaType.Video },

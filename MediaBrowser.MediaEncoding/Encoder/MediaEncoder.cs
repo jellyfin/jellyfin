@@ -783,14 +783,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
             string container,
             MediaSourceInfo mediaSource,
             MediaStream imageStream,
-            TimeSpan interval,
             int maxWidth,
+            TimeSpan interval,
             bool allowHwAccel,
-            bool allowHwEncode,
+            int? threads,
+            int? qualityScale,
+            ProcessPriorityClass? priority,
             EncodingHelper encodingHelper,
             CancellationToken cancellationToken)
         {
             var options = allowHwAccel ? _configurationManager.GetEncodingOptions() : new EncodingOptions();
+            threads = threads ?? _threads;
 
             // A new EncodingOptions instance must be used as to not disable HW acceleration for all of Jellyfin.
             // Additionally, we must set a few fields without defaults to prevent null pointer exceptions.
@@ -822,7 +825,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (!allowHwAccel)
             {
-                inputArg = "-threads " + _threads + " " + inputArg; // HW accel args set a different input thread count, only set if disabled
+                inputArg = "-threads " + threads + " " + inputArg; // HW accel args set a different input thread count, only set if disabled
             }
 
             var filterParam = encodingHelper.GetVideoProcessingFilterParam(jobState, options, jobState.OutputVideoCodec).Trim();
@@ -831,7 +834,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 throw new InvalidOperationException("EncodingHelper returned empty or invalid filter parameters.");
             }
 
-            return ExtractVideoImagesOnIntervalInternal(inputArg, filterParam, interval, vidEncoder, _threads, cancellationToken);
+            return ExtractVideoImagesOnIntervalInternal(inputArg, filterParam, interval, vidEncoder, threads, qualityScale, priority, cancellationToken);
         }
 
         private async Task<string> ExtractVideoImagesOnIntervalInternal(
@@ -839,7 +842,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             string filterParam,
             TimeSpan interval,
             string vidEncoder,
-            int outputThreads,
+            int? outputThreads,
+            int? qualityScale,
+            ProcessPriorityClass? priority,
             CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(inputArg))
@@ -857,10 +862,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 filterParam = filterParam.Insert(filterParam.IndexOf("\"", StringComparison.Ordinal) + 1, fps + ",");
             }
-            else
-            {
-                filterParam += fps + ",";
-            }
 
             var targetDirectory = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(targetDirectory);
@@ -869,11 +870,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Final command arguments
             var args = string.Format(
                 CultureInfo.InvariantCulture,
-                "-loglevel error {0} -an -sn {1} -threads {2} -c:v {3} -f {4} \"{5}\"",
+                "-loglevel error {0} -an -sn {1} -threads {2} -c:v {3} {4}-f {5} \"{6}\"",
                 inputArg,
                 filterParam,
-                outputThreads,
+                outputThreads.GetValueOrDefault(_threads),
                 vidEncoder,
+                qualityScale.HasValue ? "-qscale:v " + qualityScale.Value.ToString(CultureInfo.InvariantCulture) + " " : string.Empty,
                 "image2",
                 outputPath);
 
@@ -903,6 +905,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 try
                 {
                     StartProcess(processWrapper);
+
+                    // Set process priority
+                    if (priority.HasValue)
+                    {
+                        try
+                        {
+                            processWrapper.Process.PriorityClass = priority.Value;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogDebug(ex, "Unable to set process priority to {Priority} for {Description}", priority.Value, processDescription);
+                        }
+                    }
 
                     // Need to give ffmpeg enough time to make all the thumbnails, which could be a while,
                     // but we still need to detect if the process hangs.

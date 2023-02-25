@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Trickplay;
+using MediaBrowser.Model.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Trickplay
@@ -25,7 +26,7 @@ namespace MediaBrowser.Providers.Trickplay
         IForcedProvider
     {
         private readonly ILogger<TrickplayProvider> _logger;
-        private readonly IServerConfigurationManager _configurationManager;
+        private readonly IServerConfigurationManager _config;
         private readonly ITrickplayManager _trickplayManager;
         private readonly ILibraryManager _libraryManager;
 
@@ -33,17 +34,17 @@ namespace MediaBrowser.Providers.Trickplay
         /// Initializes a new instance of the <see cref="TrickplayProvider"/> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="config">The configuration manager.</param>
         /// <param name="trickplayManager">The trickplay manager.</param>
         /// <param name="libraryManager">The library manager.</param>
         public TrickplayProvider(
             ILogger<TrickplayProvider> logger,
-            IServerConfigurationManager configurationManager,
+            IServerConfigurationManager config,
             ITrickplayManager trickplayManager,
             ILibraryManager libraryManager)
         {
             _logger = logger;
-            _configurationManager = configurationManager;
+            _config = config;
             _trickplayManager = trickplayManager;
             _libraryManager = libraryManager;
         }
@@ -110,10 +111,13 @@ namespace MediaBrowser.Providers.Trickplay
                 return ItemUpdateType.None;
             }
 
-            // TODO: this is always blocking for metadata collection, make non-blocking option
-            if (true)
+            if (_config.Configuration.TrickplayOptions.ScanBehavior == TrickplayScanBehavior.Blocking)
             {
                 await _trickplayManager.RefreshTrickplayData(video, replace, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                _ = _trickplayManager.RefreshTrickplayData(video, replace, cancellationToken).ConfigureAwait(false);
             }
 
             // The core doesn't need to trigger any save operations over this
