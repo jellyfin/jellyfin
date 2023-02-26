@@ -368,8 +368,8 @@ namespace Jellyfin.Providers.Tests.Manager
         [Theory]
         [InlineData(nameof(ICustomMetadataProvider), true)]
         [InlineData(nameof(IRemoteMetadataProvider), true)]
-        [InlineData(nameof(ILocalMetadataProvider), false)]
-        public void GetMetadataProviders_CanRefreshMetadataOwned_WhenNotLocal(string providerType, bool expected)
+        [InlineData(nameof(ILocalMetadataProvider), true)]
+        public void GetMetadataProviders_CanRefreshMetadataOwned(string providerType, bool expected)
         {
             GetMetadataProviders_CanRefreshMetadata_Tester(providerType, expected, ownedItem: true);
         }
