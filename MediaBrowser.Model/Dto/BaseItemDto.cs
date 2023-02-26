@@ -572,7 +572,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the trickplay manifest.
         /// </summary>
         /// <value>The trickplay manifest.</value>
-        public Dictionary<Guid, Dictionary<int, TrickplayTilesInfo>> Trickplay { get; set; }
+        public Dictionary<string, Dictionary<int, TrickplayTilesInfo>> Trickplay { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the location.

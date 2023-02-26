@@ -1060,7 +1060,9 @@ namespace Emby.Server.Implementations.Dto
 
                 if (options.ContainsField(ItemFields.Trickplay))
                 {
-                    dto.Trickplay = _itemRepo.GetTrickplayManifest(item);
+                    // To stay consistent with other fields, this must go from a Guid to a non-dashed string.
+                    // This does not seem to occur automatically to dictionaries like it does with other Guid fields.
+                    dto.Trickplay = _itemRepo.GetTrickplayManifest(item).ToDictionary(x => x.Key.ToString("N", CultureInfo.InvariantCulture), y => y.Value);
                 }
 
                 if (video.ExtraType.HasValue)
