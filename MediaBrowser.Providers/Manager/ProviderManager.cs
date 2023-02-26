@@ -404,12 +404,6 @@ namespace MediaBrowser.Providers.Manager
                 return false;
             }
 
-            // Prevent owned items from reading the same local metadata file as their owner
-            if (!item.OwnerId.Equals(default) && provider is ILocalMetadataProvider)
-            {
-                return false;
-            }
-
             if (includeDisabled)
             {
                 return true;
