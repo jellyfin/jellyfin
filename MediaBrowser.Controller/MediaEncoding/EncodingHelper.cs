@@ -4232,12 +4232,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                         subFilters.Add(subTextSubtitlesFilter);
                     }
 
-                    subFilters.Add("hwupload=derive_device=vulkan:extra_hw_frames=16");
+                    // prefer vaapi hwupload to vulkan hwupload,
+                    // Mesa RADV does not support a dedicated transfer queue.
+                    subFilters.Add("hwupload=derive_device=vaapi,format=vaapi,hwmap=derive_device=vulkan");
 
                     overlayFilters.Add("overlay_vulkan=eof_action=endall:shortest=1:repeatlast=0");
-
-                    // explicitly sync using libplacebo.
-                    overlayFilters.Add("libplacebo=format=nv12:upscaler=none:downscaler=none");
+                    overlayFilters.Add("scale_vulkan=format=nv12");
 
                     // OUTPUT vaapi(nv12/bgra) surface(vram)
                     // reverse-mapping via vaapi-vulkan interop.
