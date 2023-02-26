@@ -799,6 +799,14 @@ namespace MediaBrowser.Model.Dlna
         {
             // Prefer matching video codecs
             var videoCodecs = ContainerProfile.SplitValue(videoCodec);
+
+            // Enforce HLS video codec restrictions
+            if (string.Equals(playlistItem.SubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
+            {
+                var supportedHlsVideoCodecs = new List<string> { "h264", "hevc" };
+                videoCodecs = videoCodecs.Where(codec => supportedHlsVideoCodecs.Contains(codec)).ToArray();
+            }
+
             var directVideoCodec = ContainerProfile.ContainsContainer(videoCodecs, videoStream?.Codec) ? videoStream?.Codec : null;
             if (directVideoCodec is not null)
             {
@@ -834,6 +842,22 @@ namespace MediaBrowser.Model.Dlna
 
             // Prefer matching audio codecs, could do better here
             var audioCodecs = ContainerProfile.SplitValue(audioCodec);
+
+            // Enforce HLS audio codec restrictions
+            if (string.Equals(playlistItem.SubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
+            {
+                var supportedHlsAudioCodecs = new List<string> { "aac", "ac3", "eac3", "mp3" };
+                if (string.Equals(playlistItem.Container, "mp4", StringComparison.OrdinalIgnoreCase))
+                {
+                    // fMP4 supports more codecs than TS
+                    supportedHlsAudioCodecs.Add("alac");
+                    supportedHlsAudioCodecs.Add("flac");
+                    supportedHlsAudioCodecs.Add("opus");
+                }
+
+                audioCodecs = audioCodecs.Where(codec => supportedHlsAudioCodecs.Contains(codec)).ToArray();
+            }
+
             var directAudioStream = candidateAudioStreams.FirstOrDefault(stream => ContainerProfile.ContainsContainer(audioCodecs, stream.Codec));
             playlistItem.AudioCodecs = audioCodecs;
             if (directAudioStream is not null)
