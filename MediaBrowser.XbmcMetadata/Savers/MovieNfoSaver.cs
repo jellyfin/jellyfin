@@ -63,7 +63,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 yield return Path.ChangeExtension(item.Path, ".nfo");
 
                 // only allow movie object to read movie.nfo, not owned videos (which will be itemtype video, not movie)
-                if (!item.IsInMixedFolder && item.ItemType.Equals(typeof(Movie)))
+                if (!item.IsInMixedFolder && item.ItemType == typeof(Movie))
                 {
                     yield return Path.Combine(item.ContainingFolderPath, "movie.nfo");
                 }
