@@ -2085,7 +2085,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var inputChannels = audioStream.Channels ?? 0;
             var outputChannels = outputAudioChannels ?? 0;
-            var bitrate = audioBitRate.HasValue ? audioBitRate.Value : int.MaxValue;
+            var bitrate = audioBitRate ?? int.MaxValue;
 
             if (string.IsNullOrEmpty(audioCodec)
                 || string.Equals(audioCodec, "aac", StringComparison.OrdinalIgnoreCase)
