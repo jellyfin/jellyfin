@@ -308,11 +308,10 @@ namespace MediaBrowser.Controller.Entities.TV
                 id.SeriesDisplayOrder = series.DisplayOrder;
             }
 
-            var season = Season;
 
-            if (season is not null)
+            if (Season is not null)
             {
-                id.SeasonProviderIds = season.ProviderIds;
+                id.SeasonProviderIds = Season.ProviderIds;
             }
 
             id.IsMissingEpisode = IsMissingEpisode;
