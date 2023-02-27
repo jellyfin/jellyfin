@@ -46,6 +46,13 @@ namespace Jellyfin.Api.Auth.DefaultAuthorizationPolicy
                 return Task.CompletedTask;
             }
 
+            if (isApiKey)
+            {
+                // Api keys are unrestricted.
+                context.Succeed(requirement);
+                return Task.CompletedTask;
+            }
+
             var isInLocalNetwork = _httpContextAccessor.HttpContext is not null
                                    && _networkManager.IsInLocalNetwork(_httpContextAccessor.HttpContext.GetNormalizedRemoteIp());
             var user = _userManager.GetUserById(userId);
@@ -62,7 +69,7 @@ namespace Jellyfin.Api.Auth.DefaultAuthorizationPolicy
             }
 
             // Admins can do everything
-            if (isApiKey || context.User.IsInRole(UserRoles.Administrator))
+            if (context.User.IsInRole(UserRoles.Administrator))
             {
                 context.Succeed(requirement);
                 return Task.CompletedTask;
