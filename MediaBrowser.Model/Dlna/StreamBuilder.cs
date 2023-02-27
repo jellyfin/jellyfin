@@ -25,6 +25,9 @@ namespace MediaBrowser.Model.Dlna
 
         private readonly ILogger _logger;
         private readonly ITranscoderSupport _transcoderSupport;
+        private static readonly string[] _supportedHlsVideoCodecs = new string[] { "h264", "hevc" };
+        private static readonly string[] _supportedHlsAudioCodecsTs = new string[] { "aac", "ac3", "eac3", "mp3" };
+        private static readonly string[] _supportedHlsAudioCodecsMp4 = new string[] { "aac", "ac3", "eac3", "mp3", "alac", "flac", "opus" };
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamBuilder"/> class.
@@ -803,8 +806,7 @@ namespace MediaBrowser.Model.Dlna
             // Enforce HLS video codec restrictions
             if (string.Equals(playlistItem.SubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
             {
-                var supportedHlsVideoCodecs = new List<string> { "h264", "hevc" };
-                videoCodecs = videoCodecs.Where(codec => supportedHlsVideoCodecs.Contains(codec)).ToArray();
+                videoCodecs = videoCodecs.Where(codec => _supportedHlsVideoCodecs.Contains(codec)).ToArray();
             }
 
             var directVideoCodec = ContainerProfile.ContainsContainer(videoCodecs, videoStream?.Codec) ? videoStream?.Codec : null;
@@ -846,16 +848,14 @@ namespace MediaBrowser.Model.Dlna
             // Enforce HLS audio codec restrictions
             if (string.Equals(playlistItem.SubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
             {
-                var supportedHlsAudioCodecs = new List<string> { "aac", "ac3", "eac3", "mp3" };
                 if (string.Equals(playlistItem.Container, "mp4", StringComparison.OrdinalIgnoreCase))
                 {
-                    // fMP4 supports more codecs than TS
-                    supportedHlsAudioCodecs.Add("alac");
-                    supportedHlsAudioCodecs.Add("flac");
-                    supportedHlsAudioCodecs.Add("opus");
+                    audioCodecs = audioCodecs.Where(codec => _supportedHlsAudioCodecsMp4.Contains(codec)).ToArray();
                 }
-
-                audioCodecs = audioCodecs.Where(codec => supportedHlsAudioCodecs.Contains(codec)).ToArray();
+                else
+                {
+                    audioCodecs = audioCodecs.Where(codec => _supportedHlsAudioCodecsTs.Contains(codec)).ToArray();
+                }
             }
 
             var directAudioStream = candidateAudioStreams.FirstOrDefault(stream => ContainerProfile.ContainsContainer(audioCodecs, stream.Codec));

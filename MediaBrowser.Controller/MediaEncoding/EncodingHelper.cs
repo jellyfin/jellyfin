@@ -2130,7 +2130,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var inputChannels = audioStream.Channels ?? 0;
             var outputChannels = outputAudioChannels ?? 0;
-            var bitrate = audioBitRate.HasValue ? audioBitRate.Value : int.MaxValue;
+            var bitrate = audioBitRate ?? int.MaxValue;
 
             if (string.IsNullOrEmpty(audioCodec)
                 || string.Equals(audioCodec, "aac", StringComparison.OrdinalIgnoreCase)
@@ -2190,7 +2190,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string GetAudioVbrModeParam(string encoder, int bitratePerChannel)
         {
-            if (encoder == "libfdk_aac")
+            if (string.Equals(encoder, "libfdk_aac", StringComparison.OrdinalIgnoreCase))
             {
                 return " -vbr:a " + bitratePerChannel switch
                 {
@@ -2202,7 +2202,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 };
             }
 
-            if (encoder == "libmp3lame")
+            if (string.Equals(encoder, "libmp3lame", StringComparison.OrdinalIgnoreCase))
             {
                 return " -qscale:a " + bitratePerChannel switch
                 {
@@ -2214,7 +2214,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 };
             }
 
-            if (encoder == "libvorbis")
+            if (string.Equals(encoder, "libvorbis", StringComparison.OrdinalIgnoreCase))
             {
                 return " -qscale:a " + bitratePerChannel switch
                 {
@@ -5870,8 +5870,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (bitrate.HasValue)
             {
-                string vbrParam;
-                if (encodingOptions.EnableAudioVbr && (vbrParam = GetAudioVbrModeParam(codec, bitrate.Value / channels ?? 2)) != null)
+                var vbrParam = GetAudioVbrModeParam(codec, bitrate.Value / (channels ?? 2));
+                if (encodingOptions.EnableAudioVbr && vbrParam is not null)
                 {
                     args += vbrParam;
                 }
@@ -5900,8 +5900,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (bitrate.HasValue)
             {
-                string vbrParam;
-                if (encodingOptions.EnableAudioVbr && (vbrParam = GetAudioVbrModeParam(state.OutputAudioCodec, bitrate.Value / channels ?? 2)) != null)
+                var vbrParam = GetAudioVbrModeParam(state.OutputAudioCodec, bitrate.Value / (channels ?? 2));
+                if (encodingOptions.EnableAudioVbr && vbrParam is not null)
                 {
                     audioTranscodeParams.Add(vbrParam);
                 }
