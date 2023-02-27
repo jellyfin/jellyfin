@@ -243,16 +243,10 @@ namespace MediaBrowser.Model.Configuration
         public bool AllowClientLogUpload { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets the dummy chapters duration in seconds.
+        /// Gets or sets the dummy chapter duration in seconds, use 0 (zero) or less to disable generation alltogether.
         /// </summary>
         /// <value>The dummy chapters duration.</value>
-        public int DummyChapterDuration { get; set; } = 300;
-
-        /// <summary>
-        /// Gets or sets the dummy chapter count.
-        /// </summary>
-        /// <value>The dummy chapter count.</value>
-        public int DummyChapterCount { get; set; } = 100;
+        public int DummyChapterDuration { get; set; } = 0;
 
         /// <summary>
         /// Gets or sets the chapter image resolution.
