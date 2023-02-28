@@ -286,7 +286,7 @@ namespace Emby.Server.Implementations.Library
 
             if (parents.Count == 0)
             {
-                return new List<BaseItem>();
+                return Array.Empty<BaseItem>();
             }
 
             if (includeItemTypes.Length == 0)

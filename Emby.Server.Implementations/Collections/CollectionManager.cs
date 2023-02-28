@@ -206,8 +206,7 @@ namespace Emby.Server.Implementations.Collections
                 throw new ArgumentException("No collection exists with the supplied Id");
             }
 
-            var list = new List<LinkedChild>();
-            var itemList = new List<BaseItem>();
+            List<BaseItem>? itemList = null;
 
             var linkedChildrenList = collection.GetLinkedChildren();
             var currentLinkedChildrenIds = linkedChildrenList.Select(i => i.Id).ToList();
@@ -223,18 +222,23 @@ namespace Emby.Server.Implementations.Collections
 
                 if (!currentLinkedChildrenIds.Contains(id))
                 {
-                    itemList.Add(item);
+                    (itemList ??= new()).Add(item);
 
-                    list.Add(LinkedChild.Create(item));
                     linkedChildrenList.Add(item);
                 }
             }
 
-            if (list.Count > 0)
+            if (itemList is not null)
             {
-                LinkedChild[] newChildren = new LinkedChild[collection.LinkedChildren.Length + list.Count];
+                var originalLen = collection.LinkedChildren.Length;
+                var newItemCount = itemList.Count;
+                LinkedChild[] newChildren = new LinkedChild[originalLen + newItemCount];
                 collection.LinkedChildren.CopyTo(newChildren, 0);
-                list.CopyTo(newChildren, collection.LinkedChildren.Length);
+                for (int i = 0; i < newItemCount; i++)
+                {
+                    newChildren[originalLen + i] = LinkedChild.Create(itemList[i]);
+                }
+
                 collection.LinkedChildren = newChildren;
                 collection.UpdateRatingToItems(linkedChildrenList);
 

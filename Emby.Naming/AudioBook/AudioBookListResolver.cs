@@ -79,25 +79,25 @@ namespace Emby.Naming.AudioBook
                 {
                     if (group.Count() > 1 || haveChaptersOrPages)
                     {
-                        var ex = new List<AudioBookFileInfo>();
-                        var alt = new List<AudioBookFileInfo>();
+                        List<AudioBookFileInfo>? ex = null;
+                        List<AudioBookFileInfo>? alt = null;
 
                         foreach (var audioFile in group)
                         {
-                            var name = Path.GetFileNameWithoutExtension(audioFile.Path);
-                            if (name.Equals("audiobook", StringComparison.OrdinalIgnoreCase) ||
-                                name.Contains(nameParserResult.Name, StringComparison.OrdinalIgnoreCase) ||
-                                name.Contains(nameWithReplacedDots, StringComparison.OrdinalIgnoreCase))
+                            var name = Path.GetFileNameWithoutExtension(audioFile.Path.AsSpan());
+                            if (name.Equals("audiobook", StringComparison.OrdinalIgnoreCase)
+                                || name.Contains(nameParserResult.Name, StringComparison.OrdinalIgnoreCase)
+                                || name.Contains(nameWithReplacedDots, StringComparison.OrdinalIgnoreCase))
                             {
-                                alt.Add(audioFile);
+                                (alt ??= new()).Add(audioFile);
                             }
                             else
                             {
-                                ex.Add(audioFile);
+                                (ex ??= new()).Add(audioFile);
                             }
                         }
 
-                        if (ex.Count > 0)
+                        if (ex is not null)
                         {
                             var extra = ex
                                 .OrderBy(x => x.Container)
@@ -108,7 +108,7 @@ namespace Emby.Naming.AudioBook
                             extras.AddRange(extra);
                         }
 
-                        if (alt.Count > 0)
+                        if (alt is not null)
                         {
                             var alternatives = alt
                                 .OrderBy(x => x.Container)

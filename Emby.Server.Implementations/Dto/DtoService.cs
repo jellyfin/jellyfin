@@ -85,8 +85,8 @@ namespace Emby.Server.Implementations.Dto
         {
             var accessibleItems = user is null ? items : items.Where(x => x.IsVisible(user)).ToList();
             var returnItems = new BaseItemDto[accessibleItems.Count];
-            var programTuples = new List<(BaseItem, BaseItemDto)>();
-            var channelTuples = new List<(BaseItemDto, LiveTvChannel)>();
+            List<(BaseItem, BaseItemDto)> programTuples = null;
+            List<(BaseItemDto, LiveTvChannel)> channelTuples = null;
 
             for (int index = 0; index < accessibleItems.Count; index++)
             {
@@ -95,11 +95,11 @@ namespace Emby.Server.Implementations.Dto
 
                 if (item is LiveTvChannel tvChannel)
                 {
-                    channelTuples.Add((dto, tvChannel));
+                    (channelTuples ??= new()).Add((dto, tvChannel));
                 }
                 else if (item is LiveTvProgram)
                 {
-                    programTuples.Add((item, dto));
+                    (programTuples ??= new()).Add((item, dto));
                 }
 
                 if (item is IItemByName byName)
@@ -122,12 +122,12 @@ namespace Emby.Server.Implementations.Dto
                 returnItems[index] = dto;
             }
 
-            if (programTuples.Count > 0)
+            if (programTuples is not null)
             {
                 LivetvManager.AddInfoToProgramDto(programTuples, options.Fields, user).GetAwaiter().GetResult();
             }
 
-            if (channelTuples.Count > 0)
+            if (channelTuples is not null)
             {
                 LivetvManager.AddChannelInfo(channelTuples, options, user);
             }

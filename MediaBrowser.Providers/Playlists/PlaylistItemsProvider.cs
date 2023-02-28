@@ -87,7 +87,7 @@ namespace MediaBrowser.Providers.Playlists
                 return GetPlsItems(stream);
             }
 
-            return new List<LinkedChild>();
+            return Enumerable.Empty<LinkedChild>();
         }
 
         private IEnumerable<LinkedChild> GetPlsItems(Stream stream)
