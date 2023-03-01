@@ -44,30 +44,22 @@ namespace MediaBrowser.Model.Dlna
         {
             ValidateMediaOptions(options, false);
 
-            var mediaSources = new List<MediaSourceInfo>();
+            var streams = new List<StreamInfo>();
             foreach (var mediaSource in options.MediaSources)
             {
-                if (string.IsNullOrEmpty(options.MediaSourceId)
-                    || string.Equals(mediaSource.Id, options.MediaSourceId, StringComparison.OrdinalIgnoreCase))
+                if (!(string.IsNullOrEmpty(options.MediaSourceId)
+                    || string.Equals(mediaSource.Id, options.MediaSourceId, StringComparison.OrdinalIgnoreCase)))
                 {
-                    mediaSources.Add(mediaSource);
+                    continue;
                 }
-            }
 
-            var streams = new List<StreamInfo>();
-            foreach (var mediaSourceInfo in mediaSources)
-            {
-                StreamInfo? streamInfo = GetOptimalAudioStream(mediaSourceInfo, options);
+                StreamInfo? streamInfo = GetOptimalAudioStream(mediaSource, options);
                 if (streamInfo is not null)
                 {
+                    streamInfo.DeviceId = options.DeviceId;
+                    streamInfo.DeviceProfileId = options.Profile.Id;
                     streams.Add(streamInfo);
                 }
-            }
-
-            foreach (var stream in streams)
-            {
-                stream.DeviceId = options.DeviceId;
-                stream.DeviceProfileId = options.Profile.Id;
             }
 
             return GetOptimalStream(streams, options.GetMaxBitrate(true) ?? 0);
@@ -399,7 +391,6 @@ namespace MediaBrowser.Model.Dlna
                 return (null, null, GetTranscodeReasonsFromDirectPlayProfile(item, null, audioStream, options.Profile.DirectPlayProfiles));
             }
 
-            var playMethods = new List<PlayMethod>();
             TranscodeReason transcodeReasons = 0;
 
             // The profile describes what the device supports
