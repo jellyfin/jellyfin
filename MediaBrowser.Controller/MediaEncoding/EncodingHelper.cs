@@ -41,6 +41,9 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly Version _maxKerneli915Hang = new Version(6, 1, 3);
         private readonly Version _minFixedKernel60i915Hang = new Version(6, 0, 18);
 
+        private readonly Version _minFFmpegImplictHwaccel = new Version(6, 0);
+        private readonly Version _minFFmpegHwaUnsafeOutput = new Version(6, 0);
+
         private static readonly string[] _videoProfilesH264 = new[]
         {
             "ConstrainedBaseline",
@@ -4562,12 +4565,18 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isVideotoolboxSupported = isMacOS && _mediaEncoder.SupportsHwaccel("videotoolbox");
             var isCodecAvailable = options.HardwareDecodingCodecs.Contains(videoCodec, StringComparison.OrdinalIgnoreCase);
 
+            var ffmpegVersion = _mediaEncoder.EncoderVersion;
+
             // Set the av1 codec explicitly to trigger hw accelerator, otherwise libdav1d will be used.
-            var isAv1 = string.Equals(videoCodec, "av1", StringComparison.OrdinalIgnoreCase);
+            var isAv1 = ffmpegVersion < _minFFmpegImplictHwaccel
+                && string.Equals(videoCodec, "av1", StringComparison.OrdinalIgnoreCase);
 
             // Allow profile mismatch if decoding H.264 baseline with d3d11va and vaapi hwaccels.
             var profileMismatch = string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase)
                 && string.Equals(state.VideoStream?.Profile, "baseline", StringComparison.OrdinalIgnoreCase);
+
+            // Disable the extra internal copy in nvdec. We already handle it in filter chain.
+            var nvdecNoInternalCopy = ffmpegVersion >= _minFFmpegHwaUnsafeOutput;
 
             if (bitDepth == 10 && isCodecAvailable)
             {
@@ -4622,7 +4631,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                     if (options.EnableEnhancedNvdecDecoder)
                     {
                         // set -threads 1 to nvdec decoder explicitly since it doesn't implement threading support.
-                        return " -hwaccel cuda" + (outputHwSurface ? " -hwaccel_output_format cuda" : string.Empty) + " -threads 1" + (isAv1 ? " -c:v av1" : string.Empty);
+                        return " -hwaccel cuda" + (outputHwSurface ? " -hwaccel_output_format cuda" : string.Empty)
+                            + (nvdecNoInternalCopy ? " -hwaccel_flags +unsafe_output" : string.Empty) + " -threads 1" + (isAv1 ? " -c:v av1" : string.Empty);
                     }
                     else
                     {
