@@ -1019,8 +1019,8 @@ namespace Jellyfin.Networking.Manager
                     _internalInterfaces = CreateCollection(_interfaceAddresses.Where(IsInLocalNetwork));
                 }
 
-                _logger.LogInformation("Defined LAN addresses : {0}", _lanSubnets.AsString());
-                _logger.LogInformation("Defined LAN exclusions : {0}", _excludedSubnets.AsString());
+                _logger.LogInformation("Defined LAN addresses: {0}", _lanSubnets.AsString());
+                _logger.LogInformation("Defined LAN exclusions: {0}", _excludedSubnets.AsString());
                 _logger.LogInformation("Using LAN addresses: {0}", _lanSubnets.Exclude(_excludedSubnets, true).AsNetworks().AsString());
             }
         }
@@ -1145,7 +1145,7 @@ namespace Jellyfin.Networking.Manager
                 }
 
                 _logger.LogDebug("Discovered {0} interfaces.", _interfaceAddresses.Count);
-                _logger.LogDebug("Interfaces addresses : {0}", _interfaceAddresses.AsString());
+                _logger.LogDebug("Interfaces addresses: {0}", _interfaceAddresses.AsString());
             }
         }
 
