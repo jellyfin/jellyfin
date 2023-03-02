@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.StreamingDtos;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -220,11 +221,26 @@ namespace Jellyfin.Api.Helpers
                         var sdrVideoUrl = ReplaceProfile(playlistUrl, "hevc", string.Join(',', requestedVideoProfiles), "main");
                         sdrVideoUrl += "&AllowVideoStreamCopy=false";
 
-                        var sdrOutputVideoBitrate = _encodingHelper.GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec);
-                        var sdrOutputAudioBitrate = _encodingHelper.GetAudioBitrateParam(state.VideoRequest, state.AudioStream, state.OutputAudioChannels) ?? 0;
-                        var sdrTotalBitrate = sdrOutputAudioBitrate + sdrOutputVideoBitrate;
+                    var sdrOutputVideoBitrate = _encodingHelper.GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec);
+                    var sdrOutputAudioBitrate = 0;
+                    if (EncodingHelper.LosslessAudioCodecs.Contains(state.VideoRequest.AudioCodec, StringComparison.OrdinalIgnoreCase))
+                    {
+                        sdrOutputAudioBitrate = state.AudioStream.BitRate ?? 0;
+                    }
+                    else
+                    {
+                        sdrOutputAudioBitrate = _encodingHelper.GetAudioBitrateParam(state.VideoRequest, state.AudioStream, state.OutputAudioChannels) ?? 0;
+                    }
 
-                        AppendPlaylist(builder, state, sdrVideoUrl, sdrTotalBitrate, subtitleGroup);
+                    var sdrTotalBitrate = sdrOutputAudioBitrate + sdrOutputVideoBitrate;
+                    var sdrPlaylist = AppendPlaylist(builder, state, sdrVideoUrl, sdrTotalBitrate, subtitleGroup);
+
+                    // Provide a workaround for the case issue between flac and fLaC.
+                    flacWaPlaylist = ApplyFlacCaseWorkaround(state, sdrPlaylist.ToString());
+                    if (!string.IsNullOrEmpty(flacWaPlaylist))
+                    {
+                        builder.Append(flacWaPlaylist);
+                    }
 
                         // Restore the video codec
                         state.OutputVideoCodec = "copy";
