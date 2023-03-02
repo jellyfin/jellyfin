@@ -72,7 +72,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
 
             var collectionSearchResults = await _tmdbClientManager.SearchCollectionAsync(searchInfo.Name, language, cancellationToken).ConfigureAwait(false);
 
-            var collections = new List<RemoteSearchResult>();
+            var collections = new RemoteSearchResult[collectionSearchResults.Count];
             for (var i = 0; i < collectionSearchResults.Count; i++)
             {
                 var collection = new RemoteSearchResult
@@ -82,7 +82,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
                 };
                 collection.SetProviderId(MetadataProvider.Tmdb, collectionSearchResults[i].Id.ToString(CultureInfo.InvariantCulture));
 
-                collections.Add(collection);
+                collections[i] = collection;
             }
 
             return collections;

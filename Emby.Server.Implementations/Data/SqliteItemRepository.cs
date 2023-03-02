@@ -586,7 +586,7 @@ namespace Emby.Server.Implementations.Data
         /// <exception cref="ArgumentNullException">
         /// <paramref name="items"/> or <paramref name="cancellationToken"/> is <c>null</c>.
         /// </exception>
-        public void SaveItems(IEnumerable<BaseItem> items, CancellationToken cancellationToken)
+        public void SaveItems(IReadOnlyList<BaseItem> items, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(items);
 
@@ -594,9 +594,11 @@ namespace Emby.Server.Implementations.Data
 
             CheckDisposed();
 
-            var tuples = new List<(BaseItem, List<Guid>, BaseItem, string, List<string>)>();
-            foreach (var item in items)
+            var itemsLen = items.Count;
+            var tuples = new ValueTuple<BaseItem, List<Guid>, BaseItem, string, List<string>>[itemsLen];
+            for (int i = 0; i < itemsLen; i++)
             {
+                var item = items[i];
                 var ancestorIds = item.SupportsAncestors ?
                     item.GetAncestorIds().Distinct().ToList() :
                     null;
@@ -606,7 +608,7 @@ namespace Emby.Server.Implementations.Data
                 var userdataKey = item.GetUserDataKeys().FirstOrDefault();
                 var inheritedTags = item.GetInheritedTags();
 
-                tuples.Add((item, ancestorIds, topParent, userdataKey, inheritedTags));
+                tuples[i] = (item, ancestorIds, topParent, userdataKey, inheritedTags);
             }
 
             using (var connection = GetConnection())

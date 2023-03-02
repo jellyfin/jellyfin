@@ -401,7 +401,7 @@ namespace Emby.Server.Implementations.Channels
             }
             else
             {
-                results = new List<MediaSourceInfo>();
+                results = Enumerable.Empty<MediaSourceInfo>();
             }
 
             return results
