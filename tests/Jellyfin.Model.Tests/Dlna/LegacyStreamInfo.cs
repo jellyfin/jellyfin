@@ -225,7 +225,7 @@ public class LegacyStreamInfo : StreamInfo
 
         if (!item.IsDirectStream)
         {
-            list.Add(new NameValuePair("TranscodeReasons", string.Join(',', item.TranscodeReasons.GetIndividualFlags())));
+            list.Add(new NameValuePair("TranscodeReasons", string.Join(',', item.TranscodeReasons.GetUniqueFlags())));
         }
 
         return list;

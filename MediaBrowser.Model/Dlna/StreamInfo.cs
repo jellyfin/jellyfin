@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -818,35 +819,35 @@ namespace MediaBrowser.Model.Dlna
                 if (EnableSubtitlesInManifest)
                 {
                     sb.Append("&EnableSubtitlesInManifest=");
-                    sb.Append(EnableSubtitlesInManifest.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
+                    sb.Append(EnableSubtitlesInManifest.ToString(CultureInfo.InvariantCulture));
                 }
 
                 if (EnableMpegtsM2TsMode)
                 {
                     sb.Append("&EnableMpegtsM2TsMode=");
-                    sb.Append(EnableMpegtsM2TsMode.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
+                    sb.Append(EnableMpegtsM2TsMode.ToString(CultureInfo.InvariantCulture));
                 }
 
                 if (EstimateContentLength)
                 {
                     sb.Append("&EstimateContentLength=");
-                    sb.Append(EstimateContentLength.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
+                    sb.Append(EstimateContentLength.ToString(CultureInfo.InvariantCulture));
                 }
 
                 if (TranscodeSeekInfo != TranscodeSeekInfo.Auto)
                 {
                     sb.Append("&TranscodeSeekInfo=");
-                    sb.Append(TranscodeSeekInfo.ToString().ToLowerInvariant());
+                    sb.Append(TranscodeSeekInfo.ToString());
                 }
 
                 if (CopyTimestamps)
                 {
                     sb.Append("&CopyTimestamps=");
-                    sb.Append(CopyTimestamps.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
+                    sb.Append(CopyTimestamps.ToString(CultureInfo.InvariantCulture));
                 }
 
                 sb.Append("&RequireAvc=");
-                sb.Append(RequireAvc.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
+                sb.Append(RequireAvc.ToString(CultureInfo.InvariantCulture));
             }
 
             var etag = MediaSource?.ETag;
@@ -876,10 +877,11 @@ namespace MediaBrowser.Model.Dlna
                 sb.Append(pair.Value.Replace(" ", string.Empty, StringComparison.Ordinal));
             }
 
-            if (!IsDirectStream)
+            var transcodeReasonsValues = TranscodeReasons.GetUniqueFlags().ToArray();
+            if (!IsDirectStream && transcodeReasonsValues.Length > 0)
             {
                 sb.Append("&TranscodeReasons=");
-                sb.AppendJoin(',', TranscodeReasons.ToString());
+                sb.AppendJoin(',', transcodeReasonsValues);
             }
 
             if (!string.IsNullOrEmpty(query))
