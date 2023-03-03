@@ -58,7 +58,7 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
         {
             // Fallback to official server
             _logger.LogWarning("Invalid MusicBrainz server specified, falling back to official server");
-            var defaultServer = new Uri(configuration.Server);
+            var defaultServer = new Uri(PluginConfiguration.DefaultServer);
             Query.DefaultServer = defaultServer.Host;
             Query.DefaultPort = defaultServer.Port;
             Query.DefaultUrlScheme = defaultServer.Scheme;
@@ -157,10 +157,10 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
         var artists = releaseSearchResult.ArtistCredit;
         if (artists is not null && artists.Count > 0)
         {
-            var artistResults = new List<RemoteSearchResult>();
-
-            foreach (var artist in artists)
+            var artistResults = new RemoteSearchResult[artists.Count];
+            for (int i = 0; i < artists.Count; i++)
             {
+                var artist = artists[i];
                 var artistResult = new RemoteSearchResult
                 {
                     Name = artist.Name
@@ -171,11 +171,11 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
                     artistResult.SetProviderId(MetadataProvider.MusicBrainzArtist, artist.Artist!.Id.ToString());
                 }
 
-                artistResults.Add(artistResult);
+                artistResults[i] = artistResult;
             }
 
             searchResult.AlbumArtist = artistResults[0];
-            searchResult.Artists = artistResults.ToArray();
+            searchResult.Artists = artistResults;
         }
 
         searchResult.SetProviderId(MetadataProvider.MusicBrainzAlbum, releaseSearchResult.Id.ToString());

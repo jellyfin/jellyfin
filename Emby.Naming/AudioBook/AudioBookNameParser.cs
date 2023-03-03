@@ -30,7 +30,7 @@ namespace Emby.Naming.AudioBook
             AudioBookNameParserResult result = default;
             foreach (var expression in _options.AudioBookNamesExpressions)
             {
-                var match = new Regex(expression, RegexOptions.IgnoreCase).Match(name);
+                var match = Regex.Match(name, expression, RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
                     if (result.Name is null)

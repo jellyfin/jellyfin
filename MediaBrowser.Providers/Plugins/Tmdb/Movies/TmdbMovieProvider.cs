@@ -1,5 +1,3 @@
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -64,32 +62,35 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                         cancellationToken)
                     .ConfigureAwait(false);
 
-                var remoteResult = new RemoteSearchResult
+                if (movie is not null)
                 {
-                    Name = movie.Title ?? movie.OriginalTitle,
-                    SearchProviderName = Name,
-                    ImageUrl = _tmdbClientManager.GetPosterUrl(movie.PosterPath),
-                    Overview = movie.Overview
-                };
+                    var remoteResult = new RemoteSearchResult
+                    {
+                        Name = movie.Title ?? movie.OriginalTitle,
+                        SearchProviderName = Name,
+                        ImageUrl = _tmdbClientManager.GetPosterUrl(movie.PosterPath),
+                        Overview = movie.Overview
+                    };
 
-                if (movie.ReleaseDate is not null)
-                {
-                    var releaseDate = movie.ReleaseDate.Value.ToUniversalTime();
-                    remoteResult.PremiereDate = releaseDate;
-                    remoteResult.ProductionYear = releaseDate.Year;
+                    if (movie.ReleaseDate is not null)
+                    {
+                        var releaseDate = movie.ReleaseDate.Value.ToUniversalTime();
+                        remoteResult.PremiereDate = releaseDate;
+                        remoteResult.ProductionYear = releaseDate.Year;
+                    }
+
+                    remoteResult.SetProviderId(MetadataProvider.Tmdb, movie.Id.ToString(CultureInfo.InvariantCulture));
+
+                    if (!string.IsNullOrWhiteSpace(movie.ImdbId))
+                    {
+                        remoteResult.SetProviderId(MetadataProvider.Imdb, movie.ImdbId);
+                    }
+
+                    return new[] { remoteResult };
                 }
-
-                remoteResult.SetProviderId(MetadataProvider.Tmdb, movie.Id.ToString(CultureInfo.InvariantCulture));
-
-                if (!string.IsNullOrWhiteSpace(movie.ImdbId))
-                {
-                    remoteResult.SetProviderId(MetadataProvider.Imdb, movie.ImdbId);
-                }
-
-                return new[] { remoteResult };
             }
 
-            IReadOnlyList<SearchMovie> movieResults;
+            IReadOnlyList<SearchMovie>? movieResults = null;
             if (searchInfo.TryGetProviderId(MetadataProvider.Imdb, out id))
             {
                 var result = await _tmdbClientManager.FindByExternalIdAsync(
@@ -97,18 +98,20 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     FindExternalSource.Imdb,
                     TmdbUtils.GetImageLanguagesParam(searchInfo.MetadataLanguage),
                     cancellationToken).ConfigureAwait(false);
-                movieResults = result.MovieResults;
+                movieResults = result?.MovieResults;
             }
-            else if (searchInfo.TryGetProviderId(MetadataProvider.Tvdb, out id))
+
+            if (movieResults is null && searchInfo.TryGetProviderId(MetadataProvider.Tvdb, out id))
             {
                 var result = await _tmdbClientManager.FindByExternalIdAsync(
                     id,
                     FindExternalSource.TvDb,
                     TmdbUtils.GetImageLanguagesParam(searchInfo.MetadataLanguage),
                     cancellationToken).ConfigureAwait(false);
-                movieResults = result.MovieResults;
+                movieResults = result?.MovieResults;
             }
-            else
+
+            if (movieResults is null)
             {
                 movieResults = await _tmdbClientManager
                     .SearchMovieAsync(searchInfo.Name, searchInfo.Year ?? 0, searchInfo.MetadataLanguage, cancellationToken)

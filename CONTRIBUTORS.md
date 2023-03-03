@@ -163,6 +163,7 @@
  - [vgambier](https://github.com/vgambier)
  - [MinecraftPlaye](https://github.com/MinecraftPlaye)
  - [RealGreenDragon](https://github.com/RealGreenDragon)
+ - [ipitio](https://github.com/ipitio)
 
 # Emby Contributors
 

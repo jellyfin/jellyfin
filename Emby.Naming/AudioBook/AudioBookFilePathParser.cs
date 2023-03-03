@@ -32,7 +32,7 @@ namespace Emby.Naming.AudioBook
             var fileName = Path.GetFileNameWithoutExtension(path);
             foreach (var expression in _options.AudioBookPartsExpressions)
             {
-                var match = new Regex(expression, RegexOptions.IgnoreCase).Match(fileName);
+                var match = Regex.Match(fileName, expression, RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
                     if (!result.ChapterNumber.HasValue)

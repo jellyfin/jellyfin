@@ -1,5 +1,3 @@
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -211,7 +209,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 }
             }
 
-            if (string.IsNullOrEmpty(tmdbId))
+            if (!int.TryParse(tmdbId, CultureInfo.InvariantCulture, out int tmdbIdInt))
             {
                 return result;
             }
@@ -219,8 +217,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             cancellationToken.ThrowIfCancellationRequested();
 
             var tvShow = await _tmdbClientManager
-                .GetSeriesAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
+                .GetSeriesAsync(tmdbIdInt, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
                 .ConfigureAwait(false);
+
+            if (tvShow is null)
+            {
+                return result;
+            }
 
             result = new MetadataResult<Series>
             {

@@ -22,7 +22,8 @@ namespace Jellyfin.Server.Migrations
         private static readonly Type[] _preStartupMigrationTypes =
         {
             typeof(PreStartupRoutines.CreateNetworkConfiguration),
-            typeof(PreStartupRoutines.MigrateMusicBrainzTimeout)
+            typeof(PreStartupRoutines.MigrateMusicBrainzTimeout),
+            typeof(PreStartupRoutines.MigrateRatingLevels)
         };
 
         /// <summary>

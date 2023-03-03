@@ -71,6 +71,21 @@ namespace MediaBrowser.Controller.MediaEncoding
             "m4v",
         };
 
+        // Set max transcoding channels for encoders that can't handle more than a set amount of channels
+        // AAC, FLAC, ALAC, libopus, libvorbis encoders all support at least 8 channels
+        private static readonly Dictionary<string, int> _audioTranscodeChannelLookup = new(StringComparer.OrdinalIgnoreCase)
+        {
+            { "wmav2", 2 },
+            { "libmp3lame", 2 },
+            { "libfdk_aac", 6 },
+            { "aac_at", 6 },
+            { "ac3", 6 },
+            { "eac3", 6 },
+            { "dca", 6 },
+            { "mlp", 6 },
+            { "truehd", 6 },
+        };
+
         public EncodingHelper(
             IApplicationPaths appPaths,
             IMediaEncoder mediaEncoder,
@@ -2231,25 +2246,14 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (isTranscodingAudio)
             {
-                // Set max transcoding channels for encoders that can't handle more than a set amount of channels
-                // AAC, FLAC, ALAC, libopus, libvorbis encoders all support at least 8 channels
-                int transcoderChannelLimit = GetAudioEncoder(state) switch
+                var audioEncoder = GetAudioEncoder(state);
+                if (!_audioTranscodeChannelLookup.TryGetValue(audioEncoder, out var transcoderChannelLimit))
                 {
-                    string audioEncoder when audioEncoder.Equals("wmav2", StringComparison.OrdinalIgnoreCase)
-                                          || audioEncoder.Equals("libmp3lame", StringComparison.OrdinalIgnoreCase) => 2,
-                    string audioEncoder when audioEncoder.Equals("libfdk_aac", StringComparison.OrdinalIgnoreCase)
-                                          || audioEncoder.Equals("aac_at", StringComparison.OrdinalIgnoreCase)
-                                          || audioEncoder.Equals("ac3", StringComparison.OrdinalIgnoreCase)
-                                          || audioEncoder.Equals("eac3", StringComparison.OrdinalIgnoreCase)
-                                          || audioEncoder.Equals("dts", StringComparison.OrdinalIgnoreCase)
-                                          || audioEncoder.Equals("mlp", StringComparison.OrdinalIgnoreCase)
-                                          || audioEncoder.Equals("truehd", StringComparison.OrdinalIgnoreCase) => 6,
-                    // Set default max transcoding channels to 8 to prevent encoding errors due to asking for too many channels
-                    _ => 8,
-                };
+                    // Set default max transcoding channels to 8 to prevent encoding errors due to asking for too many channels.
+                    transcoderChannelLimit = 8;
+                }
 
                 // Set resultChannels to minimum between resultChannels, TranscodingMaxAudioChannels, transcoderChannelLimit
-
                 resultChannels = transcoderChannelLimit < resultChannels ? transcoderChannelLimit : resultChannels ?? transcoderChannelLimit;
 
                 if (request.TranscodingMaxAudioChannels < resultChannels)
@@ -4228,12 +4232,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                         subFilters.Add(subTextSubtitlesFilter);
                     }
 
-                    subFilters.Add("hwupload=derive_device=vulkan:extra_hw_frames=16");
+                    // prefer vaapi hwupload to vulkan hwupload,
+                    // Mesa RADV does not support a dedicated transfer queue.
+                    subFilters.Add("hwupload=derive_device=vaapi,format=vaapi,hwmap=derive_device=vulkan");
 
                     overlayFilters.Add("overlay_vulkan=eof_action=endall:shortest=1:repeatlast=0");
-
-                    // explicitly sync using libplacebo.
-                    overlayFilters.Add("libplacebo=format=nv12:upscaler=none:downscaler=none");
+                    overlayFilters.Add("scale_vulkan=format=nv12");
 
                     // OUTPUT vaapi(nv12/bgra) surface(vram)
                     // reverse-mapping via vaapi-vulkan interop.

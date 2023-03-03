@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Emby.Naming.Common;
+using Jellyfin.Extensions;
 using MediaBrowser.Model.IO;
 
 namespace Emby.Naming.Video
@@ -13,6 +14,8 @@ namespace Emby.Naming.Video
     /// </summary>
     public static class VideoListResolver
     {
+        private static readonly Regex _resolutionRegex = new Regex("[0-9]{2}[0-9]+[ip]", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
         /// <summary>
         /// Resolves alternative versions and extras from list of video files.
         /// </summary>
@@ -115,19 +118,34 @@ namespace Emby.Naming.Video
                     continue;
                 }
 
-                if (!IsEligibleForMultiVersion(folderName, video.Files[0].Path, namingOptions))
+                if (!IsEligibleForMultiVersion(folderName, video.Files[0].FileNameWithoutExtension, namingOptions))
                 {
                     return videos;
                 }
 
-                if (folderName.Equals(Path.GetFileNameWithoutExtension(video.Files[0].Path.AsSpan()), StringComparison.Ordinal))
+                if (folderName.Equals(video.Files[0].FileNameWithoutExtension, StringComparison.Ordinal))
                 {
                     primary = video;
                 }
             }
 
-            // The list is created and overwritten in the caller, so we are allowed to do in-place sorting
-            videos.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.Ordinal));
+            if (videos.Count > 1)
+            {
+                var groups = videos.GroupBy(x => _resolutionRegex.IsMatch(x.Files[0].FileNameWithoutExtension)).ToList();
+                videos.Clear();
+                foreach (var group in groups)
+                {
+                    if (group.Key)
+                    {
+                        videos.InsertRange(0, group.OrderByDescending(x => x.Files[0].FileNameWithoutExtension.ToString(), new AlphanumericComparator()));
+                    }
+                    else
+                    {
+                        videos.AddRange(group.OrderBy(x => x.Files[0].FileNameWithoutExtension.ToString(), new AlphanumericComparator()));
+                    }
+                }
+            }
+
             primary ??= videos[0];
             videos.Remove(primary);
 
@@ -161,9 +179,8 @@ namespace Emby.Naming.Video
             return true;
         }
 
-        private static bool IsEligibleForMultiVersion(ReadOnlySpan<char> folderName, string testFilePath, NamingOptions namingOptions)
+        private static bool IsEligibleForMultiVersion(ReadOnlySpan<char> folderName, ReadOnlySpan<char> testFilename, NamingOptions namingOptions)
         {
-            var testFilename = Path.GetFileNameWithoutExtension(testFilePath.AsSpan());
             if (!testFilename.StartsWith(folderName, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
