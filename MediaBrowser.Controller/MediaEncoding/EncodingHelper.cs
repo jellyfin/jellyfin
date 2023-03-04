@@ -639,6 +639,26 @@ namespace MediaBrowser.Controller.MediaEncoding
                 deviceIndex);
         }
 
+        private string GetVulkanDeviceArgs(int deviceIndex, string deviceName, string srcDeviceAlias, string alias)
+        {
+            alias ??= VulkanAlias;
+            deviceIndex = deviceIndex >= 0
+                ? deviceIndex
+                : 0;
+            var vendorOpts = string.IsNullOrEmpty(deviceName)
+                ? ":" + deviceIndex
+                : ":" + "\"" + deviceName + "\"";
+            var options = string.IsNullOrEmpty(srcDeviceAlias)
+                ? vendorOpts
+                : "@" + srcDeviceAlias;
+
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                " -init_hw_device vulkan={0}{1}",
+                alias,
+                options);
+        }
+
         private string GetOpenclDeviceArgs(int deviceIndex, string deviceVendorName, string srcDeviceAlias, string alias)
         {
             alias ??= OpenclAlias;
@@ -820,6 +840,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                         {
                             args.Append(GetOpenclDeviceArgs(0, "Advanced Micro Devices", null, OpenclAlias));
                             filterDevArgs = GetFilterHwDeviceArgs(OpenclAlias);
+                        }
+                        else
+                        {
+                            // libplacebo wants an explicitly set vulkan filter device.
+                            args.Append(GetVulkanDeviceArgs(0, null, VaapiAlias, VulkanAlias));
+                            filterDevArgs = GetFilterHwDeviceArgs(VulkanAlias);
                         }
                     }
                     else
@@ -4126,7 +4152,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // sw => hw
                 if (doVkTonemap)
                 {
-                    mainFilters.Add("hwupload=derive_device=vulkan:extra_hw_frames=16");
+                    mainFilters.Add("hwupload_vaapi");
+                    mainFilters.Add("hwmap=derive_device=vulkan");
+                    mainFilters.Add("format=vulkan");
                 }
             }
             else if (isVaapiDecoder)
@@ -4156,6 +4184,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 // map from vaapi to vulkan via vaapi-vulkan interop (Vega/gfx9+).
                 mainFilters.Add("hwmap=derive_device=vulkan");
+                mainFilters.Add("format=vulkan");
             }
 
             // vk tonemap
@@ -4234,7 +4263,9 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     // prefer vaapi hwupload to vulkan hwupload,
                     // Mesa RADV does not support a dedicated transfer queue.
-                    subFilters.Add("hwupload=derive_device=vaapi,format=vaapi,hwmap=derive_device=vulkan");
+                    subFilters.Add("hwupload_vaapi");
+                    subFilters.Add("hwmap=derive_device=vulkan");
+                    subFilters.Add("format=vulkan");
 
                     overlayFilters.Add("overlay_vulkan=eof_action=endall:shortest=1:repeatlast=0");
                     overlayFilters.Add("scale_vulkan=format=nv12");
