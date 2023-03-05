@@ -30,11 +30,11 @@ case "$1" in
       adduser --system --ingroup ${JELLYFIN_USER} --shell /bin/false ${JELLYFIN_USER} --no-create-home --home ${PROGRAMDATA} \
         --gecos "Jellyfin default user" > /dev/null 2>&1
     fi
-    # add jellyfin to the render group for hwa
+    # Add jellyfin to the render group for hwa
     if [[ ! -z "$(getent group ${RENDER_GROUP})" ]]; then
       usermod -aG ${RENDER_GROUP} ${JELLYFIN_USER} > /dev/null 2>&1
     fi
-    # add jellyfin to the video group for hwa
+    # Add jellyfin to the video group for hwa
     if [[ ! -z "$(getent group ${VIDEO_GROUP})" ]]; then
       usermod -aG ${VIDEO_GROUP} ${JELLYFIN_USER} > /dev/null 2>&1
     fi
