@@ -31,7 +31,7 @@ namespace MediaBrowser.Model.Configuration
         /// <summary>
         /// Gets or sets the target width resolutions, in px, to generates preview images for.
         /// </summary>
-        public HashSet<int> WidthResolutions { get; set; } = new HashSet<int> { 320 };
+        public int[] WidthResolutions { get; set; } = new[] { 320 };
 
         /// <summary>
         /// Gets or sets number of tile images to allow in X dimension.
@@ -51,7 +51,7 @@ namespace MediaBrowser.Model.Configuration
         /// <summary>
         /// Gets or sets the jpeg quality to use for image tiles.
         /// </summary>
-        public int JpegQuality { get; set; } = 90;
+        public int JpegQuality { get; set; } = 80;
 
         /// <summary>
         /// Gets or sets the number of threads to be used by ffmpeg.
