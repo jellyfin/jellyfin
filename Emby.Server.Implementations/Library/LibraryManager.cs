@@ -2670,8 +2670,8 @@ namespace Emby.Server.Implementations.Library
                         }
                     }
 
-                    // if owner is Episode, only suffix type matches will be allowed, episode name must match exactly
-                    if (owner is not Episode || (prefix is not null && prefix.Equals(ownerVideoInfo.Name, StringComparison.OrdinalIgnoreCase)))
+                    // if owner is Episode, only suffix type matches will be allowed, episode file name must match exactly
+                    if (owner is not Episode || (prefix is not null && prefix.Equals(Path.GetFileNameWithoutExtension(ownerVideoInfo.Path), StringComparison.OrdinalIgnoreCase)))
                     {
                         var extra = GetExtra(current, extraType.Value);
                         if (extra is not null)
