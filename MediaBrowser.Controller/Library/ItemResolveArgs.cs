@@ -1,12 +1,11 @@
 #nullable disable
 
-#pragma warning disable CA1721, CA1819, CS1591
+#pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 
@@ -30,17 +29,12 @@ namespace MediaBrowser.Controller.Library
         /// Initializes a new instance of the <see cref="ItemResolveArgs" /> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
-        /// <param name="directoryService">The directory service.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public ItemResolveArgs(IServerApplicationPaths appPaths, IDirectoryService directoryService, ILibraryManager libraryManager)
+        public ItemResolveArgs(IServerApplicationPaths appPaths, ILibraryManager libraryManager)
         {
             _appPaths = appPaths;
-            DirectoryService = directoryService;
             _libraryManager = libraryManager;
         }
-
-        // TODO remove dependencies as properties, they should be injected where it makes sense
-        public IDirectoryService DirectoryService { get; }
 
         /// <summary>
         /// Gets or sets the file system children.

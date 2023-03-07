@@ -1,7 +1,5 @@
 #nullable disable
 
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,15 +10,20 @@ using Jellyfin.Extensions;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 
 namespace Emby.Server.Implementations.Library.Resolvers
 {
+    /// <summary>
+    /// Class PhotoResolver.
+    /// </summary>
     public class PhotoResolver : ItemResolver<Photo>
     {
         private readonly IImageProcessor _imageProcessor;
         private readonly NamingOptions _namingOptions;
+        private readonly IDirectoryService _directoryService;
 
         private static readonly HashSet<string> _ignoreFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -35,10 +38,17 @@ namespace Emby.Server.Implementations.Library.Resolvers
             "default"
         };
 
-        public PhotoResolver(IImageProcessor imageProcessor, NamingOptions namingOptions)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PhotoResolver"/> class.
+        /// </summary>
+        /// <param name="imageProcessor">The image processor.</param>
+        /// <param name="namingOptions">The naming options.</param>
+        /// <param name="directoryService">The directory service.</param>
+        public PhotoResolver(IImageProcessor imageProcessor, NamingOptions namingOptions, IDirectoryService directoryService)
         {
             _imageProcessor = imageProcessor;
             _namingOptions = namingOptions;
+            _directoryService = directoryService;
         }
 
         /// <summary>
@@ -61,7 +71,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                         var filename = Path.GetFileNameWithoutExtension(args.Path);
 
                         // Make sure the image doesn't belong to a video file
-                        var files = args.DirectoryService.GetFiles(Path.GetDirectoryName(args.Path));
+                        var files = _directoryService.GetFiles(Path.GetDirectoryName(args.Path));
 
                         foreach (var file in files)
                         {
