@@ -40,6 +40,9 @@ public class AudioResolverTests
     [InlineData("chapter 01 part 01.mp3", "chapter 01 part 02.mp3")]
     /* Mismatched chapters, parts, and named files. */
     [InlineData("chapter 01.mp3", "part 2.mp3")]
+    [InlineData("book title.mp3", "chapter name.mp3")] // "book title" resolves as alternate version of book based on directory name
+    [InlineData("01 Content.mp3", "01 Credits.mp3")] // resolves as alternate versions of chapter 1
+    [InlineData("Chapter Name.mp3", "Part 1.mp3")]
     public void Resolve_AudiobookDirectory_NoResult(params string[] children)
     {
         var resolved = TestResolveChildren("/parent/book title", children);
