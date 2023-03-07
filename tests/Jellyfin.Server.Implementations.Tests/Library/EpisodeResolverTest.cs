@@ -25,7 +25,8 @@ namespace Jellyfin.Server.Implementations.Tests.Library
             var episodeResolver = new EpisodeResolver(Mock.Of<ILogger<EpisodeResolver>>(), _namingOptions);
             var itemResolveArgs = new ItemResolveArgs(
                 Mock.Of<IServerApplicationPaths>(),
-                Mock.Of<IDirectoryService>())
+                Mock.Of<IDirectoryService>(),
+                null)
             {
                 Parent = parent,
                 CollectionType = CollectionType.TvShows,
@@ -48,7 +49,8 @@ namespace Jellyfin.Server.Implementations.Tests.Library
             var episodeResolver = new EpisodeResolverMock(Mock.Of<ILogger<EpisodeResolver>>(), _namingOptions);
             var itemResolveArgs = new ItemResolveArgs(
                 Mock.Of<IServerApplicationPaths>(),
-                Mock.Of<IDirectoryService>())
+                Mock.Of<IDirectoryService>(),
+                null)
             {
                 Parent = series,
                 CollectionType = CollectionType.TvShows,

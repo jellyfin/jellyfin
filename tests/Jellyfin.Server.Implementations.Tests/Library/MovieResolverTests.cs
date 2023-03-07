@@ -21,7 +21,8 @@ public class MovieResolverTests
         var movieResolver = new MovieResolver(Mock.Of<IImageProcessor>(), Mock.Of<ILogger<MovieResolver>>(), _namingOptions);
         var itemResolveArgs = new ItemResolveArgs(
             Mock.Of<IServerApplicationPaths>(),
-            Mock.Of<IDirectoryService>())
+            Mock.Of<IDirectoryService>(),
+            null)
         {
             Parent = null,
             FileInfo = new FileSystemMetadata

@@ -537,7 +537,7 @@ namespace Emby.Server.Implementations.Library
                 collectionType = GetContentTypeOverride(fullPath, true);
             }
 
-            var args = new ItemResolveArgs(_configurationManager.ApplicationPaths, directoryService)
+            var args = new ItemResolveArgs(_configurationManager.ApplicationPaths, directoryService, this)
             {
                 Parent = parent,
                 FileInfo = fileInfo,
