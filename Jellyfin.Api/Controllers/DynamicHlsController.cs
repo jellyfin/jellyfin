@@ -1844,7 +1844,11 @@ namespace Jellyfin.Api.Controllers
                 // args += " -mixed-refs 0 -refs 3 -x264opts b_pyramid=0:weightb=0:weightp=0";
 
                 // video processing filters.
-                args += _encodingHelper.GetVideoProcessingFilterParam(state, _encodingOptions, codec);
+                var videoProcessParam = _encodingHelper.GetVideoProcessingFilterParam(state, _encodingOptions, codec);
+
+                var negativeMapArgs = _encodingHelper.GetNegativeMapArgsByFilters(state, videoProcessParam);
+
+                args = negativeMapArgs + args + videoProcessParam;
 
                 // -start_at_zero is necessary to use with -ss when seeking,
                 // otherwise the target position cannot be determined.
