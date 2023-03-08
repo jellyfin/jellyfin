@@ -107,5 +107,14 @@
     "TasksApplicationCategory": "Forrit",
     "TasksLibraryCategory": "Miðlasafn",
     "TasksMaintenanceCategory": "Viðhald",
-    "Default": "Sjálfgefið"
+    "Default": "Sjálfgefið",
+    "TaskCleanActivityLog": "Hreinsa athafnaskrá",
+    "TaskRefreshPeople": "Endurnýja fólk",
+    "TaskDownloadMissingSubtitles": "Sækja texta sem vantar",
+    "TaskOptimizeDatabase": "Fínstilla gagnagrunn",
+    "Undefined": "Óskilgreint",
+    "TaskCleanLogsDescription": "Eyðir færslu skrám sem eru meira en {0} gömul.",
+    "TaskCleanLogs": "Hreinsa færslu skrá",
+    "TaskDownloadMissingSubtitlesDescription": "Leitar á netinu að texta sem vantar miðað við uppsetningu lýsigagna.",
+    "HearingImpaired": "Heyrnarskertur"
 }
