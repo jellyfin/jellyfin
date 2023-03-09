@@ -714,7 +714,7 @@ namespace MediaBrowser.Providers.Manager
                         if (localImagesFound)
                         {
                             options.ReplaceAllImages = false;
-                            options.ReplaceImages = replaceImages.ToArray();
+                            options.ReplaceImages = replaceImages;
                         }
 
                         if (imageService.MergeImages(item, localItem.Images))

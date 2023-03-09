@@ -273,7 +273,7 @@ namespace MediaBrowser.Providers.Manager
                 }
 
                 if (!refreshOptions.ReplaceAllImages &&
-                    refreshOptions.ReplaceImages.Length == 0 &&
+                    !refreshOptions.ReplaceImages.Any() &&
                     ContainsImages(item, provider.GetSupportedImages(item).ToList(), savedOptions, backdropLimit))
                 {
                     return;
