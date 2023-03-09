@@ -24,7 +24,7 @@ namespace MediaBrowser.Controller.Providers
 
         public bool ReplaceAllImages { get; set; }
 
-        public IEnumerable<ImageType> ReplaceImages { get; set; }
+        public IReadOnlyList<ImageType> ReplaceImages { get; set; }
 
         public bool IsAutomated { get; set; }
 
