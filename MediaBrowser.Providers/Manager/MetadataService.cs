@@ -26,6 +26,8 @@ namespace MediaBrowser.Providers.Manager
         where TItemType : BaseItem, IHasLookupInfo<TIdType>, new()
         where TIdType : ItemLookupInfo, new()
     {
+        private static readonly ImageType[] AllImageTypes = Enum.GetValues<ImageType>();
+
         protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger<MetadataService<TItemType, TIdType>> logger, IProviderManager providerManager, IFileSystem fileSystem, ILibraryManager libraryManager)
         {
             ServerConfigurationManager = serverConfigurationManager;
@@ -672,7 +674,7 @@ namespace MediaBrowser.Providers.Manager
             }
 
             var hasLocalMetadata = false;
-            var replaceImages = Enum.GetValues<ImageType>().ToList();
+            var replaceImages = AllImageTypes.ToList();
             var localImagesFound = false;
 
             foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>())
