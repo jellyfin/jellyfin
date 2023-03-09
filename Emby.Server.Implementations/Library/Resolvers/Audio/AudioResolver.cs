@@ -192,7 +192,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                     continue;
                 }
 
-                if (resolvedItem.Files.Count == 0)
+                // Until multi-part books are handled letting files stack hides them from browsing in the client
+                if (resolvedItem.Files.Count == 0 || resolvedItem.Extras.Count > 0 || resolvedItem.AlternateVersions.Count > 0)
                 {
                     continue;
                 }

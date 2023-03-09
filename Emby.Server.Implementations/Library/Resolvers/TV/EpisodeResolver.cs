@@ -5,6 +5,7 @@ using System.Linq;
 using Emby.Naming.Common;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
 
@@ -20,8 +21,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="namingOptions">The naming options.</param>
-        public EpisodeResolver(ILogger<EpisodeResolver> logger, NamingOptions namingOptions)
-            : base(logger, namingOptions)
+        /// <param name="directoryService">The directory service.</param>
+        public EpisodeResolver(ILogger<EpisodeResolver> logger, NamingOptions namingOptions, IDirectoryService directoryService)
+            : base(logger, namingOptions, directoryService)
         {
         }
 

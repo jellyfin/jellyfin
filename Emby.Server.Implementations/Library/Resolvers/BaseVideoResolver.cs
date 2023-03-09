@@ -25,13 +25,16 @@ namespace Emby.Server.Implementations.Library.Resolvers
     {
         private readonly ILogger _logger;
 
-        protected BaseVideoResolver(ILogger logger, NamingOptions namingOptions)
+        protected BaseVideoResolver(ILogger logger, NamingOptions namingOptions, IDirectoryService directoryService)
         {
             _logger = logger;
             NamingOptions = namingOptions;
+            DirectoryService = directoryService;
         }
 
         protected NamingOptions NamingOptions { get; }
+
+        protected IDirectoryService DirectoryService { get; }
 
         /// <summary>
         /// Resolves the specified args.
@@ -65,7 +68,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                     var filename = child.Name;
                     if (child.IsDirectory)
                     {
-                        if (IsDvdDirectory(child.FullName, filename, args.DirectoryService))
+                        if (IsDvdDirectory(child.FullName, filename, DirectoryService))
                         {
                             videoType = VideoType.Dvd;
                         }
