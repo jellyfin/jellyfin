@@ -56,5 +56,13 @@ namespace MediaBrowser.Controller.Playlists
         /// <param name="newIndex">The new index.</param>
         /// <returns>Task.</returns>
         Task MoveItemAsync(string playlistId, string entryId, int newIndex);
+
+        /// <summary>
+        /// Removed all playlists of a user.
+        /// If the playlist is shared, ownership is transferred.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <returns>Task.</returns>
+        Task RemovePlaylists(Guid userId);
     }
 }

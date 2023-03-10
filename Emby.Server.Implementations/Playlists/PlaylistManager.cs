@@ -135,16 +135,8 @@ namespace Emby.Server.Implementations.Playlists
                 {
                     Name = name,
                     Path = path,
-                    Shares = new[]
-                    {
-                        new Share
-                        {
-                            UserId = options.UserId.Equals(default)
-                                ? null
-                                : options.UserId.ToString("N", CultureInfo.InvariantCulture),
-                            CanEdit = true
-                        }
-                    }
+                    OwnerUserId = options.UserId,
+                    Shares = options.Shares
                 };
 
                 playlist.SetMediaType(options.MediaType);
@@ -536,6 +528,40 @@ namespace Emby.Server.Implementations.Playlists
 
             return _libraryManager.RootFolder.Children.OfType<Folder>().FirstOrDefault(i => string.Equals(i.GetType().Name, TypeName, StringComparison.Ordinal)) ??
                 _libraryManager.GetUserRootFolder().Children.OfType<Folder>().FirstOrDefault(i => string.Equals(i.GetType().Name, TypeName, StringComparison.Ordinal));
+        }
+
+        public async Task RemovePlaylists(Guid userId)
+        {
+            var playlists = GetPlaylists(userId);
+            foreach (var playlist in playlists)
+            {
+                // Update owner if shared
+                var rankedShares = playlist.Shares.OrderByDescending(x => x.CanEdit).ToArray();
+                if (rankedShares.Length > 0 && Guid.TryParse(rankedShares[0].UserId, out var guid))
+                {
+                    playlist.OwnerUserId = guid;
+                    playlist.Shares = rankedShares.Skip(1).ToArray();
+                    await playlist.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+
+                    if (playlist.IsFile)
+                    {
+                        SavePlaylistFile(playlist);
+                    }
+                }
+                else
+                {
+                    // Remove playlist if not shared
+                    _libraryManager.DeleteItem(
+                        playlist,
+                        new DeleteOptions
+                        {
+                            DeleteFileLocation = false,
+                            DeleteFromExternalProvider = false
+                        },
+                        playlist.GetParent(),
+                        false);
+                }
+            }
         }
     }
 }
