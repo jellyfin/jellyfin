@@ -47,12 +47,12 @@ using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using Season = MediaBrowser.Controller.Entities.TV.Season;
-using Series = MediaBrowser.Controller.Entities.TV.Series;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using EpisodeInfo = Emby.Naming.TV.EpisodeInfo;
 using Genre = MediaBrowser.Controller.Entities.Genre;
 using Person = MediaBrowser.Controller.Entities.Person;
+using Season = MediaBrowser.Controller.Entities.TV.Season;
+using Series = MediaBrowser.Controller.Entities.TV.Series;
 using VideoResolver = Emby.Naming.Video.VideoResolver;
 
 namespace Emby.Server.Implementations.Library
@@ -2643,26 +2643,28 @@ namespace Emby.Server.Implementations.Library
                     // if owner is dir, don't own episode extras
                     // test if extra filename is formatted like an episode
                     int? dashIndex = current.Name?.LastIndexOf('-');
-                    String prefix = null;
+                    string prefix = null;
                     if (dashIndex is int dashIndexValue)
                     {
                         if (dashIndexValue >= 0)
                         {
                             prefix = current.Name.Substring(0, dashIndexValue); // possible episode name
-                            String path = current.FullName;
+                            string path = current.FullName;
                             path = string.Concat(path.AsSpan(0, path.LastIndexOf('-')), current.Extension);
                             var episodeInfo = resolver.Resolve(path, false);
 
-                            String SeriesName = null;
+                            string seriesName = null;
                             if (owner is Series series)
                             {
-                                SeriesName = series.Name;
+                                seriesName = series.Name;
                             }
+
                             if (owner is Season season)
                             {
-                                SeriesName = season.SeriesName;
+                                seriesName = season.SeriesName;
                             }
-                            if (SeriesName is not null && SeriesName.Equals(episodeInfo?.SeriesName, StringComparison.OrdinalIgnoreCase))
+
+                            if (seriesName is not null && seriesName.Equals(episodeInfo?.SeriesName, StringComparison.OrdinalIgnoreCase))
                             {
                                 // don't attach episode extras to series or season
                                 continue;
@@ -2679,7 +2681,6 @@ namespace Emby.Server.Implementations.Library
                             yield return extra;
                         }
                     }
-
                 }
             }
 

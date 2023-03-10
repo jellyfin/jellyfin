@@ -308,7 +308,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
             result.ExtraFiles.AddRange(files.Where(i => !ContainsFile(resolverResult, i)));
 
-            //calculate if in mixed folder after extra files have been removed from count
+            // calculate if in mixed folder after extra files have been removed from count
             var isInMixedFolder = result.Items.Count > 1 || parent?.IsTopParent == true;
             foreach (var item in result.Items)
             {
