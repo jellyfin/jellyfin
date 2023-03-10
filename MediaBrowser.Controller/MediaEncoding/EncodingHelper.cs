@@ -4792,7 +4792,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // HWA decoders can handle both video files and video folders.
-            var videoType = mediaSource.VideoType;
+            var videoType = state.VideoType;
             if (videoType != VideoType.VideoFile
                 && videoType != VideoType.Iso
                 && videoType != VideoType.Dvd
