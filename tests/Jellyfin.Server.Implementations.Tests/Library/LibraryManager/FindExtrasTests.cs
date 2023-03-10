@@ -442,11 +442,12 @@ public class FindExtrasTests
         extras = _libraryManager.FindExtras(folderOwner, files, new DirectoryService(_fileSystemMock.Object)).OrderBy(e => e.ExtraType).ToList();
 
         Assert.Equal(3, extras.Count);
-        Assert.Equal(ExtraType.Clip, extras[0].ExtraType);
-        Assert.Equal(typeof(Video), extras[0].GetType());
-        Assert.Equal("/series/Dexter/Dexter - S03E05/Dexter - S03E05 - Fifth-featurette.mkv", extras[0].Path);
-        Assert.Equal("/series/Dexter/Dexter - S03E05/Dexter - S03E05 - Fifth-featurette2.mkv", extras[1].Path);
-        Assert.Equal(ExtraType.DeletedScene, extras[2].ExtraType);
-        Assert.Equal("/series/Dexter/Dexter - S03E05/Deleted Scenes/Meet Friends.mkv", extras[2].Path);
+        // directory type extras are found before suffix type
+        Assert.Equal(ExtraType.DeletedScene, extras[0].ExtraType);
+        Assert.Equal("/series/Dexter/Dexter - S03E05/Deleted Scenes/Meet Friends.mkv", extras[0].Path);
+        Assert.Equal(ExtraType.Featurette, extras[1].ExtraType);
+        Assert.Equal(typeof(Video), extras[1].GetType());
+        Assert.Equal("/series/Dexter/Dexter - S03E05/Dexter - S03E05 - Fifth-featurette.mkv", extras[1].Path);
+        Assert.Equal("/series/Dexter/Dexter - S03E05/Dexter - S03E05 - Fifth-featurette2.mkv", extras[2].Path);
     }
 }
