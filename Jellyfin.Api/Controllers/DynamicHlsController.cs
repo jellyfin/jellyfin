@@ -19,6 +19,8 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Net;
+using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
@@ -1654,8 +1656,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             startNumber.ToString(CultureInfo.InvariantCulture),
             baseUrlParam,
             isEventPlaylist ? "event" : "vod",
-            outputTsArg,
-            outputPath).Trim();
+            EncodingUtils.NormalizePath(outputTsArg),
+            EncodingUtils.NormalizePath(outputPath)).Trim();
     }
 
     /// <summary>
