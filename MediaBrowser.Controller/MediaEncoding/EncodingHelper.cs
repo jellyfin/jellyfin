@@ -4909,6 +4909,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Set the av1 codec explicitly to trigger hw accelerator, otherwise libdav1d will be used.
             var isAv1 = string.Equals(videoCodec, "av1", StringComparison.OrdinalIgnoreCase);
 
+            // Allow profile mismatch if decoding H.264 baseline with d3d11va and vaapi hwaccels.
+            var profileMismatch = string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase)
+                && string.Equals(state.VideoStream?.Profile, "baseline", StringComparison.OrdinalIgnoreCase);
+
             if (bitDepth == 10 && isCodecAvailable)
             {
                 if (string.Equals(videoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
@@ -4933,14 +4937,16 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     if (isVaapiSupported && isCodecAvailable)
                     {
-                        return " -hwaccel vaapi" + (outputHwSurface ? " -hwaccel_output_format vaapi" : string.Empty) + (isAv1 ? " -c:v av1" : string.Empty);
+                        return " -hwaccel vaapi" + (outputHwSurface ? " -hwaccel_output_format vaapi" : string.Empty)
+                            + (profileMismatch ? " -hwaccel_flags +allow_profile_mismatch" : string.Empty) + (isAv1 ? " -c:v av1" : string.Empty);
                     }
 
                     if (isD3d11Supported && isCodecAvailable)
                     {
                         // set -threads 3 to intel d3d11va decoder explicitly. Lower threads may result in dead lock.
                         // on newer devices such as Xe, the larger the init_pool_size, the longer the initialization time for opencl to derive from d3d11.
-                        return " -hwaccel d3d11va" + (outputHwSurface ? " -hwaccel_output_format d3d11" : string.Empty) + " -threads 3" + (isAv1 ? " -c:v av1" : string.Empty);
+                        return " -hwaccel d3d11va" + (outputHwSurface ? " -hwaccel_output_format d3d11" : string.Empty)
+                            + (profileMismatch ? " -hwaccel_flags +allow_profile_mismatch" : string.Empty) + " -threads 3" + (isAv1 ? " -c:v av1" : string.Empty);
                     }
                 }
                 else
@@ -4975,7 +4981,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (isD3d11Supported && isCodecAvailable)
                 {
-                    return " -hwaccel d3d11va" + (outputHwSurface ? " -hwaccel_output_format d3d11" : string.Empty) + (isAv1 ? " -c:v av1" : string.Empty);
+                    return " -hwaccel d3d11va" + (outputHwSurface ? " -hwaccel_output_format d3d11" : string.Empty)
+                        + (profileMismatch ? " -hwaccel_flags +allow_profile_mismatch" : string.Empty) + (isAv1 ? " -c:v av1" : string.Empty);
                 }
             }
 
@@ -4984,9 +4991,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && isVaapiSupported
                 && isCodecAvailable)
             {
-                return " -hwaccel vaapi" + (outputHwSurface ? " -hwaccel_output_format vaapi" : string.Empty) + (isAv1 ? " -c:v av1" : string.Empty);
+                return " -hwaccel vaapi" + (outputHwSurface ? " -hwaccel_output_format vaapi" : string.Empty)
+                    + (profileMismatch ? " -hwaccel_flags +allow_profile_mismatch" : string.Empty) + (isAv1 ? " -c:v av1" : string.Empty);
             }
 
+            // Apple videotoolbox
             if (string.Equals(options.HardwareAccelerationType, "videotoolbox", StringComparison.OrdinalIgnoreCase)
                 && isVideotoolboxSupported
                 && isCodecAvailable)
