@@ -246,6 +246,11 @@ public class ItemUpdateController : BaseJellyfinApiController
             episode.AirsBeforeSeasonNumber = request.AirsBeforeSeasonNumber;
         }
 
+        if (request.Height is not null && item is LiveTvChannel channel)
+        {
+            channel.Height = request.Height.Value;
+        }
+
         item.Tags = request.Tags;
 
         if (request.Taglines is not null)
