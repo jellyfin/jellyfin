@@ -53,6 +53,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
         /// <param name="itemRepo">Instance of the <see cref="IItemRepository"/> interface.</param>
+        /// <param name="blurayExaminer">Instance of the <see cref="IBlurayExaminer"/> interface.</param>
         /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
         /// <param name="encodingManager">Instance of the <see cref="IEncodingManager"/> interface.</param>
         /// <param name="config">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
@@ -66,6 +67,7 @@ namespace MediaBrowser.Providers.MediaInfo
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
             IItemRepository itemRepo,
+            IBlurayExaminer blurayExaminer,
             ILocalizationManager localization,
             IEncodingManager encodingManager,
             IServerConfigurationManager config,
@@ -85,6 +87,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 mediaSourceManager,
                 mediaEncoder,
                 itemRepo,
+                blurayExaminer,
                 localization,
                 encodingManager,
                 config,

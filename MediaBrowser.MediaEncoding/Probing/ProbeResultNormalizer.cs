@@ -248,12 +248,23 @@ namespace MediaBrowser.MediaEncoding.Probing
                 return null;
             }
 
+            // Handle MPEG-1 container
             if (string.Equals(format, "mpegvideo", StringComparison.OrdinalIgnoreCase))
             {
                 return "mpeg";
             }
 
-            format = format.Replace("matroska", "mkv", StringComparison.OrdinalIgnoreCase);
+            // Handle MPEG-2 container
+            if (string.Equals(format, "mpeg", StringComparison.OrdinalIgnoreCase))
+            {
+                return "ts";
+            }
+
+            // Handle matroska container
+            if (string.Equals(format, "matroska", StringComparison.OrdinalIgnoreCase))
+            {
+                return "mkv";
+            }
 
             return format;
         }
