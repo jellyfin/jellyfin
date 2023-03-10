@@ -64,5 +64,12 @@ namespace MediaBrowser.Controller.Playlists
         /// <param name="userId">The user id.</param>
         /// <returns>Task.</returns>
         Task RemovePlaylists(Guid userId);
+
+        /// <summary>
+        /// Updates a playlist.
+        /// </summary>
+        /// <param name="playlist">The updated playlist.</param>
+        /// <returns>Task.</returns>
+        Task UpdatePlaylist(Playlist playlist);
     }
 }

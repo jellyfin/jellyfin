@@ -563,5 +563,19 @@ namespace Emby.Server.Implementations.Playlists
                 }
             }
         }
+
+        public async Task UpdatePlaylist(Playlist playlist)
+        {
+            var currentPlaylist = (Playlist)_libraryManager.GetItemById(playlist.Id);
+            currentPlaylist.OwnerUserId = playlist.OwnerUserId;
+            currentPlaylist.Shares = playlist.Shares;
+
+            await playlist.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+
+            if (playlist.IsFile)
+            {
+                SavePlaylistFile(currentPlaylist);
+            }
+        }
     }
 }

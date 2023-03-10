@@ -40,7 +40,8 @@ namespace Jellyfin.Server.Migrations
             typeof(Routines.ReaddDefaultPluginRepository),
             typeof(Routines.MigrateDisplayPreferencesDb),
             typeof(Routines.RemoveDownloadImagesInAdvance),
-            typeof(Routines.MigrateAuthenticationDb)
+            typeof(Routines.MigrateAuthenticationDb),
+            typeof(Routines.FixPlaylistOwner)
         };
 
         /// <summary>
