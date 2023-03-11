@@ -10,6 +10,7 @@ RUN apk add curl git zlib zlib-dev autoconf g++ make libpng-dev gifsicle alpine-
  && curl -L https://github.com/jellyfin/jellyfin-web/archive/${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
  && cd jellyfin-web-* \
  && npm ci --no-audit --unsafe-perm \
+ && npm run build:production \
  && mv dist /dist
 
 FROM debian:stable-slim as app
