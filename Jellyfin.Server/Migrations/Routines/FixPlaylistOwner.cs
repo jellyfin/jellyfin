@@ -59,7 +59,7 @@ internal class FixPlaylistOwner : IMigrationRoutine
                     playlist.OwnerUserId = guid;
                     playlist.Shares = shares.Where(x => x != firstEditShare).ToArray();
 
-                    _playlistManager.UpdatePlaylist(playlist).GetAwaiter().GetResult();
+                    _playlistManager.UpdatePlaylistAsync(playlist).GetAwaiter().GetResult();
                 }
             }
         }

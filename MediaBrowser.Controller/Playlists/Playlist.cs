@@ -233,7 +233,8 @@ namespace MediaBrowser.Controller.Playlists
                 return base.IsVisible(user);
             }
 
-            if (user.Id.Equals(OwnerUserId))
+            var userId = user.Id;
+            if (userId.Equals(OwnerUserId))
             {
                 return true;
             }
@@ -241,10 +242,9 @@ namespace MediaBrowser.Controller.Playlists
             var shares = Shares;
             if (shares.Length == 0)
             {
-                return base.IsVisible(user);
+                return false;
             }
 
-            var userId = user.Id;
             return shares.Any(share => Guid.TryParse(share.UserId, out var id) && id.Equals(userId));
         }
 

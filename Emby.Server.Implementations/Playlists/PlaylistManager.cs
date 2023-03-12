@@ -530,7 +530,7 @@ namespace Emby.Server.Implementations.Playlists
                 _libraryManager.GetUserRootFolder().Children.OfType<Folder>().FirstOrDefault(i => string.Equals(i.GetType().Name, TypeName, StringComparison.Ordinal));
         }
 
-        public async Task RemovePlaylists(Guid userId)
+        public async Task RemovePlaylistsAsync(Guid userId)
         {
             var playlists = GetPlaylists(userId);
             foreach (var playlist in playlists)
@@ -564,7 +564,7 @@ namespace Emby.Server.Implementations.Playlists
             }
         }
 
-        public async Task UpdatePlaylist(Playlist playlist)
+        public async Task UpdatePlaylistAsync(Playlist playlist)
         {
             var currentPlaylist = (Playlist)_libraryManager.GetItemById(playlist.Id);
             currentPlaylist.OwnerUserId = playlist.OwnerUserId;
@@ -572,7 +572,7 @@ namespace Emby.Server.Implementations.Playlists
 
             await playlist.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
-            if (playlist.IsFile)
+            if (currentPlaylist.IsFile)
             {
                 SavePlaylistFile(currentPlaylist);
             }

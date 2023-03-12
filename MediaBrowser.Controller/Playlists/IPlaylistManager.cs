@@ -63,13 +63,13 @@ namespace MediaBrowser.Controller.Playlists
         /// </summary>
         /// <param name="userId">The user id.</param>
         /// <returns>Task.</returns>
-        Task RemovePlaylists(Guid userId);
+        Task RemovePlaylistsAsync(Guid userId);
 
         /// <summary>
         /// Updates a playlist.
         /// </summary>
         /// <param name="playlist">The updated playlist.</param>
         /// <returns>Task.</returns>
-        Task UpdatePlaylist(Playlist playlist);
+        Task UpdatePlaylistAsync(Playlist playlist);
     }
 }

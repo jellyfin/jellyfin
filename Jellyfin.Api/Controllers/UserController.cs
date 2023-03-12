@@ -158,7 +158,7 @@ public class UserController : BaseJellyfinApiController
         }
 
         await _sessionManager.RevokeUserTokens(user.Id, null).ConfigureAwait(false);
-        await _playlistManager.RemovePlaylists(userId).ConfigureAwait(false);
+        await _playlistManager.RemovePlaylistsAsync(userId).ConfigureAwait(false);
         await _userManager.DeleteUserAsync(userId).ConfigureAwait(false);
         return NoContent();
     }
