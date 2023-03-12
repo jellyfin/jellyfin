@@ -122,9 +122,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             var attributes = ParseExtInf(extInf, out string remaining);
             extInf = remaining;
 
-            if (attributes.TryGetValue("tvg-logo", out string value))
+            if (attributes.TryGetValue("tvg-logo", out string tvgLogo))
             {
-                channel.ImageUrl = value;
+                channel.ImageUrl = tvgLogo;
+            }
+            else if (attributes.TryGetValue("logo", out string logo))
+            {
+                channel.ImageUrl = logo;
             }
 
             if (attributes.TryGetValue("group-title", out string groupTitle))
