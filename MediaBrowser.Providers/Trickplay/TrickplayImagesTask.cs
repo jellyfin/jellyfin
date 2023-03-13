@@ -85,7 +85,7 @@ namespace MediaBrowser.Providers.Trickplay
                 MediaTypes = new[] { MediaType.Video },
                 IsVirtualItem = false,
                 IsFolder = false,
-                Recursive = false
+                Recursive = true
             }).OfType<Video>().ToList();
 
             var numComplete = 0;
