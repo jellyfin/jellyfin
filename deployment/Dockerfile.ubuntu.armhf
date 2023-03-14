@@ -16,7 +16,7 @@ RUN apt-get update -yqq \
     mmv build-essential lsb-release
 
 # Install dotnet repository
-RUN wget -q https://download.visualstudio.microsoft.com/download/pr/794cd64a-31ac-4070-ac39-34858e8c00da/9568dfe47bd2d22de99268ceac5b2bef/dotnet-sdk-7.0.103-linux-x64.tar.gz -O dotnet-sdk.tar.gz \
+RUN wget -q https://download.visualstudio.microsoft.com/download/pr/bda88810-e1a6-4cf0-8139-7fd7fe7b2c7a/7a9ffa3e12e5f1c3d8b640e326c1eb14/dotnet-sdk-7.0.202-linux-x64.tar.gz -O dotnet-sdk.tar.gz \
   && mkdir -p dotnet-sdk \
   && tar -xzf dotnet-sdk.tar.gz -C dotnet-sdk \
   && ln -s $( pwd )/dotnet-sdk/dotnet /usr/bin/dotnet
