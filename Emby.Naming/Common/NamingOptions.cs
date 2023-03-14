@@ -749,7 +749,7 @@ namespace Emby.Naming.Common
 
             VideoVersionExpressions = new[]
             {
-                // get filename before final space-dash-space
+                // Get filename before final space-dash-space
                 @"^(?<filename>.*?)(?:\s-\s(?!.*\s-\s)(.*))?$"
             };
 

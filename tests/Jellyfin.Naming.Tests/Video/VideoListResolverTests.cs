@@ -69,7 +69,6 @@ namespace Jellyfin.Naming.Tests.Video
         [Fact]
         public void TestTVStackAndVersions()
         {
-            // No stacking here because there is no part/disc/etc
             var files = new[]
             {
                 @"/TV/Grey's Anatomy (2005)/Grey's Anatomy (2005) - s01e01 CD1.avi",
@@ -99,7 +98,6 @@ namespace Jellyfin.Naming.Tests.Video
         [Fact]
         public void TestTVStackAndVersionsNoFirstDash()
         {
-            // No stacking here because there is no part/disc/etc
             var files = new[]
             {
                 @"/TV/Grey's Anatomy (2005)/Grey's Anatomy (2005) s01e01 - pt1.avi",
@@ -129,7 +127,6 @@ namespace Jellyfin.Naming.Tests.Video
         [Fact]
         public void TestTVStack()
         {
-            // No stacking here because there is no part/disc/etc
             var files = new[]
             {
                 @"/TV/Doctor Who/Season 21/Doctor Who 21x11 - Resurrection of the Daleks - Part 1.mkv",
