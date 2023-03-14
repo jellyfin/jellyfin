@@ -10,6 +10,8 @@ if [[ -f $DEFAULT_FILE ]]; then
 fi
 
 JELLYFIN_USER=${JELLYFIN_USER:-jellyfin}
+RENDER_GROUP=${RENDER_GROUP:-render}
+VIDEO_GROUP=${VIDEO_GROUP:-video}
 
 # Data directories for program data (cache, db), configs, and logs
 PROGRAMDATA=${JELLYFIN_DATA_DIRECTORY-/var/lib/$NAME}
@@ -27,6 +29,14 @@ case "$1" in
     if [[ -z "$(getent passwd ${JELLYFIN_USER})"  ]]; then
       adduser --system --ingroup ${JELLYFIN_USER} --shell /bin/false ${JELLYFIN_USER} --no-create-home --home ${PROGRAMDATA} \
         --gecos "Jellyfin default user" > /dev/null 2>&1
+    fi
+    # Add jellyfin to the render group for hwa
+    if [[ ! -z "$(getent group ${RENDER_GROUP})" ]]; then
+      usermod -aG ${RENDER_GROUP} ${JELLYFIN_USER} > /dev/null 2>&1
+    fi
+    # Add jellyfin to the video group for hwa
+    if [[ ! -z "$(getent group ${VIDEO_GROUP})" ]]; then
+      usermod -aG ${VIDEO_GROUP} ${JELLYFIN_USER} > /dev/null 2>&1
     fi
     # ensure $PROGRAMDATA exists
     if [[ ! -d $PROGRAMDATA ]]; then
