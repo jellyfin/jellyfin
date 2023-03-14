@@ -523,32 +523,32 @@ namespace Emby.Server.Implementations.Dto
             var people = _libraryManager.GetPeople(item).OrderBy(i => i.SortOrder ?? int.MaxValue)
                 .ThenBy(i =>
                 {
-                    if (i.IsType(PersonType.Actor))
+                    if (i.IsType(PersonKind.Actor))
                     {
                         return 0;
                     }
 
-                    if (i.IsType(PersonType.GuestStar))
+                    if (i.IsType(PersonKind.GuestStar))
                     {
                         return 1;
                     }
 
-                    if (i.IsType(PersonType.Director))
+                    if (i.IsType(PersonKind.Director))
                     {
                         return 2;
                     }
 
-                    if (i.IsType(PersonType.Writer))
+                    if (i.IsType(PersonKind.Writer))
                     {
                         return 3;
                     }
 
-                    if (i.IsType(PersonType.Producer))
+                    if (i.IsType(PersonKind.Producer))
                     {
                         return 4;
                     }
 
-                    if (i.IsType(PersonType.Composer))
+                    if (i.IsType(PersonKind.Composer))
                     {
                         return 4;
                     }

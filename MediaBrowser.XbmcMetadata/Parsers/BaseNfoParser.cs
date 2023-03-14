@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Providers;
@@ -530,7 +531,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 case "director":
                     {
                         var val = reader.ReadElementContentAsString();
-                        foreach (var p in SplitNames(val).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Director }))
+                        foreach (var p in SplitNames(val).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonKind.Director }))
                         {
                             if (string.IsNullOrWhiteSpace(p.Name))
                             {
@@ -552,7 +553,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             var parts = val.Split('/').Select(i => i.Trim())
                                 .Where(i => !string.IsNullOrEmpty(i));
 
-                            foreach (var p in parts.Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Writer }))
+                            foreach (var p in parts.Select(v => new PersonInfo { Name = v.Trim(), Type = PersonKind.Writer }))
                             {
                                 if (string.IsNullOrWhiteSpace(p.Name))
                                 {
@@ -569,7 +570,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 case "writer":
                     {
                         var val = reader.ReadElementContentAsString();
-                        foreach (var p in SplitNames(val).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Writer }))
+                        foreach (var p in SplitNames(val).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonKind.Writer }))
                         {
                             if (string.IsNullOrWhiteSpace(p.Name))
                             {
@@ -1206,7 +1207,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         private PersonInfo GetPersonFromXmlNode(XmlReader reader)
         {
             var name = string.Empty;
-            var type = PersonType.Actor;  // If type is not specified assume actor
+            var type = PersonKind.Actor;  // If type is not specified assume actor
             var role = string.Empty;
             int? sortOrder = null;
             string? imageUrl = null;
@@ -1240,21 +1241,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         case "type":
                             {
                                 var val = reader.ReadElementContentAsString();
-
-                                if (!string.IsNullOrWhiteSpace(val))
+                                if (!Enum.TryParse(val, true, out type))
                                 {
-                                    type = val switch
-                                    {
-                                        PersonType.Composer => PersonType.Composer,
-                                        PersonType.Conductor => PersonType.Conductor,
-                                        PersonType.Director => PersonType.Director,
-                                        PersonType.Lyricist => PersonType.Lyricist,
-                                        PersonType.Producer => PersonType.Producer,
-                                        PersonType.Writer => PersonType.Writer,
-                                        PersonType.GuestStar => PersonType.GuestStar,
-                                        // unknown type --> actor
-                                        _ => PersonType.Actor
-                                    };
+                                    type = PersonKind.Actor;
                                 }
 
                                 break;
