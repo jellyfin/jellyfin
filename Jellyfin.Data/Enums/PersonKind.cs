@@ -84,4 +84,14 @@ public enum PersonKind
     /// A person who was the album artist.
     /// </summary>
     AlbumArtist,
+
+    /// <summary>
+    /// A person who was the author.
+    /// </summary>
+    Author,
+
+    /// <summary>
+    /// A person who was the illustrator.
+    /// </summary>
+    Illustrator,
 }
