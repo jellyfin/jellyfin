@@ -298,7 +298,7 @@ namespace MediaBrowser.Providers.MediaInfo
             if (options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh ||
                 options.MetadataRefreshMode == MetadataRefreshMode.Default)
             {
-                if (chapters.Length == 0 && mediaStreams.Any(i => i.Type == MediaStreamType.Video))
+                if (_config.Configuration.DummyChapterDuration > 0 && chapters.Length == 0 && mediaStreams.Any(i => i.Type == MediaStreamType.Video))
                 {
                     chapters = CreateDummyChapters(video);
                 }
@@ -662,39 +662,39 @@ namespace MediaBrowser.Providers.MediaInfo
         private ChapterInfo[] CreateDummyChapters(Video video)
         {
             var runtime = video.RunTimeTicks ?? 0;
-            long dummyChapterDuration = TimeSpan.FromSeconds(_config.Configuration.DummyChapterDuration).Ticks;
 
-            if (runtime < 0)
+            // Only process files with a runtime higher than 0 and lower than 12h. The latter are likely corrupted.
+            if (runtime < 0 || runtime > TimeSpan.FromHours(12).Ticks)
             {
                 throw new ArgumentException(
                     string.Format(
                         CultureInfo.InvariantCulture,
-                        "{0} has invalid runtime of {1}",
+                        "{0} has an invalid runtime of {1} minutes",
                         video.Name,
-                        runtime));
+                        TimeSpan.FromTicks(runtime).Minutes));
             }
 
-            if (runtime < dummyChapterDuration)
+            long dummyChapterDuration = TimeSpan.FromSeconds(_config.Configuration.DummyChapterDuration).Ticks;
+            if (runtime > dummyChapterDuration)
             {
-                return Array.Empty<ChapterInfo>();
-            }
+                int chapterCount = (int)(runtime / dummyChapterDuration);
+                var chapters = new ChapterInfo[chapterCount];
 
-            // Limit the chapters just in case there's some incorrect metadata here
-            int chapterCount = (int)Math.Min(runtime / dummyChapterDuration, _config.Configuration.DummyChapterCount);
-            var chapters = new ChapterInfo[chapterCount];
-
-            long currentChapterTicks = 0;
-            for (int i = 0; i < chapterCount; i++)
-            {
-                chapters[i] = new ChapterInfo
+                long currentChapterTicks = 0;
+                for (int i = 0; i < chapterCount; i++)
                 {
-                    StartPositionTicks = currentChapterTicks
-                };
+                    chapters[i] = new ChapterInfo
+                    {
+                        StartPositionTicks = currentChapterTicks
+                    };
 
-                currentChapterTicks += dummyChapterDuration;
+                    currentChapterTicks += dummyChapterDuration;
+                }
+
+                return chapters;
             }
 
-            return chapters;
+            return Array.Empty<ChapterInfo>();
         }
     }
 }
