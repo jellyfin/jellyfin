@@ -5299,15 +5299,23 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return;
             }
 
-            var inputChannels = audioStream == null ? 6 : audioStream.Channels ?? 6;
+            var inputChannels = audioStream is null ? 6 : audioStream.Channels ?? 6;
+            var shiftAudioCodecs = new List<string>();
             if (inputChannels >= 6)
             {
-                return;
+                // DTS and TrueHD are not supported by HLS
+                // Keep them in the supported codecs list, but shift them to the end of the list so that if transcoding happens, another codec is used
+                shiftAudioCodecs.Add("dca");
+                shiftAudioCodecs.Add("truehd");
+            }
+            else
+            {
+                // Transcoding to 2ch ac3 or eac3 almost always causes a playback failure
+                // Keep them in the supported codecs list, but shift them to the end of the list so that if transcoding happens, another codec is used
+                shiftAudioCodecs.Add("ac3");
+                shiftAudioCodecs.Add("eac3");
             }
 
-            // Transcoding to 2ch ac3 almost always causes a playback failure
-            // Keep it in the supported codecs list, but shift it to the end of the list so that if transcoding happens, another codec is used
-            var shiftAudioCodecs = new[] { "ac3", "eac3" };
             if (audioCodecs.All(i => shiftAudioCodecs.Contains(i, StringComparison.OrdinalIgnoreCase)))
             {
                 return;
