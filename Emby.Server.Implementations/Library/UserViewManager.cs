@@ -111,10 +111,10 @@ namespace Emby.Server.Implementations.Library
 
             if (query.IncludeExternalContent)
             {
-                var channelResult = _channelManager.GetChannelsInternal(new ChannelQuery
+                var channelResult = _channelManager.GetChannelsInternalAsync(new ChannelQuery
                 {
                     UserId = query.UserId
-                });
+                }).GetAwaiter().GetResult();
 
                 var channels = channelResult.Items;
 

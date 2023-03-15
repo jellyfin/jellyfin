@@ -252,7 +252,7 @@ public class LiveTvController : BaseJellyfinApiController
     [HttpGet("Recordings")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Authorize(Policy = Policies.LiveTvAccess)]
-    public ActionResult<QueryResult<BaseItemDto>> GetRecordings(
+    public async Task<ActionResult<QueryResult<BaseItemDto>>> GetRecordings(
         [FromQuery] string? channelId,
         [FromQuery] Guid? userId,
         [FromQuery] int? startIndex,
@@ -278,7 +278,7 @@ public class LiveTvController : BaseJellyfinApiController
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
-        return _liveTvManager.GetRecordings(
+        return await _liveTvManager.GetRecordingsAsync(
             new RecordingQuery
             {
                 ChannelId = channelId,
@@ -299,7 +299,7 @@ public class LiveTvController : BaseJellyfinApiController
                 ImageTypeLimit = imageTypeLimit,
                 EnableImages = enableImages
             },
-            dtoOptions);
+            dtoOptions).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -383,13 +383,13 @@ public class LiveTvController : BaseJellyfinApiController
     [HttpGet("Recordings/Folders")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Authorize(Policy = Policies.LiveTvAccess)]
-    public ActionResult<QueryResult<BaseItemDto>> GetRecordingFolders([FromQuery] Guid? userId)
+    public async Task<ActionResult<QueryResult<BaseItemDto>>> GetRecordingFolders([FromQuery] Guid? userId)
     {
         userId = RequestHelpers.GetUserId(User, userId);
         var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
-        var folders = _liveTvManager.GetRecordingFolders(user);
+        var folders = await _liveTvManager.GetRecordingFoldersAsync(user).ConfigureAwait(false);
 
         var returnArray = _dtoService.GetBaseItemDtos(folders, new DtoOptions(), user);
 
