@@ -28,6 +28,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Prometheus;
+using Saunter;
 
 namespace Jellyfin.Server
 {
@@ -67,6 +68,7 @@ namespace Jellyfin.Server
             services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.GetNetworkConfiguration());
             services.AddJellyfinDbContext();
             services.AddJellyfinApiSwagger();
+            services.AddAsyncApi();
 
             // configure custom legacy authentication
             services.AddCustomAuthentication();
@@ -209,6 +211,9 @@ namespace Jellyfin.Server
                     }
 
                     endpoints.MapHealthChecks("/health");
+
+                    endpoints.MapAsyncApiDocuments();
+                    endpoints.MapAsyncApiUi();
                 });
             });
         }

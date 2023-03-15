@@ -9,15 +9,22 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Session;
+using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
+using Saunter.Attributes;
 
 namespace Emby.Server.Implementations.HttpServer
 {
     /// <summary>
     /// Class WebSocketConnection.
     /// </summary>
+    [AsyncApi]
+    [Channel(nameof(WebSocketConnection), Servers = new[] { "websocket" })]
+    [SubscribeOperation(typeof(WebSocketMessage<>))]
     public class WebSocketConnection : IWebSocketConnection
     {
         /// <summary>
@@ -92,6 +99,12 @@ namespace Emby.Server.Implementations.HttpServer
         /// <param name="message">The message.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
+        [Message(typeof(WebSocketMessage<int>))]
+        [Message(typeof(WebSocketMessage<string>))]
+        [Message(typeof(WebSocketMessage<GeneralCommand>))]
+        [Message(typeof(WebSocketMessage<ActivityLogEntry[]>))]
+        [Message(typeof(WebSocketMessage<TaskInfo[]>))]
+        [Message(typeof(WebSocketMessage<SessionInfo[]>))]
         public Task SendAsync<T>(WebSocketMessage<T> message, CancellationToken cancellationToken)
         {
             var json = JsonSerializer.SerializeToUtf8Bytes(message, _jsonOptions);

@@ -31,6 +31,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
     <PackageReference Include="Mono.Nat" />
     <PackageReference Include="prometheus-net.DotNetRuntime" />
+    <PackageReference Include="Saunter" />
     <PackageReference Include="SQLitePCL.pretty.netstandard" />
     <PackageReference Include="DotNet.Glob" />
   </ItemGroup>

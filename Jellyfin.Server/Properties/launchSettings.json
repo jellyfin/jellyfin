@@ -1,29 +1,39 @@
 {
-  "profiles": {
-    "Jellyfin.Server": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "applicationUrl": "http://localhost:8096",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "Jellyfin.Server (nowebclient)": {
-      "commandName": "Project",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "commandLineArgs": "--nowebclient"
-    },
-    "Jellyfin.Server (API Docs)": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "launchUrl": "api-docs/swagger",
-      "applicationUrl": "http://localhost:8096",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "commandLineArgs": "--nowebclient"
+    "profiles": {
+        "Jellyfin.Server": {
+            "commandName": "Project",
+            "launchBrowser": true,
+            "applicationUrl": "http://localhost:8096",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        },
+        "Jellyfin.Server (nowebclient)": {
+            "commandName": "Project",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "commandLineArgs": "--nowebclient"
+        },
+        "Jellyfin.Server (API Docs)": {
+            "commandName": "Project",
+            "launchBrowser": true,
+            "launchUrl": "api-docs/swagger",
+            "applicationUrl": "http://localhost:8096",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "commandLineArgs": "--nowebclient"
+        },
+        "Jellyfin.Server (AsyncAPI Docs)": {
+            "commandName": "Project",
+            "launchBrowser": true,
+            "launchUrl": "api-docs/asyncapi",
+            "applicationUrl": "http://localhost:8096",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "commandLineArgs": "--nowebclient"
+        }
     }
-  }
 }

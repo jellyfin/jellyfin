@@ -2,9 +2,7 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
-
   <!-- Run "dotnet list package (dash,dash)outdated" to see the latest versions of each package.-->
-
   <ItemGroup Label="Package Dependencies">
     <PackageVersion Include="AutoFixture.AutoMoq" Version="4.18.0" />
     <PackageVersion Include="AutoFixture.Xunit2" Version="4.18.0" />
@@ -56,6 +54,7 @@
     <PackageVersion Include="prometheus-net.AspNetCore" Version="8.0.0" />
     <PackageVersion Include="prometheus-net.DotNetRuntime" Version="4.4.0" />
     <PackageVersion Include="prometheus-net" Version="8.0.0" />
+    <PackageVersion Include="Saunter" Version="0.11.0" />
     <PackageVersion Include="Serilog.AspNetCore" Version="6.1.0" />
     <PackageVersion Include="Serilog.Enrichers.Thread" Version="3.1.0" />
     <PackageVersion Include="Serilog.Settings.Configuration" Version="3.4.0" />
