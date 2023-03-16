@@ -18,5 +18,5 @@ public class SeriesTimerCancelledMessage : WebSocketMessage<TimerEventInfo>
     }
 
     /// <inheritdoc />
-    public override SessionMessageType MessageType => SessionMessageType.TimerCancelled;
+    public override SessionMessageType MessageType => SessionMessageType.SeriesTimerCancelled;
 }
