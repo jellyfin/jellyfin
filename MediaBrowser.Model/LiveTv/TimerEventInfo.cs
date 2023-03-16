@@ -2,7 +2,7 @@
 
 using System;
 
-namespace MediaBrowser.Controller.LiveTv
+namespace MediaBrowser.Model.LiveTv
 {
     public class TimerEventInfo
     {

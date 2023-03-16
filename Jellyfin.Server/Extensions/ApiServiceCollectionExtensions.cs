@@ -264,17 +264,18 @@ namespace Jellyfin.Server.Extensions
         /// <returns>The updated service collection.</returns>
         public static IServiceCollection AddAsyncApi(this IServiceCollection serviceCollection)
         {
-            const string AsyncApiTitle = "Jellyfin Websocket Documentation";
+            const string AsyncApiTitle = "Jellyfin WebSocket Documentation";
             return serviceCollection.AddAsyncApiSchemaGeneration(options =>
             {
                 options.AssemblyMarkerTypes = new[] { typeof(WebSocketConnection), };
+
                 var version = typeof(ApplicationHost).Assembly.GetName().Version?.ToString(3) ?? "0.0.1";
                 options.AsyncApi = new AsyncApiDocument
                 {
                     Info = new Info(AsyncApiTitle, version),
                     Servers =
                     {
-                        ["websocket"] = new Saunter.AsyncApiSchema.v2.Server("localhost:8096", "wss")
+                        [nameof(WebSocketConnection)] = new Saunter.AsyncApiSchema.v2.Server("localhost:8096", "wss")
                     }
                 };
 

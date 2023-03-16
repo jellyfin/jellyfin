@@ -1,31 +1,25 @@
-#nullable disable
-#pragma warning disable CS1591
-
 using System;
 using MediaBrowser.Model.Session;
 
-namespace MediaBrowser.Model.Net
+namespace MediaBrowser.Model.Net;
+
+/// <summary>
+/// Websocket message without data.
+/// </summary>
+public abstract class WebSocketMessage
 {
     /// <summary>
-    /// Class WebSocketMessage.
+    /// Gets or sets the type of the message.
     /// </summary>
-    /// <typeparam name="T">The type of the data.</typeparam>
-    public class WebSocketMessage<T>
-    {
-        /// <summary>
-        /// Gets or sets the type of the message.
-        /// </summary>
-        /// <value>The type of the message.</value>
-        public SessionMessageType MessageType { get; set; }
+    public virtual SessionMessageType MessageType { get; set; }
 
-        public Guid MessageId { get; set; }
+    /// <summary>
+    /// Gets or sets the message id.
+    /// </summary>
+    public Guid MessageId { get; set; }
 
-        public string ServerId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the data.
-        /// </summary>
-        /// <value>The data.</value>
-        public T Data { get; set; }
-    }
+    /// <summary>
+    /// Gets or sets the server id.
+    /// </summary>
+    public string? ServerId { get; set; }
 }

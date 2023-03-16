@@ -9,11 +9,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Net.WebSocketMessages.Publish;
+using MediaBrowser.Model.Net.WebSocketMessages.Shared;
+using MediaBrowser.Model.Net.WebSocketMessages.Subscribe;
 using MediaBrowser.Model.Session;
-using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 using Saunter.Attributes;
 
@@ -23,8 +23,6 @@ namespace Emby.Server.Implementations.HttpServer
     /// Class WebSocketConnection.
     /// </summary>
     [AsyncApi]
-    [Channel(nameof(WebSocketConnection), Servers = new[] { "websocket" })]
-    [SubscribeOperation(typeof(WebSocketMessage<>))]
     public class WebSocketConnection : IWebSocketConnection
     {
         /// <summary>
@@ -99,12 +97,37 @@ namespace Emby.Server.Implementations.HttpServer
         /// <param name="message">The message.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        [Message(typeof(WebSocketMessage<int>))]
-        [Message(typeof(WebSocketMessage<string>))]
-        [Message(typeof(WebSocketMessage<GeneralCommand>))]
-        [Message(typeof(WebSocketMessage<ActivityLogEntry[]>))]
-        [Message(typeof(WebSocketMessage<TaskInfo[]>))]
-        [Message(typeof(WebSocketMessage<SessionInfo[]>))]
+        [PublishOperation(OperationId = "Publish", Summary = "From server to client")]
+        [Channel(nameof(WebSocketConnection), Servers = new[] { nameof(WebSocketConnection) })]
+        [Message(typeof(WebSocketMessage))]
+        [Message(typeof(ActivityLogEntryMessage))]
+        [Message(typeof(ForceKeepAliveMessage))]
+        [Message(typeof(GeneralCommandMessage))]
+        [Message(typeof(LibraryChangedMessage))]
+        [Message(typeof(PlayMessage))]
+        [Message(typeof(PlaystateMessage))]
+        [Message(typeof(PluginInstallationCancelledMessage))]
+        [Message(typeof(PluginInstallationCompletedMessage))]
+        [Message(typeof(PluginInstallationFailedMessage))]
+        [Message(typeof(PluginInstallingMessage))]
+        [Message(typeof(PluginUninstalledMessage))]
+        [Message(typeof(RefreshProgressMessage))]
+        [Message(typeof(RestartRequiredMessage))]
+        [Message(typeof(ScheduledTaskEndedMessage))]
+        [Message(typeof(ScheduledTasksInfoMessage))]
+        [Message(typeof(SeriesTimerCancelledMessage))]
+        [Message(typeof(SeriesTimerCreatedMessage))]
+        [Message(typeof(ServerRestartingMessage))]
+        [Message(typeof(ServerShuttingDownMessage))]
+        [Message(typeof(SessionsMessage))]
+        [Message(typeof(SyncPlayCommandMessage))]
+        [Message(typeof(SyncPlayGroupUpdateCommandMessage))]
+        [Message(typeof(TimerCancelledMessage))]
+        [Message(typeof(TimerCreatedMessage))]
+        [Message(typeof(UserDataChangedMessage))]
+        [Message(typeof(UserDeletedMessage))]
+        [Message(typeof(UserUpdatedMessage))]
+        [Message(typeof(KeepAliveMessage))]
         public Task SendAsync<T>(WebSocketMessage<T> message, CancellationToken cancellationToken)
         {
             var json = JsonSerializer.SerializeToUtf8Bytes(message, _jsonOptions);
@@ -112,6 +135,16 @@ namespace Emby.Server.Implementations.HttpServer
         }
 
         /// <inheritdoc />
+        [SubscribeOperation(OperationId = "Subscribe", Summary = "From client to server")]
+        [Channel(nameof(WebSocketConnection), Servers = new[] { nameof(WebSocketConnection) })]
+        [Message(typeof(WebSocketMessage))]
+        [Message(typeof(ActivityLogEntryStartMessage))]
+        [Message(typeof(ActivityLogEntryStopMessage))]
+        [Message(typeof(ScheduledTasksInfoStartMessage))]
+        [Message(typeof(ScheduledTasksInfoStopMessage))]
+        [Message(typeof(SessionsStartMessage))]
+        [Message(typeof(SessionsStopMessage))]
+        [Message(typeof(KeepAliveMessage))]
         public async Task ProcessAsync(CancellationToken cancellationToken = default)
         {
             var pipe = new Pipe();
