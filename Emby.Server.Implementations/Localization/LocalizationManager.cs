@@ -184,10 +184,19 @@ namespace Emby.Server.Implementations.Localization
         /// <inheritdoc />
         public IEnumerable<ParentalRating> GetParentalRatings()
         {
-            var ratings = GetParentalRatingsDictionary().Values.ToList();
+            // Use server default language for ratings
+            // Fall back to empty list if there are no parental ratings for that language
+            var ratings = GetParentalRatingsDictionary()?.Values.ToList()
+                ?? new List<ParentalRating>();
 
-            // Add common ratings to ensure them being available for selection.
+            // Add common ratings to ensure them being available for selection
             // Based on the US rating system due to it being the main source of rating in the metadata providers
+            // Unrated
+            if (!ratings.Any(x => x.Value is null))
+            {
+                ratings.Add(new ParentalRating("Unrated", null));
+            }
+
             // Minimum rating possible
             if (!ratings.Any(x => x.Value == 0))
             {
@@ -237,36 +246,26 @@ namespace Emby.Server.Implementations.Localization
         /// <summary>
         /// Gets the parental ratings dictionary.
         /// </summary>
+        /// <param name="countryCode">The optional two letter ISO language string.</param>
         /// <returns><see cref="Dictionary{String, ParentalRating}" />.</returns>
-        private Dictionary<string, ParentalRating> GetParentalRatingsDictionary()
+        private Dictionary<string, ParentalRating>? GetParentalRatingsDictionary(string? countryCode = null)
         {
-            var countryCode = _configurationManager.Configuration.MetadataCountryCode;
-
-            // Fall back to US ratings if no country code is specified or country code does not exist.
+            // Fallback to server default if no country code is specified.
             if (string.IsNullOrEmpty(countryCode))
             {
-                countryCode = "us";
+                countryCode = _configurationManager.Configuration.MetadataCountryCode;
             }
 
-            return GetRatings(countryCode)
-                ?? GetRatings("us")
-                ?? throw new InvalidOperationException($"Invalid resource path: '{CountriesPath}'");
-        }
+            if (_allParentalRatings.TryGetValue(countryCode, out var countryValue))
+            {
+                return countryValue;
+            }
 
-        /// <summary>
-        /// Gets the ratings for a country.
-        /// </summary>
-        /// <param name="countryCode">The country code.</param>
-        /// <returns>The ratings.</returns>
-        private Dictionary<string, ParentalRating>? GetRatings(string countryCode)
-        {
-            _allParentalRatings.TryGetValue(countryCode, out var countryValue);
-
-            return countryValue;
+            return null;
         }
 
         /// <inheritdoc />
-        public int? GetRatingLevel(string rating)
+        public int? GetRatingLevel(string rating, string? countryCode = null)
         {
             ArgumentException.ThrowIfNullOrEmpty(rating);
 
@@ -280,32 +279,51 @@ namespace Emby.Server.Implementations.Localization
             rating = rating.Replace("Rated :", string.Empty, StringComparison.OrdinalIgnoreCase);
             rating = rating.Replace("Rated ", string.Empty, StringComparison.OrdinalIgnoreCase);
 
-            var ratingsDictionary = GetParentalRatingsDictionary();
-
-            if (ratingsDictionary.TryGetValue(rating, out ParentalRating? value))
+            // Use rating system matching the language
+            if (!string.IsNullOrEmpty(countryCode))
             {
-                return value.Value;
+                var ratingsDictionary = GetParentalRatingsDictionary(countryCode);
+                if (ratingsDictionary is not null && ratingsDictionary.TryGetValue(rating, out ParentalRating? value))
+                {
+                    return value.Value;
+                }
             }
-
-            // If we don't find anything check all ratings systems
-            foreach (var dictionary in _allParentalRatings.Values)
+            else
             {
-                if (dictionary.TryGetValue(rating, out value))
+                // Fall back to server default language for ratings check
+                // If it has no ratings, use the US ratings
+                var ratingsDictionary = GetParentalRatingsDictionary() ?? GetParentalRatingsDictionary("us");
+                if (ratingsDictionary is not null && ratingsDictionary.TryGetValue(rating, out ParentalRating? value))
                 {
                     return value.Value;
                 }
             }
 
-            // Try splitting by : to handle "Germany: FSK 18"
+            // If we don't find anything, check all ratings systems
+            foreach (var dictionary in _allParentalRatings.Values)
+            {
+                if (dictionary.TryGetValue(rating, out var value))
+                {
+                    return value.Value;
+                }
+            }
+
+            // Try splitting by : to handle "Germany: FSK-18"
             if (rating.Contains(':', StringComparison.OrdinalIgnoreCase))
             {
                 return GetRatingLevel(rating.AsSpan().RightPart(':').ToString());
             }
 
-            // Remove prefix country code to handle "DE-18"
+            // Handle prefix country code to handle "DE-18"
             if (rating.Contains('-', StringComparison.OrdinalIgnoreCase))
             {
-                return GetRatingLevel(rating.AsSpan().RightPart('-').ToString());
+                var ratingSpan = rating.AsSpan();
+
+                // Extract culture from country prefix
+                var culture = FindLanguageInfo(ratingSpan.LeftPart('-').ToString());
+
+                // Check rating system of culture
+                return GetRatingLevel(ratingSpan.RightPart('-').ToString(), culture?.TwoLetterISOLanguageName);
             }
 
             return null;

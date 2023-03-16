@@ -83,7 +83,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             await localizationManager.LoadAll();
             var ratings = localizationManager.GetParentalRatings().ToList();
 
-            Assert.Equal(53, ratings.Count);
+            Assert.Equal(54, ratings.Count);
 
             var tvma = ratings.FirstOrDefault(x => x.Name.Equals("TV-MA", StringComparison.Ordinal));
             Assert.NotNull(tvma);
@@ -100,7 +100,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             await localizationManager.LoadAll();
             var ratings = localizationManager.GetParentalRatings().ToList();
 
-            Assert.Equal(18, ratings.Count);
+            Assert.Equal(19, ratings.Count);
 
             var fsk = ratings.FirstOrDefault(x => x.Name.Equals("FSK-12", StringComparison.Ordinal));
             Assert.NotNull(fsk);

@@ -56,8 +56,8 @@ public class ActivityLogWebSocketListener : BasePeriodicWebSocketListener<Activi
         base.Dispose(dispose);
     }
 
-    private void OnEntryCreated(object? sender, GenericEventArgs<ActivityLogEntry> e)
+    private async void OnEntryCreated(object? sender, GenericEventArgs<ActivityLogEntry> e)
     {
-        SendData(true).GetAwaiter().GetResult();
+        await SendData(true).ConfigureAwait(false);
     }
 }

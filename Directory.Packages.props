@@ -17,30 +17,30 @@
     <PackageVersion Include="Diacritics" Version="3.3.14" />
     <PackageVersion Include="DiscUtils.Udf" Version="0.16.13" />
     <PackageVersion Include="DotNet.Glob" Version="3.1.3" />
-    <PackageVersion Include="EFCoreSecondLevelCacheInterceptor" Version="3.8.5" />
+    <PackageVersion Include="EFCoreSecondLevelCacheInterceptor" Version="3.8.6" />
     <PackageVersion Include="FsCheck.Xunit" Version="2.16.5" />
     <PackageVersion Include="Jellyfin.XmlTv" Version="10.8.0" />
-    <PackageVersion Include="libse" Version="3.6.10" />
-    <PackageVersion Include="LrcParser" Version="2022.529.1" />
+    <PackageVersion Include="libse" Version="3.6.11" />
+    <PackageVersion Include="LrcParser" Version="2023.308.0" />
     <PackageVersion Include="MetaBrainz.MusicBrainz" Version="5.0.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="7.0.3" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="7.0.4" />
     <PackageVersion Include="Microsoft.AspNetCore.HttpOverrides" Version="2.2.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="7.0.3" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="7.0.4" />
     <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.4" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.3" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.3" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.3" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.3" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.4" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.4" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.4" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.4" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.4" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="7.0.3" />
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="7.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="7.0.4" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="7.0.4" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
@@ -52,7 +52,7 @@
     <PackageVersion Include="Mono.Nat" Version="3.0.4" />
     <PackageVersion Include="Moq" Version="4.18.4" />
     <PackageVersion Include="NEbml" Version="0.11.0" />
-    <PackageVersion Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="PlaylistsNET" Version="1.3.1" />
     <PackageVersion Include="prometheus-net.AspNetCore" Version="8.0.0" />
     <PackageVersion Include="prometheus-net.DotNetRuntime" Version="4.4.0" />

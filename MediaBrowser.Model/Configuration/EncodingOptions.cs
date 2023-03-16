@@ -39,7 +39,8 @@ public class EncodingOptions
         DeinterlaceMethod = "yadif";
         EnableDecodingColorDepth10Hevc = true;
         EnableDecodingColorDepth10Vp9 = true;
-        EnableEnhancedNvdecDecoder = false;
+        // Enhanced Nvdec or system native decoder is required for DoVi to SDR tone-mapping.
+        EnableEnhancedNvdecDecoder = true;
         PreferSystemNativeHwDecoder = true;
         EnableIntelLowPowerH264HwEncoder = false;
         EnableIntelLowPowerHevcHwEncoder = false;

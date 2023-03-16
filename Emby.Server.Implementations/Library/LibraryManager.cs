@@ -113,6 +113,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="imageProcessor">The image processor.</param>
         /// <param name="memoryCache">The memory cache.</param>
         /// <param name="namingOptions">The naming options.</param>
+        /// <param name="directoryService">The directory service.</param>
         public LibraryManager(
             IServerApplicationHost appHost,
             ILoggerFactory loggerFactory,
@@ -128,7 +129,8 @@ namespace Emby.Server.Implementations.Library
             IItemRepository itemRepository,
             IImageProcessor imageProcessor,
             IMemoryCache memoryCache,
-            NamingOptions namingOptions)
+            NamingOptions namingOptions,
+            IDirectoryService directoryService)
         {
             _appHost = appHost;
             _logger = loggerFactory.CreateLogger<LibraryManager>();
@@ -146,7 +148,7 @@ namespace Emby.Server.Implementations.Library
             _memoryCache = memoryCache;
             _namingOptions = namingOptions;
 
-            _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions);
+            _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions, directoryService);
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
 
@@ -537,7 +539,7 @@ namespace Emby.Server.Implementations.Library
                 collectionType = GetContentTypeOverride(fullPath, true);
             }
 
-            var args = new ItemResolveArgs(_configurationManager.ApplicationPaths, directoryService)
+            var args = new ItemResolveArgs(_configurationManager.ApplicationPaths, this)
             {
                 Parent = parent,
                 FileInfo = fileInfo,

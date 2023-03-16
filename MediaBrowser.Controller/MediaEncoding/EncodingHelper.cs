@@ -43,6 +43,9 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly Version _maxKerneli915Hang = new Version(6, 1, 3);
         private readonly Version _minFixedKernel60i915Hang = new Version(6, 0, 18);
 
+        private readonly Version _minFFmpegImplictHwaccel = new Version(6, 0);
+        private readonly Version _minFFmpegHwaUnsafeOutput = new Version(6, 0);
+
         private static readonly string[] _videoProfilesH264 = new[]
         {
             "ConstrainedBaseline",
@@ -558,9 +561,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string GetInputPathArgument(EncodingJobInfo state)
         {
-            var mediaPath = state.MediaPath ?? string.Empty;
-
-            return _mediaEncoder.GetInputArgument(mediaPath, state.MediaSource);
+            return state.MediaSource.VideoType switch
+            {
+                VideoType.Dvd => _mediaEncoder.GetInputArgument(_mediaEncoder.GetPrimaryPlaylistVobFiles(state.MediaPath, null).ToList(), state.MediaSource),
+                VideoType.BluRay => _mediaEncoder.GetInputArgument(_mediaEncoder.GetPrimaryPlaylistM2tsFiles(state.MediaPath).ToList(), state.MediaSource),
+                _ => _mediaEncoder.GetInputArgument(state.MediaPath, state.MediaSource)
+            };
         }
 
         /// <summary>
@@ -637,6 +643,26 @@ namespace MediaBrowser.Controller.MediaEncoding
                 " -init_hw_device cuda={0}:{1}",
                 alias,
                 deviceIndex);
+        }
+
+        private string GetVulkanDeviceArgs(int deviceIndex, string deviceName, string srcDeviceAlias, string alias)
+        {
+            alias ??= VulkanAlias;
+            deviceIndex = deviceIndex >= 0
+                ? deviceIndex
+                : 0;
+            var vendorOpts = string.IsNullOrEmpty(deviceName)
+                ? ":" + deviceIndex
+                : ":" + "\"" + deviceName + "\"";
+            var options = string.IsNullOrEmpty(srcDeviceAlias)
+                ? vendorOpts
+                : "@" + srcDeviceAlias;
+
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                " -init_hw_device vulkan={0}{1}",
+                alias,
+                options);
         }
 
         private string GetOpenclDeviceArgs(int deviceIndex, string deviceVendorName, string srcDeviceAlias, string alias)
@@ -821,6 +847,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                             args.Append(GetOpenclDeviceArgs(0, "Advanced Micro Devices", null, OpenclAlias));
                             filterDevArgs = GetFilterHwDeviceArgs(OpenclAlias);
                         }
+                        else
+                        {
+                            // libplacebo wants an explicitly set vulkan filter device.
+                            args.Append(GetVulkanDeviceArgs(0, null, VaapiAlias, VulkanAlias));
+                            filterDevArgs = GetFilterHwDeviceArgs(VulkanAlias);
+                        }
                     }
                     else
                     {
@@ -962,8 +994,18 @@ namespace MediaBrowser.Controller.MediaEncoding
                 arg.Append(canvasArgs);
             }
 
-            arg.Append(" -i ")
-                .Append(GetInputPathArgument(state));
+            if (state.MediaSource.VideoType == VideoType.Dvd || state.MediaSource.VideoType == VideoType.BluRay)
+            {
+                var tmpConcatPath = Path.Join(options.TranscodingTempPath, state.MediaSource.Id + ".concat");
+                _mediaEncoder.GenerateConcatConfig(state.MediaSource, tmpConcatPath);
+                arg.Append(" -f concat -safe 0 -i ")
+                    .Append(tmpConcatPath);
+            }
+            else
+            {
+                arg.Append(" -i ")
+                    .Append(GetInputPathArgument(state));
+            }
 
             // sub2video for external graphical subtitles
             if (state.SubtitleStream is not null
@@ -2074,12 +2116,18 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         private static double GetVideoBitrateScaleFactor(string codec)
         {
+            // hevc & vp9 - 40% more efficient than h.264
             if (string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(codec, "vp9", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(codec, "av1", StringComparison.OrdinalIgnoreCase))
+                || string.Equals(codec, "vp9", StringComparison.OrdinalIgnoreCase))
             {
                 return .6;
+            }
+
+            // av1 - 50% more efficient than h.264
+            if (string.Equals(codec, "av1", StringComparison.OrdinalIgnoreCase))
+            {
+                return .5;
             }
 
             return 1;
@@ -2089,7 +2137,9 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             var inputScaleFactor = GetVideoBitrateScaleFactor(inputVideoCodec);
             var outputScaleFactor = GetVideoBitrateScaleFactor(outputVideoCodec);
-            var scaleFactor = outputScaleFactor / inputScaleFactor;
+
+            // Don't scale the real bitrate lower than the requested bitrate
+            var scaleFactor = Math.Min(outputScaleFactor / inputScaleFactor, 1);
 
             if (bitrate <= 500000)
             {
@@ -2424,6 +2474,30 @@ namespace MediaBrowser.Controller.MediaEncoding
                     CultureInfo.InvariantCulture,
                     " -map 1:{0} -sn",
                     externalSubtitleStreamIndex);
+            }
+
+            return args;
+        }
+
+        /// <summary>
+        /// Gets the negative map args by filters.
+        /// </summary>
+        /// <param name="state">The state.</param>
+        /// <param name="videoProcessFilters">The videoProcessFilters.</param>
+        /// <returns>System.String.</returns>
+        public string GetNegativeMapArgsByFilters(EncodingJobInfo state, string videoProcessFilters)
+        {
+            string args = string.Empty;
+
+            // http://ffmpeg.org/ffmpeg-all.html#toc-Complex-filtergraphs-1
+            if (state.VideoStream != null && videoProcessFilters.Contains("-filter_complex", StringComparison.Ordinal))
+            {
+                int videoStreamIndex = FindIndex(state.MediaSource.MediaStreams, state.VideoStream);
+
+                args += string.Format(
+                    CultureInfo.InvariantCulture,
+                    "-map -0:{0} ",
+                    videoStreamIndex);
             }
 
             return args;
@@ -3271,7 +3345,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 // OUTPUT nv12 surface(memory)
                 // prefer hwmap to hwdownload on opencl.
-                var hwTransferFilter = hasGraphicalSubs ? "hwdownload" : "hwmap";
+                var hwTransferFilter = hasGraphicalSubs ? "hwdownload" : "hwmap=mode=read";
                 mainFilters.Add(hwTransferFilter);
                 mainFilters.Add("format=nv12");
             }
@@ -3514,7 +3588,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // OUTPUT nv12 surface(memory)
                 // prefer hwmap to hwdownload on opencl.
                 // qsv hwmap is not fully implemented for the time being.
-                mainFilters.Add(isHwmapUsable ? "hwmap" : "hwdownload");
+                mainFilters.Add(isHwmapUsable ? "hwmap=mode=read" : "hwdownload");
                 mainFilters.Add("format=nv12");
             }
 
@@ -3672,6 +3746,13 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 var outFormat = doTonemap ? string.Empty : "nv12";
                 var hwScaleFilter = GetHwScaleFilter(isVaapiDecoder ? "vaapi" : "qsv", outFormat, inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+
+                // allocate extra pool sizes for vaapi vpp
+                if (!string.IsNullOrEmpty(hwScaleFilter) && isVaapiDecoder)
+                {
+                    hwScaleFilter += ":extra_hw_frames=24";
+                }
+
                 // hw scale
                 mainFilters.Add(hwScaleFilter);
             }
@@ -3718,7 +3799,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // OUTPUT nv12 surface(memory)
                 // prefer hwmap to hwdownload on opencl/vaapi.
                 // qsv hwmap is not fully implemented for the time being.
-                mainFilters.Add(isHwmapUsable ? "hwmap" : "hwdownload");
+                mainFilters.Add(isHwmapUsable ? "hwmap=mode=read" : "hwdownload");
                 mainFilters.Add("format=nv12");
             }
 
@@ -3947,6 +4028,13 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 var outFormat = doTonemap ? string.Empty : "nv12";
                 var hwScaleFilter = GetHwScaleFilter("vaapi", outFormat, inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+
+                // allocate extra pool sizes for vaapi vpp
+                if (!string.IsNullOrEmpty(hwScaleFilter))
+                {
+                    hwScaleFilter += ":extra_hw_frames=24";
+                }
+
                 // hw scale
                 mainFilters.Add(hwScaleFilter);
             }
@@ -3988,7 +4076,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 // OUTPUT nv12 surface(memory)
                 // prefer hwmap to hwdownload on opencl/vaapi.
-                mainFilters.Add(isHwmapNotUsable ? "hwdownload" : "hwmap");
+                mainFilters.Add(isHwmapNotUsable ? "hwdownload" : "hwmap=mode=read");
                 mainFilters.Add("format=nv12");
             }
 
@@ -4126,7 +4214,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // sw => hw
                 if (doVkTonemap)
                 {
-                    mainFilters.Add("hwupload=derive_device=vulkan:extra_hw_frames=16");
+                    mainFilters.Add("hwupload_vaapi");
+                    mainFilters.Add("hwmap=derive_device=vulkan");
+                    mainFilters.Add("format=vulkan");
                 }
             }
             else if (isVaapiDecoder)
@@ -4156,6 +4246,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 // map from vaapi to vulkan via vaapi-vulkan interop (Vega/gfx9+).
                 mainFilters.Add("hwmap=derive_device=vulkan");
+                mainFilters.Add("format=vulkan");
             }
 
             // vk tonemap
@@ -4234,7 +4325,9 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     // prefer vaapi hwupload to vulkan hwupload,
                     // Mesa RADV does not support a dedicated transfer queue.
-                    subFilters.Add("hwupload=derive_device=vaapi,format=vaapi,hwmap=derive_device=vulkan");
+                    subFilters.Add("hwupload_vaapi");
+                    subFilters.Add("hwmap=derive_device=vulkan");
+                    subFilters.Add("format=vulkan");
 
                     overlayFilters.Add("overlay_vulkan=eof_action=endall:shortest=1:repeatlast=0");
                     overlayFilters.Add("scale_vulkan=format=nv12");
@@ -4336,6 +4429,13 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 outFormat = doOclTonemap ? string.Empty : "nv12";
                 var hwScaleFilter = GetHwScaleFilter("vaapi", outFormat, inW, inH, reqW, reqH, reqMaxW, reqMaxH);
+
+                // allocate extra pool sizes for vaapi vpp
+                if (!string.IsNullOrEmpty(hwScaleFilter))
+                {
+                    hwScaleFilter += ":extra_hw_frames=24";
+                }
+
                 // hw scale
                 mainFilters.Add(hwScaleFilter);
             }
@@ -4713,7 +4813,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // HWA decoders can handle both video files and video folders.
-            var videoType = mediaSource.VideoType;
+            var videoType = state.VideoType;
             if (videoType != VideoType.VideoFile
                 && videoType != VideoType.Iso
                 && videoType != VideoType.Dvd
@@ -4854,8 +4954,18 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isVideotoolboxSupported = isMacOS && _mediaEncoder.SupportsHwaccel("videotoolbox");
             var isCodecAvailable = options.HardwareDecodingCodecs.Contains(videoCodec, StringComparison.OrdinalIgnoreCase);
 
+            var ffmpegVersion = _mediaEncoder.EncoderVersion;
+
             // Set the av1 codec explicitly to trigger hw accelerator, otherwise libdav1d will be used.
-            var isAv1 = string.Equals(videoCodec, "av1", StringComparison.OrdinalIgnoreCase);
+            var isAv1 = ffmpegVersion < _minFFmpegImplictHwaccel
+                && string.Equals(videoCodec, "av1", StringComparison.OrdinalIgnoreCase);
+
+            // Allow profile mismatch if decoding H.264 baseline with d3d11va and vaapi hwaccels.
+            var profileMismatch = string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase)
+                && string.Equals(state.VideoStream?.Profile, "baseline", StringComparison.OrdinalIgnoreCase);
+
+            // Disable the extra internal copy in nvdec. We already handle it in filter chain.
+            var nvdecNoInternalCopy = ffmpegVersion >= _minFFmpegHwaUnsafeOutput;
 
             if (bitDepth == 10 && isCodecAvailable)
             {
@@ -4881,14 +4991,16 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     if (isVaapiSupported && isCodecAvailable)
                     {
-                        return " -hwaccel vaapi" + (outputHwSurface ? " -hwaccel_output_format vaapi" : string.Empty) + (isAv1 ? " -c:v av1" : string.Empty);
+                        return " -hwaccel vaapi" + (outputHwSurface ? " -hwaccel_output_format vaapi" : string.Empty)
+                            + (profileMismatch ? " -hwaccel_flags +allow_profile_mismatch" : string.Empty) + (isAv1 ? " -c:v av1" : string.Empty);
                     }
 
                     if (isD3d11Supported && isCodecAvailable)
                     {
                         // set -threads 3 to intel d3d11va decoder explicitly. Lower threads may result in dead lock.
                         // on newer devices such as Xe, the larger the init_pool_size, the longer the initialization time for opencl to derive from d3d11.
-                        return " -hwaccel d3d11va" + (outputHwSurface ? " -hwaccel_output_format d3d11" : string.Empty) + " -threads 3" + (isAv1 ? " -c:v av1" : string.Empty);
+                        return " -hwaccel d3d11va" + (outputHwSurface ? " -hwaccel_output_format d3d11" : string.Empty)
+                            + (profileMismatch ? " -hwaccel_flags +allow_profile_mismatch" : string.Empty) + " -threads 3" + (isAv1 ? " -c:v av1" : string.Empty);
                     }
                 }
                 else
@@ -4908,7 +5020,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                     if (options.EnableEnhancedNvdecDecoder)
                     {
                         // set -threads 1 to nvdec decoder explicitly since it doesn't implement threading support.
-                        return " -hwaccel cuda" + (outputHwSurface ? " -hwaccel_output_format cuda" : string.Empty) + " -threads 1" + (isAv1 ? " -c:v av1" : string.Empty);
+                        return " -hwaccel cuda" + (outputHwSurface ? " -hwaccel_output_format cuda" : string.Empty)
+                            + (nvdecNoInternalCopy ? " -hwaccel_flags +unsafe_output" : string.Empty) + " -threads 1" + (isAv1 ? " -c:v av1" : string.Empty);
                     }
                     else
                     {
@@ -4923,7 +5036,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (isD3d11Supported && isCodecAvailable)
                 {
-                    return " -hwaccel d3d11va" + (outputHwSurface ? " -hwaccel_output_format d3d11" : string.Empty) + (isAv1 ? " -c:v av1" : string.Empty);
+                    return " -hwaccel d3d11va" + (outputHwSurface ? " -hwaccel_output_format d3d11" : string.Empty)
+                        + (profileMismatch ? " -hwaccel_flags +allow_profile_mismatch" : string.Empty) + (isAv1 ? " -c:v av1" : string.Empty);
                 }
             }
 
@@ -4932,9 +5046,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && isVaapiSupported
                 && isCodecAvailable)
             {
-                return " -hwaccel vaapi" + (outputHwSurface ? " -hwaccel_output_format vaapi" : string.Empty) + (isAv1 ? " -c:v av1" : string.Empty);
+                return " -hwaccel vaapi" + (outputHwSurface ? " -hwaccel_output_format vaapi" : string.Empty)
+                    + (profileMismatch ? " -hwaccel_flags +allow_profile_mismatch" : string.Empty) + (isAv1 ? " -c:v av1" : string.Empty);
             }
 
+            // Apple videotoolbox
             if (string.Equals(options.HardwareAccelerationType, "videotoolbox", StringComparison.OrdinalIgnoreCase)
                 && isVideotoolboxSupported
                 && isCodecAvailable)
@@ -5738,7 +5854,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // video processing filters.
                 var videoProcessParam = GetVideoProcessingFilterParam(state, encodingOptions, videoCodec);
 
-                args += videoProcessParam;
+                var negativeMapArgs = GetNegativeMapArgsByFilters(state, videoProcessParam);
+
+                args = negativeMapArgs + args + videoProcessParam;
 
                 hasCopyTs = videoProcessParam.Contains("copyts", StringComparison.OrdinalIgnoreCase);
 
