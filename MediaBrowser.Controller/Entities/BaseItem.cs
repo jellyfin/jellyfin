@@ -893,16 +893,6 @@ namespace MediaBrowser.Controller.Entities
 
             var sortable = Name.Trim().ToLowerInvariant();
 
-            foreach (var removeChar in ConfigurationManager.Configuration.SortRemoveCharacters)
-            {
-                sortable = sortable.Replace(removeChar, string.Empty, StringComparison.Ordinal);
-            }
-
-            foreach (var replaceChar in ConfigurationManager.Configuration.SortReplaceCharacters)
-            {
-                sortable = sortable.Replace(replaceChar, " ", StringComparison.Ordinal);
-            }
-
             foreach (var search in ConfigurationManager.Configuration.SortRemoveWords)
             {
                 // Remove from beginning if a space follows
@@ -921,12 +911,22 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
+            foreach (var removeChar in ConfigurationManager.Configuration.SortRemoveCharacters)
+            {
+                sortable = sortable.Replace(removeChar, string.Empty, StringComparison.Ordinal);
+            }
+
+            foreach (var replaceChar in ConfigurationManager.Configuration.SortReplaceCharacters)
+            {
+                sortable = sortable.Replace(replaceChar, " ", StringComparison.Ordinal);
+            }
+
             return ModifySortChunks(sortable);
         }
 
-        internal static string ModifySortChunks(string name)
+        internal static string ModifySortChunks(ReadOnlySpan<char> name)
         {
-            void AppendChunk(StringBuilder builder, bool isDigitChunk, ReadOnlySpan<char> chunk)
+            static void AppendChunk(StringBuilder builder, bool isDigitChunk, ReadOnlySpan<char> chunk)
             {
                 if (isDigitChunk && chunk.Length < 10)
                 {
@@ -936,7 +936,7 @@ namespace MediaBrowser.Controller.Entities
                 builder.Append(chunk);
             }
 
-            if (name.Length == 0)
+            if (name.IsEmpty)
             {
                 return string.Empty;
             }
@@ -950,13 +950,13 @@ namespace MediaBrowser.Controller.Entities
                 var isDigit = char.IsDigit(name[i]);
                 if (isDigit != isDigitChunk)
                 {
-                    AppendChunk(builder, isDigitChunk, name.AsSpan(chunkStart, i - chunkStart));
+                    AppendChunk(builder, isDigitChunk, name.Slice(chunkStart, i - chunkStart));
                     chunkStart = i;
                     isDigitChunk = isDigit;
                 }
             }
 
-            AppendChunk(builder, isDigitChunk, name.AsSpan(chunkStart));
+            AppendChunk(builder, isDigitChunk, name.Slice(chunkStart));
 
             // logger.LogDebug("ModifySortChunks Start: {0} End: {1}", name, builder.ToString());
             return builder.ToString().RemoveDiacritics();
