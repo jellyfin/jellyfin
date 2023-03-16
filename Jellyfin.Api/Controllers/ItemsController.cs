@@ -850,7 +850,7 @@ public class ItemsController : BaseJellyfinApiController
         {
             excludeItemIds = _sessionManager.Sessions
                 .Where(s => s.UserId.Equals(userId) && s.NowPlayingItem is not null)
-                .Select(s => s.NowPlayingItem.Id)
+                .Select(s => s.NowPlayingItem!.Id)
                 .ToArray();
         }
 

@@ -4,15 +4,14 @@ namespace MediaBrowser.Model.Net.WebSocketMessages.Subscribe;
 
 /// <summary>
 /// Sessions start message.
-/// TODO use SessionInfo for Data.
 /// </summary>
-public class SessionsStartMessage : WebSocketMessage<object>
+public class SessionsStartMessage : WebSocketMessage<SessionInfoModel>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="SessionsStartMessage"/> class.
     /// </summary>
     /// <param name="data">Session info.</param>
-    public SessionsStartMessage(object data)
+    public SessionsStartMessage(SessionInfoModel data)
         : base(data)
     {
     }

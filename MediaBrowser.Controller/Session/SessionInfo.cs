@@ -9,7 +9,6 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
@@ -18,7 +17,7 @@ namespace MediaBrowser.Controller.Session
     /// <summary>
     /// Class SessionInfo.
     /// </summary>
-    public sealed class SessionInfo : IAsyncDisposable, IDisposable
+    public sealed class SessionInfo : SessionInfoModel, IAsyncDisposable, IDisposable
     {
         // 1 second
         private const long ProgressIncrement = 10000000;
@@ -36,31 +35,24 @@ namespace MediaBrowser.Controller.Session
         {
             _sessionManager = sessionManager;
             _logger = logger;
-
-            AdditionalUsers = Array.Empty<SessionUserInfo>();
-            PlayState = new PlayerStateInfo();
             SessionControllers = Array.Empty<ISessionController>();
-            NowPlayingQueue = Array.Empty<QueueItem>();
-            NowPlayingQueueFullItems = Array.Empty<BaseItemDto>();
         }
 
-        public PlayerStateInfo PlayState { get; set; }
-
-        public SessionUserInfo[] AdditionalUsers { get; set; }
-
-        public ClientCapabilities Capabilities { get; set; }
+        /// <summary>
+        /// Gets or sets the session controller.
+        /// </summary>
+        /// <value>The session controller.</value>
+        [JsonIgnore]
+        public ISessionController[] SessionControllers { get; set; }
 
         /// <summary>
-        /// Gets or sets the remote end point.
+        /// Gets or sets the full now playing item.
+        /// TODO move this to SessionInfoModel.
         /// </summary>
-        /// <value>The remote end point.</value>
-        public string RemoteEndPoint { get; set; }
+        public BaseItem FullNowPlayingItem { get; set; }
 
-        /// <summary>
-        /// Gets the playable media types.
-        /// </summary>
-        /// <value>The playable media types.</value>
-        public IReadOnlyList<string> PlayableMediaTypes
+        /// <inheritdoc />
+        public override IReadOnlyList<string> PlayableMediaTypes
         {
             get
             {
@@ -73,90 +65,8 @@ namespace MediaBrowser.Controller.Session
             }
         }
 
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        public string Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        public Guid UserId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the username.
-        /// </summary>
-        /// <value>The username.</value>
-        public string UserName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type of the client.
-        /// </summary>
-        /// <value>The type of the client.</value>
-        public string Client { get; set; }
-
-        /// <summary>
-        /// Gets or sets the last activity date.
-        /// </summary>
-        /// <value>The last activity date.</value>
-        public DateTime LastActivityDate { get; set; }
-
-        /// <summary>
-        /// Gets or sets the last playback check in.
-        /// </summary>
-        /// <value>The last playback check in.</value>
-        public DateTime LastPlaybackCheckIn { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the device.
-        /// </summary>
-        /// <value>The name of the device.</value>
-        public string DeviceName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type of the device.
-        /// </summary>
-        /// <value>The type of the device.</value>
-        public string DeviceType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the now playing item.
-        /// </summary>
-        /// <value>The now playing item.</value>
-        public BaseItemDto NowPlayingItem { get; set; }
-
-        public BaseItem FullNowPlayingItem { get; set; }
-
-        public BaseItemDto NowViewingItem { get; set; }
-
-        /// <summary>
-        /// Gets or sets the device id.
-        /// </summary>
-        /// <value>The device id.</value>
-        public string DeviceId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the application version.
-        /// </summary>
-        /// <value>The application version.</value>
-        public string ApplicationVersion { get; set; }
-
-        /// <summary>
-        /// Gets or sets the session controller.
-        /// </summary>
-        /// <value>The session controller.</value>
-        [JsonIgnore]
-        public ISessionController[] SessionControllers { get; set; }
-
-        public TranscodingInfo TranscodingInfo { get; set; }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is active.
-        /// </summary>
-        /// <value><c>true</c> if this instance is active; otherwise, <c>false</c>.</value>
-        public bool IsActive
+        /// <inheritdoc />
+        public override bool IsActive
         {
             get
             {
@@ -178,7 +88,8 @@ namespace MediaBrowser.Controller.Session
             }
         }
 
-        public bool SupportsMediaControl
+        /// <inheritdoc />
+        public override bool SupportsMediaControl
         {
             get
             {
@@ -200,7 +111,8 @@ namespace MediaBrowser.Controller.Session
             }
         }
 
-        public bool SupportsRemoteControl
+        /// <inheritdoc />
+        public override bool SupportsRemoteControl
         {
             get
             {
@@ -222,23 +134,8 @@ namespace MediaBrowser.Controller.Session
             }
         }
 
-        public IReadOnlyList<QueueItem> NowPlayingQueue { get; set; }
-
-        public IReadOnlyList<BaseItemDto> NowPlayingQueueFullItems { get; set; }
-
-        public bool HasCustomDeviceName { get; set; }
-
-        public string PlaylistItemId { get; set; }
-
-        public string ServerId { get; set; }
-
-        public string UserPrimaryImageTag { get; set; }
-
-        /// <summary>
-        /// Gets the supported commands.
-        /// </summary>
-        /// <value>The supported commands.</value>
-        public IReadOnlyList<GeneralCommandType> SupportedCommands
+        /// <inheritdoc />
+        public override IReadOnlyList<GeneralCommandType> SupportedCommands
             => Capabilities is null ? Array.Empty<GeneralCommandType>() : Capabilities.SupportedCommands;
 
         public Tuple<ISessionController, bool> EnsureController<T>(Func<SessionInfo, ISessionController> factory)

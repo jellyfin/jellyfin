@@ -4,15 +4,14 @@ namespace MediaBrowser.Model.Net.WebSocketMessages.Publish;
 
 /// <summary>
 /// Sessions message.
-/// TODO use SessionInfo for data.
 /// </summary>
-public class SessionsMessage : WebSocketMessage<object>
+public class SessionsMessage : WebSocketMessage<SessionInfoModel>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="SessionsMessage"/> class.
     /// </summary>
     /// <param name="data">Session info.</param>
-    public SessionsMessage(object data)
+    public SessionsMessage(SessionInfoModel data)
         : base(data)
     {
     }
