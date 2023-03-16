@@ -10,6 +10,7 @@ public abstract class WebSocketMessage
 {
     /// <summary>
     /// Gets or sets the type of the message.
+    /// TODO make this abstract and get only.
     /// </summary>
     public virtual SessionMessageType MessageType { get; set; }
 

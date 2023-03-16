@@ -4,6 +4,7 @@ namespace MediaBrowser.Model.Net;
 
 /// <summary>
 /// Class WebSocketMessage.
+/// TODO make this abstract, remove empty ctor.
 /// </summary>
 /// <typeparam name="T">The type of the data.</typeparam>
 public class WebSocketMessage<T> : WebSocketMessage
@@ -26,6 +27,7 @@ public class WebSocketMessage<T> : WebSocketMessage
 
     /// <summary>
     /// Gets or sets the data.
+    /// TODO make this set only.
     /// </summary>
     public T? Data { get; set; }
 }

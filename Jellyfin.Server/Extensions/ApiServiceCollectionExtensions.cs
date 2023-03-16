@@ -267,7 +267,7 @@ namespace Jellyfin.Server.Extensions
             const string AsyncApiTitle = "Jellyfin WebSocket Documentation";
             return serviceCollection.AddAsyncApiSchemaGeneration(options =>
             {
-                options.AssemblyMarkerTypes = new[] { typeof(WebSocketConnection), };
+                options.AssemblyMarkerTypes = new[] { typeof(WebSocketConnection) };
 
                 var version = typeof(ApplicationHost).Assembly.GetName().Version?.ToString(3) ?? "0.0.1";
                 options.AsyncApi = new AsyncApiDocument
