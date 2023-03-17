@@ -114,7 +114,7 @@
     "TasksApplicationCategory": "Toepassing",
     "TasksLibraryCategory": "Bibliotheek",
     "TasksMaintenanceCategory": "Onderhoud",
-    "TaskCleanActivityLogDescription": "Verwijdert activiteiten logs ouder dan de ingestelde leeftijd.",
+    "TaskCleanActivityLogDescription": "Verwijdert activiteitenlogs ouder dan de ingestelde leeftijd.",
     "TaskCleanActivityLog": "Activiteitenlogboek legen",
     "Undefined": "Niet gedefinieerd",
     "Forced": "Geforceerd",
