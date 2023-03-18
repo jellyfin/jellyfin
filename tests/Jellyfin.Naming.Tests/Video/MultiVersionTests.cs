@@ -612,5 +612,25 @@ namespace Jellyfin.Naming.Tests.Video
             Assert.Single(result[0].AlternateVersions);
             Assert.Empty(result[1].AlternateVersions);
         }
+
+        [Fact]
+        public void TestMultiVersionEpisodeABCD()
+        {
+            var files = new[]
+            {
+                @"/TV/SeriesName/SeriesName- S01E01 - EpisodeTitle - [VersionA].mkv",
+                @"/TV/SeriesName/SeriesName- S01E01 - EpisodeTitle - [VersionB].mkv",
+                @"/TV/SeriesName/SeriesName- S01E01 - EpisodeTitle - VersionC.mkv",
+                @"/TV/SeriesName/SeriesName- S01E01 - EpisodeTitle - VersionD.mkv"
+            };
+
+            var result = VideoListResolver.Resolve(
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions, false)).OfType<VideoFileInfo>().ToList(),
+                _namingOptions,
+                CollectionType.TvShows);
+
+            Assert.Single(result);
+            Assert.Equal(3, result[0].AlternateVersions.Count);
+        }
     }
 }
