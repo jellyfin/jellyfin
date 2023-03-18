@@ -136,7 +136,7 @@ namespace Emby.Server.Implementations.Playlists
                     Name = name,
                     Path = path,
                     OwnerUserId = options.UserId,
-                    Shares = options.Shares
+                    Shares = options.Shares ?? Array.Empty<Share>()
                 };
 
                 playlist.SetMediaType(options.MediaType);
