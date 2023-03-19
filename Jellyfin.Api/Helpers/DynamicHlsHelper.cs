@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.StreamingDtos;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -203,6 +204,13 @@ namespace Jellyfin.Api.Helpers
 
             if (state.VideoStream != null && state.VideoRequest != null)
             {
+                // Provide a workaround for the case issue between flac and fLaC.
+                var flacWaPlaylist = ApplyFlacCaseWorkaround(state, basicPlaylist.ToString());
+                if (!string.IsNullOrEmpty(flacWaPlaylist))
+                {
+                    builder.Append(flacWaPlaylist);
+                }
+
                 var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
 
                 // Provide SDR HEVC entrance for backward compatibility.
@@ -221,10 +229,25 @@ namespace Jellyfin.Api.Helpers
                         sdrVideoUrl += "&AllowVideoStreamCopy=false";
 
                         var sdrOutputVideoBitrate = _encodingHelper.GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec);
-                        var sdrOutputAudioBitrate = _encodingHelper.GetAudioBitrateParam(state.VideoRequest, state.AudioStream) ?? 0;
-                        var sdrTotalBitrate = sdrOutputAudioBitrate + sdrOutputVideoBitrate;
+                        var sdrOutputAudioBitrate = 0;
+                        if (EncodingHelper.LosslessAudioCodecs.Contains(state.VideoRequest.AudioCodec, StringComparison.OrdinalIgnoreCase))
+                        {
+                            sdrOutputAudioBitrate = state.AudioStream.BitRate ?? 0;
+                        }
+                        else
+                        {
+                            sdrOutputAudioBitrate = _encodingHelper.GetAudioBitrateParam(state.VideoRequest, state.AudioStream, state.OutputAudioChannels) ?? 0;
+                        }
 
-                        AppendPlaylist(builder, state, sdrVideoUrl, sdrTotalBitrate, subtitleGroup);
+                        var sdrTotalBitrate = sdrOutputAudioBitrate + sdrOutputVideoBitrate;
+                        var sdrPlaylist = AppendPlaylist(builder, state, sdrVideoUrl, sdrTotalBitrate, subtitleGroup);
+
+                        // Provide a workaround for the case issue between flac and fLaC.
+                        flacWaPlaylist = ApplyFlacCaseWorkaround(state, sdrPlaylist.ToString());
+                        if (!string.IsNullOrEmpty(flacWaPlaylist))
+                        {
+                            builder.Append(flacWaPlaylist);
+                        }
 
                         // Restore the video codec
                         state.OutputVideoCodec = "copy";
@@ -254,6 +277,13 @@ namespace Jellyfin.Api.Helpers
                     state.VideoStream.Level = originalLevel;
                     var newPlaylist = ReplacePlaylistCodecsField(basicPlaylist, playlistCodecsField, newPlaylistCodecsField);
                     builder.Append(newPlaylist);
+
+                    // Provide a workaround for the case issue between flac and fLaC.
+                    flacWaPlaylist = ApplyFlacCaseWorkaround(state, newPlaylist);
+                    if (!string.IsNullOrEmpty(flacWaPlaylist))
+                    {
+                        builder.Append(flacWaPlaylist);
+                    }
                 }
             }
 
@@ -612,6 +642,11 @@ namespace Jellyfin.Api.Helpers
                 return HlsCodecStringHelpers.GetALACString();
             }
 
+            if (string.Equals(state.ActualOutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase))
+            {
+                return HlsCodecStringHelpers.GetOPUSString();
+            }
+
             return string.Empty;
         }
 
@@ -710,7 +745,19 @@ namespace Jellyfin.Api.Helpers
             return oldPlaylist.Replace(
                 oldValue.ToString(),
                 newValue.ToString(),
-                StringComparison.OrdinalIgnoreCase);
+                StringComparison.Ordinal);
+        }
+
+        private string ApplyFlacCaseWorkaround(StreamState state, string srcPlaylist)
+        {
+            if (!string.Equals(state.ActualOutputAudioCodec, "flac", StringComparison.OrdinalIgnoreCase))
+            {
+                return string.Empty;
+            }
+
+            var newPlaylist = srcPlaylist.Replace(",flac\"", ",fLaC\"", StringComparison.Ordinal);
+
+            return newPlaylist.Contains(",fLaC\"", StringComparison.Ordinal) ? newPlaylist : string.Empty;
         }
     }
 }
