@@ -26,6 +26,8 @@ namespace MediaBrowser.Providers.Manager
         where TItemType : BaseItem, IHasLookupInfo<TIdType>, new()
         where TIdType : ItemLookupInfo, new()
     {
+        private static readonly ImageType[] AllImageTypes = Enum.GetValues<ImageType>();
+
         protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger<MetadataService<TItemType, TIdType>> logger, IProviderManager providerManager, IFileSystem fileSystem, ILibraryManager libraryManager)
         {
             ServerConfigurationManager = serverConfigurationManager;
@@ -672,6 +674,8 @@ namespace MediaBrowser.Providers.Manager
             }
 
             var hasLocalMetadata = false;
+            var replaceImages = AllImageTypes.ToList();
+            var localImagesFound = false;
 
             foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>())
             {
@@ -698,11 +702,21 @@ namespace MediaBrowser.Providers.Manager
 
                                 await ProviderManager.SaveImage(item, remoteImage.Url, remoteImage.Type, null, cancellationToken).ConfigureAwait(false);
                                 refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
+
+                                // remove imagetype that has just been downloaded
+                                replaceImages.Remove(remoteImage.Type);
+                                localImagesFound = true;
                             }
                             catch (HttpRequestException ex)
                             {
                                 Logger.LogError(ex, "Could not save {ImageType} image: {Url}", Enum.GetName(remoteImage.Type), remoteImage.Url);
                             }
+                        }
+
+                        if (localImagesFound)
+                        {
+                            options.ReplaceAllImages = false;
+                            options.ReplaceImages = replaceImages;
                         }
 
                         if (imageService.MergeImages(item, localItem.Images))
