@@ -6015,7 +6015,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (bitrate.HasValue && !LosslessAudioCodecs.Contains(outputCodec, StringComparison.OrdinalIgnoreCase))
             {
-                var vbrParam = GetAudioVbrModeParam(outputCodec, bitrate.Value / (channels ?? 2));
+                var vbrParam = GetAudioVbrModeParam(GetAudioEncoder(state), bitrate.Value / (channels ?? 2));
                 if (encodingOptions.EnableAudioVbr && vbrParam is not null)
                 {
                     audioTranscodeParams.Add(vbrParam);
