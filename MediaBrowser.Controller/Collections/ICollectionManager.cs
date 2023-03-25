@@ -63,7 +63,7 @@ namespace MediaBrowser.Controller.Collections
         /// <param name="createIfNeeded">Will create the collection folder on the storage if set to true.</param>
         /// <returns>The folder instance referencing the collection storage.</returns>
         Task<Folder?> GetCollectionsFolder(bool createIfNeeded);
-        
+
         /// <summary>
         /// Get Items For RunTimeTicks Count.
         /// </summary>
