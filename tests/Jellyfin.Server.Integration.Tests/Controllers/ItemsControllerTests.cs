@@ -22,13 +22,13 @@ public sealed class ItemsControllerTests : IClassFixture<JellyfinApplicationFact
     }
 
     [Fact]
-    public async Task GetItems_NoApiKeyOrUserId_BadRequest()
+    public async Task GetItems_NoApiKeyOrUserId_Success()
     {
         var client = _factory.CreateClient();
         client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
 
         var response = await client.GetAsync("Items").ConfigureAwait(false);
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
     [Theory]

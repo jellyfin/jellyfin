@@ -232,6 +232,11 @@ namespace MediaBrowser.Controller.Net
                 // TODO Investigate and properly fix.
                 Logger.LogError(ex, "Object Disposed");
             }
+            catch (Exception ex)
+            {
+                // TODO Investigate and properly fix.
+                Logger.LogError(ex, "Error disposing websocket");
+            }
 
             lock (_activeConnections)
             {

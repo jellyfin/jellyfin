@@ -154,6 +154,14 @@ namespace MediaBrowser.Controller.MediaEncoding
         string GetInputArgument(string inputFile, MediaSourceInfo mediaSource);
 
         /// <summary>
+        /// Gets the input argument.
+        /// </summary>
+        /// <param name="inputFiles">The input files.</param>
+        /// <param name="mediaSource">The mediaSource.</param>
+        /// <returns>System.String.</returns>
+        string GetInputArgument(IReadOnlyList<string> inputFiles, MediaSourceInfo mediaSource);
+
+        /// <summary>
         /// Gets the input argument for an external subtitle file.
         /// </summary>
         /// <param name="inputFile">The input file.</param>
@@ -187,5 +195,27 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="path">The path.</param>
         /// <param name="pathType">The type of path.</param>
         void UpdateEncoderPath(string path, string pathType);
+
+        /// <summary>
+        /// Gets the primary playlist of .vob files.
+        /// </summary>
+        /// <param name="path">The to the .vob files.</param>
+        /// <param name="titleNumber">The title number to start with.</param>
+        /// <returns>A playlist.</returns>
+        IReadOnlyList<string> GetPrimaryPlaylistVobFiles(string path, uint? titleNumber);
+
+        /// <summary>
+        /// Gets the primary playlist of .m2ts files.
+        /// </summary>
+        /// <param name="path">The to the .m2ts files.</param>
+        /// <returns>A playlist.</returns>
+        IReadOnlyList<string> GetPrimaryPlaylistM2tsFiles(string path);
+
+        /// <summary>
+        /// Generates a FFmpeg concat config for the source.
+        /// </summary>
+        /// <param name="source">The <see cref="MediaSourceInfo"/>.</param>
+        /// <param name="concatFilePath">The path the config should be written to.</param>
+        void GenerateConcatConfig(MediaSourceInfo source, string concatFilePath);
     }
 }

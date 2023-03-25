@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -25,7 +26,7 @@ namespace Emby.Server.Implementations.Localization
         private const string CulturesPath = "Emby.Server.Implementations.Localization.iso6392.txt";
         private const string CountriesPath = "Emby.Server.Implementations.Localization.countries.json";
         private static readonly Assembly _assembly = typeof(LocalizationManager).Assembly;
-        private static readonly string[] _unratedValues = { "n/a", "unrated", "not rated" };
+        private static readonly string[] _unratedValues = { "n/a", "unrated", "not rated", "nr" };
 
         private readonly IServerConfigurationManager _configurationManager;
         private readonly ILogger<LocalizationManager> _logger;
@@ -86,12 +87,10 @@ namespace Emby.Server.Implementations.Localization
                         var name = parts[0];
                         dict.Add(name, new ParentalRating(name, value));
                     }
-#if DEBUG
                     else
                     {
                         _logger.LogWarning("Malformed line in ratings file for country {CountryCode}", countryCode);
                     }
-#endif
                 }
 
                 _allParentalRatings[countryCode] = dict;
@@ -184,80 +183,149 @@ namespace Emby.Server.Implementations.Localization
 
         /// <inheritdoc />
         public IEnumerable<ParentalRating> GetParentalRatings()
-            => GetParentalRatingsDictionary().Values;
+        {
+            // Use server default language for ratings
+            // Fall back to empty list if there are no parental ratings for that language
+            var ratings = GetParentalRatingsDictionary()?.Values.ToList()
+                ?? new List<ParentalRating>();
+
+            // Add common ratings to ensure them being available for selection
+            // Based on the US rating system due to it being the main source of rating in the metadata providers
+            // Unrated
+            if (!ratings.Any(x => x.Value is null))
+            {
+                ratings.Add(new ParentalRating("Unrated", null));
+            }
+
+            // Minimum rating possible
+            if (!ratings.Any(x => x.Value == 0))
+            {
+                ratings.Add(new ParentalRating("Approved", 0));
+            }
+
+            // Matches PG (this has different age restrictions depending on country)
+            if (!ratings.Any(x => x.Value == 10))
+            {
+                ratings.Add(new ParentalRating("10", 10));
+            }
+
+            // Matches PG-13
+            if (!ratings.Any(x => x.Value == 13))
+            {
+                ratings.Add(new ParentalRating("13", 13));
+            }
+
+            // Matches TV-14
+            if (!ratings.Any(x => x.Value == 14))
+            {
+                ratings.Add(new ParentalRating("14", 14));
+            }
+
+            // Catchall if max rating of country is less than 21
+            // Using 21 instead of 18 to be sure to allow access to all rated content except adult and banned
+            if (!ratings.Any(x => x.Value >= 21))
+            {
+                ratings.Add(new ParentalRating("21", 21));
+            }
+
+            // A lot of countries don't excplicitly have a seperate rating for adult content
+            if (!ratings.Any(x => x.Value == 1000))
+            {
+                ratings.Add(new ParentalRating("XXX", 1000));
+            }
+
+            // A lot of countries don't excplicitly have a seperate rating for banned content
+            if (!ratings.Any(x => x.Value == 1001))
+            {
+                ratings.Add(new ParentalRating("Banned", 1001));
+            }
+
+            return ratings.OrderBy(r => r.Value);
+        }
 
         /// <summary>
         /// Gets the parental ratings dictionary.
         /// </summary>
+        /// <param name="countryCode">The optional two letter ISO language string.</param>
         /// <returns><see cref="Dictionary{String, ParentalRating}" />.</returns>
-        private Dictionary<string, ParentalRating> GetParentalRatingsDictionary()
+        private Dictionary<string, ParentalRating>? GetParentalRatingsDictionary(string? countryCode = null)
         {
-            var countryCode = _configurationManager.Configuration.MetadataCountryCode;
-
+            // Fallback to server default if no country code is specified.
             if (string.IsNullOrEmpty(countryCode))
             {
-                countryCode = "us";
+                countryCode = _configurationManager.Configuration.MetadataCountryCode;
             }
 
-            return GetRatings(countryCode)
-                ?? GetRatings("us")
-                ?? throw new InvalidOperationException($"Invalid resource path: '{CountriesPath}'");
-        }
+            if (_allParentalRatings.TryGetValue(countryCode, out var countryValue))
+            {
+                return countryValue;
+            }
 
-        /// <summary>
-        /// Gets the ratings.
-        /// </summary>
-        /// <param name="countryCode">The country code.</param>
-        /// <returns>The ratings.</returns>
-        private Dictionary<string, ParentalRating>? GetRatings(string countryCode)
-        {
-            _allParentalRatings.TryGetValue(countryCode, out var value);
-
-            return value;
+            return null;
         }
 
         /// <inheritdoc />
-        public int? GetRatingLevel(string rating)
+        public int? GetRatingLevel(string rating, string? countryCode = null)
         {
             ArgumentException.ThrowIfNullOrEmpty(rating);
 
+            // Handle unrated content
             if (_unratedValues.Contains(rating.AsSpan(), StringComparison.OrdinalIgnoreCase))
             {
                 return null;
             }
 
             // Fairly common for some users to have "Rated R" in their rating field
+            rating = rating.Replace("Rated :", string.Empty, StringComparison.OrdinalIgnoreCase);
             rating = rating.Replace("Rated ", string.Empty, StringComparison.OrdinalIgnoreCase);
 
-            var ratingsDictionary = GetParentalRatingsDictionary();
-
-            if (ratingsDictionary.TryGetValue(rating, out ParentalRating? value))
+            // Use rating system matching the language
+            if (!string.IsNullOrEmpty(countryCode))
             {
-                return value.Value;
+                var ratingsDictionary = GetParentalRatingsDictionary(countryCode);
+                if (ratingsDictionary is not null && ratingsDictionary.TryGetValue(rating, out ParentalRating? value))
+                {
+                    return value.Value;
+                }
             }
-
-            // If we don't find anything check all ratings systems
-            foreach (var dictionary in _allParentalRatings.Values)
+            else
             {
-                if (dictionary.TryGetValue(rating, out value))
+                // Fall back to server default language for ratings check
+                // If it has no ratings, use the US ratings
+                var ratingsDictionary = GetParentalRatingsDictionary() ?? GetParentalRatingsDictionary("us");
+                if (ratingsDictionary is not null && ratingsDictionary.TryGetValue(rating, out ParentalRating? value))
                 {
                     return value.Value;
                 }
             }
 
-            // Try splitting by : to handle "Germany: FSK 18"
-            var index = rating.IndexOf(':', StringComparison.Ordinal);
-            if (index != -1)
+            // If we don't find anything, check all ratings systems
+            foreach (var dictionary in _allParentalRatings.Values)
             {
-                var trimmedRating = rating.AsSpan(index).TrimStart(':').Trim();
-
-                if (!trimmedRating.IsEmpty)
+                if (dictionary.TryGetValue(rating, out var value))
                 {
-                    return GetRatingLevel(trimmedRating.ToString());
+                    return value.Value;
                 }
             }
 
-            // TODO: Further improve by normalizing out all spaces and dashes
+            // Try splitting by : to handle "Germany: FSK-18"
+            if (rating.Contains(':', StringComparison.OrdinalIgnoreCase))
+            {
+                return GetRatingLevel(rating.AsSpan().RightPart(':').ToString());
+            }
+
+            // Handle prefix country code to handle "DE-18"
+            if (rating.Contains('-', StringComparison.OrdinalIgnoreCase))
+            {
+                var ratingSpan = rating.AsSpan();
+
+                // Extract culture from country prefix
+                var culture = FindLanguageInfo(ratingSpan.LeftPart('-').ToString());
+
+                // Check rating system of culture
+                return GetRatingLevel(ratingSpan.RightPart('-').ToString(), culture?.TwoLetterISOLanguageName);
+            }
+
             return null;
         }
 

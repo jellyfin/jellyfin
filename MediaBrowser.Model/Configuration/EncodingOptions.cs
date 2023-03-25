@@ -14,6 +14,7 @@ public class EncodingOptions
     public EncodingOptions()
     {
         EnableFallbackFont = false;
+        EnableAudioVbr = false;
         DownMixAudioBoost = 2;
         DownMixStereoAlgorithm = DownMixStereoAlgorithms.None;
         MaxMuxingQueueSize = 2048;
@@ -39,7 +40,8 @@ public class EncodingOptions
         DeinterlaceMethod = "yadif";
         EnableDecodingColorDepth10Hevc = true;
         EnableDecodingColorDepth10Vp9 = true;
-        EnableEnhancedNvdecDecoder = false;
+        // Enhanced Nvdec or system native decoder is required for DoVi to SDR tone-mapping.
+        EnableEnhancedNvdecDecoder = true;
         PreferSystemNativeHwDecoder = true;
         EnableIntelLowPowerH264HwEncoder = false;
         EnableIntelLowPowerHevcHwEncoder = false;
@@ -69,6 +71,11 @@ public class EncodingOptions
     /// Gets or sets a value indicating whether to use the fallback font.
     /// </summary>
     public bool EnableFallbackFont { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether audio VBR is enabled.
+    /// </summary>
+    public bool EnableAudioVbr { get; set; }
 
     /// <summary>
     /// Gets or sets the audio boost applied when downmixing audio.

@@ -25,11 +25,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "mpeg2video",
             "mpeg4",
             "msmpeg4",
-            "dts",
+            "dca",
             "ac3",
             "aac",
             "mp3",
             "flac",
+            "truehd",
             "h264_qsv",
             "hevc_qsv",
             "mpeg2_qsv",
@@ -59,10 +60,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "aac_at",
             "libfdk_aac",
             "ac3",
+            "dca",
             "libmp3lame",
             "libopus",
             "libvorbis",
             "flac",
+            "truehd",
             "srt",
             "h264_amf",
             "hevc_amf",
@@ -277,7 +280,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (match.Success)
             {
-                if (Version.TryParse(match.Groups[1].Value, out var result))
+                if (Version.TryParse(match.Groups[1].ValueSpan, out var result))
                 {
                     return result;
                 }
@@ -327,8 +330,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 RegexOptions.Multiline))
             {
                 var version = new Version(
-                    int.Parse(match.Groups["major"].Value, CultureInfo.InvariantCulture),
-                    int.Parse(match.Groups["minor"].Value, CultureInfo.InvariantCulture));
+                    int.Parse(match.Groups["major"].ValueSpan, CultureInfo.InvariantCulture),
+                    int.Parse(match.Groups["minor"].ValueSpan, CultureInfo.InvariantCulture));
 
                 map.Add(match.Groups["name"].Value, version);
             }

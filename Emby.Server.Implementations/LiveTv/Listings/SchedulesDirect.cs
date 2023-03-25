@@ -570,15 +570,13 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 _tokens.TryAdd(username, savedToken);
             }
 
-            if (!string.IsNullOrEmpty(savedToken.Name) && !string.IsNullOrEmpty(savedToken.Value))
+            if (!string.IsNullOrEmpty(savedToken.Name)
+                && long.TryParse(savedToken.Value, CultureInfo.InvariantCulture, out long ticks))
             {
-                if (long.TryParse(savedToken.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out long ticks))
+                // If it's under 24 hours old we can still use it
+                if (DateTime.UtcNow.Ticks - ticks < TimeSpan.FromHours(20).Ticks)
                 {
-                    // If it's under 24 hours old we can still use it
-                    if (DateTime.UtcNow.Ticks - ticks < TimeSpan.FromHours(20).Ticks)
-                    {
-                        return savedToken.Name;
-                    }
+                    return savedToken.Name;
                 }
             }
 

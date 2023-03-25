@@ -86,7 +86,7 @@
     "Shows": "Шоу",
     "ServerNameNeedsToBeRestarted": "{0} потрібно перезапустити",
     "ScheduledTaskStartedWithName": "{0} розпочато",
-    "ScheduledTaskFailedWithName": "Помилка {0}",
+    "ScheduledTaskFailedWithName": "{0} незавершено, збій",
     "ProviderValue": "Постачальник: {0}",
     "PluginUpdatedWithName": "{0} оновлено",
     "PluginUninstalledWithName": "{0} видалено",

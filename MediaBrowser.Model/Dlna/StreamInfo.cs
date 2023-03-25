@@ -107,9 +107,8 @@ namespace MediaBrowser.Model.Dlna
 
         public string MediaSourceId => MediaSource?.Id;
 
-        public bool IsDirectStream =>
-            PlayMethod == PlayMethod.DirectStream ||
-            PlayMethod == PlayMethod.DirectPlay;
+        public bool IsDirectStream => MediaSource?.VideoType is not (VideoType.Dvd or VideoType.BluRay)
+            && PlayMethod is PlayMethod.DirectStream or PlayMethod.DirectPlay;
 
         /// <summary>
         /// Gets the audio stream that will be used.
@@ -922,12 +921,8 @@ namespace MediaBrowser.Model.Dlna
         public int? GetTargetVideoBitDepth(string codec)
         {
             var value = GetOption(codec, "videobitdepth");
-            if (string.IsNullOrEmpty(value))
-            {
-                return null;
-            }
 
-            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result))
+            if (int.TryParse(value, CultureInfo.InvariantCulture, out var result))
             {
                 return result;
             }
@@ -938,12 +933,8 @@ namespace MediaBrowser.Model.Dlna
         public int? GetTargetAudioBitDepth(string codec)
         {
             var value = GetOption(codec, "audiobitdepth");
-            if (string.IsNullOrEmpty(value))
-            {
-                return null;
-            }
 
-            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result))
+            if (int.TryParse(value, CultureInfo.InvariantCulture, out var result))
             {
                 return result;
             }
@@ -954,12 +945,8 @@ namespace MediaBrowser.Model.Dlna
         public double? GetTargetVideoLevel(string codec)
         {
             var value = GetOption(codec, "level");
-            if (string.IsNullOrEmpty(value))
-            {
-                return null;
-            }
 
-            if (double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+            if (double.TryParse(value, CultureInfo.InvariantCulture, out var result))
             {
                 return result;
             }
@@ -970,12 +957,8 @@ namespace MediaBrowser.Model.Dlna
         public int? GetTargetRefFrames(string codec)
         {
             var value = GetOption(codec, "maxrefframes");
-            if (string.IsNullOrEmpty(value))
-            {
-                return null;
-            }
 
-            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+            if (int.TryParse(value, CultureInfo.InvariantCulture, out var result))
             {
                 return result;
             }

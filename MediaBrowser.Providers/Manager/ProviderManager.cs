@@ -284,12 +284,12 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (OperationCanceledException)
             {
-                return new List<RemoteImageInfo>();
+                return Enumerable.Empty<RemoteImageInfo>();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "{ProviderName} failed in GetImageInfos for type {ItemType} at {ItemPath}", provider.GetType().Name, item.GetType().Name, item.Path);
-                return new List<RemoteImageInfo>();
+                return Enumerable.Empty<RemoteImageInfo>();
             }
         }
 
@@ -400,12 +400,6 @@ namespace MediaBrowser.Providers.Manager
             bool forceEnableInternetMetadata)
         {
             if (!item.SupportsLocalMetadata && provider is ILocalMetadataProvider)
-            {
-                return false;
-            }
-
-            // Prevent owned items from reading the same local metadata file as their owner
-            if (!item.OwnerId.Equals(default) && provider is ILocalMetadataProvider)
             {
                 return false;
             }

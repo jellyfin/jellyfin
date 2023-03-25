@@ -47,7 +47,7 @@ namespace MediaBrowser.Controller.Entities
         /// The supported image extensions.
         /// </summary>
         public static readonly string[] SupportedImageExtensions
-            = new[] { ".png", ".jpg", ".jpeg", ".tbn", ".gif" };
+            = new[] { ".png", ".jpg", ".jpeg", ".webp", ".tbn", ".gif" };
 
         private static readonly List<string> _supportedExtensions = new List<string>(SupportedImageExtensions)
         {
@@ -561,7 +561,7 @@ namespace MediaBrowser.Controller.Entities
         public string OfficialRating { get; set; }
 
         [JsonIgnore]
-        public int InheritedParentalRatingValue { get; set; }
+        public int? InheritedParentalRatingValue { get; set; }
 
         /// <summary>
         /// Gets or sets the critic rating.
@@ -900,16 +900,6 @@ namespace MediaBrowser.Controller.Entities
 
             var sortable = Name.Trim().ToLowerInvariant();
 
-            foreach (var removeChar in ConfigurationManager.Configuration.SortRemoveCharacters)
-            {
-                sortable = sortable.Replace(removeChar, string.Empty, StringComparison.Ordinal);
-            }
-
-            foreach (var replaceChar in ConfigurationManager.Configuration.SortReplaceCharacters)
-            {
-                sortable = sortable.Replace(replaceChar, " ", StringComparison.Ordinal);
-            }
-
             foreach (var search in ConfigurationManager.Configuration.SortRemoveWords)
             {
                 // Remove from beginning if a space follows
@@ -928,12 +918,22 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
+            foreach (var removeChar in ConfigurationManager.Configuration.SortRemoveCharacters)
+            {
+                sortable = sortable.Replace(removeChar, string.Empty, StringComparison.Ordinal);
+            }
+
+            foreach (var replaceChar in ConfigurationManager.Configuration.SortReplaceCharacters)
+            {
+                sortable = sortable.Replace(replaceChar, " ", StringComparison.Ordinal);
+            }
+
             return ModifySortChunks(sortable);
         }
 
-        internal static string ModifySortChunks(string name)
+        internal static string ModifySortChunks(ReadOnlySpan<char> name)
         {
-            void AppendChunk(StringBuilder builder, bool isDigitChunk, ReadOnlySpan<char> chunk)
+            static void AppendChunk(StringBuilder builder, bool isDigitChunk, ReadOnlySpan<char> chunk)
             {
                 if (isDigitChunk && chunk.Length < 10)
                 {
@@ -943,7 +943,7 @@ namespace MediaBrowser.Controller.Entities
                 builder.Append(chunk);
             }
 
-            if (name.Length == 0)
+            if (name.IsEmpty)
             {
                 return string.Empty;
             }
@@ -957,13 +957,13 @@ namespace MediaBrowser.Controller.Entities
                 var isDigit = char.IsDigit(name[i]);
                 if (isDigit != isDigitChunk)
                 {
-                    AppendChunk(builder, isDigitChunk, name.AsSpan(chunkStart, i - chunkStart));
+                    AppendChunk(builder, isDigitChunk, name.Slice(chunkStart, i - chunkStart));
                     chunkStart = i;
                     isDigitChunk = isDigit;
                 }
             }
 
-            AppendChunk(builder, isDigitChunk, name.AsSpan(chunkStart));
+            AppendChunk(builder, isDigitChunk, name.Slice(chunkStart));
 
             // logger.LogDebug("ModifySortChunks Start: {0} End: {1}", name, builder.ToString());
             return builder.ToString().RemoveDiacritics();
@@ -1541,12 +1541,6 @@ namespace MediaBrowser.Controller.Entities
             }
 
             var maxAllowedRating = user.MaxParentalAgeRating;
-
-            if (maxAllowedRating is null)
-            {
-                return true;
-            }
-
             var rating = CustomRatingForComparison;
 
             if (string.IsNullOrEmpty(rating))
@@ -1556,12 +1550,13 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrEmpty(rating))
             {
+                Logger.LogDebug("{0} has no parental rating set.", Name);
                 return !GetBlockUnratedValue(user);
             }
 
             var value = LocalizationManager.GetRatingLevel(rating);
 
-            // Could not determine the integer value
+            // Could not determine rating level
             if (!value.HasValue)
             {
                 var isAllowed = !GetBlockUnratedValue(user);
@@ -1574,7 +1569,7 @@ namespace MediaBrowser.Controller.Entities
                 return isAllowed;
             }
 
-            return value.Value <= maxAllowedRating.Value;
+            return !maxAllowedRating.HasValue || value.Value <= maxAllowedRating.Value;
         }
 
         public int? GetInheritedParentalRatingValue()
@@ -1634,10 +1629,10 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Gets the block unrated value.
+        /// Gets a bool indicating if access to the unrated item is blocked or not.
         /// </summary>
         /// <param name="user">The configuration.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if blocked, <c>false</c> otherwise.</returns>
         protected virtual bool GetBlockUnratedValue(User user)
         {
             // Don't block plain folders that are unrated. Let the media underneath get blocked
@@ -2524,7 +2519,7 @@ namespace MediaBrowser.Controller.Entities
 
             var item = this;
 
-            var inheritedParentalRatingValue = item.GetInheritedParentalRatingValue() ?? 0;
+            var inheritedParentalRatingValue = item.GetInheritedParentalRatingValue() ?? null;
             if (inheritedParentalRatingValue != item.InheritedParentalRatingValue)
             {
                 item.InheritedParentalRatingValue = inheritedParentalRatingValue;

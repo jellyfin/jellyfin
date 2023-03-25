@@ -136,12 +136,26 @@ namespace MediaBrowser.Model.Dlna
                 return !condition.IsRequired;
             }
 
-            if (int.TryParse(condition.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var expected))
+            var conditionType = condition.Condition;
+            if (condition.Condition == ProfileConditionType.EqualsAny)
             {
-                switch (condition.Condition)
+                foreach (var singleConditionString in condition.Value.AsSpan().Split('|'))
+                {
+                    if (int.TryParse(singleConditionString, NumberStyles.Integer, CultureInfo.InvariantCulture, out int conditionValue)
+                        && conditionValue.Equals(currentValue))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            if (int.TryParse(condition.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var expected))
+            {
+                switch (conditionType)
                 {
                     case ProfileConditionType.Equals:
-                    case ProfileConditionType.EqualsAny:
                         return currentValue.Value.Equals(expected);
                     case ProfileConditionType.GreaterThanEqual:
                         return currentValue.Value >= expected;
@@ -212,9 +226,24 @@ namespace MediaBrowser.Model.Dlna
                 return !condition.IsRequired;
             }
 
-            if (double.TryParse(condition.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var expected))
+            var conditionType = condition.Condition;
+            if (condition.Condition == ProfileConditionType.EqualsAny)
             {
-                switch (condition.Condition)
+                foreach (var singleConditionString in condition.Value.AsSpan().Split('|'))
+                {
+                    if (double.TryParse(singleConditionString, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out double conditionValue)
+                        && conditionValue.Equals(currentValue))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            if (double.TryParse(condition.Value, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var expected))
+            {
+                switch (conditionType)
                 {
                     case ProfileConditionType.Equals:
                         return currentValue.Value.Equals(expected);

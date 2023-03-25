@@ -157,16 +157,16 @@ namespace Emby.Server.Implementations.Channels
         }
 
         /// <inheritdoc />
-        public QueryResult<Channel> GetChannelsInternal(ChannelQuery query)
+        public async Task<QueryResult<Channel>> GetChannelsInternalAsync(ChannelQuery query)
         {
             var user = query.UserId.Equals(default)
                 ? null
                 : _userManager.GetUserById(query.UserId);
 
-            var channels = GetAllChannels()
-                .Select(GetChannelEntity)
+            var channels = await GetAllChannelEntitiesAsync()
                 .OrderBy(i => i.SortName)
-                .ToList();
+                .ToListAsync()
+                .ConfigureAwait(false);
 
             if (query.IsRecordingsFolder.HasValue)
             {
@@ -226,6 +226,7 @@ namespace Emby.Server.Implementations.Channels
 
             if (user is not null)
             {
+                var userId = user.Id.ToString("N", CultureInfo.InvariantCulture);
                 channels = channels.Where(i =>
                 {
                     if (!i.IsVisible(user))
@@ -235,7 +236,7 @@ namespace Emby.Server.Implementations.Channels
 
                     try
                     {
-                        return GetChannelProvider(i).IsEnabledFor(user.Id.ToString("N", CultureInfo.InvariantCulture));
+                        return GetChannelProvider(i).IsEnabledFor(userId);
                     }
                     catch
                     {
@@ -258,7 +259,7 @@ namespace Emby.Server.Implementations.Channels
             {
                 foreach (var item in all)
                 {
-                    RefreshLatestChannelItems(GetChannelProvider(item), CancellationToken.None).GetAwaiter().GetResult();
+                    await RefreshLatestChannelItems(GetChannelProvider(item), CancellationToken.None).ConfigureAwait(false);
                 }
             }
 
@@ -269,13 +270,13 @@ namespace Emby.Server.Implementations.Channels
         }
 
         /// <inheritdoc />
-        public QueryResult<BaseItemDto> GetChannels(ChannelQuery query)
+        public async Task<QueryResult<BaseItemDto>> GetChannelsAsync(ChannelQuery query)
         {
             var user = query.UserId.Equals(default)
                 ? null
                 : _userManager.GetUserById(query.UserId);
 
-            var internalResult = GetChannelsInternal(query);
+            var internalResult = await GetChannelsInternalAsync(query).ConfigureAwait(false);
 
             var dtoOptions = new DtoOptions();
 
@@ -327,9 +328,12 @@ namespace Emby.Server.Implementations.Channels
             progress.Report(100);
         }
 
-        private Channel GetChannelEntity(IChannel channel)
+        private async IAsyncEnumerable<Channel> GetAllChannelEntitiesAsync()
         {
-            return GetChannel(GetInternalChannelId(channel.Name)) ?? GetChannel(channel, CancellationToken.None).GetAwaiter().GetResult();
+            foreach (IChannel channel in GetAllChannels())
+            {
+                yield return GetChannel(GetInternalChannelId(channel.Name)) ?? await GetChannel(channel, CancellationToken.None).ConfigureAwait(false);
+            }
         }
 
         private MediaSourceInfo[] GetSavedMediaSources(BaseItem item)
@@ -401,7 +405,7 @@ namespace Emby.Server.Implementations.Channels
             }
             else
             {
-                results = new List<MediaSourceInfo>();
+                results = Enumerable.Empty<MediaSourceInfo>();
             }
 
             return results

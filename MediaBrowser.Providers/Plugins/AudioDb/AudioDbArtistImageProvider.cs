@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
@@ -42,7 +43,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         /// <inheritdoc />
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
-            return new List<ImageType>
+            return new ImageType[]
             {
                 ImageType.Primary,
                 ImageType.Logo,
@@ -74,7 +75,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
                 }
             }
 
-            return new List<RemoteImageInfo>();
+            return Enumerable.Empty<RemoteImageInfo>();
         }
 
         private IEnumerable<RemoteImageInfo> GetImages(AudioDbArtistProvider.Artist item)

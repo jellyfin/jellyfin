@@ -117,7 +117,9 @@ namespace MediaBrowser.Model.Net
 
             // Type image
             { "image/jpeg", ".jpg" },
+            { "image/tiff", ".tiff" },
             { "image/x-png", ".png" },
+            { "image/x-icon", ".ico" },
 
             // Type text
             { "text/plain", ".txt" },
@@ -178,5 +180,8 @@ namespace MediaBrowser.Model.Net
             var extension = Model.MimeTypes.GetMimeTypeExtensions(mimeType).FirstOrDefault();
             return string.IsNullOrEmpty(extension) ? null : "." + extension;
         }
+
+        public static bool IsImage(ReadOnlySpan<char> mimeType)
+            => mimeType.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
     }
 }

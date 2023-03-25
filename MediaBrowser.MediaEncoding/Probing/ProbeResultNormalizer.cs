@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
@@ -97,12 +98,9 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 info.Container = NormalizeFormat(data.Format.FormatName);
 
-                if (!string.IsNullOrEmpty(data.Format.BitRate))
+                if (int.TryParse(data.Format.BitRate, CultureInfo.InvariantCulture, out var value))
                 {
-                    if (int.TryParse(data.Format.BitRate, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
-                    {
-                        info.Bitrate = value;
-                    }
+                    info.Bitrate = value;
                 }
             }
 
@@ -251,12 +249,23 @@ namespace MediaBrowser.MediaEncoding.Probing
                 return null;
             }
 
+            // Handle MPEG-1 container
             if (string.Equals(format, "mpegvideo", StringComparison.OrdinalIgnoreCase))
             {
                 return "mpeg";
             }
 
-            format = format.Replace("matroska", "mkv", StringComparison.OrdinalIgnoreCase);
+            // Handle MPEG-2 container
+            if (string.Equals(format, "mpeg", StringComparison.OrdinalIgnoreCase))
+            {
+                return "ts";
+            }
+
+            // Handle matroska container
+            if (string.Equals(format, "matroska", StringComparison.OrdinalIgnoreCase))
+            {
+                return "mkv";
+            }
 
             return format;
         }
@@ -499,7 +508,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                     peoples.Add(new BaseItemPerson
                     {
                         Name = pair.Value,
-                        Type = PersonType.Writer
+                        Type = PersonKind.Writer
                     });
                 }
             }
@@ -510,7 +519,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                     peoples.Add(new BaseItemPerson
                     {
                         Name = pair.Value,
-                        Type = PersonType.Producer
+                        Type = PersonKind.Producer
                     });
                 }
             }
@@ -521,7 +530,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                     peoples.Add(new BaseItemPerson
                     {
                         Name = pair.Value,
-                        Type = PersonType.Director
+                        Type = PersonKind.Director
                     });
                 }
             }
@@ -561,8 +570,8 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
             }
 
-            if (string.IsNullOrWhiteSpace(name) ||
-                string.IsNullOrWhiteSpace(value))
+            if (string.IsNullOrWhiteSpace(name)
+                || string.IsNullOrWhiteSpace(value))
             {
                 return null;
             }
@@ -674,9 +683,9 @@ namespace MediaBrowser.MediaEncoding.Probing
 
                 stream.Channels = streamInfo.Channels;
 
-                if (int.TryParse(streamInfo.SampleRate, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
+                if (int.TryParse(streamInfo.SampleRate, CultureInfo.InvariantCulture, out var sampleRate))
                 {
-                    stream.SampleRate = value;
+                    stream.SampleRate = sampleRate;
                 }
 
                 stream.ChannelLayout = ParseChannelLayout(streamInfo.ChannelLayout);
@@ -853,22 +862,18 @@ namespace MediaBrowser.MediaEncoding.Probing
             // Get stream bitrate
             var bitrate = 0;
 
-            if (!string.IsNullOrEmpty(streamInfo.BitRate))
+            if (int.TryParse(streamInfo.BitRate, CultureInfo.InvariantCulture, out var value))
             {
-                if (int.TryParse(streamInfo.BitRate, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
-                {
-                    bitrate = value;
-                }
+                bitrate = value;
             }
 
             // The bitrate info of FLAC musics and some videos is included in formatInfo.
             if (bitrate == 0
                 && formatInfo is not null
-                && !string.IsNullOrEmpty(formatInfo.BitRate)
                 && (stream.Type == MediaStreamType.Video || (isAudio && stream.Type == MediaStreamType.Audio)))
             {
                 // If the stream info doesn't have a bitrate get the value from the media format info
-                if (int.TryParse(formatInfo.BitRate, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
+                if (int.TryParse(formatInfo.BitRate, CultureInfo.InvariantCulture, out value))
                 {
                     bitrate = value;
                 }
@@ -972,8 +977,8 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             var parts = (original ?? string.Empty).Split(':');
             if (!(parts.Length == 2
-                    && int.TryParse(parts[0], NumberStyles.Any, CultureInfo.InvariantCulture, out var width)
-                    && int.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out var height)
+                    && int.TryParse(parts[0], CultureInfo.InvariantCulture, out var width)
+                    && int.TryParse(parts[1], CultureInfo.InvariantCulture, out var height)
                     && width > 0
                     && height > 0))
             {
@@ -1117,7 +1122,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
 
             var duration = GetDictionaryValue(streamInfo.Tags, "DURATION-eng") ?? GetDictionaryValue(streamInfo.Tags, "DURATION");
-            if (!string.IsNullOrEmpty(duration) && TimeSpan.TryParse(duration, out var parsedDuration))
+            if (TimeSpan.TryParse(duration, out var parsedDuration))
             {
                 return parsedDuration.TotalSeconds;
             }
@@ -1159,7 +1164,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(composer, false))
                 {
-                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Composer });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonKind.Composer });
                 }
             }
 
@@ -1167,7 +1172,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(conductor, false))
                 {
-                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Conductor });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonKind.Conductor });
                 }
             }
 
@@ -1175,7 +1180,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(lyricist, false))
                 {
-                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Lyricist });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonKind.Lyricist });
                 }
             }
 
@@ -1191,7 +1196,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                         people.Add(new BaseItemPerson
                         {
                             Name = match.Groups["name"].Value,
-                            Type = PersonType.Actor,
+                            Type = PersonKind.Actor,
                             Role = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(match.Groups["instrument"].Value)
                         });
                     }
@@ -1203,7 +1208,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(writer, false))
                 {
-                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Writer });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonKind.Writer });
                 }
             }
 
@@ -1211,7 +1216,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(arranger, false))
                 {
-                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Arranger });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonKind.Arranger });
                 }
             }
 
@@ -1219,7 +1224,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(engineer, false))
                 {
-                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Engineer });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonKind.Engineer });
                 }
             }
 
@@ -1227,7 +1232,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(mixer, false))
                 {
-                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Mixer });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonKind.Mixer });
                 }
             }
 
@@ -1235,7 +1240,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(remixer, false))
                 {
-                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Remixer });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonKind.Remixer });
                 }
             }
 
@@ -1446,7 +1451,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             // Limit accuracy to milliseconds to match xml saving
             var secondsString = chapter.StartTime;
 
-            if (double.TryParse(secondsString, NumberStyles.Any, CultureInfo.InvariantCulture, out var seconds))
+            if (double.TryParse(secondsString, CultureInfo.InvariantCulture, out var seconds))
             {
                 var ms = Math.Round(TimeSpan.FromSeconds(seconds).TotalMilliseconds);
                 info.StartPositionTicks = TimeSpan.FromMilliseconds(ms).Ticks;
@@ -1487,7 +1492,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 video.People = people.Split(new[] { ';', '/' }, StringSplitOptions.RemoveEmptyEntries)
                     .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .Select(i => new BaseItemPerson { Name = i.Trim(), Type = PersonType.Actor })
+                    .Select(i => new BaseItemPerson { Name = i.Trim(), Type = PersonKind.Actor })
                     .ToArray();
             }
 

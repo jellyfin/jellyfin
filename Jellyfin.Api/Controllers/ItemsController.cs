@@ -240,7 +240,8 @@ public class ItemsController : BaseJellyfinApiController
     {
         var isApiKey = User.GetIsApiKey();
         // if api key is used (auth.IsApiKey == true), then `user` will be null throughout this method
-        var user = !isApiKey && userId.HasValue && !userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = !isApiKey && !userId.Value.Equals(default)
             ? _userManager.GetUserById(userId.Value) ?? throw new ResourceNotFoundException()
             : null;
 
@@ -408,6 +409,13 @@ public class ItemsController : BaseJellyfinApiController
             if (seriesStatus.Length != 0)
             {
                 query.SeriesStatuses = seriesStatus;
+            }
+
+            // Exclude Blocked Unrated Items
+            var blockedUnratedItems = user?.GetPreferenceValues<UnratedItem>(PreferenceKind.BlockUnratedItems);
+            if (blockedUnratedItems is not null)
+            {
+                query.BlockUnratedItems = blockedUnratedItems;
             }
 
             // ExcludeLocationTypes

@@ -46,6 +46,7 @@ namespace MediaBrowser.Model.Users
             LoginAttemptsBeforeLockout = -1;
 
             MaxActiveSessions = 0;
+            MaxParentalRating = null;
 
             EnableAllChannels = true;
             EnabledChannels = Array.Empty<Guid>();
