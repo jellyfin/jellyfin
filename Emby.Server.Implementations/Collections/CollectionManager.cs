@@ -9,6 +9,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
@@ -210,6 +211,7 @@ namespace Emby.Server.Implementations.Collections
             List<BaseItem>? itemList = null;
 
             var linkedChildrenList = collection.GetLinkedChildren();
+            var itemListForRunTimeTicks = collection.GetLinkedChildren();
             var currentLinkedChildrenIds = linkedChildrenList.Select(i => i.Id).ToList();
 
             foreach (var id in ids)
@@ -226,6 +228,8 @@ namespace Emby.Server.Implementations.Collections
                     (itemList ??= new()).Add(item);
 
                     linkedChildrenList.Add(item);
+
+                    GetItemsForRunTimeTicksCount(item).ToList<BaseItem>().ForEach((i) => itemListForRunTimeTicks.Add(i));
                 }
             }
 
@@ -242,6 +246,8 @@ namespace Emby.Server.Implementations.Collections
 
                 collection.LinkedChildren = newChildren;
                 collection.UpdateRatingToItems(linkedChildrenList);
+
+                collection.UpdateRunTimeTicksToItems(itemListForRunTimeTicks);
 
                 await collection.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
@@ -289,6 +295,30 @@ namespace Emby.Server.Implementations.Collections
             if (list.Count > 0)
             {
                 collection.LinkedChildren = collection.LinkedChildren.Except(list).ToArray();
+            }
+
+            var actualItems = new List<BaseItem>();
+
+            foreach (var child in collection.LinkedChildren)
+            {
+                if (child.ItemId.HasValue)
+                {
+                    var item = _libraryManager.GetItemById((Guid)child.ItemId);
+
+                    if (item != null)
+                    {
+                        GetItemsForRunTimeTicksCount(item).ToList<BaseItem>().ForEach((i) => actualItems.Add(i));
+                    }
+                }
+            }
+
+            if (actualItems.Count > 0)
+            {
+                collection.UpdateRunTimeTicksToItems(actualItems);
+            }
+            else
+            {
+                collection.RunTimeTicks = 0;
             }
 
             await collection.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
@@ -362,6 +392,42 @@ namespace Emby.Server.Implementations.Collections
             }
 
             return results.Values;
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<BaseItem> GetItemsForRunTimeTicksCount(BaseItem item)
+        {
+            var itemsForCount = new List<BaseItem>();
+
+            if (item.GetType() == typeof(Series))
+            {
+                var seasons = _libraryManager.GetItemList(
+                    new InternalItemsQuery()
+                    {
+                        ParentId = item.Id,
+                        SeriesPresentationUniqueKey = item.PresentationUniqueKey
+                    }).OfType<Season>();
+                foreach (var season in seasons.ToList())
+                {
+                    var episodes = _libraryManager.GetItemList(
+                    new InternalItemsQuery()
+                    {
+                        ParentId = season.Id
+                    }).OfType<Episode>();
+
+                    foreach (var e in episodes)
+                    {
+                        var episode = _libraryManager.GetItemById(e.Id);
+                        itemsForCount.Add(episode);
+                    }
+                }
+            }
+            else
+            {
+                itemsForCount.Add(item);
+            }
+
+            return itemsForCount;
         }
     }
 }

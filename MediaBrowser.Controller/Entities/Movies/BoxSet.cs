@@ -228,5 +228,28 @@ namespace MediaBrowser.Controller.Entities.Movies
 
             return new[] { item };
         }
+
+        /// <summary>
+        /// Updates the RunTimeTicks based on content and returns true or false indicating if it changed.
+        /// </summary>
+        /// <param name="children">Media children.</param>
+        /// <returns><c>true</c> if the total duration in ticks was updated; otherwise <c>false</c>.</returns>
+        public bool UpdateRunTimeTicksToItems(IList<BaseItem> children)
+        {
+            var currentRunTimeTicks = RunTimeTicks;
+
+            long ticks = 0;
+            foreach (var item in children)
+            {
+                if (item.RunTimeTicks != null && item.RunTimeTicks > 0)
+                {
+                    ticks = ticks + (long)item.RunTimeTicks;
+                }
+            }
+
+            RunTimeTicks = ticks;
+
+            return currentRunTimeTicks != RunTimeTicks;
+        }
     }
 }
