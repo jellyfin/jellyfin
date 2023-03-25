@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
@@ -507,7 +508,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                     peoples.Add(new BaseItemPerson
                     {
                         Name = pair.Value,
-                        Type = PersonType.Writer
+                        Type = PersonKind.Writer
                     });
                 }
             }
@@ -518,7 +519,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                     peoples.Add(new BaseItemPerson
                     {
                         Name = pair.Value,
-                        Type = PersonType.Producer
+                        Type = PersonKind.Producer
                     });
                 }
             }
@@ -529,7 +530,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                     peoples.Add(new BaseItemPerson
                     {
                         Name = pair.Value,
-                        Type = PersonType.Director
+                        Type = PersonKind.Director
                     });
                 }
             }
@@ -1163,7 +1164,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(composer, false))
                 {
-                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Composer });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonKind.Composer });
                 }
             }
 
@@ -1171,7 +1172,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(conductor, false))
                 {
-                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Conductor });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonKind.Conductor });
                 }
             }
 
@@ -1179,7 +1180,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(lyricist, false))
                 {
-                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Lyricist });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonKind.Lyricist });
                 }
             }
 
@@ -1195,7 +1196,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                         people.Add(new BaseItemPerson
                         {
                             Name = match.Groups["name"].Value,
-                            Type = PersonType.Actor,
+                            Type = PersonKind.Actor,
                             Role = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(match.Groups["instrument"].Value)
                         });
                     }
@@ -1207,7 +1208,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(writer, false))
                 {
-                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Writer });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonKind.Writer });
                 }
             }
 
@@ -1215,7 +1216,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(arranger, false))
                 {
-                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Arranger });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonKind.Arranger });
                 }
             }
 
@@ -1223,7 +1224,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(engineer, false))
                 {
-                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Engineer });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonKind.Engineer });
                 }
             }
 
@@ -1231,7 +1232,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(mixer, false))
                 {
-                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Mixer });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonKind.Mixer });
                 }
             }
 
@@ -1239,7 +1240,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(remixer, false))
                 {
-                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Remixer });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonKind.Remixer });
                 }
             }
 
@@ -1491,7 +1492,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 video.People = people.Split(new[] { ';', '/' }, StringSplitOptions.RemoveEmptyEntries)
                     .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .Select(i => new BaseItemPerson { Name = i.Trim(), Type = PersonType.Actor })
+                    .Select(i => new BaseItemPerson { Name = i.Trim(), Type = PersonKind.Actor })
                     .ToArray();
             }
 

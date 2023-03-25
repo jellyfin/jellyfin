@@ -5540,7 +5540,7 @@ AND Type = @InternalPersonType)");
 
                         statement.TryBind("@Name" + index, person.Name);
                         statement.TryBind("@Role" + index, person.Role);
-                        statement.TryBind("@PersonType" + index, person.Type);
+                        statement.TryBind("@PersonType" + index, person.Type.ToString());
                         statement.TryBind("@SortOrder" + index, person.SortOrder);
                         statement.TryBind("@ListOrder" + index, listIndex);
 
@@ -5569,9 +5569,10 @@ AND Type = @InternalPersonType)");
                 item.Role = role;
             }
 
-            if (reader.TryGetString(3, out var type))
+            if (reader.TryGetString(3, out var type)
+                && Enum.TryParse(type, true, out PersonKind personKind))
             {
-                item.Type = type;
+                item.Type = personKind;
             }
 
             if (reader.TryGetInt32(4, out var sortOrder))

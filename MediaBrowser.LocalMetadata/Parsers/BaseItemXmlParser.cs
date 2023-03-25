@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
@@ -370,7 +371,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                 case "Director":
                 {
-                    foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Director }))
+                    foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonKind.Director }))
                     {
                         if (string.IsNullOrWhiteSpace(p.Name))
                         {
@@ -385,7 +386,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                 case "Writer":
                 {
-                    foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Writer }))
+                    foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonKind.Writer }))
                     {
                         if (string.IsNullOrWhiteSpace(p.Name))
                         {
@@ -412,7 +413,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     else
                     {
                         // Old-style piped string
-                        foreach (var p in SplitNames(actors).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Actor }))
+                        foreach (var p in SplitNames(actors).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonKind.Actor }))
                         {
                             if (string.IsNullOrWhiteSpace(p.Name))
                             {
@@ -428,7 +429,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                 case "GuestStars":
                 {
-                    foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.GuestStar }))
+                    foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonKind.GuestStar }))
                     {
                         if (string.IsNullOrWhiteSpace(p.Name))
                         {
@@ -1035,7 +1036,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
         private IEnumerable<PersonInfo> GetPersonsFromXmlNode(XmlReader reader)
         {
             var name = string.Empty;
-            var type = PersonType.Actor; // If type is not specified assume actor
+            var type = PersonKind.Actor; // If type is not specified assume actor
             var role = string.Empty;
             int? sortOrder = null;
 
@@ -1056,11 +1057,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         case "Type":
                         {
                             var val = reader.ReadElementContentAsString();
-
-                            if (!string.IsNullOrWhiteSpace(val))
-                            {
-                                type = val;
-                            }
+                            _ = Enum.TryParse(val, true, out type);
 
                             break;
                         }
