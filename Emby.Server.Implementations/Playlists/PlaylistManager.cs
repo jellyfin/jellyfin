@@ -530,6 +530,7 @@ namespace Emby.Server.Implementations.Playlists
                 _libraryManager.GetUserRootFolder().Children.OfType<Folder>().FirstOrDefault(i => string.Equals(i.GetType().Name, TypeName, StringComparison.Ordinal));
         }
 
+        /// <inheritdoc />
         public async Task RemovePlaylistsAsync(Guid userId)
         {
             var playlists = GetPlaylists(userId);
@@ -564,6 +565,7 @@ namespace Emby.Server.Implementations.Playlists
             }
         }
 
+        /// <inheritdoc />
         public async Task UpdatePlaylistAsync(Playlist playlist)
         {
             var currentPlaylist = (Playlist)_libraryManager.GetItemById(playlist.Id);
