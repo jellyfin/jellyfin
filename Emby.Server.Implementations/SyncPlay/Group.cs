@@ -64,7 +64,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <summary>
         /// The internal playback speed.
         /// </summary>
-        private double? _playbackSpeed = 1.0;
+        private float? _playbackSpeed = 1.0f;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Group" /> class.
@@ -146,10 +146,10 @@ namespace Emby.Server.Implementations.SyncPlay
         /// Gets or sets the playback speed.
         /// </summary>
         /// <value>The playback speed.</value>
-        public double? PlaybackSpeed
+        public float? PlaybackSpeed
         {
             get => _playbackSpeed;
-            set => _playbackSpeed = value is null ? null : Math.Clamp(value.Value, 0.1, 10.0);
+            set => _playbackSpeed = value is null ? null : Math.Clamp(value.Value, 0.1f, 10.0f);
         }
 
         /// <summary>

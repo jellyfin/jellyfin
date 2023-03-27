@@ -7,7 +7,7 @@ namespace MediaBrowser.Model.Session
 {
     public class PlayerStateInfo
     {
-        private double? _playbackSpeed = 1.0;
+        private float? _playbackSpeed = 1.0f;
 
         /// <summary>
         /// Gets or sets the now playing position ticks.
@@ -79,10 +79,10 @@ namespace MediaBrowser.Model.Session
         /// Gets or sets the playback speed.
         /// </summary>
         /// <value>The playback speed.</value>
-        public double? PlaybackSpeed
+        public float? PlaybackSpeed
         {
             get => _playbackSpeed;
-            set => _playbackSpeed = value is null ? null : Math.Clamp(value.Value, 0.1, 10.0);
+            set => _playbackSpeed = value is null ? null : Math.Clamp(value.Value, 0.1f, 10.0f);
         }
     }
 }
