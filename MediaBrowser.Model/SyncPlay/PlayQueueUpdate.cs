@@ -30,7 +30,7 @@ namespace MediaBrowser.Model.SyncPlay
             IsPlaying = isPlaying;
             ShuffleMode = shuffleMode;
             RepeatMode = repeatMode;
-            PlaybackSpeed = playbackSpeed is null ? null : Math.Clamp(playbackSpeed.Value, 0.1f, 10.0f);
+            PlaybackSpeed = playbackSpeed is null ? null : (float?)Math.Round(Math.Clamp(playbackSpeed.Value, 0.1f, 10.0f), 1);
         }
 
         /// <summary>

@@ -82,7 +82,7 @@ namespace MediaBrowser.Model.Session
         public float? PlaybackSpeed
         {
             get => _playbackSpeed;
-            set => _playbackSpeed = value is null ? null : Math.Clamp(value.Value, 0.1f, 10.0f);
+            set => _playbackSpeed = value is null ? null : (float?)Math.Round(Math.Clamp(value.Value, 0.1f, 10.0f), 1);
         }
     }
 }
