@@ -6,7 +6,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -99,7 +98,8 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             string output;
-            using(System.Diagnostics.Process proc = new System.Diagnostics.Process()){
+            using (System.Diagnostics.Process proc = new System.Diagnostics.Process())
+            {
                 proc.StartInfo.FileName = _mediaEncoder.EncoderPath;
                 proc.StartInfo.Arguments = $"-hide_banner -i \"{path}\" -af ebur128=framelog=verbose -f null -";
                 proc.StartInfo.RedirectStandardOutput = false;
