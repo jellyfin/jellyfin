@@ -15,6 +15,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.QuickConnect;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Configuration;
@@ -41,6 +42,7 @@ public class UserController : BaseJellyfinApiController
     private readonly IServerConfigurationManager _config;
     private readonly ILogger _logger;
     private readonly IQuickConnect _quickConnectManager;
+    private readonly IPlaylistManager _playlistManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UserController"/> class.
@@ -53,6 +55,7 @@ public class UserController : BaseJellyfinApiController
     /// <param name="config">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
     /// <param name="quickConnectManager">Instance of the <see cref="IQuickConnect"/> interface.</param>
+    /// <param name="playlistManager">Instance of the <see cref="IPlaylistManager"/> interface.</param>
     public UserController(
         IUserManager userManager,
         ISessionManager sessionManager,
@@ -61,7 +64,8 @@ public class UserController : BaseJellyfinApiController
         IAuthorizationContext authContext,
         IServerConfigurationManager config,
         ILogger<UserController> logger,
-        IQuickConnect quickConnectManager)
+        IQuickConnect quickConnectManager,
+        IPlaylistManager playlistManager)
     {
         _userManager = userManager;
         _sessionManager = sessionManager;
@@ -71,6 +75,7 @@ public class UserController : BaseJellyfinApiController
         _config = config;
         _logger = logger;
         _quickConnectManager = quickConnectManager;
+        _playlistManager = playlistManager;
     }
 
     /// <summary>
@@ -153,6 +158,7 @@ public class UserController : BaseJellyfinApiController
         }
 
         await _sessionManager.RevokeUserTokens(user.Id, null).ConfigureAwait(false);
+        await _playlistManager.RemovePlaylistsAsync(userId).ConfigureAwait(false);
         await _userManager.DeleteUserAsync(userId).ConfigureAwait(false);
         return NoContent();
     }

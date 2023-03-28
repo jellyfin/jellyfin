@@ -9,6 +9,7 @@ using System.Xml;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
@@ -632,6 +633,21 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     else
                     {
                         reader.Read();
+                    }
+
+                    break;
+                }
+
+                case "OwnerUserId":
+                {
+                    var val = reader.ReadElementContentAsString();
+
+                    if (Guid.TryParse(val, out var guid) && !guid.Equals(Guid.Empty))
+                    {
+                        if (item is Playlist playlist)
+                        {
+                            playlist.OwnerUserId = guid;
+                        }
                     }
 
                     break;
