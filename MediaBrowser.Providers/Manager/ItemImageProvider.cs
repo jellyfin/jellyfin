@@ -32,6 +32,7 @@ namespace MediaBrowser.Providers.Manager
         private readonly ILogger _logger;
         private readonly IProviderManager _providerManager;
         private readonly IFileSystem _fileSystem;
+        private static readonly ImageType[] AllImageTypes = Enum.GetValues<ImageType>();
 
         /// <summary>
         /// Image types that are only one per item.
@@ -90,11 +91,12 @@ namespace MediaBrowser.Providers.Manager
         /// </summary>
         /// <param name="item">The <see cref="BaseItem"/> to validate images for.</param>
         /// <param name="providers">The providers to use, must include <see cref="ILocalImageProvider"/>(s) for local scanning.</param>
-        /// <param name="directoryService">The directory service for <see cref="ILocalImageProvider"/>s to use.</param>
+        /// <param name="refreshOptions">The refresh options.</param>
         /// <returns><c>true</c> if changes were made to the item; otherwise <c>false</c>.</returns>
-        public bool ValidateImages(BaseItem item, IEnumerable<IImageProvider> providers, IDirectoryService directoryService)
+        public bool ValidateImages(BaseItem item, IEnumerable<IImageProvider> providers, ImageRefreshOptions refreshOptions)
         {
             var hasChanges = false;
+            IDirectoryService directoryService = refreshOptions?.DirectoryService;
 
             if (item is not Photo)
             {
@@ -102,7 +104,7 @@ namespace MediaBrowser.Providers.Manager
                     .SelectMany(i => i.GetImages(item, directoryService))
                     .ToList();
 
-                if (MergeImages(item, images))
+                if (MergeImages(item, images, refreshOptions))
                 {
                     hasChanges = true;
                 }
@@ -384,12 +386,35 @@ namespace MediaBrowser.Providers.Manager
         /// <summary>
         /// Merges a list of images into the provided item, validating existing images and replacing them or adding new images as necessary.
         /// </summary>
+        /// <param name="refreshOptions">The refresh options.</param>
+        /// <param name="dontReplaceImages">List of imageTypes to remove from ReplaceImages.</param>
+        public void UpdateReplaceImages(ImageRefreshOptions refreshOptions, ICollection<ImageType> dontReplaceImages)
+        {
+            if (refreshOptions is not null)
+            {
+                var replaceImages = refreshOptions.ReplaceImages ?? AllImageTypes.ToList();
+
+                if (refreshOptions.ReplaceAllImages)
+                {
+                    refreshOptions.ReplaceAllImages = false;
+                    refreshOptions.ReplaceImages = AllImageTypes.ToList();
+                }
+
+                refreshOptions.ReplaceImages = refreshOptions.ReplaceImages.Except(dontReplaceImages).ToList();
+            }
+        }
+
+        /// <summary>
+        /// Merges a list of images into the provided item, validating existing images and replacing them or adding new images as necessary.
+        /// </summary>
         /// <param name="item">The <see cref="BaseItem"/> to modify.</param>
         /// <param name="images">The new images to place in <c>item</c>.</param>
+        /// <param name="refreshOptions">The refresh options.</param>
         /// <returns><c>true</c> if changes were made to the item; otherwise <c>false</c>.</returns>
-        public bool MergeImages(BaseItem item, IReadOnlyList<LocalImageInfo> images)
+        public bool MergeImages(BaseItem item, IReadOnlyList<LocalImageInfo> images, ImageRefreshOptions refreshOptions)
         {
             var changed = item.ValidateImages();
+            var foundImageTypes = new List<ImageType>();
 
             for (var i = 0; i < _singularImages.Length; i++)
             {
@@ -399,6 +424,7 @@ namespace MediaBrowser.Providers.Manager
                 if (image is not null)
                 {
                     var currentImage = item.GetImageInfo(type, 0);
+                    foundImageTypes.Add(type);
 
                     if (currentImage is null || !string.Equals(currentImage.Path, image.FileInfo.FullName, StringComparison.OrdinalIgnoreCase))
                     {
@@ -425,6 +451,12 @@ namespace MediaBrowser.Providers.Manager
             if (UpdateMultiImages(item, images, ImageType.Backdrop))
             {
                 changed = true;
+                foundImageTypes.Add(ImageType.Backdrop);
+            }
+
+            if (foundImageTypes.Count > 0)
+            {
+                UpdateReplaceImages(refreshOptions, foundImageTypes);
             }
 
             return changed;
