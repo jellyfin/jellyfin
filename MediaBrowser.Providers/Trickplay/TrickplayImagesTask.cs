@@ -71,15 +71,6 @@ namespace MediaBrowser.Providers.Trickplay
         /// <inheritdoc />
         public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            // TODO: libraryoptions dont run on libraries with trickplay disabled
-            /* will this still get all sub-items? should recursive be true?
-             * from chapterimagestask
-             *                 DtoOptions = new DtoOptions(false)
-                {
-                    EnableImages = false
-                },
-                SourceTypes = new SourceType[] { SourceType.Library },
-             */
             var items = _libraryManager.GetItemList(new InternalItemsQuery
             {
                 MediaTypes = new[] { MediaType.Video },
