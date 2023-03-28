@@ -98,22 +98,16 @@ namespace MediaBrowser.Providers.MediaInfo
                 Fetch(item, result, cancellationToken);
             }
 
-            string ffmpeg_path = _serverConfigurationManager.GetEncodingOptions().EncoderAppPathDisplay;
-            string args = "-hide_banner -i \"";
-            args += path;
-            args += "\" -af ebur128=framelog=verbose -f null -";
-
-            ProcessStartInfo ffmpeg = new ProcessStartInfo(ffmpeg_path);
-
-            System.Diagnostics.Process proc = new System.Diagnostics.Process();
-            proc.StartInfo = ffmpeg;
-            proc.StartInfo.RedirectStandardOutput = false;
-            proc.StartInfo.RedirectStandardError = true;
-            ffmpeg.Arguments = args;
-            proc.Start();
-            string output = await proc.StandardError.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
-
-            cancellationToken.ThrowIfCancellationRequested();
+            string output;
+            using(System.Diagnostics.Process proc = new System.Diagnostics.Process()){
+                proc.StartInfo.FileName = _mediaEncoder.EncoderPath;
+                proc.StartInfo.Arguments = $"-hide_banner -i \"{path}\" -af ebur128=framelog=verbose -f null -";
+                proc.StartInfo.RedirectStandardOutput = false;
+                proc.StartInfo.RedirectStandardError = true;
+                proc.Start();
+                output = await proc.StandardError.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
+            }
 
             MatchCollection split = Regex.Matches(output, @"I:\s+(.*?)\s+LUFS");
 
