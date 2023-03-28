@@ -46,12 +46,12 @@ namespace MediaBrowser.Model.Configuration
         /// <summary>
         /// Gets or sets the ffmpeg output quality level.
         /// </summary>
-        public int Qscale { get; set; } = 10;
+        public int Qscale { get; set; } = 4;
 
         /// <summary>
         /// Gets or sets the jpeg quality to use for image tiles.
         /// </summary>
-        public int JpegQuality { get; set; } = 80;
+        public int JpegQuality { get; set; } = 90;
 
         /// <summary>
         /// Gets or sets the number of threads to be used by ffmpeg.
