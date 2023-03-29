@@ -44,9 +44,7 @@ public class MigrateMusicBrainzTimeout : IMigrationRoutine
             return;
         }
 
-        var serverConfigSerializer = new XmlSerializer(typeof(OldMusicBrainzConfiguration), new XmlRootAttribute("PluginConfiguration"));
-        using var xmlReader = XmlReader.Create(path);
-        var oldPluginConfiguration = serverConfigSerializer.Deserialize(xmlReader) as OldMusicBrainzConfiguration;
+        var oldPluginConfiguration = ReadOld(path);
 
         if (oldPluginConfiguration is not null)
         {
@@ -55,10 +53,25 @@ public class MigrateMusicBrainzTimeout : IMigrationRoutine
             newPluginConfiguration.ReplaceArtistName = oldPluginConfiguration.ReplaceArtistName;
             var newRateLimit = oldPluginConfiguration.RateLimit / 1000.0;
             newPluginConfiguration.RateLimit = newRateLimit < 1.0 ? 1.0 : newRateLimit;
+            WriteNew(path, newPluginConfiguration);
+        }
+    }
 
-            var pluginConfigurationSerializer = new XmlSerializer(typeof(PluginConfiguration), new XmlRootAttribute("PluginConfiguration"));
-            var xmlWriterSettings = new XmlWriterSettings { Indent = true };
-            using var xmlWriter = XmlWriter.Create(path, xmlWriterSettings);
+    private OldMusicBrainzConfiguration? ReadOld(string path)
+    {
+        using (var xmlReader = XmlReader.Create(path))
+        {
+            var serverConfigSerializer = new XmlSerializer(typeof(OldMusicBrainzConfiguration), new XmlRootAttribute("PluginConfiguration"));
+            return serverConfigSerializer.Deserialize(xmlReader) as OldMusicBrainzConfiguration;
+        }
+    }
+
+    private void WriteNew(string path, PluginConfiguration newPluginConfiguration)
+    {
+        var pluginConfigurationSerializer = new XmlSerializer(typeof(PluginConfiguration), new XmlRootAttribute("PluginConfiguration"));
+        var xmlWriterSettings = new XmlWriterSettings { Indent = true };
+        using (var xmlWriter = XmlWriter.Create(path, xmlWriterSettings))
+        {
             pluginConfigurationSerializer.Serialize(xmlWriter, newPluginConfiguration);
         }
     }
