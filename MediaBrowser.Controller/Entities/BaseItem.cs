@@ -131,7 +131,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Gets or sets the LUFS value.
         /// </summary>
-        /// <value>The gain.</value>
+        /// <value>The LUFS Value.</value>
         [JsonIgnore]
         public string LUFS { get; set; }
 

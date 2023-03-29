@@ -782,7 +782,7 @@ namespace MediaBrowser.Model.Dto
         /// <summary>
         /// Gets or sets the LUFS value.
         /// </summary>
-        /// <value>The timer identifier.</value>
+        /// <value>The LUFS Value.</value>
         public string LUFS { get; set; }
 
         /// <summary>
