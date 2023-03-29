@@ -91,5 +91,7 @@
     "UserLockedOutWithName": "उपयोगकर्ता {0} को लॉक आउट कर दिया गया है",
     "System": "प्रणाली",
     "TvShows": "टीवी शो",
-    "HearingImpaired": "मूक बधिर"
+    "HearingImpaired": "मूक बधिर",
+    "ValueSpecialEpisodeName": "विशेष",
+    "TasksMaintenanceCategory": "रखरखाव"
 }
