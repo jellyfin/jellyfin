@@ -804,7 +804,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 options.EnableTonemapping = false;
             }
 
-            var baseRequest = new BaseEncodingJobOptions { MaxWidth = maxWidth };
+            var baseRequest = new BaseEncodingJobOptions { MaxWidth = maxWidth, MaxFramerate = (float)(1.0 / interval.TotalSeconds) };
             var jobState = new EncodingJobInfo(TranscodingJobType.Progressive)
             {
                 IsVideoRequest = true,  // must be true for InputVideoHwaccelArgs to return non-empty value
@@ -829,18 +829,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             var filterParam = encodingHelper.GetVideoProcessingFilterParam(jobState, options, jobState.OutputVideoCodec).Trim();
-            if (string.IsNullOrWhiteSpace(filterParam) || filterParam.IndexOf("\"", StringComparison.Ordinal) == -1)
+            if (string.IsNullOrWhiteSpace(filterParam))
             {
                 throw new InvalidOperationException("EncodingHelper returned empty or invalid filter parameters.");
             }
 
-            return ExtractVideoImagesOnIntervalInternal(inputArg, filterParam, interval, vidEncoder, threads, qualityScale, priority, cancellationToken);
+            return ExtractVideoImagesOnIntervalInternal(inputArg, filterParam, vidEncoder, threads, qualityScale, priority, cancellationToken);
         }
 
         private async Task<string> ExtractVideoImagesOnIntervalInternal(
             string inputArg,
             string filterParam,
-            TimeSpan interval,
             string vidEncoder,
             int? outputThreads,
             int? qualityScale,
@@ -853,16 +852,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             // Output arguments
-            string fps = "fps=1/" + interval.TotalSeconds.ToString(CultureInfo.InvariantCulture);
-            if (string.IsNullOrWhiteSpace(filterParam))
-            {
-                filterParam = "-vf \"" + fps + "\"";
-            }
-            else if (filterParam.IndexOf("\"", StringComparison.Ordinal) != -1)
-            {
-                filterParam = filterParam.Insert(filterParam.IndexOf("\"", StringComparison.Ordinal) + 1, fps + ",");
-            }
-
             var targetDirectory = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(targetDirectory);
             var outputPath = Path.Combine(targetDirectory, "%08d.jpg");
@@ -895,7 +884,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             };
 
             var processDescription = string.Format(CultureInfo.InvariantCulture, "{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
-            _logger.LogDebug("{ProcessDescription}", processDescription);
+            _logger.LogInformation("Trickplay generation: {ProcessDescription}", processDescription);
 
             using (var processWrapper = new ProcessWrapper(process, this))
             {

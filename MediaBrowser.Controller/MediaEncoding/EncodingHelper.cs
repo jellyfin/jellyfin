@@ -4806,6 +4806,15 @@ namespace MediaBrowser.Controller.MediaEncoding
             subFilters?.RemoveAll(filter => string.IsNullOrEmpty(filter));
             overlayFilters?.RemoveAll(filter => string.IsNullOrEmpty(filter));
 
+            var framerate = GetFramerateParam(state);
+            if (framerate.HasValue)
+            {
+                mainFilters.Insert(0, string.Format(
+                    CultureInfo.InvariantCulture,
+                    "fps={0}",
+                    framerate.Value));
+            }
+
             var mainStr = string.Empty;
             if (mainFilters?.Count > 0)
             {
