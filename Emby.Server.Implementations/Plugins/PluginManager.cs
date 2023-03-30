@@ -22,11 +22,8 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Updates;
-using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Nikse.SubtitleEdit.Core.Common;
-using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Plugins
 {

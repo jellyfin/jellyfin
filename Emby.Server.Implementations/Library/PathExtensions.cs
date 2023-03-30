@@ -1,9 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
 using MediaBrowser.Common.Providers;
-using Nikse.SubtitleEdit.Core.Common;
 
 namespace Emby.Server.Implementations.Library
 {
