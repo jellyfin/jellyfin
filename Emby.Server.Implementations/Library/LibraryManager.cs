@@ -2664,10 +2664,24 @@ namespace Emby.Server.Implementations.Library
                                 seriesName = season.SeriesName;
                             }
 
-                            if (seriesName is not null && seriesName.Equals(episodeInfo?.SeriesName, StringComparison.OrdinalIgnoreCase))
+                            if (seriesName is not null && episodeInfo?.SeriesName is not null)
                             {
-                                // don't attach episode extras to series or season
-                                continue;
+                                // trim series names like episodepathparser does
+                                seriesName = seriesName
+                                    .Trim()
+                                    .Trim('_', '.', '-')
+                                    .Trim();
+
+                                var episodeInfoSeriesName = episodeInfo.SeriesName
+                                    .Trim()
+                                    .Trim('_', '.', '-')
+                                    .Trim();
+
+                                if (seriesName.Equals(episodeInfoSeriesName, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    // don't attach episode extras to series or season
+                                    continue;
+                                }
                             }
                         }
                     }

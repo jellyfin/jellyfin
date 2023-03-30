@@ -382,6 +382,40 @@ public class FindExtrasTests
     }
 
     [Fact]
+    public void FindExtras_SeasonWithExtras_FindsCorrectExtras2()
+    {
+        // Series name directory has special characters stripped that episodes do not
+        var owner = new Season { Name = "Season 1", SeriesName = "The Venture Bros.", Path = "/series/The Venture Bros/Season 1" };
+        var paths = new List<string>
+        {
+            "/series/The Venture Bros/Season 1/The Venture Bros. S01E01.mkv",
+            "/series/The Venture Bros/Season 1/The Venture Bros. S01E01-deleted.mkv",
+            "/series/The Venture Bros/Season 1/The Venture Bros. - S01E02 - Second Epi.mkv",
+            "/series/The Venture Bros/Season 1/The Venture Bros. - S01E02 - Second Epi-interview.mkv",
+            "/series/The Venture Bros/Season 1/The Venture Bros. - S01E02 - Second Epi-scene.mkv",
+            "/series/The Venture Bros/Season 1/It's a begining-behindthescenes.mkv",
+            "/series/The Venture Bros/Season 1/interviews/The Cast.mkv",
+        };
+
+        var files = paths.Select(p => new FileSystemMetadata
+        {
+            FullName = p,
+            Name = Path.GetFileName(p),
+            Extension = Path.GetExtension(p),
+            IsDirectory = string.IsNullOrEmpty(Path.GetExtension(p))
+        }).ToList();
+
+        var extras = _libraryManager.FindExtras(owner, files, new DirectoryService(_fileSystemMock.Object)).OrderBy(e => e.ExtraType).ToList();
+
+        Assert.Equal(2, extras.Count);
+        Assert.Equal(ExtraType.BehindTheScenes, extras[0].ExtraType);
+        Assert.Equal(typeof(Video), extras[0].GetType());
+        Assert.Equal("It's a begining-behindthescenes", extras[0].FileNameWithoutExtension);
+        Assert.Equal("/series/The Venture Bros/Season 1/It's a begining-behindthescenes.mkv", extras[0].Path);
+        Assert.Equal("/series/The Venture Bros/Season 1/interviews/The Cast.mkv", extras[1].Path);
+    }
+
+    [Fact]
     public void FindExtras_EpisodeWithExtras_FindsCorrectExtras()
     {
         var paths = new List<string>
