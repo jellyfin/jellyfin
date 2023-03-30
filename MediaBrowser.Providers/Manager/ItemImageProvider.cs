@@ -392,8 +392,6 @@ namespace MediaBrowser.Providers.Manager
         {
             if (refreshOptions is not null)
             {
-                var replaceImages = refreshOptions.ReplaceImages ?? AllImageTypes.ToList();
-
                 if (refreshOptions.ReplaceAllImages)
                 {
                     refreshOptions.ReplaceAllImages = false;
