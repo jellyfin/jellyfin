@@ -106,5 +106,19 @@ namespace Jellyfin.Server.Implementations.Tests.Updates
             var ex = await Record.ExceptionAsync(() => _installationManager.InstallPackage(packageInfo, CancellationToken.None)).ConfigureAwait(false);
             Assert.Null(ex);
         }
+
+        [Fact]
+        public async Task InstallPackage_WithAssemblies_Success()
+        {
+            PackageInfo[] packages = await _installationManager.GetPackages(
+                "Jellyfin Stable",
+                "https://repo.jellyfin.org/releases/plugin/manifest-stable.json",
+                false);
+
+            packages = _installationManager.FilterPackages(packages, "Anime").ToArray();
+            Assert.Single(packages);
+            Assert.NotEmpty(packages[0].Versions[0].Assemblies);
+            Assert.Equal("Jellyfin.Plugin.Anime.dll", packages[0].Versions[0].Assemblies[0]);
+        }
     }
 }

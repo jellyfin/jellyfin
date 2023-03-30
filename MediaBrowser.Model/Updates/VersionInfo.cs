@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using SysVersion = System.Version;
 
@@ -73,5 +75,11 @@ namespace MediaBrowser.Model.Updates
         /// </summary>
         [JsonPropertyName("repositoryUrl")]
         public string RepositoryUrl { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the assemblies whitelist for this version.
+        /// </summary>
+        [JsonPropertyName("assemblies")]
+        public IList<string> Assemblies { get; set; } = Array.Empty<string>();
     }
 }

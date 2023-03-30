@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -9,6 +10,8 @@ using System.Runtime.Loader;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Emby.Server.Implementations.Library;
+using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Extensions.Json.Converters;
 using MediaBrowser.Common;
@@ -19,8 +22,11 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Updates;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Nikse.SubtitleEdit.Core.Common;
+using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Plugins
 {
@@ -44,7 +50,7 @@ namespace Emby.Server.Implementations.Plugins
         /// <summary>
         /// Initializes a new instance of the <see cref="PluginManager"/> class.
         /// </summary>
-        /// <param name="logger">The <see cref="ILogger"/>.</param>
+        /// <param name="logger">The <see cref="ILogger{PluginManager}"/>.</param>
         /// <param name="appHost">The <see cref="IApplicationHost"/>.</param>
         /// <param name="config">The <see cref="ServerConfiguration"/>.</param>
         /// <param name="pluginsPath">The plugin path.</param>
@@ -424,7 +430,8 @@ namespace Emby.Server.Implementations.Plugins
                 Version = versionInfo.Version,
                 Status = status == PluginStatus.Disabled ? PluginStatus.Disabled : PluginStatus.Active, // Keep disabled state.
                 AutoUpdate = true,
-                ImagePath = imagePath
+                ImagePath = imagePath,
+                Assemblies = versionInfo.Assemblies
             };
 
             return SaveManifest(manifest, path);
@@ -688,7 +695,15 @@ namespace Emby.Server.Implementations.Plugins
                 var entry = versions[x];
                 if (!string.Equals(lastName, entry.Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    entry.DllFiles = Directory.GetFiles(entry.Path, "*.dll", SearchOption.AllDirectories);
+                    if (!TryGetPluginDlls(entry, out var allowedDlls))
+                    {
+                        _logger.LogError("One or more assembly paths was invalid. Marking plugin {Plugin} as \"Malfunctioned\".", entry.Name);
+                        ChangePluginState(entry, PluginStatus.Malfunctioned);
+                        continue;
+                    }
+
+                    entry.DllFiles = allowedDlls;
+
                     if (entry.IsEnabledAndSupported)
                     {
                         lastName = entry.Name;
@@ -732,6 +747,68 @@ namespace Emby.Server.Implementations.Plugins
 
             // Only want plugin folders which have files.
             return versions.Where(p => p.DllFiles.Count != 0);
+        }
+
+        /// <summary>
+        /// Attempts to retrieve valid DLLs from the plugin path. This method will consider the assembly whitelist
+        /// from the manifest.
+        /// </summary>
+        /// <remarks>
+        /// Loading DLLs from externally supplied paths introduces a path traversal risk. This method
+        /// uses a safelisting tactic of considering DLLs from the plugin directory and only using
+        /// the plugin's canonicalized assembly whitelist for comparison. See
+        /// <see href="https://owasp.org/www-community/attacks/Path_Traversal"/> for more details.
+        /// </remarks>
+        /// <param name="plugin">The plugin.</param>
+        /// <param name="whitelistedDlls">The whitelisted DLLs. If the method returns <see langword="false"/>, this will be empty.</param>
+        /// <returns>
+        /// <see langword="true"/> if all assemblies listed in the manifest were available in the plugin directory.
+        /// <see langword="false"/> if any assemblies were invalid or missing from the plugin directory.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">If the <see cref="LocalPlugin"/> is null.</exception>
+        private bool TryGetPluginDlls(LocalPlugin plugin, out IReadOnlyList<string> whitelistedDlls)
+        {
+            _ = plugin ?? throw new ArgumentNullException(nameof(plugin));
+
+            IReadOnlyList<string> pluginDlls = Directory.GetFiles(plugin.Path, "*.dll", SearchOption.AllDirectories);
+
+            whitelistedDlls = Array.Empty<string>();
+            if (pluginDlls.Count > 0 && plugin.Manifest.Assemblies.Count > 0)
+            {
+                _logger.LogInformation("Registering whitelisted assemblies for plugin \"{Plugin}\"...", plugin.Name);
+
+                var canonicalizedPaths = new List<string>();
+                foreach (var path in plugin.Manifest.Assemblies)
+                {
+                    var canonicalized = Path.Combine(plugin.Path, path).Canonicalize();
+
+                    // Ensure we stay in the plugin directory.
+                    if (!canonicalized.StartsWith(plugin.Path.NormalizePath()!, StringComparison.Ordinal))
+                    {
+                        _logger.LogError("Assembly path {Path} is not inside the plugin directory.", path);
+                        return false;
+                    }
+
+                    canonicalizedPaths.Add(canonicalized);
+                }
+
+                var intersected = pluginDlls.Intersect(canonicalizedPaths).ToList();
+
+                if (intersected.Count != canonicalizedPaths.Count)
+                {
+                    _logger.LogError("Plugin {Plugin} contained assembly paths that were not found in the directory.", plugin.Name);
+                    return false;
+                }
+
+                whitelistedDlls = intersected;
+            }
+            else
+            {
+                // No whitelist, default to loading all DLLs in plugin directory.
+                whitelistedDlls = pluginDlls;
+            }
+
+            return true;
         }
 
         /// <summary>
