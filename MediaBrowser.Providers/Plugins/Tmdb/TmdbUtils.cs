@@ -223,11 +223,24 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             // partial matches can be returned before exact matches. Look for exact matches after removing invalid characters
             var nearExactMatchFiltered = filtered.Where(s =>
             {
-                var resultName = (s as SearchMovie)?.Title ?? (s as SearchTv)?.Name;
-                var resultOriginalName = (s as SearchMovie)?.OriginalTitle ?? (s as SearchTv)?.OriginalName;
+                string? resultName;
+                string? resultOriginalName;
+                switch (s)
+                {
+                    case SearchMovie searchMovie:
+                        resultName = searchMovie.Title;
+                        resultOriginalName = searchMovie.OriginalTitle;
+                        break;
+                    case SearchTv searchTv:
+                        resultName = searchTv.Name;
+                        resultOriginalName = searchTv.OriginalName;
+                        break;
+                    default:
+                        return false;
+                }
 
-                return RemoveInvalidFileCharacters(resultName) == name
-                    || RemoveInvalidFileCharacters(resultOriginalName) == name;
+                return string.Equals(RemoveInvalidFileCharacters(resultName), name, StringComparison.OrdinalIgnoreCase)
+                       || string.Equals(RemoveInvalidFileCharacters(resultOriginalName), name, StringComparison.OrdinalIgnoreCase);
             });
 
             if (nearExactMatchFiltered.Any())
