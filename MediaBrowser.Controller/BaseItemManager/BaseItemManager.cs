@@ -60,6 +60,14 @@ namespace MediaBrowser.Controller.BaseItemManager
         }
 
         /// <inheritdoc />
+        public bool IsMetadataFetcherEnabled(BaseItem baseItem, LibraryOptions libraryOptions, string name)
+        {
+            // just upcall into the by-TypeOptions version using the logic the old path would have used
+            TypeOptions? libraryTypeOptions = libraryOptions?.GetTypeOptions(baseItem.GetType().Name);
+            return this.IsMetadataFetcherEnabled(baseItem, libraryTypeOptions, name);
+        }
+
+        /// <inheritdoc />
         public bool IsImageFetcherEnabled(BaseItem baseItem, TypeOptions? libraryTypeOptions, string name)
         {
             if (baseItem is Channel)
@@ -82,6 +90,14 @@ namespace MediaBrowser.Controller.BaseItemManager
             var itemConfig = _serverConfigurationManager.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, baseItem.GetType().Name, StringComparison.OrdinalIgnoreCase));
 
             return itemConfig is null || !itemConfig.DisabledImageFetchers.Contains(name.AsSpan(), StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <inheritdoc />
+        public bool IsImageFetcherEnabled(BaseItem baseItem, LibraryOptions libraryOptions, string name)
+        {
+            // just upcall into the by-TypeOptions version using the logic the old path would have used
+            TypeOptions? libraryTypeOptions = libraryOptions?.GetTypeOptions(baseItem.GetType().Name);
+            return this.IsImageFetcherEnabled(baseItem, libraryTypeOptions, name);
         }
 
         /// <summary>

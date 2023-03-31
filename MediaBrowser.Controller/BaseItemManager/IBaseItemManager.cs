@@ -15,6 +15,28 @@ namespace MediaBrowser.Controller.BaseItemManager
         SemaphoreSlim MetadataRefreshThrottler { get; }
 
         /// <summary>
+        /// Is metadata fetcher enabled based on the library type options.
+        /// </summary>
+        /// <param name="baseItem">The base item.</param>
+        /// <param name="libraryOptions">The library options for <c>baseItem</c> from the library (if defined).</param>
+        /// <param name="name">The metadata fetcher name.</param>
+        /// <returns><c>true</c> if metadata fetcher is enabled, else false.</returns>
+        ///
+        /// This is still here for backward compatibility with old plugins, assume we're going to use new method.
+        bool IsMetadataFetcherEnabled(BaseItem baseItem, LibraryOptions libraryOptions, string name);
+
+        /// <summary>
+        /// Is image fetcher enabled based on the library type options.
+        /// </summary>
+        /// <param name="baseItem">The base item.</param>
+        /// <param name="libraryOptions">The library options for <c>baseItem</c> from the library (if defined).</param>
+        /// <param name="name">The image fetcher name.</param>
+        /// <returns><c>true</c> if image fetcher is enabled, else false.</returns>
+        ///
+        /// This is still here for backward compatibility with old plugins, assume we're going to use new method.
+        bool IsImageFetcherEnabled(BaseItem baseItem, LibraryOptions libraryOptions, string name);
+
+        /// <summary>
         /// Is metadata fetcher enabled.
         /// </summary>
         /// <param name="baseItem">The base item.</param>
