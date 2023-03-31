@@ -216,7 +216,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="year">The year searched for.</param>
         /// <param name="searchResults">The search results from a Movie or Tv search.</param>
         /// <returns>The nearest match to the search criteria.</returns>
-        public static SearchMovieTvBase? GetBestMatch(string name, int year, IEnumerable<SearchMovieTvBase> searchResults)
+        public static SearchMovieTvBase? GetBestMatch(string name, int year, IReadOnlyList<SearchMovieTvBase> searchResults)
         {
             var filtered = searchResults;
 
