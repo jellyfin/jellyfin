@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
@@ -105,12 +106,9 @@ namespace MediaBrowser.Controller.LiveTv
 
         protected override string CreateSortName()
         {
-            if (!string.IsNullOrEmpty(Number))
+            if (double.TryParse(Number, CultureInfo.InvariantCulture, out double number))
             {
-                if (double.TryParse(Number, NumberStyles.Any, CultureInfo.InvariantCulture, out double number))
-                {
-                    return string.Format(CultureInfo.InvariantCulture, "{0:00000.0}", number) + "-" + (Name ?? string.Empty);
-                }
+                return string.Format(CultureInfo.InvariantCulture, "{0:00000.0}", number) + "-" + (Name ?? string.Empty);
             }
 
             return (Number ?? string.Empty) + "-" + (Name ?? string.Empty);
@@ -122,9 +120,7 @@ namespace MediaBrowser.Controller.LiveTv
         }
 
         public IEnumerable<BaseItem> GetTaggedItems()
-        {
-            return new List<BaseItem>();
-        }
+            => Enumerable.Empty<BaseItem>();
 
         public override List<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution)
         {

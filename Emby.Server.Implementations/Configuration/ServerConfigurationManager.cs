@@ -1,5 +1,3 @@
-#nullable disable
-
 using System;
 using System.Globalization;
 using System.IO;
@@ -36,7 +34,7 @@ namespace Emby.Server.Implementations.Configuration
         /// <summary>
         /// Configuration updating event.
         /// </summary>
-        public event EventHandler<GenericEventArgs<ServerConfiguration>> ConfigurationUpdating;
+        public event EventHandler<GenericEventArgs<ServerConfiguration>>? ConfigurationUpdating;
 
         /// <summary>
         /// Gets the type of the configuration.

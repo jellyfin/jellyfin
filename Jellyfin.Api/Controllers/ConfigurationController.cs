@@ -19,7 +19,7 @@ namespace Jellyfin.Api.Controllers;
 /// Configuration Controller.
 /// </summary>
 [Route("System")]
-[Authorize(Policy = Policies.DefaultAuthorization)]
+[Authorize]
 public class ConfigurationController : BaseJellyfinApiController
 {
     private readonly IServerConfigurationManager _configurationManager;

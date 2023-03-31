@@ -88,9 +88,10 @@ public class ImageController : BaseJellyfinApiController
     /// <response code="403">User does not have permission to delete the image.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Users/{userId}/Images/{imageType}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [AcceptsImageFile]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
@@ -99,12 +100,22 @@ public class ImageController : BaseJellyfinApiController
         [FromRoute, Required] ImageType imageType,
         [FromQuery] int? index = null)
     {
+        var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
         if (!RequestHelpers.AssertCanUpdateUser(_userManager, HttpContext.User, userId, true))
         {
             return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the image.");
         }
 
-        var user = _userManager.GetUserById(userId);
+        if (!TryGetImageExtensionFromContentType(Request.ContentType, out string? extension))
+        {
+            return BadRequest("Incorrect ContentType.");
+        }
+
         var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
         await using (memoryStream.ConfigureAwait(false))
         {
@@ -116,7 +127,7 @@ public class ImageController : BaseJellyfinApiController
                 await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
             }
 
-            user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType ?? string.Empty)));
+            user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + extension));
 
             await _providerManager
                 .SaveImage(memoryStream, mimeType, user.ProfileImage.Path)
@@ -137,9 +148,10 @@ public class ImageController : BaseJellyfinApiController
     /// <response code="403">User does not have permission to delete the image.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Users/{userId}/Images/{imageType}/{index}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [AcceptsImageFile]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
@@ -148,12 +160,22 @@ public class ImageController : BaseJellyfinApiController
         [FromRoute, Required] ImageType imageType,
         [FromRoute] int index)
     {
+        var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
         if (!RequestHelpers.AssertCanUpdateUser(_userManager, HttpContext.User, userId, true))
         {
             return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the image.");
         }
 
-        var user = _userManager.GetUserById(userId);
+        if (!TryGetImageExtensionFromContentType(Request.ContentType, out string? extension))
+        {
+            return BadRequest("Incorrect ContentType.");
+        }
+
         var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
         await using (memoryStream.ConfigureAwait(false))
         {
@@ -165,7 +187,7 @@ public class ImageController : BaseJellyfinApiController
                 await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
             }
 
-            user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType ?? string.Empty)));
+            user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + extension));
 
             await _providerManager
                 .SaveImage(memoryStream, mimeType, user.ProfileImage.Path)
@@ -186,7 +208,7 @@ public class ImageController : BaseJellyfinApiController
     /// <response code="403">User does not have permission to delete the image.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("Users/{userId}/Images/{imageType}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -230,7 +252,7 @@ public class ImageController : BaseJellyfinApiController
     /// <response code="403">User does not have permission to delete the image.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("Users/{userId}/Images/{imageType}/{index}")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -332,6 +354,7 @@ public class ImageController : BaseJellyfinApiController
     [Authorize(Policy = Policies.RequiresElevation)]
     [AcceptsImageFile]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
     public async Task<ActionResult> SetItemImage(
@@ -342,6 +365,11 @@ public class ImageController : BaseJellyfinApiController
         if (item is null)
         {
             return NotFound();
+        }
+
+        if (!TryGetImageExtensionFromContentType(Request.ContentType, out _))
+        {
+            return BadRequest("Incorrect ContentType.");
         }
 
         var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
@@ -369,6 +397,7 @@ public class ImageController : BaseJellyfinApiController
     [Authorize(Policy = Policies.RequiresElevation)]
     [AcceptsImageFile]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
     public async Task<ActionResult> SetItemImageByIndex(
@@ -380,6 +409,11 @@ public class ImageController : BaseJellyfinApiController
         if (item is null)
         {
             return NotFound();
+        }
+
+        if (!TryGetImageExtensionFromContentType(Request.ContentType, out _))
+        {
+            return BadRequest("Incorrect ContentType.");
         }
 
         var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
@@ -432,7 +466,7 @@ public class ImageController : BaseJellyfinApiController
     /// <response code="404">Item not found.</response>
     /// <returns>The list of image infos on success, or <see cref="NotFoundResult"/> if item not found.</returns>
     [HttpGet("Items/{itemId}/Images")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IEnumerable<ImageInfo>>> GetItemImageInfos([FromRoute, Required] Guid itemId)
@@ -1753,22 +1787,14 @@ public class ImageController : BaseJellyfinApiController
     [AcceptsImageFile]
     public async Task<ActionResult> UploadCustomSplashscreen()
     {
+        if (!TryGetImageExtensionFromContentType(Request.ContentType, out var extension))
+        {
+            return BadRequest("Incorrect ContentType.");
+        }
+
         var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
         await using (memoryStream.ConfigureAwait(false))
         {
-            var mimeType = MediaTypeHeaderValue.Parse(Request.ContentType).MediaType;
-
-            if (!mimeType.HasValue)
-            {
-                return BadRequest("Error reading mimetype from uploaded image");
-            }
-
-            var extension = MimeTypes.ToExtension(mimeType.Value);
-            if (string.IsNullOrEmpty(extension))
-            {
-                return BadRequest("Error converting mimetype to an image extension");
-            }
-
             var filePath = Path.Combine(_appPaths.DataPath, "splashscreen-upload" + extension);
             var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
             brandingOptions.SplashscreenLocation = filePath;
@@ -1930,10 +1956,10 @@ public class ImageController : BaseJellyfinApiController
         }
 
         var responseHeaders = new Dictionary<string, string>
-            {
-                { "transferMode.dlna.org", "Interactive" },
-                { "realTimeInfo.dlna.org", "DLNA.ORG_TLAG=*" }
-            };
+        {
+            { "transferMode.dlna.org", "Interactive" },
+            { "realTimeInfo.dlna.org", "DLNA.ORG_TLAG=*" }
+        };
 
         if (!imageInfo.IsLocalFile && item is not null)
         {
@@ -2095,5 +2121,24 @@ public class ImageController : BaseJellyfinApiController
         }
 
         return PhysicalFile(imagePath, imageContentType ?? MediaTypeNames.Text.Plain);
+    }
+
+    internal static bool TryGetImageExtensionFromContentType(string? contentType, [NotNullWhen(true)] out string? extension)
+    {
+        extension = null;
+        if (string.IsNullOrEmpty(contentType))
+        {
+            return false;
+        }
+
+        if (MediaTypeHeaderValue.TryParse(contentType, out var parsedValue)
+            && parsedValue.MediaType.HasValue
+            && MimeTypes.IsImage(parsedValue.MediaType.Value))
+        {
+            extension = MimeTypes.ToExtension(parsedValue.MediaType.Value);
+            return extension is not null;
+        }
+
+        return false;
     }
 }

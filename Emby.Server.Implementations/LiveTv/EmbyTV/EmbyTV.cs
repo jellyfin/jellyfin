@@ -2032,7 +2032,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     var people = item.Id.Equals(default) ? new List<PersonInfo>() : _libraryManager.GetPeople(item);
 
                     var directors = people
-                        .Where(i => IsPersonType(i, PersonType.Director))
+                        .Where(i => i.IsType(PersonKind.Director))
                         .Select(i => i.Name)
                         .ToList();
 
@@ -2042,7 +2042,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     }
 
                     var writers = people
-                        .Where(i => IsPersonType(i, PersonType.Writer))
+                        .Where(i => i.IsType(PersonKind.Writer))
                         .Select(i => i.Name)
                         .Distinct(StringComparer.OrdinalIgnoreCase)
                         .ToList();
@@ -2121,10 +2121,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
             }
         }
-
-        private static bool IsPersonType(PersonInfo person, string type)
-            => string.Equals(person.Type, type, StringComparison.OrdinalIgnoreCase)
-                || string.Equals(person.Role, type, StringComparison.OrdinalIgnoreCase);
 
         private LiveTvProgram GetProgramInfoFromCache(string programId)
         {

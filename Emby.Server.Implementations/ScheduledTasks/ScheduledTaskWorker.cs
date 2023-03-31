@@ -93,11 +93,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
         public ScheduledTaskWorker(IScheduledTask scheduledTask, IApplicationPaths applicationPaths, ITaskManager taskManager, ILogger logger)
         {
             ArgumentNullException.ThrowIfNull(scheduledTask);
-
             ArgumentNullException.ThrowIfNull(applicationPaths);
-
             ArgumentNullException.ThrowIfNull(taskManager);
-
             ArgumentNullException.ThrowIfNull(logger);
 
             ScheduledTask = scheduledTask;
@@ -332,7 +329,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 return;
             }
 
-            _logger.LogInformation("{0} fired for task: {1}", trigger.GetType().Name, Name);
+            _logger.LogDebug("{0} fired for task: {1}", trigger.GetType().Name, Name);
 
             trigger.Stop();
 
@@ -378,7 +375,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             CurrentCancellationTokenSource = new CancellationTokenSource();
 
-            _logger.LogInformation("Executing {0}", Name);
+            _logger.LogDebug("Executing {0}", Name);
 
             ((TaskManager)_taskManager).OnTaskExecuting(this);
 
@@ -406,7 +403,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error");
+                _logger.LogError(ex, "Error executing Scheduled Task");
 
                 failureException = ex;
 

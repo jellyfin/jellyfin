@@ -18,17 +18,17 @@ namespace MediaBrowser.Model.Dlna
         [XmlAttribute("type")]
         public DlnaProfileType Type { get; set; }
 
-        public bool SupportsContainer(string container)
+        public bool SupportsContainer(string? container)
         {
             return ContainerProfile.ContainsContainer(Container, container);
         }
 
-        public bool SupportsVideoCodec(string codec)
+        public bool SupportsVideoCodec(string? codec)
         {
             return Type == DlnaProfileType.Video && ContainerProfile.ContainsContainer(VideoCodec, codec);
         }
 
-        public bool SupportsAudioCodec(string codec)
+        public bool SupportsAudioCodec(string? codec)
         {
             return (Type == DlnaProfileType.Audio || Type == DlnaProfileType.Video) && ContainerProfile.ContainsContainer(AudioCodec, codec);
         }

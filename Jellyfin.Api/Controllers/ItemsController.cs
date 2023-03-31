@@ -1,11 +1,11 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -25,7 +25,7 @@ namespace Jellyfin.Api.Controllers;
 /// The items controller.
 /// </summary>
 [Route("")]
-[Authorize(Policy = Policies.DefaultAuthorization)]
+[Authorize]
 public class ItemsController : BaseJellyfinApiController
 {
     private readonly IUserManager _userManager;
@@ -240,8 +240,9 @@ public class ItemsController : BaseJellyfinApiController
     {
         var isApiKey = User.GetIsApiKey();
         // if api key is used (auth.IsApiKey == true), then `user` will be null throughout this method
-        var user = !isApiKey && userId.HasValue && !userId.Value.Equals(default)
-            ? _userManager.GetUserById(userId.Value)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = !isApiKey && !userId.Value.Equals(default)
+            ? _userManager.GetUserById(userId.Value) ?? throw new ResourceNotFoundException()
             : null;
 
         // beyond this point, we're either using an api key or we have a valid user
@@ -408,6 +409,13 @@ public class ItemsController : BaseJellyfinApiController
             if (seriesStatus.Length != 0)
             {
                 query.SeriesStatuses = seriesStatus;
+            }
+
+            // Exclude Blocked Unrated Items
+            var blockedUnratedItems = user?.GetPreferenceValues<UnratedItem>(PreferenceKind.BlockUnratedItems);
+            if (blockedUnratedItems is not null)
+            {
+                query.BlockUnratedItems = blockedUnratedItems;
             }
 
             // ExcludeLocationTypes
@@ -815,6 +823,11 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery] bool excludeActiveSessions = false)
     {
         var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
         var parentIdGuid = parentId ?? Guid.Empty;
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)

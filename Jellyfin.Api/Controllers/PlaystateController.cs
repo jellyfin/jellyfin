@@ -2,7 +2,6 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
@@ -23,7 +22,7 @@ namespace Jellyfin.Api.Controllers;
 /// Playstate controller.
 /// </summary>
 [Route("")]
-[Authorize(Policy = Policies.DefaultAuthorization)]
+[Authorize]
 public class PlaystateController : BaseJellyfinApiController
 {
     private readonly IUserManager _userManager;
@@ -77,6 +76,11 @@ public class PlaystateController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(LegacyDateTimeModelBinder))] DateTime? datePlayed)
     {
         var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
         var session = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
 
         var item = _libraryManager.GetItemById(itemId);
@@ -89,6 +93,11 @@ public class PlaystateController : BaseJellyfinApiController
         foreach (var additionalUserInfo in session.AdditionalUsers)
         {
             var additionalUser = _userManager.GetUserById(additionalUserInfo.UserId);
+            if (additionalUser is null)
+            {
+                return NotFound();
+            }
+
             UpdatePlayedStatus(additionalUser, item, true, datePlayed);
         }
 
@@ -109,6 +118,11 @@ public class PlaystateController : BaseJellyfinApiController
     public async Task<ActionResult<UserItemDataDto>> MarkUnplayedItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
     {
         var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
         var session = await RequestHelpers.GetSession(_sessionManager, _userManager, HttpContext).ConfigureAwait(false);
         var item = _libraryManager.GetItemById(itemId);
 
@@ -121,6 +135,11 @@ public class PlaystateController : BaseJellyfinApiController
         foreach (var additionalUserInfo in session.AdditionalUsers)
         {
             var additionalUser = _userManager.GetUserById(additionalUserInfo.UserId);
+            if (additionalUser is null)
+            {
+                return NotFound();
+            }
+
             UpdatePlayedStatus(additionalUser, item, false, null);
         }
 

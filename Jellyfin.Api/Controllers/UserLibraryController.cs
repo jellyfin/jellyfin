@@ -4,9 +4,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.ModelBinders;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -28,7 +28,7 @@ namespace Jellyfin.Api.Controllers;
 /// User library controller.
 /// </summary>
 [Route("")]
-[Authorize(Policy = Policies.DefaultAuthorization)]
+[Authorize]
 public class UserLibraryController : BaseJellyfinApiController
 {
     private readonly IUserManager _userManager;
@@ -73,16 +73,32 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <param name="userId">User id.</param>
     /// <param name="itemId">Item id.</param>
     /// <response code="200">Item returned.</response>
-    /// <returns>An <see cref="OkResult"/> containing the d item.</returns>
+    /// <returns>An <see cref="OkResult"/> containing the item.</returns>
     [HttpGet("Users/{userId}/Items/{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<BaseItemDto>> GetItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
     {
         var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
 
         var item = itemId.Equals(default)
             ? _libraryManager.GetUserRootFolder()
             : _libraryManager.GetItemById(itemId);
+
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        if (item is not UserRootFolder
+            // Check the item is visible for the user
+            && !item.IsVisible(user))
+        {
+            return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
+        }
 
         await RefreshItemOnDemandIfNeeded(item).ConfigureAwait(false);
 
@@ -102,6 +118,11 @@ public class UserLibraryController : BaseJellyfinApiController
     public ActionResult<BaseItemDto> GetRootFolder([FromRoute, Required] Guid userId)
     {
         var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
         var item = _libraryManager.GetUserRootFolder();
         var dtoOptions = new DtoOptions().AddClientFields(User);
         return _dtoService.GetBaseItemDto(item, dtoOptions, user);
@@ -119,10 +140,26 @@ public class UserLibraryController : BaseJellyfinApiController
     public async Task<ActionResult<QueryResult<BaseItemDto>>> GetIntros([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
     {
         var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
 
         var item = itemId.Equals(default)
             ? _libraryManager.GetUserRootFolder()
             : _libraryManager.GetItemById(itemId);
+
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        if (item is not UserRootFolder
+            // Check the item is visible for the user
+            && !item.IsVisible(user))
+        {
+            return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
+        }
 
         var items = await _libraryManager.GetIntros(item, user).ConfigureAwait(false);
         var dtoOptions = new DtoOptions().AddClientFields(User);
@@ -142,7 +179,29 @@ public class UserLibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<UserItemDataDto> MarkFavoriteItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
     {
-        return MarkFavorite(userId, itemId, true);
+        var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        var item = itemId.Equals(default)
+            ? _libraryManager.GetUserRootFolder()
+            : _libraryManager.GetItemById(itemId);
+
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        if (item is not UserRootFolder
+            // Check the item is visible for the user
+            && !item.IsVisible(user))
+        {
+            return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
+        }
+
+        return MarkFavorite(user, item, true);
     }
 
     /// <summary>
@@ -156,7 +215,29 @@ public class UserLibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<UserItemDataDto> UnmarkFavoriteItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
     {
-        return MarkFavorite(userId, itemId, false);
+        var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        var item = itemId.Equals(default)
+            ? _libraryManager.GetUserRootFolder()
+            : _libraryManager.GetItemById(itemId);
+
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        if (item is not UserRootFolder
+            // Check the item is visible for the user
+            && !item.IsVisible(user))
+        {
+            return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
+        }
+
+        return MarkFavorite(user, item, false);
     }
 
     /// <summary>
@@ -170,7 +251,29 @@ public class UserLibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<UserItemDataDto> DeleteUserItemRating([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
     {
-        return UpdateUserItemRatingInternal(userId, itemId, null);
+        var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        var item = itemId.Equals(default)
+            ? _libraryManager.GetUserRootFolder()
+            : _libraryManager.GetItemById(itemId);
+
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        if (item is not UserRootFolder
+            // Check the item is visible for the user
+            && !item.IsVisible(user))
+        {
+            return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
+        }
+
+        return UpdateUserItemRatingInternal(user, item, null);
     }
 
     /// <summary>
@@ -185,7 +288,29 @@ public class UserLibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<UserItemDataDto> UpdateUserItemRating([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId, [FromQuery] bool? likes)
     {
-        return UpdateUserItemRatingInternal(userId, itemId, likes);
+        var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        var item = itemId.Equals(default)
+            ? _libraryManager.GetUserRootFolder()
+            : _libraryManager.GetItemById(itemId);
+
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        if (item is not UserRootFolder
+            // Check the item is visible for the user
+            && !item.IsVisible(user))
+        {
+            return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
+        }
+
+        return UpdateUserItemRatingInternal(user, item, likes);
     }
 
     /// <summary>
@@ -200,13 +325,28 @@ public class UserLibraryController : BaseJellyfinApiController
     public ActionResult<IEnumerable<BaseItemDto>> GetLocalTrailers([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
     {
         var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
 
         var item = itemId.Equals(default)
             ? _libraryManager.GetUserRootFolder()
             : _libraryManager.GetItemById(itemId);
 
-        var dtoOptions = new DtoOptions().AddClientFields(User);
+        if (item is null)
+        {
+            return NotFound();
+        }
 
+        if (item is not UserRootFolder
+            // Check the item is visible for the user
+            && !item.IsVisible(user))
+        {
+            return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
+        }
+
+        var dtoOptions = new DtoOptions().AddClientFields(User);
         if (item is IHasTrailers hasTrailers)
         {
             var trailers = hasTrailers.LocalTrailers;
@@ -230,10 +370,26 @@ public class UserLibraryController : BaseJellyfinApiController
     public ActionResult<IEnumerable<BaseItemDto>> GetSpecialFeatures([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
     {
         var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
 
         var item = itemId.Equals(default)
             ? _libraryManager.GetUserRootFolder()
             : _libraryManager.GetItemById(itemId);
+
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        if (item is not UserRootFolder
+            // Check the item is visible for the user
+            && !item.IsVisible(user))
+        {
+            return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
+        }
 
         var dtoOptions = new DtoOptions().AddClientFields(User);
 
@@ -275,6 +431,10 @@ public class UserLibraryController : BaseJellyfinApiController
         [FromQuery] bool groupItems = true)
     {
         var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
 
         if (!isPlayed.HasValue)
         {
@@ -345,15 +505,11 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <summary>
     /// Marks the favorite.
     /// </summary>
-    /// <param name="userId">The user id.</param>
-    /// <param name="itemId">The item id.</param>
+    /// <param name="user">The user.</param>
+    /// <param name="item">The item.</param>
     /// <param name="isFavorite">if set to <c>true</c> [is favorite].</param>
-    private UserItemDataDto MarkFavorite(Guid userId, Guid itemId, bool isFavorite)
+    private UserItemDataDto MarkFavorite(User user, BaseItem item, bool isFavorite)
     {
-        var user = _userManager.GetUserById(userId);
-
-        var item = itemId.Equals(default) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(itemId);
-
         // Get the user data for this item
         var data = _userDataRepository.GetUserData(user, item);
 
@@ -368,15 +524,11 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <summary>
     /// Updates the user item rating.
     /// </summary>
-    /// <param name="userId">The user id.</param>
-    /// <param name="itemId">The item id.</param>
+    /// <param name="user">The user.</param>
+    /// <param name="item">The item.</param>
     /// <param name="likes">if set to <c>true</c> [likes].</param>
-    private UserItemDataDto UpdateUserItemRatingInternal(Guid userId, Guid itemId, bool? likes)
+    private UserItemDataDto UpdateUserItemRatingInternal(User user, BaseItem item, bool? likes)
     {
-        var user = _userManager.GetUserById(userId);
-
-        var item = itemId.Equals(default) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(itemId);
-
         // Get the user data for this item
         var data = _userDataRepository.GetUserData(user, item);
 
@@ -413,6 +565,13 @@ public class UserLibraryController : BaseJellyfinApiController
         if (item is null)
         {
             return NotFound();
+        }
+
+        if (item is not UserRootFolder
+            // Check the item is visible for the user
+            && !item.IsVisible(user))
+        {
+            return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
         }
 
         var result = await _lyricManager.GetLyrics(item).ConfigureAwait(false);

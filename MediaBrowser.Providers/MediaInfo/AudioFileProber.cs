@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -105,7 +106,10 @@ namespace MediaBrowser.Providers.MediaInfo
             audio.RunTimeTicks = mediaInfo.RunTimeTicks;
             audio.Size = mediaInfo.Size;
 
-            FetchDataFromTags(audio);
+            if (!audio.IsLocked)
+            {
+                FetchDataFromTags(audio);
+            }
 
             _itemRepo.SaveMediaStreams(audio.Id, mediaInfo.MediaStreams, cancellationToken);
         }
@@ -160,7 +164,7 @@ namespace MediaBrowser.Providers.MediaInfo
                         PeopleHelper.AddPerson(people, new PersonInfo
                         {
                             Name = albumArtist,
-                            Type = "AlbumArtist"
+                            Type = PersonKind.AlbumArtist
                         });
                     }
 
@@ -170,7 +174,7 @@ namespace MediaBrowser.Providers.MediaInfo
                         PeopleHelper.AddPerson(people, new PersonInfo
                         {
                             Name = performer,
-                            Type = "Artist"
+                            Type = PersonKind.Artist
                         });
                     }
 
@@ -179,7 +183,7 @@ namespace MediaBrowser.Providers.MediaInfo
                         PeopleHelper.AddPerson(people, new PersonInfo
                         {
                             Name = composer,
-                            Type = "Composer"
+                            Type = PersonKind.Composer
                         });
                     }
 

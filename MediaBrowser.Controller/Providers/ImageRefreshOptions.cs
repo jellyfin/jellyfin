@@ -1,6 +1,7 @@
 #pragma warning disable CA1819, CS1591
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Model.Entities;
 
@@ -23,7 +24,7 @@ namespace MediaBrowser.Controller.Providers
 
         public bool ReplaceAllImages { get; set; }
 
-        public ImageType[] ReplaceImages { get; set; }
+        public IReadOnlyList<ImageType> ReplaceImages { get; set; }
 
         public bool IsAutomated { get; set; }
 

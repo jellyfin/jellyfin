@@ -26,6 +26,8 @@ namespace MediaBrowser.Providers.Manager
         where TItemType : BaseItem, IHasLookupInfo<TIdType>, new()
         where TIdType : ItemLookupInfo, new()
     {
+        private static readonly ImageType[] AllImageTypes = Enum.GetValues<ImageType>();
+
         protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger<MetadataService<TItemType, TIdType>> logger, IProviderManager providerManager, IFileSystem fileSystem, ILibraryManager libraryManager)
         {
             ServerConfigurationManager = serverConfigurationManager;
@@ -151,7 +153,6 @@ namespace MediaBrowser.Providers.Manager
                         ApplySearchResult(id, refreshOptions.SearchResult);
                     }
 
-                    // await FindIdentities(id, cancellationToken).ConfigureAwait(false);
                     id.IsAutomated = refreshOptions.IsAutomated;
 
                     var result = await RefreshWithProviders(metadataResult, id, refreshOptions, providers, ImageProvider, cancellationToken).ConfigureAwait(false);
@@ -334,6 +335,12 @@ namespace MediaBrowser.Providers.Manager
                 updateType |= UpdateCumulativeRunTimeTicks(item, children);
                 updateType |= UpdateDateLastMediaAdded(item, children);
 
+                // don't update user-changeable metadata for locked items
+                if (item.IsLocked)
+                {
+                    return updateType;
+                }
+
                 if (EnableUpdatingPremiereDateFromChildren)
                 {
                     updateType |= UpdatePremiereDate(item, children);
@@ -375,7 +382,7 @@ namespace MediaBrowser.Providers.Manager
                 if (!folder.RunTimeTicks.HasValue || folder.RunTimeTicks.Value != ticks)
                 {
                     folder.RunTimeTicks = ticks;
-                    return ItemUpdateType.MetadataEdit;
+                    return ItemUpdateType.MetadataImport;
                 }
             }
 
@@ -667,6 +674,8 @@ namespace MediaBrowser.Providers.Manager
             }
 
             var hasLocalMetadata = false;
+            var replaceImages = AllImageTypes.ToList();
+            var localImagesFound = false;
 
             foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>())
             {
@@ -693,11 +702,21 @@ namespace MediaBrowser.Providers.Manager
 
                                 await ProviderManager.SaveImage(item, remoteImage.Url, remoteImage.Type, null, cancellationToken).ConfigureAwait(false);
                                 refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
+
+                                // remove imagetype that has just been downloaded
+                                replaceImages.Remove(remoteImage.Type);
+                                localImagesFound = true;
                             }
                             catch (HttpRequestException ex)
                             {
                                 Logger.LogError(ex, "Could not save {ImageType} image: {Url}", Enum.GetName(remoteImage.Type), remoteImage.Url);
                             }
+                        }
+
+                        if (localImagesFound)
+                        {
+                            options.ReplaceAllImages = false;
+                            options.ReplaceImages = replaceImages;
                         }
 
                         if (imageService.MergeImages(item, localItem.Images))

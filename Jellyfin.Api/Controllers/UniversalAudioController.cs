@@ -5,7 +5,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
@@ -82,7 +81,7 @@ public class UniversalAudioController : BaseJellyfinApiController
     /// <returns>A <see cref="Task"/> containing the audio file.</returns>
     [HttpGet("Audio/{itemId}/universal")]
     [HttpHead("Audio/{itemId}/universal", Name = "HeadUniversalAudioStream")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status302Found)]
     [ProducesAudioFile]
@@ -107,11 +106,7 @@ public class UniversalAudioController : BaseJellyfinApiController
         [FromQuery] bool enableRedirection = true)
     {
         var deviceProfile = GetDeviceProfile(container, transcodingContainer, audioCodec, transcodingProtocol, breakOnNonKeyFrames, transcodingAudioChannels, maxAudioSampleRate, maxAudioBitDepth, maxAudioChannels);
-
-        if (!userId.HasValue || userId.Value.Equals(default))
-        {
-            userId = User.GetUserId();
-        }
+        userId = RequestHelpers.GetUserId(User, userId);
 
         _logger.LogInformation("GetPostedPlaybackInfo profile: {@Profile}", deviceProfile);
 

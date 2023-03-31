@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
@@ -23,7 +22,7 @@ namespace Jellyfin.Api.Controllers;
 /// <summary>
 /// The music genres controller.
 /// </summary>
-[Authorize(Policy = Policies.DefaultAuthorization)]
+[Authorize]
 public class MusicGenresController : BaseJellyfinApiController
 {
     private readonly ILibraryManager _libraryManager;
@@ -91,11 +90,12 @@ public class MusicGenresController : BaseJellyfinApiController
         [FromQuery] bool? enableImages = true,
         [FromQuery] bool enableTotalRecordCount = true)
     {
+        userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions { Fields = fields }
             .AddClientFields(User)
             .AddAdditionalDtoOptions(enableImages, false, imageTypeLimit, enableImageTypes);
 
-        User? user = userId is null || userId.Value.Equals(default)
+        User? user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 
@@ -145,6 +145,7 @@ public class MusicGenresController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<BaseItemDto> GetMusicGenre([FromRoute, Required] string genreName, [FromQuery] Guid? userId)
     {
+        userId = RequestHelpers.GetUserId(User, userId);
         var dtoOptions = new DtoOptions().AddClientFields(User);
 
         MusicGenre? item;
@@ -158,7 +159,12 @@ public class MusicGenresController : BaseJellyfinApiController
             item = _libraryManager.GetMusicGenre(genreName);
         }
 
-        if (userId.HasValue && !userId.Value.Equals(default))
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        if (!userId.Value.Equals(default))
         {
             var user = _userManager.GetUserById(userId.Value);
 

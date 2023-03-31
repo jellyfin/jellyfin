@@ -1,6 +1,6 @@
-using System.Net;
 using System.Threading.Tasks;
 using Jellyfin.Networking.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Http;
@@ -32,9 +32,14 @@ public class LanFilteringMiddleware
     /// <returns>The async task.</returns>
     public async Task Invoke(HttpContext httpContext, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager)
     {
-        var host = httpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback;
+        if (serverConfigurationManager.GetNetworkConfiguration().EnableRemoteAccess)
+        {
+            await _next(httpContext).ConfigureAwait(false);
+            return;
+        }
 
-        if (!networkManager.IsInLocalNetwork(host) && !serverConfigurationManager.GetNetworkConfiguration().EnableRemoteAccess)
+        var host = httpContext.GetNormalizedRemoteIp();
+        if (!networkManager.IsInLocalNetwork(host))
         {
             return;
         }

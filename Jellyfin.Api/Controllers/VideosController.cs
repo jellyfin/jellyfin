@@ -100,16 +100,17 @@ public class VideosController : BaseJellyfinApiController
     /// <response code="200">Additional parts returned.</response>
     /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the parts.</returns>
     [HttpGet("{itemId}/AdditionalParts")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetAdditionalPart([FromRoute, Required] Guid itemId, [FromQuery] Guid? userId)
     {
-        var user = userId is null || userId.Value.Equals(default)
+        userId = RequestHelpers.GetUserId(User, userId);
+        var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
 
         var item = itemId.Equals(default)
-            ? (userId is null || userId.Value.Equals(default)
+            ? (userId.Value.Equals(default)
                 ? _libraryManager.RootFolder
                 : _libraryManager.GetUserRootFolder())
             : _libraryManager.GetItemById(itemId);
@@ -155,7 +156,12 @@ public class VideosController : BaseJellyfinApiController
 
         if (video.LinkedAlternateVersions.Length == 0)
         {
-            video = (Video)_libraryManager.GetItemById(video.PrimaryVersionId);
+            video = (Video?)_libraryManager.GetItemById(video.PrimaryVersionId);
+        }
+
+        if (video is null)
+        {
+            return NotFound();
         }
 
         foreach (var link in video.GetLinkedAlternateVersions())

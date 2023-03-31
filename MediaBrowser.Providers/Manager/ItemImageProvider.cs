@@ -273,7 +273,7 @@ namespace MediaBrowser.Providers.Manager
                 }
 
                 if (!refreshOptions.ReplaceAllImages &&
-                    refreshOptions.ReplaceImages.Length == 0 &&
+                    refreshOptions.ReplaceImages.Count == 0 &&
                     ContainsImages(item, provider.GetSupportedImages(item).ToList(), savedOptions, backdropLimit))
                 {
                     return;
@@ -313,7 +313,8 @@ namespace MediaBrowser.Providers.Manager
                 }
 
                 minWidth = savedOptions.GetMinWidth(ImageType.Backdrop);
-                await DownloadMultiImages(item, ImageType.Backdrop, refreshOptions, backdropLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
+                var listWithNoLangFirst = list.OrderByDescending(i => string.IsNullOrEmpty(i.Language));
+                await DownloadMultiImages(item, ImageType.Backdrop, refreshOptions, backdropLimit, provider, result, listWithNoLangFirst, minWidth, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {

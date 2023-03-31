@@ -43,7 +43,7 @@ namespace Emby.Naming.Video
                 && match.Groups.Count == 5
                 && match.Groups[1].Success
                 && match.Groups[2].Success
-                && int.TryParse(match.Groups[2].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year))
+                && int.TryParse(match.Groups[2].ValueSpan, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year))
             {
                 result = new CleanDateTimeResult(match.Groups[1].Value.TrimEnd(), year);
                 return true;

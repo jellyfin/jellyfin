@@ -1,5 +1,4 @@
 using System;
-using Jellyfin.Api.Constants;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Dto;
@@ -14,7 +13,7 @@ namespace Jellyfin.Api.Controllers;
 /// <summary>
 /// The trailers controller.
 /// </summary>
-[Authorize(Policy = Policies.DefaultAuthorization)]
+[Authorize]
 public class TrailersController : BaseJellyfinApiController
 {
     private readonly ItemsController _itemsController;

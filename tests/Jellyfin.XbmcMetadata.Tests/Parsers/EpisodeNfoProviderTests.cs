@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -79,18 +80,18 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Equal("1276153", item.ProviderIds[MetadataProvider.Tmdb.ToString()]);
 
             // Credits
-            var writers = result.People.Where(x => x.Type == PersonType.Writer).ToArray();
+            var writers = result.People.Where(x => x.Type == PersonKind.Writer).ToArray();
             Assert.Equal(2, writers.Length);
             Assert.Contains("Bryan Fuller", writers.Select(x => x.Name));
             Assert.Contains("Michael Green", writers.Select(x => x.Name));
 
             // Direcotrs
-            var directors = result.People.Where(x => x.Type == PersonType.Director).ToArray();
+            var directors = result.People.Where(x => x.Type == PersonKind.Director).ToArray();
             Assert.Single(directors);
             Assert.Contains("David Slade", directors.Select(x => x.Name));
 
             // Actors
-            var actors = result.People.Where(x => x.Type == PersonType.Actor).ToArray();
+            var actors = result.People.Where(x => x.Type == PersonKind.Actor).ToArray();
             Assert.Equal(11, actors.Length);
             // Only test one actor
             var shadow = actors.FirstOrDefault(x => x.Role.Equals("Shadow Moon", StringComparison.Ordinal));

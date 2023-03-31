@@ -1,5 +1,3 @@
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -7,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
@@ -213,7 +212,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 }
             }
 
-            if (string.IsNullOrEmpty(tmdbId))
+            if (!int.TryParse(tmdbId, CultureInfo.InvariantCulture, out int tmdbIdInt))
             {
                 return result;
             }
@@ -221,8 +220,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             cancellationToken.ThrowIfCancellationRequested();
 
             var tvShow = await _tmdbClientManager
-                .GetSeriesAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
+                .GetSeriesAsync(tmdbIdInt, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
                 .ConfigureAwait(false);
+
+            if (tvShow is null)
+            {
+                return result;
+            }
 
             result = new MetadataResult<Series>
             {
@@ -351,7 +355,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     {
                         Name = actor.Name.Trim(),
                         Role = actor.Character,
-                        Type = PersonType.Actor,
+                        Type = PersonKind.Actor,
                         SortOrder = actor.Order,
                         ImageUrl = _tmdbClientManager.GetPosterUrl(actor.ProfilePath)
                     };
@@ -379,8 +383,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     // Normalize this
                     var type = TmdbUtils.MapCrewToPersonType(person);
 
-                    if (!keepTypes.Contains(type, StringComparison.OrdinalIgnoreCase)
-                        && !keepTypes.Contains(person.Job ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+                    if (!TmdbUtils.WantedCrewKinds.Contains(type)
+                        && !TmdbUtils.WantedCrewTypes.Contains(person.Job ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }
