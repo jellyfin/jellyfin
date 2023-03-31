@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -23,8 +23,12 @@ namespace MediaBrowser.Controller.ClientEvent
         {
             var fileName = $"upload_{clientName}_{clientVersion}_{DateTime.UtcNow:yyyyMMddHHmmss}_{Guid.NewGuid():N}.log";
             var logFilePath = Path.Combine(_applicationPaths.LogDirectoryPath, fileName);
-            await using var fileStream = new FileStream(logFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
-            await fileContents.CopyToAsync(fileStream).ConfigureAwait(false);
+            FileStream fileStream;
+            await using (fileStream = new FileStream(logFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            {
+                await fileContents.CopyToAsync(fileStream).ConfigureAwait(false);
+            }
+
             return fileName;
         }
     }
