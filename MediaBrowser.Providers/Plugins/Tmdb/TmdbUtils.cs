@@ -231,7 +231,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <returns>The nearest match to the search criteria.</returns>
         public static SearchMovieTvBase? GetBestMatch(string name, int year, IReadOnlyList<SearchMovieTvBase> searchResults)
         {
-            var filtered = searchResults;
+            List<SearchMovieTvBase> filtered = searchResults.ToList();
 
             // partial matches can be returned before exact matches. Look for exact matches after removing invalid characters
             var nearExactMatchFiltered = filtered.Where(s =>
@@ -254,7 +254,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
                 return string.Equals(RemoveInvalidFileCharacters(resultName), name, StringComparison.OrdinalIgnoreCase)
                        || string.Equals(RemoveInvalidFileCharacters(resultOriginalName), name, StringComparison.OrdinalIgnoreCase);
-            });
+            }).ToList();
 
             if (nearExactMatchFiltered.Any())
             {
@@ -270,10 +270,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                         ?? (s as SearchTv)?.FirstAirDate;
                     return searchResultYear.HasValue
                         && Math.Abs(searchResultYear.Value.Year - year) < MaxYearDifference;
-                });
+                }).ToList();
                 if (yearFiltered.Any())
                 {
-                    filtered = yearFiltered;
+                    filtered = yearFiltered.ToList();
                 }
             }
 
