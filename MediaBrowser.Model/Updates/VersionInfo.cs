@@ -80,6 +80,6 @@ namespace MediaBrowser.Model.Updates
         /// Gets or sets the assemblies whitelist for this version.
         /// </summary>
         [JsonPropertyName("assemblies")]
-        public IList<string> Assemblies { get; set; } = Array.Empty<string>();
+        public IReadOnlyList<string> Assemblies { get; set; } = Array.Empty<string>();
     }
 }

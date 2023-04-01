@@ -765,7 +765,7 @@ namespace Emby.Server.Implementations.Plugins
         /// <exception cref="ArgumentNullException">If the <see cref="LocalPlugin"/> is null.</exception>
         private bool TryGetPluginDlls(LocalPlugin plugin, out IReadOnlyList<string> whitelistedDlls)
         {
-            _ = plugin ?? throw new ArgumentNullException(nameof(plugin));
+            ArgumentNullException.ThrowIfNull(nameof(plugin));
 
             IReadOnlyList<string> pluginDlls = Directory.GetFiles(plugin.Path, "*.dll", SearchOption.AllDirectories);
 

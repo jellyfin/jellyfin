@@ -87,8 +87,8 @@ namespace Emby.Server.Implementations.Library
                 return false;
             }
 
-            subPath = subPath.NormalizePath(out var newDirectorySeparatorChar)!;
-            path = path.NormalizePath(newDirectorySeparatorChar)!;
+            subPath = subPath.NormalizePath(out var newDirectorySeparatorChar);
+            path = path.NormalizePath(newDirectorySeparatorChar);
 
             // We have to ensure that the sub path ends with a directory separator otherwise we'll get weird results
             // when the sub path matches a similar but in-complete subpath
@@ -128,6 +128,7 @@ namespace Emby.Server.Implementations.Library
         /// </summary>
         /// <param name="path">The path to normalize.</param>
         /// <returns>The normalized path string or <see langword="null"/> if the input path is null or empty.</returns>
+        [return: NotNullIfNotNull(nameof(path))]
         public static string? NormalizePath(this string? path)
         {
             return path.NormalizePath(Path.DirectorySeparatorChar);
@@ -139,6 +140,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="path">The path to normalize.</param>
         /// <param name="separator">The separator character the path now uses or <see langword="null"/>.</param>
         /// <returns>The normalized path string or <see langword="null"/> if the input path is null or empty.</returns>
+        [return: NotNullIfNotNull(nameof(path))]
         public static string? NormalizePath(this string? path, out char separator)
         {
             if (string.IsNullOrEmpty(path))
@@ -169,6 +171,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="newSeparator">The replacement directory separator character. Must be a valid directory separator.</param>
         /// <returns>The normalized path.</returns>
         /// <exception cref="ArgumentException">Thrown if the new separator character is not a directory separator.</exception>
+        [return: NotNullIfNotNull(nameof(path))]
         public static string? NormalizePath(this string? path, char newSeparator)
         {
             const char Bs = '\\';
@@ -184,7 +187,7 @@ namespace Emby.Server.Implementations.Library
                 return path;
             }
 
-            return newSeparator == Bs ? path?.Replace(Fs, newSeparator) : path?.Replace(Bs, newSeparator);
+            return newSeparator == Bs ? path.Replace(Fs, newSeparator) : path.Replace(Bs, newSeparator);
         }
     }
 }

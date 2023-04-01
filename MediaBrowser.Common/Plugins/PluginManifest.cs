@@ -24,7 +24,7 @@ namespace MediaBrowser.Common.Plugins
             Overview = string.Empty;
             TargetAbi = string.Empty;
             Version = string.Empty;
-            Assemblies = new List<string>();
+            Assemblies = Array.Empty<string>();
         }
 
         /// <summary>
@@ -112,6 +112,6 @@ namespace MediaBrowser.Common.Plugins
         /// Paths are considered relative to the plugin folder.
         /// </summary>
         [JsonPropertyName("assemblies")]
-        public IList<string> Assemblies { get; set; }
+        public IReadOnlyList<string> Assemblies { get; set; }
     }
 }
