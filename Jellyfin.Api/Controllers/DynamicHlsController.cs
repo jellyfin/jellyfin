@@ -20,7 +20,6 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
@@ -2030,8 +2029,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         {
             return fileSystem.GetFiles(folder, new[] { segmentExtension }, true, false)
                 .Where(i => Path.GetFileNameWithoutExtension(i.Name).StartsWith(filePrefix, StringComparison.OrdinalIgnoreCase))
-                .OrderByDescending(fileSystem.GetLastWriteTimeUtc)
-                .FirstOrDefault();
+                .MaxBy(fileSystem.GetLastWriteTimeUtc);
         }
         catch (IOException)
         {

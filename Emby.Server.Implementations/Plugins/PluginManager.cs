@@ -304,7 +304,7 @@ namespace Emby.Server.Implementations.Plugins
                 // If no version is given, return the current instance.
                 var plugins = _plugins.Where(p => p.Id.Equals(id)).ToList();
 
-                plugin = plugins.FirstOrDefault(p => p.Instance is not null) ?? plugins.OrderByDescending(p => p.Version).FirstOrDefault();
+                plugin = plugins.FirstOrDefault(p => p.Instance is not null) ?? plugins.MaxBy(p => p.Version);
             }
             else
             {
