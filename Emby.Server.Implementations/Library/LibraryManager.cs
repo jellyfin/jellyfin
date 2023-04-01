@@ -1879,7 +1879,7 @@ namespace Emby.Server.Implementations.Library
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Cannot get image dimensions for {ImagePath}", image.Path);
-                    size = new ImageDimensions(0, 0);
+                    size = default;
                     image.Width = 0;
                     image.Height = 0;
                 }

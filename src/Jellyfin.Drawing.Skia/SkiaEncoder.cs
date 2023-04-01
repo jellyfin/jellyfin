@@ -130,7 +130,7 @@ public class SkiaEncoder : IImageEncoder
                 // this exception is known to be thrown on vector images that define custom styles
                 // skia svg is not able to parse that and as the repository is quite stale and has not received updates we just catch them
                 _logger.LogDebug(skiaColorException, "There was a issue loading the requested svg file");
-                return new ImageDimensions(0, 0);
+                return default;
             }
         }
 
@@ -142,10 +142,10 @@ public class SkiaEncoder : IImageEncoder
                 return new ImageDimensions(info.Width, info.Height);
             case SKCodecResult.Unimplemented:
                 _logger.LogDebug("Image format not supported: {FilePath}", path);
-                return new ImageDimensions(0, 0);
+                return default;
             default:
                 _logger.LogError("Unable to determine image dimensions for {FilePath}: {SkCodecResult}", path, result);
-                return new ImageDimensions(0, 0);
+                return default;
         }
     }
 
