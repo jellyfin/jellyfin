@@ -25,7 +25,7 @@ namespace MediaBrowser.Controller.Collections
 
         public bool IsLocked { get; set; }
 
-        // private implementation of ProviderIds property from interface to allow setter access
+        // Private implementation of ProviderIds property from interface to allow setter access
         Dictionary<string, string> IHasProviderIds.ProviderIds
         {
             get => _providerIds;
