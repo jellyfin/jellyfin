@@ -105,7 +105,7 @@ namespace Emby.Server.Implementations.Library
                 return false;
             }
 
-            var newSubPathTrimmed = newSubPath.AsSpan().TrimEnd((char)newDirectorySeparatorChar!);
+            var newSubPathTrimmed = newSubPath.AsSpan().TrimEnd(newDirectorySeparatorChar);
             // Ensure that the path with the old subpath removed starts with a leading dir separator
             int idx = oldSubPathEndsWithSeparator ? subPath.Length - 1 : subPath.Length;
             newPath = string.Concat(newSubPathTrimmed, path.AsSpan(idx));
@@ -120,7 +120,7 @@ namespace Emby.Server.Implementations.Library
         /// <returns>The fully expanded, normalized path.</returns>
         public static string Canonicalize(this string path)
         {
-            return Path.GetFullPath(path).NormalizePath()!;
+            return Path.GetFullPath(path).NormalizePath();
         }
 
         /// <summary>
@@ -161,7 +161,7 @@ namespace Emby.Server.Implementations.Library
 
             separator = newSeparator;
 
-            return path?.NormalizePath(newSeparator);
+            return path.NormalizePath(newSeparator);
         }
 
         /// <summary>
