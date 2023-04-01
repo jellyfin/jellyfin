@@ -127,8 +127,8 @@ public class SkiaEncoder : IImageEncoder
             }
             catch (FormatException skiaColorException)
             {
-                // this exception is known to be thrown on vector images that define custom styles
-                // skia svg is not able to parse that and as the repository is quite stale and has not received updates we just catch them
+                // This exception is known to be thrown on vector images that define custom styles
+                // Skia SVG is not able to handle that and as the repository is quite stale and has not received updates we just catch them
                 _logger.LogDebug(skiaColorException, "There was a issue loading the requested svg file");
                 return default;
             }
