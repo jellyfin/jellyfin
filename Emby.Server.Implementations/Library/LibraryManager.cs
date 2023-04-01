@@ -1503,6 +1503,12 @@ namespace Emby.Server.Implementations.Library
                 });
 
                 query.TopParentIds = userViews.SelectMany(i => GetTopParentIdsForQuery(i, user)).ToArray();
+
+                // Prevent searching in all libraries due to empty filter
+                if (query.TopParentIds.Length == 0)
+                {
+                    query.TopParentIds = new[] { Guid.NewGuid() };
+                }
             }
         }
 
