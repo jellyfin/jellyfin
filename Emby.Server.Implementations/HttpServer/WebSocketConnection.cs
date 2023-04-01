@@ -98,7 +98,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         [PublishOperation(OperationId = "Publish", Summary = "From server to client")]
-        [Channel(nameof(WebSocketConnection), Servers = new[] { nameof(WebSocketConnection) })]
+        [Channel("/socket", Servers = new[] { "default" })]
         [Message(typeof(WebSocketMessage))]
         [Message(typeof(ActivityLogEntryMessage))]
         [Message(typeof(ForceKeepAliveMessage))]
@@ -140,7 +140,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         /// <inheritdoc />
         [SubscribeOperation(OperationId = "Subscribe", Summary = "From client to server")]
-        [Channel(nameof(WebSocketConnection), Servers = new[] { nameof(WebSocketConnection) })]
+        [Channel("/socket", Servers = new[] { "default" })]
         [Message(typeof(WebSocketMessage))]
         [Message(typeof(ActivityLogEntryStartMessage))]
         [Message(typeof(ActivityLogEntryStopMessage))]

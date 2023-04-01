@@ -275,7 +275,31 @@ namespace Jellyfin.Server.Extensions
                     Info = new Info(AsyncApiTitle, version),
                     Servers =
                     {
-                        [nameof(WebSocketConnection)] = new Saunter.AsyncApiSchema.v2.Server("localhost:8096", "wss")
+                        ["default"] = new Saunter.AsyncApiSchema.v2.Server("localhost:8096", "ws")
+                        {
+                            /*
+                             // TODO SecuritySchemes doesn't follow the spec properly...
+                            Security = new List<Dictionary<string, List<string>>>
+                            {
+                                new() { [AuthenticationSchemes.CustomAuthentication] = new() }
+                            }
+                            */
+                        }
+                    },
+                    Components =
+                    {
+                        /*
+                         // TODO SecuritySchemes doesn't follow the spec properly...
+                        SecuritySchemes = new Dictionary<string, SecurityScheme>
+                        {
+                            [AuthenticationSchemes.CustomAuthentication] = new(Saunter.AsyncApiSchema.v2.SecuritySchemeType.HttpApiKey)
+                            {
+                                Name = "api_key",
+                                In = "query",
+                                Description = "API key path parameter"
+                            }
+                        }
+                        */
                     }
                 };
 
