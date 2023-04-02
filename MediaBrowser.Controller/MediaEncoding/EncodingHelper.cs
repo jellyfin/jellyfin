@@ -842,38 +842,37 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 var filterDevArgs = GetFilterHwDeviceArgs(VaapiAlias);
+                var doOclTonemap = isHwTonemapAvailable && IsOpenclFullSupported();
 
-                if (isHwTonemapAvailable && IsOpenclFullSupported())
+                if (_mediaEncoder.IsVaapiDeviceInteliHD || _mediaEncoder.IsVaapiDeviceInteli965)
                 {
-                    if (_mediaEncoder.IsVaapiDeviceInteliHD || _mediaEncoder.IsVaapiDeviceInteli965)
+                    if (doOclTonemap && !isVaapiDecoder)
                     {
-                        if (!isVaapiDecoder)
-                        {
-                            args.Append(GetOpenclDeviceArgs(0, null, VaapiAlias, OpenclAlias));
-                            filterDevArgs = GetFilterHwDeviceArgs(OpenclAlias);
-                        }
-                    }
-                    else if (_mediaEncoder.IsVaapiDeviceAmd)
-                    {
-                        if (!IsVulkanFullSupported()
-                            || !_mediaEncoder.IsVaapiDeviceSupportVulkanFmtModifier
-                            || Environment.OSVersion.Version < _minKernelVersionAmdVkFmtModifier)
-                        {
-                            args.Append(GetOpenclDeviceArgs(0, "Advanced Micro Devices", null, OpenclAlias));
-                            filterDevArgs = GetFilterHwDeviceArgs(OpenclAlias);
-                        }
-                        else
-                        {
-                            // libplacebo wants an explicitly set vulkan filter device.
-                            args.Append(GetVulkanDeviceArgs(0, null, VaapiAlias, VulkanAlias));
-                            filterDevArgs = GetFilterHwDeviceArgs(VulkanAlias);
-                        }
-                    }
-                    else
-                    {
-                        args.Append(GetOpenclDeviceArgs(0, null, null, OpenclAlias));
+                        args.Append(GetOpenclDeviceArgs(0, null, VaapiAlias, OpenclAlias));
                         filterDevArgs = GetFilterHwDeviceArgs(OpenclAlias);
                     }
+                }
+                else if (_mediaEncoder.IsVaapiDeviceAmd)
+                {
+                    if (IsVulkanFullSupported()
+                        && _mediaEncoder.IsVaapiDeviceSupportVulkanFmtModifier
+                        && Environment.OSVersion.Version >= _minKernelVersionAmdVkFmtModifier)
+                    {
+                        // libplacebo wants an explicitly set vulkan filter device.
+                        args.Append(GetVulkanDeviceArgs(0, null, VaapiAlias, VulkanAlias));
+                        filterDevArgs = GetFilterHwDeviceArgs(VulkanAlias);
+                    }
+                    else if (doOclTonemap)
+                    {
+                        // ROCm/ROCr OpenCL runtime
+                        args.Append(GetOpenclDeviceArgs(0, "Advanced Micro Devices", null, OpenclAlias));
+                        filterDevArgs = GetFilterHwDeviceArgs(OpenclAlias);
+                    }
+                }
+                else if (doOclTonemap)
+                {
+                    args.Append(GetOpenclDeviceArgs(0, null, null, OpenclAlias));
+                    filterDevArgs = GetFilterHwDeviceArgs(OpenclAlias);
                 }
 
                 args.Append(filterDevArgs);
@@ -4269,7 +4268,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // sw => hw
                 if (doVkTonemap)
                 {
-                    mainFilters.Add("hwupload_vaapi");
+                    mainFilters.Add("hwupload=derive_device=vaapi");
+                    mainFilters.Add("format=vaapi");
                     mainFilters.Add("hwmap=derive_device=vulkan");
                     mainFilters.Add("format=vulkan");
                 }
@@ -4380,12 +4380,15 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     // prefer vaapi hwupload to vulkan hwupload,
                     // Mesa RADV does not support a dedicated transfer queue.
-                    subFilters.Add("hwupload_vaapi");
+                    subFilters.Add("hwupload=derive_device=vaapi");
+                    subFilters.Add("format=vaapi");
                     subFilters.Add("hwmap=derive_device=vulkan");
                     subFilters.Add("format=vulkan");
 
                     overlayFilters.Add("overlay_vulkan=eof_action=endall:shortest=1:repeatlast=0");
-                    overlayFilters.Add("scale_vulkan=format=nv12");
+
+                    // TODO: figure out why libplacebo can sync without vaSyncSurface VPP support in radeonsi.
+                    overlayFilters.Add("libplacebo=format=nv12:apply_filmgrain=0:apply_dolbyvision=0:upscaler=none:downscaler=none:dithering=none");
 
                     // OUTPUT vaapi(nv12/bgra) surface(vram)
                     // reverse-mapping via vaapi-vulkan interop.
