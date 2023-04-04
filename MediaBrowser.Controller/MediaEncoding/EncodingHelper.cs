@@ -896,6 +896,16 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 args.Append(GetQsvDeviceArgs(QsvAlias));
+
+                if (string.Equals(vidEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase) && options.EnableIntelLookAheadH264)
+                {
+                    args.Append(" -extra_hw_frames=" + options.IntelLookAheadDepthH264);
+                }
+                else if (string.Equals(vidEncoder, "hevc_qsv", StringComparison.OrdinalIgnoreCase) && options.EnableIntelLookAheadHevc)
+                {
+                    args.Append(" -extra_hw_frames=" + options.IntelLookAheadDepthHevc);
+                }
+
                 var filterDevArgs = GetFilterHwDeviceArgs(QsvAlias);
                 // child device used by qsv.
                 if (_mediaEncoder.SupportsHwaccel("vaapi") || _mediaEncoder.SupportsHwaccel("d3d11va"))
@@ -1543,7 +1553,61 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // Only h264_qsv has look_ahead option
                 if (string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase))
                 {
-                    param += " -look_ahead 0";
+                    if (encodingOptions.EnableIntelLookAheadH264)
+                    {
+                        param += $" -look_ahead 1 -look_ahead_depth {encodingOptions.IntelLookAheadDepthH264}";
+                    }
+                    else
+                    {
+                        param += " -look_ahead 0";
+                    }
+
+                    if (encodingOptions.EnableIntelExtBrcH264)
+                    {
+                        param += " -extbrc 1";
+                    }
+
+                    if (encodingOptions.EnableIntelBPyramidH264)
+                    {
+                        param += " -b_strategy 1";
+                    }
+
+                    if (encodingOptions.EnableIntelAdaptiveIBFramesH264)
+                    {
+                        param += " -adaptive_i 1 -adaptive_b 1";
+                    }
+
+                    if (encodingOptions.EnableIntelTrellisH264)
+                    {
+                        param += " -trellis 1";
+                    }
+                }
+                else if (string.Equals(videoEncoder, "hevc_qsv", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (encodingOptions.EnableIntelLookAheadHevc)
+                    {
+                        param += $" -look_ahead_depth {encodingOptions.IntelLookAheadDepthHevc}";
+                    }
+
+                    if (encodingOptions.EnableIntelExtBrcHevc)
+                    {
+                        param += " -extbrc 1";
+                    }
+
+                    if (encodingOptions.EnableIntelBPyramidHevc)
+                    {
+                        param += " -b_strategy 1";
+                    }
+
+                    if (encodingOptions.EnableIntelAdaptiveIBFramesHevc)
+                    {
+                        param += " -adaptive_i 1 -adaptive_b 1";
+                    }
+
+                    if (encodingOptions.EnableIntelTrellisHevc)
+                    {
+                        param += " -trellis 1";
+                    }
                 }
             }
             else if (string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase) // h264 (h264_nvenc)
@@ -3698,7 +3762,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     // qsv requires a fixed pool size.
                     // default to 64 otherwise it will fail on certain iGPU.
-                    subFilters.Add("hwupload=derive_device=qsv:extra_hw_frames=64");
+                    subFilters.Add($"hwupload=derive_device=qsv:extra_hw_frames={GetIntelExtraHwFrames(vidEncoder, options, 64)}");
 
                     var (overlayW, overlayH) = GetFixedOutputSize(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     var overlaySize = (overlayW.HasValue && overlayH.HasValue)
@@ -3805,7 +3869,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // allocate extra pool sizes for vaapi vpp
                 if (!string.IsNullOrEmpty(hwScaleFilter) && isVaapiDecoder)
                 {
-                    hwScaleFilter += ":extra_hw_frames=24";
+                    hwScaleFilter += $":extra_hw_frames={GetIntelExtraHwFrames(vidEncoder, options, 24)}";
                 }
 
                 // hw scale
@@ -3881,7 +3945,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     // OUTPUT qsv(nv12) surface(vram)
                     // reverse-mapping via qsv(vaapi)-opencl interop.
                     // add extra pool size to avoid the 'cannot allocate memory' error on hevc_qsv.
-                    mainFilters.Add("hwmap=derive_device=qsv:reverse=1:extra_hw_frames=16");
+                    mainFilters.Add($"hwmap=derive_device=qsv:reverse=1:extra_hw_frames={GetIntelExtraHwFrames(vidEncoder, options, 16)}");
                     mainFilters.Add("format=qsv");
                 }
                 else if (isVaapiDecoder)
@@ -3914,7 +3978,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     // qsv requires a fixed pool size.
                     // default to 64 otherwise it will fail on certain iGPU.
-                    subFilters.Add("hwupload=derive_device=qsv:extra_hw_frames=64");
+                    subFilters.Add($"hwupload=derive_device=qsv:extra_hw_frames={GetIntelExtraHwFrames(vidEncoder, options, 64)}");
 
                     var (overlayW, overlayH) = GetFixedOutputSize(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     var overlaySize = (overlayW.HasValue && overlayH.HasValue)
@@ -4087,7 +4151,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // allocate extra pool sizes for vaapi vpp
                 if (!string.IsNullOrEmpty(hwScaleFilter))
                 {
-                    hwScaleFilter += ":extra_hw_frames=24";
+                    hwScaleFilter += $":extra_hw_frames={GetIntelExtraHwFrames(vidEncoder, options, 24)}";
                 }
 
                 // hw scale
@@ -6105,6 +6169,20 @@ namespace MediaBrowser.Controller.MediaEncoding
         public static bool IsCopyCodec(string codec)
         {
             return string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase);
+        }
+
+        public int GetIntelExtraHwFrames(string vidEncoder, EncodingOptions options, int initialExtraHwFrames)
+        {
+            if (string.Equals(vidEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase) && options.EnableIntelLookAheadH264)
+            {
+                initialExtraHwFrames += options.IntelLookAheadDepthH264;
+            }
+            else if (string.Equals(vidEncoder, "hevc_qsv", StringComparison.OrdinalIgnoreCase) && options.EnableIntelLookAheadHevc)
+            {
+                initialExtraHwFrames += options.IntelLookAheadDepthHevc;
+            }
+
+            return initialExtraHwFrames;
         }
     }
 }

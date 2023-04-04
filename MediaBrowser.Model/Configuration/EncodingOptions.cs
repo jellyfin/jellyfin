@@ -44,7 +44,19 @@ public class EncodingOptions
         EnableEnhancedNvdecDecoder = true;
         PreferSystemNativeHwDecoder = true;
         EnableIntelLowPowerH264HwEncoder = false;
+        EnableIntelLookAheadH264 = false;
+        IntelLookAheadDepthH264 = 60;
+        EnableIntelExtBrcH264 = false;
+        EnableIntelBPyramidH264 = false;
+        EnableIntelAdaptiveIBFramesH264 = false;
+        EnableIntelTrellisH264 = false;
         EnableIntelLowPowerHevcHwEncoder = false;
+        EnableIntelLookAheadHevc = false;
+        IntelLookAheadDepthHevc = 60;
+        EnableIntelExtBrcHevc = false;
+        EnableIntelBPyramidHevc = false;
+        EnableIntelAdaptiveIBFramesHevc = false;
+        EnableIntelTrellisHevc = false;
         EnableHardwareEncoding = true;
         AllowHevcEncoding = false;
         EnableSubtitleExtraction = true;
@@ -223,9 +235,69 @@ public class EncodingOptions
     public bool EnableIntelLowPowerH264HwEncoder { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether LookAhead should be used for Intel H264 encoder.
+    /// </summary>
+    public bool EnableIntelLookAheadH264 { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating the number of frames that should be used for LookAhead with Intel H264 encoder.
+    /// </summary>
+    public int IntelLookAheadDepthH264 { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether ExtBrc should be used for Intel H264 encoder.
+    /// </summary>
+    public bool EnableIntelExtBrcH264 { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether B-Pyramid should be used for Intel H264 encoder.
+    /// </summary>
+    public bool EnableIntelBPyramidH264 { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether Adaptive I/B frames should be used for Intel H264 encoder.
+    /// </summary>
+    public bool EnableIntelAdaptiveIBFramesH264 { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether Trellis quantization should be used for Intel H264 encoder.
+    /// </summary>
+    public bool EnableIntelTrellisH264 { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether the Intel HEVC low-power hardware encoder should be used.
     /// </summary>
     public bool EnableIntelLowPowerHevcHwEncoder { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether LookAhead should be used for Intel HEVC encoder.
+    /// </summary>
+    public bool EnableIntelLookAheadHevc { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating the number of frames that should be used for LookAhead with Intel HEVC encoder.
+    /// </summary>
+    public int IntelLookAheadDepthHevc { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether ExtBrc should be used for Intel HEVC encoder.
+    /// </summary>
+    public bool EnableIntelExtBrcHevc { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether B-Pyramid should be used for Intel HEVC encoder.
+    /// </summary>
+    public bool EnableIntelBPyramidHevc { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether Adaptive I/B frames should be used for Intel HEVC encoder.
+    /// </summary>
+    public bool EnableIntelAdaptiveIBFramesHevc { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether Trellis quantization should be used for Intel HEVC encoder.
+    /// </summary>
+    public bool EnableIntelTrellisHevc { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether hardware encoding is enabled.
