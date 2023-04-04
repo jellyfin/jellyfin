@@ -62,14 +62,17 @@ namespace MediaBrowser.Controller.Providers
         public IReadOnlyList<string> GetFilePaths(string path)
             => GetFilePaths(path, false);
 
-        public IReadOnlyList<string> GetFilePaths(string path, bool clearCache, bool sort = false)
+        public IReadOnlyList<string> GetFilePaths(string path, bool clearCache, bool sort = false, bool recursive = false)
         {
             if (clearCache)
             {
                 _filePathCache.TryRemove(path, out _);
             }
 
-            var filePaths = _filePathCache.GetOrAdd(path, static (p, fileSystem) => fileSystem.GetFilePaths(p).ToList(), _fileSystem);
+            var filePaths = _filePathCache.GetOrAdd(
+                path,
+                static (p, options) => options.fileSystem.GetFilePaths(p, options.recursive).ToList(),
+                (fileSystem: _fileSystem, recursive));
 
             if (sort)
             {
