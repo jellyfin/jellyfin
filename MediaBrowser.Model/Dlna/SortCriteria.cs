@@ -9,7 +9,7 @@ namespace MediaBrowser.Model.Dlna
     {
         public SortCriteria(string sortOrder)
         {
-            if (!string.IsNullOrEmpty(sortOrder) && Enum.TryParse<SortOrder>(sortOrder, true, out var sortOrderValue))
+            if (Enum.TryParse<SortOrder>(sortOrder, true, out var sortOrderValue))
             {
                 SortOrder = sortOrderValue;
             }

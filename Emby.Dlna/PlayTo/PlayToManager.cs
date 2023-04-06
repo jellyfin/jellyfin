@@ -205,11 +205,10 @@ namespace Emby.Dlna.PlayTo
                     _userDataManager,
                     _localization,
                     _mediaSourceManager,
-                    _mediaEncoder);
+                    _mediaEncoder,
+                    device);
 
                 sessionInfo.AddController(controller);
-
-                controller.Init(device);
 
                 var profile = _dlnaManager.GetProfile(device.Properties.ToDeviceIdentification()) ??
                               _dlnaManager.GetDefaultProfile();

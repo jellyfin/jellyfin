@@ -42,8 +42,6 @@ namespace MediaBrowser.Controller.Drawing
 
         public IReadOnlyCollection<ImageFormat> SupportedOutputFormats { get; set; }
 
-        public bool AddPlayedIndicator { get; set; }
-
         public int? UnplayedCount { get; set; }
 
         public int? Blur { get; set; }
@@ -111,7 +109,6 @@ namespace MediaBrowser.Controller.Drawing
         {
             return (Quality >= 90) &&
                 IsFormatSupported(originalImagePath) &&
-                !AddPlayedIndicator &&
                 PercentPlayed.Equals(0) &&
                 !UnplayedCount.HasValue &&
                 !Blur.HasValue &&

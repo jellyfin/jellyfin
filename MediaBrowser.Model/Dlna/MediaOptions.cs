@@ -1,5 +1,3 @@
-#nullable disable
-
 using System;
 using MediaBrowser.Model.Dto;
 
@@ -59,22 +57,22 @@ namespace MediaBrowser.Model.Dlna
         /// <summary>
         /// Gets or sets the media sources.
         /// </summary>
-        public MediaSourceInfo[] MediaSources { get; set; }
+        public MediaSourceInfo[] MediaSources { get; set; } = Array.Empty<MediaSourceInfo>();
 
         /// <summary>
         /// Gets or sets the device profile.
         /// </summary>
-        public DeviceProfile Profile { get; set; }
+        required public DeviceProfile Profile { get; set; }
 
         /// <summary>
         /// Gets or sets a media source id. Optional. Only needed if a specific AudioStreamIndex or SubtitleStreamIndex are requested.
         /// </summary>
-        public string MediaSourceId { get; set; }
+        public string? MediaSourceId { get; set; }
 
         /// <summary>
         /// Gets or sets the device id.
         /// </summary>
-        public string DeviceId { get; set; }
+        public string? DeviceId { get; set; }
 
         /// <summary>
         /// Gets or sets an override of supported number of audio channels

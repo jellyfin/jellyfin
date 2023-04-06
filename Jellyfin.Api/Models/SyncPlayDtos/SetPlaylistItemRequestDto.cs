@@ -1,24 +1,23 @@
 using System;
 
-namespace Jellyfin.Api.Models.SyncPlayDtos
+namespace Jellyfin.Api.Models.SyncPlayDtos;
+
+/// <summary>
+/// Class SetPlaylistItemRequestDto.
+/// </summary>
+public class SetPlaylistItemRequestDto
 {
     /// <summary>
-    /// Class SetPlaylistItemRequestDto.
+    /// Initializes a new instance of the <see cref="SetPlaylistItemRequestDto"/> class.
     /// </summary>
-    public class SetPlaylistItemRequestDto
+    public SetPlaylistItemRequestDto()
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SetPlaylistItemRequestDto"/> class.
-        /// </summary>
-        public SetPlaylistItemRequestDto()
-        {
-            PlaylistItemId = Guid.Empty;
-        }
-
-        /// <summary>
-        /// Gets or sets the playlist identifier of the playing item.
-        /// </summary>
-        /// <value>The playlist identifier of the playing item.</value>
-        public Guid PlaylistItemId { get; set; }
+        PlaylistItemId = Guid.Empty;
     }
+
+    /// <summary>
+    /// Gets or sets the playlist identifier of the playing item.
+    /// </summary>
+    /// <value>The playlist identifier of the playing item.</value>
+    public Guid PlaylistItemId { get; set; }
 }

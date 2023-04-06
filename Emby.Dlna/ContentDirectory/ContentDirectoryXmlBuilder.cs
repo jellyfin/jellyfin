@@ -27,7 +27,7 @@ namespace Emby.Dlna.ContentDirectory
         /// <returns>The <see cref="IEnumerable{StateVariable}"/>.</returns>
         private static IEnumerable<StateVariable> GetStateVariables()
         {
-            var list = new List<StateVariable>
+            return new StateVariable[]
             {
                 new StateVariable
                 {
@@ -154,8 +154,6 @@ namespace Emby.Dlna.ContentDirectory
                     SendsEvents = false
                 }
             };
-
-            return list;
         }
     }
 }

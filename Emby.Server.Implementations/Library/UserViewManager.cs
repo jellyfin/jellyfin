@@ -111,10 +111,10 @@ namespace Emby.Server.Implementations.Library
 
             if (query.IncludeExternalContent)
             {
-                var channelResult = _channelManager.GetChannelsInternal(new ChannelQuery
+                var channelResult = _channelManager.GetChannelsInternalAsync(new ChannelQuery
                 {
                     UserId = query.UserId
-                });
+                }).GetAwaiter().GetResult();
 
                 var channels = channelResult.Items;
 
@@ -286,7 +286,7 @@ namespace Emby.Server.Implementations.Library
 
             if (parents.Count == 0)
             {
-                return new List<BaseItem>();
+                return Array.Empty<BaseItem>();
             }
 
             if (includeItemTypes.Length == 0)

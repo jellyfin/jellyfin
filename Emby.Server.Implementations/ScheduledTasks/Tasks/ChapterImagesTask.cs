@@ -100,7 +100,6 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
                     EnableImages = false
                 },
                 SourceTypes = new SourceType[] { SourceType.Library },
-                HasChapterImages = false,
                 IsVirtualItem = false
             })
                 .OfType<Video>()

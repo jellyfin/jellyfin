@@ -284,12 +284,12 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (OperationCanceledException)
             {
-                return new List<RemoteImageInfo>();
+                return Enumerable.Empty<RemoteImageInfo>();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "{ProviderName} failed in GetImageInfos for type {ItemType} at {ItemPath}", provider.GetType().Name, item.GetType().Name, item.Path);
-                return new List<RemoteImageInfo>();
+                return Enumerable.Empty<RemoteImageInfo>();
             }
         }
 
@@ -400,12 +400,6 @@ namespace MediaBrowser.Providers.Manager
             bool forceEnableInternetMetadata)
         {
             if (!item.SupportsLocalMetadata && provider is ILocalMetadataProvider)
-            {
-                return false;
-            }
-
-            // Prevent owned items from reading the same local metadata file as their owner
-            if (!item.OwnerId.Equals(default) && provider is ILocalMetadataProvider)
             {
                 return false;
             }
@@ -910,19 +904,34 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public void OnRefreshStart(BaseItem item)
         {
-            _logger.LogDebug("OnRefreshStart {Item}", item.Id.ToString("N", CultureInfo.InvariantCulture));
+            _logger.LogDebug("OnRefreshStart {Item:N}", item.Id);
             _activeRefreshes[item.Id] = 0;
-            RefreshStarted?.Invoke(this, new GenericEventArgs<BaseItem>(item));
+            try
+            {
+                RefreshStarted?.Invoke(this, new GenericEventArgs<BaseItem>(item));
+            }
+            catch (Exception ex)
+            {
+                // EventHandlers should never propagate exceptions, but we have little control over plugins...
+                _logger.LogError(ex, "Invoking {RefreshEvent} event handlers failed", nameof(RefreshStarted));
+            }
         }
 
         /// <inheritdoc/>
         public void OnRefreshComplete(BaseItem item)
         {
-            _logger.LogDebug("OnRefreshComplete {Item}", item.Id.ToString("N", CultureInfo.InvariantCulture));
+            _logger.LogDebug("OnRefreshComplete {Item:N}", item.Id);
+            _activeRefreshes.TryRemove(item.Id, out _);
 
-            _activeRefreshes.Remove(item.Id, out _);
-
-            RefreshCompleted?.Invoke(this, new GenericEventArgs<BaseItem>(item));
+            try
+            {
+                RefreshCompleted?.Invoke(this, new GenericEventArgs<BaseItem>(item));
+            }
+            catch (Exception ex)
+            {
+                // EventHandlers should never propagate exceptions, but we have little control over plugins...
+                _logger.LogError(ex, "Invoking {RefreshEvent} event handlers failed", nameof(RefreshCompleted));
+            }
         }
 
         /// <inheritdoc/>
@@ -940,12 +949,12 @@ namespace MediaBrowser.Providers.Manager
         public void OnRefreshProgress(BaseItem item, double progress)
         {
             var id = item.Id;
-            _logger.LogDebug("OnRefreshProgress {Id} {Progress}", id.ToString("N", CultureInfo.InvariantCulture), progress);
+            _logger.LogDebug("OnRefreshProgress {Id:N} {Progress}", id, progress);
 
             // TODO: Need to hunt down the conditions for this happening
             _activeRefreshes.AddOrUpdate(
                 id,
-                (_) => throw new InvalidOperationException(
+                _ => throw new InvalidOperationException(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         "Cannot update refresh progress of item '{0}' ({1}) because a refresh for this item is not running",
@@ -953,7 +962,15 @@ namespace MediaBrowser.Providers.Manager
                         item.Id.ToString("N", CultureInfo.InvariantCulture))),
                 (_, _) => progress);
 
-            RefreshProgress?.Invoke(this, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(item, progress)));
+            try
+            {
+                RefreshProgress?.Invoke(this, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(item, progress)));
+            }
+            catch (Exception ex)
+            {
+                // EventHandlers should never propagate exceptions, but we have little control over plugins...
+                _logger.LogError(ex, "Invoking {RefreshEvent} event handlers failed", nameof(RefreshProgress));
+            }
         }
 
         /// <inheritdoc/>

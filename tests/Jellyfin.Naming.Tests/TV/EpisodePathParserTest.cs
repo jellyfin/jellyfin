@@ -30,6 +30,7 @@ namespace Jellyfin.Naming.Tests.TV
         [InlineData("/Season 02/Elementary - 02x03-E15 - Ep Name.mp4", false, "Elementary", 2, 3)]
         [InlineData("/Season 1/Elementary - S01E23-E24-E26 - The Woman.mp4", false, "Elementary", 1, 23)]
         [InlineData("/The Wonder Years/The.Wonder.Years.S04.PDTV.x264-JCH/The Wonder Years s04e07 Christmas Party NTSC PDTV.avi", false, "The Wonder Years", 4, 7)]
+        [InlineData("/The.Sopranos/Season 3/The Sopranos Season 3 Episode 09 - The Telltale Moozadell.avi", false, "The Sopranos", 3, 9)]
         // TODO: [InlineData("/Castle Rock 2x01 Que el rio siga su curso [WEB-DL HULU 1080p h264 Dual DD5.1 Subs].mkv", "Castle Rock", 2, 1)]
         // TODO: [InlineData("/After Life 1x06 Episodio 6 [WEB-DL NF 1080p h264 Dual DD 5.1 Sub].mkv", "After Life", 1, 6)]
         // TODO: [InlineData("/Season 4/Uchuu.Senkan.Yamato.2199.E03.avi", "Uchuu Senkan Yamoto 2199", 4, 3)]
