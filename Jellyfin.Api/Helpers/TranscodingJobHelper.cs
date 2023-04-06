@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using AsyncKeyedLock;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Models.PlaybackDtos;
 using Jellyfin.Api.Models.StreamingDtos;
@@ -42,11 +43,7 @@ public class TranscodingJobHelper : IDisposable
     /// <summary>
     /// The transcoding locks.
     /// </summary>
-    private static readonly AsyncKeyedLocker<string> _asyncKeyedLocker = new(o =>
-    {
-        o.PoolSize = 20;
-        o.PoolInitialFill = 1;
-    });
+    private static readonly AsyncKeyedLocker<string> _asyncKeyedLocker = MediaBrowser.Common.Concurrency.AsyncKeyedLock.Locker;
 
     private readonly IAttachmentExtractor _attachmentExtractor;
     private readonly IApplicationPaths _appPaths;

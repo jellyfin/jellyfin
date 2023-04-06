@@ -1532,7 +1532,6 @@ public class DynamicHlsController : BaseJellyfinApiController
             }
         }
 
-
         _logger.LogDebug("returning {0} [general case]", segmentPath);
         job ??= _transcodingJobHelper.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
         return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);

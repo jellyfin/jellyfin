@@ -600,11 +600,7 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<ISubtitleParser, SubtitleEditParser>();
             serviceCollection.AddSingleton<ISubtitleEncoder, SubtitleEncoder>();
-            serviceCollection.AddSingleton(new AsyncKeyedLocker<string>(o =>
-            {
-                o.PoolSize = 20;
-                o.PoolInitialFill = 1;
-            }));
+            serviceCollection.AddSingleton(MediaBrowser.Common.Concurrency.AsyncKeyedLock.Locker);
 
             serviceCollection.AddSingleton<IAttachmentExtractor, MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor>();
 
