@@ -138,14 +138,10 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (!string.IsNullOrEmpty(hwType)
                     && encodingOptions.EnableHardwareEncoding
-                    && codecMap.ContainsKey(hwType))
+                    && codecMap.TryGetValue(hwType, out var preferredEncoder)
+                    && _mediaEncoder.SupportsEncoder(preferredEncoder))
                 {
-                    var preferredEncoder = codecMap[hwType];
-
-                    if (_mediaEncoder.SupportsEncoder(preferredEncoder))
-                    {
-                        return preferredEncoder;
-                    }
+                    return preferredEncoder;
                 }
             }
 
