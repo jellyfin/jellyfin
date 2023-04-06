@@ -483,8 +483,7 @@ namespace Rssdp.Infrastructure
                 }
             }
 
-            Uri retVal;
-            Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out retVal);
+            Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out var retVal);
             return retVal;
         }
 
@@ -501,8 +500,7 @@ namespace Rssdp.Infrastructure
                 }
             }
 
-            Uri retVal;
-            Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out retVal);
+            Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out var retVal);
             return retVal;
         }
 
