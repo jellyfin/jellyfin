@@ -882,10 +882,7 @@ namespace MediaBrowser.Providers.Manager
                 var key = providerId.Key;
 
                 // Don't replace existing Id's.
-                if (!lookupInfo.ProviderIds.ContainsKey(key))
-                {
-                    lookupInfo.ProviderIds[key] = providerId.Value;
-                }
+                lookupInfo.ProviderIds.TryAdd(key, providerId.Value);
             }
         }
 

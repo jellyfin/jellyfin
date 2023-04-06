@@ -780,10 +780,7 @@ namespace MediaBrowser.Providers.Manager
                         {
                             foreach (var providerId in result.ProviderIds)
                             {
-                                if (!existingMatch.ProviderIds.ContainsKey(providerId.Key))
-                                {
-                                    existingMatch.ProviderIds.Add(providerId.Key, providerId.Value);
-                                }
+                                existingMatch.ProviderIds.TryAdd(providerId.Key, providerId.Value);
                             }
 
                             if (string.IsNullOrWhiteSpace(existingMatch.ImageUrl))
