@@ -449,7 +449,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 {
                     try
                     {
-                        _logger.LogInformation("Deleting converted subtitle due to failure: ", outputPath);
+                        _logger.LogInformation("Deleting converted subtitle due to failure: {Path}", outputPath);
                         _fileSystem.DeleteFile(outputPath);
                     }
                     catch (IOException ex)
