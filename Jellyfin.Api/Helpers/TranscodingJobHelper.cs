@@ -42,7 +42,11 @@ public class TranscodingJobHelper : IDisposable
     /// <summary>
     /// The transcoding locks.
     /// </summary>
-    private static readonly Dictionary<string, SemaphoreSlim> _transcodingLocks = new Dictionary<string, SemaphoreSlim>();
+    private static readonly AsyncKeyedLocker<string> _asyncKeyedLocker = new(o =>
+    {
+        o.PoolSize = 20;
+        o.PoolInitialFill = 1;
+    });
 
     private readonly IAttachmentExtractor _attachmentExtractor;
     private readonly IApplicationPaths _appPaths;
@@ -282,11 +286,6 @@ public class TranscodingJobHelper : IDisposable
             {
                 job.CancellationTokenSource.Cancel();
             }
-        }
-
-        lock (_transcodingLocks)
-        {
-            _transcodingLocks.Remove(job.Path!);
         }
 
         lock (job.ProcessLock!)
@@ -759,11 +758,6 @@ public class TranscodingJobHelper : IDisposable
             }
         }
 
-        lock (_transcodingLocks)
-        {
-            _transcodingLocks.Remove(path);
-        }
-
         if (!string.IsNullOrWhiteSpace(state.Request.DeviceId))
         {
             _sessionManager.ClearTranscodingInfo(state.Request.DeviceId);
@@ -856,22 +850,14 @@ public class TranscodingJobHelper : IDisposable
     }
 
     /// <summary>
-    /// Gets the transcoding lock.
+    /// Transcoding lock.
     /// </summary>
     /// <param name="outputPath">The output path of the transcoded file.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A <see cref="SemaphoreSlim"/>.</returns>
-    public SemaphoreSlim GetTranscodingLock(string outputPath)
+    public ValueTask<IDisposable> LockAsync(string outputPath, CancellationToken cancellationToken)
     {
-        lock (_transcodingLocks)
-        {
-            if (!_transcodingLocks.TryGetValue(outputPath, out SemaphoreSlim? result))
-            {
-                result = new SemaphoreSlim(1, 1);
-                _transcodingLocks[outputPath] = result;
-            }
-
-            return result;
-        }
+        return _asyncKeyedLocker.LockAsync(outputPath, cancellationToken);
     }
 
     private void OnPlaybackProgress(object? sender, PlaybackProgressEventArgs e)
