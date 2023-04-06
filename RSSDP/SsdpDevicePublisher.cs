@@ -571,10 +571,8 @@ namespace Rssdp.Infrastructure
             {
                 return nonzeroCacheLifetimesQuery.Min();
             }
-            else
-            {
-                return TimeSpan.Zero;
-            }
+
+            return TimeSpan.Zero;
         }
 
         private string GetFirstHeaderValue(System.Net.Http.Headers.HttpRequestHeaders httpRequestHeaders, string headerName)

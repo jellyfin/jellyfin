@@ -1309,7 +1309,8 @@ namespace Emby.Server.Implementations.Data
                 {
                     return false;
                 }
-                else if (type == typeof(UserRootFolder))
+
+                if (type == typeof(UserRootFolder))
                 {
                     return false;
                 }
@@ -1319,55 +1320,68 @@ namespace Emby.Server.Implementations.Data
             {
                 return false;
             }
-            else if (type == typeof(MusicArtist))
+
+            if (type == typeof(MusicArtist))
             {
                 return false;
             }
-            else if (type == typeof(Person))
+
+            if (type == typeof(Person))
             {
                 return false;
             }
-            else if (type == typeof(MusicGenre))
+
+            if (type == typeof(MusicGenre))
             {
                 return false;
             }
-            else if (type == typeof(Genre))
+
+            if (type == typeof(Genre))
             {
                 return false;
             }
-            else if (type == typeof(Studio))
+
+            if (type == typeof(Studio))
             {
                 return false;
             }
-            else if (type == typeof(PlaylistsFolder))
+
+            if (type == typeof(PlaylistsFolder))
             {
                 return false;
             }
-            else if (type == typeof(PhotoAlbum))
+
+            if (type == typeof(PhotoAlbum))
             {
                 return false;
             }
-            else if (type == typeof(Year))
+
+            if (type == typeof(Year))
             {
                 return false;
             }
-            else if (type == typeof(Book))
+
+            if (type == typeof(Book))
             {
                 return false;
             }
-            else if (type == typeof(LiveTvProgram))
+
+            if (type == typeof(LiveTvProgram))
             {
                 return false;
             }
-            else if (type == typeof(AudioBook))
+
+            if (type == typeof(AudioBook))
             {
                 return false;
             }
-            else if (type == typeof(Audio))
+
+            if (type == typeof(Audio))
             {
                 return false;
             }
-            else if (type == typeof(MusicAlbum))
+
+            if (type == typeof(MusicAlbum))
             {
                 return false;
             }

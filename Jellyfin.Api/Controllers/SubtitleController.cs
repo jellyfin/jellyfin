@@ -533,10 +533,8 @@ public class SubtitleController : BaseJellyfinApiController
                 _logger.LogDebug("Fallback font size is {FileSize} Bytes", fileSize);
                 return PhysicalFile(fontFile.FullName, MimeTypes.GetMimeType(fontFile.FullName));
             }
-            else
-            {
-                _logger.LogWarning("The selected font is null or empty");
-            }
+
+            _logger.LogWarning("The selected font is null or empty");
         }
         else
         {
