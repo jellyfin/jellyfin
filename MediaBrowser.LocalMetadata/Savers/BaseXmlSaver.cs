@@ -375,7 +375,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                     await writer.WriteStartElementAsync(null, "Person", null).ConfigureAwait(false);
                     await writer.WriteElementStringAsync(null, "Name", null, person.Name).ConfigureAwait(false);
                     await writer.WriteElementStringAsync(null, "Type", null, person.Type.ToString()).ConfigureAwait(false);
-                    await writer.WriteElementStringAsync(null, "Role", null, person.Role.ToString()).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "Role", null, person.Role).ConfigureAwait(false);
 
                     if (person.SortOrder.HasValue)
                     {

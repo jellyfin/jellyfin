@@ -644,7 +644,7 @@ namespace Rssdp.Infrastructure
 
             public string Key
             {
-                get { return this.SearchTarget + ":" + this.EndPoint.ToString(); }
+                get { return this.SearchTarget + ":" + this.EndPoint; }
             }
 
             public bool IsOld()
