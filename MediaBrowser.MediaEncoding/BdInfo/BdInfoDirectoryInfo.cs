@@ -104,7 +104,7 @@ public class BdInfoDirectoryInfo : IDirectoryInfo
                 _impl.FullName,
                 new[] { searchPattern },
                 false,
-                (searchOption & SearchOption.AllDirectories) == SearchOption.AllDirectories)
+                searchOption == SearchOption.AllDirectories)
             .Select(x => new BdInfoFileInfo(x))
             .ToArray();
     }
