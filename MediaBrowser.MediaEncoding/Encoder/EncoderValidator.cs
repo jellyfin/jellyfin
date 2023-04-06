@@ -491,7 +491,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var found = Regex
                 .Matches(output, @"^\s\S{6}\s(?<codec>[\w|-]+)\s+.+$", RegexOptions.Multiline)
-                .Cast<Match>()
                 .Select(x => x.Groups["codec"].Value)
                 .Where(x => required.Contains(x));
 
@@ -520,7 +519,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var found = Regex
                 .Matches(output, @"^\s\S{3}\s(?<filter>[\w|-]+)\s+.+$", RegexOptions.Multiline)
-                .Cast<Match>()
                 .Select(x => x.Groups["filter"].Value)
                 .Where(x => _requiredFilters.Contains(x));
 
