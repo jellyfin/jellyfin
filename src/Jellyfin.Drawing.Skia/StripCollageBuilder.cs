@@ -23,7 +23,7 @@ public partial class StripCollageBuilder
         _skiaEncoder = skiaEncoder;
     }
 
-    [GeneratedRegex("(/s{IsArabic}||/s{IsArmenian}||/s{IsHebrew}||/s{IsSyriac}||/s{IsThaana})+", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"\s{IsArabic}|\s{IsArmenian}|\s{IsHebrew}|\s{IsSyriac}|\s{IsThaana}", RegexOptions.IgnoreCase)]
     private static partial Regex IsRtlTextRegex();
 
     /// <summary>
