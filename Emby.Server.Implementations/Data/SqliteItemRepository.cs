@@ -2392,6 +2392,7 @@ namespace Emby.Server.Implementations.Data
 
                 // genres, tags, studios, person, year?
                 builder.Append("+ (Select count(1) * 10 from ItemValues where ItemId=Guid and CleanValue in (select CleanValue from ItemValues where ItemId=@SimilarItemId))");
+                builder.Append("+ (Select count(1) * 10 from People where ItemId=Guid and Name in (select Name from People where ItemId=@SimilarItemId))");
 
                 if (item is MusicArtist)
                 {
