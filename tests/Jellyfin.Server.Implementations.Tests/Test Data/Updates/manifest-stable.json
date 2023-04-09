@@ -13,8 +13,7 @@
                 "targetAbi": "10.6.0.0",
                 "sourceUrl": "https://repo.jellyfin.org/releases/plugin/anime/anime_10.0.0.0.zip",
                 "checksum": "93e969adeba1050423fc8817ed3c36f8",
-                "timestamp": "2020-08-17T01:41:13Z",
-                "assemblies": [ "Jellyfin.Plugin.Anime.dll" ]
+                "timestamp": "2020-08-17T01:41:13Z"
             },
             {
                 "version": "9.0.0.0",
@@ -22,8 +21,7 @@
                 "targetAbi": "10.6.0.0",
                 "sourceUrl": "https://repo.jellyfin.org/releases/plugin/anime/anime_9.0.0.0.zip",
                 "checksum": "9b1cebff835813e15f414f44b40c41c8",
-                "timestamp": "2020-07-20T01:30:16Z",
-                "assemblies": [ "Jellyfin.Plugin.Anime.dll" ]
+                "timestamp": "2020-07-20T01:30:16Z"
             }
         ]
     },

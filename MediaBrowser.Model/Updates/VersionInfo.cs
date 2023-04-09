@@ -75,11 +75,5 @@ namespace MediaBrowser.Model.Updates
         /// </summary>
         [JsonPropertyName("repositoryUrl")]
         public string RepositoryUrl { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the assemblies whitelist for this version.
-        /// </summary>
-        [JsonPropertyName("assemblies")]
-        public IReadOnlyList<string> Assemblies { get; set; } = Array.Empty<string>();
     }
 }

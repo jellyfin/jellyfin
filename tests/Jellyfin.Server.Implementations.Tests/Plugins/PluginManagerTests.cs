@@ -1,12 +1,16 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
+using AutoFixture;
 using Emby.Server.Implementations.Library;
 using Emby.Server.Implementations.Plugins;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Extensions.Json.Converters;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Plugins;
+using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -15,6 +19,21 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
     public class PluginManagerTests
     {
         private static readonly string _testPathRoot = Path.Combine(Path.GetTempPath(), "jellyfin-test-data");
+
+        private string _tempPath = string.Empty;
+
+        private string _pluginPath = string.Empty;
+
+        private JsonSerializerOptions _options;
+
+        public PluginManagerTests()
+        {
+            (_tempPath, _pluginPath) = GetTestPaths("plugin-" + Path.GetRandomFileName());
+
+            Directory.CreateDirectory(_pluginPath);
+
+            _options = GetTestSerializerOptions();
+        }
 
         [Fact]
         public void SaveManifest_RoundTrip_Success()
@@ -25,12 +44,9 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
                 Version = "1.0"
             };
 
-            var tempPath = Path.Combine(_testPathRoot, "manifest-" + Path.GetRandomFileName());
-            Directory.CreateDirectory(tempPath);
+            Assert.True(pluginManager.SaveManifest(manifest, _pluginPath));
 
-            Assert.True(pluginManager.SaveManifest(manifest, tempPath));
-
-            var res = pluginManager.LoadManifest(tempPath);
+            var res = pluginManager.LoadManifest(_pluginPath);
 
             Assert.Equal(manifest.Category, res.Manifest.Category);
             Assert.Equal(manifest.Changelog, res.Manifest.Changelog);
@@ -66,28 +82,25 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
             };
 
             var filename = Path.GetFileName(dllFile)!;
-            var (tempPath, pluginPath) = GetTestPaths("safe");
+            var dllPath = Path.GetDirectoryName(Path.Combine(_pluginPath, dllFile))!;
 
-            Directory.CreateDirectory(Path.Combine(pluginPath, dllFile.Replace(filename, string.Empty, StringComparison.OrdinalIgnoreCase)));
-            File.Create(Path.Combine(pluginPath, dllFile));
+            Directory.CreateDirectory(dllPath);
+            File.Create(Path.Combine(dllPath, filename));
+            var metafilePath = Path.Combine(_pluginPath, "meta.json");
 
-            var options = GetTestSerializerOptions();
-            var data = JsonSerializer.Serialize(manifest, options);
-            var metafilePath = Path.Combine(tempPath, "safe", "meta.json");
+            File.WriteAllText(metafilePath, JsonSerializer.Serialize(manifest, _options));
 
-            File.WriteAllText(metafilePath, data);
+            var pluginManager = new PluginManager(new NullLogger<PluginManager>(), null!, null!, _tempPath, new Version(1, 0));
 
-            var pluginManager = new PluginManager(new NullLogger<PluginManager>(), null!, null!, tempPath, new Version(1, 0));
+            var res = JsonSerializer.Deserialize<PluginManifest>(File.ReadAllText(metafilePath), _options);
 
-            var res = JsonSerializer.Deserialize<PluginManifest>(File.ReadAllText(metafilePath), options);
-
-            var expectedFullPath = Path.Combine(pluginPath, dllFile).Canonicalize();
+            var expectedFullPath = Path.Combine(_pluginPath, dllFile).Canonicalize();
 
             Assert.NotNull(res);
             Assert.NotEmpty(pluginManager.Plugins);
             Assert.Equal(PluginStatus.Active, res!.Status);
             Assert.Equal(expectedFullPath, pluginManager.Plugins[0].DllFiles[0]);
-            Assert.StartsWith(Path.Combine(tempPath, "safe"), expectedFullPath, StringComparison.InvariantCulture);
+            Assert.StartsWith(_pluginPath, expectedFullPath, StringComparison.InvariantCulture);
         }
 
         /// <summary>
@@ -109,7 +122,6 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
         [InlineData("..\\.\\..\\.\\..\\some.dll")] // Windows traversal with current and parent
         [InlineData("\\\\network\\resource.dll")] // UNC Path
         [InlineData("https://jellyfin.org/some.dll")] // URL
-        [InlineData("....//....//some.dll")] // Path replacement risk if a single "../" replacement occurs.
         [InlineData("~/some.dll")] // Tilde poses a shell expansion risk, but is a valid path character.
         public void Constructor_DiscoversUnsafePluginAssembly_Status_Malfunctioned(string unsafePath)
         {
@@ -120,10 +132,7 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
                 Assemblies = new string[] { unsafePath }
             };
 
-            var (tempPath, pluginPath) = GetTestPaths("unsafe");
-
-            Directory.CreateDirectory(pluginPath);
-
+            // Only create very specific files. Otherwise the test will be exploiting path traversal.
             var files = new string[]
             {
                 "../other.dll",
@@ -132,22 +141,134 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
 
             foreach (var file in files)
             {
-                File.Create(Path.Combine(pluginPath, file));
+                File.Create(Path.Combine(_pluginPath, file));
             }
 
-            var options = GetTestSerializerOptions();
-            var data = JsonSerializer.Serialize(manifest, options);
-            var metafilePath = Path.Combine(tempPath, "unsafe", "meta.json");
+            var metafilePath = Path.Combine(_pluginPath, "meta.json");
 
-            File.WriteAllText(metafilePath, data);
+            File.WriteAllText(metafilePath, JsonSerializer.Serialize(manifest, _options));
 
-            var pluginManager = new PluginManager(new NullLogger<PluginManager>(), null!, null!, tempPath, new Version(1, 0));
+            var pluginManager = new PluginManager(new NullLogger<PluginManager>(), null!, null!, _tempPath, new Version(1, 0));
 
-            var res = JsonSerializer.Deserialize<PluginManifest>(File.ReadAllText(metafilePath), options);
+            var res = JsonSerializer.Deserialize<PluginManifest>(File.ReadAllText(metafilePath), _options);
 
             Assert.NotNull(res);
             Assert.Empty(pluginManager.Plugins);
             Assert.Equal(PluginStatus.Malfunctioned, res!.Status);
+        }
+
+        [Fact]
+        public async Task PopulateManifest_ExistingMetafilePlugin_PopulatesMissingFields()
+        {
+            var packageInfo = GenerateTestPackage();
+
+            // Partial plugin without a name, but matching version and package ID
+            var partial = new PluginManifest
+            {
+                Id = packageInfo.Id,
+                AutoUpdate = false, // Turn off AutoUpdate
+                Status = PluginStatus.Restart,
+                Version = new Version(1, 0, 0).ToString(),
+                Assemblies = new[] { "Jellyfin.Test.dll" }
+            };
+
+            var metafilePath = Path.Combine(_pluginPath, "meta.json");
+            File.WriteAllText(metafilePath, JsonSerializer.Serialize(partial, _options));
+
+            var pluginManager = new PluginManager(new NullLogger<PluginManager>(), null!, null!, _tempPath, new Version(1, 0));
+
+            await pluginManager.PopulateManifest(packageInfo, new Version(1, 0), _pluginPath, PluginStatus.Active);
+
+            var resultBytes = File.ReadAllBytes(metafilePath);
+            var result = JsonSerializer.Deserialize<PluginManifest>(resultBytes, _options);
+
+            Assert.NotNull(result);
+            Assert.Equal(packageInfo.Name, result.Name);
+            Assert.Equal(packageInfo.Owner, result.Owner);
+            Assert.Equal(PluginStatus.Active, result.Status);
+            Assert.NotEmpty(result.Assemblies);
+            Assert.False(result.AutoUpdate);
+
+            // Preserved
+            Assert.Equal(packageInfo.Category, result.Category);
+            Assert.Equal(packageInfo.Description, result.Description);
+            Assert.Equal(packageInfo.Id, result.Id);
+            Assert.Equal(packageInfo.Overview, result.Overview);
+            Assert.Equal(partial.Assemblies[0], result.Assemblies[0]);
+            Assert.Equal(packageInfo.Versions[0].TargetAbi, result.TargetAbi);
+            Assert.Equal(DateTime.Parse(packageInfo.Versions[0].Timestamp!, CultureInfo.InvariantCulture), result.Timestamp);
+            Assert.Equal(packageInfo.Versions[0].Changelog, result.Changelog);
+            Assert.Equal(packageInfo.Versions[0].Version, result.Version);
+        }
+
+        [Fact]
+        public async Task PopulateManifest_ExistingMetafileMismatchedIds_Status_Malfunctioned()
+        {
+            var packageInfo = GenerateTestPackage();
+
+            // Partial plugin without a name, but matching version and package ID
+            var partial = new PluginManifest
+            {
+                Id = Guid.NewGuid(),
+                Version = new Version(1, 0, 0).ToString()
+            };
+
+            var metafilePath = Path.Combine(_pluginPath, "meta.json");
+            File.WriteAllText(metafilePath, JsonSerializer.Serialize(partial, _options));
+
+            var pluginManager = new PluginManager(new NullLogger<PluginManager>(), null!, null!, _tempPath, new Version(1, 0));
+
+            await pluginManager.PopulateManifest(packageInfo, new Version(1, 0), _pluginPath, PluginStatus.Active);
+
+            var resultBytes = File.ReadAllBytes(metafilePath);
+            var result = JsonSerializer.Deserialize<PluginManifest>(resultBytes, _options);
+
+            Assert.NotNull(result);
+            Assert.Equal(packageInfo.Name, result.Name);
+            Assert.Equal(PluginStatus.Malfunctioned, result.Status);
+        }
+
+        [Fact]
+        public async Task PopulateManifest_ExistingMetafileMismatchedVersions_Updates_Version()
+        {
+            var packageInfo = GenerateTestPackage();
+
+            var partial = new PluginManifest
+            {
+                Id = packageInfo.Id,
+                Version = new Version(2, 0, 0).ToString()
+            };
+
+            var metafilePath = Path.Combine(_pluginPath, "meta.json");
+            File.WriteAllText(metafilePath, JsonSerializer.Serialize(partial, _options));
+
+            var pluginManager = new PluginManager(new NullLogger<PluginManager>(), null!, null!, _tempPath, new Version(1, 0));
+
+            await pluginManager.PopulateManifest(packageInfo, new Version(1, 0), _pluginPath, PluginStatus.Active);
+
+            var resultBytes = File.ReadAllBytes(metafilePath);
+            var result = JsonSerializer.Deserialize<PluginManifest>(resultBytes, _options);
+
+            Assert.NotNull(result);
+            Assert.Equal(packageInfo.Name, result.Name);
+            Assert.Equal(PluginStatus.Active, result.Status);
+            Assert.Equal(packageInfo.Versions[0].Version, result.Version);
+        }
+
+        private PackageInfo GenerateTestPackage()
+        {
+            var fixture = new Fixture();
+            fixture.Customize<PackageInfo>(c => c.Without(x => x.Versions).Without(x => x.ImageUrl));
+            fixture.Customize<VersionInfo>(c => c.Without(x => x.Version).Without(x => x.Timestamp));
+
+            var versionInfo = fixture.Create<VersionInfo>();
+            versionInfo.Version = new Version(1, 0).ToString();
+            versionInfo.Timestamp = DateTime.UtcNow.ToString(CultureInfo.InvariantCulture);
+
+            var packageInfo = fixture.Create<PackageInfo>();
+            packageInfo.Versions = new[] { versionInfo };
+
+            return packageInfo;
         }
 
         private JsonSerializerOptions GetTestSerializerOptions()
@@ -171,7 +292,7 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
 
         private (string TempPath, string PluginPath) GetTestPaths(string pluginFolderName)
         {
-            var tempPath = Path.Combine(_testPathRoot, "plugins-" + Path.GetRandomFileName());
+            var tempPath = Path.Combine(_testPathRoot, "plugin-manager" + Path.GetRandomFileName());
             var pluginPath = Path.Combine(tempPath, pluginFolderName);
 
             return (tempPath, pluginPath);

@@ -32,6 +32,8 @@ namespace Emby.Server.Implementations.Plugins
     /// </summary>
     public class PluginManager : IPluginManager
     {
+        private const string MetafileName = "meta.json";
+
         private readonly string _pluginsPath;
         private readonly Version _appVersion;
         private readonly List<AssemblyLoadContext> _assemblyLoadContexts;
@@ -374,7 +376,7 @@ namespace Emby.Server.Implementations.Plugins
             try
             {
                 var data = JsonSerializer.Serialize(manifest, _jsonOptions);
-                File.WriteAllText(Path.Combine(path, "meta.json"), data);
+                File.WriteAllText(Path.Combine(path, MetafileName), data);
                 return true;
             }
             catch (ArgumentException e)
@@ -385,7 +387,7 @@ namespace Emby.Server.Implementations.Plugins
         }
 
         /// <inheritdoc/>
-        public async Task<bool> GenerateManifest(PackageInfo packageInfo, Version version, string path, PluginStatus status)
+        public async Task<bool> PopulateManifest(PackageInfo packageInfo, Version version, string path, PluginStatus status)
         {
             var versionInfo = packageInfo.Versions.First(v => v.Version == version.ToString());
             var imagePath = string.Empty;
@@ -427,11 +429,73 @@ namespace Emby.Server.Implementations.Plugins
                 Version = versionInfo.Version,
                 Status = status == PluginStatus.Disabled ? PluginStatus.Disabled : PluginStatus.Active, // Keep disabled state.
                 AutoUpdate = true,
-                ImagePath = imagePath,
-                Assemblies = versionInfo.Assemblies
+                ImagePath = imagePath
             };
 
+            var metafile = Path.Combine(Path.Combine(path, MetafileName));
+            if (File.Exists(metafile))
+            {
+                var data = File.ReadAllBytes(metafile);
+                var localManifest = JsonSerializer.Deserialize<PluginManifest>(data, _jsonOptions) ?? new PluginManifest();
+
+                // Plugin installation is the typical cause for populating a manifest. Activate.
+                localManifest.Status = status == PluginStatus.Disabled ? PluginStatus.Disabled : PluginStatus.Active;
+
+                if (!Equals(localManifest.Id, manifest.Id))
+                {
+                    _logger.LogError("The manifest ID {LocalUUID} did not match the package info ID {PackageUUID}.", localManifest.Id, manifest.Id);
+                    localManifest.Status = PluginStatus.Malfunctioned;
+                }
+
+                if (localManifest.Version != manifest.Version)
+                {
+                    _logger.LogWarning("The version of the local manifest was {LocalVersion}, but {PackageVersion} was expected. The value will be replaced.", localManifest.Version, manifest.Version);
+
+                    // Correct the local version.
+                    localManifest.Version = manifest.Version;
+                }
+
+                // Reconcile missing data against repository manifest.
+                ReconcileManifest(localManifest, manifest);
+
+                manifest = localManifest;
+            }
+            else
+            {
+                _logger.LogInformation("No local manifest exists for plugin {Plugin}. Populating from repository manifest.", manifest.Name);
+            }
+
             return SaveManifest(manifest, path);
+        }
+
+        /// <summary>
+        /// Resolve the target plugin manifest against the source. Values are mapped onto the
+        /// target only if they are default values or empty strings. ID and status fields are ignored.
+        /// </summary>
+        /// <param name="baseManifest">The base <see cref="PluginManifest"/> to be reconciled.</param>
+        /// <param name="projector">The <see cref="PluginManifest"/> to reconcile against.</param>
+        private void ReconcileManifest(PluginManifest baseManifest, PluginManifest projector)
+        {
+            var ignoredFields = new string[]
+            {
+                nameof(baseManifest.Id),
+                nameof(baseManifest.Status)
+            };
+
+            foreach (var property in baseManifest.GetType().GetProperties())
+            {
+                var localValue = property.GetValue(baseManifest);
+
+                if (property.PropertyType == typeof(bool) || ignoredFields.Any(s => Equals(s, property.Name)))
+                {
+                    continue;
+                }
+
+                if (property.PropertyType.IsNullOrDefault(localValue) || (property.PropertyType == typeof(string) && (string)localValue! == string.Empty))
+                {
+                    property.SetValue(baseManifest, property.GetValue(projector));
+                }
+            }
         }
 
         /// <summary>
@@ -598,7 +662,7 @@ namespace Emby.Server.Implementations.Plugins
         {
             Version? version;
             PluginManifest? manifest = null;
-            var metafile = Path.Combine(dir, "meta.json");
+            var metafile = Path.Combine(dir, MetafileName);
             if (File.Exists(metafile))
             {
                 // Only path where this stays null is when File.ReadAllBytes throws an IOException
