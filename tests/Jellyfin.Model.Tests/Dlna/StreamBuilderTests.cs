@@ -162,7 +162,7 @@ namespace Jellyfin.Model.Tests
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-aac-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-ac3-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay)]
-        public async Task BuildVideoItemSimple(string deviceName, string mediaSource, PlayMethod? playMethod, TranscodeReason why = 0, string transcodeMode = "DirectStream", string transcodeProtocol = "")
+        public async Task BuildVideoItemSimple(string deviceName, string mediaSource, PlayMethod? playMethod, TranscodeReason why = default, string transcodeMode = "DirectStream", string transcodeProtocol = "")
         {
             var options = await GetMediaOptions(deviceName, mediaSource);
             BuildVideoItemSimpleTest(options, playMethod, why, transcodeMode, transcodeProtocol);
@@ -260,7 +260,7 @@ namespace Jellyfin.Model.Tests
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-aac-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-ac3-srt-2600k", PlayMethod.DirectPlay)]
         [InlineData("Tizen4-4K-5.1", "mkv-vp9-vorbis-vtt-2600k", PlayMethod.DirectPlay)]
-        public async Task BuildVideoItemWithFirstExplicitStream(string deviceName, string mediaSource, PlayMethod? playMethod, TranscodeReason why = 0, string transcodeMode = "DirectStream", string transcodeProtocol = "")
+        public async Task BuildVideoItemWithFirstExplicitStream(string deviceName, string mediaSource, PlayMethod? playMethod, TranscodeReason why = default, string transcodeMode = "DirectStream", string transcodeProtocol = "")
         {
             var options = await GetMediaOptions(deviceName, mediaSource);
             options.AudioStreamIndex = 1;
@@ -296,7 +296,7 @@ namespace Jellyfin.Model.Tests
         // Tizen 4 4K 5.1
         [InlineData("Tizen4-4K-5.1", "mp4-h264-ac3-aac-srt-2600k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")]
         [InlineData("Tizen4-4K-5.1", "mp4-hevc-ac3-aac-srt-15200k", PlayMethod.DirectPlay, (TranscodeReason)0, "Remux")]
-        public async Task BuildVideoItemWithDirectPlayExplicitStreams(string deviceName, string mediaSource, PlayMethod? playMethod, TranscodeReason why = 0, string transcodeMode = "DirectStream", string transcodeProtocol = "")
+        public async Task BuildVideoItemWithDirectPlayExplicitStreams(string deviceName, string mediaSource, PlayMethod? playMethod, TranscodeReason why = default, string transcodeMode = "DirectStream", string transcodeProtocol = "")
         {
             var options = await GetMediaOptions(deviceName, mediaSource);
             var streamCount = options.MediaSources[0].MediaStreams.Count;
