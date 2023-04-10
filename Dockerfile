@@ -38,7 +38,7 @@ RUN apt-get update \
  && apt-get update \
  && apt-get install --no-install-recommends --no-install-suggests -y \
    mesa-va-drivers \
-   jellyfin-ffmpeg5 \
+   jellyfin-ffmpeg6 \
    openssl \
    locales \
 # Intel VAAPI Tone mapping dependencies:
@@ -78,6 +78,8 @@ RUN dotnet publish Jellyfin.Server --disable-parallel --configuration Release --
 FROM app
 
 ENV HEALTHCHECK_URL=http://localhost:8096/health
+ENV JELLYFIN_CONFIG_DIR=/config
+ENV JELLYFIN_CACHE_DIR=/cache
 
 COPY --from=builder /jellyfin /jellyfin
 COPY --from=web-builder /dist /jellyfin/jellyfin-web
@@ -85,8 +87,6 @@ COPY --from=web-builder /dist /jellyfin/jellyfin-web
 EXPOSE 8096
 VOLUME /cache /config
 ENTRYPOINT ["./jellyfin/jellyfin", \
-    "--datadir", "/config", \
-    "--cachedir", "/cache", \
     "--ffmpeg", "/usr/lib/jellyfin-ffmpeg/ffmpeg"]
 
 HEALTHCHECK --interval=30s --timeout=30s --start-period=10s --retries=3 \
