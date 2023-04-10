@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Emby.Dlna.PlayTo;
 using Emby.Dlna.Ssdp;

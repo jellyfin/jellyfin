@@ -100,10 +100,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             foreach (var info in idInfos)
             {
                 var id = info.Key + "Id";
-                if (!_validProviderIds.ContainsKey(id))
-                {
-                    _validProviderIds.Add(id, info.Key);
-                }
+                _validProviderIds.TryAdd(id, info.Key);
             }
 
             // Additional Mappings

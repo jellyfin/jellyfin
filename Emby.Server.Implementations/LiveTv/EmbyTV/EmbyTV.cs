@@ -627,10 +627,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     _timerProvider.Update(existingTimer);
                     return Task.FromResult(existingTimer.Id);
                 }
-                else
-                {
-                    throw new ArgumentException("A scheduled recording already exists for this program.");
-                }
+
+                throw new ArgumentException("A scheduled recording already exists for this program.");
             }
 
             info.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
@@ -1866,8 +1864,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     await writer.WriteStartDocumentAsync(true).ConfigureAwait(false);
                     await writer.WriteStartElementAsync(null, "tvshow", null).ConfigureAwait(false);
-                    string id;
-                    if (timer.SeriesProviderIds.TryGetValue(MetadataProvider.Tvdb.ToString(), out id))
+                    if (timer.SeriesProviderIds.TryGetValue(MetadataProvider.Tvdb.ToString(), out var id))
                     {
                         await writer.WriteElementStringAsync(null, "id", null, id).ConfigureAwait(false);
                     }

@@ -139,7 +139,7 @@ namespace Emby.Server.Implementations.Data
 
             if (JournalSizeLimit.HasValue)
             {
-                WriteConnection.Execute("PRAGMA journal_size_limit=" + (int)JournalSizeLimit.Value);
+                WriteConnection.Execute("PRAGMA journal_size_limit=" + JournalSizeLimit.Value);
             }
 
             if (Synchronous.HasValue)
