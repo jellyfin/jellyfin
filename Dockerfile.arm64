@@ -61,6 +61,8 @@ RUN dotnet publish Jellyfin.Server --configuration Release --output="/jellyfin" 
 FROM app
 
 ENV HEALTHCHECK_URL=http://localhost:8096/health
+ENV JELLYFIN_CONFIG_DIR=/config
+ENV JELLYFIN_CACHE_DIR=/cache
 
 COPY --from=builder /jellyfin /jellyfin
 COPY --from=web-builder /dist /jellyfin/jellyfin-web
@@ -68,8 +70,6 @@ COPY --from=web-builder /dist /jellyfin/jellyfin-web
 EXPOSE 8096
 VOLUME /cache /config
 ENTRYPOINT ["./jellyfin/jellyfin", \
-    "--datadir", "/config", \
-    "--cachedir", "/cache", \
     "--ffmpeg", "/usr/bin/ffmpeg"]
 
 HEALTHCHECK --interval=30s --timeout=30s --start-period=10s --retries=3 \
