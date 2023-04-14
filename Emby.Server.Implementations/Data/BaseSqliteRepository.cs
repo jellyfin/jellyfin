@@ -122,17 +122,16 @@ namespace Emby.Server.Implementations.Data
         {
             WriteConnections = new ConnectionPool(WriteConnectionsCount, CreateWriteConnection);
             ReadConnections = new ConnectionPool(ReadConnectionsCount, CreateReadConnection);
+
+            // Configuration and pragmas can affect VACUUM so it needs to be last.
+            using (var connection = GetConnection(true))
+            {
+                connection.Execute("VACUUM");
+            }
         }
 
         protected ManagedConnection GetConnection(bool readOnly = false)
-        {
-            if (readOnly)
-            {
-                return ReadConnections.GetConnection();
-            }
-
-            return WriteConnections.GetConnection();
-        }
+            => readOnly ? ReadConnections.GetConnection() : WriteConnections.GetConnection();
 
         protected SQLiteDatabaseConnection CreateWriteConnection()
         {
@@ -173,52 +172,44 @@ namespace Emby.Server.Implementations.Data
 
             writeConnection.Execute("PRAGMA temp_store=" + (int)TempStore);
 
-            // Configuration and pragmas can affect VACUUM so it needs to be last.
-            writeConnection.Execute("VACUUM");
-
             return writeConnection;
         }
 
         protected SQLiteDatabaseConnection CreateReadConnection()
         {
-            var writeConnection = SQLite3.Open(
+            var connection = SQLite3.Open(
                 DbFilePath,
                 DefaultConnectionFlags | ConnectionFlags.ReadOnly,
                 null);
 
             if (CacheSize.HasValue)
             {
-                writeConnection.Execute("PRAGMA cache_size=" + CacheSize.Value);
+                connection.Execute("PRAGMA cache_size=" + CacheSize.Value);
             }
 
             if (!string.IsNullOrWhiteSpace(LockingMode))
             {
-                writeConnection.Execute("PRAGMA locking_mode=" + LockingMode);
+                connection.Execute("PRAGMA locking_mode=" + LockingMode);
             }
 
             if (!string.IsNullOrWhiteSpace(JournalMode))
             {
-                writeConnection.Execute("PRAGMA journal_mode=" + JournalMode);
+                connection.Execute("PRAGMA journal_mode=" + JournalMode);
             }
 
             if (JournalSizeLimit.HasValue)
             {
-                writeConnection.Execute("PRAGMA journal_size_limit=" + JournalSizeLimit.Value);
+                connection.Execute("PRAGMA journal_size_limit=" + JournalSizeLimit.Value);
             }
 
             if (Synchronous.HasValue)
             {
-                writeConnection.Execute("PRAGMA synchronous=" + (int)Synchronous.Value);
+                connection.Execute("PRAGMA synchronous=" + (int)Synchronous.Value);
             }
 
-            if (PageSize.HasValue)
-            {
-                writeConnection.Execute("PRAGMA page_size=" + PageSize.Value);
-            }
+            connection.Execute("PRAGMA temp_store=" + (int)TempStore);
 
-            writeConnection.Execute("PRAGMA temp_store=" + (int)TempStore);
-
-            return writeConnection;
+            return connection;
         }
 
         public IStatement PrepareStatement(ManagedConnection connection, string sql)
