@@ -124,7 +124,7 @@ namespace Emby.Server.Implementations.Data
             ReadConnections = new ConnectionPool(ReadConnectionsCount, CreateReadConnection);
 
             // Configuration and pragmas can affect VACUUM so it needs to be last.
-            using (var connection = GetConnection(true))
+            using (var connection = GetConnection())
             {
                 connection.Execute("VACUUM");
             }
