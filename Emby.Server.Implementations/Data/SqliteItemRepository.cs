@@ -336,6 +336,7 @@ namespace Emby.Server.Implementations.Data
             _jsonOptions = JsonDefaults.Options;
 
             DbFilePath = Path.Combine(_config.ApplicationPaths.DataPath, "library.db");
+            ReadConnectionsCount = 5;
         }
 
         /// <inheritdoc />
@@ -347,10 +348,10 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Opens the connection to the database.
         /// </summary>
-        /// <param name="userDataRepo">The user data repository.</param>
-        /// <param name="userManager">The user manager.</param>
-        public void Initialize(SqliteUserDataRepository userDataRepo, IUserManager userManager)
+        public override void Initialize()
         {
+            base.Initialize();
+
             const string CreateMediaStreamsTableCommand
                     = "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, CodecTag TEXT NULL, Comment TEXT NULL, NalLengthSize TEXT NULL, IsAvc BIT NULL, Title TEXT NULL, TimeBase TEXT NULL, CodecTimeBase TEXT NULL, ColorPrimaries TEXT NULL, ColorSpace TEXT NULL, ColorTransfer TEXT NULL, DvVersionMajor INT NULL, DvVersionMinor INT NULL, DvProfile INT NULL, DvLevel INT NULL, RpuPresentFlag INT NULL, ElPresentFlag INT NULL, BlPresentFlag INT NULL, DvBlSignalCompatibilityId INT NULL, IsHearingImpaired BIT NULL, PRIMARY KEY (ItemId, StreamIndex))";
 
@@ -551,8 +552,6 @@ namespace Emby.Server.Implementations.Data
 
                 connection.RunQueries(postQueries);
             }
-
-            userDataRepo.Initialize(userManager, WriteLock, WriteConnection);
         }
 
         public void SaveImages(BaseItem item)
