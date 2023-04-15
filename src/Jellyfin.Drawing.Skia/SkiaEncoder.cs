@@ -120,8 +120,18 @@ public class SkiaEncoder : IImageEncoder
         if (extension.Equals(".svg", StringComparison.OrdinalIgnoreCase))
         {
             var svg = new SKSvg();
-            svg.Load(path);
-            return new ImageDimensions(Convert.ToInt32(svg.Picture.CullRect.Width), Convert.ToInt32(svg.Picture.CullRect.Height));
+            try
+            {
+                svg.Load(path);
+                return new ImageDimensions(Convert.ToInt32(svg.Picture.CullRect.Width), Convert.ToInt32(svg.Picture.CullRect.Height));
+            }
+            catch (FormatException skiaColorException)
+            {
+                // This exception is known to be thrown on vector images that define custom styles
+                // Skia SVG is not able to handle that and as the repository is quite stale and has not received updates we just catch them
+                _logger.LogDebug(skiaColorException, "There was a issue loading the requested svg file");
+                return default;
+            }
         }
 
         using var codec = SKCodec.Create(path, out SKCodecResult result);
@@ -132,10 +142,10 @@ public class SkiaEncoder : IImageEncoder
                 return new ImageDimensions(info.Width, info.Height);
             case SKCodecResult.Unimplemented:
                 _logger.LogDebug("Image format not supported: {FilePath}", path);
-                return new ImageDimensions(0, 0);
+                return default;
             default:
                 _logger.LogError("Unable to determine image dimensions for {FilePath}: {SkCodecResult}", path, result);
-                return new ImageDimensions(0, 0);
+                return default;
         }
     }
 

@@ -1503,6 +1503,12 @@ namespace Emby.Server.Implementations.Library
                 });
 
                 query.TopParentIds = userViews.SelectMany(i => GetTopParentIdsForQuery(i, user)).ToArray();
+
+                // Prevent searching in all libraries due to empty filter
+                if (query.TopParentIds.Length == 0)
+                {
+                    query.TopParentIds = new[] { Guid.NewGuid() };
+                }
             }
         }
 
@@ -1879,7 +1885,7 @@ namespace Emby.Server.Implementations.Library
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Cannot get image dimensions for {ImagePath}", image.Path);
-                    size = new ImageDimensions(0, 0);
+                    size = default;
                     image.Width = 0;
                     image.Height = 0;
                 }
@@ -2743,9 +2749,7 @@ namespace Emby.Server.Implementations.Library
                 }
             })
             .Where(i => i is not null)
-            .Where(i => query.User is null ?
-                true :
-                i.IsVisible(query.User))
+            .Where(i => query.User is null || i.IsVisible(query.User))
             .ToList();
         }
 

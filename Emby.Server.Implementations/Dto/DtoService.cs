@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
@@ -572,9 +571,7 @@ namespace Emby.Server.Implementations.Dto
                         return null;
                     }
                 }).Where(i => i is not null)
-                .Where(i => user is null ?
-                    true :
-                    i.IsVisible(user))
+                .Where(i => user is null || i.IsVisible(user))
                 .DistinctBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 

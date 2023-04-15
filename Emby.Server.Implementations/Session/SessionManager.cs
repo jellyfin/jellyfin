@@ -606,7 +606,7 @@ namespace Emby.Server.Implementations.Session
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogDebug("Error calling OnPlaybackStopped", ex);
+                        _logger.LogDebug(ex, "Error calling OnPlaybackStopped");
                     }
                 }
 
@@ -953,7 +953,7 @@ namespace Emby.Server.Implementations.Session
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error closing live stream", ex);
+                    _logger.LogError(ex, "Error closing live stream");
                 }
             }
 

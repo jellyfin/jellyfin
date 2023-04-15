@@ -430,7 +430,7 @@ namespace MediaBrowser.Model.Dlna
 
                     return totalBitrate.HasValue ?
                         Convert.ToInt64(totalBitrate.Value * totalSeconds) :
-                        (long?)null;
+                        null;
                 }
 
                 return null;

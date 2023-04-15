@@ -500,10 +500,8 @@ namespace Jellyfin.Networking.Manager
             {
                 return true;
             }
-            else
-            {
-                return address.IsPrivateAddressRange();
-            }
+
+            return address.IsPrivateAddressRange();
         }
 
         /// <inheritdoc/>
@@ -1171,13 +1169,15 @@ namespace Jellyfin.Networking.Manager
                     bindPreference = addr.Value;
                     break;
                 }
-                else if ((addr.Key.Address.Equals(IPAddress.Any) || addr.Key.Address.Equals(IPAddress.IPv6Any)) && isInExternalSubnet)
+
+                if ((addr.Key.Address.Equals(IPAddress.Any) || addr.Key.Address.Equals(IPAddress.IPv6Any)) && isInExternalSubnet)
                 {
                     // External.
                     bindPreference = addr.Value;
                     break;
                 }
-                else if (addr.Key.Contains(source))
+
+                if (addr.Key.Contains(source))
                 {
                     // Match ip address.
                     bindPreference = addr.Value;
@@ -1256,8 +1256,7 @@ namespace Jellyfin.Networking.Manager
                     // Look for the best internal address.
                     bindAddress = addresses
                         .Where(p => IsInLocalNetwork(p) && (p.Contains(source) || p.Equals(IPAddress.None)))
-                        .OrderBy(p => p.Tag)
-                        .FirstOrDefault()?.Address;
+                        .MinBy(p => p.Tag)?.Address;
                 }
 
                 if (bindAddress is not null)

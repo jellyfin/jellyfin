@@ -138,14 +138,10 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (!string.IsNullOrEmpty(hwType)
                     && encodingOptions.EnableHardwareEncoding
-                    && codecMap.ContainsKey(hwType))
+                    && codecMap.TryGetValue(hwType, out var preferredEncoder)
+                    && _mediaEncoder.SupportsEncoder(preferredEncoder))
                 {
-                    var preferredEncoder = codecMap[hwType];
-
-                    if (_mediaEncoder.SupportsEncoder(preferredEncoder))
-                    {
-                        return preferredEncoder;
-                    }
+                    return preferredEncoder;
                 }
             }
 
@@ -561,7 +557,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 return Array.FindIndex(_videoProfilesH264, x => string.Equals(x, profile, StringComparison.OrdinalIgnoreCase));
             }
-            else if (string.Equals("hevc", videoCodec, StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals("hevc", videoCodec, StringComparison.OrdinalIgnoreCase))
             {
                 return Array.FindIndex(_videoProfilesH265, x => string.Equals(x, profile, StringComparison.OrdinalIgnoreCase));
             }
@@ -842,38 +839,37 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 var filterDevArgs = GetFilterHwDeviceArgs(VaapiAlias);
+                var doOclTonemap = isHwTonemapAvailable && IsOpenclFullSupported();
 
-                if (isHwTonemapAvailable && IsOpenclFullSupported())
+                if (_mediaEncoder.IsVaapiDeviceInteliHD || _mediaEncoder.IsVaapiDeviceInteli965)
                 {
-                    if (_mediaEncoder.IsVaapiDeviceInteliHD || _mediaEncoder.IsVaapiDeviceInteli965)
+                    if (doOclTonemap && !isVaapiDecoder)
                     {
-                        if (!isVaapiDecoder)
-                        {
-                            args.Append(GetOpenclDeviceArgs(0, null, VaapiAlias, OpenclAlias));
-                            filterDevArgs = GetFilterHwDeviceArgs(OpenclAlias);
-                        }
-                    }
-                    else if (_mediaEncoder.IsVaapiDeviceAmd)
-                    {
-                        if (!IsVulkanFullSupported()
-                            || !_mediaEncoder.IsVaapiDeviceSupportVulkanFmtModifier
-                            || Environment.OSVersion.Version < _minKernelVersionAmdVkFmtModifier)
-                        {
-                            args.Append(GetOpenclDeviceArgs(0, "Advanced Micro Devices", null, OpenclAlias));
-                            filterDevArgs = GetFilterHwDeviceArgs(OpenclAlias);
-                        }
-                        else
-                        {
-                            // libplacebo wants an explicitly set vulkan filter device.
-                            args.Append(GetVulkanDeviceArgs(0, null, VaapiAlias, VulkanAlias));
-                            filterDevArgs = GetFilterHwDeviceArgs(VulkanAlias);
-                        }
-                    }
-                    else
-                    {
-                        args.Append(GetOpenclDeviceArgs(0, null, null, OpenclAlias));
+                        args.Append(GetOpenclDeviceArgs(0, null, VaapiAlias, OpenclAlias));
                         filterDevArgs = GetFilterHwDeviceArgs(OpenclAlias);
                     }
+                }
+                else if (_mediaEncoder.IsVaapiDeviceAmd)
+                {
+                    if (IsVulkanFullSupported()
+                        && _mediaEncoder.IsVaapiDeviceSupportVulkanFmtModifier
+                        && Environment.OSVersion.Version >= _minKernelVersionAmdVkFmtModifier)
+                    {
+                        // libplacebo wants an explicitly set vulkan filter device.
+                        args.Append(GetVulkanDeviceArgs(0, null, VaapiAlias, VulkanAlias));
+                        filterDevArgs = GetFilterHwDeviceArgs(VulkanAlias);
+                    }
+                    else if (doOclTonemap)
+                    {
+                        // ROCm/ROCr OpenCL runtime
+                        args.Append(GetOpenclDeviceArgs(0, "Advanced Micro Devices", null, OpenclAlias));
+                        filterDevArgs = GetFilterHwDeviceArgs(OpenclAlias);
+                    }
+                }
+                else if (doOclTonemap)
+                {
+                    args.Append(GetOpenclDeviceArgs(0, null, null, OpenclAlias));
+                    filterDevArgs = GetFilterHwDeviceArgs(OpenclAlias);
                 }
 
                 args.Append(filterDevArgs);
@@ -1114,19 +1110,19 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 return "-bsf:v h264_mp4toannexb";
             }
-            else if (IsH265(stream))
+
+            if (IsH265(stream))
             {
                 return "-bsf:v hevc_mp4toannexb";
             }
-            else if (IsAAC(stream))
+
+            if (IsAAC(stream))
             {
                 // Convert adts header(mpegts) to asc header(mp4).
                 return "-bsf:a aac_adtstoasc";
             }
-            else
-            {
-                return null;
-            }
+
+            return null;
         }
 
         public static string GetAudioBitStreamArguments(EncodingJobInfo state, string segmentContainer, string mediaSourceContainer)
@@ -1204,10 +1200,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     return FormattableString.Invariant($" -rc_mode CBR -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
                 }
-                else
-                {
-                    return FormattableString.Invariant($" -rc_mode VBR -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
-                }
+
+                return FormattableString.Invariant($" -rc_mode VBR -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
             }
 
             return FormattableString.Invariant($" -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
@@ -2619,8 +2613,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (outputWidth > maximumWidth || outputHeight > maximumHeight)
             {
-                var scaleW = (double)maximumWidth / (double)outputWidth;
-                var scaleH = (double)maximumHeight / (double)outputHeight;
+                var scaleW = (double)maximumWidth / outputWidth;
+                var scaleH = (double)maximumHeight / outputHeight;
                 var scale = Math.Min(scaleW, scaleH);
                 outputWidth = Math.Min(maximumWidth, (int)(outputWidth * scale));
                 outputHeight = Math.Min(maximumHeight, (int)(outputHeight * scale));
@@ -2767,79 +2761,76 @@ namespace MediaBrowser.Controller.MediaEncoding
                             widthParam,
                             heightParam);
                 }
-                else
-                {
-                    return GetFixedSwScaleFilter(threedFormat, requestedWidth.Value, requestedHeight.Value);
-                }
+
+                return GetFixedSwScaleFilter(threedFormat, requestedWidth.Value, requestedHeight.Value);
             }
 
             // If Max dimensions were supplied, for width selects lowest even number between input width and width req size and selects lowest even number from in width*display aspect and requested size
-            else if (requestedMaxWidth.HasValue && requestedMaxHeight.HasValue)
+
+            if (requestedMaxWidth.HasValue && requestedMaxHeight.HasValue)
             {
                 var maxWidthParam = requestedMaxWidth.Value.ToString(CultureInfo.InvariantCulture);
                 var maxHeightParam = requestedMaxHeight.Value.ToString(CultureInfo.InvariantCulture);
 
                 return string.Format(
-                        CultureInfo.InvariantCulture,
-                        "scale=trunc(min(max(iw\\,ih*a)\\,min({0}\\,{1}*a))/{2})*{2}:trunc(min(max(iw/a\\,ih)\\,min({0}/a\\,{1}))/2)*2",
-                        maxWidthParam,
-                        maxHeightParam,
-                        scaleVal);
+                    CultureInfo.InvariantCulture,
+                    "scale=trunc(min(max(iw\\,ih*a)\\,min({0}\\,{1}*a))/{2})*{2}:trunc(min(max(iw/a\\,ih)\\,min({0}/a\\,{1}))/2)*2",
+                    maxWidthParam,
+                    maxHeightParam,
+                    scaleVal);
             }
 
             // If a fixed width was requested
-            else if (requestedWidth.HasValue)
+            if (requestedWidth.HasValue)
             {
                 if (threedFormat.HasValue)
                 {
                     // This method can handle 0 being passed in for the requested height
                     return GetFixedSwScaleFilter(threedFormat, requestedWidth.Value, 0);
                 }
-                else
-                {
-                    var widthParam = requestedWidth.Value.ToString(CultureInfo.InvariantCulture);
 
-                    return string.Format(
-                            CultureInfo.InvariantCulture,
-                            "scale={0}:trunc(ow/a/2)*2",
-                            widthParam);
-                }
+                var widthParam = requestedWidth.Value.ToString(CultureInfo.InvariantCulture);
+
+                return string.Format(
+                    CultureInfo.InvariantCulture,
+                    "scale={0}:trunc(ow/a/2)*2",
+                    widthParam);
             }
 
             // If a fixed height was requested
-            else if (requestedHeight.HasValue)
+            if (requestedHeight.HasValue)
             {
                 var heightParam = requestedHeight.Value.ToString(CultureInfo.InvariantCulture);
 
                 return string.Format(
-                        CultureInfo.InvariantCulture,
-                        "scale=trunc(oh*a/{1})*{1}:{0}",
-                        heightParam,
-                        scaleVal);
+                    CultureInfo.InvariantCulture,
+                    "scale=trunc(oh*a/{1})*{1}:{0}",
+                    heightParam,
+                    scaleVal);
             }
 
             // If a max width was requested
-            else if (requestedMaxWidth.HasValue)
+            if (requestedMaxWidth.HasValue)
             {
                 var maxWidthParam = requestedMaxWidth.Value.ToString(CultureInfo.InvariantCulture);
 
                 return string.Format(
-                        CultureInfo.InvariantCulture,
-                        "scale=trunc(min(max(iw\\,ih*a)\\,{0})/{1})*{1}:trunc(ow/a/2)*2",
-                        maxWidthParam,
-                        scaleVal);
+                    CultureInfo.InvariantCulture,
+                    "scale=trunc(min(max(iw\\,ih*a)\\,{0})/{1})*{1}:trunc(ow/a/2)*2",
+                    maxWidthParam,
+                    scaleVal);
             }
 
             // If a max height was requested
-            else if (requestedMaxHeight.HasValue)
+            if (requestedMaxHeight.HasValue)
             {
                 var maxHeightParam = requestedMaxHeight.Value.ToString(CultureInfo.InvariantCulture);
 
                 return string.Format(
-                        CultureInfo.InvariantCulture,
-                        "scale=trunc(oh*a/{1})*{1}:min(max(iw/a\\,ih)\\,{0})",
-                        maxHeightParam,
-                        scaleVal);
+                    CultureInfo.InvariantCulture,
+                    "scale=trunc(oh*a/{1})*{1}:min(max(iw/a\\,ih)\\,{0})",
+                    maxHeightParam,
+                    scaleVal);
             }
 
             return string.Empty;
@@ -2913,18 +2904,21 @@ namespace MediaBrowser.Controller.MediaEncoding
                     "yadif_cuda={0}:-1:0",
                     doubleRateDeint ? "1" : "0");
             }
-            else if (hwDeintSuffix.Contains("vaapi", StringComparison.OrdinalIgnoreCase))
+
+            if (hwDeintSuffix.Contains("vaapi", StringComparison.OrdinalIgnoreCase))
             {
                 return string.Format(
                     CultureInfo.InvariantCulture,
                     "deinterlace_vaapi=rate={0}",
                     doubleRateDeint ? "field" : "frame");
             }
-            else if (hwDeintSuffix.Contains("qsv", StringComparison.OrdinalIgnoreCase))
+
+            if (hwDeintSuffix.Contains("qsv", StringComparison.OrdinalIgnoreCase))
             {
                 return "deinterlace_qsv=mode=2";
             }
-            else if (hwDeintSuffix.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase))
+
+            if (hwDeintSuffix.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase))
             {
                 return string.Format(
                     CultureInfo.InvariantCulture,
@@ -2955,7 +2949,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                         options.VppTonemappingBrightness,
                         options.VppTonemappingContrast);
             }
-            else if (string.Equals(hwTonemapSuffix, "vulkan", StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(hwTonemapSuffix, "vulkan", StringComparison.OrdinalIgnoreCase))
             {
                 args = "libplacebo=format={1}:tonemapping={2}:color_primaries=bt709:color_trc=bt709:colorspace=bt709:peak_detect=0:upscaler=none:downscaler=none";
 
@@ -4269,7 +4264,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // sw => hw
                 if (doVkTonemap)
                 {
-                    mainFilters.Add("hwupload_vaapi");
+                    mainFilters.Add("hwupload=derive_device=vaapi");
+                    mainFilters.Add("format=vaapi");
                     mainFilters.Add("hwmap=derive_device=vulkan");
                     mainFilters.Add("format=vulkan");
                 }
@@ -4380,12 +4376,15 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     // prefer vaapi hwupload to vulkan hwupload,
                     // Mesa RADV does not support a dedicated transfer queue.
-                    subFilters.Add("hwupload_vaapi");
+                    subFilters.Add("hwupload=derive_device=vaapi");
+                    subFilters.Add("format=vaapi");
                     subFilters.Add("hwmap=derive_device=vulkan");
                     subFilters.Add("format=vulkan");
 
                     overlayFilters.Add("overlay_vulkan=eof_action=endall:shortest=1:repeatlast=0");
-                    overlayFilters.Add("scale_vulkan=format=nv12");
+
+                    // TODO: figure out why libplacebo can sync without vaSyncSurface VPP support in radeonsi.
+                    overlayFilters.Add("libplacebo=format=nv12:apply_filmgrain=0:apply_dolbyvision=0:upscaler=none:downscaler=none:dithering=none");
 
                     // OUTPUT vaapi(nv12/bgra) surface(vram)
                     // reverse-mapping via vaapi-vulkan interop.
@@ -4827,26 +4826,27 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     return videoStream.BitDepth.Value;
                 }
-                else if (string.Equals(videoStream.PixelFormat, "yuv420p", StringComparison.OrdinalIgnoreCase)
-                         || string.Equals(videoStream.PixelFormat, "yuvj420p", StringComparison.OrdinalIgnoreCase)
-                         || string.Equals(videoStream.PixelFormat, "yuv444p", StringComparison.OrdinalIgnoreCase))
+
+                if (string.Equals(videoStream.PixelFormat, "yuv420p", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoStream.PixelFormat, "yuvj420p", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoStream.PixelFormat, "yuv444p", StringComparison.OrdinalIgnoreCase))
                 {
                     return 8;
                 }
-                else if (string.Equals(videoStream.PixelFormat, "yuv420p10le", StringComparison.OrdinalIgnoreCase)
-                         || string.Equals(videoStream.PixelFormat, "yuv444p10le", StringComparison.OrdinalIgnoreCase))
+
+                if (string.Equals(videoStream.PixelFormat, "yuv420p10le", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoStream.PixelFormat, "yuv444p10le", StringComparison.OrdinalIgnoreCase))
                 {
                     return 10;
                 }
-                else if (string.Equals(videoStream.PixelFormat, "yuv420p12le", StringComparison.OrdinalIgnoreCase)
-                         || string.Equals(videoStream.PixelFormat, "yuv444p12le", StringComparison.OrdinalIgnoreCase))
+
+                if (string.Equals(videoStream.PixelFormat, "yuv420p12le", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoStream.PixelFormat, "yuv444p12le", StringComparison.OrdinalIgnoreCase))
                 {
                     return 12;
                 }
-                else
-                {
-                    return 8;
-                }
+
+                return 8;
             }
 
             return 0;
@@ -5078,11 +5078,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                         return " -hwaccel cuda" + (outputHwSurface ? " -hwaccel_output_format cuda" : string.Empty)
                             + (nvdecNoInternalCopy ? " -hwaccel_flags +unsafe_output" : string.Empty) + " -threads 1" + (isAv1 ? " -c:v av1" : string.Empty);
                     }
-                    else
-                    {
-                        // cuvid decoder doesn't have threading issue.
-                        return " -hwaccel cuda" + (outputHwSurface ? " -hwaccel_output_format cuda" : string.Empty);
-                    }
+
+                    // cuvid decoder doesn't have threading issue.
+                    return " -hwaccel cuda" + (outputHwSurface ? " -hwaccel_output_format cuda" : string.Empty);
                 }
             }
 
@@ -5440,7 +5438,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // Automatically set thread count
                 return mustSetThreadCount ? Math.Max(Environment.ProcessorCount - 1, 1) : 0;
             }
-            else if (threads >= Environment.ProcessorCount)
+
+            if (threads >= Environment.ProcessorCount)
             {
                 return Environment.ProcessorCount;
             }
