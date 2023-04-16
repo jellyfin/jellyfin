@@ -432,69 +432,67 @@ namespace Emby.Server.Implementations.Plugins
                 ImagePath = imagePath
             };
 
-            var metafile = Path.Combine(Path.Combine(path, MetafileName));
-            if (File.Exists(metafile))
+            if (!ReconcileManifest(manifest, path))
             {
-                var data = File.ReadAllBytes(metafile);
-                var localManifest = JsonSerializer.Deserialize<PluginManifest>(data, _jsonOptions) ?? new PluginManifest();
-
-                // Plugin installation is the typical cause for populating a manifest. Activate.
-                localManifest.Status = status == PluginStatus.Disabled ? PluginStatus.Disabled : PluginStatus.Active;
-
-                if (!Equals(localManifest.Id, manifest.Id))
-                {
-                    _logger.LogError("The manifest ID {LocalUUID} did not match the package info ID {PackageUUID}.", localManifest.Id, manifest.Id);
-                    localManifest.Status = PluginStatus.Malfunctioned;
-                }
-
-                if (localManifest.Version != manifest.Version)
-                {
-                    _logger.LogWarning("The version of the local manifest was {LocalVersion}, but {PackageVersion} was expected. The value will be replaced.", localManifest.Version, manifest.Version);
-
-                    // Correct the local version.
-                    localManifest.Version = manifest.Version;
-                }
-
-                // Reconcile missing data against repository manifest.
-                ReconcileManifest(localManifest, manifest);
-
-                manifest = localManifest;
-            }
-            else
-            {
-                _logger.LogInformation("No local manifest exists for plugin {Plugin}. Populating from repository manifest.", manifest.Name);
+                // An error occurred during reconciliation and saving could be undesirable.
+                return false;
             }
 
             return SaveManifest(manifest, path);
         }
 
         /// <summary>
-        /// Resolve the target plugin manifest against the source. Values are mapped onto the
-        /// target only if they are default values or empty strings. ID and status fields are ignored.
+        /// Reconciles the manifest against any properties that exist locally in a pre-packaged meta.json found at the path.
+        /// If no file is found, no reconciliation occurs.
         /// </summary>
-        /// <param name="baseManifest">The base <see cref="PluginManifest"/> to be reconciled.</param>
-        /// <param name="projector">The <see cref="PluginManifest"/> to reconcile against.</param>
-        private void ReconcileManifest(PluginManifest baseManifest, PluginManifest projector)
+        /// <param name="manifest">The <see cref="PluginManifest"/> to reconcile against.</param>
+        /// <param name="path">The plugin path.</param>
+        /// <returns>The reconciled <see cref="PluginManifest"/>.</returns>
+        private bool ReconcileManifest(PluginManifest manifest, string path)
         {
-            var ignoredFields = new string[]
+            try
             {
-                nameof(baseManifest.Id),
-                nameof(baseManifest.Status)
-            };
-
-            foreach (var property in baseManifest.GetType().GetProperties())
-            {
-                var localValue = property.GetValue(baseManifest);
-
-                if (property.PropertyType == typeof(bool) || ignoredFields.Any(s => Equals(s, property.Name)))
+                var metafile = Path.Combine(path, MetafileName);
+                if (!File.Exists(metafile))
                 {
-                    continue;
+                    _logger.LogInformation("No local manifest exists for plugin {Plugin}. Skipping manifest reconciliation.", manifest.Name);
+                    return true;
                 }
 
-                if (property.PropertyType.IsNullOrDefault(localValue) || (property.PropertyType == typeof(string) && (string)localValue! == string.Empty))
+                var data = File.ReadAllBytes(metafile);
+                var localManifest = JsonSerializer.Deserialize<PluginManifest>(data, _jsonOptions) ?? new PluginManifest();
+
+                if (!Equals(localManifest.Id, manifest.Id))
                 {
-                    property.SetValue(baseManifest, property.GetValue(projector));
+                    _logger.LogError("The manifest ID {LocalUUID} did not match the package info ID {PackageUUID}.", localManifest.Id, manifest.Id);
+                    manifest.Status = PluginStatus.Malfunctioned;
                 }
+
+                if (localManifest.Version != manifest.Version)
+                {
+                    // Package information provides the version and is the source of truth. Pre-packages meta.json is assumed to be a mistake in this regard.
+                    _logger.LogWarning("The version of the local manifest was {LocalVersion}, but {PackageVersion} was expected. The value will be replaced.", localManifest.Version, manifest.Version);
+                }
+
+                // Explicitly mapping properties instead of using reflection is preferred here.
+                manifest.Category = string.IsNullOrEmpty(localManifest.Category) ? manifest.Category : localManifest.Category;
+                manifest.AutoUpdate = localManifest.AutoUpdate; // Preserve whatever is local. Package info does not have this property.
+                manifest.Changelog = string.IsNullOrEmpty(localManifest.Changelog) ? manifest.Changelog : localManifest.Changelog;
+                manifest.Description = string.IsNullOrEmpty(localManifest.Description) ? manifest.Description : localManifest.Description;
+                manifest.Name = string.IsNullOrEmpty(localManifest.Name) ? manifest.Name : localManifest.Name;
+                manifest.Overview = string.IsNullOrEmpty(localManifest.Overview) ? manifest.Overview : localManifest.Overview;
+                manifest.Owner = string.IsNullOrEmpty(localManifest.Owner) ? manifest.Owner : localManifest.Owner;
+                manifest.TargetAbi = string.IsNullOrEmpty(localManifest.TargetAbi) ? manifest.TargetAbi : localManifest.TargetAbi;
+                manifest.Timestamp = localManifest.Timestamp.IsNullOrDefault() ? manifest.Timestamp : localManifest.Timestamp;
+                manifest.ImagePath = string.IsNullOrEmpty(localManifest.ImagePath) ? manifest.ImagePath : localManifest.ImagePath;
+                manifest.Assemblies = localManifest.Assemblies;
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning(e, "Unable to reconcile plugin manifest due to an error. {Path}", path);
+                return false;
             }
         }
 

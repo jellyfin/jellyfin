@@ -172,6 +172,24 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
                 Assemblies = new[] { "Jellyfin.Test.dll" }
             };
 
+            var expectedManifest = new PluginManifest
+            {
+                Id = partial.Id,
+                Name = packageInfo.Name,
+                AutoUpdate = partial.AutoUpdate,
+                Status = PluginStatus.Active,
+                Owner = packageInfo.Owner,
+                Assemblies = partial.Assemblies,
+                Category = packageInfo.Category,
+                Description = packageInfo.Description,
+                Overview = packageInfo.Overview,
+                TargetAbi = packageInfo.Versions[0].TargetAbi!,
+                Timestamp = DateTime.Parse(packageInfo.Versions[0].Timestamp!, CultureInfo.InvariantCulture),
+                Changelog = packageInfo.Versions[0].Changelog!,
+                Version = new Version(1, 0).ToString(),
+                ImagePath = string.Empty
+            };
+
             var metafilePath = Path.Combine(_pluginPath, "meta.json");
             File.WriteAllText(metafilePath, JsonSerializer.Serialize(partial, _options));
 
@@ -183,22 +201,41 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
             var result = JsonSerializer.Deserialize<PluginManifest>(resultBytes, _options);
 
             Assert.NotNull(result);
-            Assert.Equal(packageInfo.Name, result.Name);
-            Assert.Equal(packageInfo.Owner, result.Owner);
-            Assert.Equal(PluginStatus.Active, result.Status);
-            Assert.NotEmpty(result.Assemblies);
-            Assert.False(result.AutoUpdate);
+            Assert.Equivalent(expectedManifest, result);
+        }
 
-            // Preserved
-            Assert.Equal(packageInfo.Category, result.Category);
-            Assert.Equal(packageInfo.Description, result.Description);
-            Assert.Equal(packageInfo.Id, result.Id);
-            Assert.Equal(packageInfo.Overview, result.Overview);
-            Assert.Equal(partial.Assemblies[0], result.Assemblies[0]);
-            Assert.Equal(packageInfo.Versions[0].TargetAbi, result.TargetAbi);
-            Assert.Equal(DateTime.Parse(packageInfo.Versions[0].Timestamp!, CultureInfo.InvariantCulture), result.Timestamp);
-            Assert.Equal(packageInfo.Versions[0].Changelog, result.Changelog);
-            Assert.Equal(packageInfo.Versions[0].Version, result.Version);
+        [Fact]
+        public async Task PopulateManifest_NoMetafile_PreservesManifest()
+        {
+            var packageInfo = GenerateTestPackage();
+            var expectedManifest = new PluginManifest
+            {
+                Id = packageInfo.Id,
+                Name = packageInfo.Name,
+                AutoUpdate = true,
+                Status = PluginStatus.Active,
+                Owner = packageInfo.Owner,
+                Assemblies = Array.Empty<string>(),
+                Category = packageInfo.Category,
+                Description = packageInfo.Description,
+                Overview = packageInfo.Overview,
+                TargetAbi = packageInfo.Versions[0].TargetAbi!,
+                Timestamp = DateTime.Parse(packageInfo.Versions[0].Timestamp!, CultureInfo.InvariantCulture),
+                Changelog = packageInfo.Versions[0].Changelog!,
+                Version = packageInfo.Versions[0].Version,
+                ImagePath = string.Empty
+            };
+
+            var pluginManager = new PluginManager(new NullLogger<PluginManager>(), null!, null!, null!, new Version(1, 0));
+
+            await pluginManager.PopulateManifest(packageInfo, new Version(1, 0), _pluginPath, PluginStatus.Active);
+
+            var metafilePath = Path.Combine(_pluginPath, "meta.json");
+            var resultBytes = File.ReadAllBytes(metafilePath);
+            var result = JsonSerializer.Deserialize<PluginManifest>(resultBytes, _options);
+
+            Assert.NotNull(result);
+            Assert.Equivalent(expectedManifest, result);
         }
 
         [Fact]
