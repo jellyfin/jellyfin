@@ -1415,7 +1415,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var param = string.Empty;
 
             // Tutorials: Enable Intel GuC / HuC firmware loading for Low Power Encoding.
-            // https://01.org/linuxgraphics/downloads/firmware
+            // https://01.org/group/43/downloads/firmware
             // https://wiki.archlinux.org/title/intel_graphics#Enable_GuC_/_HuC_firmware_loading
             // Intel Low Power Encoding can save unnecessary CPU-GPU synchronization,
             // which will reduce overhead in performance intensive tasks such as 4k transcoding and tonemapping.
