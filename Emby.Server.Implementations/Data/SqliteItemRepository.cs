@@ -2379,7 +2379,7 @@ namespace Emby.Server.Implementations.Data
                 else
                 {
                     builder.Append(
-                        @"(SELECT CASE WHEN InheritedParentalRatingValue=0
+                        @"(SELECT CASE WHEN COALESCE(InheritedParentalRatingValue, 0)=0
                                 THEN 0
                                 ELSE 10.0 / (1.0 + ABS(InheritedParentalRatingValue - @InheritedParentalRatingValue))
                                 END)");
