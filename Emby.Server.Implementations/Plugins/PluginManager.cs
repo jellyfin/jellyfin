@@ -432,7 +432,7 @@ namespace Emby.Server.Implementations.Plugins
                 ImagePath = imagePath
             };
 
-            if (!ReconcileManifest(manifest, path))
+            if (!await ReconcileManifest(manifest, path))
             {
                 // An error occurred during reconciliation and saving could be undesirable.
                 return false;
@@ -448,7 +448,7 @@ namespace Emby.Server.Implementations.Plugins
         /// <param name="manifest">The <see cref="PluginManifest"/> to reconcile against.</param>
         /// <param name="path">The plugin path.</param>
         /// <returns>The reconciled <see cref="PluginManifest"/>.</returns>
-        private bool ReconcileManifest(PluginManifest manifest, string path)
+        private async Task<bool> ReconcileManifest(PluginManifest manifest, string path)
         {
             try
             {
@@ -459,8 +459,9 @@ namespace Emby.Server.Implementations.Plugins
                     return true;
                 }
 
-                var data = File.ReadAllBytes(metafile);
-                var localManifest = JsonSerializer.Deserialize<PluginManifest>(data, _jsonOptions) ?? new PluginManifest();
+                using var metaStream = File.OpenRead(metafile);
+                var localManifest = await JsonSerializer.DeserializeAsync<PluginManifest>(metaStream, _jsonOptions);
+                localManifest ??= new PluginManifest();
 
                 if (!Equals(localManifest.Id, manifest.Id))
                 {
@@ -483,7 +484,7 @@ namespace Emby.Server.Implementations.Plugins
                 manifest.Overview = string.IsNullOrEmpty(localManifest.Overview) ? manifest.Overview : localManifest.Overview;
                 manifest.Owner = string.IsNullOrEmpty(localManifest.Owner) ? manifest.Owner : localManifest.Owner;
                 manifest.TargetAbi = string.IsNullOrEmpty(localManifest.TargetAbi) ? manifest.TargetAbi : localManifest.TargetAbi;
-                manifest.Timestamp = localManifest.Timestamp.IsNullOrDefault() ? manifest.Timestamp : localManifest.Timestamp;
+                manifest.Timestamp = localManifest.Timestamp.Equals(default) ? manifest.Timestamp : localManifest.Timestamp;
                 manifest.ImagePath = string.IsNullOrEmpty(localManifest.ImagePath) ? manifest.ImagePath : localManifest.ImagePath;
                 manifest.Assemblies = localManifest.Assemblies;
 
@@ -842,7 +843,7 @@ namespace Emby.Server.Implementations.Plugins
                     var canonicalized = Path.Combine(plugin.Path, path).Canonicalize();
 
                     // Ensure we stay in the plugin directory.
-                    if (!canonicalized.StartsWith(plugin.Path.NormalizePath()!, StringComparison.Ordinal))
+                    if (!canonicalized.StartsWith(plugin.Path.NormalizePath(), StringComparison.Ordinal))
                     {
                         _logger.LogError("Assembly path {Path} is not inside the plugin directory.", path);
                         return false;
