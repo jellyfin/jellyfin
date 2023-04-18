@@ -114,6 +114,65 @@ public class SessionController : BaseJellyfinApiController
     }
 
     /// <summary>
+    /// Gets a list of Simple Session Info, ordered by UserName.
+    /// </summary>
+    /// <param name="controllableByUserId">Filter by sessions that a given user is allowed to remote control.</param>
+    /// <param name="activeWithinSeconds">Optional. Filter by sessions that were active in the last n seconds.</param>
+    /// <response code="200">List of sessions returned.</response>
+    /// <returns>An <see cref="IEnumerable{SimpleSessionInfo}"/> with the available sessions.</returns>
+    [HttpGet("Sessions/Simple")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<IEnumerable<SimpleSessionInfo>> GetSimpleSessionInfo(
+        [FromQuery] Guid? controllableByUserId,
+        [FromQuery] int? activeWithinSeconds)
+    {
+        var sessions = _sessionManager.Sessions
+                .Where(x => x.IsActive && x.NowPlayingItem != null);
+
+        if (controllableByUserId.HasValue && !controllableByUserId.Equals(default))
+        {
+            sessions = sessions.Where(i => i.SupportsRemoteControl);
+
+            var user = _userManager.GetUserById(controllableByUserId.Value);
+            if (user is null)
+            {
+                return NotFound();
+            }
+
+            if (activeWithinSeconds.HasValue && activeWithinSeconds.Value > 0)
+            {
+                var minActiveDate = DateTime.UtcNow.AddSeconds(0 - activeWithinSeconds.Value);
+                sessions = sessions.Where(i => i.LastActivityDate >= minActiveDate);
+            }
+
+            sessions = sessions.Where(i =>
+            {
+                if (!string.IsNullOrWhiteSpace(i.DeviceId))
+                {
+                    if (!_deviceManager.CanAccessDevice(user, i.DeviceId))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+        }
+
+        var result = sessions.OrderBy(x => x.UserName).Select(x => new SimpleSessionInfo
+        {
+            UserName = x.UserName,
+            Name = x.NowPlayingItem.Name,
+            DeviceName = x.DeviceName,
+            DeviceId = x.DeviceId,
+            LastActivityDate = x.LastActivityDate,
+        });
+
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Instructs a session to browse to an item or view.
     /// </summary>
     /// <param name="sessionId">The session Id.</param>
