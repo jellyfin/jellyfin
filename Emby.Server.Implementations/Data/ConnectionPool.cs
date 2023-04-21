@@ -1,16 +1,22 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Concurrent;
 using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Data;
 
+/// <summary>
+/// A pool of SQLite Database connections.
+/// </summary>
 public sealed class ConnectionPool : IDisposable
 {
     private readonly BlockingCollection<SQLiteDatabaseConnection> _connections = new();
     private bool _disposed;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ConnectionPool" /> class.
+    /// </summary>
+    /// <param name="count">The number of database connection to create.</param>
+    /// <param name="factory">Factory function to create the database connections.</param>
     public ConnectionPool(int count, Func<SQLiteDatabaseConnection> factory)
     {
         for (int i = 0; i < count; i++)
@@ -19,6 +25,10 @@ public sealed class ConnectionPool : IDisposable
         }
     }
 
+    /// <summary>
+    /// Gets a database connection from the pool if one is available, otherwise blocks.
+    /// </summary>
+    /// <returns>A database connection.</returns>
     public ManagedConnection GetConnection()
     {
         if (_disposed)
@@ -34,6 +44,10 @@ public sealed class ConnectionPool : IDisposable
         }
     }
 
+    /// <summary>
+    /// Return a database connection to the pool.
+    /// </summary>
+    /// <param name="connection">The database connection to return.</param>
     public void Return(SQLiteDatabaseConnection connection)
     {
         if (_disposed)
@@ -45,6 +59,7 @@ public sealed class ConnectionPool : IDisposable
         _connections.Add(connection);
     }
 
+    /// <inheritdoc />
     public void Dispose()
     {
         if (_disposed)

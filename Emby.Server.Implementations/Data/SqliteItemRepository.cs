@@ -336,7 +336,7 @@ namespace Emby.Server.Implementations.Data
             _jsonOptions = JsonDefaults.Options;
 
             DbFilePath = Path.Combine(_config.ApplicationPaths.DataPath, "library.db");
-            ReadConnectionsCount = 5;
+            ReadConnectionsCount = Environment.ProcessorCount * 2;
         }
 
         /// <inheritdoc />
