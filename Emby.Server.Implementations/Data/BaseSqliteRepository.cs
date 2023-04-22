@@ -73,9 +73,10 @@ namespace Emby.Server.Implementations.Data
 
         /// <summary>
         /// Gets the journal size limit. <see href="https://www.sqlite.org/pragma.html#pragma_journal_size_limit" />.
+        /// The default (-1) is overriden to prevent unconstrained WAL size, as reported by users.
         /// </summary>
         /// <value>The journal size limit.</value>
-        protected virtual int? JournalSizeLimit => 0;
+        protected virtual int? JournalSizeLimit => 134_217_728; // 128MiB
 
         /// <summary>
         /// Gets the page size.
