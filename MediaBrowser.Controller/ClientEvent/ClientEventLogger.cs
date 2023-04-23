@@ -23,6 +23,11 @@ namespace MediaBrowser.Controller.ClientEvent
         {
             var fileName = $"upload_{clientName}_{clientVersion}_{DateTime.UtcNow:yyyyMMddHHmmss}_{Guid.NewGuid():N}.log";
             var logFilePath = Path.Combine(_applicationPaths.LogDirectoryPath, fileName);
+            if (!Path.GetFullPath(logFilePath).StartsWith(_applicationPaths.LogDirectoryPath, StringComparison.Ordinal))
+            {
+                throw new ArgumentException("Path resolved to filename not in log directory");
+            }
+
             await using var fileStream = new FileStream(logFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
             await fileContents.CopyToAsync(fileStream).ConfigureAwait(false);
             return fileName;
