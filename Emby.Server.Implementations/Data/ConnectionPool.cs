@@ -72,6 +72,8 @@ public sealed class ConnectionPool : IDisposable
             connection.Dispose();
         }
 
+        _connections.Dispose();
+
         _disposed = true;
     }
 }
