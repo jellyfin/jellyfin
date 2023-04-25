@@ -24,7 +24,7 @@ public sealed class SimpleSessionInfo
     /// </summary>
     /// <value>The name of the device playing.</value>
     public string DeviceName { get; set; }
-    
+
     /// <summary>
     /// Gets or sets the device id.
     /// </summary>
