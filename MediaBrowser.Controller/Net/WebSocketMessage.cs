@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 using MediaBrowser.Model.Session;
 
 namespace MediaBrowser.Controller.Net;
@@ -22,5 +23,6 @@ public abstract class WebSocketMessage
     /// <summary>
     /// Gets or sets the server id.
     /// </summary>
+    [JsonIgnore]
     public string? ServerId { get; set; }
 }
