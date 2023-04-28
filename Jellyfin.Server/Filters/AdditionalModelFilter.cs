@@ -61,7 +61,7 @@ namespace Jellyfin.Server.Filters
                 {
                     Type = "object",
                     Description = "Represents the list of possible outbound websocket types",
-                    AllOf = websocketTypes
+                    OneOf = websocketTypes
                         .Where(t => typeof(IOutboundWebSocketMessage).IsAssignableFrom(t))
                         .Select(t => context.SchemaGenerator.GenerateSchema(t, context.SchemaRepository))
                         .ToList()
