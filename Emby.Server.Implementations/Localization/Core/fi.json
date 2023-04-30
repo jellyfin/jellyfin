@@ -118,7 +118,7 @@
     "TaskCleanActivityLogDescription": "Poistaa määritettyä ikää vanhemmat tapahtumat toimintahistoriasta.",
     "TaskCleanActivityLog": "Tyhjennä toimintahistoria",
     "Undefined": "Määrittelemätön",
-    "TaskOptimizeDatabaseDescription": "Tiivistää ja puhdistaa tietokannan. Tämän toiminnon suorittaminen kirjastojen skannauksen tai muiden tietokantaan liittyvien muutoksien jälkeen voi parantaa suorituskykyä.",
+    "TaskOptimizeDatabaseDescription": "Tiivistää ja puhdistaa tietokannan. Tämän toiminnon suorittaminen kirjastopäivityksen tai muiden mahdollisten tietokantamuutosten jälkeen voi parantaa suorituskykyä.",
     "TaskOptimizeDatabase": "Optimoi tietokanta",
     "TaskKeyframeExtractorDescription": "Purkaa videotiedostojen avainkuvat tarkempien HLS-toistolistojen luomiseksi. Tehtävä saattaa kestää huomattavan pitkään.",
     "TaskKeyframeExtractor": "Avainkuvien purkain",
