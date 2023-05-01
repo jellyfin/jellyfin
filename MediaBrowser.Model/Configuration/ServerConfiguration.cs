@@ -158,6 +158,12 @@ namespace MediaBrowser.Model.Configuration
         public int MaxAudiobookResume { get; set; } = 5;
 
         /// <summary>
+        /// Gets or sets the threshold in minutes after a inactive session gets closed automatically.
+        /// </summary>
+        /// <value>The close inactive session threshold in minutes.</value>
+        public int InactiveSessionThreshold { get; set; } = 10;
+
+        /// <summary>
         /// Gets or sets the delay in seconds that we will wait after a file system change to try and discover what has been added/removed
         /// Some delay is necessary with some items because their creation is not atomic.  It involves the creation of several
         /// different directories and files.

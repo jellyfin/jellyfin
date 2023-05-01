@@ -19,6 +19,7 @@ using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
@@ -46,6 +47,7 @@ namespace Emby.Server.Implementations.Session
     public class SessionManager : ISessionManager, IDisposable
     {
         private readonly IUserDataManager _userDataManager;
+        private readonly IServerConfigurationManager _config;
         private readonly ILogger<SessionManager> _logger;
         private readonly IEventManager _eventManager;
         private readonly ILibraryManager _libraryManager;
@@ -65,8 +67,6 @@ namespace Emby.Server.Implementations.Session
         private Timer _idleTimer;
         private Timer _inactiveTimer;
 
-        private int inactiveMinutesThreshold = 10;
-
         private DtoOptions _itemInfoDtoOptions;
         private bool _disposed = false;
 
@@ -74,6 +74,7 @@ namespace Emby.Server.Implementations.Session
             ILogger<SessionManager> logger,
             IEventManager eventManager,
             IUserDataManager userDataManager,
+            IServerConfigurationManager config,
             ILibraryManager libraryManager,
             IUserManager userManager,
             IMusicManager musicManager,
@@ -86,6 +87,7 @@ namespace Emby.Server.Implementations.Session
             _logger = logger;
             _eventManager = eventManager;
             _userDataManager = userDataManager;
+            _config = config;
             _libraryManager = libraryManager;
             _userManager = userManager;
             _musicManager = musicManager;
@@ -581,7 +583,15 @@ namespace Emby.Server.Implementations.Session
         private void StartCheckTimers()
         {
             _idleTimer ??= new Timer(CheckForIdlePlayback, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
-            _inactiveTimer ??= new Timer(CheckForInactiveSteams, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+
+            if (_config.Configuration.InactiveSessionThreshold > 0)
+            {
+                _inactiveTimer ??= new Timer(CheckForInactiveSteams, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+            }
+            else
+            {
+                StopInactiveCheckTimer();
+            }
         }
 
         private void StopIdleCheckTimer()
@@ -652,11 +662,11 @@ namespace Emby.Server.Implementations.Session
 
             if (pausedSessions.Count > 0)
             {
-                var inactiveSessions = Sessions.Where(i => (DateTime.UtcNow - i.LastPausedDate).Value.TotalMinutes > inactiveMinutesThreshold).ToList();
+                var inactiveSessions = pausedSessions.Where(i => (DateTime.UtcNow - i.LastPausedDate).Value.TotalMinutes > _config.Configuration.InactiveSessionThreshold).ToList();
 
                 foreach (var session in inactiveSessions)
                 {
-                    _logger.LogDebug("Session {0} has been inactive for {1} minutes. Stopping it.", session.Id, inactiveMinutesThreshold);
+                    _logger.LogDebug("Session {0} has been inactive for {1} minutes. Stopping it.", session.Id, _config.Configuration.InactiveSessionThreshold);
 
                     try
                     {
