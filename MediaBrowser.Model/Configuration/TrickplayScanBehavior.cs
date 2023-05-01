@@ -1,18 +1,17 @@
-namespace MediaBrowser.Model.Configuration
+namespace MediaBrowser.Model.Configuration;
+
+/// <summary>
+/// Enum TrickplayScanBehavior.
+/// </summary>
+public enum TrickplayScanBehavior
 {
     /// <summary>
-    /// Enum TrickplayScanBehavior.
+    /// Starts generation, only return once complete.
     /// </summary>
-    public enum TrickplayScanBehavior
-    {
-        /// <summary>
-        /// Starts generation, only return once complete.
-        /// </summary>
-        Blocking,
+    Blocking,
 
-        /// <summary>
-        /// Start generation, return immediately.
-        /// </summary>
-        NonBlocking
-    }
+    /// <summary>
+    /// Start generation, return immediately.
+    /// </summary>
+    NonBlocking
 }

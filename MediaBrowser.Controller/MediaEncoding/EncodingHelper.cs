@@ -90,6 +90,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             { "truehd", 6 },
         };
 
+        private static readonly string _defaultMjpegEncoder = "mjpeg";
+        private static readonly Dictionary<string, string> _mjpegCodecMap = new(StringComparer.OrdinalIgnoreCase)
+        {
+            { "vaapi", _defaultMjpegEncoder + "_vaapi" },
+            { "qsv", _defaultMjpegEncoder + "_qsv" }
+        };
+
         public static readonly string[] LosslessAudioCodecs = new string[]
         {
             "alac",
@@ -151,32 +158,20 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         private string GetMjpegEncoder(EncodingJobInfo state, EncodingOptions encodingOptions)
         {
-            var defaultEncoder = "mjpeg";
-
             if (state.VideoType == VideoType.VideoFile)
             {
                 var hwType = encodingOptions.HardwareAccelerationType;
 
-                var codecMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    { "vaapi",                  defaultEncoder + "_vaapi" },
-                    { "qsv",                defaultEncoder + "_qsv" }
-                };
-
                 if (!string.IsNullOrEmpty(hwType)
                     && encodingOptions.EnableHardwareEncoding
-                    && codecMap.ContainsKey(hwType))
+                    && _mjpegCodecMap.TryGetValue(hwType, out var preferredEncoder)
+                    && _mediaEncoder.SupportsEncoder(preferredEncoder))
                 {
-                    var preferredEncoder = codecMap[hwType];
-
-                    if (_mediaEncoder.SupportsEncoder(preferredEncoder))
-                    {
-                        return preferredEncoder;
-                    }
+                    return preferredEncoder;
                 }
             }
 
-            return defaultEncoder;
+            return _defaultMjpegEncoder;
         }
 
         private bool IsVaapiSupported(EncodingJobInfo state)
