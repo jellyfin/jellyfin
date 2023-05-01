@@ -106,6 +106,20 @@ namespace Jellyfin.Server.Implementations.Users
         public IEnumerable<Guid> UsersIds => _users.Keys;
 
         /// <inheritdoc/>
+        public User? GetUserAdmin()
+        {
+            foreach (var (guid, user) in _users)
+            {
+                if (user.HasPermission(PermissionKind.IsAdministrator))
+                {
+                    return user;
+                }
+            }
+
+            return null;
+        }
+
+        /// <inheritdoc/>
         public User? GetUserById(Guid id)
         {
             if (id.Equals(default))

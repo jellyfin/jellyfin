@@ -239,14 +239,13 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery] bool? enableImages = true)
     {
         var isApiKey = User.GetIsApiKey();
-        // if api key is used (auth.IsApiKey == true), then `user` will be null throughout this method
+        // if api key is used (auth.IsApiKey == true), then `user` will be an admin
         userId = RequestHelpers.GetUserId(User, userId);
         var user = !isApiKey && !userId.Value.Equals(default)
             ? _userManager.GetUserById(userId.Value) ?? throw new ResourceNotFoundException()
-            : null;
+            : _userManager.GetUserAdmin();
 
-        // beyond this point, we're either using an api key or we have a valid user
-        if (!isApiKey && user is null)
+        if (user is null)
         {
             return BadRequest("userId is required");
         }

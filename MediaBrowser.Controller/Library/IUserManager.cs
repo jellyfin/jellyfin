@@ -40,6 +40,12 @@ namespace MediaBrowser.Controller.Library
         Task InitializeAsync();
 
         /// <summary>
+        /// Gets an admin user for api's where the user is unknown but required. Requires initial user setup.
+        /// </summary>
+        /// <returns>The user or <c>null</c> if initial setup is not completed.</returns>
+        User? GetUserAdmin();
+
+        /// <summary>
         /// Gets a user by Id.
         /// </summary>
         /// <param name="id">The id.</param>
