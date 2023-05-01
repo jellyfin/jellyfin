@@ -110,6 +110,12 @@ namespace MediaBrowser.Controller.Session
         public DateTime LastPlaybackCheckIn { get; set; }
 
         /// <summary>
+        /// Gets or sets the last paused date.
+        /// </summary>
+        /// <value>The last paused date.</value>
+        public DateTime? LastPausedDate { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the device.
         /// </summary>
         /// <value>The name of the device.</value>
