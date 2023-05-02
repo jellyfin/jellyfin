@@ -79,7 +79,7 @@ public class CleanupCollectionPathsTask : IScheduledTask
             var collection = collections[index];
             _logger.LogDebug("Check Boxset {CollectionName}", collection.Name);
             var itemsToRemove = new List<LinkedChild>();
-            foreach (var collectionLinkedChild in collection.LinkedChildren.ToArray())
+            foreach (var collectionLinkedChild in collection.LinkedChildren)
             {
                 if (!File.Exists(collectionLinkedChild.Path))
                 {
