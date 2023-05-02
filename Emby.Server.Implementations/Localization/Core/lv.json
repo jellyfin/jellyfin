@@ -120,5 +120,6 @@
     "Default": "Noklusējuma",
     "TaskOptimizeDatabaseDescription": "Saspiež datubāzi un atbrīvo atmiņu. Uzdevum palaišana pēc bibliotēku skenēšanas vai citām, ar datubāzi saistītām, izmaiņām iespējams uzlabos ātrdarbību.",
     "TaskOptimizeDatabase": "Optimizēt datubāzi",
-    "External": "Ārējais"
+    "External": "Ārējais",
+    "HearingImpaired": "Ar dzirdes traucējumiem"
 }
