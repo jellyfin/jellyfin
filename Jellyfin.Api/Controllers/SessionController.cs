@@ -53,6 +53,7 @@ public class SessionController : BaseJellyfinApiController
     /// <param name="controllableByUserId">Filter by sessions that a given user is allowed to remote control.</param>
     /// <param name="deviceId">Filter by device Id.</param>
     /// <param name="activeWithinSeconds">Optional. Filter by sessions that were active in the last n seconds.</param>
+    /// <param name="nowPlaying">Optional. Filter by sessions that are currently playing content.</param>
     /// <response code="200">List of sessions returned.</response>
     /// <returns>An <see cref="IEnumerable{SessionInfo}"/> with the available sessions.</returns>
     [HttpGet("Sessions")]
@@ -61,7 +62,8 @@ public class SessionController : BaseJellyfinApiController
     public ActionResult<IEnumerable<SessionInfo>> GetSessions(
         [FromQuery] Guid? controllableByUserId,
         [FromQuery] string? deviceId,
-        [FromQuery] int? activeWithinSeconds)
+        [FromQuery] int? activeWithinSeconds,
+        [FromQuery] bool? nowPlaying)
     {
         var result = _sessionManager.Sessions;
 
@@ -108,6 +110,11 @@ public class SessionController : BaseJellyfinApiController
 
                 return true;
             });
+        }
+
+        if (nowPlaying.GetValueOrDefault())
+        {
+            result = result.Where(i => i.NowPlayingItem != null);
         }
 
         return Ok(result);
