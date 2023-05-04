@@ -38,9 +38,9 @@ public sealed class ConnectionPool : IDisposable
 
         return new ManagedConnection(_connections.Take(), this);
 
-        void ThrowObjectDisposedException()
+        static void ThrowObjectDisposedException()
         {
-            throw new ObjectDisposedException(GetType().Name);
+            throw new ObjectDisposedException(nameof(ConnectionPool));
         }
     }
 
