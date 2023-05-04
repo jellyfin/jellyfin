@@ -112,9 +112,11 @@ public class SessionController : BaseJellyfinApiController
             });
         }
 
-        if (nowPlaying.GetValueOrDefault())
+        if (nowPlaying.HasValue)
         {
-            result = result.Where(i => i.NowPlayingItem != null);
+            result = nowPlaying.Value
+                ? result.Where(i => i.NowPlayingItem != null)
+                : result.Where(i => i.NowPlayingItem == null);
         }
 
         return Ok(result);
