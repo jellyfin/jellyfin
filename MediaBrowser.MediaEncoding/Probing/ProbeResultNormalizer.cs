@@ -70,6 +70,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             "Phantom/Ghost",
             "She/Her/Hers",
             "5/8erl in Ehr'n",
+            "Smith/Kotzen",
         };
 
         public MediaInfo GetMediaInfo(InternalMediaInfoResult data, VideoType? videoType, bool isAudio, string path, MediaProtocol protocol)
