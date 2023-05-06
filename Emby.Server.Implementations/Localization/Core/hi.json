@@ -92,6 +92,17 @@
     "System": "प्रणाली",
     "TvShows": "टीवी शो",
     "HearingImpaired": "मूक बधिर",
-    "ValueSpecialEpisodeName": "विशेष",
-    "TasksMaintenanceCategory": "रखरखाव"
+    "ValueSpecialEpisodeName": "विशेष - {0}",
+    "TasksMaintenanceCategory": "रखरखाव",
+    "Sync": "समाकलयति",
+    "VersionNumber": "{0} पाठान्तर",
+    "ValueHasBeenAddedToLibrary": "{0} आपके माध्यम ग्रन्थालय में उपजात हो गया हैं",
+    "TasksLibraryCategory": "संग्रहालय",
+    "TaskOptimizeDatabase": "जानकारी प्रवृद्धि",
+    "TaskDownloadMissingSubtitles": "असमेत अनुलेख को अवाहरति करें",
+    "TaskRefreshLibrary": "माध्यम संग्राहत को छाने",
+    "TaskCleanActivityLog": "क्रियाकलाप लॉग साफ करें",
+    "TasksChannelsCategory": "इंटरनेट प्रणाली",
+    "TasksApplicationCategory": "अनुप्रयोग",
+    "TaskRefreshPeople": "लोगोकी जानकारी ताज़ी करें"
 }
