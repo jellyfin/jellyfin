@@ -30,6 +30,8 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableRealtimeMonitor { get; set; }
 
+        public bool EnableLUFSScan { get; set; }
+
         public bool EnableChapterImageExtraction { get; set; }
 
         public bool ExtractChapterImagesDuringLibraryScan { get; set; }

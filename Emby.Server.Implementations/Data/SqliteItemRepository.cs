@@ -489,7 +489,7 @@ namespace Emby.Server.Implementations.Data
                         AddColumn(db, "TypedBaseItems", "PrimaryVersionId", "Text", existingColumnNames);
                         AddColumn(db, "TypedBaseItems", "DateLastMediaAdded", "DATETIME", existingColumnNames);
                         AddColumn(db, "TypedBaseItems", "Album", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "LUFS", "Text", existingColumnNames);
+                        AddColumn(db, "TypedBaseItems", "LUFS", "Float", existingColumnNames);
                         AddColumn(db, "TypedBaseItems", "IsVirtualItem", "BIT", existingColumnNames);
                         AddColumn(db, "TypedBaseItems", "SeriesName", "Text", existingColumnNames);
                         AddColumn(db, "TypedBaseItems", "UserDataKey", "Text", existingColumnNames);
@@ -1754,7 +1754,7 @@ namespace Emby.Server.Implementations.Data
                 item.Album = album;
             }
 
-            if (reader.TryGetString(index++, out var lUFS))
+            if (reader.TryGetSingle(index++, out var lUFS))
             {
                 item.LUFS = lUFS;
             }

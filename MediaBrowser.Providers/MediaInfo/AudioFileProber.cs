@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -90,27 +91,36 @@ namespace MediaBrowser.Providers.MediaInfo
                 Fetch(item, result, cancellationToken);
             }
 
-            string output;
-            using (System.Diagnostics.Process proc = new System.Diagnostics.Process())
-            {
-                proc.StartInfo.FileName = _mediaEncoder.EncoderPath;
-                proc.StartInfo.Arguments = $"-hide_banner -i \"{path}\" -af ebur128=framelog=verbose -f null -";
-                proc.StartInfo.RedirectStandardOutput = false;
-                proc.StartInfo.RedirectStandardError = true;
-                proc.Start();
-                output = await proc.StandardError.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
-                cancellationToken.ThrowIfCancellationRequested();
-            }
+            var libraryOptions = _libraryManager.GetLibraryOptions(item);
 
-            MatchCollection split = Regex.Matches(output, @"I:\s+(.*?)\s+LUFS");
-
-            if (split.Count != 0)
+            if (libraryOptions.EnableLUFSScan)
             {
-                item.LUFS = split[0].Groups[1].ToString();
+                string output;
+                using (System.Diagnostics.Process proc = new System.Diagnostics.Process())
+                {
+                    proc.StartInfo.FileName = _mediaEncoder.EncoderPath;
+                    proc.StartInfo.Arguments = $"-hide_banner -i \"{path}\" -af ebur128=framelog=verbose -f null -";
+                    proc.StartInfo.RedirectStandardOutput = false;
+                    proc.StartInfo.RedirectStandardError = true;
+                    proc.Start();
+                    output = await proc.StandardError.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
+
+                MatchCollection split = Regex.Matches(output, @"I:\s+(.*?)\s+LUFS");
+
+                if (split.Count != 0)
+                {
+                    item.LUFS = float.Parse(split[0].Groups[1].ToString(), CultureInfo.InvariantCulture.NumberFormat);
+                }
+                else
+                {
+                    item.LUFS = -18;
+                }
             }
             else
             {
-                item.LUFS = null;
+                item.LUFS = -18;
             }
 
             return ItemUpdateType.MetadataImport;
