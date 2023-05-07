@@ -225,7 +225,6 @@
  - [Detector1](https://github.com/Detector1)
  - [BlackIce013](https://github.com/blackice013)
  - [mporcas](https://github.com/mporcas)
- - [TelepathicWalrus](https://github.com/TelepathicWalrus)
  - [tikuf](https://github.com/tikuf/)
  - [Tim Hobbs](https://github.com/timhobbs)
  - [SvenVandenbrande](https://github.com/SvenVandenbrande)
