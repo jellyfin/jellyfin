@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -16,6 +17,7 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
+using Microsoft.Extensions.Logging;
 using TagLib;
 
 namespace MediaBrowser.Providers.MediaInfo
@@ -25,6 +27,7 @@ namespace MediaBrowser.Providers.MediaInfo
     /// </summary>
     public class AudioFileProber
     {
+        private readonly ILogger<AudioFileProber> _logger;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IItemRepository _itemRepo;
         private readonly ILibraryManager _libraryManager;
@@ -33,16 +36,19 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <summary>
         /// Initializes a new instance of the <see cref="AudioFileProber"/> class.
         /// </summary>
+        /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
         /// <param name="itemRepo">Instance of the <see cref="IItemRepository"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         public AudioFileProber(
+            ILogger<AudioFileProber> logger,
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
             IItemRepository itemRepo,
             ILibraryManager libraryManager)
         {
+            _logger = logger;
             _mediaEncoder = mediaEncoder;
             _itemRepo = itemRepo;
             _libraryManager = libraryManager;
@@ -96,32 +102,48 @@ namespace MediaBrowser.Providers.MediaInfo
             if (libraryOptions.EnableLUFSScan)
             {
                 string output;
-                using (System.Diagnostics.Process proc = new System.Diagnostics.Process())
+                using (var process = new Process()
                 {
-                    proc.StartInfo.FileName = _mediaEncoder.EncoderPath;
-                    proc.StartInfo.Arguments = $"-hide_banner -i \"{path}\" -af ebur128=framelog=verbose -f null -";
-                    proc.StartInfo.RedirectStandardOutput = false;
-                    proc.StartInfo.RedirectStandardError = true;
-                    proc.Start();
-                    output = await proc.StandardError.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = _mediaEncoder.EncoderPath,
+                        Arguments = $"-hide_banner -i \"{path}\" -af ebur128=framelog=verbose -f null -",
+                        RedirectStandardOutput = false,
+                        RedirectStandardError = true
+                    },
+                })
+                {
+                    try
+                    {
+                        process.Start();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error starting ffmpeg");
+
+                        throw;
+                    }
+
+                    output = await process.StandardError.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
                     cancellationToken.ThrowIfCancellationRequested();
-                }
+                    MatchCollection split = Regex.Matches(output, @"I:\s+(.*?)\s+LUFS");
 
-                MatchCollection split = Regex.Matches(output, @"I:\s+(.*?)\s+LUFS");
-
-                if (split.Count != 0)
-                {
-                    item.LUFS = float.Parse(split[0].Groups[1].ToString(), CultureInfo.InvariantCulture.NumberFormat);
-                }
-                else
-                {
-                    item.LUFS = -18;
+                    if (split.Count != 0)
+                    {
+                        item.LUFS = float.Parse(split[0].Groups[1].ToString(), CultureInfo.InvariantCulture.NumberFormat);
+                    }
+                    else
+                    {
+                        item.LUFS = -18;
+                    }
                 }
             }
             else
             {
                 item.LUFS = -18;
             }
+
+            _logger.LogDebug("LUFS for {ItemName} is {LUFS}.", item.Name, item.LUFS);
 
             return ItemUpdateType.MetadataImport;
         }
