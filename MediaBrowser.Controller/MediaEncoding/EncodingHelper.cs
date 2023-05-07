@@ -2148,7 +2148,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var outputScaleFactor = GetVideoBitrateScaleFactor(outputVideoCodec);
 
             // Don't scale the real bitrate lower than the requested bitrate
-            var scaleFactor = Math.Min(outputScaleFactor / inputScaleFactor, 1);
+            var scaleFactor = Math.Max(outputScaleFactor / inputScaleFactor, 1);
 
             if (bitrate <= 500000)
             {
