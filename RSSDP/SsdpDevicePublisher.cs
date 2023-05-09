@@ -223,7 +223,6 @@ namespace Rssdp.Infrastructure
             // Wait on random interval up to MX, as per SSDP spec.
             // Also, as per UPnP 1.1/SSDP spec ignore missing/bank MX header. If over 120, assume random value between 0 and 120.
             // Using 16 as minimum as that's often the minimum system clock frequency anyway.
-            int maxWaitInterval = 0;
             if (String.IsNullOrEmpty(mx))
             {
                 // Windows Explorer is poorly behaved and doesn't supply an MX header value.
@@ -233,7 +232,7 @@ namespace Rssdp.Infrastructure
                 // return;
             }
 
-            if (!Int32.TryParse(mx, out maxWaitInterval) || maxWaitInterval <= 0)
+            if (!Int32.TryParse(mx, out var maxWaitInterval) || maxWaitInterval <= 0)
             {
                 return;
             }
@@ -546,17 +545,14 @@ namespace Rssdp.Infrastructure
             {
                 return nonzeroCacheLifetimesQuery.Min();
             }
-            else
-            {
-                return TimeSpan.Zero;
-            }
+
+            return TimeSpan.Zero;
         }
 
         private string GetFirstHeaderValue(System.Net.Http.Headers.HttpRequestHeaders httpRequestHeaders, string headerName)
         {
             string retVal = null;
-            IEnumerable<String> values = null;
-            if (httpRequestHeaders.TryGetValues(headerName, out values) && values is not null)
+            if (httpRequestHeaders.TryGetValues(headerName, out var values) && values is not null)
             {
                 retVal = values.FirstOrDefault();
             }
@@ -618,7 +614,7 @@ namespace Rssdp.Infrastructure
 
             public string Key
             {
-                get { return this.SearchTarget + ":" + this.EndPoint.ToString(); }
+                get { return this.SearchTarget + ":" + this.EndPoint; }
             }
 
             public bool IsOld()

@@ -12,6 +12,7 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.PlaybackDtos;
 using Jellyfin.Api.Models.StreamingDtos;
+using Jellyfin.Extensions;
 using Jellyfin.MediaEncoding.Hls.Playlist;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
@@ -19,7 +20,6 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
@@ -1687,14 +1687,25 @@ public class DynamicHlsController : BaseJellyfinApiController
 
             audioTranscodeParams += "-acodec " + audioCodec;
 
-            if (state.OutputAudioBitrate.HasValue)
+            var audioBitrate = state.OutputAudioBitrate;
+            var audioChannels = state.OutputAudioChannels;
+
+            if (audioBitrate.HasValue && !EncodingHelper.LosslessAudioCodecs.Contains(state.ActualOutputAudioCodec, StringComparison.OrdinalIgnoreCase))
             {
-                audioTranscodeParams += " -ab " + state.OutputAudioBitrate.Value.ToString(CultureInfo.InvariantCulture);
+                var vbrParam = _encodingHelper.GetAudioVbrModeParam(audioCodec, audioBitrate.Value / (audioChannels ?? 2));
+                if (_encodingOptions.EnableAudioVbr && vbrParam is not null)
+                {
+                    audioTranscodeParams += vbrParam;
+                }
+                else
+                {
+                    audioTranscodeParams += " -ab " + audioBitrate.Value.ToString(CultureInfo.InvariantCulture);
+                }
             }
 
-            if (state.OutputAudioChannels.HasValue)
+            if (audioChannels.HasValue)
             {
-                audioTranscodeParams += " -ac " + state.OutputAudioChannels.Value.ToString(CultureInfo.InvariantCulture);
+                audioTranscodeParams += " -ac " + audioChannels.Value.ToString(CultureInfo.InvariantCulture);
             }
 
             if (state.OutputAudioSampleRate.HasValue)
@@ -1708,11 +1719,11 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         // dts, flac, opus and truehd are experimental in mp4 muxer
         var strictArgs = string.Empty;
-
-        if (string.Equals(state.ActualOutputAudioCodec, "flac", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(state.ActualOutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(state.ActualOutputAudioCodec, "dts", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(state.ActualOutputAudioCodec, "truehd", StringComparison.OrdinalIgnoreCase))
+        var actualOutputAudioCodec = state.ActualOutputAudioCodec;
+        if (string.Equals(actualOutputAudioCodec, "flac", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(actualOutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(actualOutputAudioCodec, "dts", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(actualOutputAudioCodec, "truehd", StringComparison.OrdinalIgnoreCase))
         {
             strictArgs = " -strict -2";
         }
@@ -1746,10 +1757,17 @@ public class DynamicHlsController : BaseJellyfinApiController
         }
 
         var bitrate = state.OutputAudioBitrate;
-
-        if (bitrate.HasValue)
+        if (bitrate.HasValue && !EncodingHelper.LosslessAudioCodecs.Contains(actualOutputAudioCodec, StringComparison.OrdinalIgnoreCase))
         {
-            args += " -ab " + bitrate.Value.ToString(CultureInfo.InvariantCulture);
+            var vbrParam = _encodingHelper.GetAudioVbrModeParam(audioCodec, bitrate.Value / (channels ?? 2));
+            if (_encodingOptions.EnableAudioVbr && vbrParam is not null)
+            {
+                args += vbrParam;
+            }
+            else
+            {
+                args += " -ab " + bitrate.Value.ToString(CultureInfo.InvariantCulture);
+            }
         }
 
         if (state.OutputAudioSampleRate.HasValue)
@@ -2011,8 +2029,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         {
             return fileSystem.GetFiles(folder, new[] { segmentExtension }, true, false)
                 .Where(i => Path.GetFileNameWithoutExtension(i.Name).StartsWith(filePrefix, StringComparison.OrdinalIgnoreCase))
-                .OrderByDescending(fileSystem.GetLastWriteTimeUtc)
-                .FirstOrDefault();
+                .MaxBy(fileSystem.GetLastWriteTimeUtc);
         }
         catch (IOException)
         {

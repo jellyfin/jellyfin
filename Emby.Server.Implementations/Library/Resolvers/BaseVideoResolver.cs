@@ -78,7 +78,8 @@ namespace Emby.Server.Implementations.Library.Resolvers
                             Set3DFormat(videoTmp);
                             return videoTmp;
                         }
-                        else if (IsBluRayDirectory(filename))
+
+                        if (IsBluRayDirectory(filename))
                         {
                             var videoTmp = new TVideoType
                             {

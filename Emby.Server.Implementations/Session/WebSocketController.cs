@@ -69,9 +69,7 @@ namespace Emby.Server.Implementations.Session
             T data,
             CancellationToken cancellationToken)
         {
-            var socket = GetActiveSockets()
-                .OrderByDescending(i => i.LastActivityDate)
-                .FirstOrDefault();
+            var socket = GetActiveSockets().MaxBy(i => i.LastActivityDate);
 
             if (socket is null)
             {

@@ -627,15 +627,15 @@ namespace Emby.Server.Implementations
                 }
             }
 
+            ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize();
+            ((SqliteUserDataRepository)Resolve<IUserDataRepository>()).Initialize();
+
             var localizationManager = (LocalizationManager)Resolve<ILocalizationManager>();
             await localizationManager.LoadAll().ConfigureAwait(false);
 
             _sessionManager = Resolve<ISessionManager>();
 
             SetStaticProperties();
-
-            var userDataRepo = (SqliteUserDataRepository)Resolve<IUserDataRepository>();
-            ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize(userDataRepo, Resolve<IUserManager>());
 
             FindParts();
         }

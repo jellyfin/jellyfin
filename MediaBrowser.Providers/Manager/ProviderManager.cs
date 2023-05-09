@@ -404,12 +404,6 @@ namespace MediaBrowser.Providers.Manager
                 return false;
             }
 
-            // Prevent owned items from reading the same local metadata file as their owner
-            if (!item.OwnerId.Equals(default) && provider is ILocalMetadataProvider)
-            {
-                return false;
-            }
-
             if (includeDisabled)
             {
                 return true;
@@ -786,10 +780,7 @@ namespace MediaBrowser.Providers.Manager
                         {
                             foreach (var providerId in result.ProviderIds)
                             {
-                                if (!existingMatch.ProviderIds.ContainsKey(providerId.Key))
-                                {
-                                    existingMatch.ProviderIds.Add(providerId.Key, providerId.Value);
-                                }
+                                existingMatch.ProviderIds.TryAdd(providerId.Key, providerId.Value);
                             }
 
                             if (string.IsNullOrWhiteSpace(existingMatch.ImageUrl))

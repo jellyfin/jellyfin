@@ -489,8 +489,7 @@ namespace Rssdp.Infrastructure
                 }
             }
 
-            Uri retVal;
-            Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out retVal);
+            Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out var retVal);
             return retVal;
         }
 
@@ -507,8 +506,7 @@ namespace Rssdp.Infrastructure
                 }
             }
 
-            Uri retVal;
-            Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out retVal);
+            Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out var retVal);
             return retVal;
         }
 
@@ -593,10 +591,8 @@ namespace Rssdp.Infrastructure
             {
                 return OneSecond;
             }
-            else
-            {
-                return searchWaitTime.Subtract(OneSecond);
-            }
+
+            return searchWaitTime.Subtract(OneSecond);
         }
 
         private DiscoveredSsdpDevice FindExistingDeviceNotification(IEnumerable<DiscoveredSsdpDevice> devices, string notificationType, string usn)

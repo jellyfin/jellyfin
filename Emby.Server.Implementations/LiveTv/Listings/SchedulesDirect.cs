@@ -415,14 +415,13 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 return null;
             }
-            else if (uri.IndexOf("http", StringComparison.OrdinalIgnoreCase) != -1)
+
+            if (uri.IndexOf("http", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 return uri;
             }
-            else
-            {
-                return apiUrl + "/image/" + uri + "?token=" + token;
-            }
+
+            return apiUrl + "/image/" + uri + "?token=" + token;
         }
 
         private static double GetAspectRatio(ImageDataDto i)

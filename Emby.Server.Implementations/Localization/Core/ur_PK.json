@@ -12,7 +12,7 @@
     "HeaderContinueWatching": "دیکھنا جاری رکھیں",
     "Playlists": "پلے لسٹس",
     "ValueSpecialEpisodeName": "خصوصی - {0}",
-    "Shows": "دکھاتا ہے۔",
+    "Shows": "دکھاتا ہے",
     "Genres": "انواع",
     "Artists": "فنکار",
     "Sync": "مطابقت پذیری",
@@ -123,5 +123,5 @@
     "TaskCleanActivityLogDescription": "تشکیل شدہ عمر سے زیادہ پرانی سرگرمی لاگ اندراجات کو حذف کرتا ہے۔",
     "External": "بیرونی",
     "HearingImpaired": "قوت سماعت سے محروم",
-    "TaskCleanActivityLog": "سرگرمی لاگ کو صاف کریں۔"
+    "TaskCleanActivityLog": "سرگرمی لاگ کو صاف کریں"
 }

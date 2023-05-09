@@ -170,9 +170,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             var nameInExtInf = nameParts.Length > 1 ? nameParts[^1].AsSpan().Trim() : ReadOnlySpan<char>.Empty;
 
             string numberString = null;
-            string attributeValue;
 
-            if (attributes.TryGetValue("tvg-chno", out attributeValue)
+            if (attributes.TryGetValue("tvg-chno", out var attributeValue)
                 && double.TryParse(attributeValue, CultureInfo.InvariantCulture, out _))
             {
                 numberString = attributeValue;

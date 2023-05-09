@@ -313,17 +313,13 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
 
                     return true;
                 }
-                else
-                {
-                    // Restoring playing item.
-                    SetPlayingItemByPlaylistId(playingItem.PlaylistItemId);
-                    return false;
-                }
-            }
-            else
-            {
+
+                // Restoring playing item.
+                SetPlayingItemByPlaylistId(playingItem.PlaylistItemId);
                 return false;
             }
+
+            return false;
         }
 
         /// <summary>
@@ -528,10 +524,8 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
             {
                 return _shuffledPlaylist;
             }
-            else
-            {
-                return _sortedPlaylist;
-            }
+
+            return _sortedPlaylist;
         }
 
         /// <summary>
@@ -544,14 +538,13 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
             {
                 return null;
             }
-            else if (ShuffleMode.Equals(GroupShuffleMode.Shuffle))
+
+            if (ShuffleMode.Equals(GroupShuffleMode.Shuffle))
             {
                 return _shuffledPlaylist[PlayingItemIndex];
             }
-            else
-            {
-                return _sortedPlaylist[PlayingItemIndex];
-            }
+
+            return _sortedPlaylist[PlayingItemIndex];
         }
     }
 }

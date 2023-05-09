@@ -80,7 +80,8 @@ namespace MediaBrowser.Model.Cryptography
             {
                 throw new FormatException("Hash string must contain a valid id");
             }
-            else if (nextSegment == -1)
+
+            if (nextSegment == -1)
             {
                 return new PasswordHash(hashString.ToString(), Array.Empty<byte>());
             }

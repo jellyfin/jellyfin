@@ -141,8 +141,7 @@ namespace Emby.Naming.Common
             VideoFileStackingRules = new[]
             {
                 new FileStackRule(@"^(?<filename>.*?)(?:(?<=[\]\)\}])|[ _.-]+)[\(\[]?(?<parttype>cd|dvd|part|pt|dis[ck])[ _.-]*(?<number>[0-9]+)[\)\]]?(?:\.[^.]+)?$", true),
-                new FileStackRule(@"^(?<filename>.*?)(?:(?<=[\]\)\}])|[ _.-]+)[\(\[]?(?<parttype>cd|dvd|part|pt|dis[ck])[ _.-]*(?<number>[a-d])[\)\]]?(?:\.[^.]+)?$", false),
-                new FileStackRule(@"^(?<filename>.*?)(?:(?<=[\]\)\}])|[ _.-]?)(?<number>[a-d])(?:\.[^.]+)?$", false)
+                new FileStackRule(@"^(?<filename>.*?)(?:(?<=[\]\)\}])|[ _.-]+)[\(\[]?(?<parttype>cd|dvd|part|pt|dis[ck])[ _.-]*(?<number>[a-d])[\)\]]?(?:\.[^.]+)?$", false)
             };
 
             CleanDateTimes = new[]
@@ -157,7 +156,8 @@ namespace Emby.Naming.Common
                 @"^(?<cleaned>.+?)(\[.*\])",
                 @"^\s*(?<cleaned>.+?)\WE[0-9]+(-|~)E?[0-9]+(\W|$)",
                 @"^\s*\[[^\]]+\](?!\.\w+$)\s*(?<cleaned>.+)",
-                @"^\s*(?<cleaned>.+?)\s+-\s+[0-9]+\s*$"
+                @"^\s*(?<cleaned>.+?)\s+-\s+[0-9]+\s*$",
+                @"^\s*(?<cleaned>.+?)(([-._ ](trailer|sample))|-(scene|clip|behindthescenes|deleted|deletedscene|featurette|short|interview|other|extra))$"
             };
 
             SubtitleFileExtensions = new[]
@@ -270,7 +270,6 @@ namespace Emby.Naming.Common
                 ".sfx",
                 ".shn",
                 ".sid",
-                ".spc",
                 ".stm",
                 ".strm",
                 ".ult",

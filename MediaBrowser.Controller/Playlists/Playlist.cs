@@ -15,6 +15,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Playlists
@@ -232,7 +233,8 @@ namespace MediaBrowser.Controller.Playlists
                 return base.IsVisible(user);
             }
 
-            if (user.Id.Equals(OwnerUserId))
+            var userId = user.Id;
+            if (userId.Equals(OwnerUserId))
             {
                 return true;
             }
@@ -240,10 +242,9 @@ namespace MediaBrowser.Controller.Playlists
             var shares = Shares;
             if (shares.Length == 0)
             {
-                return base.IsVisible(user);
+                return false;
             }
 
-            var userId = user.Id;
             return shares.Any(share => Guid.TryParse(share.UserId, out var id) && id.Equals(userId));
         }
 

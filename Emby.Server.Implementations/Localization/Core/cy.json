@@ -28,7 +28,7 @@
     "NameSeasonNumber": "Tymor {0}",
     "MusicVideos": "Fideos Cerddoriaeth",
     "MixedContent": "Cynnwys amrywiol",
-    "HomeVideos": "Fideos Cartref",
+    "HomeVideos": "Genres",
     "HeaderNextUp": "Nesaf i Fyny",
     "HeaderFavoriteArtists": "Ffefryn Artistiaid",
     "HeaderFavoriteAlbums": "Ffefryn Albwmau",
@@ -122,5 +122,6 @@
     "TaskRefreshChapterImagesDescription": "Creu mân-luniau ar gyfer fideos sydd â phenodau.",
     "TaskRefreshChapterImages": "Echdynnu Lluniau Pennod",
     "TaskCleanCacheDescription": "Dileu ffeiliau cache nad oes eu hangen ar y system mwyach.",
-    "TaskCleanCache": "Gwaghau Ffolder Cache"
+    "TaskCleanCache": "Gwaghau Ffolder Cache",
+    "HearingImpaired": "Nam ar y clyw"
 }

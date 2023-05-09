@@ -336,6 +336,7 @@ namespace Emby.Server.Implementations.Data
             _jsonOptions = JsonDefaults.Options;
 
             DbFilePath = Path.Combine(_config.ApplicationPaths.DataPath, "library.db");
+            ReadConnectionsCount = Environment.ProcessorCount * 2;
         }
 
         /// <inheritdoc />
@@ -347,10 +348,10 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Opens the connection to the database.
         /// </summary>
-        /// <param name="userDataRepo">The user data repository.</param>
-        /// <param name="userManager">The user manager.</param>
-        public void Initialize(SqliteUserDataRepository userDataRepo, IUserManager userManager)
+        public override void Initialize()
         {
+            base.Initialize();
+
             const string CreateMediaStreamsTableCommand
                     = "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, CodecTag TEXT NULL, Comment TEXT NULL, NalLengthSize TEXT NULL, IsAvc BIT NULL, Title TEXT NULL, TimeBase TEXT NULL, CodecTimeBase TEXT NULL, ColorPrimaries TEXT NULL, ColorSpace TEXT NULL, ColorTransfer TEXT NULL, DvVersionMajor INT NULL, DvVersionMinor INT NULL, DvProfile INT NULL, DvLevel INT NULL, RpuPresentFlag INT NULL, ElPresentFlag INT NULL, BlPresentFlag INT NULL, DvBlSignalCompatibilityId INT NULL, IsHearingImpaired BIT NULL, PRIMARY KEY (ItemId, StreamIndex))";
 
@@ -551,8 +552,6 @@ namespace Emby.Server.Implementations.Data
 
                 connection.RunQueries(postQueries);
             }
-
-            userDataRepo.Initialize(userManager, WriteLock, WriteConnection);
         }
 
         public void SaveImages(BaseItem item)
@@ -624,14 +623,8 @@ namespace Emby.Server.Implementations.Data
 
         private void SaveItemsInTransaction(IDatabaseConnection db, IEnumerable<(BaseItem Item, List<Guid> AncestorIds, BaseItem TopParent, string UserDataKey, List<string> InheritedTags)> tuples)
         {
-            var statements = PrepareAll(db, new string[]
-            {
-                SaveItemCommandText,
-                "delete from AncestorIds where ItemId=@ItemId"
-            });
-
-            using (var saveItemStatement = statements[0])
-            using (var deleteAncestorsStatement = statements[1])
+            using (var saveItemStatement = PrepareStatement(db, SaveItemCommandText))
+            using (var deleteAncestorsStatement = PrepareStatement(db, "delete from AncestorIds where ItemId=@ItemId"))
             {
                 var requiresReset = false;
                 foreach (var tuple in tuples)
@@ -1286,15 +1279,13 @@ namespace Emby.Server.Implementations.Data
             CheckDisposed();
 
             using (var connection = GetConnection(true))
+            using (var statement = PrepareStatement(connection, _retrieveItemColumnsSelectQuery))
             {
-                using (var statement = PrepareStatement(connection, _retrieveItemColumnsSelectQuery))
-                {
-                    statement.TryBind("@guid", id);
+                statement.TryBind("@guid", id);
 
-                    foreach (var row in statement.ExecuteQuery())
-                    {
-                        return GetItem(row, new InternalItemsQuery());
-                    }
+                foreach (var row in statement.ExecuteQuery())
+                {
+                    return GetItem(row, new InternalItemsQuery());
                 }
             }
 
@@ -1309,7 +1300,8 @@ namespace Emby.Server.Implementations.Data
                 {
                     return false;
                 }
-                else if (type == typeof(UserRootFolder))
+
+                if (type == typeof(UserRootFolder))
                 {
                     return false;
                 }
@@ -1319,55 +1311,68 @@ namespace Emby.Server.Implementations.Data
             {
                 return false;
             }
-            else if (type == typeof(MusicArtist))
+
+            if (type == typeof(MusicArtist))
             {
                 return false;
             }
-            else if (type == typeof(Person))
+
+            if (type == typeof(Person))
             {
                 return false;
             }
-            else if (type == typeof(MusicGenre))
+
+            if (type == typeof(MusicGenre))
             {
                 return false;
             }
-            else if (type == typeof(Genre))
+
+            if (type == typeof(Genre))
             {
                 return false;
             }
-            else if (type == typeof(Studio))
+
+            if (type == typeof(Studio))
             {
                 return false;
             }
-            else if (type == typeof(PlaylistsFolder))
+
+            if (type == typeof(PlaylistsFolder))
             {
                 return false;
             }
-            else if (type == typeof(PhotoAlbum))
+
+            if (type == typeof(PhotoAlbum))
             {
                 return false;
             }
-            else if (type == typeof(Year))
+
+            if (type == typeof(Year))
             {
                 return false;
             }
-            else if (type == typeof(Book))
+
+            if (type == typeof(Book))
             {
                 return false;
             }
-            else if (type == typeof(LiveTvProgram))
+
+            if (type == typeof(LiveTvProgram))
             {
                 return false;
             }
-            else if (type == typeof(AudioBook))
+
+            if (type == typeof(AudioBook))
             {
                 return false;
             }
-            else if (type == typeof(Audio))
+
+            if (type == typeof(Audio))
             {
                 return false;
             }
-            else if (type == typeof(MusicAlbum))
+
+            if (type == typeof(MusicAlbum))
             {
                 return false;
             }
@@ -1958,22 +1963,19 @@ namespace Emby.Server.Implementations.Data
         {
             CheckDisposed();
 
+            var chapters = new List<ChapterInfo>();
             using (var connection = GetConnection(true))
+            using (var statement = PrepareStatement(connection, "select StartPositionTicks,Name,ImagePath,ImageDateModified from " + ChaptersTableName + " where ItemId = @ItemId order by ChapterIndex asc"))
             {
-                var chapters = new List<ChapterInfo>();
+                statement.TryBind("@ItemId", item.Id);
 
-                using (var statement = PrepareStatement(connection, "select StartPositionTicks,Name,ImagePath,ImageDateModified from " + ChaptersTableName + " where ItemId = @ItemId order by ChapterIndex asc"))
+                foreach (var row in statement.ExecuteQuery())
                 {
-                    statement.TryBind("@ItemId", item.Id);
-
-                    foreach (var row in statement.ExecuteQuery())
-                    {
-                        chapters.Add(GetChapter(row, item));
-                    }
+                    chapters.Add(GetChapter(row, item));
                 }
-
-                return chapters;
             }
+
+            return chapters;
         }
 
         /// <inheritdoc />
@@ -1982,16 +1984,14 @@ namespace Emby.Server.Implementations.Data
             CheckDisposed();
 
             using (var connection = GetConnection(true))
+            using (var statement = PrepareStatement(connection, "select StartPositionTicks,Name,ImagePath,ImageDateModified from " + ChaptersTableName + " where ItemId = @ItemId and ChapterIndex=@ChapterIndex"))
             {
-                using (var statement = PrepareStatement(connection, "select StartPositionTicks,Name,ImagePath,ImageDateModified from " + ChaptersTableName + " where ItemId = @ItemId and ChapterIndex=@ChapterIndex"))
-                {
-                    statement.TryBind("@ItemId", item.Id);
-                    statement.TryBind("@ChapterIndex", index);
+                statement.TryBind("@ItemId", item.Id);
+                statement.TryBind("@ChapterIndex", index);
 
-                    foreach (var row in statement.ExecuteQuery())
-                    {
-                        return GetChapter(row, item);
-                    }
+                foreach (var row in statement.ExecuteQuery())
+                {
+                    return GetChapter(row, item);
                 }
             }
 
@@ -2378,7 +2378,7 @@ namespace Emby.Server.Implementations.Data
                 else
                 {
                     builder.Append(
-                        @"(SELECT CASE WHEN InheritedParentalRatingValue=0
+                        @"(SELECT CASE WHEN COALESCE(InheritedParentalRatingValue, 0)=0
                                 THEN 0
                                 ELSE 10.0 / (1.0 + ABS(InheritedParentalRatingValue - @InheritedParentalRatingValue))
                                 END)");
@@ -2392,6 +2392,7 @@ namespace Emby.Server.Implementations.Data
 
                 // genres, tags, studios, person, year?
                 builder.Append("+ (Select count(1) * 10 from ItemValues where ItemId=Guid and CleanValue in (select CleanValue from ItemValues where ItemId=@SimilarItemId))");
+                builder.Append("+ (Select count(1) * 10 from People where ItemId=Guid and Name in (select Name from People where ItemId=@SimilarItemId))");
 
                 if (item is MusicArtist)
                 {
@@ -2843,13 +2844,10 @@ namespace Emby.Server.Implementations.Data
                 connection.RunInTransaction(
                     db =>
                     {
-                        var itemQueryStatement = PrepareStatement(db, itemQuery);
-                        var totalRecordCountQueryStatement = PrepareStatement(db, totalRecordCountQuery);
-
                         if (!isReturningZeroItems)
                         {
                             using (new QueryTimeLogger(Logger, itemQuery, "GetItems.ItemQuery"))
-                            using (var statement = itemQueryStatement)
+                            using (var statement = PrepareStatement(db, itemQuery))
                             {
                                 if (EnableJoinUserData(query))
                                 {
@@ -2884,7 +2882,7 @@ namespace Emby.Server.Implementations.Data
                         if (query.EnableTotalRecordCount)
                         {
                             using (new QueryTimeLogger(Logger, totalRecordCountQuery, "GetItems.TotalRecordCount"))
-                            using (var statement = totalRecordCountQueryStatement)
+                            using (var statement = PrepareStatement(db, totalRecordCountQuery))
                             {
                                 if (EnableJoinUserData(query))
                                 {
@@ -4753,22 +4751,20 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 commandText.Append(" LIMIT ").Append(query.Limit);
             }
 
+            var list = new List<string>();
             using (var connection = GetConnection(true))
+            using (var statement = PrepareStatement(connection, commandText.ToString()))
             {
-                var list = new List<string>();
-                using (var statement = PrepareStatement(connection, commandText.ToString()))
+                // Run this again to bind the params
+                GetPeopleWhereClauses(query, statement);
+
+                foreach (var row in statement.ExecuteQuery())
                 {
-                    // Run this again to bind the params
-                    GetPeopleWhereClauses(query, statement);
-
-                    foreach (var row in statement.ExecuteQuery())
-                    {
-                        list.Add(row.GetString(0));
-                    }
+                    list.Add(row.GetString(0));
                 }
-
-                return list;
             }
+
+            return list;
         }
 
         public List<PersonInfo> GetPeople(InternalPeopleQuery query)
@@ -4793,23 +4789,20 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 commandText += " LIMIT " + query.Limit;
             }
 
+            var list = new List<PersonInfo>();
             using (var connection = GetConnection(true))
+            using (var statement = PrepareStatement(connection, commandText))
             {
-                var list = new List<PersonInfo>();
+                // Run this again to bind the params
+                GetPeopleWhereClauses(query, statement);
 
-                using (var statement = PrepareStatement(connection, commandText))
+                foreach (var row in statement.ExecuteQuery())
                 {
-                    // Run this again to bind the params
-                    GetPeopleWhereClauses(query, statement);
-
-                    foreach (var row in statement.ExecuteQuery())
-                    {
-                        list.Add(GetPerson(row));
-                    }
+                    list.Add(GetPerson(row));
                 }
-
-                return list;
             }
+
+            return list;
         }
 
         private List<string> GetPeopleWhereClauses(InternalPeopleQuery query, IStatement statement)
@@ -5540,7 +5533,7 @@ AND Type = @InternalPersonType)");
 
                         statement.TryBind("@Name" + index, person.Name);
                         statement.TryBind("@Role" + index, person.Role);
-                        statement.TryBind("@PersonType" + index, person.Type);
+                        statement.TryBind("@PersonType" + index, person.Type.ToString());
                         statement.TryBind("@SortOrder" + index, person.SortOrder);
                         statement.TryBind("@ListOrder" + index, listIndex);
 
@@ -5569,9 +5562,10 @@ AND Type = @InternalPersonType)");
                 item.Role = role;
             }
 
-            if (reader.TryGetString(3, out var type))
+            if (reader.TryGetString(3, out var type)
+                && Enum.TryParse(type, true, out PersonKind personKind))
             {
-                item.Type = type;
+                item.Type = personKind;
             }
 
             if (reader.TryGetInt32(4, out var sortOrder))

@@ -15,6 +15,7 @@ using Jellyfin.Api.Models.LibraryDtos;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
@@ -332,12 +333,26 @@ public class LibraryController : BaseJellyfinApiController
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult DeleteItem(Guid itemId)
     {
-        var item = _libraryManager.GetItemById(itemId);
-        var user = _userManager.GetUserById(User.GetUserId());
+        var isApiKey = User.GetIsApiKey();
+        var userId = User.GetUserId();
+        var user = !isApiKey && !userId.Equals(default)
+            ? _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException()
+            : null;
+        if (!isApiKey && user is null)
+        {
+            return Unauthorized("Unauthorized access");
+        }
 
-        if (!item.CanDelete(user))
+        var item = _libraryManager.GetItemById(itemId);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        if (user is not null && !item.CanDelete(user))
         {
             return Unauthorized("Unauthorized access");
         }
@@ -361,26 +376,31 @@ public class LibraryController : BaseJellyfinApiController
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult DeleteItems([FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids)
     {
-        if (ids.Length == 0)
+        var isApiKey = User.GetIsApiKey();
+        var userId = User.GetUserId();
+        var user = !isApiKey && !userId.Equals(default)
+            ? _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException()
+            : null;
+
+        if (!isApiKey && user is null)
         {
-            return NoContent();
+            return Unauthorized("Unauthorized access");
         }
 
         foreach (var i in ids)
         {
             var item = _libraryManager.GetItemById(i);
-            var user = _userManager.GetUserById(User.GetUserId());
-
-            if (!item.CanDelete(user))
+            if (item is null)
             {
-                if (ids.Length > 1)
-                {
-                    return Unauthorized("Unauthorized access");
-                }
+                return NotFound();
+            }
 
-                continue;
+            if (user is not null && !item.CanDelete(user))
+            {
+                return Unauthorized("Unauthorized access");
             }
 
             _libraryManager.DeleteItem(

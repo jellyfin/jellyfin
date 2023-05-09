@@ -25,11 +25,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "mpeg2video",
             "mpeg4",
             "msmpeg4",
-            "dts",
+            "dca",
             "ac3",
             "aac",
             "mp3",
             "flac",
+            "truehd",
             "h264_qsv",
             "hevc_qsv",
             "mpeg2_qsv",
@@ -59,10 +60,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "aac_at",
             "libfdk_aac",
             "ac3",
+            "dca",
             "libmp3lame",
             "libopus",
             "libvorbis",
             "flac",
+            "truehd",
             "srt",
             "h264_amf",
             "hevc_amf",
@@ -214,12 +217,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 return false;
             }
-            else if (version < MinVersion) // Version is below what we recommend
+
+            if (version < MinVersion) // Version is below what we recommend
             {
                 _logger.LogWarning("FFmpeg validation: The minimum recommended version is {MinVersion}", MinVersion);
                 return false;
             }
-            else if (MaxVersion is not null && version > MaxVersion) // Version is above what we recommend
+
+            if (MaxVersion is not null && version > MaxVersion) // Version is above what we recommend
             {
                 _logger.LogWarning("FFmpeg validation: The maximum recommended version is {MaxVersion}", MaxVersion);
                 return false;
@@ -488,7 +493,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var found = Regex
                 .Matches(output, @"^\s\S{6}\s(?<codec>[\w|-]+)\s+.+$", RegexOptions.Multiline)
-                .Cast<Match>()
                 .Select(x => x.Groups["codec"].Value)
                 .Where(x => required.Contains(x));
 
@@ -517,7 +521,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var found = Regex
                 .Matches(output, @"^\s\S{3}\s(?<filter>[\w|-]+)\s+.+$", RegexOptions.Multiline)
-                .Cast<Match>()
                 .Select(x => x.Groups["filter"].Value)
                 .Where(x => _requiredFilters.Contains(x));
 

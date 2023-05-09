@@ -89,6 +89,16 @@ namespace MediaBrowser.Controller.MediaEncoding
             { "truehd", 6 },
         };
 
+        public static readonly string[] LosslessAudioCodecs = new string[]
+        {
+            "alac",
+            "ape",
+            "flac",
+            "mlp",
+            "truehd",
+            "wavpack"
+        };
+
         public EncodingHelper(
             IApplicationPaths appPaths,
             IMediaEncoder mediaEncoder,
@@ -128,14 +138,10 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (!string.IsNullOrEmpty(hwType)
                     && encodingOptions.EnableHardwareEncoding
-                    && codecMap.ContainsKey(hwType))
+                    && codecMap.TryGetValue(hwType, out var preferredEncoder)
+                    && _mediaEncoder.SupportsEncoder(preferredEncoder))
                 {
-                    var preferredEncoder = codecMap[hwType];
-
-                    if (_mediaEncoder.SupportsEncoder(preferredEncoder))
-                    {
-                        return preferredEncoder;
-                    }
+                    return preferredEncoder;
                 }
             }
 
@@ -551,7 +557,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 return Array.FindIndex(_videoProfilesH264, x => string.Equals(x, profile, StringComparison.OrdinalIgnoreCase));
             }
-            else if (string.Equals("hevc", videoCodec, StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals("hevc", videoCodec, StringComparison.OrdinalIgnoreCase))
             {
                 return Array.FindIndex(_videoProfilesH265, x => string.Equals(x, profile, StringComparison.OrdinalIgnoreCase));
             }
@@ -618,6 +625,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (string.Equals(codec, "flac", StringComparison.OrdinalIgnoreCase))
             {
                 return "flac";
+            }
+
+            if (string.Equals(codec, "dts", StringComparison.OrdinalIgnoreCase))
+            {
+                return "dca";
             }
 
             return codec.ToLowerInvariant();
@@ -827,38 +839,37 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 var filterDevArgs = GetFilterHwDeviceArgs(VaapiAlias);
+                var doOclTonemap = isHwTonemapAvailable && IsOpenclFullSupported();
 
-                if (isHwTonemapAvailable && IsOpenclFullSupported())
+                if (_mediaEncoder.IsVaapiDeviceInteliHD || _mediaEncoder.IsVaapiDeviceInteli965)
                 {
-                    if (_mediaEncoder.IsVaapiDeviceInteliHD || _mediaEncoder.IsVaapiDeviceInteli965)
+                    if (doOclTonemap && !isVaapiDecoder)
                     {
-                        if (!isVaapiDecoder)
-                        {
-                            args.Append(GetOpenclDeviceArgs(0, null, VaapiAlias, OpenclAlias));
-                            filterDevArgs = GetFilterHwDeviceArgs(OpenclAlias);
-                        }
-                    }
-                    else if (_mediaEncoder.IsVaapiDeviceAmd)
-                    {
-                        if (!IsVulkanFullSupported()
-                            || !_mediaEncoder.IsVaapiDeviceSupportVulkanFmtModifier
-                            || Environment.OSVersion.Version < _minKernelVersionAmdVkFmtModifier)
-                        {
-                            args.Append(GetOpenclDeviceArgs(0, "Advanced Micro Devices", null, OpenclAlias));
-                            filterDevArgs = GetFilterHwDeviceArgs(OpenclAlias);
-                        }
-                        else
-                        {
-                            // libplacebo wants an explicitly set vulkan filter device.
-                            args.Append(GetVulkanDeviceArgs(0, null, VaapiAlias, VulkanAlias));
-                            filterDevArgs = GetFilterHwDeviceArgs(VulkanAlias);
-                        }
-                    }
-                    else
-                    {
-                        args.Append(GetOpenclDeviceArgs(0, null, null, OpenclAlias));
+                        args.Append(GetOpenclDeviceArgs(0, null, VaapiAlias, OpenclAlias));
                         filterDevArgs = GetFilterHwDeviceArgs(OpenclAlias);
                     }
+                }
+                else if (_mediaEncoder.IsVaapiDeviceAmd)
+                {
+                    if (IsVulkanFullSupported()
+                        && _mediaEncoder.IsVaapiDeviceSupportVulkanFmtModifier
+                        && Environment.OSVersion.Version >= _minKernelVersionAmdVkFmtModifier)
+                    {
+                        // libplacebo wants an explicitly set vulkan filter device.
+                        args.Append(GetVulkanDeviceArgs(0, null, VaapiAlias, VulkanAlias));
+                        filterDevArgs = GetFilterHwDeviceArgs(VulkanAlias);
+                    }
+                    else if (doOclTonemap)
+                    {
+                        // ROCm/ROCr OpenCL runtime
+                        args.Append(GetOpenclDeviceArgs(0, "Advanced Micro Devices", null, OpenclAlias));
+                        filterDevArgs = GetFilterHwDeviceArgs(OpenclAlias);
+                    }
+                }
+                else if (doOclTonemap)
+                {
+                    args.Append(GetOpenclDeviceArgs(0, null, null, OpenclAlias));
+                    filterDevArgs = GetFilterHwDeviceArgs(OpenclAlias);
                 }
 
                 args.Append(filterDevArgs);
@@ -1099,19 +1110,19 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 return "-bsf:v h264_mp4toannexb";
             }
-            else if (IsH265(stream))
+
+            if (IsH265(stream))
             {
                 return "-bsf:v hevc_mp4toannexb";
             }
-            else if (IsAAC(stream))
+
+            if (IsAAC(stream))
             {
                 // Convert adts header(mpegts) to asc header(mp4).
                 return "-bsf:a aac_adtstoasc";
             }
-            else
-            {
-                return null;
-            }
+
+            return null;
         }
 
         public static string GetAudioBitStreamArguments(EncodingJobInfo state, string segmentContainer, string mediaSourceContainer)
@@ -1189,10 +1200,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     return FormattableString.Invariant($" -rc_mode CBR -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
                 }
-                else
-                {
-                    return FormattableString.Invariant($" -rc_mode VBR -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
-                }
+
+                return FormattableString.Invariant($" -rc_mode VBR -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
             }
 
             return FormattableString.Invariant($" -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
@@ -1406,7 +1415,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var param = string.Empty;
 
             // Tutorials: Enable Intel GuC / HuC firmware loading for Low Power Encoding.
-            // https://01.org/linuxgraphics/downloads/firmware
+            // https://01.org/group/43/downloads/firmware
             // https://wiki.archlinux.org/title/intel_graphics#Enable_GuC_/_HuC_firmware_loading
             // Intel Low Power Encoding can save unnecessary CPU-GPU synchronization,
             // which will reduce overhead in performance intensive tasks such as 4k transcoding and tonemapping.
@@ -2050,9 +2059,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
-            // Video bitrate must fall within requested value
+            // Audio bitrate must fall within requested value
             if (request.AudioBitRate.HasValue
-                && audioStream.BitDepth.HasValue
+                && audioStream.BitRate.HasValue
                 && audioStream.BitRate.Value > request.AudioBitRate.Value)
             {
                 return false;
@@ -2139,7 +2148,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var outputScaleFactor = GetVideoBitrateScaleFactor(outputVideoCodec);
 
             // Don't scale the real bitrate lower than the requested bitrate
-            var scaleFactor = Math.Min(outputScaleFactor / inputScaleFactor, 1);
+            var scaleFactor = Math.Max(outputScaleFactor / inputScaleFactor, 1);
 
             if (bitrate <= 500000)
             {
@@ -2161,56 +2170,96 @@ namespace MediaBrowser.Controller.MediaEncoding
             return Convert.ToInt32(scaleFactor * bitrate);
         }
 
-        public int? GetAudioBitrateParam(BaseEncodingJobOptions request, MediaStream audioStream)
+        public int? GetAudioBitrateParam(BaseEncodingJobOptions request, MediaStream audioStream, int? outputAudioChannels)
         {
-            return GetAudioBitrateParam(request.AudioBitRate, request.AudioCodec, audioStream);
+            return GetAudioBitrateParam(request.AudioBitRate, request.AudioCodec, audioStream, outputAudioChannels);
         }
 
-        public int? GetAudioBitrateParam(int? audioBitRate, string audioCodec, MediaStream audioStream)
+        public int? GetAudioBitrateParam(int? audioBitRate, string audioCodec, MediaStream audioStream, int? outputAudioChannels)
         {
             if (audioStream is null)
             {
                 return null;
             }
 
-            if (audioBitRate.HasValue && string.IsNullOrEmpty(audioCodec))
+            var inputChannels = audioStream.Channels ?? 0;
+            var outputChannels = outputAudioChannels ?? 0;
+            var bitrate = audioBitRate ?? int.MaxValue;
+
+            if (string.IsNullOrEmpty(audioCodec)
+                || string.Equals(audioCodec, "aac", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(audioCodec, "mp3", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(audioCodec, "opus", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(audioCodec, "vorbis", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(audioCodec, "ac3", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(audioCodec, "eac3", StringComparison.OrdinalIgnoreCase))
             {
-                return Math.Min(384000, audioBitRate.Value);
+                return (inputChannels, outputChannels) switch
+                {
+                    (>= 6, >= 6 or 0) => Math.Min(640000, bitrate),
+                    (> 0, > 0) => Math.Min(outputChannels * 128000, bitrate),
+                    (> 0, _) => Math.Min(inputChannels * 128000, bitrate),
+                    (_, _) => Math.Min(384000, bitrate)
+                };
             }
 
-            if (audioBitRate.HasValue && !string.IsNullOrEmpty(audioCodec))
+            if (string.Equals(audioCodec, "dts", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(audioCodec, "dca", StringComparison.OrdinalIgnoreCase))
             {
-                if (string.Equals(audioCodec, "aac", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(audioCodec, "mp3", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(audioCodec, "opus", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(audioCodec, "vorbis", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(audioCodec, "ac3", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(audioCodec, "eac3", StringComparison.OrdinalIgnoreCase))
+                return (inputChannels, outputChannels) switch
                 {
-                    if ((audioStream.Channels ?? 0) >= 6)
-                    {
-                        return Math.Min(640000, audioBitRate.Value);
-                    }
-
-                    return Math.Min(384000, audioBitRate.Value);
-                }
-
-                if (string.Equals(audioCodec, "flac", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(audioCodec, "alac", StringComparison.OrdinalIgnoreCase))
-                {
-                    if ((audioStream.Channels ?? 0) >= 6)
-                    {
-                        return Math.Min(3584000, audioBitRate.Value);
-                    }
-
-                    return Math.Min(1536000, audioBitRate.Value);
-                }
+                    (>= 6, >= 6 or 0) => Math.Min(768000, bitrate),
+                    (> 0, > 0) => Math.Min(outputChannels * 136000, bitrate),
+                    (> 0, _) => Math.Min(inputChannels * 136000, bitrate),
+                    (_, _) => Math.Min(672000, bitrate)
+                };
             }
 
             // Empty bitrate area is not allow on iOS
-            // Default audio bitrate to 128K if it is not being requested
+            // Default audio bitrate to 128K per channel if we don't have codec specific defaults
             // https://ffmpeg.org/ffmpeg-codecs.html#toc-Codec-Options
-            return 128000;
+            return 128000 * (outputAudioChannels ?? audioStream.Channels ?? 2);
+        }
+
+        public string GetAudioVbrModeParam(string encoder, int bitratePerChannel)
+        {
+            if (string.Equals(encoder, "libfdk_aac", StringComparison.OrdinalIgnoreCase))
+            {
+                return " -vbr:a " + bitratePerChannel switch
+                {
+                    < 32000 => "1",
+                    < 48000 => "2",
+                    < 64000 => "3",
+                    < 96000 => "4",
+                    _ => "5"
+                };
+            }
+
+            if (string.Equals(encoder, "libmp3lame", StringComparison.OrdinalIgnoreCase))
+            {
+                return " -qscale:a " + bitratePerChannel switch
+                {
+                    < 48000 => "8",
+                    < 64000 => "6",
+                    < 88000 => "4",
+                    < 112000 => "2",
+                    _ => "0"
+                };
+            }
+
+            if (string.Equals(encoder, "libvorbis", StringComparison.OrdinalIgnoreCase))
+            {
+                return " -qscale:a " + bitratePerChannel switch
+                {
+                    < 40000 => "0",
+                    < 56000 => "2",
+                    < 80000 => "4",
+                    < 112000 => "6",
+                    _ => "8"
+                };
+            }
+
+            return null;
         }
 
         public string GetAudioFilterParam(EncodingJobInfo state, EncodingOptions encodingOptions)
@@ -2564,8 +2613,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (outputWidth > maximumWidth || outputHeight > maximumHeight)
             {
-                var scaleW = (double)maximumWidth / (double)outputWidth;
-                var scaleH = (double)maximumHeight / (double)outputHeight;
+                var scaleW = (double)maximumWidth / outputWidth;
+                var scaleH = (double)maximumHeight / outputHeight;
                 var scale = Math.Min(scaleW, scaleH);
                 outputWidth = Math.Min(maximumWidth, (int)(outputWidth * scale));
                 outputHeight = Math.Min(maximumHeight, (int)(outputHeight * scale));
@@ -2712,79 +2761,76 @@ namespace MediaBrowser.Controller.MediaEncoding
                             widthParam,
                             heightParam);
                 }
-                else
-                {
-                    return GetFixedSwScaleFilter(threedFormat, requestedWidth.Value, requestedHeight.Value);
-                }
+
+                return GetFixedSwScaleFilter(threedFormat, requestedWidth.Value, requestedHeight.Value);
             }
 
             // If Max dimensions were supplied, for width selects lowest even number between input width and width req size and selects lowest even number from in width*display aspect and requested size
-            else if (requestedMaxWidth.HasValue && requestedMaxHeight.HasValue)
+
+            if (requestedMaxWidth.HasValue && requestedMaxHeight.HasValue)
             {
                 var maxWidthParam = requestedMaxWidth.Value.ToString(CultureInfo.InvariantCulture);
                 var maxHeightParam = requestedMaxHeight.Value.ToString(CultureInfo.InvariantCulture);
 
                 return string.Format(
-                        CultureInfo.InvariantCulture,
-                        "scale=trunc(min(max(iw\\,ih*a)\\,min({0}\\,{1}*a))/{2})*{2}:trunc(min(max(iw/a\\,ih)\\,min({0}/a\\,{1}))/2)*2",
-                        maxWidthParam,
-                        maxHeightParam,
-                        scaleVal);
+                    CultureInfo.InvariantCulture,
+                    "scale=trunc(min(max(iw\\,ih*a)\\,min({0}\\,{1}*a))/{2})*{2}:trunc(min(max(iw/a\\,ih)\\,min({0}/a\\,{1}))/2)*2",
+                    maxWidthParam,
+                    maxHeightParam,
+                    scaleVal);
             }
 
             // If a fixed width was requested
-            else if (requestedWidth.HasValue)
+            if (requestedWidth.HasValue)
             {
                 if (threedFormat.HasValue)
                 {
                     // This method can handle 0 being passed in for the requested height
                     return GetFixedSwScaleFilter(threedFormat, requestedWidth.Value, 0);
                 }
-                else
-                {
-                    var widthParam = requestedWidth.Value.ToString(CultureInfo.InvariantCulture);
 
-                    return string.Format(
-                            CultureInfo.InvariantCulture,
-                            "scale={0}:trunc(ow/a/2)*2",
-                            widthParam);
-                }
+                var widthParam = requestedWidth.Value.ToString(CultureInfo.InvariantCulture);
+
+                return string.Format(
+                    CultureInfo.InvariantCulture,
+                    "scale={0}:trunc(ow/a/2)*2",
+                    widthParam);
             }
 
             // If a fixed height was requested
-            else if (requestedHeight.HasValue)
+            if (requestedHeight.HasValue)
             {
                 var heightParam = requestedHeight.Value.ToString(CultureInfo.InvariantCulture);
 
                 return string.Format(
-                        CultureInfo.InvariantCulture,
-                        "scale=trunc(oh*a/{1})*{1}:{0}",
-                        heightParam,
-                        scaleVal);
+                    CultureInfo.InvariantCulture,
+                    "scale=trunc(oh*a/{1})*{1}:{0}",
+                    heightParam,
+                    scaleVal);
             }
 
             // If a max width was requested
-            else if (requestedMaxWidth.HasValue)
+            if (requestedMaxWidth.HasValue)
             {
                 var maxWidthParam = requestedMaxWidth.Value.ToString(CultureInfo.InvariantCulture);
 
                 return string.Format(
-                        CultureInfo.InvariantCulture,
-                        "scale=trunc(min(max(iw\\,ih*a)\\,{0})/{1})*{1}:trunc(ow/a/2)*2",
-                        maxWidthParam,
-                        scaleVal);
+                    CultureInfo.InvariantCulture,
+                    "scale=trunc(min(max(iw\\,ih*a)\\,{0})/{1})*{1}:trunc(ow/a/2)*2",
+                    maxWidthParam,
+                    scaleVal);
             }
 
             // If a max height was requested
-            else if (requestedMaxHeight.HasValue)
+            if (requestedMaxHeight.HasValue)
             {
                 var maxHeightParam = requestedMaxHeight.Value.ToString(CultureInfo.InvariantCulture);
 
                 return string.Format(
-                        CultureInfo.InvariantCulture,
-                        "scale=trunc(oh*a/{1})*{1}:min(max(iw/a\\,ih)\\,{0})",
-                        maxHeightParam,
-                        scaleVal);
+                    CultureInfo.InvariantCulture,
+                    "scale=trunc(oh*a/{1})*{1}:min(max(iw/a\\,ih)\\,{0})",
+                    maxHeightParam,
+                    scaleVal);
             }
 
             return string.Empty;
@@ -2858,18 +2904,21 @@ namespace MediaBrowser.Controller.MediaEncoding
                     "yadif_cuda={0}:-1:0",
                     doubleRateDeint ? "1" : "0");
             }
-            else if (hwDeintSuffix.Contains("vaapi", StringComparison.OrdinalIgnoreCase))
+
+            if (hwDeintSuffix.Contains("vaapi", StringComparison.OrdinalIgnoreCase))
             {
                 return string.Format(
                     CultureInfo.InvariantCulture,
                     "deinterlace_vaapi=rate={0}",
                     doubleRateDeint ? "field" : "frame");
             }
-            else if (hwDeintSuffix.Contains("qsv", StringComparison.OrdinalIgnoreCase))
+
+            if (hwDeintSuffix.Contains("qsv", StringComparison.OrdinalIgnoreCase))
             {
                 return "deinterlace_qsv=mode=2";
             }
-            else if (hwDeintSuffix.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase))
+
+            if (hwDeintSuffix.Contains("videotoolbox", StringComparison.OrdinalIgnoreCase))
             {
                 return string.Format(
                     CultureInfo.InvariantCulture,
@@ -2900,7 +2949,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                         options.VppTonemappingBrightness,
                         options.VppTonemappingContrast);
             }
-            else if (string.Equals(hwTonemapSuffix, "vulkan", StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(hwTonemapSuffix, "vulkan", StringComparison.OrdinalIgnoreCase))
             {
                 args = "libplacebo=format={1}:tonemapping={2}:color_primaries=bt709:color_trc=bt709:colorspace=bt709:peak_detect=0:upscaler=none:downscaler=none";
 
@@ -4214,7 +4264,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // sw => hw
                 if (doVkTonemap)
                 {
-                    mainFilters.Add("hwupload_vaapi");
+                    mainFilters.Add("hwupload=derive_device=vaapi");
+                    mainFilters.Add("format=vaapi");
                     mainFilters.Add("hwmap=derive_device=vulkan");
                     mainFilters.Add("format=vulkan");
                 }
@@ -4325,12 +4376,15 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     // prefer vaapi hwupload to vulkan hwupload,
                     // Mesa RADV does not support a dedicated transfer queue.
-                    subFilters.Add("hwupload_vaapi");
+                    subFilters.Add("hwupload=derive_device=vaapi");
+                    subFilters.Add("format=vaapi");
                     subFilters.Add("hwmap=derive_device=vulkan");
                     subFilters.Add("format=vulkan");
 
                     overlayFilters.Add("overlay_vulkan=eof_action=endall:shortest=1:repeatlast=0");
-                    overlayFilters.Add("scale_vulkan=format=nv12");
+
+                    // TODO: figure out why libplacebo can sync without vaSyncSurface VPP support in radeonsi.
+                    overlayFilters.Add("libplacebo=format=nv12:apply_filmgrain=0:apply_dolbyvision=0:upscaler=none:downscaler=none:dithering=none");
 
                     // OUTPUT vaapi(nv12/bgra) surface(vram)
                     // reverse-mapping via vaapi-vulkan interop.
@@ -4772,26 +4826,27 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     return videoStream.BitDepth.Value;
                 }
-                else if (string.Equals(videoStream.PixelFormat, "yuv420p", StringComparison.OrdinalIgnoreCase)
-                         || string.Equals(videoStream.PixelFormat, "yuvj420p", StringComparison.OrdinalIgnoreCase)
-                         || string.Equals(videoStream.PixelFormat, "yuv444p", StringComparison.OrdinalIgnoreCase))
+
+                if (string.Equals(videoStream.PixelFormat, "yuv420p", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoStream.PixelFormat, "yuvj420p", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoStream.PixelFormat, "yuv444p", StringComparison.OrdinalIgnoreCase))
                 {
                     return 8;
                 }
-                else if (string.Equals(videoStream.PixelFormat, "yuv420p10le", StringComparison.OrdinalIgnoreCase)
-                         || string.Equals(videoStream.PixelFormat, "yuv444p10le", StringComparison.OrdinalIgnoreCase))
+
+                if (string.Equals(videoStream.PixelFormat, "yuv420p10le", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoStream.PixelFormat, "yuv444p10le", StringComparison.OrdinalIgnoreCase))
                 {
                     return 10;
                 }
-                else if (string.Equals(videoStream.PixelFormat, "yuv420p12le", StringComparison.OrdinalIgnoreCase)
-                         || string.Equals(videoStream.PixelFormat, "yuv444p12le", StringComparison.OrdinalIgnoreCase))
+
+                if (string.Equals(videoStream.PixelFormat, "yuv420p12le", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoStream.PixelFormat, "yuv444p12le", StringComparison.OrdinalIgnoreCase))
                 {
                     return 12;
                 }
-                else
-                {
-                    return 8;
-                }
+
+                return 8;
             }
 
             return 0;
@@ -5023,11 +5078,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                         return " -hwaccel cuda" + (outputHwSurface ? " -hwaccel_output_format cuda" : string.Empty)
                             + (nvdecNoInternalCopy ? " -hwaccel_flags +unsafe_output" : string.Empty) + " -threads 1" + (isAv1 ? " -c:v av1" : string.Empty);
                     }
-                    else
-                    {
-                        // cuvid decoder doesn't have threading issue.
-                        return " -hwaccel cuda" + (outputHwSurface ? " -hwaccel_output_format cuda" : string.Empty);
-                    }
+
+                    // cuvid decoder doesn't have threading issue.
+                    return " -hwaccel cuda" + (outputHwSurface ? " -hwaccel_output_format cuda" : string.Empty);
                 }
             }
 
@@ -5385,7 +5438,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // Automatically set thread count
                 return mustSetThreadCount ? Math.Max(Environment.ProcessorCount - 1, 1) : 0;
             }
-            else if (threads >= Environment.ProcessorCount)
+
+            if (threads >= Environment.ProcessorCount)
             {
                 return Environment.ProcessorCount;
             }
@@ -5670,14 +5724,22 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             var inputChannels = audioStream is null ? 6 : audioStream.Channels ?? 6;
+            var shiftAudioCodecs = new List<string>();
             if (inputChannels >= 6)
             {
-                return;
+                // DTS and TrueHD are not supported by HLS
+                // Keep them in the supported codecs list, but shift them to the end of the list so that if transcoding happens, another codec is used
+                shiftAudioCodecs.Add("dca");
+                shiftAudioCodecs.Add("truehd");
+            }
+            else
+            {
+                // Transcoding to 2ch ac3 or eac3 almost always causes a playback failure
+                // Keep them in the supported codecs list, but shift them to the end of the list so that if transcoding happens, another codec is used
+                shiftAudioCodecs.Add("ac3");
+                shiftAudioCodecs.Add("eac3");
             }
 
-            // Transcoding to 2ch ac3 almost always causes a playback failure
-            // Keep it in the supported codecs list, but shift it to the end of the list so that if transcoding happens, another codec is used
-            var shiftAudioCodecs = new[] { "ac3", "eac3" };
             if (audioCodecs.All(i => shiftAudioCodecs.Contains(i, StringComparison.OrdinalIgnoreCase)))
             {
                 return;
@@ -5919,10 +5981,17 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             var bitrate = state.OutputAudioBitrate;
-
-            if (bitrate.HasValue)
+            if (bitrate.HasValue && !LosslessAudioCodecs.Contains(codec, StringComparison.OrdinalIgnoreCase))
             {
-                args += " -ab " + bitrate.Value.ToString(CultureInfo.InvariantCulture);
+                var vbrParam = GetAudioVbrModeParam(codec, bitrate.Value / (channels ?? 2));
+                if (encodingOptions.EnableAudioVbr && vbrParam is not null)
+                {
+                    args += vbrParam;
+                }
+                else
+                {
+                    args += " -ab " + bitrate.Value.ToString(CultureInfo.InvariantCulture);
+                }
             }
 
             if (state.OutputAudioSampleRate.HasValue)
@@ -5940,23 +6009,33 @@ namespace MediaBrowser.Controller.MediaEncoding
             var audioTranscodeParams = new List<string>();
 
             var bitrate = state.OutputAudioBitrate;
+            var channels = state.OutputAudioChannels;
+            var outputCodec = state.OutputAudioCodec;
 
-            if (bitrate.HasValue)
+            if (bitrate.HasValue && !LosslessAudioCodecs.Contains(outputCodec, StringComparison.OrdinalIgnoreCase))
             {
-                audioTranscodeParams.Add("-ab " + bitrate.Value.ToString(CultureInfo.InvariantCulture));
+                var vbrParam = GetAudioVbrModeParam(GetAudioEncoder(state), bitrate.Value / (channels ?? 2));
+                if (encodingOptions.EnableAudioVbr && vbrParam is not null)
+                {
+                    audioTranscodeParams.Add(vbrParam);
+                }
+                else
+                {
+                    audioTranscodeParams.Add("-ab " + bitrate.Value.ToString(CultureInfo.InvariantCulture));
+                }
             }
 
-            if (state.OutputAudioChannels.HasValue)
+            if (channels.HasValue)
             {
                 audioTranscodeParams.Add("-ac " + state.OutputAudioChannels.Value.ToString(CultureInfo.InvariantCulture));
             }
 
-            if (!string.IsNullOrEmpty(state.OutputAudioCodec))
+            if (!string.IsNullOrEmpty(outputCodec))
             {
                 audioTranscodeParams.Add("-acodec " + GetAudioEncoder(state));
             }
 
-            if (!string.Equals(state.OutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(outputCodec, "opus", StringComparison.OrdinalIgnoreCase))
             {
                 // opus only supports specific sampling rates
                 var sampleRate = state.OutputAudioSampleRate;

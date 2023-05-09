@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using System.Linq;
 using BDInfo.IO;
@@ -105,7 +104,7 @@ public class BdInfoDirectoryInfo : IDirectoryInfo
                 _impl.FullName,
                 new[] { searchPattern },
                 false,
-                (searchOption & SearchOption.AllDirectories) == SearchOption.AllDirectories)
+                searchOption == SearchOption.AllDirectories)
             .Select(x => new BdInfoFileInfo(x))
             .ToArray();
     }

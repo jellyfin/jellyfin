@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
@@ -523,32 +522,32 @@ namespace Emby.Server.Implementations.Dto
             var people = _libraryManager.GetPeople(item).OrderBy(i => i.SortOrder ?? int.MaxValue)
                 .ThenBy(i =>
                 {
-                    if (i.IsType(PersonType.Actor))
+                    if (i.IsType(PersonKind.Actor))
                     {
                         return 0;
                     }
 
-                    if (i.IsType(PersonType.GuestStar))
+                    if (i.IsType(PersonKind.GuestStar))
                     {
                         return 1;
                     }
 
-                    if (i.IsType(PersonType.Director))
+                    if (i.IsType(PersonKind.Director))
                     {
                         return 2;
                     }
 
-                    if (i.IsType(PersonType.Writer))
+                    if (i.IsType(PersonKind.Writer))
                     {
                         return 3;
                     }
 
-                    if (i.IsType(PersonType.Producer))
+                    if (i.IsType(PersonKind.Producer))
                     {
                         return 4;
                     }
 
-                    if (i.IsType(PersonType.Composer))
+                    if (i.IsType(PersonKind.Composer))
                     {
                         return 4;
                     }
@@ -572,9 +571,7 @@ namespace Emby.Server.Implementations.Dto
                         return null;
                     }
                 }).Where(i => i is not null)
-                .Where(i => user is null ?
-                    true :
-                    i.IsVisible(user))
+                .Where(i => user is null || i.IsVisible(user))
                 .DistinctBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
