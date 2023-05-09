@@ -30,7 +30,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
         {
             if (args.IsDirectory)
             {
-                // It's a boxset if the path is a directory with [playlist] in it's the name
+                // It's a boxset if the path is a directory with [playlist] in its name
                 var filename = Path.GetFileName(Path.TrimEndingDirectorySeparator(args.Path));
                 if (string.IsNullOrEmpty(filename))
                 {
@@ -42,7 +42,8 @@ namespace Emby.Server.Implementations.Library.Resolvers
                     return new Playlist
                     {
                         Path = args.Path,
-                        Name = filename.Replace("[playlist]", string.Empty, StringComparison.OrdinalIgnoreCase).Trim()
+                        Name = filename.Replace("[playlist]", string.Empty, StringComparison.OrdinalIgnoreCase).Trim(),
+                        OpenAccess = true
                     };
                 }
 
@@ -53,7 +54,8 @@ namespace Emby.Server.Implementations.Library.Resolvers
                     return new Playlist
                     {
                         Path = args.Path,
-                        Name = filename
+                        Name = filename,
+                        OpenAccess = true
                     };
                 }
             }
@@ -70,7 +72,8 @@ namespace Emby.Server.Implementations.Library.Resolvers
                         Path = args.Path,
                         Name = Path.GetFileNameWithoutExtension(args.Path),
                         IsInMixedFolder = true,
-                        PlaylistMediaType = MediaType.Audio
+                        PlaylistMediaType = MediaType.Audio,
+                        OpenAccess = true
                     };
                 }
             }

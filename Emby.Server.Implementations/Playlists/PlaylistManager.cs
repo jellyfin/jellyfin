@@ -549,7 +549,7 @@ namespace Emby.Server.Implementations.Playlists
                         SavePlaylistFile(playlist);
                     }
                 }
-                else
+                else if (!playlist.OpenAccess)
                 {
                     // Remove playlist if not shared
                     _libraryManager.DeleteItem(
