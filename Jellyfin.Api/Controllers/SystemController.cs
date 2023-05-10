@@ -64,7 +64,7 @@ public class SystemController : BaseJellyfinApiController
     [HttpGet("Info")]
     [Authorize(Policy = Policies.FirstTimeSetupOrIgnoreParentalControl)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public ActionResult<SystemInfo> GetSystemInfo()
     {
         return _appHost.GetSystemInfo(Request);
@@ -104,7 +104,7 @@ public class SystemController : BaseJellyfinApiController
     [HttpPost("Restart")]
     [Authorize(Policy = Policies.LocalAccessOrRequiresElevation)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public ActionResult RestartApplication()
     {
         Task.Run(async () =>
@@ -124,7 +124,7 @@ public class SystemController : BaseJellyfinApiController
     [HttpPost("Shutdown")]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public ActionResult ShutdownApplication()
     {
         Task.Run(async () =>
@@ -144,7 +144,7 @@ public class SystemController : BaseJellyfinApiController
     [HttpGet("Logs")]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public ActionResult<LogFile[]> GetServerLogs()
     {
         IEnumerable<FileSystemMetadata> files;
@@ -183,7 +183,7 @@ public class SystemController : BaseJellyfinApiController
     [HttpGet("Endpoint")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public ActionResult<EndPointInfo> GetEndpointInfo()
     {
         return new EndPointInfo
@@ -203,7 +203,7 @@ public class SystemController : BaseJellyfinApiController
     [HttpGet("Logs/Log")]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesFile(MediaTypeNames.Text.Plain)]
     public ActionResult GetLogFile([FromQuery, Required] string name)
     {
