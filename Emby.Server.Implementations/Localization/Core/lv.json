@@ -84,7 +84,7 @@
     "CameraImageUploadedFrom": "Jauns kameras attēls ir ticis augšupielādēts no {0}",
     "Books": "Grāmatas",
     "Artists": "Izpildītāji",
-    "Albums": "Albūmi",
+    "Albums": "Albumi",
     "ProviderValue": "Provider: {0}",
     "HeaderFavoriteSongs": "Dziesmu Favorīti",
     "HeaderFavoriteShows": "Raidījumu Favorīti",
@@ -121,5 +121,7 @@
     "TaskOptimizeDatabaseDescription": "Saspiež datubāzi un atbrīvo atmiņu. Uzdevum palaišana pēc bibliotēku skenēšanas vai citām, ar datubāzi saistītām, izmaiņām iespējams uzlabos ātrdarbību.",
     "TaskOptimizeDatabase": "Optimizēt datubāzi",
     "External": "Ārējais",
-    "HearingImpaired": "Ar dzirdes traucējumiem"
+    "HearingImpaired": "Ar dzirdes traucējumiem",
+    "TaskKeyframeExtractor": "Atslēgkadru Ekstraktors",
+    "TaskKeyframeExtractorDescription": "Ekstraktē atslēgkadrus no video failiem lai izveidotu precīzākus HLS atskaņošanas sarakstus. Šis process var būt ilgs."
 }
