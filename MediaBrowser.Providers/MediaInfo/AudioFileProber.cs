@@ -27,6 +27,9 @@ namespace MediaBrowser.Providers.MediaInfo
     /// </summary>
     public class AudioFileProber
     {
+        // Default LUFS value for use with the web interface, at -18db gain will be 1(no db gain).
+        private const float DefaultLUFSValue = -18;
+
         private readonly ILogger<AudioFileProber> _logger;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IItemRepository _itemRepo;
@@ -134,13 +137,13 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
                     else
                     {
-                        item.LUFS = -18;
+                        item.LUFS = DefaultLUFSValue;
                     }
                 }
             }
             else
             {
-                item.LUFS = -18;
+                item.LUFS = DefaultLUFSValue;
             }
 
             _logger.LogDebug("LUFS for {ItemName} is {LUFS}.", item.Name, item.LUFS);
