@@ -38,12 +38,10 @@ public class ClientLogController : BaseJellyfinApiController
     /// Upload a document.
     /// </summary>
     /// <response code="200">Document saved.</response>
-    /// <response code="403">Event logging disabled.</response>
     /// <response code="413">Upload size too large.</response>
     /// <returns>Create response.</returns>
     [HttpPost("Document")]
     [ProducesResponseType(typeof(ClientLogDocumentResponseDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status413PayloadTooLarge)]
     [AcceptsFile(MediaTypeNames.Text.Plain)]
     [RequestSizeLimit(MaxDocumentSize)]

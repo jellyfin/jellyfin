@@ -89,7 +89,6 @@ public class ImageController : BaseJellyfinApiController
     /// </summary>
     /// <param name="userId">User Id.</param>
     /// <response code="204">Image updated.</response>
-    /// <response code="403">User does not have permission to delete the image.</response>
     /// <response code="404">Item not found.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("UserImage")]
@@ -97,7 +96,6 @@ public class ImageController : BaseJellyfinApiController
     [AcceptsImageFile]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> PostUserImage(
         [FromQuery] Guid? userId)
@@ -147,7 +145,6 @@ public class ImageController : BaseJellyfinApiController
     /// <param name="userId">User Id.</param>
     /// <param name="imageType">(Unused) Image type.</param>
     /// <response code="204">Image updated.</response>
-    /// <response code="403">User does not have permission to delete the image.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Users/{userId}/Images/{imageType}")]
     [Authorize]
@@ -156,8 +153,6 @@ public class ImageController : BaseJellyfinApiController
     [AcceptsImageFile]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
     public Task<ActionResult> PostUserImageLegacy(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] ImageType imageType)
@@ -170,7 +165,6 @@ public class ImageController : BaseJellyfinApiController
     /// <param name="imageType">(Unused) Image type.</param>
     /// <param name="index">(Unused) Image index.</param>
     /// <response code="204">Image updated.</response>
-    /// <response code="403">User does not have permission to delete the image.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Users/{userId}/Images/{imageType}/{index}")]
     [Authorize]
@@ -179,9 +173,6 @@ public class ImageController : BaseJellyfinApiController
     [AcceptsImageFile]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
     public Task<ActionResult> PostUserImageByIndexLegacy(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] ImageType imageType,
@@ -193,12 +184,10 @@ public class ImageController : BaseJellyfinApiController
     /// </summary>
     /// <param name="userId">User Id.</param>
     /// <response code="204">Image deleted.</response>
-    /// <response code="403">User does not have permission to delete the image.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("UserImage")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> DeleteUserImage(
         [FromQuery] Guid? userId)
     {
@@ -239,16 +228,12 @@ public class ImageController : BaseJellyfinApiController
     /// <param name="imageType">(Unused) Image type.</param>
     /// <param name="index">(Unused) Image index.</param>
     /// <response code="204">Image deleted.</response>
-    /// <response code="403">User does not have permission to delete the image.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("Users/{userId}/Images/{imageType}")]
     [Authorize]
     [Obsolete("Kept for backwards compatibility")]
     [ApiExplorerSettings(IgnoreApi = true)]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public Task<ActionResult> DeleteUserImageLegacy(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] ImageType imageType,
@@ -262,16 +247,12 @@ public class ImageController : BaseJellyfinApiController
     /// <param name="imageType">(Unused) Image type.</param>
     /// <param name="index">(Unused) Image index.</param>
     /// <response code="204">Image deleted.</response>
-    /// <response code="403">User does not have permission to delete the image.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("Users/{userId}/Images/{imageType}/{index}")]
     [Authorize]
     [Obsolete("Kept for backwards compatibility")]
     [ApiExplorerSettings(IgnoreApi = true)]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public Task<ActionResult> DeleteUserImageByIndexLegacy(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] ImageType imageType,
@@ -348,7 +329,6 @@ public class ImageController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
     public async Task<ActionResult> SetItemImage(
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] ImageType imageType)
@@ -391,7 +371,6 @@ public class ImageController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
     public async Task<ActionResult> SetItemImageByIndex(
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] ImageType imageType,
@@ -1789,13 +1768,11 @@ public class ImageController : BaseJellyfinApiController
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     /// <response code="204">Successfully uploaded new splashscreen.</response>
     /// <response code="400">Error reading MimeType from uploaded image.</response>
-    /// <response code="403">User does not have permission to upload splashscreen..</response>
     /// <exception cref="ArgumentException">Error reading the image format.</exception>
     [HttpPost("Branding/Splashscreen")]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [AcceptsImageFile]
     public async Task<ActionResult> UploadCustomSplashscreen()
     {
@@ -1827,7 +1804,6 @@ public class ImageController : BaseJellyfinApiController
     /// </summary>
     /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
     /// <response code="204">Successfully deleted the custom splashscreen.</response>
-    /// <response code="403">User does not have permission to delete splashscreen..</response>
     [HttpDelete("Branding/Splashscreen")]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
