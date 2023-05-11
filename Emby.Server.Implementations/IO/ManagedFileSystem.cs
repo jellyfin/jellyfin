@@ -267,25 +267,6 @@ namespace Emby.Server.Implementations.IO
             return result;
         }
 
-        private static ExtendedFileSystemInfo GetExtendedFileSystemInfo(string path)
-        {
-            var result = new ExtendedFileSystemInfo();
-
-            var info = new FileInfo(path);
-
-            if (info.Exists)
-            {
-                result.Exists = true;
-
-                var attributes = info.Attributes;
-
-                result.IsHidden = (attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
-                result.IsReadOnly = (attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly;
-            }
-
-            return result;
-        }
-
         /// <summary>
         /// Takes a filename and removes invalid characters.
         /// </summary>
@@ -403,19 +384,18 @@ namespace Emby.Server.Implementations.IO
                 return;
             }
 
-            var info = GetExtendedFileSystemInfo(path);
+            var info = new FileInfo(path);
 
-            if (info.Exists && info.IsHidden != isHidden)
+            if (info.Exists &&
+                ((info.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) != isHidden)
             {
                 if (isHidden)
                 {
-                    File.SetAttributes(path, File.GetAttributes(path) | FileAttributes.Hidden);
+                    File.SetAttributes(path, info.Attributes | FileAttributes.Hidden);
                 }
                 else
                 {
-                    var attributes = File.GetAttributes(path);
-                    attributes = RemoveAttribute(attributes, FileAttributes.Hidden);
-                    File.SetAttributes(path, attributes);
+                    File.SetAttributes(path, info.Attributes & ~FileAttributes.Hidden);
                 }
             }
         }
@@ -428,19 +408,20 @@ namespace Emby.Server.Implementations.IO
                 return;
             }
 
-            var info = GetExtendedFileSystemInfo(path);
+            var info = new FileInfo(path);
 
             if (!info.Exists)
             {
                 return;
             }
 
-            if (info.IsReadOnly == readOnly && info.IsHidden == isHidden)
+            if (((info.Attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly) == readOnly
+                && ((info.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) == isHidden)
             {
                 return;
             }
 
-            var attributes = File.GetAttributes(path);
+            var attributes = info.Attributes;
 
             if (readOnly)
             {
@@ -448,7 +429,7 @@ namespace Emby.Server.Implementations.IO
             }
             else
             {
-                attributes = RemoveAttribute(attributes, FileAttributes.ReadOnly);
+                attributes &= ~FileAttributes.ReadOnly;
             }
 
             if (isHidden)
@@ -457,15 +438,10 @@ namespace Emby.Server.Implementations.IO
             }
             else
             {
-                attributes = RemoveAttribute(attributes, FileAttributes.Hidden);
+                attributes &= ~FileAttributes.Hidden;
             }
 
             File.SetAttributes(path, attributes);
-        }
-
-        private static FileAttributes RemoveAttribute(FileAttributes attributes, FileAttributes attributesToRemove)
-        {
-            return attributes & ~attributesToRemove;
         }
 
         /// <summary>

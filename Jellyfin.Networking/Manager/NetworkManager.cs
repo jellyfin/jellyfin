@@ -184,9 +184,16 @@ namespace Jellyfin.Networking.Manager
             {
                 Thread.Sleep(2000);
                 var networkConfig = _configurationManager.GetNetworkConfiguration();
-                InitialiseLan(networkConfig);
-                InitialiseInterfaces();
-                EnforceBindSettings(networkConfig);
+                if (IsIPv6Enabled && !Socket.OSSupportsIPv6)
+                {
+                    UpdateSettings(networkConfig);
+                }
+                else
+                {
+                    InitialiseInterfaces();
+                    InitialiseLan(networkConfig);
+                    EnforceBindSettings(networkConfig);
+                }
 
                 NetworkChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -519,6 +526,7 @@ namespace Jellyfin.Networking.Manager
             ArgumentNullException.ThrowIfNull(configuration);
 
             var config = (NetworkConfiguration)configuration;
+            HappyEyeballs.HttpClientExtension.UseIPv6 = config.EnableIPv6;
 
             InitialiseLan(config);
             InitialiseRemote(config);

@@ -59,10 +59,12 @@ public class SystemController : BaseJellyfinApiController
     /// Gets information about the server.
     /// </summary>
     /// <response code="200">Information retrieved.</response>
+    /// <response code="403">User does not have permission to retrieve information.</response>
     /// <returns>A <see cref="SystemInfo"/> with info about the system.</returns>
     [HttpGet("Info")]
     [Authorize(Policy = Policies.FirstTimeSetupOrIgnoreParentalControl)]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public ActionResult<SystemInfo> GetSystemInfo()
     {
         return _appHost.GetSystemInfo(Request);
@@ -97,10 +99,12 @@ public class SystemController : BaseJellyfinApiController
     /// Restarts the application.
     /// </summary>
     /// <response code="204">Server restarted.</response>
+    /// <response code="403">User does not have permission to restart server.</response>
     /// <returns>No content. Server restarted.</returns>
     [HttpPost("Restart")]
     [Authorize(Policy = Policies.LocalAccessOrRequiresElevation)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public ActionResult RestartApplication()
     {
         Task.Run(async () =>
@@ -115,10 +119,12 @@ public class SystemController : BaseJellyfinApiController
     /// Shuts down the application.
     /// </summary>
     /// <response code="204">Server shut down.</response>
+    /// <response code="403">User does not have permission to shutdown server.</response>
     /// <returns>No content. Server shut down.</returns>
     [HttpPost("Shutdown")]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public ActionResult ShutdownApplication()
     {
         Task.Run(async () =>
@@ -133,10 +139,12 @@ public class SystemController : BaseJellyfinApiController
     /// Gets a list of available server log files.
     /// </summary>
     /// <response code="200">Information retrieved.</response>
+    /// <response code="403">User does not have permission to get server logs.</response>
     /// <returns>An array of <see cref="LogFile"/> with the available log files.</returns>
     [HttpGet("Logs")]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public ActionResult<LogFile[]> GetServerLogs()
     {
         IEnumerable<FileSystemMetadata> files;
@@ -170,10 +178,12 @@ public class SystemController : BaseJellyfinApiController
     /// Gets information about the request endpoint.
     /// </summary>
     /// <response code="200">Information retrieved.</response>
+    /// <response code="403">User does not have permission to get endpoint information.</response>
     /// <returns><see cref="EndPointInfo"/> with information about the endpoint.</returns>
     [HttpGet("Endpoint")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public ActionResult<EndPointInfo> GetEndpointInfo()
     {
         return new EndPointInfo
@@ -188,10 +198,12 @@ public class SystemController : BaseJellyfinApiController
     /// </summary>
     /// <param name="name">The name of the log file to get.</param>
     /// <response code="200">Log file retrieved.</response>
+    /// <response code="403">User does not have permission to get log files.</response>
     /// <returns>The log file.</returns>
     [HttpGet("Logs/Log")]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesFile(MediaTypeNames.Text.Plain)]
     public ActionResult GetLogFile([FromQuery, Required] string name)
     {
