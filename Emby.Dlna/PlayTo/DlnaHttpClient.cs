@@ -17,7 +17,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.PlayTo
 {
-    public class DlnaHttpClient
+    /// <summary>
+    /// Http client for Dlna PlayTo function.
+    /// </summary>
+    public partial class DlnaHttpClient
     {
         private readonly ILogger _logger;
         private readonly IHttpClientFactory _httpClientFactory;
@@ -62,8 +65,7 @@ namespace Emby.Dlna.PlayTo
                 var xmlString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
                 // find and replace unescaped ampersands (&)
-                Regex regex = new Regex(@"(&(?![a-z]*;))");
-                xmlString = regex.Replace(xmlString, @"&amp;");
+                xmlString = EscapeAmpersandRegex().Replace(xmlString, "&amp;");
 
                 try
                 {
@@ -77,10 +79,7 @@ namespace Emby.Dlna.PlayTo
                 catch (XmlException ex)
                 {
                     _logger.LogError(ex, "Failed to parse response");
-                    if (_logger.IsEnabled(LogLevel.Debug))
-                    {
-                        _logger.LogDebug("Malformed response: {Content}\n", xmlString);
-                    }
+                    _logger.LogDebug("Malformed response: {Content}\n", xmlString);
 
                     return null;
                 }
@@ -125,5 +124,12 @@ namespace Emby.Dlna.PlayTo
             // Have to await here instead of returning the Task directly, otherwise request would be disposed too soon
             return await SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
         }
+
+        /// <summary>
+        /// Compile-time generated regular expression for escaping ampersands.
+        /// </summary>
+        /// <returns>Compiled regular expression.</returns>
+        [GeneratedRegex("(&(?![a-z]*;))")]
+        private static partial Regex EscapeAmpersandRegex();
     }
 }
