@@ -2,9 +2,11 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -54,15 +56,34 @@ namespace Emby.Dlna.PlayTo
                     LoadOptions.None,
                     cancellationToken).ConfigureAwait(false);
             }
-            catch (XmlException ex)
+            catch (XmlException)
             {
-                _logger.LogError(ex, "Failed to parse response");
-                if (_logger.IsEnabled(LogLevel.Debug))
-                {
-                    _logger.LogDebug("Malformed response: {Content}\n", await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
-                }
+                // try correcting the Xml response with common errors
+                var xmlString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
-                return null;
+                // find and replace unescaped ampersands (&)
+                Regex regex = new Regex(@"(&(?![a-z]*;))");
+                xmlString = regex.Replace(xmlString, @"&amp;");
+
+                try
+                {
+                    // retry reading Xml
+                    var xmlReader = new StringReader(xmlString);
+                    return await XDocument.LoadAsync(
+                        xmlReader,
+                        LoadOptions.None,
+                        cancellationToken).ConfigureAwait(false);
+                }
+                catch (XmlException ex)
+                {
+                    _logger.LogError(ex, "Failed to parse response");
+                    if (_logger.IsEnabled(LogLevel.Debug))
+                    {
+                        _logger.LogDebug("Malformed response: {Content}\n", xmlString);
+                    }
+
+                    return null;
+                }
             }
         }
 
