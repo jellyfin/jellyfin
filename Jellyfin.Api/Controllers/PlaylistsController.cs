@@ -64,12 +64,15 @@ public class PlaylistsController : BaseJellyfinApiController
     /// <param name="userId">The user id.</param>
     /// <param name="mediaType">The media type.</param>
     /// <param name="createPlaylistRequest">The create playlist payload.</param>
+    /// <response code="200">Playlist created.</response>
+    /// <response code="403">User does not have permission to create playlists.</response>
     /// <returns>
     /// A <see cref="Task" /> that represents the asynchronous operation to create a playlist.
     /// The task result contains an <see cref="OkResult"/> indicating success.
     /// </returns>
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<PlaylistCreationResult>> CreatePlaylist(
         [FromQuery, ParameterObsolete] string? name,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder)), ParameterObsolete] IReadOnlyList<Guid> ids,
@@ -102,9 +105,11 @@ public class PlaylistsController : BaseJellyfinApiController
     /// <param name="ids">Item id, comma delimited.</param>
     /// <param name="userId">The userId.</param>
     /// <response code="204">Items added to playlist.</response>
+    /// <response code="403">User does not have permission to add items to playlist.</response>
     /// <returns>An <see cref="NoContentResult"/> on success.</returns>
     [HttpPost("{playlistId}/Items")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> AddToPlaylist(
         [FromRoute, Required] Guid playlistId,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids,
@@ -122,9 +127,11 @@ public class PlaylistsController : BaseJellyfinApiController
     /// <param name="itemId">The item id.</param>
     /// <param name="newIndex">The new index.</param>
     /// <response code="204">Item moved to new index.</response>
+    /// <response code="403">User does not have permission to move item.</response>
     /// <returns>An <see cref="NoContentResult"/> on success.</returns>
     [HttpPost("{playlistId}/Items/{itemId}/Move/{newIndex}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> MoveItem(
         [FromRoute, Required] string playlistId,
         [FromRoute, Required] string itemId,
@@ -140,9 +147,11 @@ public class PlaylistsController : BaseJellyfinApiController
     /// <param name="playlistId">The playlist id.</param>
     /// <param name="entryIds">The item ids, comma delimited.</param>
     /// <response code="204">Items removed.</response>
+    /// <response code="403">User does not have permission to get playlist.</response>
     /// <returns>An <see cref="NoContentResult"/> on success.</returns>
     [HttpDelete("{playlistId}/Items")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> RemoveFromPlaylist(
         [FromRoute, Required] string playlistId,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] entryIds)
@@ -164,9 +173,13 @@ public class PlaylistsController : BaseJellyfinApiController
     /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
     /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
     /// <response code="200">Original playlist returned.</response>
+    /// <response code="403">User does not have permission to get playlist items.</response>
     /// <response code="404">Playlist not found.</response>
     /// <returns>The original playlist items.</returns>
     [HttpGet("{playlistId}/Items")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<QueryResult<BaseItemDto>> GetPlaylistItems(
         [FromRoute, Required] Guid playlistId,
         [FromQuery, Required] Guid userId,
@@ -189,9 +202,7 @@ public class PlaylistsController : BaseJellyfinApiController
             : _userManager.GetUserById(userId);
 
         var items = playlist.GetManageableItems().ToArray();
-
         var count = items.Length;
-
         if (startIndex.HasValue)
         {
             items = items.Skip(startIndex.Value).ToArray();
@@ -207,7 +218,6 @@ public class PlaylistsController : BaseJellyfinApiController
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
         var dtos = _dtoService.GetBaseItemDtos(items.Select(i => i.Item2).ToList(), dtoOptions, user);
-
         for (int index = 0; index < dtos.Count; index++)
         {
             dtos[index].PlaylistItemId = items[index].Item1.Id;

@@ -53,12 +53,19 @@ internal class FixPlaylistOwner : IMigrationRoutine
             foreach (var playlist in playlists)
             {
                 var shares = playlist.Shares;
-                var firstEditShare = shares.First(x => x.CanEdit);
-                if (firstEditShare is not null && Guid.TryParse(firstEditShare.UserId, out var guid))
+                if (shares.Length > 0)
                 {
-                    playlist.OwnerUserId = guid;
-                    playlist.Shares = shares.Where(x => x != firstEditShare).ToArray();
-
+                    var firstEditShare = shares.First(x => x.CanEdit);
+                    if (firstEditShare is not null && Guid.TryParse(firstEditShare.UserId, out var guid))
+                    {
+                        playlist.OwnerUserId = guid;
+                        playlist.Shares = shares.Where(x => x != firstEditShare).ToArray();
+                        _playlistManager.UpdatePlaylistAsync(playlist).GetAwaiter().GetResult();
+                    }
+                }
+                else
+                {
+                    playlist.OpenAccess = true;
                     _playlistManager.UpdatePlaylistAsync(playlist).GetAwaiter().GetResult();
                 }
             }

@@ -34,9 +34,12 @@ namespace MediaBrowser.Controller.Playlists
         public Playlist()
         {
             Shares = Array.Empty<Share>();
+            OpenAccess = false;
         }
 
         public Guid OwnerUserId { get; set; }
+
+        public bool OpenAccess { get; set; }
 
         public Share[] Shares { get; set; }
 
@@ -231,6 +234,11 @@ namespace MediaBrowser.Controller.Playlists
             if (!IsSharedItem)
             {
                 return base.IsVisible(user);
+            }
+
+            if (OpenAccess)
+            {
+                return true;
             }
 
             var userId = user.Id;
