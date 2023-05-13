@@ -20,7 +20,7 @@ namespace MediaBrowser.Controller.Entities.Movies
     {
         public BoxSet()
         {
-            DisplayOrder = ItemSortBy.PremiereDate;
+            DisplayOrder = "PremiereDate";
         }
 
         [JsonIgnore]
@@ -116,13 +116,13 @@ namespace MediaBrowser.Controller.Entities.Movies
         {
             var children = base.GetChildren(user, includeLinkedChildren, query);
 
-            if (string.Equals(DisplayOrder, ItemSortBy.SortName, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(DisplayOrder, "SortName", StringComparison.OrdinalIgnoreCase))
             {
                 // Sort by name
                 return LibraryManager.Sort(children, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending).ToList();
             }
 
-            if (string.Equals(DisplayOrder, ItemSortBy.PremiereDate, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(DisplayOrder, "PremiereDate", StringComparison.OrdinalIgnoreCase))
             {
                 // Sort by release date
                 return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Ascending).ToList();
@@ -136,7 +136,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         {
             var children = base.GetRecursiveChildren(user, query);
 
-            if (string.Equals(DisplayOrder, ItemSortBy.PremiereDate, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(DisplayOrder, "PremiereDate", StringComparison.OrdinalIgnoreCase))
             {
                 // Sort by release date
                 return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Ascending).ToList();

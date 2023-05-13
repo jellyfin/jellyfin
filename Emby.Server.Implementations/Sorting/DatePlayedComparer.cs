@@ -2,6 +2,7 @@
 
 using System;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Sorting;
@@ -36,7 +37,7 @@ namespace Emby.Server.Implementations.Sorting
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name => ItemSortBy.DatePlayed;
+        public ItemSortBy Type => ItemSortBy.DatePlayed;
 
         /// <summary>
         /// Compares the specified x.

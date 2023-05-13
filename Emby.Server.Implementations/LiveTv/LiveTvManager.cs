@@ -207,7 +207,7 @@ namespace Emby.Server.Implementations.LiveTv
                 orderBy.Insert(0, (ItemSortBy.IsFavoriteOrLiked, SortOrder.Descending));
             }
 
-            if (!internalQuery.OrderBy.Any(i => string.Equals(i.OrderBy, ItemSortBy.SortName, StringComparison.OrdinalIgnoreCase)))
+            if (internalQuery.OrderBy.All(i => i.OrderBy != ItemSortBy.SortName))
             {
                 orderBy.Add((ItemSortBy.SortName, SortOrder.Ascending));
             }

@@ -162,7 +162,7 @@ public class TrailersController : BaseJellyfinApiController
         [FromQuery] bool? isFavorite,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] imageTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] sortBy,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemSortBy[] sortBy,
         [FromQuery] bool? isPlayed,
         [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] genres,
         [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] officialRatings,

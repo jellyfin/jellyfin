@@ -1,4 +1,5 @@
 using System;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Querying;
@@ -14,7 +15,7 @@ namespace Emby.Server.Implementations.Sorting
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name => ItemSortBy.Random;
+        public ItemSortBy Type => ItemSortBy.Random;
 
         /// <summary>
         /// Compares the specified x.

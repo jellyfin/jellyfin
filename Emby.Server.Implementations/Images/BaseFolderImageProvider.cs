@@ -33,7 +33,7 @@ namespace Emby.Server.Implementations.Images
                 Parent = item,
                 DtoOptions = new DtoOptions(true),
                 ImageTypes = new ImageType[] { ImageType.Primary },
-                OrderBy = new (string, SortOrder)[]
+                OrderBy = new (ItemSortBy, SortOrder)[]
                 {
                     (ItemSortBy.IsFolder, SortOrder.Ascending),
                     (ItemSortBy.SortName, SortOrder.Ascending)

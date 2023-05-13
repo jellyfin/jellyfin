@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Sorting;
@@ -16,7 +17,7 @@ namespace Emby.Server.Implementations.Sorting
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name => ItemSortBy.AlbumArtist;
+        public ItemSortBy Type => ItemSortBy.AlbumArtist;
 
         /// <summary>
         /// Compares the specified x.

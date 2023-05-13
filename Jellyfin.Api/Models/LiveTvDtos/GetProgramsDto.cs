@@ -107,7 +107,7 @@ public class GetProgramsDto
     /// Optional.
     /// </summary>
     [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
-    public IReadOnlyList<string> SortBy { get; set; } = Array.Empty<string>();
+    public IReadOnlyList<ItemSortBy> SortBy { get; set; } = Array.Empty<ItemSortBy>();
 
     /// <summary>
     /// Gets or sets sort Order - Ascending,Descending.
