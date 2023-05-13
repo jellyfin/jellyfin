@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
@@ -256,7 +257,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The type of the media.</value>
         [JsonIgnore]
-        public override string MediaType => Model.Entities.MediaType.Video;
+        public override MediaType MediaType => MediaType.Video;
 
         public override List<string> GetUserDataKeys()
         {

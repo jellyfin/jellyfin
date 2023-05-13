@@ -722,7 +722,7 @@ namespace Emby.Server.Implementations.Data
             saveItemStatement.TryBind("@IsLocked", item.IsLocked);
             saveItemStatement.TryBind("@Name", item.Name);
             saveItemStatement.TryBind("@OfficialRating", item.OfficialRating);
-            saveItemStatement.TryBind("@MediaType", item.MediaType);
+            saveItemStatement.TryBind("@MediaType", item.MediaType.ToString());
             saveItemStatement.TryBind("@Overview", item.Overview);
             saveItemStatement.TryBind("@ParentIndexNumber", item.ParentIndexNumber);
             saveItemStatement.TryBind("@PremiereDate", item.PremiereDate);
@@ -3109,11 +3109,6 @@ namespace Emby.Server.Implementations.Data
             return true;
         }
 
-        private bool IsValidMediaType(string value)
-        {
-            return IsAlphaNumeric(value);
-        }
-
         private bool IsValidPersonType(string value)
         {
             return IsAlphaNumeric(value);
@@ -4124,15 +4119,14 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            var queryMediaTypes = query.MediaTypes.Where(IsValidMediaType).ToArray();
-            if (queryMediaTypes.Length == 1)
+            if (query.MediaTypes.Length == 1)
             {
                 whereClauses.Add("MediaType=@MediaTypes");
-                statement?.TryBind("@MediaTypes", queryMediaTypes[0]);
+                statement?.TryBind("@MediaTypes", query.MediaTypes[0].ToString());
             }
-            else if (queryMediaTypes.Length > 1)
+            else if (query.MediaTypes.Length > 1)
             {
-                var val = string.Join(',', queryMediaTypes.Select(i => "'" + i + "'"));
+                var val = string.Join(',', query.MediaTypes.Select(i => $"'{i}'"));
                 whereClauses.Add("MediaType in (" + val + ")");
             }
 

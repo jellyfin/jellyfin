@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;

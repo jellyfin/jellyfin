@@ -97,7 +97,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     var query = new InternalItemsQuery
                     {
-                        MediaTypes = new string[] { MediaType.Video },
+                        MediaTypes = new[] { MediaType.Video },
                         IsVirtualItem = false,
                         IncludeItemTypes = types,
                         DtoOptions = new DtoOptions(true),

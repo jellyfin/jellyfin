@@ -160,7 +160,7 @@ public class TrailersController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] excludeItemTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
         [FromQuery] bool? isFavorite,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] MediaType[] mediaTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] imageTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] sortBy,
         [FromQuery] bool? isPlayed,

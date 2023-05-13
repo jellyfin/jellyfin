@@ -317,7 +317,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var mediaTypes = new List<string>();
+            var mediaTypes = new List<MediaType>();
 
             if (includeItemTypes.Length == 0)
             {

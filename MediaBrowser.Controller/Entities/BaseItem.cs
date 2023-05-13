@@ -422,7 +422,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The type of the media.</value>
         [JsonIgnore]
-        public virtual string MediaType => null;
+        public virtual MediaType MediaType => MediaType.Unknown;
 
         [JsonIgnore]
         public virtual string[] PhysicalLocations

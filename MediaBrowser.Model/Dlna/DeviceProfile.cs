@@ -1,6 +1,7 @@
 #pragma warning disable CA1819 // Properties should not return arrays
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Xml.Serialization;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
@@ -227,9 +228,12 @@ namespace MediaBrowser.Model.Dlna
         /// The GetSupportedMediaTypes.
         /// </summary>
         /// <returns>The .</returns>
-        public string[] GetSupportedMediaTypes()
+        public MediaType[] GetSupportedMediaTypes()
         {
-            return ContainerProfile.SplitValue(SupportedMediaTypes);
+            return ContainerProfile.SplitValue(SupportedMediaTypes)
+                .Select(m => Enum.TryParse<MediaType>(m, out var parsed) ? parsed : MediaType.Unknown)
+                .Where(m => m != MediaType.Unknown)
+                .ToArray();
         }
 
         /// <summary>

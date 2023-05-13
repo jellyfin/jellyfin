@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Model.Session
@@ -11,12 +12,12 @@ namespace MediaBrowser.Model.Session
     {
         public ClientCapabilities()
         {
-            PlayableMediaTypes = Array.Empty<string>();
+            PlayableMediaTypes = Array.Empty<MediaType>();
             SupportedCommands = Array.Empty<GeneralCommandType>();
             SupportsPersistentIdentifier = true;
         }
 
-        public IReadOnlyList<string> PlayableMediaTypes { get; set; }
+        public IReadOnlyList<MediaType> PlayableMediaTypes { get; set; }
 
         public IReadOnlyList<GeneralCommandType> SupportedCommands { get; set; }
 
