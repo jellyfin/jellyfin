@@ -133,7 +133,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                     if (split.Count != 0)
                     {
-                        item.LUFS = float.Parse(split[0].Groups[1].ToString(), CultureInfo.InvariantCulture.NumberFormat);
+                        item.LUFS = float.Parse(split[0].Groups[1].ValueSpan, CultureInfo.InvariantCulture.NumberFormat);
                     }
                     else
                     {
