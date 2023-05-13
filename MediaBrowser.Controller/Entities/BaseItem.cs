@@ -724,7 +724,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (this is IHasCollectionType view)
                 {
-                    if (string.Equals(view.CollectionType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
+                    if (view.CollectionType == CollectionType.LiveTv)
                     {
                         return true;
                     }

@@ -565,30 +565,18 @@ namespace Emby.Dlna.ContentDirectory
 
             if (stubType != StubType.Folder && item is IHasCollectionType collectionFolder)
             {
-                var collectionType = collectionFolder.CollectionType;
-                if (string.Equals(CollectionType.Music, collectionType, StringComparison.OrdinalIgnoreCase))
+                switch (collectionFolder.CollectionType)
                 {
-                    return GetMusicFolders(item, user, stubType, sort, startIndex, limit);
-                }
-
-                if (string.Equals(CollectionType.Movies, collectionType, StringComparison.OrdinalIgnoreCase))
-                {
-                    return GetMovieFolders(item, user, stubType, sort, startIndex, limit);
-                }
-
-                if (string.Equals(CollectionType.TvShows, collectionType, StringComparison.OrdinalIgnoreCase))
-                {
-                    return GetTvFolders(item, user, stubType, sort, startIndex, limit);
-                }
-
-                if (string.Equals(CollectionType.Folders, collectionType, StringComparison.OrdinalIgnoreCase))
-                {
-                    return GetFolders(user, startIndex, limit);
-                }
-
-                if (string.Equals(CollectionType.LiveTv, collectionType, StringComparison.OrdinalIgnoreCase))
-                {
-                    return GetLiveTvChannels(user, sort, startIndex, limit);
+                    case CollectionType.Music:
+                        return GetMusicFolders(item, user, stubType, sort, startIndex, limit);
+                    case CollectionType.Movies:
+                        return GetMovieFolders(item, user, stubType, sort, startIndex, limit);
+                    case CollectionType.TvShows:
+                        return GetTvFolders(item, user, stubType, sort, startIndex, limit);
+                    case CollectionType.Folders:
+                        return GetFolders(user, startIndex, limit);
+                    case CollectionType.LiveTv:
+                        return GetLiveTvChannels(user, sort, startIndex, limit);
                 }
             }
 

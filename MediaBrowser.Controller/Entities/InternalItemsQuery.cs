@@ -42,7 +42,7 @@ namespace MediaBrowser.Controller.Entities
             OrderBy = Array.Empty<(string, SortOrder)>();
             PersonIds = Array.Empty<Guid>();
             PersonTypes = Array.Empty<string>();
-            PresetViews = Array.Empty<string>();
+            PresetViews = Array.Empty<CollectionType?>();
             SeriesStatuses = Array.Empty<SeriesStatus>();
             SourceTypes = Array.Empty<SourceType>();
             StudioIds = Array.Empty<Guid>();
@@ -248,7 +248,7 @@ namespace MediaBrowser.Controller.Entities
 
         public Guid[] TopParentIds { get; set; }
 
-        public string[] PresetViews { get; set; }
+        public CollectionType?[] PresetViews { get; set; }
 
         public TrailerType[] TrailerTypes { get; set; }
 

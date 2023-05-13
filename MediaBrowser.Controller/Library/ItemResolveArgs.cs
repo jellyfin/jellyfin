@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
@@ -120,7 +121,7 @@ namespace MediaBrowser.Controller.Library
             }
         }
 
-        public string CollectionType { get; set; }
+        public CollectionType? CollectionType { get; set; }
 
         public bool HasParent<T>()
             where T : Folder
@@ -220,7 +221,7 @@ namespace MediaBrowser.Controller.Library
             return GetFileSystemEntryByName(name) is not null;
         }
 
-        public string GetCollectionType()
+        public CollectionType? GetCollectionType()
         {
             return CollectionType;
         }
@@ -229,7 +230,7 @@ namespace MediaBrowser.Controller.Library
         /// Gets the configured content type for the path.
         /// </summary>
         /// <returns>The configured content type.</returns>
-        public string GetConfiguredContentType()
+        public CollectionType? GetConfiguredContentType()
         {
             return _libraryManager.GetConfiguredContentType(Path);
         }
