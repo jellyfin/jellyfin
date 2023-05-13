@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
@@ -14,9 +15,9 @@ namespace Emby.Dlna.PlayTo
     {
         private const string CommandBase = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" + "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + "<SOAP-ENV:Body>" + "<m:{0} xmlns:m=\"{1}\">" + "{2}" + "</m:{0}>" + "</SOAP-ENV:Body></SOAP-ENV:Envelope>";
 
-        public List<StateVariable> StateVariables { get; } = new List<StateVariable>();
+        public Collection<StateVariable> StateVariables { get; } = new Collection<StateVariable>();
 
-        public List<ServiceAction> ServiceActions { get; } = new List<ServiceAction>();
+        public Collection<ServiceAction> ServiceActions { get; } = new Collection<ServiceAction>();
 
         public static TransportCommands Create(XDocument document)
         {

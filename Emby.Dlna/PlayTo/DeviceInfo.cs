@@ -3,6 +3,7 @@
 #pragma warning disable CS1591
 
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Emby.Dlna.Common;
 using MediaBrowser.Model.Dlna;
 
@@ -10,7 +11,6 @@ namespace Emby.Dlna.PlayTo
 {
     public class DeviceInfo
     {
-        private readonly List<DeviceService> _services = new List<DeviceService>();
         private string _baseUrl = string.Empty;
 
         public DeviceInfo()
@@ -46,7 +46,7 @@ namespace Emby.Dlna.PlayTo
 
         public DeviceIcon Icon { get; set; }
 
-        public List<DeviceService> Services => _services;
+        public Collection<DeviceService> Services { get; }
 
         public DeviceIdentification ToDeviceIdentification()
         {
