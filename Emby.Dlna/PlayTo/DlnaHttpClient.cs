@@ -46,7 +46,7 @@ namespace Emby.Dlna.PlayTo
         {
             using var response = await _httpClientFactory.CreateClient(NamedClient.Dlna).SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 return await XDocument.LoadAsync(
