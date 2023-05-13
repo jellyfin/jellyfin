@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+#pragma warning disable CA1707
 
 namespace Emby.Dlna.PlayTo
 {
