@@ -404,7 +404,7 @@ namespace Emby.Server.Implementations.Session
                 session.LastPlaybackCheckIn = DateTime.UtcNow;
             }
 
-            if (info.IsPaused && session.LastPausedDate.HasValue == false)
+            if (info.IsPaused && session.LastPausedDate is null)
             {
                 session.LastPausedDate = DateTime.UtcNow;
             }
@@ -656,9 +656,10 @@ namespace Emby.Server.Implementations.Session
         private async void CheckForInactiveSteams(object state)
         {
             var pausedSessions = Sessions.Where(i =>
-                (i.NowPlayingItem is not null) &&
-                (i.PlayState.IsPaused == true) &&
-                (i.LastPausedDate is not null)).ToList();
+                    i.NowPlayingItem is not null
+                    && i.PlayState.IsPaused
+                    && i.LastPausedDate is not null)
+                .ToList();
 
             if (pausedSessions.Count > 0)
             {

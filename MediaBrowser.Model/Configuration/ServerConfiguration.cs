@@ -159,8 +159,9 @@ namespace MediaBrowser.Model.Configuration
 
         /// <summary>
         /// Gets or sets the threshold in minutes after a inactive session gets closed automatically.
+        /// If set to 0 the check for inactive sessions gets disabled.
         /// </summary>
-        /// <value>The close inactive session threshold in minutes.</value>
+        /// <value>The close inactive session threshold in minutes. 0 to disable.</value>
         public int InactiveSessionThreshold { get; set; } = 10;
 
         /// <summary>
