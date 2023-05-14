@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
@@ -60,13 +61,14 @@ internal class FixPlaylistOwner : IMigrationRoutine
                     {
                         playlist.OwnerUserId = guid;
                         playlist.Shares = shares.Where(x => x != firstEditShare).ToArray();
-                        _playlistManager.UpdatePlaylistAsync(playlist).GetAwaiter().GetResult();
+                        playlist.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
+                        _playlistManager.SavePlaylistFile(playlist);
                     }
                 }
                 else
                 {
                     playlist.OpenAccess = true;
-                    _playlistManager.UpdatePlaylistAsync(playlist).GetAwaiter().GetResult();
+                    playlist.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).GetAwaiter().GetResult();
                 }
             }
         }
