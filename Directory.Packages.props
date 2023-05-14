@@ -20,7 +20,7 @@
     <PackageVersion Include="EFCoreSecondLevelCacheInterceptor" Version="3.9.1" />
     <PackageVersion Include="FsCheck.Xunit" Version="2.16.5" />
     <PackageVersion Include="Jellyfin.XmlTv" Version="10.8.0" />
-    <PackageVersion Include="libse" Version="3.6.11" />
+    <PackageVersion Include="libse" Version="3.6.13" />
     <PackageVersion Include="LrcParser" Version="2023.308.0" />
     <PackageVersion Include="MetaBrainz.MusicBrainz" Version="5.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="7.0.5" />
