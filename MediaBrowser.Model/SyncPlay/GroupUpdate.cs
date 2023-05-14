@@ -11,11 +11,9 @@ public abstract class GroupUpdate
     /// Initializes a new instance of the <see cref="GroupUpdate"/> class.
     /// </summary>
     /// <param name="groupId">The group identifier.</param>
-    /// <param name="type">The update type.</param>
-    protected GroupUpdate(Guid groupId, GroupUpdateType type)
+    protected GroupUpdate(Guid groupId)
     {
         GroupId = groupId;
-        Type = type;
     }
 
     /// <summary>
@@ -28,5 +26,5 @@ public abstract class GroupUpdate
     /// Gets the update type.
     /// </summary>
     /// <value>The update type.</value>
-    public GroupUpdateType Type { get; }
+    public GroupUpdateType Type { get; init; }
 }

@@ -17,9 +17,10 @@ public class GroupUpdate<T> : GroupUpdate
     /// <param name="type">The update type.</param>
     /// <param name="data">The update data.</param>
     public GroupUpdate(Guid groupId, GroupUpdateType type, T data)
-        : base(groupId, type)
+        : base(groupId)
     {
         Data = data;
+        Type = type;
     }
 
     /// <summary>
