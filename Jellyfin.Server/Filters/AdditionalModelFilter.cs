@@ -63,19 +63,24 @@ namespace Jellyfin.Server.Filters
                 inboundWebSocketDiscriminators[messageType.ToString()!] = schema.Reference.ReferenceV3;
             }
 
-            context.SchemaRepository.AddDefinition(
-                nameof(InboundWebSocketMessage),
-                new OpenApiSchema
+            var inboundWebSocketMessageSchema = new OpenApiSchema
+            {
+                Type = "object",
+                Description = "Represents the list of possible inbound websocket types",
+                Reference = new OpenApiReference
                 {
-                    Type = "object",
-                    Description = "Represents the list of possible inbound websocket types",
-                    OneOf = inboundWebSocketSchemas,
-                    Discriminator = new OpenApiDiscriminator
-                    {
-                        PropertyName = nameof(WebSocketMessage.MessageType),
-                        Mapping = inboundWebSocketDiscriminators
-                    }
-                });
+                    Id = nameof(InboundWebSocketMessage),
+                    Type = ReferenceType.Schema
+                },
+                OneOf = inboundWebSocketSchemas,
+                Discriminator = new OpenApiDiscriminator
+                {
+                    PropertyName = nameof(WebSocketMessage.MessageType),
+                    Mapping = inboundWebSocketDiscriminators
+                }
+            };
+
+            context.SchemaRepository.AddDefinition(nameof(InboundWebSocketMessage), inboundWebSocketMessageSchema);
 
             var outboundWebSocketSchemas = new List<OpenApiSchema>();
             var outboundWebSocketDiscriminators = new Dictionary<string, string>();
@@ -98,17 +103,39 @@ namespace Jellyfin.Server.Filters
                 outboundWebSocketDiscriminators.Add(messageType.ToString()!, schema.Reference.ReferenceV3);
             }
 
+            var outboundWebSocketMessageSchema = new OpenApiSchema
+            {
+                Type = "object",
+                Description = "Represents the list of possible outbound websocket types",
+                Reference = new OpenApiReference
+                {
+                    Id = nameof(OutboundWebSocketMessage),
+                    Type = ReferenceType.Schema
+                },
+                OneOf = outboundWebSocketSchemas,
+                Discriminator = new OpenApiDiscriminator
+                {
+                    PropertyName = nameof(WebSocketMessage.MessageType),
+                    Mapping = outboundWebSocketDiscriminators
+                }
+            };
+
+            context.SchemaRepository.AddDefinition(nameof(OutboundWebSocketMessage), outboundWebSocketMessageSchema);
             context.SchemaRepository.AddDefinition(
-                nameof(OutboundWebSocketMessage),
+                nameof(WebSocketMessage),
                 new OpenApiSchema
                 {
                     Type = "object",
-                    Description = "Represents the list of possible outbound websocket types",
-                    OneOf = outboundWebSocketSchemas,
-                    Discriminator = new OpenApiDiscriminator
+                    Description = "Represents the possible websocket types",
+                    Reference = new OpenApiReference
                     {
-                        PropertyName = nameof(WebSocketMessage.MessageType),
-                        Mapping = outboundWebSocketDiscriminators
+                        Id = nameof(WebSocketMessage),
+                        Type = ReferenceType.Schema
+                    },
+                    OneOf = new[]
+                    {
+                        inboundWebSocketMessageSchema,
+                        outboundWebSocketMessageSchema
                     }
                 });
 
