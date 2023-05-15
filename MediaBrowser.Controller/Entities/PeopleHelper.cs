@@ -15,6 +15,8 @@ namespace MediaBrowser.Controller.Entities
             ArgumentNullException.ThrowIfNull(person);
             ArgumentException.ThrowIfNullOrEmpty(person.Name);
 
+            person.Name = person.Name.Trim();
+
             // Normalize
             if (string.Equals(person.Role, PersonType.GuestStar, StringComparison.OrdinalIgnoreCase))
             {

@@ -16,6 +16,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
@@ -400,7 +401,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     video.Genres = Array.Empty<string>();
 
-                    foreach (var genre in data.Genres)
+                    foreach (var genre in data.Genres.Trimmed())
                     {
                         video.AddGenre(genre);
                     }
@@ -509,9 +510,9 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     PeopleHelper.AddPerson(people, new PersonInfo
                     {
-                        Name = person.Name,
+                        Name = person.Name.Trim(),
                         Type = person.Type,
-                        Role = person.Role
+                        Role = person.Role.Trim()
                     });
                 }
 

@@ -19,6 +19,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -488,7 +489,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             var directors = people
                 .Where(i => i.IsType(PersonKind.Director))
-                .Select(i => i.Name)
+                .Select(i => i.Name?.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(i => i)
                 .ToList();
 
             foreach (var person in directors)
@@ -498,8 +501,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             var writers = people
                 .Where(i => i.IsType(PersonKind.Writer))
-                .Select(i => i.Name)
+                .Select(i => i.Name?.Trim())
                 .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(i => i)
                 .ToList();
 
             foreach (var person in writers)
@@ -512,7 +516,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("credits", person);
             }
 
-            foreach (var trailer in item.RemoteTrailers)
+            foreach (var trailer in item.RemoteTrailers.OrderBy(t => t.Url?.Trim()))
             {
                 writer.WriteElementString("trailer", GetOutputTrailerUrl(trailer.Url));
             }
@@ -660,22 +664,22 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("tagline", item.Tagline);
             }
 
-            foreach (var country in item.ProductionLocations)
+            foreach (var country in item.ProductionLocations.Trimmed().OrderBy(country => country))
             {
                 writer.WriteElementString("country", country);
             }
 
-            foreach (var genre in item.Genres)
+            foreach (var genre in item.Genres.Trimmed().OrderBy(genre => genre))
             {
                 writer.WriteElementString("genre", genre);
             }
 
-            foreach (var studio in item.Studios)
+            foreach (var studio in item.Studios.Trimmed().OrderBy(studio => studio))
             {
                 writer.WriteElementString("studio", studio);
             }
 
-            foreach (var tag in item.Tags)
+            foreach (var tag in item.Tags.Trimmed().OrderBy(tag => tag))
             {
                 if (item is MusicAlbum || item is MusicArtist)
                 {
@@ -752,7 +756,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             if (item.ProviderIds is not null)
             {
-                foreach (var providerKey in item.ProviderIds.Keys)
+                foreach (var providerKey in item.ProviderIds.Keys.OrderBy(providerKey => providerKey))
                 {
                     var providerId = item.ProviderIds[providerKey];
                     if (!string.IsNullOrEmpty(providerId) && !writtenProviderIds.Contains(providerKey))
@@ -764,7 +768,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                             XmlConvert.VerifyName(tagName);
                             Logger.LogDebug("Saving custom provider tagname {0}", tagName);
 
-                            writer.WriteElementString(GetTagForProviderKey(providerKey), providerId);
+                            writer.WriteElementString(tagName, providerId);
                         }
                         catch (ArgumentException)
                         {
@@ -785,7 +789,10 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             AddUserData(item, writer, userManager, userDataRepo, options);
 
-            AddActors(people, writer, libraryManager, options.SaveImagePathsInNfo);
+            if (item is not MusicAlbum && item is not MusicArtist)
+            {
+                AddActors(people, writer, libraryManager, options.SaveImagePathsInNfo);
+            }
 
             if (item is BoxSet folder)
             {
@@ -797,6 +804,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
         {
             var items = item.LinkedChildren
                 .Where(i => i.Type == LinkedChildType.Manual)
+                .OrderBy(i => i.Path?.Trim())
+                .ThenBy(i => i.LibraryItemId?.Trim())
                 .ToList();
 
             foreach (var link in items)
@@ -839,7 +848,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("poster", GetImagePathToSave(image, libraryManager));
             }
 
-            foreach (var backdrop in item.GetImages(ImageType.Backdrop))
+            foreach (var backdrop in item.GetImages(ImageType.Backdrop).OrderBy(b => b.Path?.Trim()))
             {
                 writer.WriteElementString("fanart", GetImagePathToSave(backdrop, libraryManager));
             }
@@ -913,7 +922,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         private void AddActors(List<PersonInfo> people, XmlWriter writer, ILibraryManager libraryManager, bool saveImagePath)
         {
-            foreach (var person in people)
+            foreach (var person in people
+                .OrderBy(person => person.SortOrder ?? 0)
+                .ThenBy(person => person.Name?.Trim()))
             {
                 if (person.IsType(PersonKind.Director) || person.IsType(PersonKind.Writer))
                 {

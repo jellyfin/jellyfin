@@ -8,6 +8,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 
@@ -55,12 +56,12 @@ namespace MediaBrowser.XbmcMetadata.Savers
         {
             var album = (MusicAlbum)item;
 
-            foreach (var artist in album.Artists)
+            foreach (var artist in album.Artists.Trimmed().OrderBy(artist => artist))
             {
                 writer.WriteElementString("artist", artist);
             }
 
-            foreach (var artist in album.AlbumArtists)
+            foreach (var artist in album.AlbumArtists.Trimmed().OrderBy(artist => artist))
             {
                 writer.WriteElementString("albumartist", artist);
             }
@@ -70,11 +71,19 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         private void AddTracks(IEnumerable<BaseItem> tracks, XmlWriter writer)
         {
-            foreach (var track in tracks.OrderBy(i => i.ParentIndexNumber ?? 0).ThenBy(i => i.IndexNumber ?? 0))
+            foreach (var track in tracks
+                .OrderBy(i => i.ParentIndexNumber ?? 0)
+                .ThenBy(i => i.IndexNumber ?? 0)
+                .ThenBy(i => i.Name?.Trim()))
             {
                 writer.WriteStartElement("track");
 
-                if (track.IndexNumber.HasValue)
+                if (track.ParentIndexNumber.HasValue && track.ParentIndexNumber.Value != 0)
+                {
+                    writer.WriteElementString("disc", track.ParentIndexNumber.Value.ToString(CultureInfo.InvariantCulture));
+                }
+
+                if (track.IndexNumber.HasValue && track.IndexNumber.Value != 0)
                 {
                     writer.WriteElementString("position", track.IndexNumber.Value.ToString(CultureInfo.InvariantCulture));
                 }

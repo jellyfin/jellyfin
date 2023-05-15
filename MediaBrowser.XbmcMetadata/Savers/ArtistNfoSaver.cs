@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Xml;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.IO;
 using MediaBrowser.XbmcMetadata.Configuration;
 using Microsoft.Extensions.Logging;
@@ -69,7 +71,10 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         private void AddAlbums(IList<BaseItem> albums, XmlWriter writer)
         {
-            foreach (var album in albums)
+            foreach (var album in albums
+                .OrderBy(album => album.ProductionYear ?? 0)
+                .ThenBy(album => album.SortName?.Trim())
+                .ThenBy(album => album.Name?.Trim()))
             {
                 writer.WriteStartElement("album");
 
