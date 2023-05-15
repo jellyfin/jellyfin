@@ -503,6 +503,7 @@ public class ItemsController : BaseJellyfinApiController
                 }
             }
 
+            query.Parent = null;
             result = folder.GetItems(query);
         }
         else
@@ -511,10 +512,12 @@ public class ItemsController : BaseJellyfinApiController
             result = new QueryResult<BaseItem>(itemsArray);
         }
 
+        // result might include items not accessible by the user, DtoService will remove them
+        var accessibleItems = _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user);
         return new QueryResult<BaseItemDto>(
             startIndex,
-            result.TotalRecordCount,
-            _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user));
+            accessibleItems.Count,
+            accessibleItems);
     }
 
     /// <summary>

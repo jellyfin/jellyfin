@@ -27,11 +27,6 @@ namespace Emby.Server.Implementations.Playlists
         [JsonIgnore]
         public override string CollectionType => MediaBrowser.Model.Entities.CollectionType.Playlists;
 
-        public override bool IsVisible(User user)
-        {
-            return base.IsVisible(user) && GetChildren(user, true).Any();
-        }
-
         protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
         {
             return base.GetEligibleChildrenForRecursiveChildren(user).OfType<Playlist>();
@@ -47,7 +42,6 @@ namespace Emby.Server.Implementations.Playlists
 
             query.Recursive = true;
             query.IncludeItemTypes = new[] { BaseItemKind.Playlist };
-            query.Parent = null;
             return LibraryManager.GetItemsResult(query);
         }
 
