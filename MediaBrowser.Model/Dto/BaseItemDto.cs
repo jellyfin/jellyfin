@@ -780,6 +780,12 @@ namespace MediaBrowser.Model.Dto
         public string TimerId { get; set; }
 
         /// <summary>
+        /// Gets or sets the LUFS value.
+        /// </summary>
+        /// <value>The LUFS Value.</value>
+        public float LUFS { get; set; }
+
+        /// <summary>
         /// Gets or sets the current program.
         /// </summary>
         /// <value>The current program.</value>
