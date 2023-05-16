@@ -14,7 +14,7 @@ namespace Emby.Server.Implementations
         public static Dictionary<string, string?> DefaultConfiguration => new Dictionary<string, string?>
         {
             { HostWebClientKey, bool.TrueString },
-            { DefaultRedirectKey, "web/index.html" },
+            { DefaultRedirectKey, "web/" },
             { FfmpegProbeSizeKey, "1G" },
             { FfmpegAnalyzeDurationKey, "200M" },
             { PlaylistsAllowDuplicatesKey, bool.FalseString },
