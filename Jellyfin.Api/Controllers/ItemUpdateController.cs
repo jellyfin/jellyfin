@@ -251,8 +251,6 @@ public class ItemUpdateController : BaseJellyfinApiController
             channel.Height = request.Height.Value;
         }
 
-        item.Tags = request.Tags;
-
         if (request.Taglines is not null)
         {
             item.Tagline = request.Taglines.FirstOrDefault();
@@ -276,12 +274,19 @@ public class ItemUpdateController : BaseJellyfinApiController
         item.OfficialRating = request.OfficialRating;
         item.CustomRating = request.CustomRating;
 
+        var currentTags = item.Tags;
+        var newTags = request.Tags;
+        var removedTags = currentTags.Except(newTags).ToList();
+        var addedTags = newTags.Except(currentTags).ToList();
+        item.Tags = newTags;
+
         if (item is Series rseries)
         {
             foreach (Season season in rseries.Children)
             {
                 season.OfficialRating = request.OfficialRating;
                 season.CustomRating = request.CustomRating;
+                season.Tags = season.Tags.Concat(addedTags).Except(removedTags).Distinct().ToArray();
                 season.OnMetadataChanged();
                 await season.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
@@ -289,6 +294,7 @@ public class ItemUpdateController : BaseJellyfinApiController
                 {
                     ep.OfficialRating = request.OfficialRating;
                     ep.CustomRating = request.CustomRating;
+                    ep.Tags = ep.Tags.Concat(addedTags).Except(removedTags).Distinct().ToArray();
                     ep.OnMetadataChanged();
                     await ep.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
                 }
@@ -300,6 +306,7 @@ public class ItemUpdateController : BaseJellyfinApiController
             {
                 ep.OfficialRating = request.OfficialRating;
                 ep.CustomRating = request.CustomRating;
+                ep.Tags = ep.Tags.Concat(addedTags).Except(removedTags).Distinct().ToArray();
                 ep.OnMetadataChanged();
                 await ep.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
             }
@@ -310,6 +317,7 @@ public class ItemUpdateController : BaseJellyfinApiController
             {
                 track.OfficialRating = request.OfficialRating;
                 track.CustomRating = request.CustomRating;
+                track.Tags = track.Tags.Concat(addedTags).Except(removedTags).Distinct().ToArray();
                 track.OnMetadataChanged();
                 await track.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
             }
