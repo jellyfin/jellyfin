@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Trickplay;
@@ -11,6 +10,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
+using TagLib.Ape;
 
 namespace MediaBrowser.Providers.Trickplay;
 
@@ -19,6 +19,8 @@ namespace MediaBrowser.Providers.Trickplay;
 /// </summary>
 public class TrickplayImagesTask : IScheduledTask
 {
+    private const int QueryPageLimit = 100;
+
     private readonly ILogger<TrickplayImagesTask> _logger;
     private readonly ILibraryManager _libraryManager;
     private readonly ILocalizationManager _localization;
@@ -71,38 +73,46 @@ public class TrickplayImagesTask : IScheduledTask
     /// <inheritdoc />
     public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
-        var items = _libraryManager.GetItemList(new InternalItemsQuery
+        var query = new InternalItemsQuery
         {
             MediaTypes = new[] { MediaType.Video },
+            SourceTypes = new[] { SourceType.Library },
             IsVirtualItem = false,
             IsFolder = false,
-            Recursive = true
-        }).OfType<Video>().ToList();
+            Recursive = true,
+            Limit = QueryPageLimit
+        };
 
+        var numberOfVideos = _libraryManager.GetCount(query);
+
+        var startIndex = 0;
         var numComplete = 0;
 
-        foreach (var item in items)
+        while (startIndex < numberOfVideos)
         {
-            try
+            query.StartIndex = startIndex;
+            var videos = _libraryManager.GetItemList(query).OfType<Video>().ToList();
+
+            foreach (var video in videos)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await _trickplayManager.RefreshTrickplayDataAsync(item, false, cancellationToken).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                break;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating trickplay files for {ItemName}", item.Name);
+
+                try
+                {
+                    await _trickplayManager.RefreshTrickplayDataAsync(video, false, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error creating trickplay files for {ItemName}", video.Name);
+                }
+
+                numComplete++;
+                progress.Report(100d * numComplete / numberOfVideos);
             }
 
-            numComplete++;
-            double percent = numComplete;
-            percent /= items.Count;
-            percent *= 100;
-
-            progress.Report(percent);
+            startIndex += QueryPageLimit;
         }
+
+        progress.Report(100);
     }
 }
