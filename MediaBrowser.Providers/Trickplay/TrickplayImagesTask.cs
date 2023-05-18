@@ -94,7 +94,7 @@ public class TrickplayImagesTask : IScheduledTask
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error creating trickplay files for {ItemName}: {Msg}", item.Name, ex);
+                _logger.LogError(ex, "Error creating trickplay files for {ItemName}", item.Name);
             }
 
             numComplete++;

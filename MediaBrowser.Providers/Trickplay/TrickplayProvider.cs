@@ -25,7 +25,6 @@ public class TrickplayProvider : ICustomMetadataProvider<Episode>,
     IHasOrder,
     IForcedProvider
 {
-    private readonly ILogger<TrickplayProvider> _logger;
     private readonly IServerConfigurationManager _config;
     private readonly ITrickplayManager _trickplayManager;
     private readonly ILibraryManager _libraryManager;
@@ -33,17 +32,14 @@ public class TrickplayProvider : ICustomMetadataProvider<Episode>,
     /// <summary>
     /// Initializes a new instance of the <see cref="TrickplayProvider"/> class.
     /// </summary>
-    /// <param name="logger">The logger.</param>
     /// <param name="config">The configuration manager.</param>
     /// <param name="trickplayManager">The trickplay manager.</param>
     /// <param name="libraryManager">The library manager.</param>
     public TrickplayProvider(
-        ILogger<TrickplayProvider> logger,
         IServerConfigurationManager config,
         ITrickplayManager trickplayManager,
         ILibraryManager libraryManager)
     {
-        _logger = logger;
         _config = config;
         _trickplayManager = trickplayManager;
         _libraryManager = libraryManager;

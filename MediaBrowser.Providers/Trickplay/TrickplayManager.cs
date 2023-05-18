@@ -33,6 +33,7 @@ public class TrickplayManager : ITrickplayManager
     private readonly IServerConfigurationManager _config;
 
     private static readonly SemaphoreSlim _resourcePool = new(1, 1);
+    private static readonly string[] _trickplayImgExtensions = { ".jpg" };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TrickplayManager"/> class.
@@ -95,10 +96,10 @@ public class TrickplayManager : ITrickplayManager
         var imgTempDir = string.Empty;
         var outputDir = GetTrickplayDirectory(video, width);
 
+        await _resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+
         try
         {
-            await _resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
             if (!replace && Directory.Exists(outputDir) && GetTilesResolutions(video.Id).ContainsKey(width))
             {
                 _logger.LogDebug("Found existing trickplay files for {ItemId}. Exiting.", video.Id);
@@ -139,8 +140,7 @@ public class TrickplayManager : ITrickplayManager
                 throw new InvalidOperationException("Null or invalid directory from media encoder.");
             }
 
-            var images = _fileSystem.GetFiles(imgTempDir, new string[] { ".jpg" }, false, false)
-                .Where(img => string.Equals(img.Extension, ".jpg", StringComparison.Ordinal))
+            var images = _fileSystem.GetFiles(imgTempDir, _trickplayImgExtensions, false, false)
                 .OrderBy(i => i.FullName)
                 .ToList();
 

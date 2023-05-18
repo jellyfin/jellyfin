@@ -6,18 +6,14 @@ using System.IO;
 using System.Linq;
 using System.Net.Mime;
 using System.Text;
-using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
-using Jellyfin.Api.Helpers;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Controllers;
 
@@ -28,26 +24,18 @@ namespace Jellyfin.Api.Controllers;
 [Authorize]
 public class TrickplayController : BaseJellyfinApiController
 {
-    private readonly ILogger<TrickplayController> _logger;
-    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILibraryManager _libraryManager;
     private readonly ITrickplayManager _trickplayManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TrickplayController"/> class.
     /// </summary>
-    /// <param name="logger">Instance of the <see cref="ILogger{TrickplayController}"/> interface.</param>
-    /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
     /// <param name="libraryManager">Instance of <see cref="ILibraryManager"/>.</param>
     /// <param name="trickplayManager">Instance of <see cref="ITrickplayManager"/>.</param>
     public TrickplayController(
-        ILogger<TrickplayController> logger,
-        IHttpContextAccessor httpContextAccessor,
         ILibraryManager libraryManager,
         ITrickplayManager trickplayManager)
     {
-        _logger = logger;
-        _httpContextAccessor = httpContextAccessor;
         _libraryManager = libraryManager;
         _trickplayManager = trickplayManager;
     }
@@ -66,9 +54,9 @@ public class TrickplayController : BaseJellyfinApiController
     public ActionResult GetTrickplayHlsPlaylist(
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] int width,
-        [FromQuery] string? mediaSourceId)
+        [FromQuery] Guid? mediaSourceId)
     {
-        return GetTrickplayPlaylistInternal(width, mediaSourceId ?? itemId.ToString("N"));
+        return GetTrickplayPlaylistInternal(width, mediaSourceId ?? itemId);
     }
 
     /// <summary>
@@ -89,9 +77,9 @@ public class TrickplayController : BaseJellyfinApiController
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] int width,
         [FromRoute, Required] int index,
-        [FromQuery] string? mediaSourceId)
+        [FromQuery] Guid? mediaSourceId)
     {
-        var item = _libraryManager.GetItemById(mediaSourceId ?? itemId.ToString("N"));
+        var item = _libraryManager.GetItemById(mediaSourceId ?? itemId);
         if (item is null)
         {
             return NotFound();
@@ -106,28 +94,22 @@ public class TrickplayController : BaseJellyfinApiController
         return NotFound();
     }
 
-    private ActionResult GetTrickplayPlaylistInternal(int width, string mediaSourceId)
+    private ActionResult GetTrickplayPlaylistInternal(int width, Guid mediaSourceId)
     {
-        if (_httpContextAccessor.HttpContext is null)
-        {
-            throw new ResourceNotFoundException(nameof(_httpContextAccessor.HttpContext));
-        }
-
-        var tilesResolutions = _trickplayManager.GetTilesResolutions(Guid.Parse(mediaSourceId));
-        if (tilesResolutions is not null && tilesResolutions.ContainsKey(width))
+        var tilesResolutions = _trickplayManager.GetTilesResolutions(mediaSourceId);
+        if (tilesResolutions is not null && tilesResolutions.TryGetValue(width, out var tilesInfo))
         {
             var builder = new StringBuilder(128);
-            var tilesInfo = tilesResolutions[width];
 
             if (tilesInfo.TileCount > 0)
             {
                 const string urlFormat = "Trickplay/{0}/{1}.jpg?MediaSourceId={2}&api_key={3}";
                 const string decimalFormat = "{0:0.###}";
 
-                var resolution = tilesInfo.Width.ToString(CultureInfo.InvariantCulture) + "x" + tilesInfo.Height.ToString(CultureInfo.InvariantCulture);
-                var layout = tilesInfo.TileWidth.ToString(CultureInfo.InvariantCulture) + "x" + tilesInfo.TileHeight.ToString(CultureInfo.InvariantCulture);
+                var resolution = $"{tilesInfo.Width}x{tilesInfo.Height}";
+                var layout = $"{tilesInfo.TileWidth}x{tilesInfo.TileHeight}";
                 var tilesPerGrid = tilesInfo.TileWidth * tilesInfo.TileHeight;
-                var tileDuration = (decimal)tilesInfo.Interval / 1000;
+                var tileDuration = tilesInfo.Interval / 1000m;
                 var infDuration = tileDuration * tilesPerGrid;
                 var tileGridCount = (int)Math.Ceiling((decimal)tilesInfo.TileCount / tilesPerGrid);
 
@@ -153,15 +135,22 @@ public class TrickplayController : BaseJellyfinApiController
                         urlFormat,
                         width.ToString(CultureInfo.InvariantCulture),
                         i.ToString(CultureInfo.InvariantCulture),
-                        mediaSourceId,
-                        _httpContextAccessor.HttpContext.User.GetToken());
+                        mediaSourceId.ToString("N"),
+                        User.GetToken());
 
                     // EXTINF
-                    builder.Append("#EXTINF:").Append(string.Format(CultureInfo.InvariantCulture, decimalFormat, infDuration))
+                    builder
+                        .Append("#EXTINF:")
+                        .Append(string.Format(CultureInfo.InvariantCulture, decimalFormat, infDuration))
                         .AppendLine(",");
 
                     // EXT-X-TILES
-                    builder.Append("#EXT-X-TILES:RESOLUTION=").Append(resolution).Append(",LAYOUT=").Append(layout).Append(",DURATION=")
+                    builder
+                        .Append("#EXT-X-TILES:RESOLUTION=")
+                        .Append(resolution)
+                        .Append(",LAYOUT=")
+                        .Append(layout)
+                        .Append(",DURATION=")
                         .AppendLine(string.Format(CultureInfo.InvariantCulture, decimalFormat, tileDuration));
 
                     // URL
