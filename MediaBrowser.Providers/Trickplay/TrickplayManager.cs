@@ -317,14 +317,7 @@ public class TrickplayManager : ITrickplayManager
         }
 
         var libraryOptions = _libraryManager.GetLibraryOptions(video);
-        if (libraryOptions is not null)
-        {
-            if (!libraryOptions.EnableTrickplayImageExtraction)
-            {
-                return false;
-            }
-        }
-        else
+        if (libraryOptions is null || !libraryOptions.EnableTrickplayImageExtraction)
         {
             return false;
         }
