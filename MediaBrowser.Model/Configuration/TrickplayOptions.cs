@@ -56,5 +56,5 @@ public class TrickplayOptions
     /// <summary>
     /// Gets or sets the number of threads to be used by ffmpeg.
     /// </summary>
-    public int ProcessThreads { get; set; } = 0;
+    public int ProcessThreads { get; set; } = 1;
 }
