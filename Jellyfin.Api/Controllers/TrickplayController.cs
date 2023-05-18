@@ -113,12 +113,14 @@ public class TrickplayController : BaseJellyfinApiController
                 var infDuration = tileDuration * tilesPerGrid;
                 var tileGridCount = (int)Math.Ceiling((decimal)tilesInfo.TileCount / tilesPerGrid);
 
-                builder.AppendLine("#EXTM3U");
-                builder.Append("#EXT-X-TARGETDURATION:").AppendLine(tileGridCount.ToString(CultureInfo.InvariantCulture));
-                builder.AppendLine("#EXT-X-VERSION:7");
-                builder.AppendLine("#EXT-X-MEDIA-SEQUENCE:1");
-                builder.AppendLine("#EXT-X-PLAYLIST-TYPE:VOD");
-                builder.AppendLine("#EXT-X-IMAGES-ONLY");
+                builder
+                    .AppendLine("#EXTM3U")
+                    .Append("#EXT-X-TARGETDURATION:")
+                    .AppendLine(tileGridCount.ToString(CultureInfo.InvariantCulture))
+                    .AppendLine("#EXT-X-VERSION:7")
+                    .AppendLine("#EXT-X-MEDIA-SEQUENCE:1")
+                    .AppendLine("#EXT-X-PLAYLIST-TYPE:VOD")
+                    .AppendLine("#EXT-X-IMAGES-ONLY");
 
                 for (int i = 0; i < tileGridCount; i++)
                 {
