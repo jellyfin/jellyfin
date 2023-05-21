@@ -79,10 +79,7 @@ namespace MediaBrowser.Providers.TV
                 foreach (var season in sourceSeasonNames)
                 {
                     var seasonNumber = season.Key;
-                    if (!targetSeasonNames.ContainsKey(seasonNumber))
-                    {
-                        targetItem.SeasonNames[seasonNumber] = season.Value;
-                    }
+                    targetSeasonNames.TryAdd(seasonNumber, season.Value);
                 }
             }
 
@@ -219,9 +216,9 @@ namespace MediaBrowser.Providers.TV
                 var existingSeason = seasons.FirstOrDefault(i => i.IndexNumber == seasonNumber);
                 string? seasonName = null;
 
-                if (seasonNumber.HasValue && seasonNames.ContainsKey(seasonNumber.Value))
+                if (seasonNumber.HasValue && seasonNames.TryGetValue(seasonNumber.Value, out var tmp))
                 {
-                    seasonName = seasonNames[seasonNumber.Value];
+                    seasonName = tmp;
                 }
 
                 if (existingSeason is null)
