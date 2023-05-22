@@ -24,7 +24,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
     /// <summary>
     /// Class MovieResolver.
     /// </summary>
-    public class MovieResolver : BaseVideoResolver<Video>, IMultiItemResolver
+    public partial class MovieResolver : BaseVideoResolver<Video>, IMultiItemResolver
     {
         private readonly IImageProcessor _imageProcessor;
 
@@ -55,6 +55,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         /// </summary>
         /// <value>The priority.</value>
         public override ResolverPriority Priority => ResolverPriority.Fourth;
+
+        [GeneratedRegex(@"\bsample\b", RegexOptions.IgnoreCase)]
+        private static partial Regex IsIgnoredRegex();
 
         /// <inheritdoc />
         public MultiItemResolverResult ResolveMultiple(
@@ -261,7 +264,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 {
                     leftOver.Add(child);
                 }
-                else if (!IsIgnored(child.Name))
+                else if (!IsIgnoredRegex().IsMatch(child.Name))
                 {
                     files.Add(child);
                 }
@@ -313,9 +316,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
             return result;
         }
-
-        private static bool IsIgnored(ReadOnlySpan<char> filename)
-            => Regex.IsMatch(filename, @"\bsample\b", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         private static bool ContainsFile(IReadOnlyList<VideoInfo> result, FileSystemMetadata file)
         {

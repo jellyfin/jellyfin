@@ -20,7 +20,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {
-    public class M3uParser
+    public partial class M3uParser
     {
         private const string ExtInfPrefix = "#EXTINF:";
 
@@ -32,6 +32,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             _logger = logger;
             _httpClientFactory = httpClientFactory;
         }
+
+        [GeneratedRegex(@"([a-z0-9\-_]+)=\""([^""]+)\""", RegexOptions.IgnoreCase, "en-US")]
+        private static partial Regex KeyValueRegex();
 
         public async Task<List<ChannelInfo>> Parse(TunerHostInfo info, string channelIdPrefix, CancellationToken cancellationToken)
         {
@@ -311,7 +314,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         {
             var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            var matches = Regex.Matches(line, @"([a-z0-9\-_]+)=\""([^""]+)\""", RegexOptions.IgnoreCase);
+            var matches = KeyValueRegex().Matches(line);
 
             remaining = line;
 
@@ -320,7 +323,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 var key = match.Groups[1].Value;
                 var value = match.Groups[2].Value;
 
-                dict[match.Groups[1].Value] = match.Groups[2].Value;
+                dict[key] = value;
                 remaining = remaining.Replace(key + "=\"" + value + "\"", string.Empty, StringComparison.OrdinalIgnoreCase);
             }
 

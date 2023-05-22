@@ -25,7 +25,7 @@ namespace MediaBrowser.Providers.MediaInfo
     /// <summary>
     /// Probes audio files for metadata.
     /// </summary>
-    public class AudioFileProber
+    public partial class AudioFileProber
     {
         // Default LUFS value for use with the web interface, at -18db gain will be 1(no db gain).
         private const float DefaultLUFSValue = -18;
@@ -57,6 +57,9 @@ namespace MediaBrowser.Providers.MediaInfo
             _libraryManager = libraryManager;
             _mediaSourceManager = mediaSourceManager;
         }
+
+        [GeneratedRegex("I:\\s+(.*?)\\s+LUFS")]
+        private static partial Regex LUFSRegex();
 
         /// <summary>
         /// Probes the specified item for metadata.
@@ -129,7 +132,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                     output = await process.StandardError.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
                     cancellationToken.ThrowIfCancellationRequested();
-                    MatchCollection split = Regex.Matches(output, @"I:\s+(.*?)\s+LUFS");
+                    MatchCollection split = LUFSRegex().Matches(output);
 
                     if (split.Count != 0)
                     {

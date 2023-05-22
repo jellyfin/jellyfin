@@ -31,7 +31,7 @@ namespace Jellyfin.Server.Implementations.Users
     /// <summary>
     /// Manages the creation and retrieval of <see cref="User"/> instances.
     /// </summary>
-    public class UserManager : IUserManager
+    public partial class UserManager : IUserManager
     {
         private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
         private readonly IEventManager _eventManager;
@@ -104,6 +104,12 @@ namespace Jellyfin.Server.Implementations.Users
 
         /// <inheritdoc/>
         public IEnumerable<Guid> UsersIds => _users.Keys;
+
+        // This is some regex that matches only on unicode "word" characters, as well as -, _ and @
+        // In theory this will cut out most if not all 'control' characters which should help minimize any weirdness
+        // Usernames can contain letters (a-z + whatever else unicode is cool with), numbers (0-9), at-signs (@), dashes (-), underscores (_), apostrophes ('), periods (.) and spaces ( )
+        [GeneratedRegex("^[\\w\\ \\-'._@]+$")]
+        private static partial Regex ValidUsernameRegex();
 
         /// <inheritdoc/>
         public User? GetUserById(Guid id)
@@ -527,7 +533,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             var defaultName = Environment.UserName;
-            if (string.IsNullOrWhiteSpace(defaultName) || !IsValidUsername(defaultName))
+            if (string.IsNullOrWhiteSpace(defaultName) || !ValidUsernameRegex().IsMatch(defaultName))
             {
                 defaultName = "MyJellyfinUser";
             }
@@ -710,20 +716,12 @@ namespace Jellyfin.Server.Implementations.Users
 
         internal static void ThrowIfInvalidUsername(string name)
         {
-            if (!string.IsNullOrWhiteSpace(name) && IsValidUsername(name))
+            if (!string.IsNullOrWhiteSpace(name) && ValidUsernameRegex().IsMatch(name))
             {
                 return;
             }
 
             throw new ArgumentException("Usernames can contain unicode symbols, numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)", nameof(name));
-        }
-
-        private static bool IsValidUsername(ReadOnlySpan<char> name)
-        {
-            // This is some regex that matches only on unicode "word" characters, as well as -, _ and @
-            // In theory this will cut out most if not all 'control' characters which should help minimize any weirdness
-            // Usernames can contain letters (a-z + whatever else unicode is cool with), numbers (0-9), at-signs (@), dashes (-), underscores (_), apostrophes ('), periods (.) and spaces ( )
-            return Regex.IsMatch(name, @"^[\w\ \-'._@]+$");
         }
 
         private IAuthenticationProvider GetAuthenticationProvider(User user)
