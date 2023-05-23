@@ -1226,7 +1226,7 @@ namespace MediaBrowser.Model.Dlna
                     TranscodeReason audioCodecProfileReasons = 0;
 
                     // Check container type
-                    if (!directPlayProfile.SupportsContainer(container))
+                    if (!directPlayProfile.SupportsContainer(container) && container != "hls")
                     {
                         directPlayProfileReasons |= TranscodeReason.ContainerNotSupported;
                     }
