@@ -23,7 +23,7 @@ namespace Emby.Naming.Audio
             _options = options;
         }
 
-        [GeneratedRegex(@"([-\.\(\)]|\s+)")]
+        [GeneratedRegex(@"[-\.\(\)\s]+")]
         private static partial Regex CleanRegex();
 
         /// <summary>

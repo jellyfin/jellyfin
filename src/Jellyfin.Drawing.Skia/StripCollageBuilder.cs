@@ -23,6 +23,9 @@ public partial class StripCollageBuilder
         _skiaEncoder = skiaEncoder;
     }
 
+    [GeneratedRegex(@"[^\p{IsCJKUnifiedIdeographs}\p{IsCJKUnifiedIdeographsExtensionA}\p{IsKatakana}\p{IsHiragana}\p{IsHangulSyllables}\p{IsHangulJamo}]")]
+    private static partial Regex NonCjkPatternRegex();
+
     [GeneratedRegex(@"\p{IsArabic}|\p{IsArmenian}|\p{IsHebrew}|\p{IsSyriac}|\p{IsThaana}")]
     private static partial Regex IsRtlTextRegex();
 
