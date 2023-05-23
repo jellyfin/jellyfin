@@ -6,9 +6,9 @@ namespace Jellyfin.Data.Enums;
 public enum ItemSortBy
 {
     /// <summary>
-    /// Unknown sort order.
+    /// Default sort order.
     /// </summary>
-    Unknown = 0,
+    Default = 0,
 
     /// <summary>
     /// The aired episode order.
