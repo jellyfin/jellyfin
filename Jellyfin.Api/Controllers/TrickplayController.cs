@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Net.Mime;
 using System.Text;
 using Jellyfin.Api.Attributes;
@@ -50,6 +47,7 @@ public class TrickplayController : BaseJellyfinApiController
     /// <returns>A <see cref="FileResult"/> containing the trickplay tiles file.</returns>
     [HttpGet("Videos/{itemId}/Trickplay/{width}/tiles.m3u8")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesPlaylistFile]
     public ActionResult GetTrickplayHlsPlaylist(
         [FromRoute, Required] Guid itemId,
@@ -109,7 +107,7 @@ public class TrickplayController : BaseJellyfinApiController
                 var resolution = $"{tilesInfo.Width}x{tilesInfo.Height}";
                 var layout = $"{tilesInfo.TileWidth}x{tilesInfo.TileHeight}";
                 var tilesPerGrid = tilesInfo.TileWidth * tilesInfo.TileHeight;
-                var tileDuration = tilesInfo.Interval / 1000m;
+                var tileDuration = tilesInfo.Interval / 1000d;
                 var infDuration = tileDuration * tilesPerGrid;
                 var tileGridCount = (int)Math.Ceiling((decimal)tilesInfo.TileCount / tilesPerGrid);
 
@@ -132,18 +130,10 @@ public class TrickplayController : BaseJellyfinApiController
                         infDuration = tileDuration * tilesPerGrid;
                     }
 
-                    var url = string.Format(
-                        CultureInfo.InvariantCulture,
-                        urlFormat,
-                        width.ToString(CultureInfo.InvariantCulture),
-                        i.ToString(CultureInfo.InvariantCulture),
-                        mediaSourceId.ToString("N"),
-                        User.GetToken());
-
                     // EXTINF
                     builder
                         .Append("#EXTINF:")
-                        .Append(string.Format(CultureInfo.InvariantCulture, decimalFormat, infDuration))
+                        .AppendFormat(CultureInfo.InvariantCulture, decimalFormat, infDuration)
                         .AppendLine(",");
 
                     // EXT-X-TILES
@@ -153,10 +143,19 @@ public class TrickplayController : BaseJellyfinApiController
                         .Append(",LAYOUT=")
                         .Append(layout)
                         .Append(",DURATION=")
-                        .AppendLine(string.Format(CultureInfo.InvariantCulture, decimalFormat, tileDuration));
+                        .AppendFormat(CultureInfo.InvariantCulture, decimalFormat, tileDuration)
+                        .AppendLine();
 
                     // URL
-                    builder.AppendLine(url);
+                    builder
+                        .AppendFormat(
+                            CultureInfo.InvariantCulture,
+                            urlFormat,
+                            width.ToString(CultureInfo.InvariantCulture),
+                            i.ToString(CultureInfo.InvariantCulture),
+                            mediaSourceId.ToString("N"),
+                            User.GetToken())
+                        .AppendLine();
                 }
 
                 builder.AppendLine("#EXT-X-ENDLIST");
@@ -164,6 +163,6 @@ public class TrickplayController : BaseJellyfinApiController
             }
         }
 
-        return new FileContentResult(Array.Empty<byte>(), MimeTypes.GetMimeType("playlist.m3u8"));
+        return NotFound();
     }
 }

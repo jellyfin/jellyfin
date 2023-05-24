@@ -8,7 +8,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.Configuration;
-using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Trickplay;
 
