@@ -184,6 +184,12 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         {
             var justName = Path.GetFileName(path.AsSpan());
 
+            var imdbId = justName.GetAttributeValue("imdbid");
+            if (!string.IsNullOrEmpty(imdbId))
+            {
+                item.SetProviderId(MetadataProvider.Imdb, imdbId);
+            }
+
             var tvdbId = justName.GetAttributeValue("tvdbid");
             if (!string.IsNullOrEmpty(tvdbId))
             {

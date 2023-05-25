@@ -129,6 +129,13 @@ namespace MediaBrowser.Controller.Entities
         public string Album { get; set; }
 
         /// <summary>
+        /// Gets or sets the LUFS value.
+        /// </summary>
+        /// <value>The LUFS Value.</value>
+        [JsonIgnore]
+        public float LUFS { get; set; }
+
+        /// <summary>
         /// Gets or sets the channel identifier.
         /// </summary>
         /// <value>The channel identifier.</value>

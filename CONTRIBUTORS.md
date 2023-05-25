@@ -126,6 +126,7 @@
  - [SuperSandro2000](https://github.com/SuperSandro2000)
  - [tbraeutigam](https://github.com/tbraeutigam)
  - [teacupx](https://github.com/teacupx)
+ - [TelepathicWalrus](https://github.com/TelepathicWalrus)
  - [Terror-Gene](https://github.com/Terror-Gene)
  - [ThatNerdyPikachu](https://github.com/ThatNerdyPikachu)
  - [ThibaultNocchi](https://github.com/ThibaultNocchi)
