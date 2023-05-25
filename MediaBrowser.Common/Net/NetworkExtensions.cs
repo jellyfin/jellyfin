@@ -93,31 +93,36 @@ namespace MediaBrowser.Common.Net
             ArgumentNullException.ThrowIfNull(mask);
 
             byte cidrnet = 0;
-            if (!mask.Equals(IPAddress.Any))
+            if (mask.Equals(IPAddress.Any))
             {
-                // GetAddressBytes
-                Span<byte> bytes = stackalloc byte[mask.AddressFamily == AddressFamily.InterNetwork ? 4 : 16];
-                mask.TryWriteBytes(bytes, out _);
+                return cidrnet;
+            }
 
-                var zeroed = false;
-                for (var i = 0; i < bytes.Length; i++)
+            // GetAddressBytes
+            Span<byte> bytes = stackalloc byte[mask.AddressFamily == AddressFamily.InterNetwork ? 4 : 16];
+            if (!mask.TryWriteBytes(bytes, out var bytesWritten))
+            {
+                Console.WriteLine("Unable to write address bytes, only {Bytes} bytes written.", bytesWritten);
+            }
+
+            var zeroed = false;
+            for (var i = 0; i < bytes.Length; i++)
+            {
+                for (int v = bytes[i]; (v & 0xFF) != 0; v <<= 1)
                 {
-                    for (int v = bytes[i]; (v & 0xFF) != 0; v <<= 1)
+                    if (zeroed)
                     {
-                        if (zeroed)
-                        {
-                            // Invalid netmask.
-                            return (byte)~cidrnet;
-                        }
+                        // Invalid netmask.
+                        return (byte)~cidrnet;
+                    }
 
-                        if ((v & 0x80) == 0)
-                        {
-                            zeroed = true;
-                        }
-                        else
-                        {
-                            cidrnet++;
-                        }
+                    if ((v & 0x80) == 0)
+                    {
+                        zeroed = true;
+                    }
+                    else
+                    {
+                        cidrnet++;
                     }
                 }
             }
@@ -273,10 +278,9 @@ namespace MediaBrowser.Common.Net
             }
 
             var hosts = new List<string>();
-            var splitSpan = host.Split(':');
-            while (splitSpan.MoveNext())
+            foreach (var splitSpan in host.Split(':'))
             {
-                hosts.Add(splitSpan.Current.ToString());
+                hosts.Add(splitSpan.ToString());
             }
 
             if (hosts.Count <= 2)
@@ -316,7 +320,7 @@ namespace MediaBrowser.Common.Net
             }
             else if (hosts.Count <= 9) // 8 octets + port
             {
-                splitSpan = host.Split('/');
+                var splitSpan = host.Split('/');
                 if (splitSpan.MoveNext() && IPAddress.TryParse(splitSpan.Current, out var address))
                 {
                     addresses = new[] { address };
