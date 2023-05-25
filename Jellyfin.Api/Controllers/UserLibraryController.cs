@@ -241,6 +241,78 @@ public class UserLibraryController : BaseJellyfinApiController
     }
 
     /// <summary>
+    /// Adds an item to the user's My List.
+    /// </summary>
+    /// <param name="userId">User id.</param>
+    /// <param name="itemId">Item id.</param>
+    /// <response code="200">Item added to user's My List.</response>
+    /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
+    [HttpPost("Users/{userId}/MyListItems/{itemId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<UserItemDataDto> MarkMyListItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
+    {
+        var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        var item = itemId.Equals(default)
+            ? _libraryManager.GetUserRootFolder()
+            : _libraryManager.GetItemById(itemId);
+
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        if (item is not UserRootFolder
+            // Check the item is visible for the user
+            && !item.IsVisible(user))
+        {
+            return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
+        }
+
+        return MarkMyList(user, item, true);
+    }
+
+    /// <summary>
+    /// Removes an item from the user's My List.
+    /// </summary>
+    /// <param name="userId">User id.</param>
+    /// <param name="itemId">Item id.</param>
+    /// <response code="200">Item removed from user's My List.</response>
+    /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
+    [HttpDelete("Users/{userId}/MyListItems/{itemId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<UserItemDataDto> UnmarkMyListItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
+    {
+        var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        var item = itemId.Equals(default)
+            ? _libraryManager.GetUserRootFolder()
+            : _libraryManager.GetItemById(itemId);
+
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        if (item is not UserRootFolder
+            // Check the item is visible for the user
+            && !item.IsVisible(user))
+        {
+            return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
+        }
+
+        return MarkMyList(user, item, false);
+    }
+
+    /// <summary>
     /// Deletes a user's saved personal rating for an item.
     /// </summary>
     /// <param name="userId">User id.</param>
@@ -517,6 +589,26 @@ public class UserLibraryController : BaseJellyfinApiController
         data.IsFavorite = isFavorite;
 
         _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
+
+        return _userDataRepository.GetUserDataDto(item, user);
+    }
+
+    /// <summary>
+    /// Marks an item on the user's My List.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <param name="item">The item.</param>
+    /// <param name="isMyList">if set to <c>true</c> [is on user's My List].</param>
+    private UserItemDataDto MarkMyList(User user, BaseItem item, bool isMyList)
+    {
+        // Get the user data for this item
+        var data = _userDataRepository.GetUserData(user, item);
+
+        // Set MyList status
+        data.IsMyList = isMyList;
+        data.LastMyListDate = isMyList ? DateTime.UtcNow : null;
+
+        _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateMyList, CancellationToken.None);
 
         return _userDataRepository.GetUserDataDto(item, user);
     }

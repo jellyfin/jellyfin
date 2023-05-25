@@ -2146,6 +2146,7 @@ namespace Emby.Server.Implementations.Data
                     || sortingFields.Contains(ItemSortBy.SeriesDatePlayed)
                     || query.IsFavoriteOrLiked.HasValue
                     || query.IsFavorite.HasValue
+                    || query.IsMyList.HasValue
                     || query.IsResumable.HasValue
                     || query.IsPlayed.HasValue
                     || query.IsLiked.HasValue;
@@ -2368,6 +2369,8 @@ namespace Emby.Server.Implementations.Data
                 columns.Add("UserDatas.playbackPositionTicks");
                 columns.Add("UserDatas.playcount");
                 columns.Add("UserDatas.isFavorite");
+                columns.Add("UserDatas.isMyList");
+                columns.Add("UserDatas.lastMyListDate");
                 columns.Add("UserDatas.played");
                 columns.Add("UserDatas.rating");
             }
@@ -3758,6 +3761,20 @@ namespace Emby.Server.Implementations.Data
                 }
 
                 statement?.TryBind("@IsFavorite", query.IsFavorite.Value);
+            }
+
+            if (query.IsMyList.HasValue)
+            {
+                if (query.IsMyList.Value)
+                {
+                    whereClauses.Add("IsMyList=@IsMyList");
+                }
+                else
+                {
+                    whereClauses.Add("(IsMyList is null or IsMyList=@IsMyList)");
+                }
+
+                statement?.TryBind("@IsMyList", query.IsMyList.Value);
             }
 
             if (EnableJoinUserData(query))
@@ -5154,6 +5171,7 @@ AND Type = @InternalPersonType)");
             {
                 IsPlayed = query.IsPlayed,
                 IsFavorite = query.IsFavorite,
+                IsMyList = query.IsMyList,
                 IsFavoriteOrLiked = query.IsFavoriteOrLiked,
                 IsLiked = query.IsLiked,
                 IsLocked = query.IsLocked,

@@ -48,6 +48,11 @@ namespace MediaBrowser.Model.Querying
         /// <summary>
         /// The is favorite or likes.
         /// </summary>
-        IsFavoriteOrLikes = 10
+        IsFavoriteOrLikes = 10,
+
+        /// <summary>
+        /// The item is on the user's My List.
+        /// </summary>
+        IsMyList = 11,
     }
 }

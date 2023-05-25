@@ -45,6 +45,18 @@ namespace MediaBrowser.Model.Dto
         public bool IsFavorite { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is on the user's My List.
+        /// </summary>
+        /// <value><c>true</c> if this instance is on the user's My List; otherwise, <c>false</c>.</value>
+        public bool IsMyList { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last My List date.
+        /// </summary>
+        /// <value>The last My List date.</value>
+        public DateTime? LastMyListDate { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="UserItemDataDto" /> is likes.
         /// </summary>
         /// <value><c>null</c> if [likes] contains no value, <c>true</c> if [likes]; otherwise, <c>false</c>.</value>

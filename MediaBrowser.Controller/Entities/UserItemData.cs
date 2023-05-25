@@ -96,6 +96,18 @@ namespace MediaBrowser.Controller.Entities
         public int? SubtitleStreamIndex { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is on the user's My List.
+        /// </summary>
+        /// <value><c>true</c> if this instance is on the user's My List; otherwise, <c>false</c>.</value>
+        public bool IsMyList { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last date this instance was added to the user's My List.
+        /// </summary>
+        /// <value>The last date this instance was added to the user's My List.</value>
+        public DateTime? LastMyListDate { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the item is liked or not.
         /// This should never be serialized.
         /// </summary>

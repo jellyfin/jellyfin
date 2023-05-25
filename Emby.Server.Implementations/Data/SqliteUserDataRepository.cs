@@ -48,10 +48,20 @@ namespace Emby.Server.Implementations.Data
                 connection.RunInTransaction(
                     db =>
                     {
+                        if (userDatasTableExists)
+                        {
+                            var existingColumnNames = GetColumnNames(db, "UserDatas");
+
+                            AddNotNullColumn(db, "UserDatas", "isMyList", "bit", 0, existingColumnNames);
+                            AddColumn(db, "UserDatas", "lastMyListDate", "datetime", existingColumnNames);
+                        }
+                        else
+                        {
+                            db.ExecuteAll("create table if not exists UserDatas (key nvarchar not null, userId INT not null, rating float null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null, AudioStreamIndex INT, SubtitleStreamIndex INT, isMyList bit not null, lastMyListDate datetime null)");
+                        }
+
                         db.ExecuteAll(string.Join(';', new[]
                         {
-                            "create table if not exists UserDatas (key nvarchar not null, userId INT not null, rating float null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null, AudioStreamIndex INT, SubtitleStreamIndex INT)",
-
                             "drop index if exists idx_userdata",
                             "drop index if exists idx_userdata1",
                             "drop index if exists idx_userdata2",
@@ -62,7 +72,8 @@ namespace Emby.Server.Implementations.Data
                             "create unique index if not exists UserDatasIndex1 on UserDatas (key, userId)",
                             "create index if not exists UserDatasIndex2 on UserDatas (key, userId, played)",
                             "create index if not exists UserDatasIndex3 on UserDatas (key, userId, playbackPositionTicks)",
-                            "create index if not exists UserDatasIndex4 on UserDatas (key, userId, isFavorite)"
+                            "create index if not exists UserDatasIndex4 on UserDatas (key, userId, isFavorite)",
+                            "create index if not exists UserDatasIndex5 on UserDatas (key, userId, isMyList)",
                         }));
 
                         if (userDataTableExists)
@@ -72,12 +83,14 @@ namespace Emby.Server.Implementations.Data
                             AddColumn(db, "userdata", "InternalUserId", "int", existingColumnNames);
                             AddColumn(db, "userdata", "AudioStreamIndex", "int", existingColumnNames);
                             AddColumn(db, "userdata", "SubtitleStreamIndex", "int", existingColumnNames);
+                            AddNotNullColumn(db, "userdata", "isMyList", "bit", 0, existingColumnNames);
+                            AddColumn(db, "userdata", "lastMyListDate", "datetime", existingColumnNames);
 
                             if (!userDatasTableExists)
                             {
                                 ImportUserIds(db, users);
 
-                                db.ExecuteAll("INSERT INTO UserDatas (key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex) SELECT key, InternalUserId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex from userdata where InternalUserId not null");
+                                db.ExecuteAll("INSERT INTO UserDatas (key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex, isMyList, lastMyListDate) SELECT key, InternalUserId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex, isMyList, lastMyListDate from userdata where InternalUserId not null");
                             }
                         }
                     },
@@ -181,7 +194,7 @@ namespace Emby.Server.Implementations.Data
 
         private static void SaveUserData(IDatabaseConnection db, long internalUserId, string key, UserItemData userData)
         {
-            using (var statement = db.PrepareStatement("replace into UserDatas (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex)"))
+            using (var statement = db.PrepareStatement("replace into UserDatas (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex,isMyList,lastMyListDate) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex,@isMyList,@lastMyListDate)"))
             {
                 statement.TryBind("@userId", internalUserId);
                 statement.TryBind("@key", key);
@@ -225,6 +238,16 @@ namespace Emby.Server.Implementations.Data
                 else
                 {
                     statement.TryBindNull("@SubtitleStreamIndex");
+                }
+
+                statement.TryBind("@isMyList", userData.IsMyList);
+                if (userData.LastMyListDate.HasValue)
+                {
+                    statement.TryBind("@lastMyListDate", userData.LastMyListDate.Value.ToDateTimeParamValue());
+                }
+                else
+                {
+                    statement.TryBindNull("@lastMyListDate");
                 }
 
                 statement.MoveNext();
@@ -274,7 +297,7 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection(true))
             {
-                using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where key =@Key and userId=@UserId"))
+                using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex,isMyList,lastMyListDate from UserDatas where key =@Key and userId=@UserId"))
                 {
                     statement.TryBind("@UserId", userId);
                     statement.TryBind("@Key", key);
@@ -317,7 +340,7 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection())
             {
-                using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where userId=@UserId"))
+                using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex,isMyList,lastMyListDate from UserDatas where userId=@UserId"))
                 {
                     statement.TryBind("@UserId", userId);
 
@@ -366,6 +389,12 @@ namespace Emby.Server.Implementations.Data
             if (reader.TryGetInt32(9, out var subtitleStreamIndex))
             {
                 userData.SubtitleStreamIndex = subtitleStreamIndex;
+            }
+
+            userData.IsMyList = reader[10].ToBool();
+            if (reader.TryReadDateTime(11, out var lastMyListDate))
+            {
+                userData.LastMyListDate = lastMyListDate;
             }
 
             return userData;

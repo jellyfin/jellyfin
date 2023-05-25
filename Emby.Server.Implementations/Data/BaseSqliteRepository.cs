@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Jellyfin.Extensions;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
@@ -262,6 +263,16 @@ namespace Emby.Server.Implementations.Data
             }
 
             connection.Execute("alter table " + table + " add column " + columnName + " " + type + " NULL");
+        }
+
+        protected void AddNotNullColumn(IDatabaseConnection connection, string table, string columnName, string type, int defaultValue, List<string> existingColumnNames)
+        {
+            if (existingColumnNames.Contains(columnName, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            connection.Execute("alter table " + table + " add column " + columnName + " " + type + " NOT NULL DEFAULT " + defaultValue.ToString(CultureInfo.InvariantCulture));
         }
 
         protected void CheckDisposed()

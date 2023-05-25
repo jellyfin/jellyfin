@@ -76,6 +76,8 @@ namespace MediaBrowser.Controller.Entities
 
         public bool? IsFavorite { get; set; }
 
+        public bool? IsMyList { get; set; }
+
         public bool? IsFavoriteOrLiked { get; set; }
 
         public bool? IsLiked { get; set; }

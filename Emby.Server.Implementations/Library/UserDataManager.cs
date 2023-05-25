@@ -193,6 +193,8 @@ namespace Emby.Server.Implementations.Library
             return new UserItemDataDto
             {
                 IsFavorite = data.IsFavorite,
+                IsMyList = data.IsMyList,
+                LastMyListDate = data.LastMyListDate,
                 Likes = data.Likes,
                 PlaybackPositionTicks = data.PlaybackPositionTicks,
                 PlayCount = data.PlayCount,
@@ -228,6 +230,8 @@ namespace Emby.Server.Implementations.Library
                     // mark as completed close to the end
                     positionTicks = 0;
                     data.Played = playedToCompletion = true;
+                    data.IsMyList = false;
+                    data.LastMyListDate = null;
                 }
                 else
                 {
@@ -237,6 +241,8 @@ namespace Emby.Server.Implementations.Library
                     {
                         positionTicks = 0;
                         data.Played = playedToCompletion = true;
+                        data.IsMyList = false;
+                        data.LastMyListDate = null;
                     }
                 }
             }
@@ -255,6 +261,8 @@ namespace Emby.Server.Implementations.Library
                     // mark as completed close to the end
                     positionTicks = 0;
                     data.Played = playedToCompletion = true;
+                    data.IsMyList = false;
+                    data.LastMyListDate = null;
                 }
             }
             else if (!hasRuntime)

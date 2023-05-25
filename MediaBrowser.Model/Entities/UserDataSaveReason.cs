@@ -33,6 +33,11 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// The import.
         /// </summary>
-        Import = 6
+        Import = 6,
+
+        /// <summary>
+        /// Update the user's My List.
+        /// </summary>
+        UpdateMyList = 7,
     }
 }

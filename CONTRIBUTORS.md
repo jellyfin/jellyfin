@@ -165,6 +165,7 @@
  - [MinecraftPlaye](https://github.com/MinecraftPlaye)
  - [RealGreenDragon](https://github.com/RealGreenDragon)
  - [ipitio](https://github.com/ipitio)
+ - [rickparrish](https://github.com/rickparrish)
 
 # Emby Contributors
 
