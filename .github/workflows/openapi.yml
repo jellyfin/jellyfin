@@ -19,7 +19,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Setup .NET
-        uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a # v3.0.3
+        uses: actions/setup-dotnet@aa983c550dfda0d1722b6ac6aed55724ffacc6d3 # v3.1.0
         with:
           dotnet-version: '7.0.x'
       - name: Generate openapi.json
@@ -51,7 +51,7 @@ jobs:
           ANCESTOR_REF=$(git merge-base upstream/${{ github.base_ref }} origin/${{ github.head_ref }})
           git checkout --progress --force $ANCESTOR_REF
       - name: Setup .NET
-        uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a # v3.0.3
+        uses: actions/setup-dotnet@aa983c550dfda0d1722b6ac6aed55724ffacc6d3 # v3.1.0
         with:
           dotnet-version: '7.0.x'
       - name: Generate openapi.json
