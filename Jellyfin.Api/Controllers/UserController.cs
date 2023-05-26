@@ -332,7 +332,7 @@ public class UserController : BaseJellyfinApiController
         [FromRoute, Required] Guid userId,
         [FromBody, Required] UpdateUserEasyPassword request)
     {
-        return BadRequest("Deprecated");
+        return Forbid();
     }
 
     /// <summary>
