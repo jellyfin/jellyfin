@@ -17,7 +17,7 @@
     <PackageVersion Include="Diacritics" Version="3.3.18" />
     <PackageVersion Include="DiscUtils.Udf" Version="0.16.13" />
     <PackageVersion Include="DotNet.Glob" Version="3.1.3" />
-    <PackageVersion Include="EFCoreSecondLevelCacheInterceptor" Version="3.9.1" />
+    <PackageVersion Include="EFCoreSecondLevelCacheInterceptor" Version="3.9.2" />
     <PackageVersion Include="FsCheck.Xunit" Version="2.16.5" />
     <PackageVersion Include="Jellyfin.XmlTv" Version="10.8.0" />
     <PackageVersion Include="libse" Version="3.6.13" />
