@@ -250,7 +250,6 @@ namespace Emby.Naming.Common
                 ".sfx",
                 ".shn",
                 ".sid",
-                ".spc",
                 ".stm",
                 ".strm",
                 ".ult",
