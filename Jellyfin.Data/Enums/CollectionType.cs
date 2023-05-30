@@ -1,3 +1,5 @@
+using Jellyfin.Data.Attributes;
+
 namespace Jellyfin.Data.Enums;
 
 /// <summary>
@@ -73,75 +75,90 @@ public enum CollectionType
     /// <summary>
     /// Tv show series collection.
     /// </summary>
+    [OpenApiIgnoreEnum]
     TvShowSeries = 101,
 
     /// <summary>
     /// Tv genres collection.
     /// </summary>
+    [OpenApiIgnoreEnum]
     TvGenres = 102,
 
     /// <summary>
     /// Tv genre collection.
     /// </summary>
+    [OpenApiIgnoreEnum]
     TvGenre = 103,
 
     /// <summary>
     /// Tv latest collection.
     /// </summary>
+    [OpenApiIgnoreEnum]
     TvLatest = 104,
 
     /// <summary>
     /// Tv next up collection.
     /// </summary>
+    [OpenApiIgnoreEnum]
     TvNextUp = 105,
 
     /// <summary>
     /// Tv resume collection.
     /// </summary>
+    [OpenApiIgnoreEnum]
     TvResume = 106,
 
     /// <summary>
     /// Tv favorite series collection.
     /// </summary>
+    [OpenApiIgnoreEnum]
     TvFavoriteSeries = 107,
 
     /// <summary>
     /// Tv favorite episodes collection.
     /// </summary>
+    [OpenApiIgnoreEnum]
     TvFavoriteEpisodes = 108,
 
     /// <summary>
     /// Latest movies collection.
     /// </summary>
+    [OpenApiIgnoreEnum]
     MovieLatest = 109,
 
     /// <summary>
     /// Movies to resume collection.
     /// </summary>
+    [OpenApiIgnoreEnum]
     MovieResume = 110,
 
     /// <summary>
     /// Movie movie collection.
     /// </summary>
+    [OpenApiIgnoreEnum]
     MovieMovies = 111,
 
     /// <summary>
     /// Movie collections collection.
     /// </summary>
+    [OpenApiIgnoreEnum]
     MovieCollections = 112,
 
     /// <summary>
     /// Movie favorites collection.
     /// </summary>
+    [OpenApiIgnoreEnum]
     MovieFavorites = 113,
 
     /// <summary>
     /// Movie genres collection.
     /// </summary>
+    [OpenApiIgnoreEnum]
     MovieGenres = 114,
 
     /// <summary>
     /// Movie genre collection.
     /// </summary>
+    [OpenApiIgnoreEnum]
     MovieGenre = 115
 }
