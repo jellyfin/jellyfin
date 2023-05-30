@@ -272,6 +272,10 @@ namespace Jellyfin.Server.Implementations.Users
         public async Task ChangePassword(User user, string newPassword)
         {
             ArgumentNullException.ThrowIfNull(user);
+            if (user.HasPermission(PermissionKind.IsAdministrator) && string.IsNullOrWhiteSpace(newPassword))
+            {
+                throw new ArgumentException("Admin user passwords must not be empty", nameof(newPassword));
+            }
 
             await GetAuthenticationProvider(user).ChangePassword(user, newPassword).ConfigureAwait(false);
             await UpdateUserAsync(user).ConfigureAwait(false);
