@@ -1264,7 +1264,14 @@ namespace Emby.Server.Implementations.Library
                 AddUserToQuery(query, query.User, allowExternalContent);
             }
 
-            return _itemRepository.GetItemList(query);
+            var itemList = _itemRepository.GetItemList(query);
+            var user = query.User;
+            if (user is not null)
+            {
+                return itemList.Where(i => i.IsVisible(user)).ToList();
+            }
+
+            return itemList;
         }
 
         public List<BaseItem> GetItemList(InternalItemsQuery query)
