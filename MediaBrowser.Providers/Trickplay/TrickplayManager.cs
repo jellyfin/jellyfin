@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -15,7 +16,6 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
-using SkiaSharp;
 
 namespace MediaBrowser.Providers.Trickplay;
 
@@ -31,6 +31,7 @@ public class TrickplayManager : ITrickplayManager
     private readonly EncodingHelper _encodingHelper;
     private readonly ILibraryManager _libraryManager;
     private readonly IServerConfigurationManager _config;
+    private readonly IImageEncoder _imageEncoder;
 
     private static readonly SemaphoreSlim _resourcePool = new(1, 1);
     private static readonly string[] _trickplayImgExtensions = { ".jpg" };
@@ -45,6 +46,7 @@ public class TrickplayManager : ITrickplayManager
     /// <param name="encodingHelper">The encoding helper.</param>
     /// <param name="libraryManager">The library manager.</param>
     /// <param name="config">The server configuration manager.</param>
+    /// <param name="imageEncoder">The image encoder.</param>
     public TrickplayManager(
         ILogger<TrickplayManager> logger,
         IItemRepository itemRepo,
@@ -52,7 +54,8 @@ public class TrickplayManager : ITrickplayManager
         IFileSystem fileSystem,
         EncodingHelper encodingHelper,
         ILibraryManager libraryManager,
-        IServerConfigurationManager config)
+        IServerConfigurationManager config,
+        IImageEncoder imageEncoder)
     {
         _logger = logger;
         _itemRepo = itemRepo;
@@ -61,6 +64,7 @@ public class TrickplayManager : ITrickplayManager
         _encodingHelper = encodingHelper;
         _libraryManager = libraryManager;
         _config = config;
+        _imageEncoder = imageEncoder;
     }
 
     /// <inheritdoc />
@@ -141,7 +145,8 @@ public class TrickplayManager : ITrickplayManager
             }
 
             var images = _fileSystem.GetFiles(imgTempDir, _trickplayImgExtensions, false, false)
-                .OrderBy(i => i.FullName)
+                .Select(i => i.FullName)
+                .OrderBy(i => i)
                 .ToList();
 
             // Create tiles
@@ -185,11 +190,11 @@ public class TrickplayManager : ITrickplayManager
         }
     }
 
-    private TrickplayTilesInfo CreateTiles(List<FileSystemMetadata> images, int width, TrickplayOptions options, string workDir, string outputDir)
+    private TrickplayTilesInfo CreateTiles(List<string> images, int width, TrickplayOptions options, string workDir, string outputDir)
     {
         if (images.Count == 0)
         {
-            throw new InvalidOperationException("Can't create trickplay from 0 images.");
+            throw new ArgumentException("Can't create trickplay from 0 images.");
         }
 
         Directory.CreateDirectory(workDir);
@@ -200,76 +205,42 @@ public class TrickplayManager : ITrickplayManager
             Interval = options.Interval,
             TileWidth = options.TileWidth,
             TileHeight = options.TileHeight,
-            TileCount = 0,
+            TileCount = images.Count,
+            // Set during image generation
+            Height = 0,
             Bandwidth = 0
         };
 
-        var firstImg = SKBitmap.Decode(images[0].FullName);
-        if (firstImg == null)
-        {
-            throw new InvalidDataException("Could not decode image data.");
-        }
-
-        tilesInfo.Height = firstImg.Height;
-        if (tilesInfo.Width != firstImg.Width)
-        {
-            throw new InvalidOperationException("Image width does not match config width.");
-        }
-
         /*
-         * Generate grids of trickplay image tiles
+         * Generate trickplay tile grids from sets of images
          */
-        var imgNo = 0;
-        var i = 0;
-        while (i < images.Count)
+        var imageOptions = new ImageCollageOptions
         {
-            var tileGrid = new SKBitmap(tilesInfo.Width * tilesInfo.TileWidth, tilesInfo.Height * tilesInfo.TileHeight);
+            Width = tilesInfo.TileWidth,
+            Height = tilesInfo.TileHeight
+        };
 
-            using (var canvas = new SKCanvas(tileGrid))
+        var tilesPerGrid = tilesInfo.TileWidth * tilesInfo.TileHeight;
+        var requiredTileGrids = (int)Math.Ceiling((double)images.Count / tilesPerGrid);
+
+        for (int i = 0; i < requiredTileGrids; i++)
+        {
+            // Set output/input paths
+            var tileGridPath = Path.Combine(workDir, $"{i}.jpg");
+
+            imageOptions.OutputPath = tileGridPath;
+            imageOptions.InputPaths = images.Skip(i * tilesPerGrid).Take(tilesPerGrid).ToList();
+
+            // Generate image and use returned height for tiles info
+            var height = _imageEncoder.CreateTrickplayGrid(imageOptions, options.JpegQuality, tilesInfo.Width, tilesInfo.Height != 0 ? tilesInfo.Height : null);
+            if (tilesInfo.Height == 0)
             {
-                for (var y = 0; y < tilesInfo.TileHeight; y++)
-                {
-                    for (var x = 0; x < tilesInfo.TileWidth; x++)
-                    {
-                        if (i >= images.Count)
-                        {
-                            break;
-                        }
-
-                        var img = SKBitmap.Decode(images[i].FullName);
-                        if (img == null)
-                        {
-                            throw new InvalidDataException("Could not decode image data.");
-                        }
-
-                        if (tilesInfo.Width != img.Width)
-                        {
-                            throw new InvalidOperationException("Image width does not match config width.");
-                        }
-
-                        if (tilesInfo.Height != img.Height)
-                        {
-                            throw new InvalidOperationException("Image height does not match first image height.");
-                        }
-
-                        canvas.DrawBitmap(img, x * tilesInfo.Width, y * tilesInfo.Height);
-                        tilesInfo.TileCount++;
-                        i++;
-                    }
-                }
+                tilesInfo.Height = height;
             }
 
-            // Output each tile grid to singular file
-            var tileGridPath = Path.Combine(workDir, $"{imgNo}.jpg");
-            using (var stream = File.OpenWrite(tileGridPath))
-            {
-                tileGrid.Encode(stream, SKEncodedImageFormat.Jpeg, options.JpegQuality);
-            }
-
+            // Update bitrate
             var bitrate = (int)Math.Ceiling((decimal)new FileInfo(tileGridPath).Length * 8 / tilesInfo.TileWidth / tilesInfo.TileHeight / (tilesInfo.Interval / 1000));
             tilesInfo.Bandwidth = Math.Max(tilesInfo.Bandwidth, bitrate);
-
-            imgNo++;
         }
 
         /*

@@ -2,14 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
+using System.Security.Cryptography.Xml;
 using BlurHashSharp.SkiaSharp;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Drawing;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
+using static System.Net.Mime.MediaTypeNames;
 using SKSvg = SkiaSharp.Extended.Svg.SKSvg;
 
 namespace Jellyfin.Drawing.Skia;
@@ -524,6 +528,81 @@ public class SkiaEncoder : IImageEncoder
         var splashBuilder = new SplashscreenBuilder(this);
         var outputPath = Path.Combine(_appPaths.DataPath, "splashscreen.png");
         splashBuilder.GenerateSplash(posters, backdrops, outputPath);
+    }
+
+    /// <inheritdoc />
+    public int CreateTrickplayGrid(ImageCollageOptions options, int quality, int imgWidth, int? imgHeight)
+    {
+        var paths = options.InputPaths;
+        var tileWidth = options.Width;
+        var tileHeight = options.Height;
+
+        if (paths.Count < 1)
+        {
+            throw new ArgumentException("InputPaths cannot be empty.");
+        }
+        else if (paths.Count > tileWidth * tileHeight)
+        {
+            throw new ArgumentException($"InputPaths contains more images than would fit on {tileWidth}x{tileHeight} grid.");
+        }
+
+        // If no height provided, use height of first image.
+        if (!imgHeight.HasValue)
+        {
+            using var firstImg = Decode(paths[0], false, null, out _);
+
+            if (firstImg is null)
+            {
+                throw new InvalidDataException("Could not decode image data.");
+            }
+
+            if (firstImg.Width != imgWidth)
+            {
+                throw new InvalidOperationException("Image width does not match provided width.");
+            }
+
+            imgHeight = firstImg.Height;
+        }
+
+        // Make horizontal strips using every provided image.
+        using var tileGrid = new SKBitmap(imgWidth * tileWidth, imgHeight.Value * tileHeight);
+        using var canvas = new SKCanvas(tileGrid);
+
+        var imgIndex = 0;
+        for (var y = 0; y < tileHeight; y++)
+        {
+            for (var x = 0; x < tileWidth; x++)
+            {
+                if (imgIndex >= paths.Count)
+                {
+                    break;
+                }
+
+                using var img = Decode(paths[imgIndex++], false, null, out _);
+
+                if (img is null)
+                {
+                    throw new InvalidDataException("Could not decode image data.");
+                }
+
+                if (img.Width != imgWidth)
+                {
+                    throw new InvalidOperationException("Image width does not match provided width.");
+                }
+
+                if (img.Height != imgHeight)
+                {
+                    throw new InvalidOperationException("Image height does not match first image height.");
+                }
+
+                canvas.DrawBitmap(img, x * imgWidth, y * imgHeight.Value);
+            }
+        }
+
+        using var outputStream = new SKFileWStream(options.OutputPath);
+        tileGrid.Encode(outputStream, SKEncodedImageFormat.Jpeg, quality);
+
+        return imgHeight.Value;
     }
 
     private void DrawIndicator(SKCanvas canvas, int imageWidth, int imageHeight, ImageProcessingOptions options)
