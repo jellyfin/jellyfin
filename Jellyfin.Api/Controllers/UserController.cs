@@ -323,36 +323,16 @@ public class UserController : BaseJellyfinApiController
     /// <response code="404">User not found.</response>
     /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="ForbidResult"/> or a <see cref="NotFoundResult"/> on failure.</returns>
     [HttpPost("{userId}/EasyPassword")]
+    [Obsolete("Use Quick Connect instead")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> UpdateUserEasyPassword(
+    public ActionResult UpdateUserEasyPassword(
         [FromRoute, Required] Guid userId,
         [FromBody, Required] UpdateUserEasyPassword request)
     {
-        if (!RequestHelpers.AssertCanUpdateUser(_userManager, User, userId, true))
-        {
-            return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the easy password.");
-        }
-
-        var user = _userManager.GetUserById(userId);
-
-        if (user is null)
-        {
-            return NotFound("User not found");
-        }
-
-        if (request.ResetPassword)
-        {
-            await _userManager.ResetEasyPassword(user).ConfigureAwait(false);
-        }
-        else
-        {
-            await _userManager.ChangeEasyPassword(user, request.NewPw ?? string.Empty, request.NewPassword ?? string.Empty).ConfigureAwait(false);
-        }
-
-        return NoContent();
+        return Forbid();
     }
 
     /// <summary>
