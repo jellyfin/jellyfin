@@ -80,7 +80,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                 })
                 .Select(i => _fileSystem.GetFileNameWithoutExtension(i))
                 .Select(i => Enum.TryParse<CollectionType>(i, out var collectionType) ? collectionType : (CollectionType?)null)
-                .FirstOrDefault(i => i != null);
+                .FirstOrDefault(i => i is not null);
         }
     }
 }

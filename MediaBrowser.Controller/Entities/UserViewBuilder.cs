@@ -952,7 +952,7 @@ namespace MediaBrowser.Controller.Entities
                     {
                         var folder = i as ICollectionFolder;
 
-                        return folder?.CollectionType != null && viewTypes.Contains(folder.CollectionType.Value);
+                        return folder?.CollectionType is not null && viewTypes.Contains(folder.CollectionType.Value);
                     }).ToArray();
             }
 
