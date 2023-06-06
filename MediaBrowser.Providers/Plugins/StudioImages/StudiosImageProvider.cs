@@ -64,7 +64,7 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
         {
             var thumbsPath = Path.Combine(_config.ApplicationPaths.CachePath, "imagesbyname", "remotestudiothumbs.txt");
 
-            thumbsPath = await EnsureThumbsList(thumbsPath, cancellationToken).ConfigureAwait(false);
+            await EnsureThumbsList(thumbsPath, cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -107,7 +107,7 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
             return string.Format(CultureInfo.InvariantCulture, "{0}/images/{1}/{2}.jpg", GetRepositoryUrl(), image, filename);
         }
 
-        private Task<string> EnsureThumbsList(string file, CancellationToken cancellationToken)
+        private Task EnsureThumbsList(string file, CancellationToken cancellationToken)
         {
             string url = string.Format(CultureInfo.InvariantCulture, "{0}/thumbs.txt", GetRepositoryUrl());
 
@@ -129,7 +129,7 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
         /// <param name="fileSystem">The file system.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A Task to ensure existence of a file listing.</returns>
-        public async Task<string> EnsureList(string url, string file, IFileSystem fileSystem, CancellationToken cancellationToken)
+        public async Task EnsureList(string url, string file, IFileSystem fileSystem, CancellationToken cancellationToken)
         {
             var fileInfo = fileSystem.GetFileInfo(file);
 
@@ -148,8 +148,6 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
                     }
                 }
             }
-
-            return file;
         }
 
         /// <summary>

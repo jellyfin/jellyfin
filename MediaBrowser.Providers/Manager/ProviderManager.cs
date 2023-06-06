@@ -131,12 +131,12 @@ namespace MediaBrowser.Providers.Manager
         {
             var type = item.GetType();
 
-            var service = _metadataServices.FirstOrDefault(current => current.CanRefreshPrimary(type));
-            service ??= _metadataServices.FirstOrDefault(current => current.CanRefresh(item));
+            var service = _metadataServices.FirstOrDefault(current => current.CanRefreshPrimary(type))
+                ?? _metadataServices.FirstOrDefault(current => current.CanRefresh(item));
 
             if (service is null)
             {
-                _logger.LogError("Unable to find a metadata service for item of type {TypeName}", item.GetType().Name);
+                _logger.LogError("Unable to find a metadata service for item of type {TypeName}", type.Name);
                 return Task.FromResult(ItemUpdateType.None);
             }
 
@@ -160,7 +160,7 @@ namespace MediaBrowser.Providers.Manager
             // TODO: Isolate this hack into the tvh plugin
             if (string.IsNullOrEmpty(contentType))
             {
-                if (url.IndexOf("/imagecache/", StringComparison.OrdinalIgnoreCase) != -1)
+                if (url.Contains("/imagecache/", StringComparison.OrdinalIgnoreCase))
                 {
                     contentType = "image/png";
                 }
@@ -230,6 +230,11 @@ namespace MediaBrowser.Providers.Manager
                 var providerName = query.ProviderName;
 
                 providers = providers.Where(i => string.Equals(i.Name, providerName, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (query.ImageType is not null)
+            {
+                providers = providers.Where(i => i.GetSupportedImages(item).Contains(query.ImageType.Value));
             }
 
             var preferredLanguage = item.GetPreferredMetadataLanguage();
@@ -568,13 +573,7 @@ namespace MediaBrowser.Providers.Manager
 
         /// <inheritdoc/>
         public MetadataOptions GetMetadataOptions(BaseItem item)
-        {
-            var type = item.GetType().Name;
-
-            return _configurationManager.Configuration.MetadataOptions
-                .FirstOrDefault(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase)) ??
-                new MetadataOptions();
-        }
+            => _configurationManager.GetMetadataOptionsForType(item.GetType().Name) ?? new MetadataOptions();
 
         /// <inheritdoc/>
         public Task SaveMetadataAsync(BaseItem item, ItemUpdateType updateType)
@@ -809,27 +808,12 @@ namespace MediaBrowser.Providers.Manager
         {
             var results = await provider.GetSearchResults(searchInfo, cancellationToken).ConfigureAwait(false);
 
-            var list = results.ToList();
-
-            foreach (var item in list)
+            foreach (var item in results)
             {
                 item.SearchProviderName = provider.Name;
             }
 
-            return list;
-        }
-
-        /// <inheritdoc/>
-        public Task<HttpResponseMessage> GetSearchImage(string providerName, string url, CancellationToken cancellationToken)
-        {
-            var provider = _metadataProviders.OfType<IRemoteSearchProvider>().FirstOrDefault(i => string.Equals(i.Name, providerName, StringComparison.OrdinalIgnoreCase));
-
-            if (provider is null)
-            {
-                throw new ArgumentException("Search provider not found.");
-            }
-
-            return provider.GetImageResponse(url, cancellationToken);
+            return results;
         }
 
         private IEnumerable<IExternalId> GetExternalIds(IHasProviderIds item)
@@ -1100,29 +1084,6 @@ namespace MediaBrowser.Providers.Manager
         public Task RefreshFullItem(BaseItem item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             return RefreshItem(item, options, cancellationToken);
-        }
-
-        /// <summary>
-        /// Runs multiple metadata refreshes concurrently.
-        /// </summary>
-        /// <param name="action">The action to run.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        public async Task RunMetadataRefresh(Func<Task> action, CancellationToken cancellationToken)
-        {
-            // create a variable for this since it is possible MetadataRefreshThrottler could change due to a config update during a scan
-            var metadataRefreshThrottler = _baseItemManager.MetadataRefreshThrottler;
-
-            await metadataRefreshThrottler.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                await action().ConfigureAwait(false);
-            }
-            finally
-            {
-                metadataRefreshThrottler.Release();
-            }
         }
 
         /// <inheritdoc/>
