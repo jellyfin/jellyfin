@@ -49,20 +49,24 @@ namespace Emby.Dlna.PlayTo
 
         private async Task<XDocument?> SendRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            using var response = await _httpClientFactory.CreateClient(NamedClient.Dlna).SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+            var client = _httpClientFactory.CreateClient(NamedClient.Dlna);
+            using var response = await client.SendAsync(request, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using MemoryStream ms = new MemoryStream();
+            await response.Content.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
             try
             {
                 return await XDocument.LoadAsync(
-                    stream,
+                    ms,
                     LoadOptions.None,
                     cancellationToken).ConfigureAwait(false);
             }
             catch (XmlException)
             {
                 // try correcting the Xml response with common errors
-                var xmlString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                ms.Position = 0;
+                using StreamReader sr = new StreamReader(ms);
+                var xmlString = await sr.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
 
                 // find and replace unescaped ampersands (&)
                 xmlString = EscapeAmpersandRegex().Replace(xmlString, "&amp;");
@@ -70,7 +74,7 @@ namespace Emby.Dlna.PlayTo
                 try
                 {
                     // retry reading Xml
-                    var xmlReader = new StringReader(xmlString);
+                    using var xmlReader = new StringReader(xmlString);
                     return await XDocument.LoadAsync(
                         xmlReader,
                         LoadOptions.None,
