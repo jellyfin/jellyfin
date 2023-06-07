@@ -512,12 +512,10 @@ public class ItemsController : BaseJellyfinApiController
             result = new QueryResult<BaseItem>(itemsArray);
         }
 
-        // result might include items not accessible by the user, DtoService will remove them
-        var accessibleItems = _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user);
         return new QueryResult<BaseItemDto>(
             startIndex,
-            accessibleItems.Count,
-            accessibleItems);
+            result.TotalRecordCount,
+            _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user));
     }
 
     /// <summary>
