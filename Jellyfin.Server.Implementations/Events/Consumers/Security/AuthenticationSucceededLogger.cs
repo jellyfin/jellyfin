@@ -2,8 +2,8 @@
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events;
-using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Events;
+using MediaBrowser.Controller.Events.Authentication;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Globalization;
 
@@ -12,7 +12,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Security
     /// <summary>
     /// Creates an entry in the activity log when there is a successful login attempt.
     /// </summary>
-    public class AuthenticationSucceededLogger : IEventConsumer<GenericEventArgs<AuthenticationResult>>
+    public class AuthenticationSucceededLogger : IEventConsumer<GenericEventArgs<AuthenticationResultEventArgs>>
     {
         private readonly ILocalizationManager _localizationManager;
         private readonly IActivityManager _activityManager;
@@ -29,7 +29,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Security
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(GenericEventArgs<AuthenticationResult> eventArgs)
+        public async Task OnEvent(GenericEventArgs<AuthenticationResultEventArgs> eventArgs)
         {
             await _activityManager.CreateAsync(new ActivityLog(
                 string.Format(
@@ -42,7 +42,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Security
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localizationManager.GetLocalizedString("LabelIpAddressValue"),
-                    eventArgs.Argument.SessionInfo.RemoteEndPoint),
+                    eventArgs.Argument.SessionInfo?.RemoteEndPoint),
             }).ConfigureAwait(false);
         }
     }

@@ -8,12 +8,11 @@ using Jellyfin.Server.Implementations.Events.Consumers.System;
 using Jellyfin.Server.Implementations.Events.Consumers.Updates;
 using Jellyfin.Server.Implementations.Events.Consumers.Users;
 using MediaBrowser.Common.Updates;
-using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Events;
+using MediaBrowser.Controller.Events.Authentication;
 using MediaBrowser.Controller.Events.Session;
 using MediaBrowser.Controller.Events.Updates;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,8 +34,8 @@ namespace Jellyfin.Server.Implementations.Events
             collection.AddScoped<IEventConsumer<SubtitleDownloadFailureEventArgs>, SubtitleDownloadFailureLogger>();
 
             // Security consumers
-            collection.AddScoped<IEventConsumer<GenericEventArgs<AuthenticationRequest>>, AuthenticationFailedLogger>();
-            collection.AddScoped<IEventConsumer<GenericEventArgs<AuthenticationResult>>, AuthenticationSucceededLogger>();
+            collection.AddScoped<IEventConsumer<GenericEventArgs<AuthenticationRequestEventArgs>>, AuthenticationFailedLogger>();
+            collection.AddScoped<IEventConsumer<GenericEventArgs<AuthenticationResultEventArgs>>, AuthenticationSucceededLogger>();
 
             // Session consumers
             collection.AddScoped<IEventConsumer<PlaybackStartEventArgs>, PlaybackStartLogger>();

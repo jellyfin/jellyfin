@@ -24,6 +24,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Events;
+using MediaBrowser.Controller.Events.Authentication;
 using MediaBrowser.Controller.Events.Session;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -1462,7 +1463,7 @@ namespace Emby.Server.Implementations.Session
 
             if (user is null)
             {
-                await _eventManager.PublishAsync(new GenericEventArgs<AuthenticationRequest>(request)).ConfigureAwait(false);
+                await _eventManager.PublishAsync(new GenericEventArgs<AuthenticationRequestEventArgs>(new AuthenticationRequestEventArgs(request))).ConfigureAwait(false);
                 throw new AuthenticationException("Invalid username or password entered.");
             }
 
@@ -1498,7 +1499,7 @@ namespace Emby.Server.Implementations.Session
                 ServerId = _appHost.SystemId
             };
 
-            await _eventManager.PublishAsync(new GenericEventArgs<AuthenticationResult>(returnResult)).ConfigureAwait(false);
+            await _eventManager.PublishAsync(new GenericEventArgs<AuthenticationResultEventArgs>(new AuthenticationResultEventArgs(returnResult))).ConfigureAwait(false);
             return returnResult;
         }
 
