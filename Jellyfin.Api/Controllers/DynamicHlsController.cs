@@ -15,6 +15,7 @@ using Jellyfin.Api.Models.StreamingDtos;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.MediaEncoding.Hls.Playlist;
+using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
@@ -37,7 +38,7 @@ namespace Jellyfin.Api.Controllers;
 /// Dynamic hls controller.
 /// </summary>
 [Route("")]
-[Authorize]
+[Authorize(Policy = Policies.Playback)]
 public class DynamicHlsController : BaseJellyfinApiController
 {
     private const string DefaultVodEncoderPreset = "veryfast";
