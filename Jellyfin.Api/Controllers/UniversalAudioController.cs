@@ -8,6 +8,7 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.StreamingDtos;
+using MediaBrowser.Common.Api;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
@@ -29,6 +30,7 @@ namespace Jellyfin.Api.Controllers;
 /// The universal audio controller.
 /// </summary>
 [Route("")]
+[Authorize(Policy = Policies.Playback)]
 public class UniversalAudioController : BaseJellyfinApiController
 {
     private readonly ILibraryManager _libraryManager;
@@ -91,7 +93,6 @@ public class UniversalAudioController : BaseJellyfinApiController
     /// <returns>A <see cref="Task"/> containing the audio file.</returns>
     [HttpGet("Audio/{itemId}/universal")]
     [HttpHead("Audio/{itemId}/universal", Name = "HeadUniversalAudioStream")]
-    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status302Found)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
