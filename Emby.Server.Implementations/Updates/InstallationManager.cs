@@ -183,7 +183,7 @@ namespace Emby.Server.Implementations.Updates
                             var plugin = _pluginManager.GetPlugin(package.Id, version.VersionNumber);
                             if (plugin is not null)
                             {
-                                await _pluginManager.GenerateManifest(package, version.VersionNumber, plugin.Path, plugin.Manifest.Status).ConfigureAwait(false);
+                                await _pluginManager.PopulateManifest(package, version.VersionNumber, plugin.Path, plugin.Manifest.Status).ConfigureAwait(false);
                             }
 
                             // Remove versions with a target ABI greater then the current application version.
@@ -555,7 +555,10 @@ namespace Emby.Server.Implementations.Updates
             stream.Position = 0;
             using var reader = new ZipArchive(stream);
             reader.ExtractToDirectory(targetDir, true);
-            await _pluginManager.GenerateManifest(package.PackageInfo, package.Version, targetDir, status).ConfigureAwait(false);
+
+            // Ensure we create one or populate existing ones with missing data.
+            await _pluginManager.PopulateManifest(package.PackageInfo, package.Version, targetDir, status);
+
             _pluginManager.ImportPluginFrom(targetDir);
         }
 
