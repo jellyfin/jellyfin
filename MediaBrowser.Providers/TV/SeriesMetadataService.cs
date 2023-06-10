@@ -76,10 +76,9 @@ namespace MediaBrowser.Providers.TV
             }
             else if (targetSeasonNames.Count != sourceSeasonNames.Count || !sourceSeasonNames.Keys.All(targetSeasonNames.ContainsKey))
             {
-                foreach (var season in sourceSeasonNames)
+                foreach (var (number, name) in sourceSeasonNames)
                 {
-                    var seasonNumber = season.Key;
-                    targetSeasonNames.TryAdd(seasonNumber, season.Value);
+                    targetSeasonNames.TryAdd(number, name);
                 }
             }
 
