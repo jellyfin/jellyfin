@@ -3883,41 +3883,9 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(query.HasNoAudioTrackWithLanguage))
-            {
-                whereClauses.Add("((select language from MediaStreams where MediaStreams.ItemId=A.Guid and MediaStreams.StreamType='Audio' and MediaStreams.Language=@HasNoAudioTrackWithLanguage limit 1) is null)");
-                statement?.TryBind("@HasNoAudioTrackWithLanguage", query.HasNoAudioTrackWithLanguage);
-            }
-
-            if (!string.IsNullOrWhiteSpace(query.HasNoInternalSubtitleTrackWithLanguage))
-            {
-                whereClauses.Add("((select language from MediaStreams where MediaStreams.ItemId=A.Guid and MediaStreams.StreamType='Subtitle' and MediaStreams.IsExternal=0 and MediaStreams.Language=@HasNoInternalSubtitleTrackWithLanguage limit 1) is null)");
-                statement?.TryBind("@HasNoInternalSubtitleTrackWithLanguage", query.HasNoInternalSubtitleTrackWithLanguage);
-            }
-
-            if (!string.IsNullOrWhiteSpace(query.HasNoExternalSubtitleTrackWithLanguage))
-            {
-                whereClauses.Add("((select language from MediaStreams where MediaStreams.ItemId=A.Guid and MediaStreams.StreamType='Subtitle' and MediaStreams.IsExternal=1 and MediaStreams.Language=@HasNoExternalSubtitleTrackWithLanguage limit 1) is null)");
-                statement?.TryBind("@HasNoExternalSubtitleTrackWithLanguage", query.HasNoExternalSubtitleTrackWithLanguage);
-            }
-
-            if (!string.IsNullOrWhiteSpace(query.HasNoSubtitleTrackWithLanguage))
-            {
-                whereClauses.Add("((select language from MediaStreams where MediaStreams.ItemId=A.Guid and MediaStreams.StreamType='Subtitle' and MediaStreams.Language=@HasNoSubtitleTrackWithLanguage limit 1) is null)");
-                statement?.TryBind("@HasNoSubtitleTrackWithLanguage", query.HasNoSubtitleTrackWithLanguage);
-            }
-
-            if (query.HasSubtitles.HasValue)
-            {
-                if (query.HasSubtitles.Value)
-                {
-                    whereClauses.Add("((select type from MediaStreams where MediaStreams.ItemId=A.Guid and MediaStreams.StreamType='Subtitle' limit 1) not null)");
-                }
-                else
-                {
-                    whereClauses.Add("((select type from MediaStreams where MediaStreams.ItemId=A.Guid and MediaStreams.StreamType='Subtitle' limit 1) is null)");
-                }
-            }
+            // if no filters are present for MediaStreams the method returns (1=1)
+            // which can be added to the where clause without changing the result and no null or empty check is needed
+            whereClauses.Add(GetMediaStreamsFiltersSubquery(query, statement));
 
             if (query.HasChapterImages.HasValue)
             {
@@ -4329,6 +4297,89 @@ namespace Emby.Server.Implementations.Data
             }
 
             return whereClauses;
+        }
+
+        private string GetMediaStreamsFiltersSubquery(InternalItemsQuery query, SqliteCommand? statement)
+        {
+            var mediaStreamsQuery = @"
+                WITH RECURSIVE items AS (
+                    SELECT
+                        tbi.guid AS CollectionId,
+                        tbi.""type"" AS CollectionType,
+                        0 AS ""Level"",
+                        tbi.Guid AS ItemId,
+                        tbi.""type"" AS ItemType,
+                        tbi.PresentationUniqueKey as ItemPresentationUniqueKey,
+                        tbi.PrimaryVersionId as ItemPrimaryVersionId,
+                        null AS CollectionParent
+                    FROM TypedBaseItems tbi
+                    WHERE tbi.guid = A.Guid
+
+                    UNION ALL
+
+                    SELECT
+                        CollectionId,
+                        CollectionType,
+                        ""Level"" + 1 AS ""Level"",
+                        child.Guid AS ItemId,
+                        child.""type"" AS ItemType,
+                        child.PresentationUniqueKey AS ItemPresentationUniqueKey,
+                        child.PrimaryVersionId as ItemPrimaryVersionId,
+                        i.ItemId AS CollectionParent
+                    FROM TypedBaseItems child
+                    JOIN items i
+                        ON child.ParentId = i.ItemId
+                        OR (child.PrimaryVersionId = i.ItemPresentationUniqueKey AND i.ItemPrimaryVersionId IS NULL)
+                        OR (child.OwnerId = i.ItemId AND child.ExtraType IS NULL)
+                )
+            ";
+
+            var mediaStreamsFilters = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(query.HasNoAudioTrackWithLanguage))
+            {
+                mediaStreamsFilters.Add("SELECT CASE WHEN NOT EXISTS (select 1 from items join mediastreams ms ON ms.ItemId = items.ItemId AND ms.StreamType = 'Audio' AND ms.Language = @HasNoAudioTrackWithLanguage LIMIT 1) THEN TRUE ELSE FALSE END AS StreamFilterMatches");
+                statement?.TryBind("@HasNoAudioTrackWithLanguage", query.HasNoAudioTrackWithLanguage);
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.HasNoInternalSubtitleTrackWithLanguage))
+            {
+                mediaStreamsFilters.Add("SELECT CASE WHEN NOT EXISTS (SELECT 1 FROM items join mediastreams ms ON ms.ItemId = items.ItemId AND ms.StreamType = 'Subtitle' AND ms.IsExternal = 0 AND ms.Language = @HasNoInternalSubtitleTrackWithLanguage LIMIT 1) THEN TRUE ELSE FALSE END AS StreamFilterMatches");
+                statement?.TryBind("@HasNoInternalSubtitleTrackWithLanguage", query.HasNoInternalSubtitleTrackWithLanguage);
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.HasNoExternalSubtitleTrackWithLanguage))
+            {
+                mediaStreamsFilters.Add("SELECT CASE WHEN NOT EXISTS (SELECT 1 FROM items join mediastreams ms ON ms.ItemId = items.ItemId AND ms.StreamType = 'Subtitle' AND ms.IsExternal = 1 AND ms.Language = @HasNoExternalSubtitleTrackWithLanguage LIMIT 1) THEN TRUE ELSE FALSE END AS StreamFilterMatches");
+                statement?.TryBind("@HasNoExternalSubtitleTrackWithLanguage", query.HasNoExternalSubtitleTrackWithLanguage);
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.HasNoSubtitleTrackWithLanguage))
+            {
+                mediaStreamsFilters.Add("SELECT CASE WHEN NOT EXISTS (SELECT 1 FROM items join mediastreams ms ON ms.ItemId = items.ItemId AND ms.StreamType = 'Subtitle' AND ms.Language = @HasNoSubtitleTrackWithLanguage LIMIT 1) THEN TRUE ELSE FALSE END AS StreamFilterMatches");
+                statement?.TryBind("@HasNoSubtitleTrackWithLanguage", query.HasNoSubtitleTrackWithLanguage);
+            }
+
+            if (query.HasSubtitles.HasValue)
+            {
+                if (query.HasSubtitles.Value)
+                {
+                    mediaStreamsFilters.Add("SELECT CASE WHEN EXISTS (SELECT 1 FROM items JOIN mediastreams ms ON ms.ItemId = items.ItemId AND ms.StreamType = 'Subtitle' limit 1) THEN TRUE ELSE FALSE END AS StreamFilterMatches");
+                }
+                else
+                {
+                    mediaStreamsFilters.Add("SELECT CASE WHEN NOT EXISTS (SELECT 1 FROM items JOIN mediastreams ms ON ms.ItemId = items.ItemId AND ms.StreamType = 'Subtitle' limit 1) THEN TRUE ELSE FALSE END AS StreamFilterMatches");
+                }
+            }
+
+            if (mediaStreamsFilters.Count > 0)
+            {
+                return "(NOT EXISTS (" + mediaStreamsQuery + " SELECT 1 FROM (" + string.Join(" UNION ", mediaStreamsFilters) + ") WHERE StreamFilterMatches = FALSE LIMIT 1))";
+            }
+            else
+            {
+                return "(1=1)"; // -> resolves always to true; can be added to the where clause without null or empty check
+            }
         }
 
         /// <summary>
