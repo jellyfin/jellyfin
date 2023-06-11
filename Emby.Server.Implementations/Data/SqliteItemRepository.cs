@@ -423,6 +423,10 @@ namespace Emby.Server.Implementations.Data
                 // resume
                 "create index if not exists idx_TypeTopParentId7 on TypedBaseItems(TopParentId,MediaType,IsVirtualItem,PresentationUniqueKey)",
 
+                // used to effectively link items when building item tree
+                "create index if not exists idx_TypedBaseItemsOwnerId on TypedBaseItems(OwnerId)",
+                "create index if not exists idx_TypedBaseItemsPrimaryVersionId on TypedBaseItems(PrimaryVersionId)",
+
                 // items by name
                 "create index if not exists idx_ItemValues6 on ItemValues(ItemId,Type,CleanValue)",
                 "create index if not exists idx_ItemValues7 on ItemValues(Type,CleanValue,ItemId)",
@@ -512,10 +516,22 @@ namespace Emby.Server.Implementations.Data
                 AddColumn(connection, "TypedBaseItems", "ExternalId", "Text", existingColumnNames);
                 AddColumn(connection, "TypedBaseItems", "SeriesPresentationUniqueKey", "Text", existingColumnNames);
                 AddColumn(connection, "TypedBaseItems", "ShowId", "Text", existingColumnNames);
-                AddColumn(connection, "TypedBaseItems", "OwnerId", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "OwnerId", "GUID", existingColumnNames);
                 AddColumn(connection, "TypedBaseItems", "Width", "INT", existingColumnNames);
                 AddColumn(connection, "TypedBaseItems", "Height", "INT", existingColumnNames);
                 AddColumn(connection, "TypedBaseItems", "Size", "BIGINT", existingColumnNames);
+
+                // change type of OwnerId from TEXT to GUID so database can use index when compared to guid column
+                // sadly sqlite doesn't support to change column types directly (see: https://www.sqlite.org/lang_altertable.html)
+                // it would be much cleaner to use a database migration tool with proper versioning like evolve to execute the necessary databse changes for new versions (see: https://github.com/lecaillon/Evolve)
+                var columnTypes = GetColumnTypes(connection, "TypedBaseItems");
+                if (columnTypes["OwnerId"] == "TEXT")
+                {
+                    connection.Execute("ALTER TABLE TypedBaseItems RENAME COLUMN OwnerId TO OwnerId_OLD");
+                    connection.Execute("ALTER TABLE TypedBaseItems ADD COLUMN OwnerId GUID NULL");
+                    connection.Execute("UPDATE TypedBaseItems SET OwnerId = OwnerId_OLD WHERE OwnerId_OLD IS NOT NULL");
+                    connection.Execute("ALTER TABLE TypedBaseItems DROP COLUMN OwnerId_OLD");
+                }
 
                 existingColumnNames = GetColumnNames(connection, "ItemValues");
                 AddColumn(connection, "ItemValues", "CleanValue", "Text", existingColumnNames);
