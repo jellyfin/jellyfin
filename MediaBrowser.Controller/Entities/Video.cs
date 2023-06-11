@@ -380,6 +380,15 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
+        /// Gets the MediaStreams for this Video and all alternate Versions (linked and local).
+        /// </summary>
+        /// <returns>A list of all MediaStreams which are linked to this Video.</returns>
+        public IEnumerable<MediaStream> GetAllLinkedMediaStreams()
+        {
+            return GetAllItemsForMediaSources().SelectMany(item => item.Item.GetMediaStreams());
+        }
+
+        /// <summary>
         /// Gets the additional parts.
         /// </summary>
         /// <returns>IEnumerable{Video}.</returns>

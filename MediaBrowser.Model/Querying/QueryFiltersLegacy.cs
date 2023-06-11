@@ -13,6 +13,8 @@ namespace MediaBrowser.Model.Querying
             Tags = Array.Empty<string>();
             OfficialRatings = Array.Empty<string>();
             Years = Array.Empty<int>();
+            AudioLanguages = Array.Empty<string>();
+            SubtitleLanguages = Array.Empty<string>();
         }
 
         public string[] Genres { get; set; }
@@ -22,5 +24,9 @@ namespace MediaBrowser.Model.Querying
         public string[] OfficialRatings { get; set; }
 
         public int[] Years { get; set; }
+
+        public string[] AudioLanguages { get; set; }
+
+        public string[] SubtitleLanguages { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
@@ -7,6 +8,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -112,6 +114,20 @@ public class FilterController : BaseJellyfinApiController
                 .Where(i => !string.IsNullOrWhiteSpace(i))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Order()
+                .ToArray(),
+
+            AudioLanguages = GetMediaStreams(itemList, BaseItemKind.Movie, BaseItemKind.Episode)
+                .Where(mediaStream => mediaStream.Type == MediaStreamType.Audio)
+                .Select(mediaStream => string.IsNullOrWhiteSpace(mediaStream.Language) ? "und" : mediaStream.Language)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Order()
+                .ToArray(),
+
+            SubtitleLanguages = GetMediaStreams(itemList, BaseItemKind.Movie, BaseItemKind.Episode)
+                .Where(mediaStream => mediaStream.Type == MediaStreamType.Subtitle)
+                .Select(mediaStream => string.IsNullOrWhiteSpace(mediaStream.Language) ? "und" : mediaStream.Language)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Order()
                 .ToArray()
         };
     }
@@ -213,5 +229,33 @@ public class FilterController : BaseJellyfinApiController
         }
 
         return filters;
+    }
+
+    /// <summary>
+    /// Extracts the MediaStreams from the list of BaseItems.
+    /// If an item is a Folder, MediaStreams are searched in the list of it's child items.
+    /// </summary>
+    /// <param name="itemList">The list of items for which the MediaStreams should be xtracted.</param>
+    /// <param name="types">Optional list of item kinds for which the MediaStreams should be extracted.</param>
+    /// <returns>A list of all MediaStreams which are linked to the provided items.</returns>
+    private IEnumerable<MediaStream> GetMediaStreams(IEnumerable<BaseItem> itemList, params BaseItemKind[] types)
+    {
+        return itemList
+            .Where(item => item.IsFolder || types.Length == 0 || types.Contains(item.GetBaseItemKind()))
+            .SelectMany(item =>
+            {
+                if (item.IsFolder)
+                {
+                    return GetMediaStreams(((Folder)item).Children, types);
+                }
+                else if (item is Video)
+                {
+                    return ((Video)item).GetAllLinkedMediaStreams();
+                }
+                else
+                {
+                    return item.GetMediaStreams();
+                }
+            });
     }
 }
