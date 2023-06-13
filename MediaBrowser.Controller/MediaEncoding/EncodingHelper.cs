@@ -1549,11 +1549,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                         param += " -preset p7";
                         break;
 
-                    case "slow":
+                    case "slower":
                         param += " -preset p6";
                         break;
 
-                    case "slower":
+                    case "slow":
                         param += " -preset p5";
                         break;
 
@@ -1586,8 +1586,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 switch (encodingOptions.EncoderPreset)
                 {
                     case "veryslow":
-                    case "slow":
                     case "slower":
+                    case "slow":
                         param += " -quality quality";
                         break;
 
