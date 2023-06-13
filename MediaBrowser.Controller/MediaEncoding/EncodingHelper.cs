@@ -45,6 +45,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         private readonly Version _minFFmpegImplictHwaccel = new Version(6, 0);
         private readonly Version _minFFmpegHwaUnsafeOutput = new Version(6, 0);
+        private readonly Version _minFFmpegOclCuTonemapMode = new Version(5, 1, 3);
 
         private static readonly string[] _videoProfilesH264 = new[]
         {
@@ -2929,7 +2930,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             return string.Empty;
         }
 
-        public static string GetHwTonemapFilter(EncodingOptions options, string hwTonemapSuffix, string videoFormat)
+        public string GetHwTonemapFilter(EncodingOptions options, string hwTonemapSuffix, string videoFormat)
         {
             if (string.IsNullOrEmpty(hwTonemapSuffix))
             {
@@ -2941,7 +2942,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (string.Equals(hwTonemapSuffix, "vaapi", StringComparison.OrdinalIgnoreCase))
             {
-                args = "tonemap_vaapi=format={0}:p=bt709:t=bt709:m=bt709,procamp_vaapi=b={1}:c={2}:extra_hw_frames=16";
+                args = "procamp_vaapi=b={2}:c={3}," + args + ":extra_hw_frames=32";
+
                 return string.Format(
                         CultureInfo.InvariantCulture,
                         args,
@@ -2972,14 +2974,24 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 args = "tonemap_{0}=format={1}:p=bt709:t=bt709:m=bt709:tonemap={2}:peak={3}:desat={4}";
 
-                if (options.TonemappingParam != 0)
+                if (string.Equals(options.TonemappingMode, "max", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(options.TonemappingMode, "rgb", StringComparison.OrdinalIgnoreCase))
                 {
-                    args += ":param={5}";
+                    if (_mediaEncoder.EncoderVersion >= _minFFmpegOclCuTonemapMode)
+                    {
+                        args += ":tonemap_mode={5}";
+                    }
                 }
 
-                if (!string.Equals(options.TonemappingRange, "auto", StringComparison.OrdinalIgnoreCase))
+                if (options.TonemappingParam != 0)
                 {
-                    args += ":range={6}";
+                    args += ":param={6}";
+                }
+
+                if (string.Equals(options.TonemappingRange, "tv", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(options.TonemappingRange, "pc", StringComparison.OrdinalIgnoreCase))
+                {
+                    args += ":range={7}";
                 }
             }
 
@@ -2991,6 +3003,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     algorithm,
                     options.TonemappingPeak,
                     options.TonemappingDesat,
+                    options.TonemappingMode,
                     options.TonemappingParam,
                     options.TonemappingRange);
         }
