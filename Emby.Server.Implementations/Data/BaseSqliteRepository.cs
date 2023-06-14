@@ -174,21 +174,6 @@ namespace Emby.Server.Implementations.Data
             return columnNames;
         }
 
-        protected Dictionary<string, string> GetColumnTypes(SqliteConnection connection, string table)
-        {
-            var columnTypes = new Dictionary<string, string>();
-
-            foreach (var row in connection.Query("PRAGMA table_info(" + table + ")"))
-            {
-                if (row.TryGetString(1, out var columnName) && row.TryGetString(2, out var columnType))
-                {
-                    columnTypes[columnName] = columnType;
-                }
-            }
-
-            return columnTypes;
-        }
-
         protected void AddColumn(SqliteConnection connection, string table, string columnName, string type, List<string> existingColumnNames)
         {
             if (existingColumnNames.Contains(columnName, StringComparison.OrdinalIgnoreCase))

@@ -521,18 +521,6 @@ namespace Emby.Server.Implementations.Data
                 AddColumn(connection, "TypedBaseItems", "Height", "INT", existingColumnNames);
                 AddColumn(connection, "TypedBaseItems", "Size", "BIGINT", existingColumnNames);
 
-                // change type of OwnerId from TEXT to GUID so database can use index when compared to guid column
-                // sadly sqlite doesn't support to change column types directly (see: https://www.sqlite.org/lang_altertable.html)
-                // it would be much cleaner to use a database migration tool with proper versioning like evolve to execute the necessary databse changes for new versions (see: https://github.com/lecaillon/Evolve)
-                var columnTypes = GetColumnTypes(connection, "TypedBaseItems");
-                if (columnTypes["OwnerId"] == "TEXT")
-                {
-                    connection.Execute("ALTER TABLE TypedBaseItems RENAME COLUMN OwnerId TO OwnerId_OLD");
-                    connection.Execute("ALTER TABLE TypedBaseItems ADD COLUMN OwnerId GUID NULL");
-                    connection.Execute("UPDATE TypedBaseItems SET OwnerId = OwnerId_OLD WHERE OwnerId_OLD IS NOT NULL");
-                    connection.Execute("ALTER TABLE TypedBaseItems DROP COLUMN OwnerId_OLD");
-                }
-
                 existingColumnNames = GetColumnNames(connection, "ItemValues");
                 AddColumn(connection, "ItemValues", "CleanValue", "Text", existingColumnNames);
 
