@@ -21,7 +21,7 @@ public class EncodingOptions
         EnableThrottling = false;
         ThrottleDelaySeconds = 180;
         EnableSegmentDeletion = false;
-        SegmentKeepSeconds = 360;
+        SegmentKeepSeconds = 720;
         EncodingThreadCount = -1;
         // This is a DRM device that is almost guaranteed to be there on every intel platform,
         // plus it's the default one in ffmpeg if you don't specify anything
