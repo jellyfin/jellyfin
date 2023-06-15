@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Models.StreamingDtos;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -211,8 +212,7 @@ public class DynamicHlsHelper
             // Provide SDR HEVC entrance for backward compatibility.
             if (encodingOptions.AllowHevcEncoding
                 && EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
-                && !string.IsNullOrEmpty(state.VideoStream.VideoRange)
-                && string.Equals(state.VideoStream.VideoRange, "HDR", StringComparison.OrdinalIgnoreCase)
+                && state.VideoStream.VideoRange == VideoRange.HDR
                 && string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase))
             {
                 var requestedVideoProfiles = state.GetRequestedProfiles("hevc");
@@ -255,8 +255,7 @@ public class DynamicHlsHelper
             if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
                 && state.VideoStream.Level.HasValue
                 && state.VideoStream.Level > 150
-                && !string.IsNullOrEmpty(state.VideoStream.VideoRange)
-                && string.Equals(state.VideoStream.VideoRange, "SDR", StringComparison.OrdinalIgnoreCase)
+                && state.VideoStream.VideoRange == VideoRange.SDR
                 && string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase))
             {
                 var playlistCodecsField = new StringBuilder();
@@ -340,17 +339,17 @@ public class DynamicHlsHelper
     /// <param name="state">StreamState of the current stream.</param>
     private void AppendPlaylistVideoRangeField(StringBuilder builder, StreamState state)
     {
-        if (state.VideoStream is not null && !string.IsNullOrEmpty(state.VideoStream.VideoRange))
+        if (state.VideoStream is not null && state.VideoStream.VideoRange != VideoRange.Unknown)
         {
             var videoRange = state.VideoStream.VideoRange;
             if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
             {
-                if (string.Equals(videoRange, "SDR", StringComparison.OrdinalIgnoreCase))
+                if (videoRange == VideoRange.SDR)
                 {
                     builder.Append(",VIDEO-RANGE=SDR");
                 }
 
-                if (string.Equals(videoRange, "HDR", StringComparison.OrdinalIgnoreCase))
+                if (videoRange == VideoRange.HDR)
                 {
                     builder.Append(",VIDEO-RANGE=PQ");
                 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
@@ -889,7 +890,7 @@ namespace MediaBrowser.Model.Dlna
             int? videoBitrate = videoStream?.BitRate;
             double? videoLevel = videoStream?.Level;
             string? videoProfile = videoStream?.Profile;
-            string? videoRangeType = videoStream?.VideoRangeType;
+            VideoRangeType? videoRangeType = videoStream?.VideoRangeType;
             float videoFramerate = videoStream is null ? 0 : videoStream.AverageFrameRate ?? videoStream.AverageFrameRate ?? 0;
             bool? isAnamorphic = videoStream?.IsAnamorphic;
             bool? isInterlaced = videoStream?.IsInterlaced;
@@ -1144,7 +1145,7 @@ namespace MediaBrowser.Model.Dlna
             int? videoBitrate = videoStream?.BitRate;
             double? videoLevel = videoStream?.Level;
             string? videoProfile = videoStream?.Profile;
-            string? videoRangeType = videoStream?.VideoRangeType;
+            VideoRangeType? videoRangeType = videoStream?.VideoRangeType;
             float videoFramerate = videoStream is null ? 0 : videoStream.AverageFrameRate ?? videoStream.AverageFrameRate ?? 0;
             bool? isAnamorphic = videoStream?.IsAnamorphic;
             bool? isInterlaced = videoStream?.IsInterlaced;
@@ -1931,6 +1932,10 @@ namespace MediaBrowser.Model.Dlna
                             if (condition.Condition == ProfileConditionType.Equals)
                             {
                                 item.SetOption(qualifier, "rangetype", string.Join(',', values));
+                            }
+                            else if (condition.Condition == ProfileConditionType.NotEquals)
+                            {
+                                item.SetOption(qualifier, "rangetype", string.Join(',', Enum.GetNames(typeof(VideoRangeType)).Except(values)));
                             }
                             else if (condition.Condition == ProfileConditionType.EqualsAny)
                             {
