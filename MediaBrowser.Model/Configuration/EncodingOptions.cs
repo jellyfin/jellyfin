@@ -103,12 +103,12 @@ public class EncodingOptions
     /// Gets or sets the delay after which throttling happens.
     /// </summary>
     public int ThrottleDelaySeconds { get; set; }
-  
+
     /// <summary>
     /// Gets or sets a value indicating whether segment deletion is enabled.
     /// </summary>
     public bool EnableSegmentDeletion { get; set; }
-  
+
     /// <summary>
     /// Gets or sets seconds for which segments should be kept before being deleted.
     /// </summary>

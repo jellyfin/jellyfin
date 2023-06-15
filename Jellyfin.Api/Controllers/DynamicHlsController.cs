@@ -1632,6 +1632,15 @@ public class DynamicHlsController : BaseJellyfinApiController
             ? _encodingOptions.MaxMuxingQueueSize.ToString(CultureInfo.InvariantCulture)
             : "128";
 
+        var baseUrlParam = string.Empty;
+        if (isEventPlaylist)
+        {
+            baseUrlParam = string.Format(
+                CultureInfo.InvariantCulture,
+                " -hls_base_url \"hls/{0}/\"",
+                Path.GetFileNameWithoutExtension(outputPath));
+        }
+
         var hlsArguments = GetHlsArguments(isEventPlaylist, state.SegmentLength);
 
         return string.Format(
