@@ -253,7 +253,7 @@ namespace Emby.Server.Implementations.Data
         {
             if (statement.BindParameters.TryGetValue(name, out IBindParameter bindParam))
             {
-                if (value == null)
+                if (value is null)
                 {
                     bindParam.BindNull();
                 }

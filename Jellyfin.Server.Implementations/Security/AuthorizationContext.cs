@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
-using EFCoreSecondLevelCacheInterceptor;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -16,12 +15,12 @@ namespace Jellyfin.Server.Implementations.Security
 {
     public class AuthorizationContext : IAuthorizationContext
     {
-        private readonly IDbContextFactory<JellyfinDb> _jellyfinDbProvider;
+        private readonly IDbContextFactory<JellyfinDbContext> _jellyfinDbProvider;
         private readonly IUserManager _userManager;
         private readonly IServerApplicationHost _serverApplicationHost;
 
         public AuthorizationContext(
-            IDbContextFactory<JellyfinDb> jellyfinDb,
+            IDbContextFactory<JellyfinDbContext> jellyfinDb,
             IUserManager userManager,
             IServerApplicationHost serverApplicationHost)
         {
@@ -32,7 +31,7 @@ namespace Jellyfin.Server.Implementations.Security
 
         public Task<AuthorizationInfo> GetAuthorizationInfo(HttpContext requestContext)
         {
-            if (requestContext.Request.HttpContext.Items.TryGetValue("AuthorizationInfo", out var cached) && cached != null)
+            if (requestContext.Request.HttpContext.Items.TryGetValue("AuthorizationInfo", out var cached) && cached is not null)
             {
                 return Task.FromResult((AuthorizationInfo)cached); // Cache should never contain null
             }
@@ -72,7 +71,7 @@ namespace Jellyfin.Server.Implementations.Security
             string? version = null;
             string? token = null;
 
-            if (auth != null)
+            if (auth is not null)
             {
                 auth.TryGetValue("DeviceId", out deviceId);
                 auth.TryGetValue("Device", out deviceName);
@@ -127,7 +126,7 @@ namespace Jellyfin.Server.Implementations.Security
             {
                 var device = await dbContext.Devices.FirstOrDefaultAsync(d => d.AccessToken == token).ConfigureAwait(false);
 
-                if (device != null)
+                if (device is not null)
                 {
                     authInfo.IsAuthenticated = true;
                     var updateToken = false;
@@ -189,7 +188,7 @@ namespace Jellyfin.Server.Implementations.Security
                 else
                 {
                     var key = await dbContext.ApiKeys.FirstOrDefaultAsync(apiKey => apiKey.AccessToken == token).ConfigureAwait(false);
-                    if (key != null)
+                    if (key is not null)
                     {
                         authInfo.IsAuthenticated = true;
                         authInfo.Client = key.Name;

@@ -167,6 +167,11 @@ namespace MediaBrowser.Common.Net
                 address = address.MapToIPv4();
             }
 
+            if (address.AddressFamily != AddressFamily)
+            {
+                return false;
+            }
+
             var (altAddress, altPrefix) = NetworkAddressOf(address, PrefixLength);
             return NetworkAddress.Address.Equals(altAddress) && NetworkAddress.PrefixLength >= altPrefix;
         }
@@ -214,7 +219,7 @@ namespace MediaBrowser.Common.Net
         /// <inheritdoc/>
         public override bool Equals(IPAddress ip)
         {
-            if (ip != null && !ip.Equals(IPAddress.None) && !Address.Equals(IPAddress.None))
+            if (ip is not null && !ip.Equals(IPAddress.None) && !Address.Equals(IPAddress.None))
             {
                 return ip.Equals(Address);
             }

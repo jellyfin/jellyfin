@@ -35,7 +35,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             EnableStreamSharing = true;
             UniqueId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
 
-            if (tuner != null)
+            if (tuner is not null)
             {
                 TunerHostId = tuner.Id;
             }

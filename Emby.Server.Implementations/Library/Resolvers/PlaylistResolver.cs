@@ -30,17 +30,20 @@ namespace Emby.Server.Implementations.Library.Resolvers
         {
             if (args.IsDirectory)
             {
-                // It's a boxset if the path is a directory with [playlist] in it's the name
-                // TODO: Should this use Path.GetDirectoryName() instead?
-                bool isBoxSet = Path.GetFileName(args.Path)
-                    ?.Contains("[playlist]", StringComparison.OrdinalIgnoreCase)
-                    ?? false;
-                if (isBoxSet)
+                // It's a boxset if the path is a directory with [playlist] in its name
+                var filename = Path.GetFileName(Path.TrimEndingDirectorySeparator(args.Path));
+                if (string.IsNullOrEmpty(filename))
+                {
+                    return null;
+                }
+
+                if (filename.Contains("[playlist]", StringComparison.OrdinalIgnoreCase))
                 {
                     return new Playlist
                     {
                         Path = args.Path,
-                        Name = Path.GetFileName(args.Path).Replace("[playlist]", string.Empty, StringComparison.OrdinalIgnoreCase).Trim()
+                        Name = filename.Replace("[playlist]", string.Empty, StringComparison.OrdinalIgnoreCase).Trim(),
+                        OpenAccess = true
                     };
                 }
 
@@ -51,7 +54,8 @@ namespace Emby.Server.Implementations.Library.Resolvers
                     return new Playlist
                     {
                         Path = args.Path,
-                        Name = Path.GetFileName(args.Path)
+                        Name = filename,
+                        OpenAccess = true
                     };
                 }
             }
@@ -60,15 +64,16 @@ namespace Emby.Server.Implementations.Library.Resolvers
             // It should have the correct collection type and a supported file extension
             else if (_musicPlaylistCollectionTypes.Contains(args.CollectionType ?? string.Empty, StringComparison.OrdinalIgnoreCase))
             {
-                var extension = Path.GetExtension(args.Path);
-                if (Playlist.SupportedExtensions.Contains(extension ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+                var extension = Path.GetExtension(args.Path.AsSpan());
+                if (Playlist.SupportedExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
                 {
                     return new Playlist
                     {
                         Path = args.Path,
                         Name = Path.GetFileNameWithoutExtension(args.Path),
                         IsInMixedFolder = true,
-                        PlaylistMediaType = MediaType.Audio
+                        PlaylistMediaType = MediaType.Audio,
+                        OpenAccess = true
                     };
                 }
             }

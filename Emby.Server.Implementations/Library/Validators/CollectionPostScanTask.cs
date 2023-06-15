@@ -118,7 +118,7 @@ namespace Emby.Server.Implementations.Library.Validators
                 try
                 {
                     var boxSet = boxSets.FirstOrDefault(b => b?.Name == collectionName) as BoxSet;
-                    if (boxSet == null)
+                    if (boxSet is null)
                     {
                         // won't automatically create collection if only one movie in it
                         if (movieIds.Count >= 2)

@@ -29,20 +29,9 @@ namespace Jellyfin.Data.Entities
         /// <param name="passwordResetProviderId">The Id of the user's password reset provider.</param>
         public User(string username, string authenticationProviderId, string passwordResetProviderId)
         {
-            if (string.IsNullOrEmpty(username))
-            {
-                throw new ArgumentNullException(nameof(username));
-            }
-
-            if (string.IsNullOrEmpty(authenticationProviderId))
-            {
-                throw new ArgumentNullException(nameof(authenticationProviderId));
-            }
-
-            if (string.IsNullOrEmpty(passwordResetProviderId))
-            {
-                throw new ArgumentNullException(nameof(passwordResetProviderId));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(username);
+            ArgumentException.ThrowIfNullOrEmpty(authenticationProviderId);
+            ArgumentException.ThrowIfNullOrEmpty(passwordResetProviderId);
 
             Username = username;
             AuthenticationProviderId = authenticationProviderId;
@@ -101,16 +90,6 @@ namespace Jellyfin.Data.Entities
         [MaxLength(65535)]
         [StringLength(65535)]
         public string? Password { get; set; }
-
-        /// <summary>
-        /// Gets or sets the user's easy password, or <c>null</c> if none is set.
-        /// </summary>
-        /// <remarks>
-        /// Max length = 65535.
-        /// </remarks>
-        [MaxLength(65535)]
-        [StringLength(65535)]
-        public string? EasyPassword { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the user must update their password.
@@ -373,7 +352,7 @@ namespace Jellyfin.Data.Entities
         public void SetPermission(PermissionKind kind, bool value)
         {
             var currentPermission = Permissions.FirstOrDefault(p => p.Kind == kind);
-            if (currentPermission == null)
+            if (currentPermission is null)
             {
                 Permissions.Add(new Permission(kind, value));
             }
@@ -419,7 +398,7 @@ namespace Jellyfin.Data.Entities
                 try
                 {
                     var parsedValue = converter.ConvertFromString(stringValues[i].Trim());
-                    if (parsedValue != null)
+                    if (parsedValue is not null)
                     {
                         parsedValues[convertedCount++] = (T)parsedValue;
                     }
@@ -442,7 +421,7 @@ namespace Jellyfin.Data.Entities
         {
             var value = string.Join(Delimiter, values);
             var currentPreference = Preferences.FirstOrDefault(p => p.Kind == preference);
-            if (currentPreference == null)
+            if (currentPreference is null)
             {
                 Preferences.Add(new Preference(preference, value));
             }
@@ -462,7 +441,7 @@ namespace Jellyfin.Data.Entities
         {
             var value = string.Join(Delimiter, values);
             var currentPreference = Preferences.FirstOrDefault(p => p.Kind == preference);
-            if (currentPreference == null)
+            if (currentPreference is null)
             {
                 Preferences.Add(new Preference(preference, value));
             }
@@ -519,6 +498,7 @@ namespace Jellyfin.Data.Entities
             Permissions.Add(new Permission(PermissionKind.EnableVideoPlaybackTranscoding, true));
             Permissions.Add(new Permission(PermissionKind.ForceRemoteSourceTranscoding, false));
             Permissions.Add(new Permission(PermissionKind.EnableRemoteControlOfOtherUsers, false));
+            Permissions.Add(new Permission(PermissionKind.EnableCollectionManagement, false));
         }
 
         /// <summary>
@@ -536,8 +516,9 @@ namespace Jellyfin.Data.Entities
         {
             var localTime = date.ToLocalTime();
             var hour = localTime.TimeOfDay.TotalHours;
+            var currentDayOfWeek = localTime.DayOfWeek;
 
-            return DayOfWeekHelper.GetDaysOfWeek(schedule.DayOfWeek).Contains(localTime.DayOfWeek)
+            return schedule.DayOfWeek.Contains(currentDayOfWeek)
                    && hour >= schedule.StartHour
                    && hour <= schedule.EndHour;
         }

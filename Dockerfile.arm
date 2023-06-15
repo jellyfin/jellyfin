@@ -2,7 +2,7 @@
 #####################################
 # Requires binfm_misc registration
 # https://github.com/multiarch/qemu-user-static#binfmt_misc-register
-ARG DOTNET_VERSION=6.0
+ARG DOTNET_VERSION=7.0
 
 
 FROM node:lts-alpine as web-builder
@@ -11,6 +11,7 @@ RUN apk add curl git zlib zlib-dev autoconf g++ make libpng-dev gifsicle alpine-
  && curl -L https://github.com/jellyfin/jellyfin-web/archive/${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
  && cd jellyfin-web-* \
  && npm ci --no-audit --unsafe-perm \
+ && npm run build:production \
  && mv dist /dist
 
 FROM multiarch/qemu-user-static:x86_64-arm as qemu

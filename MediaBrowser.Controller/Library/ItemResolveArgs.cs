@@ -1,12 +1,11 @@
 #nullable disable
 
-#pragma warning disable CA1721, CA1819, CS1591
+#pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 
@@ -23,21 +22,19 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         private readonly IServerApplicationPaths _appPaths;
 
+        private readonly ILibraryManager _libraryManager;
         private LibraryOptions _libraryOptions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemResolveArgs" /> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
-        /// <param name="directoryService">The directory service.</param>
-        public ItemResolveArgs(IServerApplicationPaths appPaths, IDirectoryService directoryService)
+        /// <param name="libraryManager">The library manager.</param>
+        public ItemResolveArgs(IServerApplicationPaths appPaths, ILibraryManager libraryManager)
         {
             _appPaths = appPaths;
-            DirectoryService = directoryService;
+            _libraryManager = libraryManager;
         }
-
-        // TODO remove dependencies as properties, they should be injected where it makes sense
-        public IDirectoryService DirectoryService { get; }
 
         /// <summary>
         /// Gets or sets the file system children.
@@ -47,7 +44,7 @@ namespace MediaBrowser.Controller.Library
 
         public LibraryOptions LibraryOptions
         {
-            get => _libraryOptions ??= Parent == null ? new LibraryOptions() : BaseItem.LibraryManager.GetLibraryOptions(Parent);
+            get => _libraryOptions ??= Parent is null ? new LibraryOptions() : _libraryManager.GetLibraryOptions(Parent);
             set => _libraryOptions = value;
         }
 
@@ -119,7 +116,7 @@ namespace MediaBrowser.Controller.Library
             get
             {
                 var paths = string.IsNullOrEmpty(Path) ? Array.Empty<string>() : new[] { Path };
-                return AdditionalLocations == null ? paths : paths.Concat(AdditionalLocations).ToArray();
+                return AdditionalLocations is null ? paths : paths.Concat(AdditionalLocations).ToArray();
             }
         }
 
@@ -130,13 +127,13 @@ namespace MediaBrowser.Controller.Library
         {
             var parent = Parent;
 
-            if (parent != null)
+            if (parent is not null)
             {
                 var item = parent as T;
 
                 // Just in case the user decided to nest episodes.
                 // Not officially supported but in some cases we can handle it.
-                if (item == null)
+                if (item is null)
                 {
                     var parents = parent.GetParents();
                     foreach (var currentParent in parents)
@@ -148,7 +145,7 @@ namespace MediaBrowser.Controller.Library
                     }
                 }
 
-                return item != null;
+                return item is not null;
             }
 
             return false;
@@ -171,10 +168,7 @@ namespace MediaBrowser.Controller.Library
         /// <exception cref="ArgumentNullException"><paramref name="path"/> is <c>null</c> or empty.</exception>
         public void AddAdditionalLocation(string path)
         {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentException("The path was empty or null.", nameof(path));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(path);
 
             AdditionalLocations ??= new List<string>();
             AdditionalLocations.Add(path);
@@ -190,10 +184,7 @@ namespace MediaBrowser.Controller.Library
         /// <exception cref="ArgumentNullException"><paramref name="name"/> is <c>null</c> or empty.</exception>
         public FileSystemMetadata GetFileSystemEntryByName(string name)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentException("The name was empty or null.", nameof(name));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(name);
 
             return GetFileSystemEntryByPath(System.IO.Path.Combine(Path, name));
         }
@@ -206,10 +197,7 @@ namespace MediaBrowser.Controller.Library
         /// <exception cref="ArgumentNullException">Throws if path is invalid.</exception>
         public FileSystemMetadata GetFileSystemEntryByPath(string path)
         {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentException("The path was empty or null.", nameof(path));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(path);
 
             foreach (var file in FileSystemChildren)
             {
@@ -240,21 +228,15 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the configured content type for the path.
         /// </summary>
-        /// <remarks>
-        /// This is subject to future refactoring as it relies on a static property in BaseItem.
-        /// </remarks>
         /// <returns>The configured content type.</returns>
         public string GetConfiguredContentType()
         {
-            return BaseItem.LibraryManager.GetConfiguredContentType(Path);
+            return _libraryManager.GetConfiguredContentType(Path);
         }
 
         /// <summary>
         /// Gets the file system children that do not hit the ignore file check.
         /// </summary>
-        /// <remarks>
-        /// This is subject to future refactoring as it relies on a static property in BaseItem.
-        /// </remarks>
         /// <returns>The file system children that are not ignored.</returns>
         public IEnumerable<FileSystemMetadata> GetActualFileSystemChildren()
         {
@@ -262,7 +244,7 @@ namespace MediaBrowser.Controller.Library
             for (var i = 0; i < numberOfChildren; i++)
             {
                 var child = FileSystemChildren[i];
-                if (BaseItem.LibraryManager.IgnoreFile(child, Parent))
+                if (_libraryManager.IgnoreFile(child, Parent))
                 {
                     continue;
                 }
@@ -287,14 +269,14 @@ namespace MediaBrowser.Controller.Library
         /// <returns><c>true</c> if the arguments are the same, <c>false</c> otherwise.</returns>
         protected bool Equals(ItemResolveArgs args)
         {
-            if (args != null)
+            if (args is not null)
             {
-                if (args.Path == null && Path == null)
+                if (args.Path is null && Path is null)
                 {
                     return true;
                 }
 
-                return args.Path != null && BaseItem.FileSystem.AreEqual(args.Path, Path);
+                return args.Path is not null && BaseItem.FileSystem.AreEqual(args.Path, Path);
             }
 
             return false;

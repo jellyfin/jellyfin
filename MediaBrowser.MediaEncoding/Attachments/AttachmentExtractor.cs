@@ -14,6 +14,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -62,14 +63,14 @@ namespace MediaBrowser.MediaEncoding.Attachments
             var mediaSources = await _mediaSourceManager.GetPlaybackMediaSources(item, null, true, false, cancellationToken).ConfigureAwait(false);
             var mediaSource = mediaSources
                 .FirstOrDefault(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
-            if (mediaSource == null)
+            if (mediaSource is null)
             {
                 throw new ResourceNotFoundException($"MediaSource {mediaSourceId} not found");
             }
 
             var mediaAttachment = mediaSource.MediaAttachments
                 .FirstOrDefault(i => i.Index == attachmentStreamIndex);
-            if (mediaAttachment == null)
+            if (mediaAttachment is null)
             {
                 throw new ResourceNotFoundException($"MediaSource {mediaSourceId} has no attachment with stream index {attachmentStreamIndex}");
             }
@@ -145,15 +146,8 @@ namespace MediaBrowser.MediaEncoding.Attachments
             bool isExternal,
             CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(inputPath))
-            {
-                throw new ArgumentNullException(nameof(inputPath));
-            }
-
-            if (string.IsNullOrEmpty(outputPath))
-            {
-                throw new ArgumentNullException(nameof(outputPath));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(inputPath);
+            ArgumentException.ThrowIfNullOrEmpty(outputPath);
 
             Directory.CreateDirectory(outputPath);
 
@@ -237,10 +231,8 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 throw new InvalidOperationException(
                     string.Format(CultureInfo.InvariantCulture, "ffmpeg attachment extraction failed for {0} to {1}", inputPath, outputPath));
             }
-            else
-            {
-                _logger.LogInformation("ffmpeg attachment extraction completed for {Path} to {Path}", inputPath, outputPath);
-            }
+
+            _logger.LogInformation("ffmpeg attachment extraction completed for {InputPath} to {OutputPath}", inputPath, outputPath);
         }
 
         private async Task<Stream> GetAttachmentStream(
@@ -300,24 +292,18 @@ namespace MediaBrowser.MediaEncoding.Attachments
             string outputPath,
             CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(inputPath))
-            {
-                throw new ArgumentNullException(nameof(inputPath));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(inputPath);
 
-            if (string.IsNullOrEmpty(outputPath))
-            {
-                throw new ArgumentNullException(nameof(outputPath));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(outputPath);
 
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
             var processArgs = string.Format(
                 CultureInfo.InvariantCulture,
-                "-dump_attachment:{1} {2} -i {0} -t 0 -f null null",
+                "-dump_attachment:{1} \"{2}\" -i {0} -t 0 -f null null",
                 inputPath,
                 attachmentStreamIndex,
-                outputPath);
+                EncodingUtils.NormalizePath(outputPath));
 
             int exitCode;
 
@@ -388,10 +374,8 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 throw new InvalidOperationException(
                     string.Format(CultureInfo.InvariantCulture, "ffmpeg attachment extraction failed for {0} to {1}", inputPath, outputPath));
             }
-            else
-            {
-                _logger.LogInformation("ffmpeg attachment extraction completed for {Path} to {Path}", inputPath, outputPath);
-            }
+
+            _logger.LogInformation("ffmpeg attachment extraction completed for {InputPath} to {OutputPath}", inputPath, outputPath);
         }
 
         private string GetAttachmentCachePath(string mediaPath, MediaSourceInfo mediaSource, int attachmentStreamIndex)

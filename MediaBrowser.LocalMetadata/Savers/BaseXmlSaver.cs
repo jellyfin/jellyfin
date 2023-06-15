@@ -126,7 +126,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
                     var baseItem = item;
 
-                    if (baseItem != null)
+                    if (baseItem is not null)
                     {
                         await AddCommonNodesAsync(baseItem, writer).ConfigureAwait(false);
                     }
@@ -309,7 +309,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 await writer.WriteElementStringAsync(null, "RunningTime", null, Math.Floor(timespan.TotalMinutes).ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
             }
 
-            if (item.ProviderIds != null)
+            if (item.ProviderIds is not null)
             {
                 foreach (var providerKey in item.ProviderIds.Keys)
                 {
@@ -374,7 +374,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 {
                     await writer.WriteStartElementAsync(null, "Person", null).ConfigureAwait(false);
                     await writer.WriteElementStringAsync(null, "Name", null, person.Name).ConfigureAwait(false);
-                    await writer.WriteElementStringAsync(null, "Type", null, person.Type).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "Type", null, person.Type.ToString()).ConfigureAwait(false);
                     await writer.WriteElementStringAsync(null, "Role", null, person.Role).ConfigureAwait(false);
 
                     if (person.SortOrder.HasValue)
@@ -395,6 +395,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             if (item is Playlist playlist && !Playlist.IsPlaylistFile(playlist.Path))
             {
+                await writer.WriteElementStringAsync(null, "OwnerUserId", null, playlist.OwnerUserId.ToString("N")).ConfigureAwait(false);
                 await AddLinkedChildren(playlist, writer, "PlaylistItems", "PlaylistItem").ConfigureAwait(false);
             }
 
@@ -418,16 +419,19 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             foreach (var share in item.Shares)
             {
-                await writer.WriteStartElementAsync(null, "Share", null).ConfigureAwait(false);
+                if (share.UserId is not null)
+                {
+                    await writer.WriteStartElementAsync(null, "Share", null).ConfigureAwait(false);
 
-                await writer.WriteElementStringAsync(null, "UserId", null, share.UserId).ConfigureAwait(false);
-                await writer.WriteElementStringAsync(
-                    null,
-                    "CanEdit",
-                    null,
-                    share.CanEdit.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(null, "UserId", null, share.UserId).ConfigureAwait(false);
+                    await writer.WriteElementStringAsync(
+                        null,
+                        "CanEdit",
+                        null,
+                        share.CanEdit.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()).ConfigureAwait(false);
 
-                await writer.WriteEndElementAsync().ConfigureAwait(false);
+                    await writer.WriteEndElementAsync().ConfigureAwait(false);
+                }
             }
 
             await writer.WriteEndElementAsync().ConfigureAwait(false);

@@ -72,7 +72,7 @@ namespace Jellyfin.Server.Infrastructure
             ArgumentNullException.ThrowIfNull(context);
             ArgumentNullException.ThrowIfNull(result);
 
-            if (range != null && rangeLength == 0)
+            if (range is not null && rangeLength == 0)
             {
                 return Task.CompletedTask;
             }
@@ -85,7 +85,7 @@ namespace Jellyfin.Server.Infrastructure
 
             var response = context.HttpContext.Response;
 
-            if (range != null)
+            if (range is not null)
             {
                 return SendFileAsync(
                     result.FileName,

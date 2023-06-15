@@ -27,6 +27,7 @@
  - [cvium](https://github.com/cvium)
  - [dannymichel](https://github.com/dannymichel)
  - [DaveChild](https://github.com/DaveChild)
+ - [DavidFair](https://github.com/DavidFair)
  - [Delgan](https://github.com/Delgan)
  - [dcrdev](https://github.com/dcrdev)
  - [dhartung](https://github.com/dhartung)
@@ -37,6 +38,7 @@
  - [DMouse10462](https://github.com/DMouse10462)
  - [DrPandemic](https://github.com/DrPandemic)
  - [eglia](https://github.com/eglia)
+ - [EgorBakanov](https://github.com/EgorBakanov)
  - [EraYaN](https://github.com/EraYaN)
  - [escabe](https://github.com/escabe)
  - [excelite](https://github.com/excelite)
@@ -56,6 +58,7 @@
  - [HelloWorld017](https://github.com/HelloWorld017)
  - [ikomhoog](https://github.com/ikomhoog)
  - [jftuga](https://github.com/jftuga)
+ - [jmshrv](https://github.com/jmshrv)
  - [joern-h](https://github.com/joern-h)
  - [joshuaboniface](https://github.com/joshuaboniface)
  - [JustAMan](https://github.com/JustAMan)
@@ -123,6 +126,7 @@
  - [SuperSandro2000](https://github.com/SuperSandro2000)
  - [tbraeutigam](https://github.com/tbraeutigam)
  - [teacupx](https://github.com/teacupx)
+ - [TelepathicWalrus](https://github.com/TelepathicWalrus)
  - [Terror-Gene](https://github.com/Terror-Gene)
  - [ThatNerdyPikachu](https://github.com/ThatNerdyPikachu)
  - [ThibaultNocchi](https://github.com/ThibaultNocchi)
@@ -160,6 +164,8 @@
  - [vgambier](https://github.com/vgambier)
  - [MinecraftPlaye](https://github.com/MinecraftPlaye)
  - [RealGreenDragon](https://github.com/RealGreenDragon)
+ - [ipitio](https://github.com/ipitio)
+ - [TheTyrius](https://github.com/TheTyrius)
 
 # Emby Contributors
 
@@ -229,3 +235,4 @@
  - [Matthew Jones](https://github.com/matthew-jones-uk)
  - [Jakob Kukla](https://github.com/jakobkukla)
  - [Utku Özdemir](https://github.com/utkuozdemir)
+ - [JPUC1143](https://github.com/Jpuc1143/)

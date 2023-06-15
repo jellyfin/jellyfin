@@ -6,8 +6,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
@@ -54,11 +56,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
         public void Fetch(MetadataResult<T> item, string metadataFile, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(item);
-
-            if (string.IsNullOrEmpty(metadataFile))
-            {
-                throw new ArgumentException("The metadata file was empty or null.", nameof(metadataFile));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(metadataFile);
 
             var settings = new XmlReaderSettings
             {
@@ -75,10 +73,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
             foreach (var info in idInfos)
             {
                 var id = info.Key + "Id";
-                if (!_validProviderIds.ContainsKey(id))
-                {
-                    _validProviderIds.Add(id, info.Key);
-                }
+                _validProviderIds.TryAdd(id, info.Key);
             }
 
             // Additional Mappings
@@ -173,12 +168,9 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 {
                     var text = reader.ReadElementContentAsString();
 
-                    if (!string.IsNullOrEmpty(text))
+                    if (float.TryParse(text, CultureInfo.InvariantCulture, out var value))
                     {
-                        if (float.TryParse(text, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
-                        {
-                            item.CriticRating = value;
-                        }
+                        item.CriticRating = value;
                     }
 
                     break;
@@ -377,7 +369,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                 case "Director":
                 {
-                    foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Director }))
+                    foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonKind.Director }))
                     {
                         if (string.IsNullOrWhiteSpace(p.Name))
                         {
@@ -392,7 +384,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                 case "Writer":
                 {
-                    foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Writer }))
+                    foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonKind.Writer }))
                     {
                         if (string.IsNullOrWhiteSpace(p.Name))
                         {
@@ -419,7 +411,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     else
                     {
                         // Old-style piped string
-                        foreach (var p in SplitNames(actors).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Actor }))
+                        foreach (var p in SplitNames(actors).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonKind.Actor }))
                         {
                             if (string.IsNullOrWhiteSpace(p.Name))
                             {
@@ -435,7 +427,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                 case "GuestStars":
                 {
-                    foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.GuestStar }))
+                    foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonKind.GuestStar }))
                     {
                         if (string.IsNullOrWhiteSpace(p.Name))
                         {
@@ -643,6 +635,21 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     break;
                 }
 
+                case "OwnerUserId":
+                {
+                    var val = reader.ReadElementContentAsString();
+
+                    if (Guid.TryParse(val, out var guid) && !guid.Equals(Guid.Empty))
+                    {
+                        if (item is Playlist playlist)
+                        {
+                            playlist.OwnerUserId = guid;
+                        }
+                    }
+
+                    break;
+                }
+
                 case "Format3D":
                 {
                     var val = reader.ReadElementContentAsString();
@@ -721,7 +728,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             {
                                 var child = GetShare(subReader);
 
-                                if (child != null)
+                                if (child is not null)
                                 {
                                     list.Add(child);
                                 }
@@ -1042,7 +1049,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
         private IEnumerable<PersonInfo> GetPersonsFromXmlNode(XmlReader reader)
         {
             var name = string.Empty;
-            var type = PersonType.Actor; // If type is not specified assume actor
+            var type = PersonKind.Actor; // If type is not specified assume actor
             var role = string.Empty;
             int? sortOrder = null;
 
@@ -1063,11 +1070,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         case "Type":
                         {
                             var val = reader.ReadElementContentAsString();
-
-                            if (!string.IsNullOrWhiteSpace(val))
-                            {
-                                type = val;
-                            }
+                            _ = Enum.TryParse(val, true, out type);
 
                             break;
                         }

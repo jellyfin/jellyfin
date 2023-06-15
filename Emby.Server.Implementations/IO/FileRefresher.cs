@@ -40,10 +40,7 @@ namespace Emby.Server.Implementations.IO
 
         private void AddAffectedPath(string path)
         {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(path);
 
             if (!_affectedPaths.Contains(path, StringComparer.Ordinal))
             {
@@ -53,10 +50,7 @@ namespace Emby.Server.Implementations.IO
 
         public void AddPath(string path)
         {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(path);
 
             lock (_timerLock)
             {
@@ -80,7 +74,7 @@ namespace Emby.Server.Implementations.IO
                     return;
                 }
 
-                if (_timer == null)
+                if (_timer is null)
                 {
                     _timer = new Timer(OnTimerCallback, null, TimeSpan.FromSeconds(_configurationManager.Configuration.LibraryMonitorDelay), TimeSpan.FromMilliseconds(-1));
                 }
@@ -138,9 +132,8 @@ namespace Emby.Server.Implementations.IO
             IEnumerable<BaseItem> itemsToRefresh = paths
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(GetAffectedBaseItem)
-                .Where(item => item != null)
-                .GroupBy(x => x!.Id) // Removed null values in the previous .Where()
-                .Select(x => x.First())!;
+                .Where(item => item is not null)
+                .DistinctBy(x => x!.Id)!;  // Removed null values in the previous .Where()
 
             foreach (var item in itemsToRefresh)
             {
@@ -178,21 +171,21 @@ namespace Emby.Server.Implementations.IO
         {
             BaseItem? item = null;
 
-            while (item == null && !string.IsNullOrEmpty(path))
+            while (item is null && !string.IsNullOrEmpty(path))
             {
                 item = _libraryManager.FindByPath(path, null);
 
                 path = System.IO.Path.GetDirectoryName(path) ?? string.Empty;
             }
 
-            if (item != null)
+            if (item is not null)
             {
                 // If the item has been deleted find the first valid parent that still exists
                 while (!Directory.Exists(item.Path) && !File.Exists(item.Path))
                 {
                     item = item.GetOwner() ?? item.GetParent();
 
-                    if (item == null)
+                    if (item is null)
                     {
                         break;
                     }
@@ -206,7 +199,7 @@ namespace Emby.Server.Implementations.IO
         {
             lock (_timerLock)
             {
-                if (_timer != null)
+                if (_timer is not null)
                 {
                     _timer.Dispose();
                     _timer = null;

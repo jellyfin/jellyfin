@@ -2,7 +2,7 @@
 #####################################
 # Requires binfm_misc registration
 # https://github.com/multiarch/qemu-user-static#binfmt_misc-register
-ARG DOTNET_VERSION=6.0
+ARG DOTNET_VERSION=7.0
 
 FROM node:lts-alpine as web-builder
 ARG JELLYFIN_WEB_VERSION=master
@@ -10,6 +10,7 @@ RUN apk add curl git zlib zlib-dev autoconf g++ make libpng-dev gifsicle alpine-
  && curl -L https://github.com/jellyfin/jellyfin-web/archive/${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
  && cd jellyfin-web-* \
  && npm ci --no-audit --unsafe-perm \
+ && npm run build:production \
  && mv dist /dist
 
 FROM debian:stable-slim as app
@@ -37,7 +38,7 @@ RUN apt-get update \
  && apt-get update \
  && apt-get install --no-install-recommends --no-install-suggests -y \
    mesa-va-drivers \
-   jellyfin-ffmpeg \
+   jellyfin-ffmpeg5 \
    openssl \
    locales \
 # Intel VAAPI Tone mapping dependencies:

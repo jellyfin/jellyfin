@@ -9,6 +9,7 @@ on:
       - labeled
       - synchronize
 
+permissions: {}
 jobs:
   rebase:
     name: Rebase
@@ -16,30 +17,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Notify as seen
-        uses: peter-evans/create-or-update-comment@5adcb0bb0f9fb3f95ef05400558bdb3f329ee808 # tag=v2
+        uses: peter-evans/create-or-update-comment@c6c9a1a66007646a28c153e2a8580a5bad27bcfa # v3.0.2
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
           comment-id: ${{ github.event.comment.id }}
           reactions: '+1'
 
       - name: Checkout the latest code
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
           fetch-depth: 0
 
       - name: Automatic Rebase
-        uses: cirrus-actions/rebase@6e572f08c244e2f04f9beb85a943eb618218714d # tag=1.7
+        uses: cirrus-actions/rebase@b87d48154a87a85666003575337e27b8cd65f691 # 1.8
         env:
           GITHUB_TOKEN: ${{ secrets.JF_BOT_TOKEN }}
 
   check-backport:
+    permissions:
+      contents: read
+
     name: Check Backport
     if: ${{ ( github.event.issue.pull_request && contains(github.event.comment.body, '@jellyfin-bot check backport') ) || github.event.label.name == 'stable backport' || contains(github.event.pull_request.labels.*.name, 'stable backport' ) }}
     runs-on: ubuntu-latest
     steps:
       - name: Notify as seen
-        uses: peter-evans/create-or-update-comment@5adcb0bb0f9fb3f95ef05400558bdb3f329ee808 # tag=v2
+        uses: peter-evans/create-or-update-comment@c6c9a1a66007646a28c153e2a8580a5bad27bcfa # v3.0.2
         if: ${{ github.event.comment != null }}
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
@@ -47,14 +51,14 @@ jobs:
           reactions: eyes
 
       - name: Checkout the latest code
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
           fetch-depth: 0
 
       - name: Notify as running
         id: comment_running
-        uses: peter-evans/create-or-update-comment@5adcb0bb0f9fb3f95ef05400558bdb3f329ee808 # tag=v2
+        uses: peter-evans/create-or-update-comment@c6c9a1a66007646a28c153e2a8580a5bad27bcfa # v3.0.2
         if: ${{ github.event.comment != null }}
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
@@ -89,7 +93,7 @@ jobs:
           exit ${retcode}
 
       - name: Notify with result success
-        uses: peter-evans/create-or-update-comment@5adcb0bb0f9fb3f95ef05400558bdb3f329ee808 # tag=v2
+        uses: peter-evans/create-or-update-comment@c6c9a1a66007646a28c153e2a8580a5bad27bcfa # v3.0.2
         if: ${{ github.event.comment != null && success() }}
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
@@ -104,7 +108,7 @@ jobs:
           reactions: hooray
 
       - name: Notify with result failure
-        uses: peter-evans/create-or-update-comment@5adcb0bb0f9fb3f95ef05400558bdb3f329ee808 # tag=v2
+        uses: peter-evans/create-or-update-comment@c6c9a1a66007646a28c153e2a8580a5bad27bcfa # v3.0.2
         if: ${{ github.event.comment != null && failure() }}
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}

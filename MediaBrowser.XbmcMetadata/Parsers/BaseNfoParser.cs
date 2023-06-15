@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -8,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Providers;
@@ -23,6 +22,10 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
 {
+    /// <summary>
+    /// The BaseNfoParser class.
+    /// </summary>
+    /// <typeparam name="T">The type.</typeparam>
     public class BaseNfoParser<T>
         where T : BaseItem
     {
@@ -63,29 +66,32 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// </summary>
         protected ILogger Logger { get; }
 
+        /// <summary>
+        /// Gets the provider manager.
+        /// </summary>
         protected IProviderManager ProviderManager { get; }
 
+        /// <summary>
+        /// Gets a value indicating whether URLs after a closing XML tag are supporrted.
+        /// </summary>
         protected virtual bool SupportsUrlAfterClosingXmlTag => false;
 
         /// <summary>
         /// Fetches metadata for an item from one xml file.
         /// </summary>
-        /// <param name="item">The item.</param>
+        /// <param name="item">The <see cref="MetadataResult{T}"/>.</param>
         /// <param name="metadataFile">The metadata file.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         /// <exception cref="ArgumentNullException"><c>item</c> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException"><c>metadataFile</c> is <c>null</c> or empty.</exception>
         public void Fetch(MetadataResult<T> item, string metadataFile, CancellationToken cancellationToken)
         {
-            if (item.Item == null)
+            if (item.Item is null)
             {
                 throw new ArgumentException("Item can't be null.", nameof(item));
             }
 
-            if (string.IsNullOrEmpty(metadataFile))
-            {
-                throw new ArgumentException("The metadata filepath was empty.", nameof(metadataFile));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(metadataFile);
 
             _validProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -94,10 +100,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             foreach (var info in idInfos)
             {
                 var id = info.Key + "Id";
-                if (!_validProviderIds.ContainsKey(id))
-                {
-                    _validProviderIds.Add(id, info.Key);
-                }
+                _validProviderIds.TryAdd(id, info.Key);
             }
 
             // Additional Mappings
@@ -111,10 +114,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <summary>
         /// Fetches the specified item.
         /// </summary>
-        /// <param name="item">The item.</param>
+        /// <param name="item">The <see cref="MetadataResult{T}"/>.</param>
         /// <param name="metadataFile">The metadata file.</param>
-        /// <param name="settings">The settings.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="settings">The <see cref="XmlReaderSettings"/>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         protected virtual void Fetch(MetadataResult<T> item, string metadataFile, XmlReaderSettings settings, CancellationToken cancellationToken)
         {
             if (!SupportsUrlAfterClosingXmlTag)
@@ -170,7 +173,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 ParseProviderLinks(item.Item, endingXml);
 
-                // If the file is just an imdb url, don't go any further
+                // If the file is just an IMDb url, don't go any further
                 if (index == 0)
                 {
                     return;
@@ -216,6 +219,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             }
         }
 
+        /// <summary>
+        /// Parses a XML tag to a provider id.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="xml">The xml tag.</param>
         protected void ParseProviderLinks(T item, ReadOnlySpan<char> xml)
         {
             if (ProviderIdParsers.TryFindImdbId(xml, out var imdbId))
@@ -245,17 +253,17 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             }
         }
 
+        /// <summary>
+        /// Fetches metadata from an XML node.
+        /// </summary>
+        /// <param name="reader">The <see cref="XmlReader"/>.</param>
+        /// <param name="itemResult">The <see cref="MetadataResult{T}"/>.</param>
         protected virtual void FetchDataFromXmlNode(XmlReader reader, MetadataResult<T> itemResult)
         {
             var item = itemResult.Item;
 
             var nfoConfiguration = _config.GetNfoConfiguration();
             UserItemData? userData = null;
-            if (!string.IsNullOrWhiteSpace(nfoConfiguration.UserId))
-            {
-                var user = _userManager.GetUserById(Guid.Parse(nfoConfiguration.UserId));
-                userData = _userDataManager.GetUserData(user, item);
-            }
 
             switch (reader.Name)
             {
@@ -264,16 +272,13 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        if (!string.IsNullOrWhiteSpace(val))
+                        if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var added))
                         {
-                            if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var added))
-                            {
-                                item.DateCreated = added;
-                            }
-                            else
-                            {
-                                Logger.LogWarning("Invalid Added value found: {Value}", val);
-                            }
+                            item.DateCreated = added;
+                        }
+                        else
+                        {
+                            Logger.LogWarning("Invalid Added value found: {Value}", val);
                         }
 
                         break;
@@ -305,12 +310,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var text = reader.ReadElementContentAsString();
 
-                        if (!string.IsNullOrEmpty(text))
+                        if (float.TryParse(text, CultureInfo.InvariantCulture, out var value))
                         {
-                            if (float.TryParse(text, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
-                            {
-                                item.CriticRating = value;
-                            }
+                            item.CriticRating = value;
                         }
 
                         break;
@@ -355,9 +357,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var val = reader.ReadElementContentAsBoolean();
 
-                        if (userData != null)
+                        if (!string.IsNullOrWhiteSpace(nfoConfiguration.UserId))
                         {
+                            var user = _userManager.GetUserById(Guid.Parse(nfoConfiguration.UserId));
+                            userData = _userDataManager.GetUserData(user, item);
                             userData.Played = val;
+                            _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
                         }
 
                         break;
@@ -366,12 +371,13 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 case "playcount":
                     {
                         var val = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(val) && userData != null)
+                        if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var count)
+                            && Guid.TryParse(nfoConfiguration.UserId, out var guid))
                         {
-                            if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var count))
-                            {
-                                userData.PlayCount = count;
-                            }
+                            var user = _userManager.GetUserById(guid);
+                            userData = _userDataManager.GetUserData(user, item);
+                            userData.PlayCount = count;
+                            _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
                         }
 
                         break;
@@ -380,12 +386,15 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 case "lastplayed":
                     {
                         var val = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(val) && userData != null)
+                        if (Guid.TryParse(nfoConfiguration.UserId, out var guid))
                         {
                             if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var added))
                             {
+                                var user = _userManager.GetUserById(guid);
+                                userData = _userDataManager.GetUserData(user, item);
                                 userData.LastPlayedDate = added;
-                            }
+                                _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
+                           }
                             else
                             {
                                 Logger.LogWarning("Invalid lastplayed value found: {Value}", val);
@@ -471,12 +480,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var text = reader.ReadElementContentAsString();
 
-                        if (!string.IsNullOrWhiteSpace(text))
+                        if (int.TryParse(text.AsSpan().LeftPart(' '), NumberStyles.Integer, CultureInfo.InvariantCulture, out var runtime))
                         {
-                            if (int.TryParse(text.AsSpan().LeftPart(' '), NumberStyles.Integer, CultureInfo.InvariantCulture, out var runtime))
-                            {
-                                item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
-                            }
+                            item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
                         }
 
                         break;
@@ -522,7 +528,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 case "director":
                     {
                         var val = reader.ReadElementContentAsString();
-                        foreach (var p in SplitNames(val).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Director }))
+                        foreach (var p in SplitNames(val).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonKind.Director }))
                         {
                             if (string.IsNullOrWhiteSpace(p.Name))
                             {
@@ -544,7 +550,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             var parts = val.Split('/').Select(i => i.Trim())
                                 .Where(i => !string.IsNullOrEmpty(i));
 
-                            foreach (var p in parts.Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Writer }))
+                            foreach (var p in parts.Select(v => new PersonInfo { Name = v.Trim(), Type = PersonKind.Writer }))
                             {
                                 if (string.IsNullOrWhiteSpace(p.Name))
                                 {
@@ -561,7 +567,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 case "writer":
                     {
                         var val = reader.ReadElementContentAsString();
-                        foreach (var p in SplitNames(val).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Writer }))
+                        foreach (var p in SplitNames(val).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonKind.Writer }))
                         {
                             if (string.IsNullOrWhiteSpace(p.Name))
                             {
@@ -614,13 +620,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        var hasDisplayOrder = item as IHasDisplayOrder;
-                        if (hasDisplayOrder != null)
+                        if (item is IHasDisplayOrder hasDisplayOrder && !string.IsNullOrWhiteSpace(val))
                         {
-                            if (!string.IsNullOrWhiteSpace(val))
-                            {
-                                hasDisplayOrder.DisplayOrder = val;
-                            }
+                            hasDisplayOrder.DisplayOrder = val;
                         }
 
                         break;
@@ -630,12 +632,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        if (!string.IsNullOrWhiteSpace(val))
+                        if (int.TryParse(val, out var productionYear) && productionYear > 1850)
                         {
-                            if (int.TryParse(val, out var productionYear) && productionYear > 1850)
-                            {
-                                item.ProductionYear = productionYear;
-                            }
+                            item.ProductionYear = productionYear;
                         }
 
                         break;
@@ -645,13 +644,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var rating = reader.ReadElementContentAsString();
 
-                        if (!string.IsNullOrWhiteSpace(rating))
+                        // All external meta is saving this as '.' for decimal I believe...but just to be sure
+                        if (float.TryParse(rating.Replace(',', '.'), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var val))
                         {
-                            // All external meta is saving this as '.' for decimal I believe...but just to be sure
-                            if (float.TryParse(rating.Replace(',', '.'), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var val))
-                            {
-                                item.CommunityRating = val;
-                            }
+                            item.CommunityRating = val;
                         }
 
                         break;
@@ -681,13 +677,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         var val = reader.ReadElementContentAsString();
 
-                        if (!string.IsNullOrWhiteSpace(val))
+                        if (DateTime.TryParseExact(val, formatString, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var date) && date.Year > 1850)
                         {
-                            if (DateTime.TryParseExact(val, formatString, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var date) && date.Year > 1850)
-                            {
-                                item.PremiereDate = date;
-                                item.ProductionYear = date.Year;
-                            }
+                            item.PremiereDate = date;
+                            item.ProductionYear = date.Year;
                         }
 
                         break;
@@ -699,12 +692,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         var val = reader.ReadElementContentAsString();
 
-                        if (!string.IsNullOrWhiteSpace(val))
+                        if (DateTime.TryParseExact(val, formatString, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var date) && date.Year > 1850)
                         {
-                            if (DateTime.TryParseExact(val, formatString, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var date) && date.Year > 1850)
-                            {
-                                item.EndDate = date;
-                            }
+                            item.EndDate = date;
                         }
 
                         break;
@@ -862,7 +852,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 var fileSystemMetadata = _directoryService.GetFile(val);
                 // non existing file returns null
-                if (fileSystemMetadata == null || !fileSystemMetadata.Exists)
+                if (fileSystemMetadata is null || !fileSystemMetadata.Exists)
                 {
                     Logger.LogWarning("Artwork file {Path} specified in nfo file for {ItemName} does not exist.", uri, itemResult.Item.Name);
                     return;
@@ -1000,7 +990,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                                 var video = item as Video;
 
-                                if (video != null)
+                                if (video is not null)
                                 {
                                     if (string.Equals("HSBS", val, StringComparison.OrdinalIgnoreCase))
                                     {
@@ -1100,16 +1090,13 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     switch (reader.Name)
                     {
                         case "language":
+                            _ = reader.ReadElementContentAsString();
+                            if (item is Video video)
                             {
-                                _ = reader.ReadElementContentAsString();
-
-                                if (item is Video video)
-                                {
-                                    video.HasSubtitles = true;
-                                }
-
-                                break;
+                                video.HasSubtitles = true;
                             }
+
+                            break;
 
                         default:
                             reader.Skip();
@@ -1136,20 +1123,20 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     switch (reader.Name)
                     {
                         case "rating":
-                        {
-                            if (reader.IsEmptyElement)
                             {
-                                reader.Read();
-                                continue;
+                                if (reader.IsEmptyElement)
+                                {
+                                    reader.Read();
+                                    continue;
+                                }
+
+                                var ratingName = reader.GetAttribute("name");
+
+                                using var subtree = reader.ReadSubtree();
+                                FetchFromRatingNode(subtree, item, ratingName);
+
+                                break;
                             }
-
-                            var ratingName = reader.GetAttribute("name");
-
-                            using var subtree = reader.ReadSubtree();
-                            FetchFromRatingNode(subtree, item, ratingName);
-
-                            break;
-                        }
 
                         default:
                             reader.Skip();
@@ -1178,21 +1165,21 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         case "value":
                             var val = reader.ReadElementContentAsString();
 
-                            if (!string.IsNullOrWhiteSpace(val))
+                            if (float.TryParse(val, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var ratingValue))
                             {
-                                if (float.TryParse(val, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var ratingValue))
+                                // if ratingName contains tomato --> assume critic rating
+                                if (ratingName is not null
+                                    && ratingName.Contains("tomato", StringComparison.OrdinalIgnoreCase)
+                                    && !ratingName.Contains("audience", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    // if ratingName contains tomato --> assume critic rating
-                                    if (ratingName != null &&
-                                        ratingName.Contains("tomato", StringComparison.OrdinalIgnoreCase) &&
-                                        !ratingName.Contains("audience", StringComparison.OrdinalIgnoreCase))
+                                    if (!ratingName.Contains("avg", StringComparison.OrdinalIgnoreCase))
                                     {
                                         item.CriticRating = ratingValue;
                                     }
-                                    else
-                                    {
-                                        item.CommunityRating = ratingValue;
-                                    }
+                                }
+                                else
+                                {
+                                    item.CommunityRating = ratingValue;
                                 }
                             }
 
@@ -1210,14 +1197,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         }
 
         /// <summary>
-        /// Gets the persons from XML node.
+        /// Gets the persons from a XML node.
         /// </summary>
-        /// <param name="reader">The reader.</param>
+        /// <param name="reader">The <see cref="XmlReader"/>.</param>
         /// <returns>IEnumerable{PersonInfo}.</returns>
         private PersonInfo GetPersonFromXmlNode(XmlReader reader)
         {
             var name = string.Empty;
-            var type = PersonType.Actor;  // If type is not specified assume actor
+            var type = PersonKind.Actor;  // If type is not specified assume actor
             var role = string.Empty;
             int? sortOrder = null;
             string? imageUrl = null;
@@ -1251,21 +1238,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         case "type":
                             {
                                 var val = reader.ReadElementContentAsString();
-
-                                if (!string.IsNullOrWhiteSpace(val))
+                                if (!Enum.TryParse(val, true, out type))
                                 {
-                                    type = val switch
-                                    {
-                                        PersonType.Composer => PersonType.Composer,
-                                        PersonType.Conductor => PersonType.Conductor,
-                                        PersonType.Director => PersonType.Director,
-                                        PersonType.Lyricist => PersonType.Lyricist,
-                                        PersonType.Producer => PersonType.Producer,
-                                        PersonType.Writer => PersonType.Writer,
-                                        PersonType.GuestStar => PersonType.GuestStar,
-                                        // unknown type --> actor
-                                        _ => PersonType.Actor
-                                    };
+                                    type = PersonKind.Actor;
                                 }
 
                                 break;
@@ -1276,12 +1251,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             {
                                 var val = reader.ReadElementContentAsString();
 
-                                if (!string.IsNullOrWhiteSpace(val))
+                                if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intVal))
                                 {
-                                    if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intVal))
-                                    {
-                                        sortOrder = intVal;
-                                    }
+                                    sortOrder = intVal;
                                 }
 
                                 break;
@@ -1348,10 +1320,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         }
 
         /// <summary>
-        /// Parses the ImageType from the nfo aspect property.
+        /// Parses the <see cref="ImageType"/> from the NFO aspect property.
         /// </summary>
-        /// <param name="aspect">The nfo aspect property.</param>
-        /// <returns>The image type.</returns>
+        /// <param name="aspect">The NFO aspect property.</param>
+        /// <returns>The <see cref="ImageType"/>.</returns>
         private static ImageType GetImageType(string aspect)
         {
             return aspect switch

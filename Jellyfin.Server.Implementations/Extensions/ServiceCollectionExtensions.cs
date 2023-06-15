@@ -4,7 +4,6 @@ using EFCoreSecondLevelCacheInterceptor;
 using MediaBrowser.Common.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Implementations.Extensions;
 
@@ -27,15 +26,13 @@ public static class ServiceCollectionExtensions
                 .UseCacheKeyPrefix("EF_")
                 // Don't cache null values. Remove this optional setting if it's not necessary.
                 .SkipCachingResults(result =>
-                    result.Value == null || (result.Value is EFTableRows rows && rows.RowsCount == 0)));
+                    result.Value is null || (result.Value is EFTableRows rows && rows.RowsCount == 0)));
 
-        serviceCollection.AddPooledDbContextFactory<JellyfinDb>((serviceProvider, opt) =>
+        serviceCollection.AddPooledDbContextFactory<JellyfinDbContext>((serviceProvider, opt) =>
         {
             var applicationPaths = serviceProvider.GetRequiredService<IApplicationPaths>();
-            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
             opt.UseSqlite($"Filename={Path.Combine(applicationPaths.DataPath, "jellyfin.db")}")
-                .AddInterceptors(serviceProvider.GetRequiredService<SecondLevelCacheInterceptor>())
-                .UseLoggerFactory(loggerFactory);
+                .AddInterceptors(serviceProvider.GetRequiredService<SecondLevelCacheInterceptor>());
         });
 
         return serviceCollection;

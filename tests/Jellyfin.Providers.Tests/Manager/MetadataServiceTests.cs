@@ -91,7 +91,7 @@ namespace Jellyfin.Providers.Tests.Manager
 
             // Use type Series to hit DisplayOrder
             Assert.False(TestMergeBaseItemData<Series, SeriesInfo>(propName, oldValue, newValue, null, false, out _));
-            if (lockField != null)
+            if (lockField is not null)
             {
                 Assert.False(TestMergeBaseItemData<Series, SeriesInfo>(propName, oldValue, newValue, lockField, true, out _));
                 Assert.False(TestMergeBaseItemData<Series, SeriesInfo>(propName, null, newValue, lockField, false, out _));
@@ -120,7 +120,7 @@ namespace Jellyfin.Providers.Tests.Manager
 
             // Use type Audio to hit AlbumArtists
             Assert.False(TestMergeBaseItemData<Audio, SongInfo>(propName, oldValue, newValue, null, false, out _));
-            if (lockField != null)
+            if (lockField is not null)
             {
                 Assert.False(TestMergeBaseItemData<Audio, SongInfo>(propName, oldValue, newValue, lockField, true, out _));
                 Assert.False(TestMergeBaseItemData<Audio, SongInfo>(propName, Array.Empty<string>(), newValue, lockField, false, out _));
@@ -238,9 +238,6 @@ namespace Jellyfin.Providers.Tests.Manager
                     }
                 };
 
-            object? result;
-            List<PersonInfo> actual;
-
             // overwrite provider id
             var overwriteNewValue = new List<PersonInfo>
             {
@@ -249,9 +246,9 @@ namespace Jellyfin.Providers.Tests.Manager
                     Name = "Name 2"
                 }
             };
-            Assert.False(TestMergeBaseItemDataPerson(GetOldValue(), overwriteNewValue, null, false, out result));
+            Assert.False(TestMergeBaseItemDataPerson(GetOldValue(), overwriteNewValue, null, false, out var result));
             // People not already in target are not merged into it from source
-            actual = (List<PersonInfo>)result!;
+            List<PersonInfo> actual = (List<PersonInfo>)result!;
             Assert.Single(actual);
             Assert.Equal("Name 1", actual[0].Name);
 
@@ -328,11 +325,11 @@ namespace Jellyfin.Providers.Tests.Manager
                 People = oldValue
             };
 
-            var lockedFields = lockField == null ? Array.Empty<MetadataField>() : new[] { (MetadataField)lockField };
+            var lockedFields = lockField is null ? Array.Empty<MetadataField>() : new[] { (MetadataField)lockField };
             MetadataService<Movie, MovieInfo>.MergeBaseItemData(source, target, lockedFields, replaceData, false);
 
             actualValue = target.People;
-            return newValue?.Equals(actualValue) ?? actualValue == null;
+            return newValue?.Equals(actualValue) ?? actualValue is null;
         }
 
         /// <summary>
@@ -367,12 +364,12 @@ namespace Jellyfin.Providers.Tests.Manager
             };
             property.SetValue(target.Item, oldValue);
 
-            var lockedFields = lockField == null ? Array.Empty<MetadataField>() : new[] { (MetadataField)lockField };
+            var lockedFields = lockField is null ? Array.Empty<MetadataField>() : new[] { (MetadataField)lockField };
             // generic type doesn't actually matter to call the static method, just has to be filled in
             MetadataService<TItemType, TIdType>.MergeBaseItemData(source, target, lockedFields, replaceData, false);
 
             actualValue = property.GetValue(target.Item);
-            return newValue?.Equals(actualValue) ?? actualValue == null;
+            return newValue?.Equals(actualValue) ?? actualValue is null;
         }
     }
 }

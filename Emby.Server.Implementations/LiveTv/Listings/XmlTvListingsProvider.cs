@@ -137,32 +137,33 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
         private static ProgramInfo GetProgramInfo(XmlTvProgram program, ListingsProviderInfo info)
         {
-            string episodeTitle = program.Episode?.Title;
+            string episodeTitle = program.Episode.Title;
+            var programCategories = program.Categories.Where(c => !string.IsNullOrWhiteSpace(c)).ToList();
 
             var programInfo = new ProgramInfo
             {
                 ChannelId = program.ChannelId,
                 EndDate = program.EndDate.UtcDateTime,
-                EpisodeNumber = program.Episode?.Episode,
+                EpisodeNumber = program.Episode.Episode,
                 EpisodeTitle = episodeTitle,
-                Genres = program.Categories,
+                Genres = programCategories,
                 StartDate = program.StartDate.UtcDateTime,
                 Name = program.Title,
                 Overview = program.Description,
                 ProductionYear = program.CopyrightDate?.Year,
-                SeasonNumber = program.Episode?.Series,
-                IsSeries = program.Episode != null,
+                SeasonNumber = program.Episode.Series,
+                IsSeries = program.Episode.Series is not null,
                 IsRepeat = program.IsPreviouslyShown && !program.IsNew,
-                IsPremiere = program.Premiere != null,
-                IsKids = program.Categories.Any(c => info.KidsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
-                IsMovie = program.Categories.Any(c => info.MovieCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
-                IsNews = program.Categories.Any(c => info.NewsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
-                IsSports = program.Categories.Any(c => info.SportsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
+                IsPremiere = program.Premiere is not null,
+                IsKids = programCategories.Any(c => info.KidsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
+                IsMovie = programCategories.Any(c => info.MovieCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
+                IsNews = programCategories.Any(c => info.NewsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
+                IsSports = programCategories.Any(c => info.SportsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
                 ImageUrl = string.IsNullOrEmpty(program.Icon?.Source) ? null : program.Icon.Source,
                 HasImage = !string.IsNullOrEmpty(program.Icon?.Source),
                 OfficialRating = string.IsNullOrEmpty(program.Rating?.Value) ? null : program.Rating.Value,
                 CommunityRating = program.StarRating,
-                SeriesId = program.Episode == null ? null : program.Title?.GetMD5().ToString("N", CultureInfo.InvariantCulture)
+                SeriesId = program.Episode.Episode is null ? null : program.Title?.GetMD5().ToString("N", CultureInfo.InvariantCulture)
             };
 
             if (string.IsNullOrWhiteSpace(program.ProgramId))
@@ -243,7 +244,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 Id = c.Id,
                 Name = c.DisplayName,
-                ImageUrl = c.Icon != null && !string.IsNullOrEmpty(c.Icon.Source) ? c.Icon.Source : null,
+                ImageUrl = string.IsNullOrEmpty(c.Icon?.Source) ? null : c.Icon.Source,
                 Number = string.IsNullOrWhiteSpace(c.Number) ? c.Id : c.Number
             }).ToList();
         }

@@ -2,7 +2,7 @@
 #pragma warning disable CA1819
 
 using System;
-using System.Collections.Generic;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Updates;
 
@@ -193,7 +193,7 @@ namespace MediaBrowser.Model.Configuration
 
         public string[] CodecsUsed { get; set; } = Array.Empty<string>();
 
-        public List<RepositoryInfo> PluginRepositories { get; set; } = new List<RepositoryInfo>();
+        public RepositoryInfo[] PluginRepositories { get; set; } = Array.Empty<RepositoryInfo>();
 
         public bool EnableExternalContentInSuggestions { get; set; } = true;
 
@@ -240,5 +240,23 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets a value indicating whether clients should be allowed to upload logs.
         /// </summary>
         public bool AllowClientLogUpload { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the dummy chapter duration in seconds, use 0 (zero) or less to disable generation alltogether.
+        /// </summary>
+        /// <value>The dummy chapters duration.</value>
+        public int DummyChapterDuration { get; set; } = 0;
+
+        /// <summary>
+        /// Gets or sets the chapter image resolution.
+        /// </summary>
+        /// <value>The chapter image resolution.</value>
+        public ImageResolution ChapterImageResolution { get; set; } = ImageResolution.MatchSource;
+
+        /// <summary>
+        /// Gets or sets the limit for parallel image encoding.
+        /// </summary>
+        /// <value>The limit for parallel image encoding.</value>
+        public int ParallelImageEncodingLimit { get; set; } = 0;
     }
 }

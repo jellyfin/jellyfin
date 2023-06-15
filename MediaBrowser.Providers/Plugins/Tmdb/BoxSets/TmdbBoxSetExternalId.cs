@@ -7,7 +7,7 @@ using MediaBrowser.Model.Providers;
 namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
 {
     /// <summary>
-    /// External ID for a TMDB box set.
+    /// External id for a TMDb box set.
     /// </summary>
     public class TmdbBoxSetExternalId : IExternalId
     {

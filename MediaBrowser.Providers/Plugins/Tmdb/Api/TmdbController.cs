@@ -8,10 +8,10 @@ using TMDbLib.Objects.General;
 namespace MediaBrowser.Providers.Plugins.Tmdb.Api
 {
     /// <summary>
-    /// The TMDb api controller.
+    /// The TMDb API controller.
     /// </summary>
     [ApiController]
-    [Authorize(Policy = "DefaultAuthorization")]
+    [Authorize]
     [Route("[controller]")]
     [Produces(MediaTypeNames.Application.Json)]
     public class TmdbController : ControllerBase

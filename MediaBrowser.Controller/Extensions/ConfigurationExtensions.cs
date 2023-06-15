@@ -60,6 +60,11 @@ namespace MediaBrowser.Controller.Extensions
         public const string UnixSocketPermissionsKey = "kestrel:socketPermissions";
 
         /// <summary>
+        /// The cache size of the SQL database, see cache_size.
+        /// </summary>
+        public const string SqliteCacheSizeKey = "sqlite:cacheSize";
+
+        /// <summary>
         /// Gets a value indicating whether the application should host static web content from the <see cref="IConfiguration"/>.
         /// </summary>
         /// <param name="configuration">The configuration to retrieve the value from.</param>
@@ -73,7 +78,7 @@ namespace MediaBrowser.Controller.Extensions
         /// </summary>
         /// <param name="configuration">The configuration to read the setting from.</param>
         /// <returns>The FFmpeg probe size option.</returns>
-        public static string GetFFmpegProbeSize(this IConfiguration configuration)
+        public static string? GetFFmpegProbeSize(this IConfiguration configuration)
             => configuration[FfmpegProbeSizeKey];
 
         /// <summary>
@@ -81,7 +86,7 @@ namespace MediaBrowser.Controller.Extensions
         /// </summary>
         /// <param name="configuration">The configuration to read the setting from.</param>
         /// <returns>The FFmpeg analyze duration option.</returns>
-        public static string GetFFmpegAnalyzeDuration(this IConfiguration configuration)
+        public static string? GetFFmpegAnalyzeDuration(this IConfiguration configuration)
             => configuration[FfmpegAnalyzeDurationKey];
 
         /// <summary>
@@ -105,7 +110,7 @@ namespace MediaBrowser.Controller.Extensions
         /// </summary>
         /// <param name="configuration">The configuration to read the setting from.</param>
         /// <returns>The unix socket path.</returns>
-        public static string GetUnixSocketPath(this IConfiguration configuration)
+        public static string? GetUnixSocketPath(this IConfiguration configuration)
             => configuration[UnixSocketPathKey];
 
         /// <summary>
@@ -113,7 +118,15 @@ namespace MediaBrowser.Controller.Extensions
         /// </summary>
         /// <param name="configuration">The configuration to read the setting from.</param>
         /// <returns>The unix socket permissions.</returns>
-        public static string GetUnixSocketPermissions(this IConfiguration configuration)
+        public static string? GetUnixSocketPermissions(this IConfiguration configuration)
             => configuration[UnixSocketPermissionsKey];
+
+        /// <summary>
+        /// Gets the cache_size from the <see cref="IConfiguration" />.
+        /// </summary>
+        /// <param name="configuration">The configuration to read the setting from.</param>
+        /// <returns>The sqlite cache size.</returns>
+        public static int? GetSqliteCacheSize(this IConfiguration configuration)
+            => configuration.GetValue<int?>(SqliteCacheSizeKey);
     }
 }

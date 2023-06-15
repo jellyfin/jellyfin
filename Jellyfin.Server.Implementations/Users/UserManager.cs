@@ -33,7 +33,7 @@ namespace Jellyfin.Server.Implementations.Users
     /// </summary>
     public class UserManager : IUserManager
     {
-        private readonly IDbContextFactory<JellyfinDb> _dbProvider;
+        private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
         private readonly IEventManager _eventManager;
         private readonly ICryptoProvider _cryptoProvider;
         private readonly INetworkManager _networkManager;
@@ -59,7 +59,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <param name="imageProcessor">The image processor.</param>
         /// <param name="logger">The logger.</param>
         public UserManager(
-            IDbContextFactory<JellyfinDb> dbProvider,
+            IDbContextFactory<JellyfinDbContext> dbProvider,
             IEventManager eventManager,
             ICryptoProvider cryptoProvider,
             INetworkManager networkManager,
@@ -85,6 +85,7 @@ namespace Jellyfin.Server.Implementations.Users
             _users = new ConcurrentDictionary<Guid, User>();
             using var dbContext = _dbProvider.CreateDbContext();
             foreach (var user in dbContext.Users
+                .AsSplitQuery()
                 .Include(user => user.Permissions)
                 .Include(user => user.Preferences)
                 .Include(user => user.AccessSchedules)
@@ -143,7 +144,6 @@ namespace Jellyfin.Server.Implementations.Users
             await using (dbContext.ConfigureAwait(false))
             {
                 if (await dbContext.Users
-                        .AsQueryable()
                         .AnyAsync(u => u.Username == newName && !u.Id.Equals(user.Id))
                         .ConfigureAwait(false))
                 {
@@ -157,7 +157,9 @@ namespace Jellyfin.Server.Implementations.Users
                 await UpdateUserInternalAsync(dbContext, user).ConfigureAwait(false);
             }
 
-            OnUserUpdated?.Invoke(this, new GenericEventArgs<User>(user));
+            var eventArgs = new UserUpdatedEventArgs(user);
+            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
+            OnUserUpdated?.Invoke(this, eventArgs);
         }
 
         /// <inheritdoc/>
@@ -170,7 +172,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
         }
 
-        internal async Task<User> CreateUserInternalAsync(string name, JellyfinDb dbContext)
+        internal async Task<User> CreateUserInternalAsync(string name, JellyfinDbContext dbContext)
         {
             // TODO: Remove after user item data is migrated.
             var max = await dbContext.Users.AsQueryable().AnyAsync().ConfigureAwait(false)
@@ -267,36 +269,15 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public Task ResetEasyPassword(User user)
-        {
-            return ChangeEasyPassword(user, string.Empty, null);
-        }
-
-        /// <inheritdoc/>
         public async Task ChangePassword(User user, string newPassword)
         {
             ArgumentNullException.ThrowIfNull(user);
+            if (user.HasPermission(PermissionKind.IsAdministrator) && string.IsNullOrWhiteSpace(newPassword))
+            {
+                throw new ArgumentException("Admin user passwords must not be empty", nameof(newPassword));
+            }
 
             await GetAuthenticationProvider(user).ChangePassword(user, newPassword).ConfigureAwait(false);
-            await UpdateUserAsync(user).ConfigureAwait(false);
-
-            await _eventManager.PublishAsync(new UserPasswordChangedEventArgs(user)).ConfigureAwait(false);
-        }
-
-        /// <inheritdoc/>
-        public async Task ChangeEasyPassword(User user, string newPassword, string? newPasswordSha1)
-        {
-            if (newPassword != null)
-            {
-                newPasswordSha1 = _cryptoProvider.CreatePasswordHash(newPassword).ToString();
-            }
-
-            if (string.IsNullOrWhiteSpace(newPasswordSha1))
-            {
-                throw new ArgumentNullException(nameof(newPasswordSha1));
-            }
-
-            user.EasyPassword = newPasswordSha1;
             await UpdateUserAsync(user).ConfigureAwait(false);
 
             await _eventManager.PublishAsync(new UserPasswordChangedEventArgs(user)).ConfigureAwait(false);
@@ -313,11 +294,10 @@ namespace Jellyfin.Server.Implementations.Users
                 ServerId = _appHost.SystemId,
                 HasPassword = hasPassword,
                 HasConfiguredPassword = hasPassword,
-                HasConfiguredEasyPassword = !string.IsNullOrEmpty(user.EasyPassword),
                 EnableAutoLogin = user.EnableAutoLogin,
                 LastLoginDate = user.LastLoginDate,
                 LastActivityDate = user.LastActivityDate,
-                PrimaryImageTag = user.ProfileImage != null ? _imageProcessor.GetImageCacheTag(user) : null,
+                PrimaryImageTag = user.ProfileImage is not null ? _imageProcessor.GetImageCacheTag(user) : null,
                 Configuration = new UserConfiguration
                 {
                     SubtitleMode = user.SubtitleMode,
@@ -367,8 +347,10 @@ namespace Jellyfin.Server.Implementations.Users
                     EnablePlaybackRemuxing = user.HasPermission(PermissionKind.EnablePlaybackRemuxing),
                     ForceRemoteSourceTranscoding = user.HasPermission(PermissionKind.ForceRemoteSourceTranscoding),
                     EnablePublicSharing = user.HasPermission(PermissionKind.EnablePublicSharing),
+                    EnableCollectionManagement = user.HasPermission(PermissionKind.EnableCollectionManagement),
                     AccessSchedules = user.AccessSchedules.ToArray(),
                     BlockedTags = user.GetPreference(PreferenceKind.BlockedTags),
+                    AllowedTags = user.GetPreference(PreferenceKind.AllowedTags),
                     EnabledChannels = user.GetPreferenceValues<Guid>(PreferenceKind.EnabledChannels),
                     EnabledDevices = user.GetPreference(PreferenceKind.EnabledDevices),
                     EnabledFolders = user.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders),
@@ -401,12 +383,12 @@ namespace Jellyfin.Server.Implementations.Users
             var authenticationProvider = authResult.AuthenticationProvider;
             var success = authResult.Success;
 
-            if (user == null)
+            if (user is null)
             {
                 string updatedUsername = authResult.Username;
 
                 if (success
-                    && authenticationProvider != null
+                    && authenticationProvider is not null
                     && authenticationProvider is not DefaultAuthenticationProvider)
                 {
                     // Trust the username returned by the authentication provider
@@ -416,25 +398,25 @@ namespace Jellyfin.Server.Implementations.Users
                     // the authentication provider might have created it
                     user = Users.FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
 
-                    if (authenticationProvider is IHasNewUserPolicy hasNewUserPolicy && user != null)
+                    if (authenticationProvider is IHasNewUserPolicy hasNewUserPolicy && user is not null)
                     {
                         await UpdatePolicyAsync(user.Id, hasNewUserPolicy.GetNewUserPolicy()).ConfigureAwait(false);
                     }
                 }
             }
 
-            if (success && user != null && authenticationProvider != null)
+            if (success && user is not null && authenticationProvider is not null)
             {
                 var providerId = authenticationProvider.GetType().FullName;
 
-                if (providerId != null && !string.Equals(providerId, user.AuthenticationProviderId, StringComparison.OrdinalIgnoreCase))
+                if (providerId is not null && !string.Equals(providerId, user.AuthenticationProviderId, StringComparison.OrdinalIgnoreCase))
                 {
                     user.AuthenticationProviderId = providerId;
                     await UpdateUserAsync(user).ConfigureAwait(false);
                 }
             }
 
-            if (user == null)
+            if (user is null)
             {
                 _logger.LogInformation(
                     "Authentication request for {UserName} has been denied (IP: {IP}).",
@@ -501,7 +483,7 @@ namespace Jellyfin.Server.Implementations.Users
         {
             var user = string.IsNullOrWhiteSpace(enteredUsername) ? null : GetUserByName(enteredUsername);
 
-            if (user != null && isInNetwork)
+            if (user is not null && isInNetwork)
             {
                 var passwordResetProvider = GetPasswordResetProvider(user);
                 var result = await passwordResetProvider
@@ -682,6 +664,7 @@ namespace Jellyfin.Server.Implementations.Users
                 user.SetPermission(PermissionKind.EnableAllFolders, policy.EnableAllFolders);
                 user.SetPermission(PermissionKind.EnableRemoteControlOfOtherUsers, policy.EnableRemoteControlOfOtherUsers);
                 user.SetPermission(PermissionKind.EnablePlaybackRemuxing, policy.EnablePlaybackRemuxing);
+                user.SetPermission(PermissionKind.EnableCollectionManagement, policy.EnableCollectionManagement);
                 user.SetPermission(PermissionKind.ForceRemoteSourceTranscoding, policy.ForceRemoteSourceTranscoding);
                 user.SetPermission(PermissionKind.EnablePublicSharing, policy.EnablePublicSharing);
 
@@ -694,6 +677,7 @@ namespace Jellyfin.Server.Implementations.Users
                 // TODO: fix this at some point
                 user.SetPreference(PreferenceKind.BlockUnratedItems, policy.BlockUnratedItems ?? Array.Empty<UnratedItem>());
                 user.SetPreference(PreferenceKind.BlockedTags, policy.BlockedTags);
+                user.SetPreference(PreferenceKind.AllowedTags, policy.AllowedTags);
                 user.SetPreference(PreferenceKind.EnabledChannels, policy.EnabledChannels);
                 user.SetPreference(PreferenceKind.EnabledDevices, policy.EnabledDevices);
                 user.SetPreference(PreferenceKind.EnabledFolders, policy.EnabledFolders);
@@ -708,7 +692,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task ClearProfileImageAsync(User user)
         {
-            if (user.ProfileImage == null)
+            if (user.ProfileImage is null)
             {
                 return;
             }
@@ -734,7 +718,7 @@ namespace Jellyfin.Server.Implementations.Users
             throw new ArgumentException("Usernames can contain unicode symbols, numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)", nameof(name));
         }
 
-        private static bool IsValidUsername(string name)
+        private static bool IsValidUsername(ReadOnlySpan<char> name)
         {
             // This is some regex that matches only on unicode "word" characters, as well as -, _ and @
             // In theory this will cut out most if not all 'control' characters which should help minimize any weirdness
@@ -826,16 +810,6 @@ namespace Jellyfin.Server.Implementations.Users
                 }
             }
 
-            if (!success
-                && _networkManager.IsInLocalNetwork(remoteEndPoint)
-                && user?.EnableLocalPassword == true
-                && !string.IsNullOrEmpty(user.EasyPassword))
-            {
-                // Check easy password
-                var passwordHash = PasswordHash.Parse(user.EasyPassword);
-                success = _cryptoProvider.Verify(passwordHash, password);
-            }
-
             return (authenticationProvider, username, success);
         }
 
@@ -884,7 +858,7 @@ namespace Jellyfin.Server.Implementations.Users
             await UpdateUserAsync(user).ConfigureAwait(false);
         }
 
-        private async Task UpdateUserInternalAsync(JellyfinDb dbContext, User user)
+        private async Task UpdateUserInternalAsync(JellyfinDbContext dbContext, User user)
         {
             dbContext.Users.Update(user);
             _users[user.Id] = user;

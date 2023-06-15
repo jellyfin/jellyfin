@@ -166,7 +166,7 @@ namespace MediaBrowser.Controller.Net
 
                 var data = await GetDataToSend().ConfigureAwait(false);
 
-                if (data != null)
+                if (data is not null)
                 {
                     await connection.SendAsync(
                         new WebSocketMessage<TReturnDataType>
@@ -204,7 +204,7 @@ namespace MediaBrowser.Controller.Net
             {
                 var connection = _activeConnections.FirstOrDefault(c => c.Item1 == message.Connection);
 
-                if (connection != null)
+                if (connection is not null)
                 {
                     DisposeConnection(connection);
                 }
@@ -227,9 +227,15 @@ namespace MediaBrowser.Controller.Net
                 connection.Item2.Cancel();
                 connection.Item2.Dispose();
             }
-            catch (ObjectDisposedException)
+            catch (ObjectDisposedException ex)
             {
                 // TODO Investigate and properly fix.
+                Logger.LogError(ex, "Object Disposed");
+            }
+            catch (Exception ex)
+            {
+                // TODO Investigate and properly fix.
+                Logger.LogError(ex, "Error disposing websocket");
             }
 
             lock (_activeConnections)

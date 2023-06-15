@@ -1,5 +1,3 @@
-#nullable disable
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -34,14 +32,9 @@ namespace Emby.Server.Implementations.AppBase
         private IConfigurationFactory[] _configurationFactories = Array.Empty<IConfigurationFactory>();
 
         /// <summary>
-        /// The _configuration loaded.
-        /// </summary>
-        private bool _configurationLoaded;
-
-        /// <summary>
         /// The _configuration.
         /// </summary>
-        private BaseApplicationConfiguration _configuration;
+        private BaseApplicationConfiguration? _configuration;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseConfigurationManager" /> class.
@@ -63,17 +56,17 @@ namespace Emby.Server.Implementations.AppBase
         /// <summary>
         /// Occurs when [configuration updated].
         /// </summary>
-        public event EventHandler<EventArgs> ConfigurationUpdated;
+        public event EventHandler<EventArgs>? ConfigurationUpdated;
 
         /// <summary>
         /// Occurs when [configuration updating].
         /// </summary>
-        public event EventHandler<ConfigurationUpdateEventArgs> NamedConfigurationUpdating;
+        public event EventHandler<ConfigurationUpdateEventArgs>? NamedConfigurationUpdating;
 
         /// <summary>
         /// Occurs when [named configuration updated].
         /// </summary>
-        public event EventHandler<ConfigurationUpdateEventArgs> NamedConfigurationUpdated;
+        public event EventHandler<ConfigurationUpdateEventArgs>? NamedConfigurationUpdated;
 
         /// <summary>
         /// Gets the type of the configuration.
@@ -107,31 +100,25 @@ namespace Emby.Server.Implementations.AppBase
         {
             get
             {
-                if (_configurationLoaded)
+                if (_configuration is not null)
                 {
                     return _configuration;
                 }
 
                 lock (_configurationSyncLock)
                 {
-                    if (_configurationLoaded)
+                    if (_configuration is not null)
                     {
                         return _configuration;
                     }
 
-                    _configuration = (BaseApplicationConfiguration)ConfigurationHelper.GetXmlConfiguration(ConfigurationType, CommonApplicationPaths.SystemConfigurationFilePath, XmlSerializer);
-
-                    _configurationLoaded = true;
-
-                    return _configuration;
+                    return _configuration = (BaseApplicationConfiguration)ConfigurationHelper.GetXmlConfiguration(ConfigurationType, CommonApplicationPaths.SystemConfigurationFilePath, XmlSerializer);
                 }
             }
 
             protected set
             {
                 _configuration = value;
-
-                _configurationLoaded = value != null;
             }
         }
 
@@ -144,7 +131,7 @@ namespace Emby.Server.Implementations.AppBase
         {
             IConfigurationFactory factory = Activator.CreateInstance<T>();
 
-            if (_configurationFactories == null)
+            if (_configurationFactories is null)
             {
                 _configurationFactories = new[] { factory };
             }
@@ -183,7 +170,7 @@ namespace Emby.Server.Implementations.AppBase
             Logger.LogInformation("Saving system configuration");
             var path = CommonApplicationPaths.SystemConfigurationFilePath;
 
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            Directory.CreateDirectory(Path.GetDirectoryName(path) ?? throw new InvalidOperationException("Path can't be a root directory."));
 
             lock (_configurationSyncLock)
             {
@@ -306,7 +293,7 @@ namespace Emby.Server.Implementations.AppBase
                         configurationManager._configurationStores,
                         i => string.Equals(i.Key, k, StringComparison.OrdinalIgnoreCase));
 
-                    if (configurationInfo == null)
+                    if (configurationInfo is null)
                     {
                         throw new ResourceNotFoundException("Configuration with key " + k + " not found.");
                     }
@@ -323,25 +310,20 @@ namespace Emby.Server.Implementations.AppBase
 
         private object LoadConfiguration(string path, Type configurationType)
         {
-            if (!File.Exists(path))
-            {
-                return Activator.CreateInstance(configurationType);
-            }
-
             try
             {
-                return XmlSerializer.DeserializeFromFile(configurationType, path);
+                if (File.Exists(path))
+                {
+                    return XmlSerializer.DeserializeFromFile(configurationType, path);
+                }
             }
-            catch (IOException)
-            {
-                return Activator.CreateInstance(configurationType);
-            }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not IOException)
             {
                 Logger.LogError(ex, "Error loading configuration file: {Path}", path);
-
-                return Activator.CreateInstance(configurationType);
             }
+
+            return Activator.CreateInstance(configurationType)
+                ?? throw new InvalidOperationException("Configuration type can't be Nullable<T>.");
         }
 
         /// <inheritdoc />
@@ -367,7 +349,7 @@ namespace Emby.Server.Implementations.AppBase
             _configurations.AddOrUpdate(key, configuration, (_, _) => configuration);
 
             var path = GetConfigurationFile(key);
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            Directory.CreateDirectory(Path.GetDirectoryName(path) ?? throw new InvalidOperationException("Path can't be a root directory."));
 
             lock (_configurationSyncLock)
             {

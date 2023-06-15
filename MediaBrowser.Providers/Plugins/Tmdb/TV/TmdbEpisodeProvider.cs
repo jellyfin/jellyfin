@@ -1,7 +1,3 @@
-#nullable disable
-
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
@@ -19,22 +16,32 @@ using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 {
+    /// <summary>
+    /// TV episode provider powered by TheMovieDb.
+    /// </summary>
     public class TmdbEpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IHasOrder
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly TmdbClientManager _tmdbClientManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TmdbEpisodeProvider"/> class.
+        /// </summary>
+        /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
+        /// <param name="tmdbClientManager">The <see cref="TmdbClientManager"/>.</param>
         public TmdbEpisodeProvider(IHttpClientFactory httpClientFactory, TmdbClientManager tmdbClientManager)
         {
             _httpClientFactory = httpClientFactory;
             _tmdbClientManager = tmdbClientManager;
         }
 
-        // After TheTvDb
+        /// <inheritdoc />
         public int Order => 1;
 
+        /// <inheritdoc />
         public string Name => TmdbUtils.ProviderName;
 
+        /// <inheritdoc />
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(EpisodeInfo searchInfo, CancellationToken cancellationToken)
         {
             // The search query must either provide an episode number or date
@@ -68,6 +75,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             };
         }
 
+        /// <inheritdoc />
         public async Task<MetadataResult<Episode>> GetMetadata(EpisodeInfo info, CancellationToken cancellationToken)
         {
             var metadataResult = new MetadataResult<Episode>();
@@ -78,7 +86,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 return metadataResult;
             }
 
-            info.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out string tmdbId);
+            info.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out string? tmdbId);
 
             var seriesTmdbId = Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture);
             if (seriesTmdbId <= 0)
@@ -98,7 +106,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 .GetEpisodeAsync(seriesTmdbId, seasonNumber.Value, episodeNumber.Value, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
                 .ConfigureAwait(false);
 
-            if (episodeResult == null)
+            if (episodeResult is null)
             {
                 return metadataResult;
             }
@@ -140,7 +148,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 item.SetProviderId(MetadataProvider.TvRage, externalIds.TvrageId);
             }
 
-            if (episodeResult.Videos?.Results != null)
+            if (episodeResult.Videos?.Results is not null)
             {
                 foreach (var video in episodeResult.Videos.Results)
                 {
@@ -153,7 +161,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             var credits = episodeResult.Credits;
 
-            if (credits?.Cast != null)
+            if (credits?.Cast is not null)
             {
                 foreach (var actor in credits.Cast.OrderBy(a => a.Order).Take(Plugin.Instance.Configuration.MaxCastMembers))
                 {
@@ -161,13 +169,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     {
                         Name = actor.Name.Trim(),
                         Role = actor.Character,
-                        Type = PersonType.Actor,
+                        Type = PersonKind.Actor,
                         SortOrder = actor.Order
                     });
                 }
             }
 
-            if (credits?.GuestStars != null)
+            if (credits?.GuestStars is not null)
             {
                 foreach (var guest in credits.GuestStars.OrderBy(a => a.Order).Take(Plugin.Instance.Configuration.MaxCastMembers))
                 {
@@ -175,21 +183,21 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     {
                         Name = guest.Name.Trim(),
                         Role = guest.Character,
-                        Type = PersonType.GuestStar,
+                        Type = PersonKind.GuestStar,
                         SortOrder = guest.Order
                     });
                 }
             }
 
             // and the rest from crew
-            if (credits?.Crew != null)
+            if (credits?.Crew is not null)
             {
                 foreach (var person in credits.Crew)
                 {
                     // Normalize this
                     var type = TmdbUtils.MapCrewToPersonType(person);
 
-                    if (!TmdbUtils.WantedCrewTypes.Contains(type, StringComparison.OrdinalIgnoreCase)
+                    if (!TmdbUtils.WantedCrewKinds.Contains(type)
                         && !TmdbUtils.WantedCrewTypes.Contains(person.Job ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
@@ -209,6 +217,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             return metadataResult;
         }
 
+        /// <inheritdoc />
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);

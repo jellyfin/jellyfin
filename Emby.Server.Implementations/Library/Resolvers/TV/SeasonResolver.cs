@@ -66,7 +66,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
 
                     var episodeInfo = resolver.Resolve(testPath, true);
 
-                    if (episodeInfo?.EpisodeNumber != null && episodeInfo.SeasonNumber.HasValue)
+                    if (episodeInfo?.EpisodeNumber is not null && episodeInfo.SeasonNumber.HasValue)
                     {
                         _logger.LogDebug(
                             "Found folder underneath series with episode number: {0}. Season {1}. Episode {2}",
@@ -81,14 +81,24 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 if (season.IndexNumber.HasValue)
                 {
                     var seasonNumber = season.IndexNumber.Value;
-
-                    season.Name = seasonNumber == 0 ?
-                        args.LibraryOptions.SeasonZeroDisplayName :
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            _localization.GetLocalizedString("NameSeasonNumber"),
-                            seasonNumber,
-                            args.LibraryOptions.PreferredMetadataLanguage);
+                    if (string.IsNullOrEmpty(season.Name))
+                    {
+                        var seasonNames = series.SeasonNames;
+                        if (seasonNames.TryGetValue(seasonNumber, out var seasonName))
+                        {
+                            season.Name = seasonName;
+                        }
+                        else
+                        {
+                            season.Name = seasonNumber == 0 ?
+                                args.LibraryOptions.SeasonZeroDisplayName :
+                                string.Format(
+                                    CultureInfo.InvariantCulture,
+                                    _localization.GetLocalizedString("NameSeasonNumber"),
+                                    seasonNumber,
+                                    args.LibraryOptions.PreferredMetadataLanguage);
+                        }
+                    }
                 }
 
                 return season;

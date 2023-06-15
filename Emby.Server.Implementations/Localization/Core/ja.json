@@ -37,8 +37,8 @@
     "MessageNamedServerConfigurationUpdatedWithValue": "サーバー設定項目の {0} が更新されました",
     "MessageServerConfigurationUpdated": "サーバー設定が更新されました",
     "MixedContent": "ミックスコンテンツ",
-    "Movies": "ムービー",
-    "Music": "ミュージック",
+    "Movies": "映画",
+    "Music": "音楽",
     "MusicVideos": "ミュージックビデオ",
     "NameInstallFailed": "{0}のインストールに失敗しました",
     "NameSeasonNumber": "シーズン {0}",
@@ -122,5 +122,6 @@
     "TaskOptimizeDatabase": "データベースの最適化",
     "TaskKeyframeExtractorDescription": "より正確なHLSプレイリストを作成するため、動画ファイルからキーフレームを抽出する。この処理には時間がかかる場合があります。",
     "TaskKeyframeExtractor": "キーフレーム抽出",
-    "External": "外部"
+    "External": "外部",
+    "HearingImpaired": "聴覚障害の方"
 }

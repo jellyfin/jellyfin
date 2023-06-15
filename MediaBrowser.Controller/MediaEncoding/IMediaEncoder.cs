@@ -38,7 +38,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         Version EncoderVersion { get; }
 
         /// <summary>
-        /// Whether p key pausing is supported.
+        /// Gets a value indicating whether p key pausing is supported.
         /// </summary>
         /// <value><c>true</c> if p key pausing is supported, <c>false</c> otherwise.</value>
         bool IsPkeyPauseSupported { get; }
@@ -154,6 +154,14 @@ namespace MediaBrowser.Controller.MediaEncoding
         string GetInputArgument(string inputFile, MediaSourceInfo mediaSource);
 
         /// <summary>
+        /// Gets the input argument.
+        /// </summary>
+        /// <param name="inputFiles">The input files.</param>
+        /// <param name="mediaSource">The mediaSource.</param>
+        /// <returns>System.String.</returns>
+        string GetInputArgument(IReadOnlyList<string> inputFiles, MediaSourceInfo mediaSource);
+
+        /// <summary>
         /// Gets the input argument for an external subtitle file.
         /// </summary>
         /// <param name="inputFile">The input file.</param>
@@ -194,6 +202,20 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="path">The to the .vob files.</param>
         /// <param name="titleNumber">The title number to start with.</param>
         /// <returns>A playlist.</returns>
-        IEnumerable<string> GetPrimaryPlaylistVobFiles(string path, uint? titleNumber);
+        IReadOnlyList<string> GetPrimaryPlaylistVobFiles(string path, uint? titleNumber);
+
+        /// <summary>
+        /// Gets the primary playlist of .m2ts files.
+        /// </summary>
+        /// <param name="path">The to the .m2ts files.</param>
+        /// <returns>A playlist.</returns>
+        IReadOnlyList<string> GetPrimaryPlaylistM2tsFiles(string path);
+
+        /// <summary>
+        /// Generates a FFmpeg concat config for the source.
+        /// </summary>
+        /// <param name="source">The <see cref="MediaSourceInfo"/>.</param>
+        /// <param name="concatFilePath">The path the config should be written to.</param>
+        void GenerateConcatConfig(MediaSourceInfo source, string concatFilePath);
     }
 }

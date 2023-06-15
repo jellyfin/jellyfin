@@ -190,7 +190,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>Object representing the string, if it has successfully been parsed.</returns>
         public static IPHost Parse(string host)
         {
-            if (!string.IsNullOrEmpty(host) && IPHost.TryParse(host, out IPHost res))
+            if (IPHost.TryParse(host, out IPHost res))
             {
                 return res;
             }
@@ -206,7 +206,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>Object representing the string, if it has successfully been parsed.</returns>
         public static IPHost Parse(string host, AddressFamily family)
         {
-            if (!string.IsNullOrEmpty(host) && IPHost.TryParse(host, out IPHost res))
+            if (IPHost.TryParse(host, out IPHost res))
             {
                 if (family == AddressFamily.InterNetwork)
                 {
@@ -236,7 +236,7 @@ namespace MediaBrowser.Common.Net
         /// <inheritdoc/>
         public override bool Contains(IPAddress address)
         {
-            if (address != null && !Address.Equals(IPAddress.None))
+            if (address is not null && !Address.Equals(IPAddress.None))
             {
                 if (address.IsIPv4MappedToIPv6)
                 {

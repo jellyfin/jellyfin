@@ -43,7 +43,7 @@ namespace MediaBrowser.Common.Plugins
         {
             get
             {
-                if (_version == null)
+                if (_version is null)
                 {
                     _version = Version.Parse(Manifest.Version);
                 }
@@ -85,9 +85,9 @@ namespace MediaBrowser.Common.Plugins
         /// <returns>Comparison result.</returns>
         public static int Compare(LocalPlugin a, LocalPlugin b)
         {
-            if (a == null || b == null)
+            if (a is null || b is null)
             {
-                throw new ArgumentNullException(a == null ? nameof(a) : nameof(b));
+                throw new ArgumentNullException(a is null ? nameof(a) : nameof(b));
             }
 
             var compare = string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase);
@@ -128,7 +128,7 @@ namespace MediaBrowser.Common.Plugins
         /// <inheritdoc />
         public bool Equals(LocalPlugin? other)
         {
-            if (other == null)
+            if (other is null)
             {
                 return false;
             }

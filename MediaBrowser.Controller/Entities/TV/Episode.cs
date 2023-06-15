@@ -136,7 +136,7 @@ namespace MediaBrowser.Controller.Entities.TV
         public string FindSeriesSortName()
         {
             var series = Series;
-            return series == null ? SeriesName : series.SortName;
+            return series is null ? SeriesName : series.SortName;
         }
 
         public override double GetDefaultPrimaryImageAspectRatio()
@@ -155,7 +155,7 @@ namespace MediaBrowser.Controller.Entities.TV
             var list = base.GetUserDataKeys();
 
             var series = Series;
-            if (series != null && ParentIndexNumber.HasValue && IndexNumber.HasValue)
+            if (series is not null && ParentIndexNumber.HasValue && IndexNumber.HasValue)
             {
                 var seriesUserDataKeys = series.GetUserDataKeys();
                 var take = seriesUserDataKeys.Count;
@@ -181,14 +181,14 @@ namespace MediaBrowser.Controller.Entities.TV
         public string FindSeriesPresentationUniqueKey()
         {
             var series = Series;
-            return series == null ? null : series.PresentationUniqueKey;
+            return series is null ? null : series.PresentationUniqueKey;
         }
 
         public string FindSeasonName()
         {
             var season = Season;
 
-            if (season == null)
+            if (season is null)
             {
                 if (ParentIndexNumber.HasValue)
                 {
@@ -204,7 +204,7 @@ namespace MediaBrowser.Controller.Entities.TV
         public string FindSeriesName()
         {
             var series = Series;
-            return series == null ? SeriesName : series.Name;
+            return series is null ? SeriesName : series.Name;
         }
 
         public Guid FindSeasonId()
@@ -212,11 +212,11 @@ namespace MediaBrowser.Controller.Entities.TV
             var season = FindParent<Season>();
 
             // Episodes directly in series folder
-            if (season == null)
+            if (season is null)
             {
                 var series = Series;
 
-                if (series != null && ParentIndexNumber.HasValue)
+                if (series is not null && ParentIndexNumber.HasValue)
                 {
                     var findNumber = ParentIndexNumber.Value;
 
@@ -226,7 +226,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 }
             }
 
-            return season == null ? Guid.Empty : season.Id;
+            return season is null ? Guid.Empty : season.Id;
         }
 
         /// <summary>
@@ -235,8 +235,8 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <returns>System.String.</returns>
         protected override string CreateSortName()
         {
-            return (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("000 - ", CultureInfo.InvariantCulture) : string.Empty)
-                    + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ", CultureInfo.InvariantCulture) : string.Empty) + Name;
+            return (ParentIndexNumber is not null ? ParentIndexNumber.Value.ToString("000 - ", CultureInfo.InvariantCulture) : string.Empty)
+                    + (IndexNumber is not null ? IndexNumber.Value.ToString("0000 - ", CultureInfo.InvariantCulture) : string.Empty) + Name;
         }
 
         /// <summary>
@@ -262,7 +262,7 @@ namespace MediaBrowser.Controller.Entities.TV
         public Guid FindSeriesId()
         {
             var series = FindParent<Series>();
-            return series == null ? Guid.Empty : series.Id;
+            return series is null ? Guid.Empty : series.Id;
         }
 
         public override IEnumerable<Guid> GetAncestorIds()
@@ -302,10 +302,15 @@ namespace MediaBrowser.Controller.Entities.TV
 
             var series = Series;
 
-            if (series != null)
+            if (series is not null)
             {
                 id.SeriesProviderIds = series.ProviderIds;
                 id.SeriesDisplayOrder = series.DisplayOrder;
+            }
+
+            if (Season is not null)
+            {
+                id.SeasonProviderIds = Season.ProviderIds;
             }
 
             id.IsMissingEpisode = IsMissingEpisode;
@@ -320,7 +325,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
             if (!IsLocked)
             {
-                if (SourceType == SourceType.Library)
+                if (SourceType == SourceType.Library || SourceType == SourceType.LiveTV)
                 {
                     try
                     {

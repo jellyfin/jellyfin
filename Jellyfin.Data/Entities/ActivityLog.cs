@@ -20,15 +20,8 @@ namespace Jellyfin.Data.Entities
         /// <param name="userId">The user id.</param>
         public ActivityLog(string name, string type, Guid userId)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            if (string.IsNullOrEmpty(type))
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(name);
+            ArgumentException.ThrowIfNullOrEmpty(type);
 
             Name = name;
             Type = type;

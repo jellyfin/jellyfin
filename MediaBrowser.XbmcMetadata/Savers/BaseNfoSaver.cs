@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
@@ -257,7 +258,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                 var baseItem = item;
 
-                if (baseItem != null)
+                if (baseItem is not null)
                 {
                     AddCommonNodes(baseItem, writer, LibraryManager, UserManager, UserDataManager, ConfigurationManager);
                 }
@@ -485,7 +486,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             var people = libraryManager.GetPeople(item);
 
             var directors = people
-                .Where(i => IsPersonType(i, PersonType.Director))
+                .Where(i => i.IsType(PersonKind.Director))
                 .Select(i => i.Name)
                 .ToList();
 
@@ -495,7 +496,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
 
             var writers = people
-                .Where(i => IsPersonType(i, PersonType.Writer))
+                .Where(i => i.IsType(PersonKind.Writer))
                 .Select(i => i.Name)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
@@ -748,7 +749,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writtenProviderIds.Add(MetadataProvider.TvRage.ToString());
             }
 
-            if (item.ProviderIds != null)
+            if (item.ProviderIds is not null)
             {
                 foreach (var providerKey in item.ProviderIds.Keys)
                 {
@@ -832,7 +833,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             var image = item.GetImageInfo(ImageType.Primary, 0);
 
-            if (image != null)
+            if (image is not null)
             {
                 writer.WriteElementString("poster", GetImagePathToSave(image, libraryManager));
             }
@@ -855,7 +856,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             var user = userManager.GetUserById(Guid.Parse(userId));
 
-            if (user == null)
+            if (user is null)
             {
                 return;
             }
@@ -913,7 +914,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
         {
             foreach (var person in people)
             {
-                if (IsPersonType(person, PersonType.Director) || IsPersonType(person, PersonType.Writer))
+                if (person.IsType(PersonKind.Director) || person.IsType(PersonKind.Writer))
                 {
                     continue;
                 }
@@ -930,9 +931,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     writer.WriteElementString("role", person.Role);
                 }
 
-                if (!string.IsNullOrWhiteSpace(person.Type))
+                if (person.Type != PersonKind.Unknown)
                 {
-                    writer.WriteElementString("type", person.Type);
+                    writer.WriteElementString("type", person.Type.ToString());
                 }
 
                 if (person.SortOrder.HasValue)
@@ -947,7 +948,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     var personEntity = libraryManager.GetPerson(person.Name);
                     var image = personEntity.GetImageInfo(ImageType.Primary, 0);
 
-                    if (image != null)
+                    if (image is not null)
                     {
                         writer.WriteElementString(
                             "thumb",
@@ -968,10 +969,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             return libraryManager.GetPathAfterNetworkSubstitution(image.Path);
         }
-
-        private bool IsPersonType(PersonInfo person, string type)
-            => string.Equals(person.Type, type, StringComparison.OrdinalIgnoreCase)
-                || string.Equals(person.Role, type, StringComparison.OrdinalIgnoreCase);
 
         private void AddCustomTags(string path, IReadOnlyCollection<string> xmlTagsUsed, XmlWriter writer, ILogger<BaseNfoSaver> logger)
         {

@@ -67,14 +67,17 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
                 var path = GetArtistInfoPath(_config.ApplicationPaths, id);
 
-                await using FileStream jsonStream = AsyncFile.OpenRead(path);
-                var obj = await JsonSerializer.DeserializeAsync<RootObject>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-
-                if (obj != null && obj.artists != null && obj.artists.Count > 0)
+                FileStream jsonStream = AsyncFile.OpenRead(path);
+                await using (jsonStream.ConfigureAwait(false))
                 {
-                    result.Item = new MusicArtist();
-                    result.HasMetadata = true;
-                    ProcessResult(result.Item, obj.artists[0], info.MetadataLanguage);
+                    var obj = await JsonSerializer.DeserializeAsync<RootObject>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+
+                    if (obj is not null && obj.artists is not null && obj.artists.Count > 0)
+                    {
+                        result.Item = new MusicArtist();
+                        result.HasMetadata = true;
+                        ProcessResult(result.Item, obj.artists[0], info.MetadataLanguage);
+                    }
                 }
             }
 
@@ -149,18 +152,23 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             var url = BaseUrl + "/artist-mb.php?i=" + musicBrainzId;
 
-            var path = GetArtistInfoPath(_config.ApplicationPaths, musicBrainzId);
-
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+            var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using (stream.ConfigureAwait(false))
+            {
+                var path = GetArtistInfoPath(_config.ApplicationPaths, musicBrainzId);
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-
-            var fileStreamOptions = AsyncFile.WriteOptions;
-            fileStreamOptions.Mode = FileMode.Create;
-            fileStreamOptions.PreallocationSize = stream.Length;
-            await using var xmlFileStream = new FileStream(path, fileStreamOptions);
-            await stream.CopyToAsync(xmlFileStream, cancellationToken).ConfigureAwait(false);
+                var fileStreamOptions = AsyncFile.WriteOptions;
+                fileStreamOptions.Mode = FileMode.Create;
+                fileStreamOptions.PreallocationSize = stream.Length;
+                var xmlFileStream = new FileStream(path, fileStreamOptions);
+                await using (xmlFileStream.ConfigureAwait(false))
+                {
+                    await stream.CopyToAsync(xmlFileStream, cancellationToken).ConfigureAwait(false);
+                }
+            }
         }
 
         /// <summary>

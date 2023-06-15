@@ -64,14 +64,6 @@ namespace Jellyfin.Server
         public string? PackageName { get; set; }
 
         /// <inheritdoc />
-        [Option("restartpath", Required = false, HelpText = "Path to restart script.")]
-        public string? RestartPath { get; set; }
-
-        /// <inheritdoc />
-        [Option("restartargs", Required = false, HelpText = "Arguments for restart script.")]
-        public string? RestartArgs { get; set; }
-
-        /// <inheritdoc />
         [Option("published-server-url", Required = false, HelpText = "Jellyfin Server URL to publish via auto discover process")]
         public string? PublishedServerUrl { get; set; }
 
@@ -79,21 +71,21 @@ namespace Jellyfin.Server
         /// Gets the command line options as a dictionary that can be used in the .NET configuration system.
         /// </summary>
         /// <returns>The configuration dictionary.</returns>
-        public Dictionary<string, string> ConvertToConfig()
+        public Dictionary<string, string?> ConvertToConfig()
         {
-            var config = new Dictionary<string, string>();
+            var config = new Dictionary<string, string?>();
 
             if (NoWebClient)
             {
                 config.Add(HostWebClientKey, bool.FalseString);
             }
 
-            if (PublishedServerUrl != null)
+            if (PublishedServerUrl is not null)
             {
                 config.Add(AddressOverrideKey, PublishedServerUrl);
             }
 
-            if (FFmpegPath != null)
+            if (FFmpegPath is not null)
             {
                 config.Add(FfmpegPathKey, FFmpegPath);
             }

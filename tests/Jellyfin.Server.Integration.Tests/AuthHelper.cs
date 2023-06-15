@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Models.StartupDtos;
 using Jellyfin.Api.Models.UserDtos;
 using Jellyfin.Extensions.Json;
+using MediaBrowser.Model.Dto;
 using Xunit;
 
 namespace Jellyfin.Server.Integration.Tests
@@ -43,12 +44,39 @@ namespace Jellyfin.Server.Integration.Tests
             return auth!.AccessToken;
         }
 
+        public static async Task<UserDto> GetUserDtoAsync(HttpClient client)
+        {
+            using var response = await client.GetAsync("Users/Me").ConfigureAwait(false);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var userDto = await JsonSerializer.DeserializeAsync<UserDto>(
+                    await response.Content.ReadAsStreamAsync().ConfigureAwait(false), JsonDefaults.Options).ConfigureAwait(false);
+            Assert.NotNull(userDto);
+            return userDto;
+        }
+
+        public static async Task<BaseItemDto> GetRootFolderDtoAsync(HttpClient client, Guid userId = default)
+        {
+            if (userId.Equals(default))
+            {
+                var userDto = await GetUserDtoAsync(client).ConfigureAwait(false);
+                userId = userDto.Id;
+            }
+
+            var response = await client.GetAsync($"Users/{userId}/Items/Root").ConfigureAwait(false);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var rootDto = await JsonSerializer.DeserializeAsync<BaseItemDto>(
+                    await response.Content.ReadAsStreamAsync().ConfigureAwait(false),
+                    JsonDefaults.Options).ConfigureAwait(false);
+            Assert.NotNull(rootDto);
+            return rootDto;
+        }
+
         public static void AddAuthHeader(this HttpHeaders headers, string accessToken)
         {
             headers.Add(AuthHeaderName, DummyAuthHeader + $", Token={accessToken}");
         }
 
-        private class AuthenticationResultDto
+        private sealed class AuthenticationResultDto
         {
             public string AccessToken { get; set; } = string.Empty;
 

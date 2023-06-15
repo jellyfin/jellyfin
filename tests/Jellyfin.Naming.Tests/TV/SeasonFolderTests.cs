@@ -27,7 +27,7 @@ namespace Jellyfin.Naming.Tests.TV
         {
             var result = SeasonPathParser.Parse(path, true, true);
 
-            Assert.Equal(result.SeasonNumber != null, result.Success);
+            Assert.Equal(result.SeasonNumber is not null, result.Success);
             Assert.Equal(result.SeasonNumber, seasonNumber);
             Assert.Equal(isSeasonDirectory, result.IsSeasonFolder);
         }

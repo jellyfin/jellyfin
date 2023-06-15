@@ -10,6 +10,7 @@ using System.Text;
 using System.Xml;
 using Emby.Dlna.ContentDirectory;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
@@ -153,7 +154,7 @@ namespace Emby.Dlna.Didl
             writer.WriteAttributeString("restricted", "1");
             writer.WriteAttributeString("id", clientId);
 
-            if (context != null)
+            if (context is not null)
             {
                 writer.WriteAttributeString("parentID", GetClientId(context, contextStubType));
             }
@@ -191,11 +192,11 @@ namespace Emby.Dlna.Didl
 
         private void AddVideoResource(XmlWriter writer, BaseItem video, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
-            if (streamInfo == null)
+            if (streamInfo is null)
             {
                 var sources = _mediaSourceManager.GetStaticMediaSources(video, true, _user);
 
-                streamInfo = new StreamBuilder(_mediaEncoder, _logger).BuildVideoItem(new VideoOptions
+                streamInfo = new StreamBuilder(_mediaEncoder, _logger).GetOptimalVideoStream(new MediaOptions
                 {
                     ItemId = video.Id,
                     MediaSources = sources.ToArray(),
@@ -263,7 +264,7 @@ namespace Emby.Dlna.Didl
                 .FirstOrDefault(i => string.Equals(info.Format, i.Format, StringComparison.OrdinalIgnoreCase)
                                     && i.Method == SubtitleDeliveryMethod.External);
 
-            if (subtitleProfile == null)
+            if (subtitleProfile is null)
             {
                 return false;
             }
@@ -392,7 +393,7 @@ namespace Emby.Dlna.Didl
 
             var filename = url.Substring(0, url.IndexOf('?', StringComparison.Ordinal));
 
-            var mimeType = mediaProfile == null || string.IsNullOrEmpty(mediaProfile.MimeType)
+            var mimeType = mediaProfile is null || string.IsNullOrEmpty(mediaProfile.MimeType)
                ? MimeTypes.GetMimeType(filename)
                : mediaProfile.MimeType;
 
@@ -533,11 +534,11 @@ namespace Emby.Dlna.Didl
         {
             writer.WriteStartElement(string.Empty, "res", NsDidl);
 
-            if (streamInfo == null)
+            if (streamInfo is null)
             {
                 var sources = _mediaSourceManager.GetStaticMediaSources(audio, true, _user);
 
-                streamInfo = new StreamBuilder(_mediaEncoder, _logger).BuildAudioItem(new AudioOptions
+                streamInfo = new StreamBuilder(_mediaEncoder, _logger).GetOptimalAudioStream(new MediaOptions
                 {
                     ItemId = audio.Id,
                     MediaSources = sources.ToArray(),
@@ -598,7 +599,7 @@ namespace Emby.Dlna.Didl
 
             var filename = url.Substring(0, url.IndexOf('?', StringComparison.Ordinal));
 
-            var mimeType = mediaProfile == null || string.IsNullOrEmpty(mediaProfile.MimeType)
+            var mimeType = mediaProfile is null || string.IsNullOrEmpty(mediaProfile.MimeType)
                 ? MimeTypes.GetMimeType(filename)
                 : mediaProfile.MimeType;
 
@@ -652,7 +653,7 @@ namespace Emby.Dlna.Didl
             {
                 writer.WriteAttributeString("id", clientId);
 
-                if (context != null)
+                if (context is not null)
                 {
                     writer.WriteAttributeString("parentID", GetClientId(context, null));
                 }
@@ -695,13 +696,13 @@ namespace Emby.Dlna.Didl
             }
 
             // Not a samsung device
-            if (secAttribute == null)
+            if (secAttribute is null)
             {
                 return;
             }
 
             var userdata = _userDataManager.GetUserData(user, item);
-            var playbackPositionTicks = (streamInfo != null && streamInfo.StartPositionTicks > 0) ? streamInfo.StartPositionTicks : userdata.PlaybackPositionTicks;
+            var playbackPositionTicks = (streamInfo is not null && streamInfo.StartPositionTicks > 0) ? streamInfo.StartPositionTicks : userdata.PlaybackPositionTicks;
 
             if (playbackPositionTicks > 0)
             {
@@ -870,11 +871,11 @@ namespace Emby.Dlna.Didl
 
             var types = new[]
             {
-                PersonType.Director,
-                PersonType.Writer,
-                PersonType.Producer,
-                PersonType.Composer,
-                "creator"
+                PersonKind.Director,
+                PersonKind.Writer,
+                PersonKind.Producer,
+                PersonKind.Composer,
+                PersonKind.Creator
             };
 
             // Seeing some LG models locking up due content with large lists of people
@@ -888,10 +889,13 @@ namespace Emby.Dlna.Didl
 
             foreach (var actor in people)
             {
-                var type = types.FirstOrDefault(i => string.Equals(i, actor.Type, StringComparison.OrdinalIgnoreCase) || string.Equals(i, actor.Role, StringComparison.OrdinalIgnoreCase))
-                    ?? PersonType.Actor;
+                var type = types.FirstOrDefault(i => i == actor.Type || string.Equals(actor.Role, i.ToString(), StringComparison.OrdinalIgnoreCase));
+                if (type == PersonKind.Unknown)
+                {
+                    type = PersonKind.Actor;
+                }
 
-                AddValue(writer, "upnp", type.ToLowerInvariant(), actor.Name, NsUpnp);
+                AddValue(writer, "upnp", type.ToString().ToLowerInvariant(), actor.Name, NsUpnp);
             }
         }
 
@@ -909,14 +913,14 @@ namespace Emby.Dlna.Didl
                     AddValue(writer, "dc", "creator", artist, NsDc);
 
                     // If it doesn't support album artists (musicvideo), then tag as both
-                    if (hasAlbumArtists == null)
+                    if (hasAlbumArtists is null)
                     {
                         AddAlbumArtist(writer, artist);
                     }
                 }
             }
 
-            if (hasAlbumArtists != null)
+            if (hasAlbumArtists is not null)
             {
                 foreach (var albumArtist in hasAlbumArtists.AlbumArtists)
                 {
@@ -973,7 +977,7 @@ namespace Emby.Dlna.Didl
         {
             ImageDownloadInfo imageInfo = GetImageInfo(item);
 
-            if (imageInfo == null)
+            if (imageInfo is null)
             {
                 return;
             }
@@ -1036,7 +1040,7 @@ namespace Emby.Dlna.Didl
         {
             var imageInfo = GetImageInfo(item);
 
-            if (imageInfo == null)
+            if (imageInfo is null)
             {
                 return;
             }
@@ -1093,7 +1097,7 @@ namespace Emby.Dlna.Didl
             if (item is Audio audioItem)
             {
                 var album = audioItem.AlbumEntity;
-                return album != null && album.HasImage(ImageType.Primary)
+                return album is not null && album.HasImage(ImageType.Primary)
                     ? GetImageInfo(album, ImageType.Primary)
                     : null;
             }
@@ -1106,7 +1110,7 @@ namespace Emby.Dlna.Didl
 
             // For other item types check parents, but be aware that image retrieved from a parent may be not suitable for this media item.
             var parentWithImage = GetFirstParentWithImageBelowUserRoot(item);
-            if (parentWithImage != null)
+            if (parentWithImage is not null)
             {
                 return GetImageInfo(parentWithImage, ImageType.Primary);
             }
@@ -1116,7 +1120,7 @@ namespace Emby.Dlna.Didl
 
         private BaseItem GetFirstParentWithImageBelowUserRoot(BaseItem item)
         {
-            if (item == null)
+            if (item is null)
             {
                 return null;
             }

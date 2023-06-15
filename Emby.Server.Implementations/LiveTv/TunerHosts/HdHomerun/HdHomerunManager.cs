@@ -37,7 +37,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             using (var socket = _tcpClient)
             {
-                if (socket != null)
+                if (socket is not null)
                 {
                     _tcpClient = null;
 
@@ -51,7 +51,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         public async Task<bool> CheckTunerAvailability(IPAddress remoteIp, int tuner, CancellationToken cancellationToken)
         {
             using var client = new TcpClient();
-            await client.ConnectAsync(remoteIp, HdHomeRunPort).ConfigureAwait(false);
+            await client.ConnectAsync(remoteIp, HdHomeRunPort, cancellationToken).ConfigureAwait(false);
 
             using var stream = client.GetStream();
             return await CheckTunerAvailability(stream, tuner, cancellationToken).ConfigureAwait(false);

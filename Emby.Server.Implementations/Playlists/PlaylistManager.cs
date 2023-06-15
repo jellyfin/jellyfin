@@ -67,10 +67,9 @@ namespace Emby.Server.Implementations.Playlists
         public async Task<PlaylistCreationResult> CreatePlaylist(PlaylistCreationRequest options)
         {
             var name = options.Name;
-
             var folderName = _fileSystem.GetValidFilename(name);
-            var parentFolder = GetPlaylistsFolder(Guid.Empty);
-            if (parentFolder == null)
+            var parentFolder = GetPlaylistsFolder(options.UserId);
+            if (parentFolder is null)
             {
                 throw new ArgumentException(nameof(parentFolder));
             }
@@ -80,8 +79,7 @@ namespace Emby.Server.Implementations.Playlists
                 foreach (var itemId in options.ItemIdList)
                 {
                     var item = _libraryManager.GetItemById(itemId);
-
-                    if (item == null)
+                    if (item is null)
                     {
                         throw new ArgumentException("No item exists with the supplied Id");
                     }
@@ -121,7 +119,6 @@ namespace Emby.Server.Implementations.Playlists
             }
 
             var user = _userManager.GetUserById(options.UserId);
-
             var path = Path.Combine(parentFolder.Path, folderName);
             path = GetTargetPath(path);
 
@@ -130,25 +127,15 @@ namespace Emby.Server.Implementations.Playlists
             try
             {
                 Directory.CreateDirectory(path);
-
                 var playlist = new Playlist
                 {
                     Name = name,
                     Path = path,
-                    Shares = new[]
-                    {
-                        new Share
-                        {
-                            UserId = options.UserId.Equals(default)
-                                ? null
-                                : options.UserId.ToString("N", CultureInfo.InvariantCulture),
-                            CanEdit = true
-                        }
-                    }
+                    OwnerUserId = options.UserId,
+                    Shares = options.Shares ?? Array.Empty<Share>()
                 };
 
                 playlist.SetMediaType(options.MediaType);
-
                 parentFolder.AddChild(playlist);
 
                 await playlist.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_fileSystem)) { ForceSave = true }, CancellationToken.None)
@@ -183,7 +170,7 @@ namespace Emby.Server.Implementations.Playlists
 
         private List<BaseItem> GetPlaylistItems(IEnumerable<Guid> itemIds, string playlistMediaType, User user, DtoOptions options)
         {
-            var items = itemIds.Select(i => _libraryManager.GetItemById(i)).Where(i => i != null);
+            var items = itemIds.Select(i => _libraryManager.GetItemById(i)).Where(i => i is not null);
 
             return Playlist.GetPlaylistItems(playlistMediaType, items, user, options);
         }
@@ -334,7 +321,8 @@ namespace Emby.Server.Implementations.Playlists
             }
         }
 
-        private void SavePlaylistFile(Playlist item)
+        /// <inheritdoc />
+        public void SavePlaylistFile(Playlist item)
         {
             // this is probably best done as a metadata provider
             // saving a file over itself will require some work to prevent this from happening when not needed
@@ -502,15 +490,8 @@ namespace Emby.Server.Implementations.Playlists
 
         private static string MakeRelativePath(string folderPath, string fileAbsolutePath)
         {
-            if (string.IsNullOrEmpty(folderPath))
-            {
-                throw new ArgumentException("Folder path was null or empty.", nameof(folderPath));
-            }
-
-            if (string.IsNullOrEmpty(fileAbsolutePath))
-            {
-                throw new ArgumentException("File absolute path was null or empty.", nameof(fileAbsolutePath));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(folderPath);
+            ArgumentException.ThrowIfNullOrEmpty(fileAbsolutePath);
 
             if (!folderPath.EndsWith(Path.DirectorySeparatorChar))
             {
@@ -543,6 +524,41 @@ namespace Emby.Server.Implementations.Playlists
 
             return _libraryManager.RootFolder.Children.OfType<Folder>().FirstOrDefault(i => string.Equals(i.GetType().Name, TypeName, StringComparison.Ordinal)) ??
                 _libraryManager.GetUserRootFolder().Children.OfType<Folder>().FirstOrDefault(i => string.Equals(i.GetType().Name, TypeName, StringComparison.Ordinal));
+        }
+
+        /// <inheritdoc />
+        public async Task RemovePlaylistsAsync(Guid userId)
+        {
+            var playlists = GetPlaylists(userId);
+            foreach (var playlist in playlists)
+            {
+                // Update owner if shared
+                var rankedShares = playlist.Shares.OrderByDescending(x => x.CanEdit).ToArray();
+                if (rankedShares.Length > 0 && Guid.TryParse(rankedShares[0].UserId, out var guid))
+                {
+                    playlist.OwnerUserId = guid;
+                    playlist.Shares = rankedShares.Skip(1).ToArray();
+                    await playlist.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+
+                    if (playlist.IsFile)
+                    {
+                        SavePlaylistFile(playlist);
+                    }
+                }
+                else if (!playlist.OpenAccess)
+                {
+                    // Remove playlist if not shared
+                    _libraryManager.DeleteItem(
+                        playlist,
+                        new DeleteOptions
+                        {
+                            DeleteFileLocation = false,
+                            DeleteFromExternalProvider = false
+                        },
+                        playlist.GetParent(),
+                        false);
+                }
+            }
         }
     }
 }

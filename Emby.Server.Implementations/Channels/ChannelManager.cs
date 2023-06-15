@@ -66,6 +66,7 @@ namespace Emby.Server.Implementations.Channels
         /// <param name="userDataManager">The user data manager.</param>
         /// <param name="providerManager">The provider manager.</param>
         /// <param name="memoryCache">The memory cache.</param>
+        /// <param name="channels">The channels.</param>
         public ChannelManager(
             IUserManager userManager,
             IDtoService dtoService,
@@ -75,7 +76,8 @@ namespace Emby.Server.Implementations.Channels
             IFileSystem fileSystem,
             IUserDataManager userDataManager,
             IProviderManager providerManager,
-            IMemoryCache memoryCache)
+            IMemoryCache memoryCache,
+            IEnumerable<IChannel> channels)
         {
             _userManager = userManager;
             _dtoService = dtoService;
@@ -86,17 +88,12 @@ namespace Emby.Server.Implementations.Channels
             _userDataManager = userDataManager;
             _providerManager = providerManager;
             _memoryCache = memoryCache;
-        }
-
-        internal IChannel[] Channels { get; private set; }
-
-        private static TimeSpan CacheLength => TimeSpan.FromHours(3);
-
-        /// <inheritdoc />
-        public void AddParts(IEnumerable<IChannel> channels)
-        {
             Channels = channels.ToArray();
         }
+
+        internal IChannel[] Channels { get; }
+
+        private static TimeSpan CacheLength => TimeSpan.FromHours(3);
 
         /// <inheritdoc />
         public bool EnableMediaSourceDisplay(BaseItem item)
@@ -129,7 +126,7 @@ namespace Emby.Server.Implementations.Channels
         public Task DeleteItem(BaseItem item)
         {
             var internalChannel = _libraryManager.GetItemById(item.ChannelId);
-            if (internalChannel == null)
+            if (internalChannel is null)
             {
                 throw new ArgumentException(nameof(item.ChannelId));
             }
@@ -160,16 +157,16 @@ namespace Emby.Server.Implementations.Channels
         }
 
         /// <inheritdoc />
-        public QueryResult<Channel> GetChannelsInternal(ChannelQuery query)
+        public async Task<QueryResult<Channel>> GetChannelsInternalAsync(ChannelQuery query)
         {
             var user = query.UserId.Equals(default)
                 ? null
                 : _userManager.GetUserById(query.UserId);
 
-            var channels = GetAllChannels()
-                .Select(GetChannelEntity)
+            var channels = await GetAllChannelEntitiesAsync()
                 .OrderBy(i => i.SortName)
-                .ToList();
+                .ToListAsync()
+                .ConfigureAwait(false);
 
             if (query.IsRecordingsFolder.HasValue)
             {
@@ -227,8 +224,9 @@ namespace Emby.Server.Implementations.Channels
                     .ToList();
             }
 
-            if (user != null)
+            if (user is not null)
             {
+                var userId = user.Id.ToString("N", CultureInfo.InvariantCulture);
                 channels = channels.Where(i =>
                 {
                     if (!i.IsVisible(user))
@@ -238,7 +236,7 @@ namespace Emby.Server.Implementations.Channels
 
                     try
                     {
-                        return GetChannelProvider(i).IsEnabledFor(user.Id.ToString("N", CultureInfo.InvariantCulture));
+                        return GetChannelProvider(i).IsEnabledFor(userId);
                     }
                     catch
                     {
@@ -253,7 +251,7 @@ namespace Emby.Server.Implementations.Channels
             if (query.StartIndex.HasValue || query.Limit.HasValue)
             {
                 int startIndex = query.StartIndex ?? 0;
-                int count = query.Limit == null ? totalCount - startIndex : Math.Min(query.Limit.Value, totalCount - startIndex);
+                int count = query.Limit is null ? totalCount - startIndex : Math.Min(query.Limit.Value, totalCount - startIndex);
                 all = all.GetRange(startIndex, count);
             }
 
@@ -261,7 +259,7 @@ namespace Emby.Server.Implementations.Channels
             {
                 foreach (var item in all)
                 {
-                    RefreshLatestChannelItems(GetChannelProvider(item), CancellationToken.None).GetAwaiter().GetResult();
+                    await RefreshLatestChannelItems(GetChannelProvider(item), CancellationToken.None).ConfigureAwait(false);
                 }
             }
 
@@ -272,13 +270,13 @@ namespace Emby.Server.Implementations.Channels
         }
 
         /// <inheritdoc />
-        public QueryResult<BaseItemDto> GetChannels(ChannelQuery query)
+        public async Task<QueryResult<BaseItemDto>> GetChannelsAsync(ChannelQuery query)
         {
             var user = query.UserId.Equals(default)
                 ? null
                 : _userManager.GetUserById(query.UserId);
 
-            var internalResult = GetChannelsInternal(query);
+            var internalResult = await GetChannelsInternalAsync(query).ConfigureAwait(false);
 
             var dtoOptions = new DtoOptions();
 
@@ -330,9 +328,12 @@ namespace Emby.Server.Implementations.Channels
             progress.Report(100);
         }
 
-        private Channel GetChannelEntity(IChannel channel)
+        private async IAsyncEnumerable<Channel> GetAllChannelEntitiesAsync()
         {
-            return GetChannel(GetInternalChannelId(channel.Name)) ?? GetChannel(channel, CancellationToken.None).GetAwaiter().GetResult();
+            foreach (IChannel channel in GetAllChannels())
+            {
+                yield return GetChannel(GetInternalChannelId(channel.Name)) ?? await GetChannel(channel, CancellationToken.None).ConfigureAwait(false);
+            }
         }
 
         private MediaSourceInfo[] GetSavedMediaSources(BaseItem item)
@@ -355,7 +356,7 @@ namespace Emby.Server.Implementations.Channels
         {
             var path = Path.Combine(item.GetInternalMetadataPath(), "channelmediasourceinfos.json");
 
-            if (mediaSources == null || mediaSources.Count == 0)
+            if (mediaSources is null || mediaSources.Count == 0)
             {
                 try
                 {
@@ -404,7 +405,7 @@ namespace Emby.Server.Implementations.Channels
             }
             else
             {
-                results = new List<MediaSourceInfo>();
+                results = Enumerable.Empty<MediaSourceInfo>();
             }
 
             return results
@@ -447,7 +448,7 @@ namespace Emby.Server.Implementations.Channels
 
             var item = _libraryManager.GetItemById(id) as Channel;
 
-            if (item == null)
+            if (item is null)
             {
                 item = new Channel
                 {
@@ -601,10 +602,7 @@ namespace Emby.Server.Implementations.Channels
 
         private Guid GetInternalChannelId(string name)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(name);
 
             return _libraryManager.GetNewItemId("Channel " + name, typeof(Channel));
         }
@@ -739,7 +737,7 @@ namespace Emby.Server.Implementations.Channels
             query.GroupByPresentationUniqueKey = false;
 
             // null if came from cache
-            if (itemsResult != null)
+            if (itemsResult is not null)
             {
                 var items = itemsResult.Items;
                 var itemsLen = items.Count;
@@ -761,7 +759,7 @@ namespace Emby.Server.Implementations.Channels
                 foreach (var deadId in deadIds)
                 {
                     var deadItem = _libraryManager.GetItemById(deadId);
-                    if (deadItem != null)
+                    if (deadItem is not null)
                     {
                         _libraryManager.DeleteItem(
                             deadItem,
@@ -813,7 +811,7 @@ namespace Emby.Server.Implementations.Channels
                 {
                     await using FileStream jsonStream = AsyncFile.OpenRead(cachePath);
                     var cachedResult = await JsonSerializer.DeserializeAsync<ChannelItemResult>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-                    if (cachedResult != null)
+                    if (cachedResult is not null)
                     {
                         return null;
                     }
@@ -836,7 +834,7 @@ namespace Emby.Server.Implementations.Channels
                     {
                         await using FileStream jsonStream = AsyncFile.OpenRead(cachePath);
                         var cachedResult = await JsonSerializer.DeserializeAsync<ChannelItemResult>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-                        if (cachedResult != null)
+                        if (cachedResult is not null)
                         {
                             return null;
                         }
@@ -861,7 +859,7 @@ namespace Emby.Server.Implementations.Channels
 
                 var result = await channel.GetChannelItems(query, cancellationToken).ConfigureAwait(false);
 
-                if (result == null)
+                if (result is null)
                 {
                     throw new InvalidOperationException("Channel returned a null result from GetChannelItems");
                 }
@@ -955,7 +953,7 @@ namespace Emby.Server.Implementations.Channels
                 _logger.LogError(ex, "Error retrieving channel item from database");
             }
 
-            if (item == null)
+            if (item is null)
             {
                 item = new T();
                 isNew = true;
@@ -1156,7 +1154,7 @@ namespace Emby.Server.Implementations.Channels
             {
                 _libraryManager.CreateItem(item, parentFolder);
 
-                if (info.People != null && info.People.Count > 0)
+                if (info.People is not null && info.People.Count > 0)
                 {
                     _libraryManager.UpdatePeople(item, info.People);
                 }
@@ -1193,7 +1191,7 @@ namespace Emby.Server.Implementations.Channels
             var result = GetAllChannels()
                 .FirstOrDefault(i => GetInternalChannelId(i.Name).Equals(channel.ChannelId) || string.Equals(i.Name, channel.Name, StringComparison.OrdinalIgnoreCase));
 
-            if (result == null)
+            if (result is null)
             {
                 throw new ResourceNotFoundException("No channel provider found for channel " + channel.Name);
             }
@@ -1206,7 +1204,7 @@ namespace Emby.Server.Implementations.Channels
             var result = GetAllChannels()
                 .FirstOrDefault(i => internalChannelId.Equals(GetInternalChannelId(i.Name)));
 
-            if (result == null)
+            if (result is null)
             {
                 throw new ResourceNotFoundException("No channel provider found for channel id " + internalChannelId);
             }

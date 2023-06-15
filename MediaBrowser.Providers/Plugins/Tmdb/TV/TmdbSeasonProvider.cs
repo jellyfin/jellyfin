@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -7,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
@@ -17,19 +16,29 @@ using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 {
+    /// <summary>
+    /// TV season provider powered by TheMovieDb.
+    /// </summary>
     public class TmdbSeasonProvider : IRemoteMetadataProvider<Season, SeasonInfo>
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly TmdbClientManager _tmdbClientManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TmdbSeasonProvider"/> class.
+        /// </summary>
+        /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
+        /// <param name="tmdbClientManager">The <see cref="TmdbClientManager"/>.</param>
         public TmdbSeasonProvider(IHttpClientFactory httpClientFactory, TmdbClientManager tmdbClientManager)
         {
             _httpClientFactory = httpClientFactory;
             _tmdbClientManager = tmdbClientManager;
         }
 
+        /// <inheritdoc />
         public string Name => TmdbUtils.ProviderName;
 
+        /// <inheritdoc />
         public async Task<MetadataResult<Season>> GetMetadata(SeasonInfo info, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<Season>();
@@ -47,7 +56,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 .GetSeasonAsync(Convert.ToInt32(seriesTmdbId, CultureInfo.InvariantCulture), seasonNumber.Value, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
                 .ConfigureAwait(false);
 
-            if (seasonResult == null)
+            if (seasonResult is null)
             {
                 return result;
             }
@@ -71,7 +80,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             // TODO why was this disabled?
             var credits = seasonResult.Credits;
-            if (credits?.Cast != null)
+            if (credits?.Cast is not null)
             {
                 var cast = credits.Cast.OrderBy(c => c.Order).Take(Plugin.Instance.Configuration.MaxCastMembers).ToList();
                 for (var i = 0; i < cast.Count; i++)
@@ -80,20 +89,20 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     {
                         Name = cast[i].Name.Trim(),
                         Role = cast[i].Character,
-                        Type = PersonType.Actor,
+                        Type = PersonKind.Actor,
                         SortOrder = cast[i].Order
                     });
                 }
             }
 
-            if (credits?.Crew != null)
+            if (credits?.Crew is not null)
             {
                 foreach (var person in credits.Crew)
                 {
                     // Normalize this
                     var type = TmdbUtils.MapCrewToPersonType(person);
 
-                    if (!TmdbUtils.WantedCrewTypes.Contains(type, StringComparison.OrdinalIgnoreCase)
+                    if (!TmdbUtils.WantedCrewKinds.Contains(type)
                         && !TmdbUtils.WantedCrewTypes.Contains(person.Job ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
@@ -114,11 +123,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             return result;
         }
 
+        /// <inheritdoc />
         public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeasonInfo searchInfo, CancellationToken cancellationToken)
         {
             return Task.FromResult(Enumerable.Empty<RemoteSearchResult>());
         }
 
+        /// <inheritdoc />
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);

@@ -30,10 +30,10 @@ namespace Emby.Naming.AudioBook
             AudioBookNameParserResult result = default;
             foreach (var expression in _options.AudioBookNamesExpressions)
             {
-                var match = new Regex(expression, RegexOptions.IgnoreCase).Match(name);
+                var match = Regex.Match(name, expression, RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
-                    if (result.Name == null)
+                    if (result.Name is null)
                     {
                         var value = match.Groups["name"];
                         if (value.Success)
@@ -47,7 +47,7 @@ namespace Emby.Naming.AudioBook
                         var value = match.Groups["year"];
                         if (value.Success)
                         {
-                            if (int.TryParse(value.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intValue))
+                            if (int.TryParse(value.ValueSpan, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intValue))
                             {
                                 result.Year = intValue;
                             }

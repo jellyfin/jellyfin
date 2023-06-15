@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Emby.Drawing;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.Session;
 using Jellyfin.Api.WebSocketListeners;
+using Jellyfin.Drawing;
 using Jellyfin.Drawing.Skia;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Activity;
@@ -22,7 +22,6 @@ using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Activity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -107,7 +106,7 @@ namespace Jellyfin.Server
             yield return typeof(CoreAppHost).Assembly;
 
             // Jellyfin.Server.Implementations
-            yield return typeof(JellyfinDb).Assembly;
+            yield return typeof(JellyfinDbContext).Assembly;
         }
 
         /// <inheritdoc />

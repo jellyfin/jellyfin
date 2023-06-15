@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
+using Jellyfin.Extensions.Json.Converters;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -58,7 +59,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             _socketFactory = socketFactory;
             _streamHelper = streamHelper;
 
-            _jsonOptions = JsonDefaults.Options;
+            _jsonOptions = new JsonSerializerOptions(JsonDefaults.Options);
+            _jsonOptions.Converters.Add(new JsonBoolNumberConverter());
         }
 
         public string Name => "HD Homerun";
@@ -302,7 +304,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var hdHomerunChannelInfo = channels.FirstOrDefault() as HdHomerunChannelInfo;
 
-            if (hdHomerunChannelInfo == null || hdHomerunChannelInfo.IsLegacyTuner)
+            if (hdHomerunChannelInfo is null || hdHomerunChannelInfo.IsLegacyTuner)
             {
                 return await GetTunerInfosUdp(info, cancellationToken).ConfigureAwait(false);
             }
@@ -503,7 +505,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             {
                 var modelInfo = await GetModelInfo(tuner, false, cancellationToken).ConfigureAwait(false);
 
-                if (modelInfo != null && modelInfo.SupportsTranscoding)
+                if (modelInfo is not null && modelInfo.SupportsTranscoding)
                 {
                     if (tuner.AllowHWTranscoding)
                     {
@@ -560,7 +562,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var mediaSource = GetMediaSource(tunerHost, hdhrId, channel, profile);
 
-            if (hdhomerunChannel != null && hdhomerunChannel.IsLegacyTuner)
+            if (hdhomerunChannel is not null && hdhomerunChannel.IsLegacyTuner)
             {
                 return new HdHomerunUdpStream(
                     mediaSource,
@@ -674,7 +676,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                             var info = await TryGetTunerHostInfo(deviceAddress, cancellationToken).ConfigureAwait(false);
 
-                            if (info != null)
+                            if (info is not null)
                             {
                                 list.Add(info);
                             }

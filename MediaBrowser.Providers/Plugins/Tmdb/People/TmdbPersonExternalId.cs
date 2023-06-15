@@ -6,7 +6,7 @@ using MediaBrowser.Model.Providers;
 namespace MediaBrowser.Providers.Plugins.Tmdb.People
 {
     /// <summary>
-    /// External ID for a TMDB person.
+    /// External id for a TMDb person.
     /// </summary>
     public class TmdbPersonExternalId : IExternalId
     {

@@ -1,9 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
 using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
 using Jellyfin.Api.Constants;
+using Jellyfin.Data.Entities;
 using Jellyfin.Server.Implementations.Security;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Library;
@@ -46,6 +50,32 @@ namespace Jellyfin.Api.Tests.Auth.DefaultAuthorizationPolicy
                 userRole);
 
             var context = new AuthorizationHandlerContext(_requirements, claims, null);
+
+            await _sut.HandleAsync(context);
+            Assert.True(context.HasSucceeded);
+        }
+
+        [Fact]
+        public async Task ShouldSucceedOnApiKey()
+        {
+            TestHelpers.SetupConfigurationManager(_configurationManagerMock, true);
+
+            _httpContextAccessor
+                .Setup(h => h.HttpContext!.Connection.RemoteIpAddress)
+                .Returns(new IPAddress(0));
+
+            _userManagerMock
+                .Setup(u => u.GetUserById(It.IsAny<Guid>()))
+                .Returns<User>(null);
+
+            var claims = new[]
+            {
+                new Claim(InternalClaimTypes.IsApiKey, bool.TrueString)
+            };
+
+            var identity = new ClaimsIdentity(claims, string.Empty);
+            var principal = new ClaimsPrincipal(identity);
+            var context = new AuthorizationHandlerContext(_requirements, principal, null);
 
             await _sut.HandleAsync(context);
             Assert.True(context.HasSucceeded);

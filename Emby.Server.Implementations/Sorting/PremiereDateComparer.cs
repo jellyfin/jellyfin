@@ -34,7 +34,7 @@ namespace Emby.Server.Implementations.Sorting
         /// <returns>DateTime.</returns>
         private static DateTime GetDate(BaseItem? x)
         {
-            if (x == null)
+            if (x is null)
             {
                 return DateTime.MinValue;
             }

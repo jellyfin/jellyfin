@@ -16,12 +16,6 @@ namespace MediaBrowser.Controller.Channels
     public interface IChannelManager
     {
         /// <summary>
-        /// Adds the parts.
-        /// </summary>
-        /// <param name="channels">The channels.</param>
-        void AddParts(IEnumerable<IChannel> channels);
-
-        /// <summary>
         /// Gets the channel features.
         /// </summary>
         /// <param name="id">The identifier.</param>
@@ -52,14 +46,14 @@ namespace MediaBrowser.Controller.Channels
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>The channels.</returns>
-        QueryResult<Channel> GetChannelsInternal(ChannelQuery query);
+        Task<QueryResult<Channel>> GetChannelsInternalAsync(ChannelQuery query);
 
         /// <summary>
         /// Gets the channels.
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>The channels.</returns>
-        QueryResult<BaseItemDto> GetChannels(ChannelQuery query);
+        Task<QueryResult<BaseItemDto>> GetChannelsAsync(ChannelQuery query);
 
         /// <summary>
         /// Gets the latest channel items.

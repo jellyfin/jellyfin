@@ -29,12 +29,7 @@ namespace MediaBrowser.Model.Cryptography
 
         public PasswordHash(string id, byte[] hash, byte[] salt, Dictionary<string, string> parameters)
         {
-            ArgumentNullException.ThrowIfNull(id);
-
-            if (id.Length == 0)
-            {
-                throw new ArgumentException("String can't be empty", nameof(id));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(id);
 
             Id = id;
             _hash = hash;
@@ -85,7 +80,8 @@ namespace MediaBrowser.Model.Cryptography
             {
                 throw new FormatException("Hash string must contain a valid id");
             }
-            else if (nextSegment == -1)
+
+            if (nextSegment == -1)
             {
                 return new PasswordHash(hashString.ToString(), Array.Empty<byte>());
             }

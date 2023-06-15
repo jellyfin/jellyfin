@@ -208,7 +208,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             // var audioChannels = 2;
             // var audioStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
-            // if (audioStream != null)
+            // if (audioStream is not null)
             // {
             //    audioChannels = audioStream.Channels ?? audioChannels;
             // }

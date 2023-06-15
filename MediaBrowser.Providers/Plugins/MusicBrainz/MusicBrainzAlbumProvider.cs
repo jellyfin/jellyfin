@@ -8,11 +8,14 @@ using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Providers.Music;
+using MediaBrowser.Providers.Plugins.MusicBrainz.Configuration;
 using MetaBrainz.MusicBrainz;
 using MetaBrainz.MusicBrainz.Interfaces.Entities;
 using MetaBrainz.MusicBrainz.Interfaces.Searches;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Plugins.MusicBrainz;
 
@@ -21,20 +24,19 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz;
 /// </summary>
 public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, AlbumInfo>, IHasOrder, IDisposable
 {
-    private readonly Query _musicBrainzQuery;
+    private readonly ILogger<MusicBrainzAlbumProvider> _logger;
+    private Query _musicBrainzQuery;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MusicBrainzAlbumProvider"/> class.
     /// </summary>
-    public MusicBrainzAlbumProvider()
+    /// <param name="logger">The logger.</param>
+    public MusicBrainzAlbumProvider(ILogger<MusicBrainzAlbumProvider> logger)
     {
-        MusicBrainz.Plugin.Instance!.ConfigurationChanged += (_, _) =>
-            {
-                Query.DefaultServer = MusicBrainz.Plugin.Instance.Configuration.Server;
-                Query.DelayBetweenRequests = MusicBrainz.Plugin.Instance.Configuration.RateLimit;
-            };
-
+        _logger = logger;
         _musicBrainzQuery = new Query();
+        ReloadConfig(null, MusicBrainz.Plugin.Instance!.Configuration);
+        MusicBrainz.Plugin.Instance!.ConfigurationChanged += ReloadConfig;
     }
 
     /// <inheritdoc />
@@ -42,6 +44,29 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
 
     /// <inheritdoc />
     public int Order => 0;
+
+    private void ReloadConfig(object? sender, BasePluginConfiguration e)
+    {
+        var configuration = (PluginConfiguration)e;
+        if (Uri.TryCreate(configuration.Server, UriKind.Absolute, out var server))
+        {
+            Query.DefaultServer = server.DnsSafeHost;
+            Query.DefaultPort = server.Port;
+            Query.DefaultUrlScheme = server.Scheme;
+        }
+        else
+        {
+            // Fallback to official server
+            _logger.LogWarning("Invalid MusicBrainz server specified, falling back to official server");
+            var defaultServer = new Uri(PluginConfiguration.DefaultServer);
+            Query.DefaultServer = defaultServer.Host;
+            Query.DefaultPort = defaultServer.Port;
+            Query.DefaultUrlScheme = defaultServer.Scheme;
+        }
+
+        Query.DelayBetweenRequests = configuration.RateLimit;
+        _musicBrainzQuery = new Query();
+    }
 
     /// <inheritdoc />
     public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(AlbumInfo searchInfo, CancellationToken cancellationToken)
@@ -51,13 +76,13 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
 
         if (!string.IsNullOrEmpty(releaseId))
         {
-            var releaseResult = await _musicBrainzQuery.LookupReleaseAsync(new Guid(releaseId), Include.ReleaseGroups, cancellationToken).ConfigureAwait(false);
+            var releaseResult = await _musicBrainzQuery.LookupReleaseAsync(new Guid(releaseId), Include.Artists | Include.ReleaseGroups, cancellationToken).ConfigureAwait(false);
             return GetReleaseResult(releaseResult).SingleItemAsEnumerable();
         }
 
         if (!string.IsNullOrEmpty(releaseGroupId))
         {
-            var releaseGroupResult = await _musicBrainzQuery.LookupReleaseGroupAsync(new Guid(releaseGroupId), Include.None, null, cancellationToken).ConfigureAwait(false);
+            var releaseGroupResult = await _musicBrainzQuery.LookupReleaseGroupAsync(new Guid(releaseGroupId), Include.Releases, null, cancellationToken).ConfigureAwait(false);
             return GetReleaseGroupResult(releaseGroupResult.Releases);
         }
 
@@ -112,7 +137,9 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
 
         foreach (var result in releaseSearchResults)
         {
-            yield return GetReleaseResult(result);
+            // Fetch full release info, otherwise artists are missing
+            var fullResult = _musicBrainzQuery.LookupRelease(result.Id, Include.Artists | Include.ReleaseGroups);
+            yield return GetReleaseResult(fullResult);
         }
     }
 
@@ -122,21 +149,33 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
         {
             Name = releaseSearchResult.Title,
             ProductionYear = releaseSearchResult.Date?.Year,
-            PremiereDate = releaseSearchResult.Date?.NearestDate
+            PremiereDate = releaseSearchResult.Date?.NearestDate,
+            SearchProviderName = Name
         };
 
-        if (releaseSearchResult.ArtistCredit?.Count > 0)
+        // Add artists and use first as album artist
+        var artists = releaseSearchResult.ArtistCredit;
+        if (artists is not null && artists.Count > 0)
         {
-            searchResult.AlbumArtist = new RemoteSearchResult
+            var artistResults = new RemoteSearchResult[artists.Count];
+            for (int i = 0; i < artists.Count; i++)
             {
-                SearchProviderName = Name,
-                Name = releaseSearchResult.ArtistCredit[0].Name
-            };
+                var artist = artists[i];
+                var artistResult = new RemoteSearchResult
+                {
+                    Name = artist.Name
+                };
 
-            if (releaseSearchResult.ArtistCredit[0].Artist?.Id is not null)
-            {
-                searchResult.AlbumArtist.SetProviderId(MetadataProvider.MusicBrainzArtist, releaseSearchResult.ArtistCredit[0].Artist!.Id.ToString());
+                if (artist.Artist?.Id is not null)
+                {
+                    artistResult.SetProviderId(MetadataProvider.MusicBrainzArtist, artist.Artist!.Id.ToString());
+                }
+
+                artistResults[i] = artistResult;
             }
+
+            searchResult.AlbumArtist = artistResults[0];
+            searchResult.Artists = artistResults;
         }
 
         searchResult.SetProviderId(MetadataProvider.MusicBrainzAlbum, releaseSearchResult.Id.ToString());
@@ -167,7 +206,7 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
             // TODO: Actually try to match the release. Simply taking the first result is stupid.
             var releaseGroup = await _musicBrainzQuery.LookupReleaseGroupAsync(new Guid(releaseGroupId), Include.None, null, cancellationToken).ConfigureAwait(false);
             var release = releaseGroup.Releases?.Count > 0 ? releaseGroup.Releases[0] : null;
-            if (release != null)
+            if (release is not null)
             {
                 releaseId = release.Id.ToString();
                 result.HasMetadata = true;
@@ -193,7 +232,7 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
                 releaseResult = releaseSearchResults.Results.Count > 0 ? releaseSearchResults.Results[0].Item : null;
             }
 
-            if (releaseResult != null)
+            if (releaseResult is not null)
             {
                 releaseId = releaseResult.Id.ToString();
 

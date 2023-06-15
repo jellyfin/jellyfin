@@ -17,17 +17,17 @@ namespace MediaBrowser.MediaEncoding.Probing
         {
             ArgumentNullException.ThrowIfNull(result);
 
-            if (result.Format?.Tags != null)
+            if (result.Format?.Tags is not null)
             {
                 result.Format.Tags = ConvertDictionaryToCaseInsensitive(result.Format.Tags);
             }
 
-            if (result.Streams != null)
+            if (result.Streams is not null)
             {
                 // Convert all dictionaries to case insensitive
                 foreach (var stream in result.Streams)
                 {
-                    if (stream.Tags != null)
+                    if (stream.Tags is not null)
                     {
                         stream.Tags = ConvertDictionaryToCaseInsensitive(stream.Tags);
                     }

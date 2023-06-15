@@ -164,7 +164,7 @@ namespace Emby.Server.Implementations.HttpServer
             ReadResult result = await reader.ReadAsync().ConfigureAwait(false);
             ReadOnlySequence<byte> buffer = result.Buffer;
 
-            if (OnReceive == null)
+            if (OnReceive is null)
             {
                 // Tell the PipeReader how much of the buffer we have consumed
                 reader.AdvanceTo(buffer.End);
@@ -185,7 +185,7 @@ namespace Emby.Server.Implementations.HttpServer
                 return;
             }
 
-            if (stub == null)
+            if (stub is null)
             {
                 _logger.LogError("Error processing web socket message");
                 return;

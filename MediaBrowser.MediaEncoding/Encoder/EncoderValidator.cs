@@ -25,11 +25,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "mpeg2video",
             "mpeg4",
             "msmpeg4",
-            "dts",
+            "dca",
             "ac3",
             "aac",
             "mp3",
             "flac",
+            "truehd",
             "h264_qsv",
             "hevc_qsv",
             "mpeg2_qsv",
@@ -56,12 +57,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "libvpx",
             "libvpx-vp9",
             "aac",
+            "aac_at",
             "libfdk_aac",
             "ac3",
+            "dca",
             "libmp3lame",
             "libopus",
             "libvorbis",
             "flac",
+            "truehd",
             "srt",
             "h264_amf",
             "hevc_amf",
@@ -106,7 +110,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // vulkan
             "libplacebo",
             "scale_vulkan",
-            "overlay_vulkan"
+            "overlay_vulkan",
+            "hwupload_vaapi",
+            // videotoolbox
+            "yadif_videotoolbox"
         };
 
         private static readonly IReadOnlyDictionary<int, string[]> _filterOptionsDict = new Dictionary<int, string[]>
@@ -188,11 +195,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Work out what the version under test is
             var version = GetFFmpegVersionInternal(versionOutput);
 
-            _logger.LogInformation("Found ffmpeg version {Version}", version != null ? version.ToString() : "unknown");
+            _logger.LogInformation("Found ffmpeg version {Version}", version is not null ? version.ToString() : "unknown");
 
-            if (version == null)
+            if (version is null)
             {
-                if (MaxVersion != null) // Version is unknown
+                if (MaxVersion is not null) // Version is unknown
                 {
                     if (MinVersion == MaxVersion)
                     {
@@ -210,12 +217,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 return false;
             }
-            else if (version < MinVersion) // Version is below what we recommend
+
+            if (version < MinVersion) // Version is below what we recommend
             {
                 _logger.LogWarning("FFmpeg validation: The minimum recommended version is {MinVersion}", MinVersion);
                 return false;
             }
-            else if (MaxVersion != null && version > MaxVersion) // Version is above what we recommend
+
+            if (MaxVersion is not null && version > MaxVersion) // Version is above what we recommend
             {
                 _logger.LogWarning("FFmpeg validation: The maximum recommended version is {MaxVersion}", MaxVersion);
                 return false;
@@ -273,7 +282,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (match.Success)
             {
-                if (Version.TryParse(match.Groups[1].Value, out var result))
+                if (Version.TryParse(match.Groups[1].ValueSpan, out var result))
                 {
                     return result;
                 }
@@ -323,8 +332,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 RegexOptions.Multiline))
             {
                 var version = new Version(
-                    int.Parse(match.Groups["major"].Value, CultureInfo.InvariantCulture),
-                    int.Parse(match.Groups["minor"].Value, CultureInfo.InvariantCulture));
+                    int.Parse(match.Groups["major"].ValueSpan, CultureInfo.InvariantCulture),
+                    int.Parse(match.Groups["minor"].ValueSpan, CultureInfo.InvariantCulture));
 
                 map.Add(match.Groups["name"].Value, version);
             }
@@ -484,7 +493,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var found = Regex
                 .Matches(output, @"^\s\S{6}\s(?<codec>[\w|-]+)\s+.+$", RegexOptions.Multiline)
-                .Cast<Match>()
                 .Select(x => x.Groups["codec"].Value)
                 .Where(x => required.Contains(x));
 
@@ -513,7 +521,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var found = Regex
                 .Matches(output, @"^\s\S{3}\s(?<filter>[\w|-]+)\s+.+$", RegexOptions.Multiline)
-                .Cast<Match>()
                 .Select(x => x.Groups["filter"].Value)
                 .Where(x => _requiredFilters.Contains(x));
 

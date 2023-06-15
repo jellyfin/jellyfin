@@ -236,7 +236,7 @@ namespace Jellyfin.Naming.Tests.Video
         }
 
         [Fact]
-        public void TestFalsePositive()
+        public void TestMissingParttype()
         {
             var files = new[]
             {
@@ -248,9 +248,8 @@ namespace Jellyfin.Naming.Tests.Video
 
             var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
-            Assert.Single(result);
-
-            TestStackInfo(result[0], "300", 3);
+            // There should be no stack, because all files should be treated as separate movies
+            Assert.Empty(result);
         }
 
         [Fact]
@@ -297,11 +296,11 @@ namespace Jellyfin.Naming.Tests.Video
 
             var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
-            Assert.Equal(3, result.Count);
+            // Only 'Bad Boys (2006)' and '300 (2006)' should be in the stack
+            Assert.Equal(2, result.Count);
 
             TestStackInfo(result[0], "300 (2006)", 4);
-            TestStackInfo(result[1], "300", 3);
-            TestStackInfo(result[2], "Bad Boys (2006)", 4);
+            TestStackInfo(result[1], "Bad Boys (2006)", 4);
         }
 
         [Fact]

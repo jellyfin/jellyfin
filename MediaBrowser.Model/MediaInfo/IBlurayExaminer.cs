@@ -1,15 +1,14 @@
-namespace MediaBrowser.Model.MediaInfo
+namespace MediaBrowser.Model.MediaInfo;
+
+/// <summary>
+/// Interface IBlurayExaminer.
+/// </summary>
+public interface IBlurayExaminer
 {
     /// <summary>
-    /// Interface IBlurayExaminer.
+    /// Gets the disc info.
     /// </summary>
-    public interface IBlurayExaminer
-    {
-        /// <summary>
-        /// Gets the disc info.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>BlurayDiscInfo.</returns>
-        BlurayDiscInfo GetDiscInfo(string path);
-    }
+    /// <param name="path">The path.</param>
+    /// <returns>BlurayDiscInfo.</returns>
+    BlurayDiscInfo GetDiscInfo(string path);
 }

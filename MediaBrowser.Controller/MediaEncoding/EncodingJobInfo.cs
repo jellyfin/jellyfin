@@ -40,7 +40,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (!_transcodeReasons.HasValue)
                 {
-                    if (BaseRequest.TranscodeReasons == null)
+                    if (BaseRequest.TranscodeReasons is null)
                     {
                         _transcodeReasons = 0;
                         return 0;
@@ -147,7 +147,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                if (VideoStream != null && VideoStream.Width.HasValue && VideoStream.Height.HasValue)
+                if (VideoStream is not null && VideoStream.Width.HasValue && VideoStream.Height.HasValue)
                 {
                     var size = new ImageDimensions(VideoStream.Width.Value, VideoStream.Height.Value);
 
@@ -174,7 +174,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                if (VideoStream != null && VideoStream.Width.HasValue && VideoStream.Height.HasValue)
+                if (VideoStream is not null && VideoStream.Width.HasValue && VideoStream.Height.HasValue)
                 {
                     var size = new ImageDimensions(VideoStream.Width.Value, VideoStream.Height.Value);
 
@@ -204,7 +204,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (BaseRequest.Static
                     || EncodingHelper.IsCopyCodec(OutputAudioCodec))
                 {
-                    if (AudioStream != null)
+                    if (AudioStream is not null)
                     {
                         return AudioStream.SampleRate;
                     }
@@ -227,7 +227,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (BaseRequest.Static
                     || EncodingHelper.IsCopyCodec(OutputAudioCodec))
                 {
-                    if (AudioStream != null)
+                    if (AudioStream is not null)
                     {
                         return AudioStream.BitDepth;
                     }
@@ -250,8 +250,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 var level = GetRequestedLevel(ActualOutputVideoCodec);
-                if (!string.IsNullOrEmpty(level)
-                    && double.TryParse(level, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+                if (double.TryParse(level, CultureInfo.InvariantCulture, out var result))
                 {
                     return result;
                 }
@@ -305,7 +304,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (BaseRequest.Static
                     || EncodingHelper.IsCopyCodec(OutputVideoCodec))
                 {
-                    return VideoStream == null ? null : (VideoStream.AverageFrameRate ?? VideoStream.RealFrameRate);
+                    return VideoStream is null ? null : (VideoStream.AverageFrameRate ?? VideoStream.RealFrameRate);
                 }
 
                 return BaseRequest.MaxFramerate ?? BaseRequest.Framerate;
@@ -419,7 +418,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                if (VideoStream == null)
+                if (VideoStream is null)
                 {
                     return null;
                 }
@@ -437,7 +436,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                if (AudioStream == null)
+                if (AudioStream is null)
                 {
                     return null;
                 }
@@ -556,7 +555,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         public bool DeInterlace(string videoCodec, bool forceDeinterlaceIfSourceIsInterlaced)
         {
             var videoStream = VideoStream;
-            var isInputInterlaced = videoStream != null && videoStream.IsInterlaced;
+            var isInputInterlaced = videoStream is not null && videoStream.IsInterlaced;
 
             if (!isInputInterlaced)
             {
@@ -645,8 +644,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (!string.IsNullOrEmpty(codec))
             {
                 var value = BaseRequest.GetOption(codec, "maxrefframes");
-                if (!string.IsNullOrEmpty(value)
-                    && int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+                if (int.TryParse(value, CultureInfo.InvariantCulture, out var result))
                 {
                     return result;
                 }
@@ -665,8 +663,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (!string.IsNullOrEmpty(codec))
             {
                 var value = BaseRequest.GetOption(codec, "videobitdepth");
-                if (!string.IsNullOrEmpty(value)
-                    && int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+                if (int.TryParse(value, CultureInfo.InvariantCulture, out var result))
                 {
                     return result;
                 }
@@ -685,8 +682,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (!string.IsNullOrEmpty(codec))
             {
                 var value = BaseRequest.GetOption(codec, "audiobitdepth");
-                if (!string.IsNullOrEmpty(value)
-                    && int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+                if (int.TryParse(value, CultureInfo.InvariantCulture, out var result))
                 {
                     return result;
                 }
@@ -700,8 +696,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (!string.IsNullOrEmpty(codec))
             {
                 var value = BaseRequest.GetOption(codec, "audiochannels");
-                if (!string.IsNullOrEmpty(value)
-                    && int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+                if (int.TryParse(value, CultureInfo.InvariantCulture, out var result))
                 {
                     return result;
                 }

@@ -17,7 +17,7 @@ namespace MediaBrowser.Model.Updates
         [JsonPropertyName("version")]
         public string Version
         {
-            get => _version == null ? string.Empty : _version.ToString();
+            get => _version is null ? string.Empty : _version.ToString();
 
             set => _version = SysVersion.Parse(value);
         }

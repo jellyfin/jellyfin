@@ -28,11 +28,15 @@ namespace MediaBrowser.Controller.Entities.TV
         public Series()
         {
             AirDays = Array.Empty<DayOfWeek>();
+            SeasonNames = new Dictionary<int, string>();
         }
 
         public DayOfWeek[] AirDays { get; set; }
 
         public string AirTime { get; set; }
+
+        [JsonIgnore]
+        public Dictionary<int, string> SeasonNames { get; set; }
 
         [JsonIgnore]
         public override bool SupportsAddingToPlaylist => true;
@@ -218,7 +222,7 @@ namespace MediaBrowser.Controller.Entities.TV
             query.IncludeItemTypes = new[] { BaseItemKind.Season };
             query.OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) };
 
-            if (user != null && !user.DisplayMissingEpisodes)
+            if (user is not null && !user.DisplayMissingEpisodes)
             {
                 query.IsMissing = false;
             }
@@ -266,7 +270,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 DtoOptions = options
             };
 
-            if (user == null || !user.DisplayMissingEpisodes)
+            if (user is null || !user.DisplayMissingEpisodes)
             {
                 query.IsMissing = false;
             }
@@ -283,7 +287,7 @@ namespace MediaBrowser.Controller.Entities.TV
             // This depends on settings for that series
             // When this happens, remove the duplicate from season 0
 
-            return allEpisodes.GroupBy(i => i.Id).Select(x => x.First()).Reverse();
+            return allEpisodes.DistinctBy(i => i.Id).Reverse();
         }
 
         public async Task RefreshAllMetadata(MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
@@ -369,7 +373,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
                 DtoOptions = options
             };
-            if (user != null)
+            if (user is not null)
             {
                 if (!user.DisplayMissingEpisodes)
                 {
@@ -384,7 +388,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public List<BaseItem> GetSeasonEpisodes(Season parentSeason, User user, IEnumerable<BaseItem> allSeriesEpisodes, DtoOptions options)
         {
-            if (allSeriesEpisodes == null)
+            if (allSeriesEpisodes is null)
             {
                 return GetSeasonEpisodes(parentSeason, user, options);
             }
@@ -426,7 +430,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 }
 
                 var season = episodeItem.Season;
-                return season != null && string.Equals(GetUniqueSeriesKey(season), seasonPresentationKey, StringComparison.OrdinalIgnoreCase);
+                return season is not null && string.Equals(GetUniqueSeriesKey(season), seasonPresentationKey, StringComparison.OrdinalIgnoreCase);
             });
         }
 
@@ -448,7 +452,7 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 var episode = i;
 
-                if (episode != null)
+                if (episode is not null)
                 {
                     var currentSeasonNumber = episode.AiredSeasonNumber;
 

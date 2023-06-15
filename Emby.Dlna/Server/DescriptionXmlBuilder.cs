@@ -22,15 +22,8 @@ namespace Emby.Dlna.Server
 
         public DescriptionXmlBuilder(DeviceProfile profile, string serverUdn, string serverAddress, string serverName, string serverId)
         {
-            if (string.IsNullOrEmpty(serverUdn))
-            {
-                throw new ArgumentNullException(nameof(serverUdn));
-            }
-
-            if (string.IsNullOrEmpty(serverAddress))
-            {
-                throw new ArgumentNullException(nameof(serverAddress));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(serverUdn);
+            ArgumentException.ThrowIfNullOrEmpty(serverAddress);
 
             _profile = profile;
             _serverUdn = serverUdn;
@@ -154,11 +147,16 @@ namespace Emby.Dlna.Server
             }
         }
 
-        private string GetFriendlyName()
+        internal string GetFriendlyName()
         {
             if (string.IsNullOrEmpty(_profile.FriendlyName))
             {
-                return "Jellyfin - " + _serverName;
+                return _serverName;
+            }
+
+            if (!_profile.FriendlyName.Contains("${HostName}", StringComparison.OrdinalIgnoreCase))
+            {
+                return _profile.FriendlyName;
             }
 
             var characterList = new List<char>();
@@ -171,13 +169,18 @@ namespace Emby.Dlna.Server
                 }
             }
 
-            var characters = characterList.ToArray();
+            var serverName = string.Create(
+                characterList.Count,
+                characterList,
+                (dest, source) =>
+                {
+                    for (int i = 0; i < dest.Length; i++)
+                    {
+                        dest[i] = source[i];
+                    }
+                });
 
-            var serverName = new string(characters);
-
-            var name = _profile.FriendlyName?.Replace("${HostName}", serverName, StringComparison.OrdinalIgnoreCase);
-
-            return name ?? string.Empty;
+            return _profile.FriendlyName.Replace("${HostName}", serverName, StringComparison.OrdinalIgnoreCase);
         }
 
         private void AppendIconList(StringBuilder builder)

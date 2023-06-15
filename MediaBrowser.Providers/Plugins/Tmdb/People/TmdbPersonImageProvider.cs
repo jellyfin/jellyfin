@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -14,11 +12,19 @@ using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.People
 {
+    /// <summary>
+    /// Person image provider powered by TMDb.
+    /// </summary>
     public class TmdbPersonImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly TmdbClientManager _tmdbClientManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TmdbPersonImageProvider"/> class.
+        /// </summary>
+        /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
+        /// <param name="tmdbClientManager">The <see cref="TmdbClientManager"/>.</param>
         public TmdbPersonImageProvider(IHttpClientFactory httpClientFactory, TmdbClientManager tmdbClientManager)
         {
             _httpClientFactory = httpClientFactory;
@@ -31,19 +37,19 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
         /// <inheritdoc />
         public int Order => 0;
 
+        /// <inheritdoc />
         public bool Supports(BaseItem item)
         {
             return item is Person;
         }
 
+        /// <inheritdoc />
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
-            return new List<ImageType>
-            {
-                ImageType.Primary
-            };
+            yield return ImageType.Primary;
         }
 
+        /// <inheritdoc />
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             var person = (Person)item;
@@ -55,19 +61,15 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
 
             var language = item.GetPreferredMetadataLanguage();
             var personResult = await _tmdbClientManager.GetPersonAsync(int.Parse(personTmdbId, CultureInfo.InvariantCulture), language, cancellationToken).ConfigureAwait(false);
-            if (personResult?.Images?.Profiles == null)
+            if (personResult?.Images?.Profiles is null)
             {
                 return Enumerable.Empty<RemoteImageInfo>();
             }
 
-            var profiles = personResult.Images.Profiles;
-            var remoteImages = new List<RemoteImageInfo>(profiles.Count);
-
-            _tmdbClientManager.ConvertProfilesToRemoteImageInfo(profiles, language, remoteImages);
-
-            return remoteImages;
+            return _tmdbClientManager.ConvertProfilesToRemoteImageInfo(personResult.Images.Profiles, language);
         }
 
+        /// <inheritdoc />
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);

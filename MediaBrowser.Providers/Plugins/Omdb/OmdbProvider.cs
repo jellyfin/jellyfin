@@ -13,6 +13,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -98,8 +99,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 // item.VoteCount = voteCount;
             }
 
-            if (!string.IsNullOrEmpty(result.imdbRating)
-                && float.TryParse(result.imdbRating, NumberStyles.Any, CultureInfo.InvariantCulture, out var imdbRating)
+            if (float.TryParse(result.imdbRating, CultureInfo.InvariantCulture, out var imdbRating)
                 && imdbRating >= 0)
             {
                 item.CommunityRating = imdbRating;
@@ -141,7 +141,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             var seasonResult = await GetSeasonRootObject(seriesImdbId, seasonNumber, cancellationToken).ConfigureAwait(false);
 
-            if (seasonResult?.Episodes == null)
+            if (seasonResult?.Episodes is null)
             {
                 return false;
             }
@@ -161,7 +161,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
 
             // finally, search by numbers
-            if (result == null)
+            if (result is null)
             {
                 foreach (var episode in seasonResult.Episodes)
                 {
@@ -173,7 +173,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 }
             }
 
-            if (result == null)
+            if (result is null)
             {
                 return false;
             }
@@ -209,8 +209,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 // item.VoteCount = voteCount;
             }
 
-            if (!string.IsNullOrEmpty(result.imdbRating)
-                && float.TryParse(result.imdbRating, NumberStyles.Any, CultureInfo.InvariantCulture, out var imdbRating)
+            if (float.TryParse(result.imdbRating, CultureInfo.InvariantCulture, out var imdbRating)
                 && imdbRating >= 0)
             {
                 item.CommunityRating = imdbRating;
@@ -234,15 +233,21 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         internal async Task<RootObject> GetRootObject(string imdbId, CancellationToken cancellationToken)
         {
             var path = await EnsureItemInfo(imdbId, cancellationToken).ConfigureAwait(false);
-            await using var stream = AsyncFile.OpenRead(path);
-            return await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            var stream = AsyncFile.OpenRead(path);
+            await using (stream.ConfigureAwait(false))
+            {
+                return await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            }
         }
 
         internal async Task<SeasonRootObject> GetSeasonRootObject(string imdbId, int seasonId, CancellationToken cancellationToken)
         {
             var path = await EnsureSeasonInfo(imdbId, seasonId, cancellationToken).ConfigureAwait(false);
-            await using var stream = AsyncFile.OpenRead(path);
-            return await JsonSerializer.DeserializeAsync<SeasonRootObject>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            var stream = AsyncFile.OpenRead(path);
+            await using (stream.ConfigureAwait(false))
+            {
+                return await JsonSerializer.DeserializeAsync<SeasonRootObject>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            }
         }
 
         /// <summary>Gets OMDB URL.</summary>
@@ -317,8 +322,11 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     imdbParam));
 
             var rootObject = await _httpClientFactory.CreateClient(NamedClient.Default).GetFromJsonAsync<RootObject>(url, _jsonOptions, cancellationToken).ConfigureAwait(false);
-            await using FileStream jsonFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
-            await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            FileStream jsonFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+            await using (jsonFileStream.ConfigureAwait(false))
+            {
+                await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            }
 
             return path;
         }
@@ -357,18 +365,18 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     seasonId));
 
             var rootObject = await _httpClientFactory.CreateClient(NamedClient.Default).GetFromJsonAsync<SeasonRootObject>(url, _jsonOptions, cancellationToken).ConfigureAwait(false);
-            await using FileStream jsonFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
-            await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            FileStream jsonFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+            await using (jsonFileStream.ConfigureAwait(false))
+            {
+                await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            }
 
             return path;
         }
 
         internal string GetDataFilePath(string imdbId)
         {
-            if (string.IsNullOrEmpty(imdbId))
-            {
-                throw new ArgumentNullException(nameof(imdbId));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(imdbId);
 
             var dataPath = Path.Combine(_configurationManager.ApplicationPaths.CachePath, "omdb");
 
@@ -379,10 +387,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         internal string GetSeasonFilePath(string imdbId, int seasonId)
         {
-            if (string.IsNullOrEmpty(imdbId))
-            {
-                throw new ArgumentNullException(nameof(imdbId));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(imdbId);
 
             var dataPath = Path.Combine(_configurationManager.ApplicationPaths.CachePath, "omdb");
 
@@ -420,7 +425,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 var person = new PersonInfo
                 {
                     Name = result.Director,
-                    Type = PersonType.Director
+                    Type = PersonKind.Director
                 };
 
                 itemResult.AddPerson(person);
@@ -431,7 +436,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 var person = new PersonInfo
                 {
                     Name = result.Writer,
-                    Type = PersonType.Writer
+                    Type = PersonKind.Writer
                 };
 
                 itemResult.AddPerson(person);
@@ -450,7 +455,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     var person = new PersonInfo
                     {
                         Name = actor,
-                        Type = PersonType.Actor
+                        Type = PersonKind.Actor
                     };
 
                     itemResult.AddPerson(person);
@@ -540,13 +545,13 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             public float? GetRottenTomatoScore()
             {
-                if (Ratings != null)
+                if (Ratings is not null)
                 {
                     var rating = Ratings.FirstOrDefault(i => string.Equals(i.Source, "Rotten Tomatoes", StringComparison.OrdinalIgnoreCase));
-                    if (rating?.Value != null)
+                    if (rating?.Value is not null)
                     {
                         var value = rating.Value.TrimEnd('%');
-                        if (float.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var score))
+                        if (float.TryParse(value, CultureInfo.InvariantCulture, out var score))
                         {
                             return score;
                         }

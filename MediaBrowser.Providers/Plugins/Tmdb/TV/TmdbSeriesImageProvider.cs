@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,30 +14,41 @@ using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 {
+    /// <summary>
+    /// TV series image provider powered by TheMovieDb.
+    /// </summary>
     public class TmdbSeriesImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly TmdbClientManager _tmdbClientManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TmdbSeriesImageProvider"/> class.
+        /// </summary>
+        /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
+        /// <param name="tmdbClientManager">The <see cref="TmdbClientManager"/>.</param>
         public TmdbSeriesImageProvider(IHttpClientFactory httpClientFactory, TmdbClientManager tmdbClientManager)
         {
             _httpClientFactory = httpClientFactory;
             _tmdbClientManager = tmdbClientManager;
         }
 
+        /// <inheritdoc />
         public string Name => TmdbUtils.ProviderName;
 
-        // After tvdb and fanart
+        /// <inheritdoc />
         public int Order => 2;
 
+        /// <inheritdoc />
         public bool Supports(BaseItem item)
         {
             return item is Series;
         }
 
+        /// <inheritdoc />
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
-            return new List<ImageType>
+            return new ImageType[]
             {
                 ImageType.Primary,
                 ImageType.Backdrop,
@@ -47,6 +56,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             };
         }
 
+        /// <inheritdoc />
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             var tmdbId = item.GetProviderId(MetadataProvider.Tmdb);
@@ -63,7 +73,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 .GetSeriesAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), null, null, cancellationToken)
                 .ConfigureAwait(false);
 
-            if (series?.Images == null)
+            if (series?.Images is null)
             {
                 return Enumerable.Empty<RemoteImageInfo>();
             }
@@ -73,13 +83,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             var logos = series.Images.Logos;
             var remoteImages = new List<RemoteImageInfo>(posters.Count + backdrops.Count + logos.Count);
 
-            _tmdbClientManager.ConvertPostersToRemoteImageInfo(posters, language, remoteImages);
-            _tmdbClientManager.ConvertBackdropsToRemoteImageInfo(backdrops, language, remoteImages);
-            _tmdbClientManager.ConvertLogosToRemoteImageInfo(logos, language, remoteImages);
+            remoteImages.AddRange(_tmdbClientManager.ConvertPostersToRemoteImageInfo(posters, language));
+            remoteImages.AddRange(_tmdbClientManager.ConvertBackdropsToRemoteImageInfo(backdrops, language));
+            remoteImages.AddRange(_tmdbClientManager.ConvertLogosToRemoteImageInfo(logos, language));
 
             return remoteImages;
         }
 
+        /// <inheritdoc />
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);

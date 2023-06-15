@@ -9,7 +9,7 @@ set -o xtrace
 pushd ${SOURCE_DIR}
 
 if [[ ${IS_DOCKER} == YES ]]; then
-    # Remove BuildRequires for dotnet-sdk-6.0, since it's installed manually
+    # Remove BuildRequires for dotnet, since it's installed manually
     pushd fedora
 
     cp -a jellyfin.spec /tmp/spec.orig
@@ -52,7 +52,7 @@ if [[ ${IS_DOCKER} == YES ]]; then
 
     cp -a /tmp/spec.orig jellyfin.spec
     chown -Rc $(stat -c %u:%g ${ARTIFACT_DIR}) ${ARTIFACT_DIR}
-    
+
     popd
 fi
 

@@ -31,7 +31,7 @@ namespace Jellyfin.Server.Filters
                         .FirstOrDefault(o => o.Key.Equals(SuccessCode, StringComparison.Ordinal));
 
                     // Operation doesn't have a response.
-                    if (response.Value == null)
+                    if (response.Value is null)
                     {
                         continue;
                     }
@@ -40,7 +40,7 @@ namespace Jellyfin.Server.Filters
                     response.Value.Content.Clear();
 
                     // Add all content-types as file.
-                    foreach (var contentType in producesFileAttribute.GetContentTypes())
+                    foreach (var contentType in producesFileAttribute.ContentTypes)
                     {
                         response.Value.Content.Add(contentType, _openApiMediaType);
                     }

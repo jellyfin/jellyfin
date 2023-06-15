@@ -27,7 +27,7 @@ namespace Jellyfin.Server.Migrations.Routines
 
         private readonly ILogger<MigrateUserDb> _logger;
         private readonly IServerApplicationPaths _paths;
-        private readonly IDbContextFactory<JellyfinDb> _provider;
+        private readonly IDbContextFactory<JellyfinDbContext> _provider;
         private readonly IXmlSerializer _xmlSerializer;
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace Jellyfin.Server.Migrations.Routines
         public MigrateUserDb(
             ILogger<MigrateUserDb> logger,
             IServerApplicationPaths paths,
-            IDbContextFactory<JellyfinDb> provider,
+            IDbContextFactory<JellyfinDbContext> provider,
             IXmlSerializer xmlSerializer)
         {
             _logger = logger;
@@ -76,7 +76,7 @@ namespace Jellyfin.Server.Migrations.Routines
                 foreach (var entry in queryResult)
                 {
                     UserMockup? mockup = JsonSerializer.Deserialize<UserMockup>(entry[2].ToBlob(), JsonDefaults.Options);
-                    if (mockup == null)
+                    if (mockup is null)
                     {
                         continue;
                     }
@@ -127,7 +127,6 @@ namespace Jellyfin.Server.Migrations.Routines
                         RememberSubtitleSelections = config.RememberSubtitleSelections,
                         SubtitleLanguagePreference = config.SubtitleLanguagePreference,
                         Password = mockup.Password,
-                        EasyPassword = mockup.EasyPassword,
                         LastLoginDate = mockup.LastLoginDate,
                         LastActivityDate = mockup.LastActivityDate
                     };
@@ -163,6 +162,7 @@ namespace Jellyfin.Server.Migrations.Routines
                     user.SetPermission(PermissionKind.EnablePlaybackRemuxing, policy.EnablePlaybackRemuxing);
                     user.SetPermission(PermissionKind.ForceRemoteSourceTranscoding, policy.ForceRemoteSourceTranscoding);
                     user.SetPermission(PermissionKind.EnablePublicSharing, policy.EnablePublicSharing);
+                    user.SetPermission(PermissionKind.EnableCollectionManagement, policy.EnableCollectionManagement);
 
                     foreach (var policyAccessSchedule in policy.AccessSchedules)
                     {

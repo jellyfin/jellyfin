@@ -22,10 +22,10 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         {
             var parent = new Folder { Name = "extras" };
 
-            var episodeResolver = new EpisodeResolver(Mock.Of<ILogger<EpisodeResolver>>(), _namingOptions);
+            var episodeResolver = new EpisodeResolver(Mock.Of<ILogger<EpisodeResolver>>(), _namingOptions, Mock.Of<IDirectoryService>());
             var itemResolveArgs = new ItemResolveArgs(
                 Mock.Of<IServerApplicationPaths>(),
-                Mock.Of<IDirectoryService>())
+                null)
             {
                 Parent = parent,
                 CollectionType = CollectionType.TvShows,
@@ -45,10 +45,10 @@ namespace Jellyfin.Server.Implementations.Tests.Library
 
             // Have to create a mock because of moq proxies not being castable to a concrete implementation
             // https://github.com/jellyfin/jellyfin/blob/ab0cff8556403e123642dc9717ba778329554634/Emby.Server.Implementations/Library/Resolvers/BaseVideoResolver.cs#L48
-            var episodeResolver = new EpisodeResolverMock(Mock.Of<ILogger<EpisodeResolver>>(), _namingOptions);
+            var episodeResolver = new EpisodeResolverMock(Mock.Of<ILogger<EpisodeResolver>>(), _namingOptions, Mock.Of<IDirectoryService>());
             var itemResolveArgs = new ItemResolveArgs(
                 Mock.Of<IServerApplicationPaths>(),
-                Mock.Of<IDirectoryService>())
+                null)
             {
                 Parent = series,
                 CollectionType = CollectionType.TvShows,
@@ -60,9 +60,9 @@ namespace Jellyfin.Server.Implementations.Tests.Library
             Assert.NotNull(episodeResolver.Resolve(itemResolveArgs));
         }
 
-        private class EpisodeResolverMock : EpisodeResolver
+        private sealed class EpisodeResolverMock : EpisodeResolver
         {
-            public EpisodeResolverMock(ILogger<EpisodeResolver> logger, NamingOptions namingOptions) : base(logger, namingOptions)
+            public EpisodeResolverMock(ILogger<EpisodeResolver> logger, NamingOptions namingOptions, IDirectoryService directoryService) : base(logger, namingOptions, directoryService)
             {
             }
 

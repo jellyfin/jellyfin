@@ -1,5 +1,3 @@
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -58,7 +56,7 @@ namespace Emby.Server.Implementations.Session
         /// <summary>
         /// The KeepAlive cancellation token.
         /// </summary>
-        private CancellationTokenSource _keepAliveCancellationToken;
+        private CancellationTokenSource? _keepAliveCancellationToken;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SessionWebSocketListener" /> class.
@@ -94,7 +92,7 @@ namespace Emby.Server.Implementations.Session
         public async Task ProcessWebSocketConnectedAsync(IWebSocketConnection connection, HttpContext httpContext)
         {
             var session = await GetSession(httpContext, connection.RemoteEndPoint?.ToString()).ConfigureAwait(false);
-            if (session != null)
+            if (session is not null)
             {
                 EnsureController(session, connection);
                 await KeepAliveWebSocket(connection).ConfigureAwait(false);
@@ -105,7 +103,7 @@ namespace Emby.Server.Implementations.Session
             }
         }
 
-        private async Task<SessionInfo> GetSession(HttpContext httpContext, string remoteEndpoint)
+        private async Task<SessionInfo?> GetSession(HttpContext httpContext, string? remoteEndpoint)
         {
             if (!httpContext.User.Identity?.IsAuthenticated ?? false)
             {
@@ -138,8 +136,13 @@ namespace Emby.Server.Implementations.Session
         /// </summary>
         /// <param name="sender">The WebSocket.</param>
         /// <param name="e">The event arguments.</param>
-        private void OnWebSocketClosed(object sender, EventArgs e)
+        private void OnWebSocketClosed(object? sender, EventArgs e)
         {
+            if (sender is null)
+            {
+                return;
+            }
+
             var webSocket = (IWebSocketConnection)sender;
             _logger.LogDebug("WebSocket {0} is closed.", webSocket);
             RemoveWebSocket(webSocket);
@@ -202,7 +205,7 @@ namespace Emby.Server.Implementations.Session
         {
             lock (_keepAliveLock)
             {
-                if (_keepAliveCancellationToken == null)
+                if (_keepAliveCancellationToken is null)
                 {
                     _keepAliveCancellationToken = new CancellationTokenSource();
                     // Start KeepAlive watcher
@@ -221,7 +224,7 @@ namespace Emby.Server.Implementations.Session
         {
             lock (_keepAliveLock)
             {
-                if (_keepAliveCancellationToken != null)
+                if (_keepAliveCancellationToken is not null)
                 {
                     _keepAliveCancellationToken.Cancel();
                     _keepAliveCancellationToken.Dispose();

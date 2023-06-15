@@ -13,5 +13,6 @@ packages:
   - centos.amd64
   - linux.amd64
   - windows.amd64
-  - macos
+  - macos.amd64
+  - macos.arm64
   - portable

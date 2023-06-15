@@ -46,10 +46,9 @@ namespace Emby.Server.Implementations.Library
         public Folder[] GetUserViews(UserViewQuery query)
         {
             var user = _userManager.GetUserById(query.UserId);
-
-            if (user == null)
+            if (user is null)
             {
-                throw new ArgumentException("User Id specified in the query does not exist.", nameof(query));
+                throw new ArgumentException("User id specified in the query does not exist.", nameof(query));
             }
 
             var folders = _libraryManager.GetUserRootFolder()
@@ -58,7 +57,6 @@ namespace Emby.Server.Implementations.Library
                 .ToList();
 
             var groupedFolders = new List<ICollectionFolder>();
-
             var list = new List<Folder>();
 
             foreach (var folder in folders)
@@ -66,13 +64,27 @@ namespace Emby.Server.Implementations.Library
                 var collectionFolder = folder as ICollectionFolder;
                 var folderViewType = collectionFolder?.CollectionType;
 
+                // Playlist library requires special handling because the folder only refrences user playlists
+                if (string.Equals(folderViewType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
+                {
+                    var items = folder.GetItemList(new InternalItemsQuery(user)
+                    {
+                        ParentId = folder.ParentId
+                    });
+
+                    if (!items.Any(item => item.IsVisible(user)))
+                    {
+                        continue;
+                    }
+                }
+
                 if (UserView.IsUserSpecific(folder))
                 {
                     list.Add(_libraryManager.GetNamedView(user, folder.Name, folder.Id, folderViewType, null));
                     continue;
                 }
 
-                if (collectionFolder != null && UserView.IsEligibleForGrouping(folder) && user.IsFolderGrouped(folder.Id))
+                if (collectionFolder is not null && UserView.IsEligibleForGrouping(folder) && user.IsFolderGrouped(folder.Id))
                 {
                     groupedFolders.Add(collectionFolder);
                     continue;
@@ -111,10 +123,10 @@ namespace Emby.Server.Implementations.Library
 
             if (query.IncludeExternalContent)
             {
-                var channelResult = _channelManager.GetChannelsInternal(new ChannelQuery
+                var channelResult = _channelManager.GetChannelsInternalAsync(new ChannelQuery
                 {
                     UserId = query.UserId
-                });
+                }).GetAwaiter().GetResult();
 
                 var channels = channelResult.Items;
 
@@ -132,14 +144,12 @@ namespace Emby.Server.Implementations.Library
             }
 
             var sorted = _libraryManager.Sort(list, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending).ToList();
-
             var orders = user.GetPreferenceValues<Guid>(PreferenceKind.OrderedViews);
 
             return list
                 .OrderBy(i =>
                 {
                     var index = Array.IndexOf(orders, i.Id);
-
                     if (index == -1
                         && i is UserView view
                         && !view.DisplayParentId.Equals(default))
@@ -208,15 +218,15 @@ namespace Emby.Server.Implementations.Library
                 // Only grab the index container for media
                 var container = item.IsFolder || !request.GroupItems ? null : item.LatestItemsIndexContainer;
 
-                if (container == null)
+                if (container is null)
                 {
                     list.Add(new Tuple<BaseItem, List<BaseItem>>(null, new List<BaseItem> { item }));
                 }
                 else
                 {
-                    var current = list.FirstOrDefault(i => i.Item1 != null && i.Item1.Id.Equals(container.Id));
+                    var current = list.FirstOrDefault(i => i.Item1 is not null && i.Item1.Id.Equals(container.Id));
 
-                    if (current != null)
+                    if (current is not null)
                     {
                         current.Item2.Add(item);
                     }
@@ -286,7 +296,7 @@ namespace Emby.Server.Implementations.Library
 
             if (parents.Count == 0)
             {
-                return new List<BaseItem>();
+                return Array.Empty<BaseItem>();
             }
 
             if (includeItemTypes.Length == 0)

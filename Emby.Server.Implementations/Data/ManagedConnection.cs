@@ -2,23 +2,22 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Data
 {
     public sealed class ManagedConnection : IDisposable
     {
-        private readonly SemaphoreSlim _writeLock;
+        private readonly ConnectionPool _pool;
 
-        private SQLiteDatabaseConnection? _db;
+        private SQLiteDatabaseConnection _db;
 
         private bool _disposed = false;
 
-        public ManagedConnection(SQLiteDatabaseConnection db, SemaphoreSlim writeLock)
+        public ManagedConnection(SQLiteDatabaseConnection db, ConnectionPool pool)
         {
             _db = db;
-            _writeLock = writeLock;
+            _pool = pool;
         }
 
         public IStatement PrepareStatement(string sql)
@@ -73,9 +72,9 @@ namespace Emby.Server.Implementations.Data
                 return;
             }
 
-            _writeLock.Release();
+            _pool.Return(_db);
 
-            _db = null; // Don't dispose it
+            _db = null!; // Don't dispose it
             _disposed = true;
         }
     }

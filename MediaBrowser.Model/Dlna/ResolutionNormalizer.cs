@@ -39,7 +39,7 @@ namespace MediaBrowser.Model.Dlna
             }
 
             var resolutionConfig = GetResolutionConfiguration(outputBitrate);
-            if (resolutionConfig != null)
+            if (resolutionConfig is not null)
             {
                 var originvalValue = maxWidth;
 

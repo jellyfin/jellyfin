@@ -90,7 +90,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             var imdbId = searchInfo.GetProviderId(MetadataProvider.Imdb);
 
             var urlQuery = new StringBuilder("plot=full&r=json");
-            if (episodeSearchInfo != null)
+            if (episodeSearchInfo is not null)
             {
                 episodeSearchInfo.SeriesProviderIds.TryGetValue(MetadataProvider.Imdb.ToString(), out imdbId);
                 if (searchInfo.IndexNumber.HasValue)
@@ -137,29 +137,31 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             var url = OmdbProvider.GetOmdbUrl(urlQuery.ToString());
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-
-            if (isSearch)
+            var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using (stream.ConfigureAwait(false))
             {
-                var searchResultList = await JsonSerializer.DeserializeAsync<SearchResultList>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-                if (searchResultList?.Search != null)
+                if (isSearch)
                 {
-                    var resultCount = searchResultList.Search.Count;
-                    var result = new RemoteSearchResult[resultCount];
-                    for (var i = 0; i < resultCount; i++)
+                    var searchResultList = await JsonSerializer.DeserializeAsync<SearchResultList>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+                    if (searchResultList?.Search is not null)
                     {
-                        result[i] = ResultToMetadataResult(searchResultList.Search[i], searchInfo, indexNumberEnd);
-                    }
+                        var resultCount = searchResultList.Search.Count;
+                        var result = new RemoteSearchResult[resultCount];
+                        for (var i = 0; i < resultCount; i++)
+                        {
+                            result[i] = ResultToMetadataResult(searchResultList.Search[i], searchInfo, indexNumberEnd);
+                        }
 
-                    return result;
+                        return result;
+                    }
                 }
-            }
-            else
-            {
-                var result = await JsonSerializer.DeserializeAsync<SearchResult>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-                if (string.Equals(result?.Response, "true", StringComparison.OrdinalIgnoreCase))
+                else
                 {
-                    return new[] { ResultToMetadataResult(result, searchInfo, indexNumberEnd) };
+                    var result = await JsonSerializer.DeserializeAsync<SearchResult>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+                    if (string.Equals(result?.Response, "true", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return new[] { ResultToMetadataResult(result, searchInfo, indexNumberEnd) };
+                    }
                 }
             }
 

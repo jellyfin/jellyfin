@@ -186,7 +186,7 @@ namespace Jellyfin.Model.Tests.Entities
             Assert.Null(nullProvider.ProviderIds);
         }
 
-        private class ProviderIdsExtensionsTestsObject : IHasProviderIds
+        private sealed class ProviderIdsExtensionsTestsObject : IHasProviderIds
         {
             public static readonly ProviderIdsExtensionsTestsObject Empty = new ProviderIdsExtensionsTestsObject();
 

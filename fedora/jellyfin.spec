@@ -16,18 +16,16 @@ URL:            https://jellyfin.org
 Source0:        jellyfin-server-%{version}.tar.gz
 Source11:       jellyfin.service
 Source12:       jellyfin.env
-Source13:       jellyfin.sudoers
-Source14:       restart.sh
-Source15:       jellyfin.override.conf
-Source16:       jellyfin-firewalld.xml
-Source17:       jellyfin-server-lowports.conf
+Source13:       jellyfin.override.conf
+Source14:       jellyfin-firewalld.xml
+Source15:       jellyfin-server-lowports.conf
 
 %{?systemd_requires}
 BuildRequires:  systemd
 BuildRequires:  libcurl-devel, fontconfig-devel, freetype-devel, openssl-devel, glibc-devel, libicu-devel
 # Requirements not packaged in RHEL 7 main repos, added via Makefile
 # https://packages.microsoft.com/rhel/7/prod/
-BuildRequires:  dotnet-runtime-6.0, dotnet-sdk-6.0
+BuildRequires:  dotnet-runtime-7.0, dotnet-sdk-7.0
 Requires: %{name}-server = %{version}-%{release}, %{name}-web = %{version}-%{release}
 
 # Temporary (hopefully?) fix for https://github.com/jellyfin/jellyfin/issues/7471
@@ -44,7 +42,7 @@ Jellyfin is a free software media system that puts you in control of managing an
 Summary:        The Free Software Media System Server backend
 Requires(pre):  shadow-utils
 Requires:       ffmpeg
-Requires:       libcurl, fontconfig, freetype, openssl, glibc, libicu, at, sudo
+Requires:       libcurl, fontconfig, freetype, openssl, glibc, libicu
 
 %description server
 The Jellyfin media server backend.
@@ -74,18 +72,16 @@ dotnet publish --configuration Release --self-contained --runtime %{dotnet_runti
 %install
 # Jellyfin files
 %{__mkdir} -p %{buildroot}%{_libdir}/jellyfin %{buildroot}%{_bindir}
-%{__cp} -r Jellyfin.Server/bin/Release/net6.0/%{dotnet_runtime}/publish/* %{buildroot}%{_libdir}/jellyfin
+%{__cp} -r Jellyfin.Server/bin/Release/net7.0/%{dotnet_runtime}/publish/* %{buildroot}%{_libdir}/jellyfin
 ln -srf %{_libdir}/jellyfin/jellyfin %{buildroot}%{_bindir}/jellyfin
-%{__install} -D %{SOURCE14} %{buildroot}%{_libexecdir}/jellyfin/restart.sh
 
 # Jellyfin config
 %{__install} -D Jellyfin.Server/Resources/Configuration/logging.json %{buildroot}%{_sysconfdir}/jellyfin/logging.json
 %{__install} -D %{SOURCE12} %{buildroot}%{_sysconfdir}/sysconfig/jellyfin
 
 # system config
-%{__install} -D %{SOURCE16} %{buildroot}%{_prefix}/lib/firewalld/services/jellyfin.xml
-%{__install} -D %{SOURCE13} %{buildroot}%{_sysconfdir}/sudoers.d/jellyfin-sudoers
-%{__install} -D %{SOURCE15} %{buildroot}%{_sysconfdir}/systemd/system/jellyfin.service.d/override.conf
+%{__install} -D %{SOURCE14} %{buildroot}%{_prefix}/lib/firewalld/services/jellyfin.xml
+%{__install} -D %{SOURCE13} %{buildroot}%{_sysconfdir}/systemd/system/jellyfin.service.d/override.conf
 %{__install} -D %{SOURCE11} %{buildroot}%{_unitdir}/jellyfin.service
 
 # empty directories
@@ -95,7 +91,7 @@ ln -srf %{_libdir}/jellyfin/jellyfin %{buildroot}%{_bindir}/jellyfin
 %{__mkdir} -p %{buildroot}%{_var}/log/jellyfin
 
 # jellyfin-server-lowports subpackage
-%{__install} -D -m 0644 %{SOURCE17} %{buildroot}%{_unitdir}/jellyfin.service.d/jellyfin-server-lowports.conf
+%{__install} -D -m 0644 %{SOURCE15} %{buildroot}%{_unitdir}/jellyfin.service.d/jellyfin-server-lowports.conf
 
 
 %files
@@ -110,7 +106,6 @@ ln -srf %{_libdir}/jellyfin/jellyfin %{buildroot}%{_bindir}/jellyfin
 %attr(755,root,root) %{_libdir}/jellyfin/createdump
 %attr(755,root,root) %{_libdir}/jellyfin/jellyfin
 %{_libdir}/jellyfin/*
-%attr(755,root,root) %{_libexecdir}/jellyfin/restart.sh
 
 # Jellyfin config
 %config(noreplace) %attr(644,jellyfin,jellyfin) %{_sysconfdir}/jellyfin/logging.json
@@ -119,7 +114,6 @@ ln -srf %{_libdir}/jellyfin/jellyfin %{buildroot}%{_bindir}/jellyfin
 # system config
 %{_prefix}/lib/firewalld/services/jellyfin.xml
 %{_unitdir}/jellyfin.service
-%config(noreplace) %attr(600,root,root) %{_sysconfdir}/sudoers.d/jellyfin-sudoers
 %config(noreplace) %{_sysconfdir}/systemd/system/jellyfin.service.d/override.conf
 
 # empty directories
@@ -139,6 +133,9 @@ getent group jellyfin >/dev/null || groupadd -r jellyfin
 getent passwd jellyfin >/dev/null || \
     useradd -r -g jellyfin -d %{_sharedstatedir}/jellyfin -s /sbin/nologin \
     -c "Jellyfin default user" jellyfin
+# Add jellyfin to the render and video groups for hwa.
+[ ! -z "$(getent group render)" ] && usermod -aG render jellyfin >/dev/null 2>&1
+[ ! -z "$(getent group video)" ] && usermod -aG video jellyfin >/dev/null 2>&1
 exit 0
 
 %post server

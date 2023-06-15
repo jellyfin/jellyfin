@@ -16,10 +16,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         /// <inheritdoc />
         public override void Add(SeriesTimerInfo item)
         {
-            if (string.IsNullOrEmpty(item.Id))
-            {
-                throw new ArgumentException("SeriesTimerInfo.Id cannot be null or empty.");
-            }
+            ArgumentException.ThrowIfNullOrEmpty(item.Id);
 
             base.Add(item);
         }

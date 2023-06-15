@@ -191,7 +191,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
             lock (_libraryChangedSyncLock)
             {
-                if (LibraryUpdateTimer == null)
+                if (LibraryUpdateTimer is null)
                 {
                     LibraryUpdateTimer = new Timer(
                         LibraryUpdateTimerCallback,
@@ -227,7 +227,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
             lock (_libraryChangedSyncLock)
             {
-                if (LibraryUpdateTimer == null)
+                if (LibraryUpdateTimer is null)
                 {
                     LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration, Timeout.Infinite);
                 }
@@ -254,7 +254,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
             lock (_libraryChangedSyncLock)
             {
-                if (LibraryUpdateTimer == null)
+                if (LibraryUpdateTimer is null)
                 {
                     LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration, Timeout.Infinite);
                 }
@@ -276,30 +276,33 @@ namespace Emby.Server.Implementations.EntryPoints
         /// Libraries the update timer callback.
         /// </summary>
         /// <param name="state">The state.</param>
-        private void LibraryUpdateTimerCallback(object state)
+        private async void LibraryUpdateTimerCallback(object state)
         {
+            List<Folder> foldersAddedTo;
+            List<Folder> foldersRemovedFrom;
+            List<BaseItem> itemsUpdated;
+            List<BaseItem> itemsAdded;
+            List<BaseItem> itemsRemoved;
             lock (_libraryChangedSyncLock)
             {
                 // Remove dupes in case some were saved multiple times
-                var foldersAddedTo = _foldersAddedTo
-                                        .GroupBy(x => x.Id)
-                                        .Select(x => x.First())
+                foldersAddedTo = _foldersAddedTo
+                                        .DistinctBy(x => x.Id)
                                         .ToList();
 
-                var foldersRemovedFrom = _foldersRemovedFrom
-                                            .GroupBy(x => x.Id)
-                                            .Select(x => x.First())
+                foldersRemovedFrom = _foldersRemovedFrom
+                                            .DistinctBy(x => x.Id)
                                             .ToList();
 
-                var itemsUpdated = _itemsUpdated
+                itemsUpdated = _itemsUpdated
                                     .Where(i => !_itemsAdded.Contains(i))
-                                    .GroupBy(x => x.Id)
-                                    .Select(x => x.First())
+                                    .DistinctBy(x => x.Id)
                                     .ToList();
 
-                SendChangeNotifications(_itemsAdded.ToList(), itemsUpdated, _itemsRemoved.ToList(), foldersAddedTo, foldersRemovedFrom, CancellationToken.None).GetAwaiter().GetResult();
+                itemsAdded = _itemsAdded.ToList();
+                itemsRemoved = _itemsRemoved.ToList();
 
-                if (LibraryUpdateTimer != null)
+                if (LibraryUpdateTimer is not null)
                 {
                     LibraryUpdateTimer.Dispose();
                     LibraryUpdateTimer = null;
@@ -311,6 +314,8 @@ namespace Emby.Server.Implementations.EntryPoints
                 _foldersAddedTo.Clear();
                 _foldersRemovedFrom.Clear();
             }
+
+            await SendChangeNotifications(itemsAdded, itemsUpdated, itemsRemoved, foldersAddedTo, foldersRemovedFrom, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -475,7 +480,7 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             if (dispose)
             {
-                if (LibraryUpdateTimer != null)
+                if (LibraryUpdateTimer is not null)
                 {
                     LibraryUpdateTimer.Dispose();
                     LibraryUpdateTimer = null;

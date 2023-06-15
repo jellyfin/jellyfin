@@ -45,7 +45,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         {
             var result = ResolveMultipleInternal(parent, files, collectionType);
 
-            if (result != null)
+            if (result is not null)
             {
                 foreach (var item in result.Items)
                 {
@@ -116,7 +116,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
 
                 // Use regular audio type for mixed libraries, owned items and music
                 if (isMixedCollectionType ||
-                    args.Parent == null ||
+                    args.Parent is null ||
                     isMusicCollectionType)
                 {
                     item = new MediaBrowser.Controller.Entities.Audio.Audio();
@@ -126,7 +126,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                     item = new AudioBook();
                 }
 
-                if (item != null)
+                if (item is not null)
                 {
                     item.IsShortcut = string.Equals(extension, ".strm", StringComparison.OrdinalIgnoreCase);
 
@@ -144,7 +144,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             // TODO: Allow GetMultiDiscMovie in here
             var result = ResolveMultipleAudio(args.Parent, args.GetActualFileSystemChildren(), parseName);
 
-            if (result == null || result.Items.Count != 1 || result.Items[0] is not AudioBook item)
+            if (result is null || result.Items.Count != 1 || result.Items[0] is not AudioBook item)
             {
                 return null;
             }
@@ -158,7 +158,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         private MultiItemResolverResult ResolveMultipleAudio(Folder parent, IEnumerable<FileSystemMetadata> fileSystemEntries, bool parseName)
         {
             var files = new List<FileSystemMetadata>();
-            var items = new List<BaseItem>();
             var leftOver = new List<FileSystemMetadata>();
 
             // Loop through each child file/folder and see if we find a video
@@ -180,10 +179,10 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             var result = new MultiItemResolverResult
             {
                 ExtraFiles = leftOver,
-                Items = items
+                Items = new List<BaseItem>()
             };
 
-            var isInMixedFolder = resolverResult.Count > 1 || (parent != null && parent.IsTopParent);
+            var isInMixedFolder = resolverResult.Count > 1 || (parent is not null && parent.IsTopParent);
 
             foreach (var resolvedItem in resolverResult)
             {
@@ -193,7 +192,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                     continue;
                 }
 
-                if (resolvedItem.Files.Count == 0)
+                // Until multi-part books are handled letting files stack hides them from browsing in the client
+                if (resolvedItem.Files.Count == 0 || resolvedItem.Extras.Count > 0 || resolvedItem.AlternateVersions.Count > 0)
                 {
                     continue;
                 }
