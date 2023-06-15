@@ -62,7 +62,7 @@
     <PackageVersion Include="Serilog.Sinks.Async" Version="1.5.0" />
     <PackageVersion Include="Serilog.Sinks.Console" Version="4.1.0" />
     <PackageVersion Include="Serilog.Sinks.File" Version="5.0.0" />
-    <PackageVersion Include="Serilog.Sinks.Graylog" Version="3.0.0" />
+    <PackageVersion Include="Serilog.Sinks.Graylog" Version="3.0.1" />
     <PackageVersion Include="SerilogAnalyzer" Version="0.15.0" />
     <PackageVersion Include="SharpFuzz" Version="2.0.2" />
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="2.88.3" />
