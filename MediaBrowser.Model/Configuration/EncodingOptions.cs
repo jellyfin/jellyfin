@@ -27,13 +27,13 @@ public class EncodingOptions
         EnableTonemapping = false;
         EnableVppTonemapping = false;
         TonemappingAlgorithm = "bt2390";
+        TonemappingMode = "auto";
         TonemappingRange = "auto";
         TonemappingDesat = 0;
-        TonemappingThreshold = 0.8;
         TonemappingPeak = 100;
         TonemappingParam = 0;
-        VppTonemappingBrightness = 0;
-        VppTonemappingContrast = 1.2;
+        VppTonemappingBrightness = 16;
+        VppTonemappingContrast = 1;
         H264Crf = 23;
         H265Crf = 28;
         DeinterlaceDoubleRate = false;
@@ -138,6 +138,11 @@ public class EncodingOptions
     public string TonemappingAlgorithm { get; set; }
 
     /// <summary>
+    /// Gets or sets the tone-mapping mode.
+    /// </summary>
+    public string TonemappingMode { get; set; }
+
+    /// <summary>
     /// Gets or sets the tone-mapping range.
     /// </summary>
     public string TonemappingRange { get; set; }
@@ -146,11 +151,6 @@ public class EncodingOptions
     /// Gets or sets the tone-mapping desaturation.
     /// </summary>
     public double TonemappingDesat { get; set; }
-
-    /// <summary>
-    /// Gets or sets the tone-mapping threshold.
-    /// </summary>
-    public double TonemappingThreshold { get; set; }
 
     /// <summary>
     /// Gets or sets the tone-mapping peak.

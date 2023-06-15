@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Emby.Server.Implementations.Library;
 using Xunit;
 
@@ -72,6 +73,48 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         {
             Assert.False(PathExtensions.TryReplaceSubPath(path, subPath, newSubPath, out var result));
             Assert.Null(result);
+        }
+
+        [Theory]
+        [InlineData(null, '/', null)]
+        [InlineData(null, '\\', null)]
+        [InlineData("/home/jeff/myfile.mkv", '\\', "\\home\\jeff\\myfile.mkv")]
+        [InlineData("C:\\Users\\Jeff\\myfile.mkv", '/', "C:/Users/Jeff/myfile.mkv")]
+        [InlineData("\\home/jeff\\myfile.mkv", '\\', "\\home\\jeff\\myfile.mkv")]
+        [InlineData("\\home/jeff\\myfile.mkv", '/', "/home/jeff/myfile.mkv")]
+        [InlineData("", '/', "")]
+        public void NormalizePath_SpecifyingSeparator_Normalizes(string path, char separator, string expectedPath)
+        {
+            Assert.Equal(expectedPath, path.NormalizePath(separator));
+        }
+
+        [Theory]
+        [InlineData("/home/jeff/myfile.mkv")]
+        [InlineData("C:\\Users\\Jeff\\myfile.mkv")]
+        [InlineData("\\home/jeff\\myfile.mkv")]
+        public void NormalizePath_NoArgs_UsesDirectorySeparatorChar(string path)
+        {
+            var separator = Path.DirectorySeparatorChar;
+
+            Assert.Equal(path.Replace('\\', separator).Replace('/', separator), path.NormalizePath());
+        }
+
+        [Theory]
+        [InlineData("/home/jeff/myfile.mkv", '/')]
+        [InlineData("C:\\Users\\Jeff\\myfile.mkv", '\\')]
+        [InlineData("\\home/jeff\\myfile.mkv", '/')]
+        public void NormalizePath_OutVar_Correct(string path, char expectedSeparator)
+        {
+            var result = path.NormalizePath(out var separator);
+
+            Assert.Equal(expectedSeparator, separator);
+            Assert.Equal(path.Replace('\\', separator).Replace('/', separator), result);
+        }
+
+        [Fact]
+        public void NormalizePath_SpecifyInvalidSeparator_ThrowsException()
+        {
+            Assert.Throws<ArgumentException>(() => string.Empty.NormalizePath('a'));
         }
     }
 }

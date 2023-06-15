@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Xml;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
@@ -105,6 +107,19 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             {
                                 Logger.LogInformation("Unrecognized series status: {Status}", status);
                             }
+                        }
+
+                        break;
+                    }
+
+                case "namedseason":
+                    {
+                        var parsed = int.TryParse(reader.GetAttribute("number"), NumberStyles.Integer, CultureInfo.InvariantCulture, out var seasonNumber);
+                        var name = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(name) && parsed)
+                        {
+                            item.SeasonNames[seasonNumber] = name;
                         }
 
                         break;
