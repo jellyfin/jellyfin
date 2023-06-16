@@ -166,6 +166,12 @@ namespace MediaBrowser.Model.Configuration
         public int LibraryMonitorDelay { get; set; } = 60;
 
         /// <summary>
+        /// Gets or sets the duration in seconds that we will wait after a library updated event before executing the library changed notification.
+        /// </summary>
+        /// <value>The library update duration.</value>
+        public int LibraryUpdateDuration { get; set; } = 30;
+
+        /// <summary>
         /// Gets or sets the image saving convention.
         /// </summary>
         /// <value>The image saving convention.</value>
