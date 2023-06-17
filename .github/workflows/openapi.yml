@@ -14,12 +14,12 @@ jobs:
     permissions: read-all
     steps:
       - name: Checkout repository
-        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Setup .NET
-        uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a # v3.0.3
+        uses: actions/setup-dotnet@3447fd6a9f9e57506b15f895c5b76d3b197dc7c2 # v3.2.0
         with:
           dotnet-version: '7.0.x'
       - name: Generate openapi.json
@@ -39,7 +39,7 @@ jobs:
     permissions: read-all
     steps:
       - name: Checkout repository
-        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
@@ -51,7 +51,7 @@ jobs:
           ANCESTOR_REF=$(git merge-base upstream/${{ github.base_ref }} origin/${{ github.head_ref }})
           git checkout --progress --force $ANCESTOR_REF
       - name: Setup .NET
-        uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a # v3.0.3
+        uses: actions/setup-dotnet@3447fd6a9f9e57506b15f895c5b76d3b197dc7c2 # v3.2.0
         with:
           dotnet-version: '7.0.x'
       - name: Generate openapi.json
@@ -110,7 +110,7 @@ jobs:
           direction: last
           body-includes: openapi-diff-workflow-comment
       - name: Reply or edit difference comment (changed)
-        uses: peter-evans/create-or-update-comment@ca08ebd5dc95aa0cd97021e9708fcd6b87138c9b # v3.0.1
+        uses: peter-evans/create-or-update-comment@c6c9a1a66007646a28c153e2a8580a5bad27bcfa # v3.0.2
         if: ${{ steps.read-diff.outputs.body != '' }}
         with:
           issue-number: ${{ github.event.pull_request.number }}
@@ -125,7 +125,7 @@ jobs:
 
             </details>
       - name: Edit difference comment (unchanged)
-        uses: peter-evans/create-or-update-comment@ca08ebd5dc95aa0cd97021e9708fcd6b87138c9b # v3.0.1
+        uses: peter-evans/create-or-update-comment@c6c9a1a66007646a28c153e2a8580a5bad27bcfa # v3.0.2
         if: ${{ steps.read-diff.outputs.body == '' && steps.find-comment.outputs.comment-id != '' }}
         with:
           issue-number: ${{ github.event.pull_request.number }}

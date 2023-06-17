@@ -25,6 +25,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
@@ -34,6 +35,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
 
@@ -319,13 +321,15 @@ namespace Emby.Server.Implementations.Data
         /// <param name="logger">Instance of the <see cref="ILogger{SqliteItemRepository}"/> interface.</param>
         /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
         /// <param name="imageProcessor">Instance of the <see cref="IImageProcessor"/> interface.</param>
+        /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
         /// <exception cref="ArgumentNullException">config is null.</exception>
         public SqliteItemRepository(
             IServerConfigurationManager config,
             IServerApplicationHost appHost,
             ILogger<SqliteItemRepository> logger,
             ILocalizationManager localization,
-            IImageProcessor imageProcessor)
+            IImageProcessor imageProcessor,
+            IConfiguration configuration)
             : base(logger)
         {
             _config = config;
@@ -337,11 +341,13 @@ namespace Emby.Server.Implementations.Data
             _jsonOptions = JsonDefaults.Options;
 
             DbFilePath = Path.Combine(_config.ApplicationPaths.DataPath, "library.db");
+
+            CacheSize = configuration.GetSqliteCacheSize();
             ReadConnectionsCount = Environment.ProcessorCount * 2;
         }
 
         /// <inheritdoc />
-        protected override int? CacheSize => 20000;
+        protected override int? CacheSize { get; }
 
         /// <inheritdoc />
         protected override TempStoreMode TempStore => TempStoreMode.Memory;

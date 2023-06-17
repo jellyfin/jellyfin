@@ -783,7 +783,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the LUFS value.
         /// </summary>
         /// <value>The LUFS Value.</value>
-        public float LUFS { get; set; }
+        public float? LUFS { get; set; }
 
         /// <summary>
         /// Gets or sets the current program.

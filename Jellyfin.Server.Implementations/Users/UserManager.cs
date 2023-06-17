@@ -269,36 +269,15 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public Task ResetEasyPassword(User user)
-        {
-            return ChangeEasyPassword(user, string.Empty, null);
-        }
-
-        /// <inheritdoc/>
         public async Task ChangePassword(User user, string newPassword)
         {
             ArgumentNullException.ThrowIfNull(user);
+            if (user.HasPermission(PermissionKind.IsAdministrator) && string.IsNullOrWhiteSpace(newPassword))
+            {
+                throw new ArgumentException("Admin user passwords must not be empty", nameof(newPassword));
+            }
 
             await GetAuthenticationProvider(user).ChangePassword(user, newPassword).ConfigureAwait(false);
-            await UpdateUserAsync(user).ConfigureAwait(false);
-
-            await _eventManager.PublishAsync(new UserPasswordChangedEventArgs(user)).ConfigureAwait(false);
-        }
-
-        /// <inheritdoc/>
-        public async Task ChangeEasyPassword(User user, string newPassword, string? newPasswordSha1)
-        {
-            if (newPassword is not null)
-            {
-                newPasswordSha1 = _cryptoProvider.CreatePasswordHash(newPassword).ToString();
-            }
-
-            if (string.IsNullOrWhiteSpace(newPasswordSha1))
-            {
-                throw new ArgumentNullException(nameof(newPasswordSha1));
-            }
-
-            user.EasyPassword = newPasswordSha1;
             await UpdateUserAsync(user).ConfigureAwait(false);
 
             await _eventManager.PublishAsync(new UserPasswordChangedEventArgs(user)).ConfigureAwait(false);
@@ -315,7 +294,6 @@ namespace Jellyfin.Server.Implementations.Users
                 ServerId = _appHost.SystemId,
                 HasPassword = hasPassword,
                 HasConfiguredPassword = hasPassword,
-                HasConfiguredEasyPassword = !string.IsNullOrEmpty(user.EasyPassword),
                 EnableAutoLogin = user.EnableAutoLogin,
                 LastLoginDate = user.LastLoginDate,
                 LastActivityDate = user.LastActivityDate,
@@ -830,16 +808,6 @@ namespace Jellyfin.Server.Implementations.Users
                     username = updatedUsername;
                     break;
                 }
-            }
-
-            if (!success
-                && _networkManager.IsInLocalNetwork(remoteEndPoint)
-                && user?.EnableLocalPassword == true
-                && !string.IsNullOrEmpty(user.EasyPassword))
-            {
-                // Check easy password
-                var passwordHash = PasswordHash.Parse(user.EasyPassword);
-                success = _cryptoProvider.Verify(passwordHash, password);
             }
 
             return (authenticationProvider, username, success);

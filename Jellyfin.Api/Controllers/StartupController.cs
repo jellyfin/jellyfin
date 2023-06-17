@@ -131,6 +131,10 @@ public class StartupController : BaseJellyfinApiController
     public async Task<ActionResult> UpdateStartupUser([FromBody] StartupUserDto startupUserDto)
     {
         var user = _userManager.Users.First();
+        if (string.IsNullOrWhiteSpace(startupUserDto.Password))
+        {
+            return BadRequest("Password must not be empty");
+        }
 
         if (startupUserDto.Name is not null)
         {
