@@ -2975,25 +2975,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                         options.VppTonemappingBrightness,
                         options.VppTonemappingContrast);
             }
-
-            if (string.Equals(hwTonemapSuffix, "vulkan", StringComparison.OrdinalIgnoreCase))
-            {
-                args = "libplacebo=format={1}:tonemapping={2}:color_primaries=bt709:color_trc=bt709:colorspace=bt709:peak_detect=0:upscaler=none:downscaler=none";
-
-                if (!string.Equals(options.TonemappingRange, "auto", StringComparison.OrdinalIgnoreCase))
-                {
-                    args += ":range={6}";
-                }
-
-                if (string.Equals(options.TonemappingAlgorithm, "bt2390", StringComparison.OrdinalIgnoreCase))
-                {
-                    algorithm = "bt.2390";
-                }
-                else if (string.Equals(options.TonemappingAlgorithm, "none", StringComparison.OrdinalIgnoreCase))
-                {
-                    algorithm = "clip";
-                }
-            }
             else
             {
                 args = "tonemap_{0}=format={1}:p=bt709:t=bt709:m=bt709:tonemap={2}:peak={3}:desat={4}";
