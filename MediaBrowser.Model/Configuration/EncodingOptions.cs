@@ -49,6 +49,7 @@ public class EncodingOptions
         EnableIntelLowPowerHevcHwEncoder = false;
         EnableHardwareEncoding = true;
         AllowHevcEncoding = false;
+        AllowAv1Encoding = false;
         EnableSubtitleExtraction = true;
         AllowOnDemandMetadataBasedKeyframeExtractionForExtensions = new[] { "mkv" };
         HardwareDecodingCodecs = new string[] { "h264", "vc1" };
@@ -248,6 +249,11 @@ public class EncodingOptions
     /// Gets or sets a value indicating whether HEVC encoding is enabled.
     /// </summary>
     public bool AllowHevcEncoding { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether AV1 encoding is enabled.
+    /// </summary>
+    public bool AllowAv1Encoding { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether subtitle extraction is enabled.
