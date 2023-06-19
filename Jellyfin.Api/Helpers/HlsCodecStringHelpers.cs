@@ -181,13 +181,13 @@ public static class HlsCodecStringHelpers
     }
 
     /// <summary>
-    /// Gets a AV1 codec string.
+    /// Gets an AV1 codec string.
     /// </summary>
     /// <param name="profile">AV1 profile.</param>
     /// <param name="level">AV1 level.</param>
     /// <param name="tierFlag">AV1 tier flag.</param>
     /// <param name="bitDepth">AV1 bit depth.</param>
-    /// <returns>AV1 string.</returns>
+    /// <returns>The AV1 codec string.</returns>
     public static string GetAv1String(string? profile, int level, bool tierFlag, int bitDepth)
     {
         // https://aomedia.org/av1/specification/annex-a/
