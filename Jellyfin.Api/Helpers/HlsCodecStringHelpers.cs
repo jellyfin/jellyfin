@@ -227,11 +227,13 @@ public static class HlsCodecStringHelpers
             bitDepth = 8;
         }
 
-        result.Append("." + level)
-            .Append(tierFlag ? "H" : "M");
+        result.Append('.')
+            .Append(level)
+            .Append(tierFlag ? 'H' : 'M');
 
         string bitDepthD2 = bitDepth.ToString("D2", CultureInfo.InvariantCulture);
-        result.Append("." + bitDepthD2);
+        result.Append('.')
+            .Append(bitDepthD2);
 
         return result.ToString();
     }
