@@ -12,14 +12,17 @@ namespace MediaBrowser.Providers.Lyric;
 public class LyricManager : ILyricManager
 {
     private readonly ILyricProvider[] _lyricProviders;
+    private readonly ILyricParser[] _lyricParsers;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LyricManager"/> class.
     /// </summary>
     /// <param name="lyricProviders">All found lyricProviders.</param>
-    public LyricManager(IEnumerable<ILyricProvider> lyricProviders)
+    /// <param name="lyricParsers">All found lyricParsers.</param>
+    public LyricManager(IEnumerable<ILyricProvider> lyricProviders, IEnumerable<ILyricParser> lyricParsers)
     {
         _lyricProviders = lyricProviders.OrderBy(i => i.Priority).ToArray();
+        _lyricParsers = lyricParsers.OrderBy(i => i.Priority).ToArray();
     }
 
     /// <inheritdoc />
@@ -27,10 +30,19 @@ public class LyricManager : ILyricManager
     {
         foreach (ILyricProvider provider in _lyricProviders)
         {
-            var results = await provider.GetLyrics(item).ConfigureAwait(false);
-            if (results is not null)
+            var lyrics = await provider.GetLyrics(item).ConfigureAwait(false);
+            if (lyrics is null)
             {
-                return results;
+                continue;
+            }
+
+            foreach (ILyricParser parser in _lyricParsers)
+            {
+                var result = parser.ParseLyrics(lyrics);
+                if (result is not null)
+                {
+                    return result;
+                }
             }
         }
 
@@ -47,7 +59,7 @@ public class LyricManager : ILyricManager
                 continue;
             }
 
-            if (provider.GetLyricFilePath(item.Path) is not null)
+            if (provider.HasLyrics(item))
             {
                 return true;
             }
