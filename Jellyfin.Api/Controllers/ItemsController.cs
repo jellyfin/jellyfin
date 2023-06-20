@@ -244,8 +244,7 @@ namespace Jellyfin.Api.Controllers
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             if (includeItemTypes.Length == 1
-                && (includeItemTypes[0] == BaseItemKind.Playlist
-                    || includeItemTypes[0] == BaseItemKind.BoxSet))
+                && includeItemTypes[0] == BaseItemKind.BoxSet)
             {
                 parentId = null;
             }
