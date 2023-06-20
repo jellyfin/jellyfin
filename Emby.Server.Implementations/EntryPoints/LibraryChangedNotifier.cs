@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -26,12 +27,8 @@ namespace Emby.Server.Implementations.EntryPoints
 {
     public class LibraryChangedNotifier : IServerEntryPoint
     {
-        /// <summary>
-        /// The library update duration.
-        /// </summary>
-        private const int LibraryUpdateDuration = 30000;
-
         private readonly ILibraryManager _libraryManager;
+        private readonly IServerConfigurationManager _configurationManager;
         private readonly IProviderManager _providerManager;
         private readonly ISessionManager _sessionManager;
         private readonly IUserManager _userManager;
@@ -51,12 +48,14 @@ namespace Emby.Server.Implementations.EntryPoints
 
         public LibraryChangedNotifier(
             ILibraryManager libraryManager,
+            IServerConfigurationManager configurationManager,
             ISessionManager sessionManager,
             IUserManager userManager,
             ILogger<LibraryChangedNotifier> logger,
             IProviderManager providerManager)
         {
             _libraryManager = libraryManager;
+            _configurationManager = configurationManager;
             _sessionManager = sessionManager;
             _userManager = userManager;
             _logger = logger;
@@ -196,12 +195,12 @@ namespace Emby.Server.Implementations.EntryPoints
                     LibraryUpdateTimer = new Timer(
                         LibraryUpdateTimerCallback,
                         null,
-                        LibraryUpdateDuration,
-                        Timeout.Infinite);
+                        TimeSpan.FromSeconds(_configurationManager.Configuration.LibraryUpdateDuration),
+                        Timeout.InfiniteTimeSpan);
                 }
                 else
                 {
-                    LibraryUpdateTimer.Change(LibraryUpdateDuration, Timeout.Infinite);
+                    LibraryUpdateTimer.Change(TimeSpan.FromSeconds(_configurationManager.Configuration.LibraryUpdateDuration), Timeout.InfiniteTimeSpan);
                 }
 
                 if (e.Item.GetParent() is Folder parent)
@@ -229,11 +228,11 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 if (LibraryUpdateTimer is null)
                 {
-                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration, Timeout.Infinite);
+                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, TimeSpan.FromSeconds(_configurationManager.Configuration.LibraryUpdateDuration), Timeout.InfiniteTimeSpan);
                 }
                 else
                 {
-                    LibraryUpdateTimer.Change(LibraryUpdateDuration, Timeout.Infinite);
+                    LibraryUpdateTimer.Change(TimeSpan.FromSeconds(_configurationManager.Configuration.LibraryUpdateDuration), Timeout.InfiniteTimeSpan);
                 }
 
                 _itemsUpdated.Add(e.Item);
@@ -256,11 +255,11 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 if (LibraryUpdateTimer is null)
                 {
-                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration, Timeout.Infinite);
+                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, TimeSpan.FromSeconds(_configurationManager.Configuration.LibraryUpdateDuration), Timeout.InfiniteTimeSpan);
                 }
                 else
                 {
-                    LibraryUpdateTimer.Change(LibraryUpdateDuration, Timeout.Infinite);
+                    LibraryUpdateTimer.Change(TimeSpan.FromSeconds(_configurationManager.Configuration.LibraryUpdateDuration), Timeout.InfiniteTimeSpan);
                 }
 
                 if (e.Parent is Folder parent)
