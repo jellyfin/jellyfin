@@ -62,7 +62,7 @@ namespace MediaBrowser.Model.Dlna
         /// <summary>
         /// Gets or sets the device profile.
         /// </summary>
-        required public DeviceProfile Profile { get; set; }
+        public required DeviceProfile Profile { get; set; }
 
         /// <summary>
         /// Gets or sets a media source id. Optional. Only needed if a specific AudioStreamIndex or SubtitleStreamIndex are requested.
