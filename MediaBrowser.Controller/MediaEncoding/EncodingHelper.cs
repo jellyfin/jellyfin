@@ -1365,22 +1365,11 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             var args = string.Empty;
             var gopArg = string.Empty;
-            var keyFrameArg = string.Empty;
-            if (isEventPlaylist)
-            {
-                keyFrameArg = string.Format(
-                    CultureInfo.InvariantCulture,
-                    " -force_key_frames:0 \"expr:gte(t,n_forced*{0})\"",
-                    segmentLength);
-            }
-            else if (startNumber.HasValue)
-            {
-                keyFrameArg = string.Format(
-                    CultureInfo.InvariantCulture,
-                    " -force_key_frames:0 \"expr:gte(t,{0}+n_forced*{1})\"",
-                    startNumber.Value * segmentLength,
-                    segmentLength);
-            }
+
+            var keyFrameArg = string.Format(
+                CultureInfo.InvariantCulture,
+                " -force_key_frames:0 \"expr:gte(t,n_forced*{0})\"",
+                segmentLength);
 
             var framerate = state.VideoStream?.RealFrameRate;
             if (framerate.HasValue)
@@ -2966,7 +2955,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (string.Equals(hwTonemapSuffix, "vaapi", StringComparison.OrdinalIgnoreCase))
             {
-                args = "procamp_vaapi=b={2}:c={3}," + args + ":extra_hw_frames=32";
+                args = "procamp_vaapi=b={1}:c={2},tonemap_vaapi=format={0}:p=bt709:t=bt709:m=bt709:extra_hw_frames=32";
 
                 return string.Format(
                         CultureInfo.InvariantCulture,
@@ -2974,25 +2963,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                         videoFormat ?? "nv12",
                         options.VppTonemappingBrightness,
                         options.VppTonemappingContrast);
-            }
-
-            if (string.Equals(hwTonemapSuffix, "vulkan", StringComparison.OrdinalIgnoreCase))
-            {
-                args = "libplacebo=format={1}:tonemapping={2}:color_primaries=bt709:color_trc=bt709:colorspace=bt709:peak_detect=0:upscaler=none:downscaler=none";
-
-                if (!string.Equals(options.TonemappingRange, "auto", StringComparison.OrdinalIgnoreCase))
-                {
-                    args += ":range={6}";
-                }
-
-                if (string.Equals(options.TonemappingAlgorithm, "bt2390", StringComparison.OrdinalIgnoreCase))
-                {
-                    algorithm = "bt.2390";
-                }
-                else if (string.Equals(options.TonemappingAlgorithm, "none", StringComparison.OrdinalIgnoreCase))
-                {
-                    algorithm = "clip";
-                }
             }
             else
             {

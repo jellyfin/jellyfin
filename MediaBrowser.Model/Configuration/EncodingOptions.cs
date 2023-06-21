@@ -20,6 +20,8 @@ public class EncodingOptions
         MaxMuxingQueueSize = 2048;
         EnableThrottling = false;
         ThrottleDelaySeconds = 180;
+        EnableSegmentDeletion = false;
+        SegmentKeepSeconds = 720;
         EncodingThreadCount = -1;
         // This is a DRM device that is almost guaranteed to be there on every intel platform,
         // plus it's the default one in ffmpeg if you don't specify anything
@@ -101,6 +103,16 @@ public class EncodingOptions
     /// Gets or sets the delay after which throttling happens.
     /// </summary>
     public int ThrottleDelaySeconds { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether segment deletion is enabled.
+    /// </summary>
+    public bool EnableSegmentDeletion { get; set; }
+
+    /// <summary>
+    /// Gets or sets seconds for which segments should be kept before being deleted.
+    /// </summary>
+    public int SegmentKeepSeconds { get; set; }
 
     /// <summary>
     /// Gets or sets the hardware acceleration type.
