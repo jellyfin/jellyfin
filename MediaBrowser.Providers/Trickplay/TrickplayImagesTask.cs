@@ -91,7 +91,7 @@ public class TrickplayImagesTask : IScheduledTask
         while (startIndex < numberOfVideos)
         {
             query.StartIndex = startIndex;
-            var videos = _libraryManager.GetItemList(query).OfType<Video>().ToList();
+            var videos = _libraryManager.GetItemList(query).OfType<Video>();
 
             foreach (var video in videos)
             {

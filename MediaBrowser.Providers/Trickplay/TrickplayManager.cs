@@ -247,7 +247,7 @@ public class TrickplayManager : ITrickplayManager
         /*
          * Move trickplay tiles to output directory
          */
-        Directory.CreateDirectory(outputDir);
+        Directory.CreateDirectory(Directory.GetParent(outputDir)!.FullName);
 
         // Replace existing tile grids if they already exist
         if (Directory.Exists(outputDir))
