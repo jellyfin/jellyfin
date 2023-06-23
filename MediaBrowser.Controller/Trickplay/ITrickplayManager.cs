@@ -50,4 +50,13 @@ public interface ITrickplayManager
     /// <param name="index">The tile grid's index.</param>
     /// <returns>The absolute path.</returns>
     string GetTrickplayTilePath(BaseItem item, int width, int index);
+
+    /// <summary>
+    /// Gets the trickplay HLS playlist.
+    /// </summary>
+    /// <param name="itemId">The item.</param>
+    /// <param name="width">The width of a single tile.</param>
+    /// <param name="apiKey">Optional api key of the requesting user.</param>
+    /// <returns>The text content of the .m3u8 playlist.</returns>
+    string? GetHlsPlaylist(Guid itemId, int width, string? apiKey);
 }

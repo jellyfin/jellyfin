@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
@@ -319,6 +320,81 @@ public class TrickplayManager : ITrickplayManager
     public string GetTrickplayTilePath(BaseItem item, int width, int index)
     {
         return Path.Combine(GetTrickplayDirectory(item, width), index + ".jpg");
+    }
+
+    /// <inheritdoc />
+    public string? GetHlsPlaylist(Guid itemId, int width, string? apiKey)
+    {
+        var tilesResolutions = GetTilesResolutions(itemId);
+        if (tilesResolutions is not null && tilesResolutions.TryGetValue(width, out var tilesInfo))
+        {
+            var builder = new StringBuilder(128);
+
+            if (tilesInfo.TileCount > 0)
+            {
+                const string urlFormat = "Trickplay/{0}/{1}.jpg?MediaSourceId={2}&api_key={3}";
+                const string decimalFormat = "{0:0.###}";
+
+                var resolution = $"{tilesInfo.Width}x{tilesInfo.Height}";
+                var layout = $"{tilesInfo.TileWidth}x{tilesInfo.TileHeight}";
+                var tilesPerGrid = tilesInfo.TileWidth * tilesInfo.TileHeight;
+                var tileDuration = tilesInfo.Interval / 1000d;
+                var infDuration = tileDuration * tilesPerGrid;
+                var tileGridCount = (int)Math.Ceiling((decimal)tilesInfo.TileCount / tilesPerGrid);
+
+                builder
+                    .AppendLine("#EXTM3U")
+                    .Append("#EXT-X-TARGETDURATION:")
+                    .AppendLine(tileGridCount.ToString(CultureInfo.InvariantCulture))
+                    .AppendLine("#EXT-X-VERSION:7")
+                    .AppendLine("#EXT-X-MEDIA-SEQUENCE:1")
+                    .AppendLine("#EXT-X-PLAYLIST-TYPE:VOD")
+                    .AppendLine("#EXT-X-IMAGES-ONLY");
+
+                for (int i = 0; i < tileGridCount; i++)
+                {
+                    // All tile grids before the last one must contain full amount of tiles.
+                    // The final grid will be 0 < count <= maxTiles
+                    if (i == tileGridCount - 1)
+                    {
+                        tilesPerGrid = tilesInfo.TileCount - (i * tilesPerGrid);
+                        infDuration = tileDuration * tilesPerGrid;
+                    }
+
+                    // EXTINF
+                    builder
+                        .Append("#EXTINF:")
+                        .AppendFormat(CultureInfo.InvariantCulture, decimalFormat, infDuration)
+                        .AppendLine(",");
+
+                    // EXT-X-TILES
+                    builder
+                        .Append("#EXT-X-TILES:RESOLUTION=")
+                        .Append(resolution)
+                        .Append(",LAYOUT=")
+                        .Append(layout)
+                        .Append(",DURATION=")
+                        .AppendFormat(CultureInfo.InvariantCulture, decimalFormat, tileDuration)
+                        .AppendLine();
+
+                    // URL
+                    builder
+                        .AppendFormat(
+                            CultureInfo.InvariantCulture,
+                            urlFormat,
+                            width.ToString(CultureInfo.InvariantCulture),
+                            i.ToString(CultureInfo.InvariantCulture),
+                            itemId.ToString("N"),
+                            apiKey)
+                        .AppendLine();
+                }
+
+                builder.AppendLine("#EXT-X-ENDLIST");
+                return builder.ToString();
+            }
+        }
+
+        return null;
     }
 
     private string GetTrickplayDirectory(BaseItem item, int? width = null)

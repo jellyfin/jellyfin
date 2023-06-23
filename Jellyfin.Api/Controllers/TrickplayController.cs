@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
 using System.Net.Mime;
 using System.Text;
 using Jellyfin.Api.Attributes;
@@ -54,7 +53,14 @@ public class TrickplayController : BaseJellyfinApiController
         [FromRoute, Required] int width,
         [FromQuery] Guid? mediaSourceId)
     {
-        return GetTrickplayPlaylistInternal(width, mediaSourceId ?? itemId);
+        string? playlist = _trickplayManager.GetHlsPlaylist(mediaSourceId ?? itemId, width, User.GetToken());
+
+        if (string.IsNullOrEmpty(playlist))
+        {
+            return NotFound();
+        }
+
+        return new FileContentResult(Encoding.UTF8.GetBytes(playlist), MimeTypes.GetMimeType("playlist.m3u8"));
     }
 
     /// <summary>
@@ -71,7 +77,7 @@ public class TrickplayController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesImageFile]
-    public ActionResult GetTrickplayHlsPlaylist(
+    public ActionResult GetTrickplayGridImage(
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] int width,
         [FromRoute, Required] int index,
@@ -87,80 +93,6 @@ public class TrickplayController : BaseJellyfinApiController
         if (System.IO.File.Exists(path))
         {
             return PhysicalFile(path, MediaTypeNames.Image.Jpeg);
-        }
-
-        return NotFound();
-    }
-
-    private ActionResult GetTrickplayPlaylistInternal(int width, Guid mediaSourceId)
-    {
-        var tilesResolutions = _trickplayManager.GetTilesResolutions(mediaSourceId);
-        if (tilesResolutions is not null && tilesResolutions.TryGetValue(width, out var tilesInfo))
-        {
-            var builder = new StringBuilder(128);
-
-            if (tilesInfo.TileCount > 0)
-            {
-                const string urlFormat = "Trickplay/{0}/{1}.jpg?MediaSourceId={2}&api_key={3}";
-                const string decimalFormat = "{0:0.###}";
-
-                var resolution = $"{tilesInfo.Width}x{tilesInfo.Height}";
-                var layout = $"{tilesInfo.TileWidth}x{tilesInfo.TileHeight}";
-                var tilesPerGrid = tilesInfo.TileWidth * tilesInfo.TileHeight;
-                var tileDuration = tilesInfo.Interval / 1000d;
-                var infDuration = tileDuration * tilesPerGrid;
-                var tileGridCount = (int)Math.Ceiling((decimal)tilesInfo.TileCount / tilesPerGrid);
-
-                builder
-                    .AppendLine("#EXTM3U")
-                    .Append("#EXT-X-TARGETDURATION:")
-                    .AppendLine(tileGridCount.ToString(CultureInfo.InvariantCulture))
-                    .AppendLine("#EXT-X-VERSION:7")
-                    .AppendLine("#EXT-X-MEDIA-SEQUENCE:1")
-                    .AppendLine("#EXT-X-PLAYLIST-TYPE:VOD")
-                    .AppendLine("#EXT-X-IMAGES-ONLY");
-
-                for (int i = 0; i < tileGridCount; i++)
-                {
-                    // All tile grids before the last one must contain full amount of tiles.
-                    // The final grid will be 0 < count <= maxTiles
-                    if (i == tileGridCount - 1)
-                    {
-                        tilesPerGrid = tilesInfo.TileCount - (i * tilesPerGrid);
-                        infDuration = tileDuration * tilesPerGrid;
-                    }
-
-                    // EXTINF
-                    builder
-                        .Append("#EXTINF:")
-                        .AppendFormat(CultureInfo.InvariantCulture, decimalFormat, infDuration)
-                        .AppendLine(",");
-
-                    // EXT-X-TILES
-                    builder
-                        .Append("#EXT-X-TILES:RESOLUTION=")
-                        .Append(resolution)
-                        .Append(",LAYOUT=")
-                        .Append(layout)
-                        .Append(",DURATION=")
-                        .AppendFormat(CultureInfo.InvariantCulture, decimalFormat, tileDuration)
-                        .AppendLine();
-
-                    // URL
-                    builder
-                        .AppendFormat(
-                            CultureInfo.InvariantCulture,
-                            urlFormat,
-                            width.ToString(CultureInfo.InvariantCulture),
-                            i.ToString(CultureInfo.InvariantCulture),
-                            mediaSourceId.ToString("N"),
-                            User.GetToken())
-                        .AppendLine();
-                }
-
-                builder.AppendLine("#EXT-X-ENDLIST");
-                return new FileContentResult(Encoding.UTF8.GetBytes(builder.ToString()), MimeTypes.GetMimeType("playlist.m3u8"));
-            }
         }
 
         return NotFound();
