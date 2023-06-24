@@ -166,6 +166,7 @@
  - [RealGreenDragon](https://github.com/RealGreenDragon)
  - [ipitio](https://github.com/ipitio)
  - [TheTyrius](https://github.com/TheTyrius)
+ - [Jacob Willden](https://github.com/jacob-willden)
 
 # Emby Contributors
 
