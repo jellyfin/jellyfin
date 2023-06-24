@@ -12,6 +12,7 @@ namespace MediaBrowser.Providers.Lyric;
 public class TxtLyricParser : ILyricParser
 {
     private static readonly string[] _supportedMediaTypes = { "lrc", "elrc", "txt" };
+    private static readonly string[] _lineBreakCharacters = { "\r\n", "\r", "\n" };
 
     /// <inheritdoc />
     public string Name => "TxtLyricProvider";
@@ -30,7 +31,7 @@ public class TxtLyricParser : ILyricParser
             return null;
         }
 
-        string[] lyricTextLines = lyrics.Content.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+        string[] lyricTextLines = lyrics.Content.Split(_lineBreakCharacters, StringSplitOptions.None);
 
         if (lyricTextLines.Length == 0)
         {
