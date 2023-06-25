@@ -48,21 +48,6 @@ namespace MediaBrowser.Model.Session
         /// <summary>
         /// The play pause.
         /// </summary>
-        PlayPause,
-
-        /// <summary>
-        /// The mute.
-        /// </summary>
-        Mute,
-
-        /// <summary>
-        /// The unmute.
-        /// </summary>
-        Unmute,
-
-        /// <summary>
-        /// The toggle mute.
-        /// </summary>
-        ToggleMute
+        PlayPause
     }
 }
