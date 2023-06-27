@@ -308,8 +308,8 @@ public class DynamicHlsHelper
         if (!isLiveStream && (state.VideoRequest?.EnableTrickplay).GetValueOrDefault(false))
         {
             var sourceId = Guid.Parse(state.Request.MediaSourceId);
-            var tilesResolutions = _trickplayManager.GetTilesResolutions(sourceId);
-            AddTrickplay(state, tilesResolutions, builder, _httpContextAccessor.HttpContext.User);
+            var trickplayResolutions = await _trickplayManager.GetTrickplayResolutions(sourceId).ConfigureAwait(false);
+            AddTrickplay(state, trickplayResolutions, builder, _httpContextAccessor.HttpContext.User);
         }
 
         return new FileContentResult(Encoding.UTF8.GetBytes(builder.ToString()), MimeTypes.GetMimeType("playlist.m3u8"));
@@ -544,17 +544,17 @@ public class DynamicHlsHelper
     /// Appends EXT-X-IMAGE-STREAM-INF playlists for each available trickplay resolution.
     /// </summary>
     /// <param name="state">StreamState of the current stream.</param>
-    /// <param name="tilesResolutions">Dictionary of widths to corresponding tiles info.</param>
+    /// <param name="trickplayResolutions">Dictionary of widths to corresponding tiles info.</param>
     /// <param name="builder">StringBuilder to append the field to.</param>
     /// <param name="user">Http user context.</param>
-    private void AddTrickplay(StreamState state, Dictionary<int, TrickplayTilesInfo> tilesResolutions, StringBuilder builder, ClaimsPrincipal user)
+    private void AddTrickplay(StreamState state, Dictionary<int, TrickplayInfo> trickplayResolutions, StringBuilder builder, ClaimsPrincipal user)
     {
         const string playlistFormat = "#EXT-X-IMAGE-STREAM-INF:BANDWIDTH={0},RESOLUTION={1}x{2},CODECS=\"jpeg\",URI=\"{3}\"";
 
-        foreach (var resolution in tilesResolutions)
+        foreach (var resolution in trickplayResolutions)
         {
             var width = resolution.Key;
-            var tilesInfo = resolution.Value;
+            var trickplayInfo = resolution.Value;
 
             var url = string.Format(
                 CultureInfo.InvariantCulture,
@@ -566,9 +566,9 @@ public class DynamicHlsHelper
             var line = string.Format(
                 CultureInfo.InvariantCulture,
                 playlistFormat,
-                tilesInfo.Bandwidth.ToString(CultureInfo.InvariantCulture),
-                tilesInfo.Width.ToString(CultureInfo.InvariantCulture),
-                tilesInfo.Height.ToString(CultureInfo.InvariantCulture),
+                trickplayInfo.Bandwidth.ToString(CultureInfo.InvariantCulture),
+                trickplayInfo.Width.ToString(CultureInfo.InvariantCulture),
+                trickplayInfo.Height.ToString(CultureInfo.InvariantCulture),
                 url);
 
             builder.AppendLine(line);

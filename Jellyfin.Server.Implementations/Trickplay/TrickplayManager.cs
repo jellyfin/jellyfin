@@ -6,19 +6,20 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Providers.Trickplay;
+namespace Jellyfin.Server.Implementations.Trickplay;
 
 /// <summary>
 /// ITrickplayManager implementation.
@@ -26,13 +27,13 @@ namespace MediaBrowser.Providers.Trickplay;
 public class TrickplayManager : ITrickplayManager
 {
     private readonly ILogger<TrickplayManager> _logger;
-    private readonly IItemRepository _itemRepo;
     private readonly IMediaEncoder _mediaEncoder;
     private readonly IFileSystem _fileSystem;
     private readonly EncodingHelper _encodingHelper;
     private readonly ILibraryManager _libraryManager;
     private readonly IServerConfigurationManager _config;
     private readonly IImageEncoder _imageEncoder;
+    private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
 
     private static readonly SemaphoreSlim _resourcePool = new(1, 1);
     private static readonly string[] _trickplayImgExtensions = { ".jpg" };
@@ -41,31 +42,31 @@ public class TrickplayManager : ITrickplayManager
     /// Initializes a new instance of the <see cref="TrickplayManager"/> class.
     /// </summary>
     /// <param name="logger">The logger.</param>
-    /// <param name="itemRepo">The item repository.</param>
     /// <param name="mediaEncoder">The media encoder.</param>
     /// <param name="fileSystem">The file systen.</param>
     /// <param name="encodingHelper">The encoding helper.</param>
     /// <param name="libraryManager">The library manager.</param>
     /// <param name="config">The server configuration manager.</param>
     /// <param name="imageEncoder">The image encoder.</param>
+    /// <param name="dbProvider">The database provider.</param>
     public TrickplayManager(
         ILogger<TrickplayManager> logger,
-        IItemRepository itemRepo,
         IMediaEncoder mediaEncoder,
         IFileSystem fileSystem,
         EncodingHelper encodingHelper,
         ILibraryManager libraryManager,
         IServerConfigurationManager config,
-        IImageEncoder imageEncoder)
+        IImageEncoder imageEncoder,
+        IDbContextFactory<JellyfinDbContext> dbProvider)
     {
         _logger = logger;
-        _itemRepo = itemRepo;
         _mediaEncoder = mediaEncoder;
         _fileSystem = fileSystem;
         _encodingHelper = encodingHelper;
         _libraryManager = libraryManager;
         _config = config;
         _imageEncoder = imageEncoder;
+        _dbProvider = dbProvider;
     }
 
     /// <inheritdoc />
@@ -105,7 +106,7 @@ public class TrickplayManager : ITrickplayManager
 
         try
         {
-            if (!replace && Directory.Exists(outputDir) && GetTilesResolutions(video.Id).ContainsKey(width))
+            if (!replace && Directory.Exists(outputDir) && (await GetTrickplayResolutions(video.Id).ConfigureAwait(false)).ContainsKey(width))
             {
                 _logger.LogDebug("Found existing trickplay files for {ItemId}. Exiting.", video.Id);
                 return;
@@ -152,14 +153,16 @@ public class TrickplayManager : ITrickplayManager
 
             // Create tiles
             var tilesTempDir = Path.Combine(imgTempDir, Guid.NewGuid().ToString("N"));
-            var tilesInfo = CreateTiles(images, width, options, tilesTempDir, outputDir);
+            var trickplayInfo = CreateTiles(images, width, options, tilesTempDir, outputDir);
 
             // Save tiles info
             try
             {
-                if (tilesInfo is not null)
+                if (trickplayInfo is not null)
                 {
-                    SaveTilesInfo(video.Id, tilesInfo);
+                    trickplayInfo.ItemId = video.Id;
+                    await SaveTrickplayInfo(trickplayInfo).ConfigureAwait(false);
+
                     _logger.LogInformation("Finished creation of trickplay files for {0}", mediaPath);
                 }
                 else
@@ -191,7 +194,7 @@ public class TrickplayManager : ITrickplayManager
         }
     }
 
-    private TrickplayTilesInfo CreateTiles(List<string> images, int width, TrickplayOptions options, string workDir, string outputDir)
+    private TrickplayInfo CreateTiles(List<string> images, int width, TrickplayOptions options, string workDir, string outputDir)
     {
         if (images.Count == 0)
         {
@@ -200,48 +203,48 @@ public class TrickplayManager : ITrickplayManager
 
         Directory.CreateDirectory(workDir);
 
-        var tilesInfo = new TrickplayTilesInfo
+        var trickplayInfo = new TrickplayInfo
         {
             Width = width,
             Interval = options.Interval,
             TileWidth = options.TileWidth,
             TileHeight = options.TileHeight,
-            TileCount = images.Count,
+            ThumbnailCount = images.Count,
             // Set during image generation
             Height = 0,
             Bandwidth = 0
         };
 
         /*
-         * Generate trickplay tile grids from sets of images
+         * Generate trickplay tiles from sets of thumbnails
          */
         var imageOptions = new ImageCollageOptions
         {
-            Width = tilesInfo.TileWidth,
-            Height = tilesInfo.TileHeight
+            Width = trickplayInfo.TileWidth,
+            Height = trickplayInfo.TileHeight
         };
 
-        var tilesPerGrid = tilesInfo.TileWidth * tilesInfo.TileHeight;
-        var requiredTileGrids = (int)Math.Ceiling((double)images.Count / tilesPerGrid);
+        var thumbnailsPerTile = trickplayInfo.TileWidth * trickplayInfo.TileHeight;
+        var requiredTiles = (int)Math.Ceiling((double)images.Count / thumbnailsPerTile);
 
-        for (int i = 0; i < requiredTileGrids; i++)
+        for (int i = 0; i < requiredTiles; i++)
         {
             // Set output/input paths
-            var tileGridPath = Path.Combine(workDir, $"{i}.jpg");
+            var tilePath = Path.Combine(workDir, $"{i}.jpg");
 
-            imageOptions.OutputPath = tileGridPath;
-            imageOptions.InputPaths = images.Skip(i * tilesPerGrid).Take(tilesPerGrid).ToList();
+            imageOptions.OutputPath = tilePath;
+            imageOptions.InputPaths = images.Skip(i * thumbnailsPerTile).Take(thumbnailsPerTile).ToList();
 
             // Generate image and use returned height for tiles info
-            var height = _imageEncoder.CreateTrickplayGrid(imageOptions, options.JpegQuality, tilesInfo.Width, tilesInfo.Height != 0 ? tilesInfo.Height : null);
-            if (tilesInfo.Height == 0)
+            var height = _imageEncoder.CreateTrickplayTile(imageOptions, options.JpegQuality, trickplayInfo.Width, trickplayInfo.Height != 0 ? trickplayInfo.Height : null);
+            if (trickplayInfo.Height == 0)
             {
-                tilesInfo.Height = height;
+                trickplayInfo.Height = height;
             }
 
             // Update bitrate
-            var bitrate = (int)Math.Ceiling((decimal)new FileInfo(tileGridPath).Length * 8 / tilesInfo.TileWidth / tilesInfo.TileHeight / (tilesInfo.Interval / 1000));
-            tilesInfo.Bandwidth = Math.Max(tilesInfo.Bandwidth, bitrate);
+            var bitrate = (int)Math.Ceiling((decimal)new FileInfo(tilePath).Length * 8 / trickplayInfo.TileWidth / trickplayInfo.TileHeight / (trickplayInfo.Interval / 1000));
+            trickplayInfo.Bandwidth = Math.Max(trickplayInfo.Bandwidth, bitrate);
         }
 
         /*
@@ -249,7 +252,7 @@ public class TrickplayManager : ITrickplayManager
          */
         Directory.CreateDirectory(Directory.GetParent(outputDir)!.FullName);
 
-        // Replace existing tile grids if they already exist
+        // Replace existing tiles if they already exist
         if (Directory.Exists(outputDir))
         {
             Directory.Delete(outputDir, true);
@@ -257,7 +260,7 @@ public class TrickplayManager : ITrickplayManager
 
         MoveDirectory(workDir, outputDir);
 
-        return tilesInfo;
+        return trickplayInfo;
     }
 
     private bool CanGenerateTrickplay(Video video, int interval)
@@ -299,21 +302,62 @@ public class TrickplayManager : ITrickplayManager
     }
 
     /// <inheritdoc />
-    public Dictionary<int, TrickplayTilesInfo> GetTilesResolutions(Guid itemId)
+    public async Task<Dictionary<int, TrickplayInfo>> GetTrickplayResolutions(Guid itemId)
     {
-        return _itemRepo.GetTilesResolutions(itemId);
+        var trickplayResolutions = new Dictionary<int, TrickplayInfo>();
+
+        var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+        await using (dbContext.ConfigureAwait(false))
+        {
+            var trickplayInfos = await dbContext.TrickplayInfos
+                .AsNoTracking()
+                .Where(i => i.ItemId.Equals(itemId))
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            foreach (var info in trickplayInfos)
+            {
+                trickplayResolutions[info.Width] = info;
+            }
+        }
+
+        return trickplayResolutions;
     }
 
     /// <inheritdoc />
-    public void SaveTilesInfo(Guid itemId, TrickplayTilesInfo tilesInfo)
+    public async Task SaveTrickplayInfo(TrickplayInfo info)
     {
-        _itemRepo.SaveTilesInfo(itemId, tilesInfo);
+        var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
+        await using (dbContext.ConfigureAwait(false))
+        {
+            var oldInfo = await dbContext.TrickplayInfos.FindAsync(info.ItemId, info.Width).ConfigureAwait(false);
+            if (oldInfo is not null)
+            {
+                dbContext.TrickplayInfos.Remove(oldInfo);
+            }
+
+            dbContext.Add(info);
+
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc />
-    public Dictionary<Guid, Dictionary<int, TrickplayTilesInfo>> GetTrickplayManifest(BaseItem item)
+    public async Task<Dictionary<Guid, Dictionary<int, TrickplayInfo>>> GetTrickplayManifest(BaseItem item)
     {
-        return _itemRepo.GetTrickplayManifest(item);
+        var trickplayManifest = new Dictionary<Guid, Dictionary<int, TrickplayInfo>>();
+        foreach (var mediaSource in item.GetMediaSources(false))
+        {
+            var mediaSourceId = Guid.Parse(mediaSource.Id);
+            var trickplayResolutions = await GetTrickplayResolutions(mediaSourceId).ConfigureAwait(false);
+
+            if (trickplayResolutions.Count > 0)
+            {
+                trickplayManifest[mediaSourceId] = trickplayResolutions;
+            }
+        }
+
+        return trickplayManifest;
     }
 
     /// <inheritdoc />
@@ -323,42 +367,41 @@ public class TrickplayManager : ITrickplayManager
     }
 
     /// <inheritdoc />
-    public string? GetHlsPlaylist(Guid itemId, int width, string? apiKey)
+    public async Task<string?> GetHlsPlaylist(Guid itemId, int width, string? apiKey)
     {
-        var tilesResolutions = GetTilesResolutions(itemId);
-        if (tilesResolutions is not null && tilesResolutions.TryGetValue(width, out var tilesInfo))
+        var trickplayResolutions = await GetTrickplayResolutions(itemId).ConfigureAwait(false);
+        if (trickplayResolutions is not null && trickplayResolutions.TryGetValue(width, out var trickplayInfo))
         {
             var builder = new StringBuilder(128);
 
-            if (tilesInfo.TileCount > 0)
+            if (trickplayInfo.ThumbnailCount > 0)
             {
                 const string urlFormat = "Trickplay/{0}/{1}.jpg?MediaSourceId={2}&api_key={3}";
                 const string decimalFormat = "{0:0.###}";
 
-                var resolution = $"{tilesInfo.Width}x{tilesInfo.Height}";
-                var layout = $"{tilesInfo.TileWidth}x{tilesInfo.TileHeight}";
-                var tilesPerGrid = tilesInfo.TileWidth * tilesInfo.TileHeight;
-                var tileDuration = tilesInfo.Interval / 1000d;
-                var infDuration = tileDuration * tilesPerGrid;
-                var tileGridCount = (int)Math.Ceiling((decimal)tilesInfo.TileCount / tilesPerGrid);
+                var resolution = $"{trickplayInfo.Width}x{trickplayInfo.Height}";
+                var layout = $"{trickplayInfo.TileWidth}x{trickplayInfo.TileHeight}";
+                var thumbnailsPerTile = trickplayInfo.TileWidth * trickplayInfo.TileHeight;
+                var thumbnailDuration = trickplayInfo.Interval / 1000d;
+                var infDuration = thumbnailDuration * thumbnailsPerTile;
+                var tileCount = (int)Math.Ceiling((decimal)trickplayInfo.ThumbnailCount / thumbnailsPerTile);
 
                 builder
                     .AppendLine("#EXTM3U")
                     .Append("#EXT-X-TARGETDURATION:")
-                    .AppendLine(tileGridCount.ToString(CultureInfo.InvariantCulture))
+                    .AppendLine(tileCount.ToString(CultureInfo.InvariantCulture))
                     .AppendLine("#EXT-X-VERSION:7")
                     .AppendLine("#EXT-X-MEDIA-SEQUENCE:1")
                     .AppendLine("#EXT-X-PLAYLIST-TYPE:VOD")
                     .AppendLine("#EXT-X-IMAGES-ONLY");
 
-                for (int i = 0; i < tileGridCount; i++)
+                for (int i = 0; i < tileCount; i++)
                 {
-                    // All tile grids before the last one must contain full amount of tiles.
-                    // The final grid will be 0 < count <= maxTiles
-                    if (i == tileGridCount - 1)
+                    // All tiles prior to the last must contain full amount of thumbnails (no black).
+                    if (i == tileCount - 1)
                     {
-                        tilesPerGrid = tilesInfo.TileCount - (i * tilesPerGrid);
-                        infDuration = tileDuration * tilesPerGrid;
+                        thumbnailsPerTile = trickplayInfo.ThumbnailCount - (i * thumbnailsPerTile);
+                        infDuration = thumbnailDuration * thumbnailsPerTile;
                     }
 
                     // EXTINF
@@ -374,7 +417,7 @@ public class TrickplayManager : ITrickplayManager
                         .Append(",LAYOUT=")
                         .Append(layout)
                         .Append(",DURATION=")
-                        .AppendFormat(CultureInfo.InvariantCulture, decimalFormat, tileDuration)
+                        .AppendFormat(CultureInfo.InvariantCulture, decimalFormat, thumbnailDuration)
                         .AppendLine();
 
                     // URL

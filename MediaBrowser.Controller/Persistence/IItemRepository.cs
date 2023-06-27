@@ -62,27 +62,6 @@ namespace MediaBrowser.Controller.Persistence
         void SaveChapters(Guid id, IReadOnlyList<ChapterInfo> chapters);
 
         /// <summary>
-        /// Get available trickplay resolutions and corresponding info.
-        /// </summary>
-        /// <param name="itemId">The item.</param>
-        /// <returns>Map of width resolutions to trickplay tiles info.</returns>
-        Dictionary<int, TrickplayTilesInfo> GetTilesResolutions(Guid itemId);
-
-        /// <summary>
-        /// Saves trickplay tiles info.
-        /// </summary>
-        /// <param name="itemId">The item.</param>
-        /// <param name="tilesInfo">The trickplay tiles info.</param>
-        void SaveTilesInfo(Guid itemId, TrickplayTilesInfo tilesInfo);
-
-        /// <summary>
-        /// Gets trickplay data for an item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>A map of media source id to a map of tile width to tile info.</returns>
-        Dictionary<Guid, Dictionary<int, TrickplayTilesInfo>> GetTrickplayManifest(BaseItem item);
-
-        /// <summary>
         /// Gets the media streams.
         /// </summary>
         /// <param name="query">The query.</param>

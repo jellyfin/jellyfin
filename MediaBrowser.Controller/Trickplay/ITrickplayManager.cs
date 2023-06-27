@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Trickplay;
 
@@ -13,7 +13,7 @@ namespace MediaBrowser.Controller.Trickplay;
 public interface ITrickplayManager
 {
     /// <summary>
-    /// Generate or replace trickplay data.
+    /// Generates new trickplay images and metadata.
     /// </summary>
     /// <param name="video">The video.</param>
     /// <param name="replace">Whether or not existing data should be replaced.</param>
@@ -26,28 +26,28 @@ public interface ITrickplayManager
     /// </summary>
     /// <param name="itemId">The item.</param>
     /// <returns>Map of width resolutions to trickplay tiles info.</returns>
-    Dictionary<int, TrickplayTilesInfo> GetTilesResolutions(Guid itemId);
+    Task<Dictionary<int, TrickplayInfo>> GetTrickplayResolutions(Guid itemId);
 
     /// <summary>
-    /// Saves trickplay tiles info.
+    /// Saves trickplay info.
     /// </summary>
-    /// <param name="itemId">The item.</param>
-    /// <param name="tilesInfo">The trickplay tiles info.</param>
-    void SaveTilesInfo(Guid itemId, TrickplayTilesInfo tilesInfo);
+    /// <param name="info">The trickplay info.</param>
+    /// <returns>Task.</returns>
+    Task SaveTrickplayInfo(TrickplayInfo info);
 
     /// <summary>
-    /// Gets the trickplay manifest.
-    /// </summary>
-    /// <param name="item">The item.</param>
-    /// <returns>A map of media source id to a map of tile width to tile info.</returns>
-    Dictionary<Guid, Dictionary<int, TrickplayTilesInfo>> GetTrickplayManifest(BaseItem item);
-
-    /// <summary>
-    /// Gets the path to a trickplay tiles image.
+    /// Gets all trickplay infos for all media streams of an item.
     /// </summary>
     /// <param name="item">The item.</param>
-    /// <param name="width">The width of a single tile.</param>
-    /// <param name="index">The tile grid's index.</param>
+    /// <returns>A map of media source id to a map of tile width to trickplay info.</returns>
+    Task<Dictionary<Guid, Dictionary<int, TrickplayInfo>>> GetTrickplayManifest(BaseItem item);
+
+    /// <summary>
+    /// Gets the path to a trickplay tile image.
+    /// </summary>
+    /// <param name="item">The item.</param>
+    /// <param name="width">The width of a single thumbnail.</param>
+    /// <param name="index">The tile's index.</param>
     /// <returns>The absolute path.</returns>
     string GetTrickplayTilePath(BaseItem item, int width, int index);
 
@@ -55,8 +55,8 @@ public interface ITrickplayManager
     /// Gets the trickplay HLS playlist.
     /// </summary>
     /// <param name="itemId">The item.</param>
-    /// <param name="width">The width of a single tile.</param>
+    /// <param name="width">The width of a single thumbnail.</param>
     /// <param name="apiKey">Optional api key of the requesting user.</param>
     /// <returns>The text content of the .m3u8 playlist.</returns>
-    string? GetHlsPlaylist(Guid itemId, int width, string? apiKey);
+    Task<string?> GetHlsPlaylist(Guid itemId, int width, string? apiKey);
 }

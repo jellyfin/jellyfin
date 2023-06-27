@@ -22,6 +22,7 @@ using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -52,6 +53,7 @@ namespace Emby.Server.Implementations.Dto
         private readonly Lazy<ILiveTvManager> _livetvManagerFactory;
 
         private readonly ILyricManager _lyricManager;
+        private readonly ITrickplayManager _trickplayManager;
 
         public DtoService(
             ILogger<DtoService> logger,
@@ -63,7 +65,8 @@ namespace Emby.Server.Implementations.Dto
             IApplicationHost appHost,
             IMediaSourceManager mediaSourceManager,
             Lazy<ILiveTvManager> livetvManagerFactory,
-            ILyricManager lyricManager)
+            ILyricManager lyricManager,
+            ITrickplayManager trickplayManager)
         {
             _logger = logger;
             _libraryManager = libraryManager;
@@ -75,6 +78,7 @@ namespace Emby.Server.Implementations.Dto
             _mediaSourceManager = mediaSourceManager;
             _livetvManagerFactory = livetvManagerFactory;
             _lyricManager = lyricManager;
+            _trickplayManager = trickplayManager;
         }
 
         private ILiveTvManager LivetvManager => _livetvManagerFactory.Value;
@@ -1060,9 +1064,11 @@ namespace Emby.Server.Implementations.Dto
 
                 if (options.ContainsField(ItemFields.Trickplay))
                 {
+                    var manifest = _trickplayManager.GetTrickplayManifest(item).ConfigureAwait(false).GetAwaiter().GetResult();
+
                     // To stay consistent with other fields, this must go from a Guid to a non-dashed string.
                     // This does not seem to occur automatically to dictionaries like it does with other Guid fields.
-                    dto.Trickplay = _itemRepo.GetTrickplayManifest(item).ToDictionary(x => x.Key.ToString("N", CultureInfo.InvariantCulture), y => y.Value);
+                    dto.Trickplay = manifest.ToDictionary(x => x.Key.ToString("N", CultureInfo.InvariantCulture), y => y.Value);
                 }
 
                 if (video.ExtraType.HasValue)

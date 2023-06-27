@@ -78,6 +78,11 @@ public class JellyfinDbContext : DbContext
     /// </summary>
     public DbSet<User> Users => Set<User>();
 
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the trickplay metadata.
+    /// </summary>
+    public DbSet<TrickplayInfo> TrickplayInfos => Set<TrickplayInfo>();
+
     /*public DbSet<Artwork> Artwork => Set<Artwork>();
 
     public DbSet<Book> Books => Set<Book>();

@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Drawing;
 
 namespace MediaBrowser.Controller.Drawing
@@ -84,13 +83,13 @@ namespace MediaBrowser.Controller.Drawing
         void CreateSplashscreen(IReadOnlyList<string> posters, IReadOnlyList<string> backdrops);
 
         /// <summary>
-        /// Creates a new jpeg trickplay grid image.
+        /// Creates a new trickplay tile image.
         /// </summary>
-        /// <param name="options">The options to use when creating the image. Width and Height are a quantity of tiles in this case, not pixels.</param>
+        /// <param name="options">The options to use when creating the image. Width and Height are a quantity of thumbnails in this case, not pixels.</param>
         /// <param name="quality">The image encode quality.</param>
-        /// <param name="imgWidth">The width of a single trickplay image.</param>
-        /// <param name="imgHeight">Optional height of a single trickplay image, if it is known.</param>
-        /// <returns>Height of single decoded trickplay image.</returns>
-        int CreateTrickplayGrid(ImageCollageOptions options, int quality, int imgWidth, int? imgHeight);
+        /// <param name="imgWidth">The width of a single trickplay thumbnail.</param>
+        /// <param name="imgHeight">Optional height of a single trickplay thumbnail, if it is known.</param>
+        /// <returns>Height of single decoded trickplay thumbnail.</returns>
+        int CreateTrickplayTile(ImageCollageOptions options, int quality, int imgWidth, int? imgHeight);
     }
 }

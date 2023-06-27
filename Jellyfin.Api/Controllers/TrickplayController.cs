@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
 using System.Text;
+using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Extensions;
 using MediaBrowser.Controller.Library;
@@ -42,18 +43,18 @@ public class TrickplayController : BaseJellyfinApiController
     /// <param name="itemId">The item id.</param>
     /// <param name="width">The width of a single tile.</param>
     /// <param name="mediaSourceId">The media version id, if using an alternate version.</param>
-    /// <response code="200">Tiles stream returned.</response>
-    /// <returns>A <see cref="FileResult"/> containing the trickplay tiles file.</returns>
+    /// <response code="200">Tiles playlist returned.</response>
+    /// <returns>A <see cref="FileResult"/> containing the trickplay playlist file.</returns>
     [HttpGet("Videos/{itemId}/Trickplay/{width}/tiles.m3u8")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesPlaylistFile]
-    public ActionResult GetTrickplayHlsPlaylist(
+    public async Task<ActionResult> GetTrickplayHlsPlaylist(
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] int width,
         [FromQuery] Guid? mediaSourceId)
     {
-        string? playlist = _trickplayManager.GetHlsPlaylist(mediaSourceId ?? itemId, width, User.GetToken());
+        string? playlist = await _trickplayManager.GetHlsPlaylist(mediaSourceId ?? itemId, width, User.GetToken()).ConfigureAwait(false);
 
         if (string.IsNullOrEmpty(playlist))
         {
@@ -64,20 +65,20 @@ public class TrickplayController : BaseJellyfinApiController
     }
 
     /// <summary>
-    /// Gets a trickplay tile grid image.
+    /// Gets a trickplay tile image.
     /// </summary>
     /// <param name="itemId">The item id.</param>
     /// <param name="width">The width of a single tile.</param>
-    /// <param name="index">The index of the desired tile grid.</param>
+    /// <param name="index">The index of the desired tile.</param>
     /// <param name="mediaSourceId">The media version id, if using an alternate version.</param>
-    /// <response code="200">Tiles image returned.</response>
-    /// <response code="200">Tiles image not found at specified index.</response>
+    /// <response code="200">Tile image returned.</response>
+    /// <response code="200">Tile image not found at specified index.</response>
     /// <returns>A <see cref="FileResult"/> containing the trickplay tiles image.</returns>
     [HttpGet("Videos/{itemId}/Trickplay/{width}/{index}.jpg")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesImageFile]
-    public ActionResult GetTrickplayGridImage(
+    public ActionResult GetTrickplayTileImage(
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] int width,
         [FromRoute, Required] int index,

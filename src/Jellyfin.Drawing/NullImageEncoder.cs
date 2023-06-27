@@ -50,7 +50,7 @@ public class NullImageEncoder : IImageEncoder
     }
 
     /// <inheritdoc />
-    public int CreateTrickplayGrid(ImageCollageOptions options, int quality, int imgWidth, int? imgHeight)
+    public int CreateTrickplayTile(ImageCollageOptions options, int quality, int imgWidth, int? imgHeight)
     {
         throw new NotImplementedException();
     }

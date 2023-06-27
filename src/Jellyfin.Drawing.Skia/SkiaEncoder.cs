@@ -531,7 +531,7 @@ public class SkiaEncoder : IImageEncoder
     }
 
     /// <inheritdoc />
-    public int CreateTrickplayGrid(ImageCollageOptions options, int quality, int imgWidth, int? imgHeight)
+    public int CreateTrickplayTile(ImageCollageOptions options, int quality, int imgWidth, int? imgHeight)
     {
         var paths = options.InputPaths;
         var tileWidth = options.Width;
