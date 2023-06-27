@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Session;
 
 namespace MediaBrowser.Controller.Net.WebSocketMessages.Inbound;
