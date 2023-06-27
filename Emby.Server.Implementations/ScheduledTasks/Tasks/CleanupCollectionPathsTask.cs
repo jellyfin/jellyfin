@@ -88,7 +88,7 @@ public class CleanupCollectionPathsTask : IScheduledTask
                 }
             }
 
-            if (itemsToRemove.Any())
+            if (itemsToRemove.Count != 0)
             {
                 _logger.LogDebug("Update Boxset {CollectionName}", collection.Name);
                 collection.LinkedChildren = collection.LinkedChildren.Except(itemsToRemove).ToArray();
