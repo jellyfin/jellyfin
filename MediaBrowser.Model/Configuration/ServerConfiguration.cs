@@ -189,7 +189,7 @@ namespace MediaBrowser.Model.Configuration
 
         public NameValuePair[] ContentTypes { get; set; } = Array.Empty<NameValuePair>();
 
-        public int RemoteClientBitrateLimit { get; set; } = 0;
+        public int RemoteClientBitrateLimit { get; set; }
 
         public bool EnableFolderView { get; set; } = false;
 
@@ -203,7 +203,7 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableExternalContentInSuggestions { get; set; } = true;
 
-        public int ImageExtractionTimeoutMs { get; set; } = 0;
+        public int ImageExtractionTimeoutMs { get; set; }
 
         public PathSubstitution[] PathSubstitutions { get; set; } = Array.Empty<PathSubstitution>();
 
@@ -251,7 +251,7 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the dummy chapter duration in seconds, use 0 (zero) or less to disable generation alltogether.
         /// </summary>
         /// <value>The dummy chapters duration.</value>
-        public int DummyChapterDuration { get; set; } = 0;
+        public int DummyChapterDuration { get; set; }
 
         /// <summary>
         /// Gets or sets the chapter image resolution.
@@ -263,6 +263,6 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the limit for parallel image encoding.
         /// </summary>
         /// <value>The limit for parallel image encoding.</value>
-        public int ParallelImageEncodingLimit { get; set; } = 0;
+        public int ParallelImageEncodingLimit { get; set; }
     }
 }

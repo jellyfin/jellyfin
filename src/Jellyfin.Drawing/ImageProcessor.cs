@@ -50,14 +50,12 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
     /// <param name="appPaths">The server application paths.</param>
     /// <param name="fileSystem">The filesystem.</param>
     /// <param name="imageEncoder">The image encoder.</param>
-    /// <param name="mediaEncoder">The media encoder.</param>
     /// <param name="config">The configuration.</param>
     public ImageProcessor(
         ILogger<ImageProcessor> logger,
         IServerApplicationPaths appPaths,
         IFileSystem fileSystem,
         IImageEncoder imageEncoder,
-        IMediaEncoder mediaEncoder,
         IServerConfigurationManager config)
     {
         _logger = logger;

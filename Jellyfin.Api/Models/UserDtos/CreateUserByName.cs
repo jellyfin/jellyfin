@@ -11,7 +11,7 @@ public class CreateUserByName
     /// Gets or sets the username.
     /// </summary>
     [Required]
-    required public string Name { get; set; }
+    public required string Name { get; set; }
 
     /// <summary>
     /// Gets or sets the password.

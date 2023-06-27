@@ -57,7 +57,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly IServerConfigurationManager _serverConfig;
         private readonly string _startupOptionFFmpegPath;
 
-        private readonly SemaphoreSlim _thumbnailResourcePool = new SemaphoreSlim(2, 2);
+        private readonly SemaphoreSlim _thumbnailResourcePool;
 
         private readonly object _runningProcessesLock = new object();
         private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
@@ -113,6 +113,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             _jsonSerializerOptions = new JsonSerializerOptions(JsonDefaults.Options);
             _jsonSerializerOptions.Converters.Add(new JsonBoolStringConverter());
+
+            var semaphoreCount = 2 * Environment.ProcessorCount;
+            _thumbnailResourcePool = new SemaphoreSlim(semaphoreCount, semaphoreCount);
         }
 
         /// <inheritdoc />
