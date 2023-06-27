@@ -2,6 +2,7 @@
 #pragma warning disable CS1591, CA1819
 
 using System;
+using System.ComponentModel;
 using System.Xml.Serialization;
 using Jellyfin.Data.Enums;
 using AccessSchedule = Jellyfin.Data.Entities.AccessSchedule;
@@ -79,6 +80,7 @@ namespace MediaBrowser.Model.Users
         /// Gets or sets a value indicating whether this instance can manage collections.
         /// </summary>
         /// <value><c>true</c> if this instance is hidden; otherwise, <c>false</c>.</value>
+        [DefaultValue(false)]
         public bool EnableCollectionManagement { get; set; }
 
         /// <summary>
