@@ -265,6 +265,10 @@ namespace MediaBrowser.Model.Configuration
         /// <value>The limit for parallel image encoding.</value>
         public int ParallelImageEncodingLimit { get; set; }
 
+        /// <summary>
+        /// Gets or sets the trickplay options.
+        /// </summary>
+        /// <value>The trickplay options.</value>
         public TrickplayOptions TrickplayOptions { get; set; } = new TrickplayOptions();
     }
 }
