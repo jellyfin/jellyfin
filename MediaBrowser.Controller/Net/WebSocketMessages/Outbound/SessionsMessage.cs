@@ -7,7 +7,7 @@ namespace MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 /// <summary>
 /// Sessions message.
 /// </summary>
-public class SessionsMessage : WebSocketMessage<SessionInfo>, IOutboundWebSocketMessage
+public class SessionsMessage : OutboundWebSocketMessage<SessionInfo>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="SessionsMessage"/> class.

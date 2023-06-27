@@ -8,7 +8,7 @@ namespace MediaBrowser.Controller.Net.WebSocketMessages.Inbound;
 /// <summary>
 /// Activity log entry start message.
 /// </summary>
-public class ActivityLogEntryStartMessage : WebSocketMessage<IReadOnlyCollection<ActivityLogEntry>>, IInboundWebSocketMessage
+public class ActivityLogEntryStartMessage : InboundWebSocketMessage<IReadOnlyCollection<ActivityLogEntry>>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ActivityLogEntryStartMessage"/> class.

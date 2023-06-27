@@ -7,7 +7,7 @@ namespace MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 /// <summary>
 /// Library changed message.
 /// </summary>
-public class LibraryChangedMessage : WebSocketMessage<LibraryUpdateInfo>, IOutboundWebSocketMessage
+public class LibraryChangedMessage : OutboundWebSocketMessage<LibraryUpdateInfo>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="LibraryChangedMessage"/> class.

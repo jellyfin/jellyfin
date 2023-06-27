@@ -7,7 +7,7 @@ namespace MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 /// <summary>
 /// Series timer created message.
 /// </summary>
-public class SeriesTimerCreatedMessage : WebSocketMessage<TimerEventInfo>, IOutboundWebSocketMessage
+public class SeriesTimerCreatedMessage : OutboundWebSocketMessage<TimerEventInfo>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="SeriesTimerCreatedMessage"/> class.

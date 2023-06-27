@@ -8,7 +8,7 @@ namespace MediaBrowser.Controller.Net.WebSocketMessages.Inbound;
 /// <summary>
 /// Scheduled tasks info start message.
 /// </summary>
-public class ScheduledTasksInfoStartMessage : WebSocketMessage<IReadOnlyCollection<TaskInfo>>, IInboundWebSocketMessage
+public class ScheduledTasksInfoStartMessage : InboundWebSocketMessage<IReadOnlyCollection<TaskInfo>>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ScheduledTasksInfoStartMessage"/> class.

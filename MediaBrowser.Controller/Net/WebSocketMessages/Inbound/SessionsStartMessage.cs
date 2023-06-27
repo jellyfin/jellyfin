@@ -7,7 +7,7 @@ namespace MediaBrowser.Controller.Net.WebSocketMessages.Inbound;
 /// <summary>
 /// Sessions start message.
 /// </summary>
-public class SessionsStartMessage : WebSocketMessage<SessionInfo>, IInboundWebSocketMessage
+public class SessionsStartMessage : InboundWebSocketMessage<SessionInfo>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="SessionsStartMessage"/> class.

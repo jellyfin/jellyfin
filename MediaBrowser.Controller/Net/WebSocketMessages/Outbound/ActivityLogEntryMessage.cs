@@ -8,7 +8,7 @@ namespace MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 /// <summary>
 /// Activity log created message.
 /// </summary>
-public class ActivityLogEntryMessage : WebSocketMessage<IReadOnlyList<ActivityLogEntry>>, IOutboundWebSocketMessage
+public class ActivityLogEntryMessage : OutboundWebSocketMessage<IReadOnlyList<ActivityLogEntry>>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ActivityLogEntryMessage"/> class.

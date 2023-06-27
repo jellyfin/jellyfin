@@ -7,7 +7,7 @@ namespace MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 /// <summary>
 /// Sync play command.
 /// </summary>
-public class SyncPlayCommandMessage : WebSocketMessage<SendCommand>, IOutboundWebSocketMessage
+public class SyncPlayCommandMessage : OutboundWebSocketMessage<SendCommand>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="SyncPlayCommandMessage"/> class.
