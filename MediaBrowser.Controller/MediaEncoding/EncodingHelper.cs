@@ -209,8 +209,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             if (string.Equals(state.VideoStream.Codec, "hevc", StringComparison.OrdinalIgnoreCase)
-                && string.Equals(state.VideoStream.VideoRange, "HDR", StringComparison.OrdinalIgnoreCase)
-                && string.Equals(state.VideoStream.VideoRangeType, "DOVI", StringComparison.OrdinalIgnoreCase))
+                && state.VideoStream.VideoRange == VideoRange.HDR
+                && state.VideoStream.VideoRangeType == VideoRangeType.DOVI)
             {
                 // Only native SW decoder and HW accelerator can parse dovi rpu.
                 var vidDecoder = GetHardwareVideoDecoder(state, options) ?? string.Empty;
@@ -221,9 +221,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return isSwDecoder || isNvdecDecoder || isVaapiDecoder || isD3d11vaDecoder;
             }
 
-            return string.Equals(state.VideoStream.VideoRange, "HDR", StringComparison.OrdinalIgnoreCase)
-                   && (string.Equals(state.VideoStream.VideoRangeType, "HDR10", StringComparison.OrdinalIgnoreCase)
-                       || string.Equals(state.VideoStream.VideoRangeType, "HLG", StringComparison.OrdinalIgnoreCase));
+            return state.VideoStream.VideoRange == VideoRange.HDR
+                   && (state.VideoStream.VideoRangeType == VideoRangeType.HDR10
+                       || state.VideoStream.VideoRangeType == VideoRangeType.HLG);
         }
 
         private bool IsVulkanHwTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
@@ -235,7 +235,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // libplacebo has partial Dolby Vision to SDR tonemapping support.
             return options.EnableTonemapping
-                   && string.Equals(state.VideoStream.VideoRange, "HDR", StringComparison.OrdinalIgnoreCase)
+                   && state.VideoStream.VideoRange == VideoRange.HDR
                    && GetVideoColorBitDepth(state) == 10;
         }
 
@@ -250,8 +250,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // Native VPP tonemapping may come to QSV in the future.
 
-            return string.Equals(state.VideoStream.VideoRange, "HDR", StringComparison.OrdinalIgnoreCase)
-                   && string.Equals(state.VideoStream.VideoRangeType, "HDR10", StringComparison.OrdinalIgnoreCase);
+            return state.VideoStream.VideoRange == VideoRange.HDR
+                   && state.VideoStream.VideoRangeType == VideoRangeType.HDR10;
         }
 
         /// <summary>
@@ -1934,12 +1934,12 @@ namespace MediaBrowser.Controller.MediaEncoding
             var requestedRangeTypes = state.GetRequestedRangeTypes(videoStream.Codec);
             if (requestedRangeTypes.Length > 0)
             {
-                if (string.IsNullOrEmpty(videoStream.VideoRangeType))
+                if (videoStream.VideoRangeType == VideoRangeType.Unknown)
                 {
                     return false;
                 }
 
-                if (!requestedRangeTypes.Contains(videoStream.VideoRangeType, StringComparison.OrdinalIgnoreCase))
+                if (!requestedRangeTypes.Contains(videoStream.VideoRangeType.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
