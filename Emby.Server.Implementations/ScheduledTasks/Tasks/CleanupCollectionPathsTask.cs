@@ -74,11 +74,12 @@ public class CleanupCollectionPathsTask : IScheduledTask
         var collections = collectionsFolder.Children.OfType<BoxSet>().ToArray();
         _logger.LogDebug("Found {CollectionLength} Boxsets", collections.Length);
 
+        var itemsToRemove = new List<LinkedChild>();
         for (var index = 0; index < collections.Length; index++)
         {
             var collection = collections[index];
             _logger.LogDebug("Check Boxset {CollectionName}", collection.Name);
-            var itemsToRemove = new List<LinkedChild>();
+
             foreach (var collectionLinkedChild in collection.LinkedChildren)
             {
                 if (!File.Exists(collectionLinkedChild.Path))
@@ -102,6 +103,8 @@ public class CleanupCollectionPathsTask : IScheduledTask
                         ForceSave = true
                     },
                     RefreshPriority.High);
+
+                itemsToRemove.Clear();
             }
 
             progress.Report(100D / collections.Length * (index + 1));
