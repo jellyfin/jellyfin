@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using SkiaSharp;
+using SkiaSharp.HarfBuzz;
 
 namespace Jellyfin.Drawing.Skia;
 
 /// <summary>
 /// Used to build collages of multiple images arranged in vertical strips.
 /// </summary>
-public class StripCollageBuilder
+public partial class StripCollageBuilder
 {
     private readonly SkiaEncoder _skiaEncoder;
 
@@ -21,6 +22,9 @@ public class StripCollageBuilder
     {
         _skiaEncoder = skiaEncoder;
     }
+
+    [GeneratedRegex(@"\p{IsArabic}|\p{IsArmenian}|\p{IsHebrew}|\p{IsSyriac}|\p{IsThaana}")]
+    private static partial Regex IsRtlTextRegex();
 
     /// <summary>
     /// Check which format an image has been encoded with using its filename extension.
@@ -144,7 +148,19 @@ public class StripCollageBuilder
             textPaint.TextSize = 0.9f * width * textPaint.TextSize / textWidth;
         }
 
-        canvas.DrawText(libraryName, width / 2f, (height / 2f) + (textPaint.FontMetrics.XHeight / 2), textPaint);
+        if (string.IsNullOrWhiteSpace(libraryName))
+        {
+            return bitmap;
+        }
+
+        if (IsRtlTextRegex().IsMatch(libraryName))
+        {
+            canvas.DrawShapedText(libraryName, width / 2f, (height / 2f) + (textPaint.FontMetrics.XHeight / 2), textPaint);
+        }
+        else
+        {
+            canvas.DrawText(libraryName, width / 2f, (height / 2f) + (textPaint.FontMetrics.XHeight / 2), textPaint);
+        }
 
         return bitmap;
     }
