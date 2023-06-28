@@ -155,7 +155,7 @@ public partial class StripCollageBuilder
 
         if (IsRtlTextRegex().IsMatch(libraryName))
         {
-            canvas.DrawShapedText(libraryName, 250, (height / 2f) + (textPaint.FontMetrics.XHeight / 2), textPaint);
+            canvas.DrawShapedText(libraryName, width / 2f, (height / 2f) + (textPaint.FontMetrics.XHeight / 2), textPaint);
         }
         else
         {
