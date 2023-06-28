@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Runtime.InteropServices;
 using System.Text;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Middleware;
 using Jellyfin.MediaEncoding.Hls.Extensions;
 using Jellyfin.Networking.Configuration;
@@ -123,6 +124,8 @@ namespace Jellyfin.Server
                 .AddCheck<DbContextFactoryHealthCheck<JellyfinDbContext>>(nameof(JellyfinDbContext));
 
             services.AddHlsPlaylistGenerator();
+            services.AddSingleton<IBandwidthLimiterProviderService, BandwidthLimiterProviderService>();
+            services.AddSingleton<IActionResultExecutor<ThrottledPhysicalFileActionResult>, ThrottledPhysicalFileResultExecutor>();
         }
 
         /// <summary>

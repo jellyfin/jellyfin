@@ -1,4 +1,4 @@
-﻿#pragma warning disable CA1307
+#pragma warning disable CA1307
 
 using System;
 using System.Collections.Concurrent;
@@ -156,10 +156,6 @@ namespace Jellyfin.Server.Implementations.Users
                 user.Username = newName;
                 await UpdateUserInternalAsync(dbContext, user).ConfigureAwait(false);
             }
-
-            var eventArgs = new UserUpdatedEventArgs(user);
-            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
-            OnUserUpdated?.Invoke(this, eventArgs);
         }
 
         /// <inheritdoc/>
@@ -343,6 +339,7 @@ namespace Jellyfin.Server.Implementations.Users
                     MaxParentalRating = user.MaxParentalAgeRating,
                     EnableUserPreferenceAccess = user.EnableUserPreferenceAccess,
                     RemoteClientBitrateLimit = user.RemoteClientBitrateLimit ?? 0,
+                    RemoteDownloadSpeedLimit = user.RemoteDownloadSpeedLimit,
                     AuthenticationProviderId = user.AuthenticationProviderId,
                     PasswordResetProviderId = user.PasswordResetProviderId,
                     InvalidLoginAttemptCount = user.InvalidLoginAttemptCount,
@@ -630,9 +627,7 @@ namespace Jellyfin.Server.Implementations.Users
                 user.SetPreference(PreferenceKind.MyMediaExcludes, config.MyMediaExcludes);
                 user.SetPreference(PreferenceKind.LatestItemExcludes, config.LatestItemsExcludes);
 
-                dbContext.Update(user);
-                _users[user.Id] = user;
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                await UpdateUserInternalAsync(dbContext, user).ConfigureAwait(false);
             }
         }
 
@@ -661,6 +656,7 @@ namespace Jellyfin.Server.Implementations.Users
                 user.MaxParentalAgeRating = policy.MaxParentalRating;
                 user.EnableUserPreferenceAccess = policy.EnableUserPreferenceAccess;
                 user.RemoteClientBitrateLimit = policy.RemoteClientBitrateLimit;
+                user.RemoteDownloadSpeedLimit = policy.RemoteDownloadSpeedLimit;
                 user.AuthenticationProviderId = policy.AuthenticationProviderId;
                 user.PasswordResetProviderId = policy.PasswordResetProviderId;
                 user.InvalidLoginAttemptCount = policy.InvalidLoginAttemptCount;
@@ -705,9 +701,7 @@ namespace Jellyfin.Server.Implementations.Users
                 user.SetPreference(PreferenceKind.EnabledFolders, policy.EnabledFolders);
                 user.SetPreference(PreferenceKind.EnableContentDeletionFromFolders, policy.EnableContentDeletionFromFolders);
 
-                dbContext.Update(user);
-                _users[user.Id] = user;
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                await UpdateUserInternalAsync(dbContext, user).ConfigureAwait(false);
             }
         }
 
@@ -723,11 +717,11 @@ namespace Jellyfin.Server.Implementations.Users
             await using (dbContext.ConfigureAwait(false))
             {
                 dbContext.Remove(user.ProfileImage);
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+
+                await UpdateUserInternalAsync(dbContext, user).ConfigureAwait(false);
             }
 
             user.ProfileImage = null;
-            _users[user.Id] = user;
         }
 
         internal static void ThrowIfInvalidUsername(string name)
@@ -895,6 +889,10 @@ namespace Jellyfin.Server.Implementations.Users
             dbContext.Users.Update(user);
             _users[user.Id] = user;
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
+
+            var eventArgs = new UserUpdatedEventArgs(user);
+            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
+            OnUserUpdated?.Invoke(this, eventArgs);
         }
     }
 }

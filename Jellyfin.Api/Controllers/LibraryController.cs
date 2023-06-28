@@ -54,6 +54,7 @@ public class LibraryController : BaseJellyfinApiController
     private readonly ILibraryMonitor _libraryMonitor;
     private readonly ILogger<LibraryController> _logger;
     private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IBandwidthLimiterProviderService _bandwidthLimiterProviderService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LibraryController"/> class.
@@ -67,6 +68,7 @@ public class LibraryController : BaseJellyfinApiController
     /// <param name="libraryMonitor">Instance of the <see cref="ILibraryMonitor"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{LibraryController}"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="bandwidthLimiterProviderService">Instance of the <see cref="IBandwidthLimiterProviderService"/> interface.</param>
     public LibraryController(
         IProviderManager providerManager,
         ILibraryManager libraryManager,
@@ -76,7 +78,8 @@ public class LibraryController : BaseJellyfinApiController
         ILocalizationManager localization,
         ILibraryMonitor libraryMonitor,
         ILogger<LibraryController> logger,
-        IServerConfigurationManager serverConfigurationManager)
+        IServerConfigurationManager serverConfigurationManager,
+        IBandwidthLimiterProviderService bandwidthLimiterProviderService)
     {
         _providerManager = providerManager;
         _libraryManager = libraryManager;
@@ -87,6 +90,7 @@ public class LibraryController : BaseJellyfinApiController
         _libraryMonitor = libraryMonitor;
         _logger = logger;
         _serverConfigurationManager = serverConfigurationManager;
+        _bandwidthLimiterProviderService = bandwidthLimiterProviderService;
     }
 
     /// <summary>
@@ -671,6 +675,15 @@ public class LibraryController : BaseJellyfinApiController
 
         // Quotes are valid in linux. They'll possibly cause issues here.
         var filename = Path.GetFileName(item.Path)?.Replace("\"", string.Empty, StringComparison.Ordinal);
+
+        if (_bandwidthLimiterProviderService.GetLimit(User.GetUserId()).BandwidthPerSec > 0)
+        {
+            return new ThrottledPhysicalFileActionResult(item.Path, MimeTypes.GetMimeType(item.Path))
+            {
+                EnableRangeProcessing = true,
+                FileDownloadName = filename!
+            };
+        }
 
         return PhysicalFile(item.Path, MimeTypes.GetMimeType(item.Path), filename, true);
     }

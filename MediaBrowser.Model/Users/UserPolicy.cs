@@ -163,6 +163,8 @@ namespace MediaBrowser.Model.Users
 
         public int RemoteClientBitrateLimit { get; set; }
 
+        public long? RemoteDownloadSpeedLimit { get; set; }
+
         [XmlElement(ElementName = "AuthenticationProviderId")]
         public string AuthenticationProviderId { get; set; }
 

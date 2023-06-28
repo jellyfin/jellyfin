@@ -276,6 +276,11 @@ namespace Jellyfin.Data.Entities
         public int? RemoteClientBitrateLimit { get; set; }
 
         /// <summary>
+        /// Gets or sets the remote client download limit.
+        /// </summary>
+        public long? RemoteDownloadSpeedLimit { get; set; }
+
+        /// <summary>
         /// Gets or sets the internal id.
         /// This is a temporary stopgap for until the library db is migrated.
         /// This corresponds to the value of the index of this user in the library db.
