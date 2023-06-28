@@ -211,6 +211,7 @@ public class DynamicHlsHelper
 
             // Provide SDR HEVC entrance for backward compatibility.
             if (encodingOptions.AllowHevcEncoding
+                && !encodingOptions.AllowAv1Encoding
                 && EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
                 && state.VideoStream.VideoRange == VideoRange.HDR
                 && string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase))
@@ -252,7 +253,9 @@ public class DynamicHlsHelper
             // Provide Level 5.0 entrance for backward compatibility.
             // e.g. Apple A10 chips refuse the master playlist containing SDR HEVC Main Level 5.1 video,
             // but in fact it is capable of playing videos up to Level 6.1.
-            if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
+            if (encodingOptions.AllowHevcEncoding
+                && !encodingOptions.AllowAv1Encoding
+                && EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
                 && state.VideoStream.Level.HasValue
                 && state.VideoStream.Level > 150
                 && state.VideoStream.VideoRange == VideoRange.SDR
@@ -554,6 +557,12 @@ public class DynamicHlsHelper
                 levelString = state.GetRequestedLevel("h265") ?? state.GetRequestedLevel("hevc") ?? "120";
                 levelString = EncodingHelper.NormalizeTranscodingLevel(state, levelString);
             }
+
+            if (string.Equals(state.ActualOutputVideoCodec, "av1", StringComparison.OrdinalIgnoreCase))
+            {
+                levelString = state.GetRequestedLevel("av1") ?? "19";
+                levelString = EncodingHelper.NormalizeTranscodingLevel(state, levelString);
+            }
         }
 
         if (int.TryParse(levelString, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedLevel))
@@ -565,11 +574,11 @@ public class DynamicHlsHelper
     }
 
     /// <summary>
-    /// Get the H.26X profile of the output video stream.
+    /// Get the profile of the output video stream.
     /// </summary>
     /// <param name="state">StreamState of the current stream.</param>
     /// <param name="codec">Video codec.</param>
-    /// <returns>H.26X profile of the output video stream.</returns>
+    /// <returns>Profile of the output video stream.</returns>
     private string GetOutputVideoCodecProfile(StreamState state, string codec)
     {
         string profileString = string.Empty;
@@ -587,7 +596,8 @@ public class DynamicHlsHelper
             }
 
             if (string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase))
+                || string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(state.ActualOutputVideoCodec, "av1", StringComparison.OrdinalIgnoreCase))
             {
                 profileString ??= "main";
             }
@@ -657,9 +667,9 @@ public class DynamicHlsHelper
     {
         if (level == 0)
         {
-            // This is 0 when there's no requested H.26X level in the device profile
-            // and the source is not encoded in H.26X
-            _logger.LogError("Got invalid H.26X level when building CODECS field for HLS master playlist");
+            // This is 0 when there's no requested level in the device profile
+            // and the source is not encoded in H.26X or AV1
+            _logger.LogError("Got invalid level when building CODECS field for HLS master playlist");
             return string.Empty;
         }
 
@@ -674,6 +684,22 @@ public class DynamicHlsHelper
         {
             string profile = GetOutputVideoCodecProfile(state, "hevc");
             return HlsCodecStringHelpers.GetH265String(profile, level);
+        }
+
+        if (string.Equals(codec, "av1", StringComparison.OrdinalIgnoreCase))
+        {
+            string profile = GetOutputVideoCodecProfile(state, "av1");
+
+            // Currently we only transcode to 8 bits AV1
+            int bitDepth = 8;
+            if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
+                && state.VideoStream != null
+                && state.VideoStream.BitDepth.HasValue)
+            {
+                bitDepth = state.VideoStream.BitDepth.Value;
+            }
+
+            return HlsCodecStringHelpers.GetAv1String(profile, level, false, bitDepth);
         }
 
         return string.Empty;
