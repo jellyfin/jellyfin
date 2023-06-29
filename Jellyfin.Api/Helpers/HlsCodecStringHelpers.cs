@@ -179,4 +179,62 @@ public static class HlsCodecStringHelpers
 
         return result.ToString();
     }
+
+    /// <summary>
+    /// Gets an AV1 codec string.
+    /// </summary>
+    /// <param name="profile">AV1 profile.</param>
+    /// <param name="level">AV1 level.</param>
+    /// <param name="tierFlag">AV1 tier flag.</param>
+    /// <param name="bitDepth">AV1 bit depth.</param>
+    /// <returns>The AV1 codec string.</returns>
+    public static string GetAv1String(string? profile, int level, bool tierFlag, int bitDepth)
+    {
+        // https://aomedia.org/av1/specification/annex-a/
+        // FORMAT: [codecTag].[profile].[level][tier].[bitDepth]
+        StringBuilder result = new StringBuilder("av01", 13);
+
+        if (string.Equals(profile, "Main", StringComparison.OrdinalIgnoreCase))
+        {
+            result.Append(".0");
+        }
+        else if (string.Equals(profile, "High", StringComparison.OrdinalIgnoreCase))
+        {
+            result.Append(".1");
+        }
+        else if (string.Equals(profile, "Professional", StringComparison.OrdinalIgnoreCase))
+        {
+            result.Append(".2");
+        }
+        else
+        {
+            // Default to Main
+            result.Append(".0");
+        }
+
+        if (level <= 0
+            || level > 31)
+        {
+            // Default to the maximum defined level 6.3
+            level = 19;
+        }
+
+        if (bitDepth != 8
+            && bitDepth != 10
+            && bitDepth != 12)
+        {
+            // Default to 8 bits
+            bitDepth = 8;
+        }
+
+        result.Append('.')
+            .Append(level)
+            .Append(tierFlag ? 'H' : 'M');
+
+        string bitDepthD2 = bitDepth.ToString("D2", CultureInfo.InvariantCulture);
+        result.Append('.')
+            .Append(bitDepthD2);
+
+        return result.ToString();
+    }
 }

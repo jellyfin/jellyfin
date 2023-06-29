@@ -109,5 +109,19 @@
     "Sync": "समकालीन",
     "SubtitleDownloadFailureFromForItem": "उपशीर्षकहरू {0} बाट {1} को लागि डाउनलोड गर्न असफल",
     "PluginUpdatedWithName": "{0} अद्यावधिक गरिएको थियो",
-    "PluginUninstalledWithName": "{0} को स्थापना रद्द गरिएको थियो"
+    "PluginUninstalledWithName": "{0} को स्थापना रद्द गरिएको थियो",
+    "HearingImpaired": "सुन्न नसक्ने",
+    "TaskUpdatePluginsDescription": "स्वचालित रूपमा अद्यावधिक गर्न कन्फिगर गरिएका प्लगइनहरूका लागि अद्यावधिकहरू डाउनलोड र स्थापना गर्दछ।",
+    "TaskCleanTranscode": "सफा ट्रान्सकोड निर्देशिका",
+    "TaskCleanTranscodeDescription": "एक दिन भन्दा पुराना ट्रान्सकोड फाइलहरू मेटाउँछ।",
+    "TaskRefreshChannels": "च्यानलहरू ताजा गर्नुहोस्",
+    "TaskDownloadMissingSubtitlesDescription": "मेटाडेटा कन्फिगरेसनमा आधारित हराइरहेको उपशीर्षकहरूको लागि इन्टरनेट खोज्छ।",
+    "TaskOptimizeDatabase": "डेटाबेस अप्टिमाइज गर्नुहोस्",
+    "TaskOptimizeDatabaseDescription": "डाटाबेस कम्प्याक्ट र खाली ठाउँ काट्छ। पुस्तकालय स्क्यान गरेपछि वा डाटाबेस परिमार्जनलाई संकेत गर्ने अन्य परिवर्तनहरू गरेपछि यो कार्य चलाउँदा कार्यसम्पादनमा सुधार हुन सक्छ।",
+    "TaskKeyframeExtractorDescription": "थप सटीक एचएलएस प्लेलिस्टहरू सिर्जना गर्न भिडियो फाइलहरूबाट कीफ्रेमहरू निकाल्छ। यो कार्य लामो समय सम्म चल्न सक्छ।",
+    "TaskUpdatePlugins": "प्लगइनहरू अपडेट गर्नुहोस्",
+    "TaskRefreshPeopleDescription": "तपाईंको मिडिया लाइब्रेरीमा अभिनेता र निर्देशकहरूको लागि मेटाडेटा अपडेट गर्दछ।",
+    "TaskRefreshChannelsDescription": "इन्टरनेट च्यानल जानकारी ताजा गर्दछ।",
+    "TaskDownloadMissingSubtitles": "छुटेका उपशीर्षकहरू डाउनलोड गर्नुहोस्",
+    "TaskKeyframeExtractor": "कीफ्रेम एक्स्ट्रक्टर"
 }

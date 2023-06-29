@@ -38,7 +38,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             _httpClientFactory = httpClientFactory;
             _appHost = appHost;
             OriginalStreamId = originalStreamId;
-            EnableStreamSharing = true;
         }
 
         public override async Task Open(CancellationToken openCancellationToken)
@@ -59,39 +58,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 .GetAsync(url, HttpCompletionOption.ResponseHeadersRead, CancellationToken.None)
                 .ConfigureAwait(false);
 
-            var contentType = response.Content.Headers.ContentType?.ToString() ?? string.Empty;
-            if (contentType.Contains("matroska", StringComparison.OrdinalIgnoreCase)
-                || contentType.Contains("mp4", StringComparison.OrdinalIgnoreCase)
-                || contentType.Contains("dash", StringComparison.OrdinalIgnoreCase)
-                || contentType.Contains("mpegURL", StringComparison.OrdinalIgnoreCase)
-                || contentType.Contains("text/", StringComparison.OrdinalIgnoreCase))
-            {
-                // Close the stream without any sharing features
-                response.Dispose();
-                return;
-            }
-
-            SetTempFilePath("ts");
-
             var taskCompletionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             _ = StartStreaming(response, taskCompletionSource, LiveStreamCancellationTokenSource.Token);
 
-            // OpenedMediaSource.Protocol = MediaProtocol.File;
-            // OpenedMediaSource.Path = tempFile;
-            // OpenedMediaSource.ReadAtNativeFramerate = true;
-
             MediaSource.Path = _appHost.GetApiUrlForLocalAccess() + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
             MediaSource.Protocol = MediaProtocol.Http;
 
-            // OpenedMediaSource.Path = TempFilePath;
-            // OpenedMediaSource.Protocol = MediaProtocol.File;
-
-            // OpenedMediaSource.Path = _tempFilePath;
-            // OpenedMediaSource.Protocol = MediaProtocol.File;
-            // OpenedMediaSource.SupportsDirectPlay = false;
-            // OpenedMediaSource.SupportsDirectStream = true;
-            // OpenedMediaSource.SupportsTranscoding = true;
             var res = await taskCompletionSource.Task.ConfigureAwait(false);
             if (!res)
             {
@@ -108,15 +81,17 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     try
                     {
                         Logger.LogInformation("Beginning {StreamType} stream to {FilePath}", GetType().Name, TempFilePath);
-                        using var message = response;
-                        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                        await using var fileStream = new FileStream(TempFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
-                        await StreamHelper.CopyToAsync(
-                            stream,
-                            fileStream,
-                            IODefaults.CopyToBufferSize,
-                            () => Resolve(openTaskCompletionSource),
-                            cancellationToken).ConfigureAwait(false);
+                        using (response)
+                        {
+                            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                            await using var fileStream = new FileStream(TempFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+                            await StreamHelper.CopyToAsync(
+                                stream,
+                                fileStream,
+                                IODefaults.CopyToBufferSize,
+                                () => Resolve(openTaskCompletionSource),
+                                cancellationToken).ConfigureAwait(false);
+                        }
                     }
                     catch (OperationCanceledException ex)
                     {
