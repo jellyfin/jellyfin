@@ -10,7 +10,7 @@ namespace MediaBrowser.Providers.Lyric;
 /// <inheritdoc />
 public class DefaultLyricProvider : ILyricProvider
 {
-    private static readonly string[] _lyricExtensions = { "lrc", "elrc", "txt", "elrc" };
+    private static readonly string[] _lyricExtensions = { ".lrc", ".elrc", ".txt" };
 
     /// <inheritdoc />
     public string Name => "DefaultLyricProvider";
@@ -55,7 +55,7 @@ public class DefaultLyricProvider : ILyricProvider
 
         foreach (var lyricFilePath in Directory.GetFiles(itemDirectoryPath, $"{Path.GetFileNameWithoutExtension(item.Path)}.*"))
         {
-            if (_lyricExtensions.Contains(Path.GetExtension(lyricFilePath.AsSpan())[1..], StringComparison.OrdinalIgnoreCase))
+            if (_lyricExtensions.Contains(Path.GetExtension(lyricFilePath.AsSpan()), StringComparison.OrdinalIgnoreCase))
             {
                 return lyricFilePath;
             }

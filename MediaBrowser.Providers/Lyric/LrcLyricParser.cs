@@ -18,7 +18,7 @@ public class LrcLyricParser : ILyricParser
 {
     private readonly LyricParser _lrcLyricParser;
 
-    private static readonly string[] _supportedMediaTypes = { "lrc", "elrc" };
+    private static readonly string[] _supportedMediaTypes = { ".lrc", ".elrc" };
     private static readonly string[] _acceptedTimeFormats = { "HH:mm:ss", "H:mm:ss", "mm:ss", "m:ss" };
 
     /// <summary>
@@ -41,7 +41,7 @@ public class LrcLyricParser : ILyricParser
     /// <inheritdoc />
     public LyricResponse? ParseLyrics(LyricFile lyrics)
     {
-        if (!_supportedMediaTypes.Contains(Path.GetExtension(lyrics.Name.AsSpan())[1..], StringComparison.OrdinalIgnoreCase))
+        if (!_supportedMediaTypes.Contains(Path.GetExtension(lyrics.Name.AsSpan()), StringComparison.OrdinalIgnoreCase))
         {
             return null;
         }
