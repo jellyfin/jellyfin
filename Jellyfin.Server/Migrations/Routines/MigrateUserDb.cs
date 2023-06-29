@@ -127,7 +127,6 @@ namespace Jellyfin.Server.Migrations.Routines
                         RememberSubtitleSelections = config.RememberSubtitleSelections,
                         SubtitleLanguagePreference = config.SubtitleLanguagePreference,
                         Password = mockup.Password,
-                        EasyPassword = mockup.EasyPassword,
                         LastLoginDate = mockup.LastLoginDate,
                         LastActivityDate = mockup.LastActivityDate
                     };

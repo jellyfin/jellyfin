@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -281,23 +282,24 @@ namespace MediaBrowser.Model.Dlna
         /// <summary>
         /// Gets the target video range type that will be in the output stream.
         /// </summary>
-        public string TargetVideoRangeType
+        public VideoRangeType TargetVideoRangeType
         {
             get
             {
                 if (IsDirectStream)
                 {
-                    return TargetVideoStream?.VideoRangeType;
+                    return TargetVideoStream?.VideoRangeType ?? VideoRangeType.Unknown;
                 }
 
                 var targetVideoCodecs = TargetVideoCodec;
                 var videoCodec = targetVideoCodecs.Length == 0 ? null : targetVideoCodecs[0];
-                if (!string.IsNullOrEmpty(videoCodec))
+                if (!string.IsNullOrEmpty(videoCodec)
+                    && Enum.TryParse(GetOption(videoCodec, "rangetype"), true, out VideoRangeType videoRangeType))
                 {
-                    return GetOption(videoCodec, "rangetype");
+                    return videoRangeType;
                 }
 
-                return TargetVideoStream?.VideoRangeType;
+                return TargetVideoStream?.VideoRangeType ?? VideoRangeType.Unknown;
             }
         }
 
@@ -430,7 +432,7 @@ namespace MediaBrowser.Model.Dlna
 
                     return totalBitrate.HasValue ?
                         Convert.ToInt64(totalBitrate.Value * totalSeconds) :
-                        (long?)null;
+                        null;
                 }
 
                 return null;

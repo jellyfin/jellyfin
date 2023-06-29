@@ -94,7 +94,7 @@ namespace Jellyfin.Providers.Tests.Manager
         public void MergeImages_EmptyItemNewImagesEmpty_NoChange()
         {
             var itemImageProvider = GetItemImageProvider(null, null);
-            var changed = itemImageProvider.MergeImages(new Video(), Array.Empty<LocalImageInfo>());
+            var changed = itemImageProvider.MergeImages(new Video(), Array.Empty<LocalImageInfo>(), new ImageRefreshOptions(Mock.Of<IDirectoryService>()));
 
             Assert.False(changed);
         }
@@ -108,7 +108,7 @@ namespace Jellyfin.Providers.Tests.Manager
             var images = GetImages(imageType, imageCount, false);
 
             var itemImageProvider = GetItemImageProvider(null, null);
-            var changed = itemImageProvider.MergeImages(item, images);
+            var changed = itemImageProvider.MergeImages(item, images, new ImageRefreshOptions(Mock.Of<IDirectoryService>()));
 
             Assert.True(changed);
             // adds for types that allow multiple, replaces singular type images
@@ -151,7 +151,7 @@ namespace Jellyfin.Providers.Tests.Manager
             var images = GetImages(imageType, imageCount, true);
 
             var itemImageProvider = GetItemImageProvider(null, fileSystem);
-            var changed = itemImageProvider.MergeImages(item, images);
+            var changed = itemImageProvider.MergeImages(item, images, new ImageRefreshOptions(Mock.Of<IDirectoryService>()));
 
             if (updateTime)
             {

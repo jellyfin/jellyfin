@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Model.MediaInfo;
 
@@ -445,7 +446,7 @@ namespace MediaBrowser.Model.Dlna
             int? bitDepth,
             int? videoBitrate,
             string videoProfile,
-            string videoRangeType,
+            VideoRangeType videoRangeType,
             double? videoLevel,
             float? videoFramerate,
             int? packetLength,

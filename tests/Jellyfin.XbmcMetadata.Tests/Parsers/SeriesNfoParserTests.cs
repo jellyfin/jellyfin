@@ -90,7 +90,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             };
 
             _parser.Fetch(result, path, CancellationToken.None);
-            var item = (Series)result.Item;
+            var item = result.Item;
 
             Assert.Equal(id, item.ProviderIds[provider]);
         }

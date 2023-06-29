@@ -500,10 +500,8 @@ namespace Jellyfin.Networking.Manager
             {
                 return true;
             }
-            else
-            {
-                return address.IsPrivateAddressRange();
-            }
+
+            return address.IsPrivateAddressRange();
         }
 
         /// <inheritdoc/>
@@ -594,6 +592,7 @@ namespace Jellyfin.Networking.Manager
 
             IsIP4Enabled = Socket.OSSupportsIPv4 && config.EnableIPV4;
             IsIP6Enabled = Socket.OSSupportsIPv6 && config.EnableIPV6;
+            HappyEyeballs.HttpClientExtension.UseIPv6 = IsIP6Enabled;
 
             if (!IsIP6Enabled && !IsIP4Enabled)
             {
@@ -838,9 +837,19 @@ namespace Jellyfin.Networking.Manager
             try
             {
                 await Task.Delay(2000).ConfigureAwait(false);
-                InitialiseInterfaces();
-                // Recalculate LAN caches.
-                InitialiseLAN(_configurationManager.GetNetworkConfiguration());
+
+                var config = _configurationManager.GetNetworkConfiguration();
+                // Have we lost IPv6 capability?
+                if (IsIP6Enabled && !Socket.OSSupportsIPv6)
+                {
+                    UpdateSettings(config);
+                }
+                else
+                {
+                    InitialiseInterfaces();
+                    // Recalculate LAN caches.
+                    InitialiseLAN(config);
+                }
 
                 NetworkChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -1171,13 +1180,15 @@ namespace Jellyfin.Networking.Manager
                     bindPreference = addr.Value;
                     break;
                 }
-                else if ((addr.Key.Address.Equals(IPAddress.Any) || addr.Key.Address.Equals(IPAddress.IPv6Any)) && isInExternalSubnet)
+
+                if ((addr.Key.Address.Equals(IPAddress.Any) || addr.Key.Address.Equals(IPAddress.IPv6Any)) && isInExternalSubnet)
                 {
                     // External.
                     bindPreference = addr.Value;
                     break;
                 }
-                else if (addr.Key.Contains(source))
+
+                if (addr.Key.Contains(source))
                 {
                     // Match ip address.
                     bindPreference = addr.Value;

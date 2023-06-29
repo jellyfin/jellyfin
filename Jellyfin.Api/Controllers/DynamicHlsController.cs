@@ -12,6 +12,7 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.PlaybackDtos;
 using Jellyfin.Api.Models.StreamingDtos;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.MediaEncoding.Hls.Playlist;
 using MediaBrowser.Common.Configuration;
@@ -1641,9 +1642,11 @@ public class DynamicHlsController : BaseJellyfinApiController
                 Path.GetFileNameWithoutExtension(outputPath));
         }
 
+        var hlsArguments = GetHlsArguments(isEventPlaylist, state.SegmentLength);
+
         return string.Format(
             CultureInfo.InvariantCulture,
-            "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -max_muxing_queue_size {6} -f hls -max_delay 5000000 -hls_time {7} -hls_segment_type {8} -start_number {9}{10} -hls_segment_filename \"{12}\" -hls_playlist_type {11} -hls_list_size 0 -y \"{13}\"",
+            "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -max_muxing_queue_size {6} -f hls -max_delay 5000000 -hls_time {7} -hls_segment_type {8} -start_number {9}{10} -hls_segment_filename \"{11}\" {12} -y \"{13}\"",
             inputModifier,
             _encodingHelper.GetInputArgument(state, _encodingOptions, segmentContainer),
             threads,
@@ -1655,9 +1658,36 @@ public class DynamicHlsController : BaseJellyfinApiController
             segmentFormat,
             startNumber.ToString(CultureInfo.InvariantCulture),
             baseUrlParam,
-            isEventPlaylist ? "event" : "vod",
             EncodingUtils.NormalizePath(outputTsArg),
+            hlsArguments,
             EncodingUtils.NormalizePath(outputPath)).Trim();
+    }
+
+    /// <summary>
+    /// Gets the HLS arguments for transcoding.
+    /// </summary>
+    /// <returns>The command line arguments for HLS transcoding.</returns>
+    private string GetHlsArguments(bool isEventPlaylist, int segmentLength)
+    {
+        var enableThrottling = _encodingOptions.EnableThrottling;
+        var enableSegmentDeletion = _encodingOptions.EnableSegmentDeletion;
+
+        // Only enable segment deletion when throttling is enabled
+        if (enableThrottling && enableSegmentDeletion)
+        {
+            // Store enough segments for configured seconds of playback; this needs to be above throttling settings
+            var segmentCount = _encodingOptions.SegmentKeepSeconds / segmentLength;
+
+            _logger.LogDebug("Using throttling and segment deletion, keeping {0} segments", segmentCount);
+
+            return string.Format(CultureInfo.InvariantCulture, "-hls_list_size {0} -hls_flags delete_segments", segmentCount.ToString(CultureInfo.InvariantCulture));
+        }
+        else
+        {
+            _logger.LogDebug("Using normal playback, is event playlist? {0}", isEventPlaylist);
+
+            return string.Format(CultureInfo.InvariantCulture, "-hls_playlist_type {0} -hls_list_size 0", isEventPlaylist ? "event" : "vod");
+        }
     }
 
     /// <summary>
@@ -1809,7 +1839,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             || string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase))
         {
             if (EncodingHelper.IsCopyCodec(codec)
-                && (string.Equals(state.VideoStream.VideoRangeType, "DOVI", StringComparison.OrdinalIgnoreCase)
+                && (state.VideoStream.VideoRangeType == VideoRangeType.DOVI
                     || string.Equals(state.VideoStream.CodecTag, "dovi", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(state.VideoStream.CodecTag, "dvh1", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(state.VideoStream.CodecTag, "dvhe", StringComparison.OrdinalIgnoreCase)))

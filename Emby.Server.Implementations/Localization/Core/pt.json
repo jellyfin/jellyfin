@@ -122,5 +122,6 @@
     "TaskOptimizeDatabaseDescription": "Base de dados compacta e corta espaço livre. A execução desta tarefa depois de digitalizar a biblioteca ou de fazer outras alterações que impliquem modificações na base de dados pode melhorar o desempenho.",
     "External": "Externo",
     "HearingImpaired": "Problemas auditivos",
-    "TaskKeyframeExtractor": "Extrator de quadro-chave"
+    "TaskKeyframeExtractor": "Extrator de quadro-chave",
+    "TaskKeyframeExtractorDescription": "Retira frames chave do video para criar listas HLS precisas. Esta tarefa pode correr durante algum tempo."
 }

@@ -17,11 +17,13 @@ namespace MediaBrowser.Model.MediaInfo
             {
                 return "Dolby Digital";
             }
-            else if (string.Equals(codec, "eac3", StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(codec, "eac3", StringComparison.OrdinalIgnoreCase))
             {
                 return "Dolby Digital+";
             }
-            else if (string.Equals(codec, "dca", StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(codec, "dca", StringComparison.OrdinalIgnoreCase))
             {
                 return "DTS";
             }

@@ -13,12 +13,12 @@ public class ChannelMappingOptionsDto
     /// <summary>
     /// Gets or sets list of tuner channels.
     /// </summary>
-    required public IReadOnlyList<TunerChannelMapping> TunerChannels { get; set; }
+    public required IReadOnlyList<TunerChannelMapping> TunerChannels { get; set; }
 
     /// <summary>
     /// Gets or sets list of provider channels.
     /// </summary>
-    required public IReadOnlyList<NameIdPair> ProviderChannels { get; set; }
+    public required IReadOnlyList<NameIdPair> ProviderChannels { get; set; }
 
     /// <summary>
     /// Gets or sets list of mappings.

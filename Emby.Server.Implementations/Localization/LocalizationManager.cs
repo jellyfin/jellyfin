@@ -198,25 +198,25 @@ namespace Emby.Server.Implementations.Localization
             }
 
             // Minimum rating possible
-            if (!ratings.Any(x => x.Value == 0))
+            if (ratings.All(x => x.Value != 0))
             {
                 ratings.Add(new ParentalRating("Approved", 0));
             }
 
             // Matches PG (this has different age restrictions depending on country)
-            if (!ratings.Any(x => x.Value == 10))
+            if (ratings.All(x => x.Value != 10))
             {
                 ratings.Add(new ParentalRating("10", 10));
             }
 
             // Matches PG-13
-            if (!ratings.Any(x => x.Value == 13))
+            if (ratings.All(x => x.Value != 13))
             {
                 ratings.Add(new ParentalRating("13", 13));
             }
 
             // Matches TV-14
-            if (!ratings.Any(x => x.Value == 14))
+            if (ratings.All(x => x.Value != 14))
             {
                 ratings.Add(new ParentalRating("14", 14));
             }
@@ -229,13 +229,13 @@ namespace Emby.Server.Implementations.Localization
             }
 
             // A lot of countries don't excplicitly have a seperate rating for adult content
-            if (!ratings.Any(x => x.Value == 1000))
+            if (ratings.All(x => x.Value != 1000))
             {
                 ratings.Add(new ParentalRating("XXX", 1000));
             }
 
             // A lot of countries don't excplicitly have a seperate rating for banned content
-            if (!ratings.Any(x => x.Value == 1001))
+            if (ratings.All(x => x.Value != 1001))
             {
                 ratings.Add(new ParentalRating("Banned", 1001));
             }

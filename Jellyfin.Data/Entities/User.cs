@@ -92,16 +92,6 @@ namespace Jellyfin.Data.Entities
         public string? Password { get; set; }
 
         /// <summary>
-        /// Gets or sets the user's easy password, or <c>null</c> if none is set.
-        /// </summary>
-        /// <remarks>
-        /// Max length = 65535.
-        /// </remarks>
-        [MaxLength(65535)]
-        [StringLength(65535)]
-        public string? EasyPassword { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether the user must update their password.
         /// </summary>
         /// <remarks>

@@ -20,6 +20,8 @@ public class EncodingOptions
         MaxMuxingQueueSize = 2048;
         EnableThrottling = false;
         ThrottleDelaySeconds = 180;
+        EnableSegmentDeletion = false;
+        SegmentKeepSeconds = 720;
         EncodingThreadCount = -1;
         // This is a DRM device that is almost guaranteed to be there on every intel platform,
         // plus it's the default one in ffmpeg if you don't specify anything
@@ -27,13 +29,13 @@ public class EncodingOptions
         EnableTonemapping = false;
         EnableVppTonemapping = false;
         TonemappingAlgorithm = "bt2390";
+        TonemappingMode = "auto";
         TonemappingRange = "auto";
         TonemappingDesat = 0;
-        TonemappingThreshold = 0.8;
         TonemappingPeak = 100;
         TonemappingParam = 0;
-        VppTonemappingBrightness = 0;
-        VppTonemappingContrast = 1.2;
+        VppTonemappingBrightness = 16;
+        VppTonemappingContrast = 1;
         H264Crf = 23;
         H265Crf = 28;
         DeinterlaceDoubleRate = false;
@@ -47,6 +49,7 @@ public class EncodingOptions
         EnableIntelLowPowerHevcHwEncoder = false;
         EnableHardwareEncoding = true;
         AllowHevcEncoding = false;
+        AllowAv1Encoding = false;
         EnableSubtitleExtraction = true;
         AllowOnDemandMetadataBasedKeyframeExtractionForExtensions = new[] { "mkv" };
         HardwareDecodingCodecs = new string[] { "h264", "vc1" };
@@ -103,6 +106,16 @@ public class EncodingOptions
     public int ThrottleDelaySeconds { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether segment deletion is enabled.
+    /// </summary>
+    public bool EnableSegmentDeletion { get; set; }
+
+    /// <summary>
+    /// Gets or sets seconds for which segments should be kept before being deleted.
+    /// </summary>
+    public int SegmentKeepSeconds { get; set; }
+
+    /// <summary>
     /// Gets or sets the hardware acceleration type.
     /// </summary>
     public string HardwareAccelerationType { get; set; }
@@ -138,6 +151,11 @@ public class EncodingOptions
     public string TonemappingAlgorithm { get; set; }
 
     /// <summary>
+    /// Gets or sets the tone-mapping mode.
+    /// </summary>
+    public string TonemappingMode { get; set; }
+
+    /// <summary>
     /// Gets or sets the tone-mapping range.
     /// </summary>
     public string TonemappingRange { get; set; }
@@ -146,11 +164,6 @@ public class EncodingOptions
     /// Gets or sets the tone-mapping desaturation.
     /// </summary>
     public double TonemappingDesat { get; set; }
-
-    /// <summary>
-    /// Gets or sets the tone-mapping threshold.
-    /// </summary>
-    public double TonemappingThreshold { get; set; }
 
     /// <summary>
     /// Gets or sets the tone-mapping peak.
@@ -236,6 +249,11 @@ public class EncodingOptions
     /// Gets or sets a value indicating whether HEVC encoding is enabled.
     /// </summary>
     public bool AllowHevcEncoding { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether AV1 encoding is enabled.
+    /// </summary>
+    public bool AllowAv1Encoding { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether subtitle extraction is enabled.

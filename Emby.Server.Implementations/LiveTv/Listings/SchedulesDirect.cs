@@ -415,14 +415,13 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 return null;
             }
-            else if (uri.IndexOf("http", StringComparison.OrdinalIgnoreCase) != -1)
+
+            if (uri.IndexOf("http", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 return uri;
             }
-            else
-            {
-                return apiUrl + "/image/" + uri + "?token=" + token;
-            }
+
+            return apiUrl + "/image/" + uri + "?token=" + token;
         }
 
         private static double GetAspectRatio(ImageDataDto i)
@@ -463,10 +462,10 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
 
             StringBuilder str = new StringBuilder("[", 1 + (programIds.Count * 13));
-            foreach (ReadOnlySpan<char> i in programIds)
+            foreach (var i in programIds)
             {
                 str.Append('"')
-                    .Append(i.Slice(0, 10))
+                    .Append(i[..10])
                     .Append("\",");
             }
 
