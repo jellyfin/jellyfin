@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Net;
+using MediaBrowser.Controller.Net.WebSocketMessages;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
@@ -84,6 +84,18 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         /// <value>The state.</value>
         public WebSocketState State => _socket.State;
+
+        /// <summary>
+        /// Sends a message asynchronously.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public Task SendAsync(WebSocketMessage message, CancellationToken cancellationToken)
+        {
+            var json = JsonSerializer.SerializeToUtf8Bytes(message, _jsonOptions);
+            return _socket.SendAsync(json, WebSocketMessageType.Text, true, cancellationToken);
+        }
 
         /// <summary>
         /// Sends a message asynchronously.
@@ -224,7 +236,7 @@ namespace Emby.Server.Implementations.HttpServer
         {
             LastKeepAliveDate = DateTime.UtcNow;
             return SendAsync(
-                new WebSocketMessage<string>
+                new OutboundWebSocketMessage
                 {
                     MessageId = Guid.NewGuid(),
                     MessageType = SessionMessageType.KeepAlive

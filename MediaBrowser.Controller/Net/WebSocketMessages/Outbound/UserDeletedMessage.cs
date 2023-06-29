@@ -7,7 +7,7 @@ namespace MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 /// <summary>
 /// User deleted message.
 /// </summary>
-public class UserDeletedMessage : WebSocketMessage<Guid>, IOutboundWebSocketMessage
+public class UserDeletedMessage : OutboundWebSocketMessage<Guid>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="UserDeletedMessage"/> class.

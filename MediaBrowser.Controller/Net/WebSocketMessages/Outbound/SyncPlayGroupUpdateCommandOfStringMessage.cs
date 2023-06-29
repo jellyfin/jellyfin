@@ -8,7 +8,7 @@ namespace MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 /// Sync play group update command with string.
 /// GroupUpdateTypes: GroupDoesNotExist (error), LibraryAccessDenied (error), NotInGroup (error), GroupLeft (groupId), UserJoined (username), UserLeft (username).
 /// </summary>
-public class SyncPlayGroupUpdateCommandOfStringMessage : WebSocketMessage<GroupUpdate<string>>, IOutboundWebSocketMessage
+public class SyncPlayGroupUpdateCommandOfStringMessage : OutboundWebSocketMessage<GroupUpdate<string>>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="SyncPlayGroupUpdateCommandOfStringMessage"/> class.

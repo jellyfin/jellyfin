@@ -7,7 +7,7 @@ namespace MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 /// <summary>
 /// Refresh progress message.
 /// </summary>
-public class RefreshProgressMessage : WebSocketMessage<Dictionary<string, string>>, IOutboundWebSocketMessage
+public class RefreshProgressMessage : OutboundWebSocketMessage<Dictionary<string, string>>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="RefreshProgressMessage"/> class.

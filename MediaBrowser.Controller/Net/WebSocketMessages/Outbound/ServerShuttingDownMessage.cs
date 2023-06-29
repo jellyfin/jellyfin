@@ -6,7 +6,7 @@ namespace MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 /// <summary>
 /// Server shutting down message.
 /// </summary>
-public class ServerShuttingDownMessage : WebSocketMessage, IOutboundWebSocketMessage
+public class ServerShuttingDownMessage : OutboundWebSocketMessage
 {
     /// <inheritdoc />
     [DefaultValue(SessionMessageType.ServerShuttingDown)]
