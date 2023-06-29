@@ -1,34 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 
-namespace Jellyfin.Api.Models.LiveTvDtos
+namespace Jellyfin.Api.Models.LiveTvDtos;
+
+/// <summary>
+/// Channel mapping options dto.
+/// </summary>
+public class ChannelMappingOptionsDto
 {
     /// <summary>
-    /// Channel mapping options dto.
+    /// Gets or sets list of tuner channels.
     /// </summary>
-    public class ChannelMappingOptionsDto
-    {
-        /// <summary>
-        /// Gets or sets list of tuner channels.
-        /// </summary>
-        required public IReadOnlyList<TunerChannelMapping> TunerChannels { get; set; }
+    public required IReadOnlyList<TunerChannelMapping> TunerChannels { get; set; }
 
-        /// <summary>
-        /// Gets or sets list of provider channels.
-        /// </summary>
-        required public IReadOnlyList<NameIdPair> ProviderChannels { get; set; }
+    /// <summary>
+    /// Gets or sets list of provider channels.
+    /// </summary>
+    public required IReadOnlyList<NameIdPair> ProviderChannels { get; set; }
 
-        /// <summary>
-        /// Gets or sets list of mappings.
-        /// </summary>
-        public IReadOnlyList<NameValuePair> Mappings { get; set; } = Array.Empty<NameValuePair>();
+    /// <summary>
+    /// Gets or sets list of mappings.
+    /// </summary>
+    public IReadOnlyList<NameValuePair> Mappings { get; set; } = Array.Empty<NameValuePair>();
 
-        /// <summary>
-        /// Gets or sets provider name.
-        /// </summary>
-        public string? ProviderName { get; set; }
-    }
+    /// <summary>
+    /// Gets or sets provider name.
+    /// </summary>
+    public string? ProviderName { get; set; }
 }

@@ -1312,20 +1312,19 @@ namespace Emby.Server.Implementations.LiveTv
             return 7;
         }
 
-        private QueryResult<BaseItem> GetEmbyRecordings(RecordingQuery query, DtoOptions dtoOptions, User user)
+        private async Task<QueryResult<BaseItem>> GetEmbyRecordingsAsync(RecordingQuery query, DtoOptions dtoOptions, User user)
         {
             if (user is null)
             {
                 return new QueryResult<BaseItem>();
             }
 
-            var folderIds = GetRecordingFolders(user, true)
-                .Select(i => i.Id)
-                .ToList();
+            var folders = await GetRecordingFoldersAsync(user, true).ConfigureAwait(false);
+            var folderIds = Array.ConvertAll(folders, x => x.Id);
 
             var excludeItemTypes = new List<BaseItemKind>();
 
-            if (folderIds.Count == 0)
+            if (folderIds.Length == 0)
             {
                 return new QueryResult<BaseItem>();
             }
@@ -1392,7 +1391,7 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 MediaTypes = new[] { MediaType.Video },
                 Recursive = true,
-                AncestorIds = folderIds.ToArray(),
+                AncestorIds = folderIds,
                 IsFolder = false,
                 IsVirtualItem = false,
                 Limit = limit,
@@ -1528,7 +1527,7 @@ namespace Emby.Server.Implementations.LiveTv
             }
         }
 
-        public QueryResult<BaseItemDto> GetRecordings(RecordingQuery query, DtoOptions options)
+        public async Task<QueryResult<BaseItemDto>> GetRecordingsAsync(RecordingQuery query, DtoOptions options)
         {
             var user = query.UserId.Equals(default)
                 ? null
@@ -1536,7 +1535,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             RemoveFields(options);
 
-            var internalResult = GetEmbyRecordings(query, options, user);
+            var internalResult = await GetEmbyRecordingsAsync(query, options, user).ConfigureAwait(false);
 
             var returnArray = _dtoService.GetBaseItemDtos(internalResult.Items, options, user);
 
@@ -2379,12 +2378,11 @@ namespace Emby.Server.Implementations.LiveTv
             return _tvDtoService.GetInternalProgramId(externalId);
         }
 
-        public List<BaseItem> GetRecordingFolders(User user)
-        {
-            return GetRecordingFolders(user, false);
-        }
+        /// <inheritdoc />
+        public Task<BaseItem[]> GetRecordingFoldersAsync(User user)
+            => GetRecordingFoldersAsync(user, false);
 
-        private List<BaseItem> GetRecordingFolders(User user, bool refreshChannels)
+        private async Task<BaseItem[]> GetRecordingFoldersAsync(User user, bool refreshChannels)
         {
             var folders = EmbyTV.EmbyTV.Current.GetRecordingFolders()
                 .SelectMany(i => i.Locations)
@@ -2396,14 +2394,16 @@ namespace Emby.Server.Implementations.LiveTv
                 .OrderBy(i => i.SortName)
                 .ToList();
 
-            folders.AddRange(_channelManager.GetChannelsInternal(new MediaBrowser.Model.Channels.ChannelQuery
+            var channels = await _channelManager.GetChannelsInternalAsync(new MediaBrowser.Model.Channels.ChannelQuery
             {
                 UserId = user.Id,
                 IsRecordingsFolder = true,
                 RefreshLatestChannelItems = refreshChannels
-            }).Items);
+            }).ConfigureAwait(false);
 
-            return folders.Cast<BaseItem>().ToList();
+            folders.AddRange(channels.Items);
+
+            return folders.Cast<BaseItem>().ToArray();
         }
     }
 }

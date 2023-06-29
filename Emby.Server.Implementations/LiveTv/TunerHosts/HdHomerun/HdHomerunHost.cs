@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
+using Jellyfin.Extensions.Json.Converters;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -58,7 +59,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             _socketFactory = socketFactory;
             _streamHelper = streamHelper;
 
-            _jsonOptions = JsonDefaults.Options;
+            _jsonOptions = new JsonSerializerOptions(JsonDefaults.Options);
+            _jsonOptions.Converters.Add(new JsonBoolNumberConverter());
         }
 
         public string Name => "HD Homerun";

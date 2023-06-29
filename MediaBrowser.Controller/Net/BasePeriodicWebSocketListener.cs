@@ -9,7 +9,7 @@ using System.Linq;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Net;
+using MediaBrowser.Controller.Net.WebSocketMessages;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -169,7 +169,7 @@ namespace MediaBrowser.Controller.Net
                 if (data is not null)
                 {
                     await connection.SendAsync(
-                        new WebSocketMessage<TReturnDataType>
+                        new OutboundWebSocketMessage<TReturnDataType>
                         {
                             MessageId = Guid.NewGuid(),
                             MessageType = Type,
@@ -231,6 +231,11 @@ namespace MediaBrowser.Controller.Net
             {
                 // TODO Investigate and properly fix.
                 Logger.LogError(ex, "Object Disposed");
+            }
+            catch (Exception ex)
+            {
+                // TODO Investigate and properly fix.
+                Logger.LogError(ex, "Error disposing websocket");
             }
 
             lock (_activeConnections)

@@ -269,36 +269,15 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public Task ResetEasyPassword(User user)
-        {
-            return ChangeEasyPassword(user, string.Empty, null);
-        }
-
-        /// <inheritdoc/>
         public async Task ChangePassword(User user, string newPassword)
         {
             ArgumentNullException.ThrowIfNull(user);
+            if (user.HasPermission(PermissionKind.IsAdministrator) && string.IsNullOrWhiteSpace(newPassword))
+            {
+                throw new ArgumentException("Admin user passwords must not be empty", nameof(newPassword));
+            }
 
             await GetAuthenticationProvider(user).ChangePassword(user, newPassword).ConfigureAwait(false);
-            await UpdateUserAsync(user).ConfigureAwait(false);
-
-            await _eventManager.PublishAsync(new UserPasswordChangedEventArgs(user)).ConfigureAwait(false);
-        }
-
-        /// <inheritdoc/>
-        public async Task ChangeEasyPassword(User user, string newPassword, string? newPasswordSha1)
-        {
-            if (newPassword is not null)
-            {
-                newPasswordSha1 = _cryptoProvider.CreatePasswordHash(newPassword).ToString();
-            }
-
-            if (string.IsNullOrWhiteSpace(newPasswordSha1))
-            {
-                throw new ArgumentNullException(nameof(newPasswordSha1));
-            }
-
-            user.EasyPassword = newPasswordSha1;
             await UpdateUserAsync(user).ConfigureAwait(false);
 
             await _eventManager.PublishAsync(new UserPasswordChangedEventArgs(user)).ConfigureAwait(false);
@@ -315,7 +294,6 @@ namespace Jellyfin.Server.Implementations.Users
                 ServerId = _appHost.SystemId,
                 HasPassword = hasPassword,
                 HasConfiguredPassword = hasPassword,
-                HasConfiguredEasyPassword = !string.IsNullOrEmpty(user.EasyPassword),
                 EnableAutoLogin = user.EnableAutoLogin,
                 LastLoginDate = user.LastLoginDate,
                 LastActivityDate = user.LastActivityDate,
@@ -369,8 +347,10 @@ namespace Jellyfin.Server.Implementations.Users
                     EnablePlaybackRemuxing = user.HasPermission(PermissionKind.EnablePlaybackRemuxing),
                     ForceRemoteSourceTranscoding = user.HasPermission(PermissionKind.ForceRemoteSourceTranscoding),
                     EnablePublicSharing = user.HasPermission(PermissionKind.EnablePublicSharing),
+                    EnableCollectionManagement = user.HasPermission(PermissionKind.EnableCollectionManagement),
                     AccessSchedules = user.AccessSchedules.ToArray(),
                     BlockedTags = user.GetPreference(PreferenceKind.BlockedTags),
+                    AllowedTags = user.GetPreference(PreferenceKind.AllowedTags),
                     EnabledChannels = user.GetPreferenceValues<Guid>(PreferenceKind.EnabledChannels),
                     EnabledDevices = user.GetPreference(PreferenceKind.EnabledDevices),
                     EnabledFolders = user.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders),
@@ -684,6 +664,7 @@ namespace Jellyfin.Server.Implementations.Users
                 user.SetPermission(PermissionKind.EnableAllFolders, policy.EnableAllFolders);
                 user.SetPermission(PermissionKind.EnableRemoteControlOfOtherUsers, policy.EnableRemoteControlOfOtherUsers);
                 user.SetPermission(PermissionKind.EnablePlaybackRemuxing, policy.EnablePlaybackRemuxing);
+                user.SetPermission(PermissionKind.EnableCollectionManagement, policy.EnableCollectionManagement);
                 user.SetPermission(PermissionKind.ForceRemoteSourceTranscoding, policy.ForceRemoteSourceTranscoding);
                 user.SetPermission(PermissionKind.EnablePublicSharing, policy.EnablePublicSharing);
 
@@ -696,6 +677,7 @@ namespace Jellyfin.Server.Implementations.Users
                 // TODO: fix this at some point
                 user.SetPreference(PreferenceKind.BlockUnratedItems, policy.BlockUnratedItems ?? Array.Empty<UnratedItem>());
                 user.SetPreference(PreferenceKind.BlockedTags, policy.BlockedTags);
+                user.SetPreference(PreferenceKind.AllowedTags, policy.AllowedTags);
                 user.SetPreference(PreferenceKind.EnabledChannels, policy.EnabledChannels);
                 user.SetPreference(PreferenceKind.EnabledDevices, policy.EnabledDevices);
                 user.SetPreference(PreferenceKind.EnabledFolders, policy.EnabledFolders);
@@ -736,7 +718,7 @@ namespace Jellyfin.Server.Implementations.Users
             throw new ArgumentException("Usernames can contain unicode symbols, numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)", nameof(name));
         }
 
-        private static bool IsValidUsername(string name)
+        private static bool IsValidUsername(ReadOnlySpan<char> name)
         {
             // This is some regex that matches only on unicode "word" characters, as well as -, _ and @
             // In theory this will cut out most if not all 'control' characters which should help minimize any weirdness
@@ -826,16 +808,6 @@ namespace Jellyfin.Server.Implementations.Users
                     username = updatedUsername;
                     break;
                 }
-            }
-
-            if (!success
-                && _networkManager.IsInLocalNetwork(remoteEndPoint)
-                && user?.EnableLocalPassword == true
-                && !string.IsNullOrEmpty(user.EasyPassword))
-            {
-                // Check easy password
-                var passwordHash = PasswordHash.Parse(user.EasyPassword);
-                success = _cryptoProvider.Verify(passwordHash, password);
             }
 
             return (authenticationProvider, username, success);

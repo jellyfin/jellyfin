@@ -13,6 +13,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -98,8 +99,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 // item.VoteCount = voteCount;
             }
 
-            if (!string.IsNullOrEmpty(result.imdbRating)
-                && float.TryParse(result.imdbRating, NumberStyles.Any, CultureInfo.InvariantCulture, out var imdbRating)
+            if (float.TryParse(result.imdbRating, CultureInfo.InvariantCulture, out var imdbRating)
                 && imdbRating >= 0)
             {
                 item.CommunityRating = imdbRating;
@@ -209,8 +209,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 // item.VoteCount = voteCount;
             }
 
-            if (!string.IsNullOrEmpty(result.imdbRating)
-                && float.TryParse(result.imdbRating, NumberStyles.Any, CultureInfo.InvariantCulture, out var imdbRating)
+            if (float.TryParse(result.imdbRating, CultureInfo.InvariantCulture, out var imdbRating)
                 && imdbRating >= 0)
             {
                 item.CommunityRating = imdbRating;
@@ -426,7 +425,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 var person = new PersonInfo
                 {
                     Name = result.Director,
-                    Type = PersonType.Director
+                    Type = PersonKind.Director
                 };
 
                 itemResult.AddPerson(person);
@@ -437,7 +436,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 var person = new PersonInfo
                 {
                     Name = result.Writer,
-                    Type = PersonType.Writer
+                    Type = PersonKind.Writer
                 };
 
                 itemResult.AddPerson(person);
@@ -456,7 +455,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     var person = new PersonInfo
                     {
                         Name = actor,
-                        Type = PersonType.Actor
+                        Type = PersonKind.Actor
                     };
 
                     itemResult.AddPerson(person);
@@ -552,7 +551,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     if (rating?.Value is not null)
                     {
                         var value = rating.Value.TrimEnd('%');
-                        if (float.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var score))
+                        if (float.TryParse(value, CultureInfo.InvariantCulture, out var score))
                         {
                             return score;
                         }

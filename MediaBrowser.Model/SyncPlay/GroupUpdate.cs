@@ -1,42 +1,30 @@
 using System;
 
-namespace MediaBrowser.Model.SyncPlay
+namespace MediaBrowser.Model.SyncPlay;
+
+/// <summary>
+/// Group update without data.
+/// </summary>
+public abstract class GroupUpdate
 {
     /// <summary>
-    /// Class GroupUpdate.
+    /// Initializes a new instance of the <see cref="GroupUpdate"/> class.
     /// </summary>
-    /// <typeparam name="T">The type of the data of the message.</typeparam>
-    public class GroupUpdate<T>
+    /// <param name="groupId">The group identifier.</param>
+    protected GroupUpdate(Guid groupId)
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GroupUpdate{T}"/> class.
-        /// </summary>
-        /// <param name="groupId">The group identifier.</param>
-        /// <param name="type">The update type.</param>
-        /// <param name="data">The update data.</param>
-        public GroupUpdate(Guid groupId, GroupUpdateType type, T data)
-        {
-            GroupId = groupId;
-            Type = type;
-            Data = data;
-        }
-
-        /// <summary>
-        /// Gets the group identifier.
-        /// </summary>
-        /// <value>The group identifier.</value>
-        public Guid GroupId { get; }
-
-        /// <summary>
-        /// Gets the update type.
-        /// </summary>
-        /// <value>The update type.</value>
-        public GroupUpdateType Type { get; }
-
-        /// <summary>
-        /// Gets the update data.
-        /// </summary>
-        /// <value>The update data.</value>
-        public T Data { get; }
+        GroupId = groupId;
     }
+
+    /// <summary>
+    /// Gets the group identifier.
+    /// </summary>
+    /// <value>The group identifier.</value>
+    public Guid GroupId { get; }
+
+    /// <summary>
+    /// Gets the update type.
+    /// </summary>
+    /// <value>The update type.</value>
+    public GroupUpdateType Type { get; init; }
 }

@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
@@ -83,22 +82,23 @@ namespace Emby.Server.Implementations.Dto
         /// <inheritdoc />
         public IReadOnlyList<BaseItemDto> GetBaseItemDtos(IReadOnlyList<BaseItem> items, DtoOptions options, User user = null, BaseItem owner = null)
         {
-            var returnItems = new BaseItemDto[items.Count];
-            var programTuples = new List<(BaseItem, BaseItemDto)>();
-            var channelTuples = new List<(BaseItemDto, LiveTvChannel)>();
+            var accessibleItems = user is null ? items : items.Where(x => x.IsVisible(user)).ToList();
+            var returnItems = new BaseItemDto[accessibleItems.Count];
+            List<(BaseItem, BaseItemDto)> programTuples = null;
+            List<(BaseItemDto, LiveTvChannel)> channelTuples = null;
 
-            for (int index = 0; index < items.Count; index++)
+            for (int index = 0; index < accessibleItems.Count; index++)
             {
-                var item = items[index];
+                var item = accessibleItems[index];
                 var dto = GetBaseItemDtoInternal(item, options, user, owner);
 
                 if (item is LiveTvChannel tvChannel)
                 {
-                    channelTuples.Add((dto, tvChannel));
+                    (channelTuples ??= new()).Add((dto, tvChannel));
                 }
                 else if (item is LiveTvProgram)
                 {
-                    programTuples.Add((item, dto));
+                    (programTuples ??= new()).Add((item, dto));
                 }
 
                 if (item is IItemByName byName)
@@ -121,12 +121,12 @@ namespace Emby.Server.Implementations.Dto
                 returnItems[index] = dto;
             }
 
-            if (programTuples.Count > 0)
+            if (programTuples is not null)
             {
                 LivetvManager.AddInfoToProgramDto(programTuples, options.Fields, user).GetAwaiter().GetResult();
             }
 
-            if (channelTuples.Count > 0)
+            if (channelTuples is not null)
             {
                 LivetvManager.AddChannelInfo(channelTuples, options, user);
             }
@@ -522,32 +522,32 @@ namespace Emby.Server.Implementations.Dto
             var people = _libraryManager.GetPeople(item).OrderBy(i => i.SortOrder ?? int.MaxValue)
                 .ThenBy(i =>
                 {
-                    if (i.IsType(PersonType.Actor))
+                    if (i.IsType(PersonKind.Actor))
                     {
                         return 0;
                     }
 
-                    if (i.IsType(PersonType.GuestStar))
+                    if (i.IsType(PersonKind.GuestStar))
                     {
                         return 1;
                     }
 
-                    if (i.IsType(PersonType.Director))
+                    if (i.IsType(PersonKind.Director))
                     {
                         return 2;
                     }
 
-                    if (i.IsType(PersonType.Writer))
+                    if (i.IsType(PersonKind.Writer))
                     {
                         return 3;
                     }
 
-                    if (i.IsType(PersonType.Producer))
+                    if (i.IsType(PersonKind.Producer))
                     {
                         return 4;
                     }
 
-                    if (i.IsType(PersonType.Composer))
+                    if (i.IsType(PersonKind.Composer))
                     {
                         return 4;
                     }
@@ -571,9 +571,7 @@ namespace Emby.Server.Implementations.Dto
                         return null;
                     }
                 }).Where(i => i is not null)
-                .Where(i => user is null ?
-                    true :
-                    i.IsVisible(user))
+                .Where(i => user is null || i.IsVisible(user))
                 .DistinctBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
@@ -908,6 +906,7 @@ namespace Emby.Server.Implementations.Dto
             // Add audio info
             if (item is Audio audio)
             {
+                dto.LUFS = audio.LUFS;
                 dto.Album = audio.Album;
                 if (audio.ExtraType.HasValue)
                 {

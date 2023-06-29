@@ -10,6 +10,7 @@ using System.Text;
 using System.Xml;
 using Emby.Dlna.ContentDirectory;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
@@ -870,11 +871,11 @@ namespace Emby.Dlna.Didl
 
             var types = new[]
             {
-                PersonType.Director,
-                PersonType.Writer,
-                PersonType.Producer,
-                PersonType.Composer,
-                "creator"
+                PersonKind.Director,
+                PersonKind.Writer,
+                PersonKind.Producer,
+                PersonKind.Composer,
+                PersonKind.Creator
             };
 
             // Seeing some LG models locking up due content with large lists of people
@@ -888,10 +889,13 @@ namespace Emby.Dlna.Didl
 
             foreach (var actor in people)
             {
-                var type = types.FirstOrDefault(i => string.Equals(i, actor.Type, StringComparison.OrdinalIgnoreCase) || string.Equals(i, actor.Role, StringComparison.OrdinalIgnoreCase))
-                    ?? PersonType.Actor;
+                var type = types.FirstOrDefault(i => i == actor.Type || string.Equals(actor.Role, i.ToString(), StringComparison.OrdinalIgnoreCase));
+                if (type == PersonKind.Unknown)
+                {
+                    type = PersonKind.Actor;
+                }
 
-                AddValue(writer, "upnp", type.ToLowerInvariant(), actor.Name, NsUpnp);
+                AddValue(writer, "upnp", type.ToString().ToLowerInvariant(), actor.Name, NsUpnp);
             }
         }
 

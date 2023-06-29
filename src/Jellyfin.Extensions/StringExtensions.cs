@@ -1,6 +1,4 @@
 using System;
-using System.Globalization;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Jellyfin.Extensions
@@ -12,7 +10,7 @@ namespace Jellyfin.Extensions
     {
         // Matches non-conforming unicode chars
         // https://mnaoumov.wordpress.com/2014/06/14/stripping-invalid-characters-from-utf-16-strings/
-        private static readonly Regex _nonConformingUnicode = new Regex("([\ud800-\udbff](?![\udc00-\udfff]))|((?<![\ud800-\udbff])[\udc00-\udfff])|(\ufffd)");
+        private static readonly Regex _nonConformingUnicode = new Regex("([\ud800-\udbff](?![\udc00-\udfff]))|((?<![\ud800-\udbff])[\udc00-\udfff])|(\ufffd)", RegexOptions.Compiled);
 
         /// <summary>
         /// Removes the diacritics character from the strings.

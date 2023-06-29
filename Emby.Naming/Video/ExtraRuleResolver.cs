@@ -56,7 +56,7 @@ namespace Emby.Naming.Video
                 }
                 else if (rule.RuleType == ExtraRuleType.Regex)
                 {
-                    var filename = Path.GetFileName(path);
+                    var filename = Path.GetFileName(path.AsSpan());
 
                     var isMatch = Regex.IsMatch(filename, rule.Token, RegexOptions.IgnoreCase | RegexOptions.Compiled);
 

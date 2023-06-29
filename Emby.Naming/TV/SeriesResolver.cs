@@ -14,7 +14,7 @@ namespace Emby.Naming.TV
         /// Used for removing separators between words, i.e turns "The_show" into "The show" while
         /// preserving namings like "S.H.O.W".
         /// </summary>
-        private static readonly Regex _seriesNameRegex = new Regex(@"((?<a>[^\._]{2,})[\._]*)|([\._](?<b>[^\._]{2,}))");
+        private static readonly Regex _seriesNameRegex = new Regex(@"((?<a>[^\._]{2,})[\._]*)|([\._](?<b>[^\._]{2,}))", RegexOptions.Compiled);
 
         /// <summary>
         /// Resolve information about series from path.

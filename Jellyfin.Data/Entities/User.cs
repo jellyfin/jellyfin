@@ -92,16 +92,6 @@ namespace Jellyfin.Data.Entities
         public string? Password { get; set; }
 
         /// <summary>
-        /// Gets or sets the user's easy password, or <c>null</c> if none is set.
-        /// </summary>
-        /// <remarks>
-        /// Max length = 65535.
-        /// </remarks>
-        [MaxLength(65535)]
-        [StringLength(65535)]
-        public string? EasyPassword { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether the user must update their password.
         /// </summary>
         /// <remarks>
@@ -508,6 +498,7 @@ namespace Jellyfin.Data.Entities
             Permissions.Add(new Permission(PermissionKind.EnableVideoPlaybackTranscoding, true));
             Permissions.Add(new Permission(PermissionKind.ForceRemoteSourceTranscoding, false));
             Permissions.Add(new Permission(PermissionKind.EnableRemoteControlOfOtherUsers, false));
+            Permissions.Add(new Permission(PermissionKind.EnableCollectionManagement, false));
         }
 
         /// <summary>
@@ -525,8 +516,9 @@ namespace Jellyfin.Data.Entities
         {
             var localTime = date.ToLocalTime();
             var hour = localTime.TimeOfDay.TotalHours;
+            var currentDayOfWeek = localTime.DayOfWeek;
 
-            return DayOfWeekHelper.GetDaysOfWeek(schedule.DayOfWeek).Contains(localTime.DayOfWeek)
+            return schedule.DayOfWeek.Contains(currentDayOfWeek)
                    && hour >= schedule.StartHour
                    && hour <= schedule.EndHour;
         }

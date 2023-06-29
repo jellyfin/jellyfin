@@ -627,10 +627,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     _timerProvider.Update(existingTimer);
                     return Task.FromResult(existingTimer.Id);
                 }
-                else
-                {
-                    throw new ArgumentException("A scheduled recording already exists for this program.");
-                }
+
+                throw new ArgumentException("A scheduled recording already exists for this program.");
             }
 
             info.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
@@ -1866,8 +1864,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     await writer.WriteStartDocumentAsync(true).ConfigureAwait(false);
                     await writer.WriteStartElementAsync(null, "tvshow", null).ConfigureAwait(false);
-                    string id;
-                    if (timer.SeriesProviderIds.TryGetValue(MetadataProvider.Tvdb.ToString(), out id))
+                    if (timer.SeriesProviderIds.TryGetValue(MetadataProvider.Tvdb.ToString(), out var id))
                     {
                         await writer.WriteElementStringAsync(null, "id", null, id).ConfigureAwait(false);
                     }
@@ -2032,7 +2029,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     var people = item.Id.Equals(default) ? new List<PersonInfo>() : _libraryManager.GetPeople(item);
 
                     var directors = people
-                        .Where(i => IsPersonType(i, PersonType.Director))
+                        .Where(i => i.IsType(PersonKind.Director))
                         .Select(i => i.Name)
                         .ToList();
 
@@ -2042,7 +2039,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     }
 
                     var writers = people
-                        .Where(i => IsPersonType(i, PersonType.Writer))
+                        .Where(i => i.IsType(PersonKind.Writer))
                         .Select(i => i.Name)
                         .Distinct(StringComparer.OrdinalIgnoreCase)
                         .ToList();
@@ -2121,10 +2118,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
             }
         }
-
-        private static bool IsPersonType(PersonInfo person, string type)
-            => string.Equals(person.Type, type, StringComparison.OrdinalIgnoreCase)
-                || string.Equals(person.Role, type, StringComparison.OrdinalIgnoreCase);
 
         private LiveTvProgram GetProgramInfoFromCache(string programId)
         {

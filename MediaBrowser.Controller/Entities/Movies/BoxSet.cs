@@ -104,7 +104,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         public override bool IsAuthorizedToDelete(User user, List<Folder> allCollectionFolders)
         {
-            return true;
+            return user.HasPermission(PermissionKind.IsAdministrator) || user.HasPermission(PermissionKind.EnableCollectionManagement);
         }
 
         public override bool IsSaveLocalMetadataEnabled()

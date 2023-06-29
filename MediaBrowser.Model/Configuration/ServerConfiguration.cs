@@ -2,7 +2,6 @@
 #pragma warning disable CA1819
 
 using System;
-using System.Collections.Generic;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Updates;
@@ -167,6 +166,12 @@ namespace MediaBrowser.Model.Configuration
         public int LibraryMonitorDelay { get; set; } = 60;
 
         /// <summary>
+        /// Gets or sets the duration in seconds that we will wait after a library updated event before executing the library changed notification.
+        /// </summary>
+        /// <value>The library update duration.</value>
+        public int LibraryUpdateDuration { get; set; } = 30;
+
+        /// <summary>
         /// Gets or sets the image saving convention.
         /// </summary>
         /// <value>The image saving convention.</value>
@@ -184,7 +189,7 @@ namespace MediaBrowser.Model.Configuration
 
         public NameValuePair[] ContentTypes { get; set; } = Array.Empty<NameValuePair>();
 
-        public int RemoteClientBitrateLimit { get; set; } = 0;
+        public int RemoteClientBitrateLimit { get; set; }
 
         public bool EnableFolderView { get; set; } = false;
 
@@ -198,7 +203,7 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableExternalContentInSuggestions { get; set; } = true;
 
-        public int ImageExtractionTimeoutMs { get; set; } = 0;
+        public int ImageExtractionTimeoutMs { get; set; }
 
         public PathSubstitution[] PathSubstitutions { get; set; } = Array.Empty<PathSubstitution>();
 
@@ -243,16 +248,10 @@ namespace MediaBrowser.Model.Configuration
         public bool AllowClientLogUpload { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets the dummy chapters duration in seconds.
+        /// Gets or sets the dummy chapter duration in seconds, use 0 (zero) or less to disable generation alltogether.
         /// </summary>
         /// <value>The dummy chapters duration.</value>
-        public int DummyChapterDuration { get; set; } = 300;
-
-        /// <summary>
-        /// Gets or sets the dummy chapter count.
-        /// </summary>
-        /// <value>The dummy chapter count.</value>
-        public int DummyChapterCount { get; set; } = 100;
+        public int DummyChapterDuration { get; set; }
 
         /// <summary>
         /// Gets or sets the chapter image resolution.
@@ -264,6 +263,6 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the limit for parallel image encoding.
         /// </summary>
         /// <value>The limit for parallel image encoding.</value>
-        public int ParallelImageEncodingLimit { get; set; } = 0;
+        public int ParallelImageEncodingLimit { get; set; }
     }
 }

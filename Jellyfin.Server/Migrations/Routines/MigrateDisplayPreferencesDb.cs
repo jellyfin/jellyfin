@@ -130,12 +130,10 @@ namespace Jellyfin.Server.Migrations.Routines
                         SkipForwardLength = dto.CustomPrefs.TryGetValue("skipForwardLength", out var length) && int.TryParse(length, out var skipForwardLength)
                             ? skipForwardLength
                             : 30000,
-                        SkipBackwardLength = dto.CustomPrefs.TryGetValue("skipBackLength", out length) && !string.IsNullOrEmpty(length) && int.TryParse(length, out var skipBackwardLength)
+                        SkipBackwardLength = dto.CustomPrefs.TryGetValue("skipBackLength", out length) && int.TryParse(length, out var skipBackwardLength)
                             ? skipBackwardLength
                             : 10000,
-                        EnableNextVideoInfoOverlay = dto.CustomPrefs.TryGetValue("enableNextVideoInfoOverlay", out var enabled) && !string.IsNullOrEmpty(enabled)
-                            ? bool.Parse(enabled)
-                            : true,
+                        EnableNextVideoInfoOverlay = !dto.CustomPrefs.TryGetValue("enableNextVideoInfoOverlay", out var enabled) || string.IsNullOrEmpty(enabled) || bool.Parse(enabled),
                         DashboardTheme = dto.CustomPrefs.TryGetValue("dashboardtheme", out var theme) ? theme : string.Empty,
                         TvHome = dto.CustomPrefs.TryGetValue("tvhome", out var home) ? home : string.Empty
                     };

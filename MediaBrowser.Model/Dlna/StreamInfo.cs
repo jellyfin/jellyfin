@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -107,9 +108,8 @@ namespace MediaBrowser.Model.Dlna
 
         public string MediaSourceId => MediaSource?.Id;
 
-        public bool IsDirectStream =>
-            PlayMethod == PlayMethod.DirectStream ||
-            PlayMethod == PlayMethod.DirectPlay;
+        public bool IsDirectStream => MediaSource?.VideoType is not (VideoType.Dvd or VideoType.BluRay)
+            && PlayMethod is PlayMethod.DirectStream or PlayMethod.DirectPlay;
 
         /// <summary>
         /// Gets the audio stream that will be used.
@@ -282,23 +282,24 @@ namespace MediaBrowser.Model.Dlna
         /// <summary>
         /// Gets the target video range type that will be in the output stream.
         /// </summary>
-        public string TargetVideoRangeType
+        public VideoRangeType TargetVideoRangeType
         {
             get
             {
                 if (IsDirectStream)
                 {
-                    return TargetVideoStream?.VideoRangeType;
+                    return TargetVideoStream?.VideoRangeType ?? VideoRangeType.Unknown;
                 }
 
                 var targetVideoCodecs = TargetVideoCodec;
                 var videoCodec = targetVideoCodecs.Length == 0 ? null : targetVideoCodecs[0];
-                if (!string.IsNullOrEmpty(videoCodec))
+                if (!string.IsNullOrEmpty(videoCodec)
+                    && Enum.TryParse(GetOption(videoCodec, "rangetype"), true, out VideoRangeType videoRangeType))
                 {
-                    return GetOption(videoCodec, "rangetype");
+                    return videoRangeType;
                 }
 
-                return TargetVideoStream?.VideoRangeType;
+                return TargetVideoStream?.VideoRangeType ?? VideoRangeType.Unknown;
             }
         }
 
@@ -431,7 +432,7 @@ namespace MediaBrowser.Model.Dlna
 
                     return totalBitrate.HasValue ?
                         Convert.ToInt64(totalBitrate.Value * totalSeconds) :
-                        (long?)null;
+                        null;
                 }
 
                 return null;
@@ -922,12 +923,8 @@ namespace MediaBrowser.Model.Dlna
         public int? GetTargetVideoBitDepth(string codec)
         {
             var value = GetOption(codec, "videobitdepth");
-            if (string.IsNullOrEmpty(value))
-            {
-                return null;
-            }
 
-            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result))
+            if (int.TryParse(value, CultureInfo.InvariantCulture, out var result))
             {
                 return result;
             }
@@ -938,12 +935,8 @@ namespace MediaBrowser.Model.Dlna
         public int? GetTargetAudioBitDepth(string codec)
         {
             var value = GetOption(codec, "audiobitdepth");
-            if (string.IsNullOrEmpty(value))
-            {
-                return null;
-            }
 
-            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result))
+            if (int.TryParse(value, CultureInfo.InvariantCulture, out var result))
             {
                 return result;
             }
@@ -954,12 +947,8 @@ namespace MediaBrowser.Model.Dlna
         public double? GetTargetVideoLevel(string codec)
         {
             var value = GetOption(codec, "level");
-            if (string.IsNullOrEmpty(value))
-            {
-                return null;
-            }
 
-            if (double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+            if (double.TryParse(value, CultureInfo.InvariantCulture, out var result))
             {
                 return result;
             }
@@ -970,12 +959,8 @@ namespace MediaBrowser.Model.Dlna
         public int? GetTargetRefFrames(string codec)
         {
             var value = GetOption(codec, "maxrefframes");
-            if (string.IsNullOrEmpty(value))
-            {
-                return null;
-            }
 
-            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+            if (int.TryParse(value, CultureInfo.InvariantCulture, out var result))
             {
                 return result;
             }

@@ -14,6 +14,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -230,10 +231,8 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 throw new InvalidOperationException(
                     string.Format(CultureInfo.InvariantCulture, "ffmpeg attachment extraction failed for {0} to {1}", inputPath, outputPath));
             }
-            else
-            {
-                _logger.LogInformation("ffmpeg attachment extraction completed for {Path} to {Path}", inputPath, outputPath);
-            }
+
+            _logger.LogInformation("ffmpeg attachment extraction completed for {InputPath} to {OutputPath}", inputPath, outputPath);
         }
 
         private async Task<Stream> GetAttachmentStream(
@@ -301,10 +300,10 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
             var processArgs = string.Format(
                 CultureInfo.InvariantCulture,
-                "-dump_attachment:{1} {2} -i {0} -t 0 -f null null",
+                "-dump_attachment:{1} \"{2}\" -i {0} -t 0 -f null null",
                 inputPath,
                 attachmentStreamIndex,
-                outputPath);
+                EncodingUtils.NormalizePath(outputPath));
 
             int exitCode;
 
@@ -375,10 +374,8 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 throw new InvalidOperationException(
                     string.Format(CultureInfo.InvariantCulture, "ffmpeg attachment extraction failed for {0} to {1}", inputPath, outputPath));
             }
-            else
-            {
-                _logger.LogInformation("ffmpeg attachment extraction completed for {Path} to {Path}", inputPath, outputPath);
-            }
+
+            _logger.LogInformation("ffmpeg attachment extraction completed for {InputPath} to {OutputPath}", inputPath, outputPath);
         }
 
         private string GetAttachmentCachePath(string mediaPath, MediaSourceInfo mediaSource, int attachmentStreamIndex)

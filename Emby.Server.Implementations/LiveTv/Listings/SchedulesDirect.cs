@@ -415,14 +415,13 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 return null;
             }
-            else if (uri.IndexOf("http", StringComparison.OrdinalIgnoreCase) != -1)
+
+            if (uri.IndexOf("http", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 return uri;
             }
-            else
-            {
-                return apiUrl + "/image/" + uri + "?token=" + token;
-            }
+
+            return apiUrl + "/image/" + uri + "?token=" + token;
         }
 
         private static double GetAspectRatio(ImageDataDto i)
@@ -463,10 +462,10 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
 
             StringBuilder str = new StringBuilder("[", 1 + (programIds.Count * 13));
-            foreach (ReadOnlySpan<char> i in programIds)
+            foreach (var i in programIds)
             {
                 str.Append('"')
-                    .Append(i.Slice(0, 10))
+                    .Append(i[..10])
                     .Append("\",");
             }
 
@@ -570,15 +569,13 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 _tokens.TryAdd(username, savedToken);
             }
 
-            if (!string.IsNullOrEmpty(savedToken.Name) && !string.IsNullOrEmpty(savedToken.Value))
+            if (!string.IsNullOrEmpty(savedToken.Name)
+                && long.TryParse(savedToken.Value, CultureInfo.InvariantCulture, out long ticks))
             {
-                if (long.TryParse(savedToken.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out long ticks))
+                // If it's under 24 hours old we can still use it
+                if (DateTime.UtcNow.Ticks - ticks < TimeSpan.FromHours(20).Ticks)
                 {
-                    // If it's under 24 hours old we can still use it
-                    if (DateTime.UtcNow.Ticks - ticks < TimeSpan.FromHours(20).Ticks)
-                    {
-                        return savedToken.Name;
-                    }
+                    return savedToken.Name;
                 }
             }
 

@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System;
@@ -42,7 +40,7 @@ namespace Emby.Server.Implementations.TV
                 throw new ArgumentException("User not found");
             }
 
-            string presentationUniqueKey = null;
+            string? presentationUniqueKey = null;
             if (query.SeriesId.HasValue && !query.SeriesId.Value.Equals(default))
             {
                 if (_libraryManager.GetItemById(query.SeriesId.Value) is Series series)
@@ -91,7 +89,7 @@ namespace Emby.Server.Implementations.TV
                 throw new ArgumentException("User not found");
             }
 
-            string presentationUniqueKey = null;
+            string? presentationUniqueKey = null;
             int? limit = null;
             if (request.SeriesId.HasValue && !request.SeriesId.Value.Equals(default))
             {
@@ -168,7 +166,7 @@ namespace Emby.Server.Implementations.TV
                     return !anyFound && i.LastWatchedDate == DateTime.MinValue;
                 })
                 .Select(i => i.GetEpisodeFunction())
-                .Where(i => i is not null);
+                .Where(i => i is not null)!;
         }
 
         private static string GetUniqueSeriesKey(Episode episode)
@@ -185,7 +183,7 @@ namespace Emby.Server.Implementations.TV
         /// Gets the next up.
         /// </summary>
         /// <returns>Task{Episode}.</returns>
-        private (DateTime LastWatchedDate, Func<Episode> GetEpisodeFunction) GetNextUp(string seriesKey, User user, DtoOptions dtoOptions, bool rewatching)
+        private (DateTime LastWatchedDate, Func<Episode?> GetEpisodeFunction) GetNextUp(string seriesKey, User user, DtoOptions dtoOptions, bool rewatching)
         {
             var lastQuery = new InternalItemsQuery(user)
             {
@@ -209,7 +207,7 @@ namespace Emby.Server.Implementations.TV
 
             var lastWatchedEpisode = _libraryManager.GetItemList(lastQuery).Cast<Episode>().FirstOrDefault();
 
-            Episode GetEpisode()
+            Episode? GetEpisode()
             {
                 var nextQuery = new InternalItemsQuery(user)
                 {

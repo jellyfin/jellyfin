@@ -1,4 +1,4 @@
-FROM fedora:36
+FROM fedora:39
 # Docker build arguments
 ARG SOURCE_DIR=/jellyfin
 ARG ARTIFACT_DIR=/dist
@@ -12,7 +12,7 @@ RUN dnf update -yq \
   && dnf install -yq @buildsys-build rpmdevtools git dnf-plugins-core libcurl-devel fontconfig-devel freetype-devel openssl-devel glibc-devel libicu-devel systemd wget make
 
 # Install DotNET SDK
-RUN wget -q https://download.visualstudio.microsoft.com/download/pr/c646b288-5d5b-4c9c-a95b-e1fad1c0d95d/e13d71d48b629fe3a85f5676deb09e2d/dotnet-sdk-7.0.102-linux-x64.tar.gz -O dotnet-sdk.tar.gz \
+RUN wget -q https://download.visualstudio.microsoft.com/download/pr/87a55ae3-917d-449e-a4e8-776f82976e91/03380e598c326c2f9465d262c6a88c45/dotnet-sdk-7.0.305-linux-x64.tar.gz -O dotnet-sdk.tar.gz \
   && mkdir -p dotnet-sdk \
   && tar -xzf dotnet-sdk.tar.gz -C dotnet-sdk \
   && ln -s $( pwd )/dotnet-sdk/dotnet /usr/bin/dotnet

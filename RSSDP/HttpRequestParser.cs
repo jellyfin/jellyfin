@@ -64,8 +64,7 @@ namespace Rssdp.Infrastructure
             }
 
             message.Method = new HttpMethod(parts[0].Trim());
-            Uri requestUri;
-            if (Uri.TryCreate(parts[1].Trim(), UriKind.RelativeOrAbsolute, out requestUri))
+            if (Uri.TryCreate(parts[1].Trim(), UriKind.RelativeOrAbsolute, out var requestUri))
             {
                 message.RequestUri = requestUri;
             }

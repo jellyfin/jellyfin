@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
-using Jellyfin.Api.Auth.IgnoreParentalControlPolicy;
+using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
@@ -20,7 +20,7 @@ namespace Jellyfin.Api.Tests.Auth.IgnoreSchedulePolicy
     {
         private readonly Mock<IConfigurationManager> _configurationManagerMock;
         private readonly List<IAuthorizationRequirement> _requirements;
-        private readonly IgnoreParentalControlHandler _sut;
+        private readonly DefaultAuthorizationHandler _sut;
         private readonly Mock<IUserManager> _userManagerMock;
         private readonly Mock<IHttpContextAccessor> _httpContextAccessor;
 
@@ -33,11 +33,11 @@ namespace Jellyfin.Api.Tests.Auth.IgnoreSchedulePolicy
         {
             var fixture = new Fixture().Customize(new AutoMoqCustomization());
             _configurationManagerMock = fixture.Freeze<Mock<IConfigurationManager>>();
-            _requirements = new List<IAuthorizationRequirement> { new IgnoreParentalControlRequirement() };
+            _requirements = new List<IAuthorizationRequirement> { new DefaultAuthorizationRequirement(validateParentalSchedule: false) };
             _userManagerMock = fixture.Freeze<Mock<IUserManager>>();
             _httpContextAccessor = fixture.Freeze<Mock<IHttpContextAccessor>>();
 
-            _sut = fixture.Create<IgnoreParentalControlHandler>();
+            _sut = fixture.Create<DefaultAuthorizationHandler>();
         }
 
         [Theory]

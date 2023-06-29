@@ -4,6 +4,8 @@ using System.IO;
 using Emby.Naming.Common;
 using Emby.Naming.Video;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
@@ -14,7 +16,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
     /// <summary>
     /// Resolves a Path into a Video or Video subclass.
     /// </summary>
-    internal class ExtraResolver
+    internal class ExtraResolver : BaseVideoResolver<Video>
     {
         private readonly NamingOptions _namingOptions;
         private readonly IItemResolver[] _trailerResolvers;
@@ -25,11 +27,18 @@ namespace Emby.Server.Implementations.Library.Resolvers
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="namingOptions">An instance of <see cref="NamingOptions"/>.</param>
-        public ExtraResolver(ILogger<ExtraResolver> logger, NamingOptions namingOptions)
+        /// <param name="directoryService">The directory service.</param>
+        public ExtraResolver(ILogger<ExtraResolver> logger, NamingOptions namingOptions, IDirectoryService directoryService)
+            : base(logger, namingOptions, directoryService)
         {
             _namingOptions = namingOptions;
-            _trailerResolvers = new IItemResolver[] { new GenericVideoResolver<Trailer>(logger, namingOptions) };
-            _videoResolvers = new IItemResolver[] { new GenericVideoResolver<Video>(logger, namingOptions) };
+            _trailerResolvers = new IItemResolver[] { new GenericVideoResolver<Trailer>(logger, namingOptions, directoryService) };
+            _videoResolvers = new IItemResolver[] { this };
+        }
+
+        protected override Video Resolve(ItemResolveArgs args)
+        {
+            return ResolveVideo<Video>(args, true);
         }
 
         /// <summary>
