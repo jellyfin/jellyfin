@@ -32,12 +32,6 @@ public class TxtLyricParser : ILyricParser
         }
 
         string[] lyricTextLines = lyrics.Content.Split(_lineBreakCharacters, StringSplitOptions.None);
-
-        if (lyricTextLines.Length == 0)
-        {
-            return null;
-        }
-
         LyricLine[] lyricList = new LyricLine[lyricTextLines.Length];
 
         for (int lyricLineIndex = 0; lyricLineIndex < lyricTextLines.Length; lyricLineIndex++)

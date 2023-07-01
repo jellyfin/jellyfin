@@ -9,7 +9,7 @@ public class LyricFile
     /// Initializes a new instance of the <see cref="LyricFile"/> class.
     /// </summary>
     /// <param name="name">The name.</param>
-    /// <param name="content">The content.</param>
+    /// <param name="content">The content, must not be empty.</param>
     public LyricFile(string name, string content)
     {
         Name = name;

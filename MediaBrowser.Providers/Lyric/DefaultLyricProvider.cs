@@ -32,7 +32,10 @@ public class DefaultLyricProvider : ILyricProvider
         if (path is not null)
         {
             var content = await File.ReadAllTextAsync(path).ConfigureAwait(false);
-            return new LyricFile(path, content);
+            if (content.Length != 0)
+            {
+                return new LyricFile(path, content);
+            }
         }
 
         return null;
