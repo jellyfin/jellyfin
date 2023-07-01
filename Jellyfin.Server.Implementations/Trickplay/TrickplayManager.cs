@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
@@ -34,6 +35,7 @@ public class TrickplayManager : ITrickplayManager
     private readonly IServerConfigurationManager _config;
     private readonly IImageEncoder _imageEncoder;
     private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
+    private readonly IApplicationPaths _appPaths;
 
     private static readonly SemaphoreSlim _resourcePool = new(1, 1);
     private static readonly string[] _trickplayImgExtensions = { ".jpg" };
@@ -49,6 +51,7 @@ public class TrickplayManager : ITrickplayManager
     /// <param name="config">The server configuration manager.</param>
     /// <param name="imageEncoder">The image encoder.</param>
     /// <param name="dbProvider">The database provider.</param>
+    /// <param name="appPaths">The application paths.</param>
     public TrickplayManager(
         ILogger<TrickplayManager> logger,
         IMediaEncoder mediaEncoder,
@@ -57,7 +60,8 @@ public class TrickplayManager : ITrickplayManager
         ILibraryManager libraryManager,
         IServerConfigurationManager config,
         IImageEncoder imageEncoder,
-        IDbContextFactory<JellyfinDbContext> dbProvider)
+        IDbContextFactory<JellyfinDbContext> dbProvider,
+        IApplicationPaths appPaths)
     {
         _logger = logger;
         _mediaEncoder = mediaEncoder;
@@ -67,6 +71,7 @@ public class TrickplayManager : ITrickplayManager
         _config = config;
         _imageEncoder = imageEncoder;
         _dbProvider = dbProvider;
+        _appPaths = appPaths;
     }
 
     /// <inheritdoc />
@@ -152,8 +157,7 @@ public class TrickplayManager : ITrickplayManager
                 .ToList();
 
             // Create tiles
-            var tilesTempDir = Path.Combine(imgTempDir, Guid.NewGuid().ToString("N"));
-            var trickplayInfo = CreateTiles(images, width, options, tilesTempDir, outputDir);
+            var trickplayInfo = CreateTiles(images, width, options, outputDir);
 
             // Save tiles info
             try
@@ -194,13 +198,15 @@ public class TrickplayManager : ITrickplayManager
         }
     }
 
-    private TrickplayInfo CreateTiles(List<string> images, int width, TrickplayOptions options, string workDir, string outputDir)
+    /// <inheritdoc />
+    public TrickplayInfo CreateTiles(List<string> images, int width, TrickplayOptions options, string outputDir)
     {
         if (images.Count == 0)
         {
             throw new ArgumentException("Can't create trickplay from 0 images.");
         }
 
+        var workDir = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(workDir);
 
         var trickplayInfo = new TrickplayInfo

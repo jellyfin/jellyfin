@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Controller.Trickplay;
 
@@ -20,6 +21,19 @@ public interface ITrickplayManager
     /// <param name="cancellationToken">CancellationToken to use for operation.</param>
     /// <returns>Task.</returns>
     Task RefreshTrickplayDataAsync(Video video, bool replace, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Creates trickplay tiles out of individual thumbnails.
+    /// </summary>
+    /// <param name="images">Ordered file paths of the thumbnails to be used.</param>
+    /// <param name="width">The width of a single thumbnail.</param>
+    /// <param name="options">The trickplay options.</param>
+    /// <param name="outputDir">The output directory.</param>
+    /// <returns>The associated trickplay information.</returns>
+    /// <remarks>
+    /// The output directory will be DELETED and replaced if it already exists.
+    /// </remarks>
+    TrickplayInfo CreateTiles(List<string> images, int width, TrickplayOptions options, string outputDir);
 
     /// <summary>
     /// Get available trickplay resolutions and corresponding info.
