@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -380,7 +381,7 @@ namespace Jellyfin.Networking.Manager
                 // Remove all interfaces matching any virtual machine interface prefix
                 if (config.IgnoreVirtualInterfaces)
                 {
-                    // Remove potentially exisiting * and split config string into prefixes
+                    // Remove potentially existing * and split config string into prefixes
                     var virtualInterfacePrefixes = config.VirtualInterfaceNames
                         .Select(i => i.Replace("*", string.Empty, StringComparison.OrdinalIgnoreCase));
 
@@ -587,7 +588,7 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public bool TryParseInterface(string intf, out IReadOnlyList<IPData> result)
+        public bool TryParseInterface(string intf, [NotNullWhen(true)] out IReadOnlyList<IPData>? result)
         {
             var resultList = new List<IPData>();
             if (string.IsNullOrEmpty(intf) || _interfaces is null)
@@ -660,7 +661,7 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public IReadOnlyList<IPData> GetLoopbacks()
         {
-            if (!(IsIPv4Enabled && IsIPv4Enabled))
+            if (!IsIPv4Enabled && !IsIPv6Enabled)
             {
                 return Array.Empty<IPData>();
             }

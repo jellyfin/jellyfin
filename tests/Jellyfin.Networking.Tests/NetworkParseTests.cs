@@ -203,12 +203,13 @@ namespace Jellyfin.Networking.Tests
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
-            _ = nm.TryParseInterface(result, out IReadOnlyList<IPData>? resultObj);
+            // Check to see if DNS resolution is working. If not, skip test.
+            if (!NetworkExtensions.TryParseHost(source, out var host))
+            {
+                return;
+            }
 
-            // Check to see if dns resolution is working. If not, skip test.
-            _ = NetworkExtensions.TryParseHost(source, out var host);
-
-            if (resultObj is not null && host.Length > 0)
+            if (nm.TryParseInterface(result, out var resultObj))
             {
                 result = resultObj.First().Address.ToString();
                 var intf = nm.GetBindAddress(source, out _);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.NetworkInformation;
 using MediaBrowser.Model.Net;
@@ -120,7 +121,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="intf">Interface name.</param>
         /// <param name="result">Resulting object's IP addresses, if successful.</param>
         /// <returns>Success of the operation.</returns>
-        bool TryParseInterface(string intf, out IReadOnlyList<IPData> result);
+        bool TryParseInterface(string intf, [NotNullWhen(true)] out IReadOnlyList<IPData>? result);
 
         /// <summary>
         /// Returns all internal (LAN) bind interface addresses.

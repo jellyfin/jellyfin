@@ -166,28 +166,30 @@ namespace MediaBrowser.Common.Net
         /// <param name="result">Collection of <see cref="IPNetwork"/>.</param>
         /// <param name="negated">Boolean signaling if negated or not negated values should be parsed.</param>
         /// <returns><c>True</c> if parsing was successful.</returns>
-        public static bool TryParseToSubnets(string[] values, out List<IPNetwork> result, bool negated = false)
+        public static bool TryParseToSubnets(string[] values, [NotNullWhen(true)] out IReadOnlyList<IPNetwork>? result, bool negated = false)
         {
-            result = new List<IPNetwork>();
-
             if (values is null || values.Length == 0)
             {
+                result = null;
                 return false;
             }
 
+            var tmpResult = new List<IPNetwork>();
             for (int a = 0; a < values.Length; a++)
             {
                 if (TryParseToSubnet(values[a], out var innerResult, negated))
                 {
-                    result.Add(innerResult);
+                    tmpResult.Add(innerResult);
                 }
             }
 
-            if (result.Count > 0)
+            if (tmpResult.Count > 0)
             {
+                result = tmpResult;
                 return true;
             }
 
+            result = null;
             return false;
         }
 
@@ -199,9 +201,8 @@ namespace MediaBrowser.Common.Net
         /// <param name="result">An <see cref="IPNetwork"/>.</param>
         /// <param name="negated">Boolean signaling if negated or not negated values should be parsed.</param>
         /// <returns><c>True</c> if parsing was successful.</returns>
-        public static bool TryParseToSubnet(ReadOnlySpan<char> value, out IPNetwork result, bool negated = false)
+        public static bool TryParseToSubnet(ReadOnlySpan<char> value, [NotNullWhen(true)] out IPNetwork? result, bool negated = false)
         {
-            result = new IPNetwork(IPAddress.None, 32);
             var splitString = value.Trim().Split('/');
             if (splitString.MoveNext())
             {
@@ -224,25 +225,28 @@ namespace MediaBrowser.Common.Net
                         if (int.TryParse(subnetBlock, out var netmask))
                         {
                             result = new IPNetwork(address, netmask);
+                            return true;
                         }
                         else if (IPAddress.TryParse(subnetBlock, out var netmaskAddress))
                         {
                             result = new IPNetwork(address, NetworkExtensions.MaskToCidr(netmaskAddress));
+                            return true;
                         }
                     }
                     else if (address.AddressFamily == AddressFamily.InterNetwork)
                     {
                         result = new IPNetwork(address, 32);
+                        return true;
                     }
                     else if (address.AddressFamily == AddressFamily.InterNetworkV6)
                     {
                         result = new IPNetwork(address, 128);
+                        return true;
                     }
-
-                    return true;
                 }
             }
 
+            result = null;
             return false;
         }
 
@@ -254,11 +258,11 @@ namespace MediaBrowser.Common.Net
         /// <param name="isIPv4Enabled"><c>true</c> if IPv4 is enabled.</param>
         /// <param name="isIPv6Enabled"><c>true</c> if IPv6 is enabled.</param>
         /// <returns><c>true</c> if the parsing is successful, <c>false</c> if not.</returns>
-        public static bool TryParseHost(ReadOnlySpan<char> host, [NotNullWhen(true)] out IPAddress[] addresses, bool isIPv4Enabled = true, bool isIPv6Enabled = false)
+        public static bool TryParseHost(ReadOnlySpan<char> host, [NotNullWhen(true)] out IPAddress[]? addresses, bool isIPv4Enabled = true, bool isIPv6Enabled = false)
         {
             if (host.IsEmpty)
             {
-                addresses = Array.Empty<IPAddress>();
+                addresses = null;
                 return false;
             }
 
@@ -301,9 +305,7 @@ namespace MediaBrowser.Common.Net
                 }
 
                 // Is an IP4 or IP4:port
-                host = hosts[0].Split('/')[0];
-
-                if (IPAddress.TryParse(host, out var address))
+                if (IPAddress.TryParse(hosts[0].AsSpan().LeftPart('/'), out var address))
                 {
                     if (((address.AddressFamily == AddressFamily.InterNetwork) && (!isIPv4Enabled && isIPv6Enabled)) ||
                         ((address.AddressFamily == AddressFamily.InterNetworkV6) && (isIPv4Enabled && !isIPv6Enabled)))
@@ -318,10 +320,9 @@ namespace MediaBrowser.Common.Net
                     return true;
                 }
             }
-            else if (hosts.Count <= 9) // 8 octets + port
+            else if (hosts.Count > 0 && hosts.Count <= 9) // 8 octets + port
             {
-                var splitSpan = host.Split('/');
-                if (splitSpan.MoveNext() && IPAddress.TryParse(splitSpan.Current, out var address))
+                if (IPAddress.TryParse(host.LeftPart('/'), out var address))
                 {
                     addresses = new[] { address };
                     return true;
