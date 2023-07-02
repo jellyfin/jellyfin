@@ -575,7 +575,7 @@ public class UserLibraryController : BaseJellyfinApiController
             return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
         }
 
-        var result = await _lyricManager.GetLyrics(item).ConfigureAwait(false);
+        var result = await _lyricManager.GetLyricsAsync(item).ConfigureAwait(false);
         if (result is not null)
         {
             return Ok(result);

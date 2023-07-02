@@ -22,9 +22,16 @@ public interface ILyricProvider
     ResolverPriority Priority { get; }
 
     /// <summary>
+    /// Checks if an item has lyrics available.
+    /// </summary>
+    /// <param name="item">The media item.</param>
+    /// <returns>Whether lyrics were found.</returns>
+    Task<bool> HasLyricsAsync(BaseItem item);
+
+    /// <summary>
     /// Gets the lyrics.
     /// </summary>
-    /// <param name="path">The lyric path.</param>
+    /// <param name="item">The media item.</param>
     /// <returns>A task representing found lyrics.</returns>
-    Task<LyricFile?> GetLyrics(string path);
+    Task<LyricFile?> GetLyricsAsync(BaseItem item);
 }

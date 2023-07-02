@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Lyrics;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Providers.Lyric;
 
@@ -27,30 +26,41 @@ public class LyricManager : ILyricManager
     }
 
     /// <inheritdoc />
-    public async Task<LyricResponse?> GetLyrics(BaseItem item)
+    public async Task<LyricResponse?> GetLyricsAsync(BaseItem item)
     {
-        var lyricPaths = item.GetMediaStreams().Where(s => s.Type == MediaStreamType.Lyric);
-        foreach (var lyricPath in lyricPaths)
+        foreach (ILyricProvider provider in _lyricProviders)
         {
-            foreach (ILyricProvider provider in _lyricProviders)
+            var lyrics = await provider.GetLyricsAsync(item).ConfigureAwait(false);
+            if (lyrics is null)
             {
-                var lyrics = await provider.GetLyrics(lyricPath.Path).ConfigureAwait(false);
-                if (lyrics is null)
-                {
-                    continue;
-                }
+                continue;
+            }
 
-                foreach (ILyricParser parser in _lyricParsers)
+            foreach (ILyricParser parser in _lyricParsers)
+            {
+                var result = parser.ParseLyrics(lyrics);
+                if (result is not null)
                 {
-                    var result = parser.ParseLyrics(lyrics);
-                    if (result is not null)
-                    {
-                        return result;
-                    }
+                    return result;
                 }
             }
         }
 
         return null;
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> HasLyricsAsync(BaseItem item)
+    {
+        foreach (var provider in _lyricProviders)
+        {
+            var hasLyrics = await provider.HasLyricsAsync(item).ConfigureAwait(false);
+            if (hasLyrics)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

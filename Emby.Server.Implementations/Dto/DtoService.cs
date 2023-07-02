@@ -271,7 +271,7 @@ namespace Emby.Server.Implementations.Dto
 
             if (item is Audio audio)
             {
-                dto.HasLyrics = audio.GetMediaStreams().Any(i => i.Type == MediaStreamType.Lyric);
+                dto.HasLyrics = _lyricManager.HasLyricsAsync(audio).GetAwaiter().GetResult();
             }
 
             return dto;
