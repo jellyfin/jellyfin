@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Net.WebSocketMessages;
 using MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
@@ -85,26 +86,15 @@ namespace Emby.Server.Implementations.HttpServer
         /// <value>The state.</value>
         public WebSocketState State => _socket.State;
 
-        /// <summary>
-        /// Sends a message asynchronously.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public Task SendAsync(WebSocketMessage message, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public Task SendAsync(OutboundWebSocketMessage message, CancellationToken cancellationToken)
         {
             var json = JsonSerializer.SerializeToUtf8Bytes(message, _jsonOptions);
             return _socket.SendAsync(json, WebSocketMessageType.Text, true, cancellationToken);
         }
 
-        /// <summary>
-        /// Sends a message asynchronously.
-        /// </summary>
-        /// <typeparam name="T">The type of the message.</typeparam>
-        /// <param name="message">The message.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public Task SendAsync<T>(WebSocketMessage<T> message, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public Task SendAsync<T>(OutboundWebSocketMessage<T> message, CancellationToken cancellationToken)
         {
             var json = JsonSerializer.SerializeToUtf8Bytes(message, _jsonOptions);
             return _socket.SendAsync(json, WebSocketMessageType.Text, true, cancellationToken);
@@ -183,7 +173,7 @@ namespace Emby.Server.Implementations.HttpServer
                 return;
             }
 
-            WebSocketMessage<object>? stub;
+            InboundWebSocketMessage<object>? stub;
             long bytesConsumed;
             try
             {
@@ -224,10 +214,10 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        internal WebSocketMessage<object>? DeserializeWebSocketMessage(ReadOnlySequence<byte> bytes, out long bytesConsumed)
+        internal InboundWebSocketMessage<object>? DeserializeWebSocketMessage(ReadOnlySequence<byte> bytes, out long bytesConsumed)
         {
             var jsonReader = new Utf8JsonReader(bytes);
-            var ret = JsonSerializer.Deserialize<WebSocketMessage<object>>(ref jsonReader, _jsonOptions);
+            var ret = JsonSerializer.Deserialize<InboundWebSocketMessage<object>>(ref jsonReader, _jsonOptions);
             bytesConsumed = jsonReader.BytesConsumed;
             return ret;
         }

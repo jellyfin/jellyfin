@@ -29,5 +29,5 @@ public class OutboundWebSocketMessage<T> : WebSocketMessage<T>, IOutboundWebSock
     /// <summary>
     /// Gets or sets the message id.
     /// </summary>
-    public Guid MessageId { get; set; }
+    public Guid MessageId { get; set; } = Guid.NewGuid();
 }
