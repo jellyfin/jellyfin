@@ -1454,6 +1454,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                 args += keyFrameArg + gopArg;
             }
 
+            // global_header produced by AMD VA-API encoder causes non-playable fMP4 on iOS
+            if (codec.Contains("vaapi", StringComparison.OrdinalIgnoreCase)
+                && _mediaEncoder.IsVaapiDeviceAmd)
+            {
+                args += " -flags:v -global_header";
+            }
+
             return args;
         }
 
