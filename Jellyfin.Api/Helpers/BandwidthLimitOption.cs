@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Jellyfin.Api.Helpers;
 
@@ -13,7 +13,7 @@ public class BandwidthLimitOption
     public Guid User { get; set; }
 
     /// <summary>
-    /// Gets or sets the bandwidth per second for a download.
+    /// Gets or sets the bandwidth in bytes/second for a download.
     /// </summary>
     public long BandwidthPerSec { get; set; }
 }

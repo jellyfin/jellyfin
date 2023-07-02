@@ -261,12 +261,12 @@ namespace Jellyfin.Data.Entities
         public int? MaxParentalAgeRating { get; set; }
 
         /// <summary>
-        /// Gets or sets the remote client bitrate limit.
+        /// Gets or sets the remote client bitrate limit in bytes/second.
         /// </summary>
         public int? RemoteClientBitrateLimit { get; set; }
 
         /// <summary>
-        /// Gets or sets the remote client download limit.
+        /// Gets or sets the remote client download limit in bytes/second.
         /// </summary>
         public long? RemoteDownloadSpeedLimit { get; set; }
 
