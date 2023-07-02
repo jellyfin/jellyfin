@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Net.WebSocketMessages;
 
 namespace MediaBrowser.Controller.Net
 {
@@ -48,12 +49,21 @@ namespace MediaBrowser.Controller.Net
         /// <summary>
         /// Sends a message asynchronously.
         /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="ArgumentNullException">The message is null.</exception>
+        Task SendAsync(OutboundWebSocketMessage message, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sends a message asynchronously.
+        /// </summary>
         /// <typeparam name="T">The type of websocket message data.</typeparam>
         /// <param name="message">The message.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException">The message is null.</exception>
-        Task SendAsync<T>(WebSocketMessage<T> message, CancellationToken cancellationToken);
+        Task SendAsync<T>(OutboundWebSocketMessage<T> message, CancellationToken cancellationToken);
 
         Task ProcessAsync(CancellationToken cancellationToken = default);
     }

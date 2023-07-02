@@ -171,7 +171,6 @@ namespace MediaBrowser.Controller.Net
                     await connection.SendAsync(
                         new OutboundWebSocketMessage<TReturnDataType>
                         {
-                            MessageId = Guid.NewGuid(),
                             MessageType = Type,
                             Data = data
                         },
