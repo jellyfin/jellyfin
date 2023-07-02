@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Net.WebSocketMessages;
+using MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
@@ -236,11 +236,7 @@ namespace Emby.Server.Implementations.HttpServer
         {
             LastKeepAliveDate = DateTime.UtcNow;
             return SendAsync(
-                new OutboundWebSocketMessage
-                {
-                    MessageId = Guid.NewGuid(),
-                    MessageType = SessionMessageType.KeepAlive
-                },
+                new OutboundKeepAliveMessage(),
                 CancellationToken.None);
         }
 
