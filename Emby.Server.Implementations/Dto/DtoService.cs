@@ -149,10 +149,6 @@ namespace Emby.Server.Implementations.Dto
             {
                 LivetvManager.AddInfoToProgramDto(new[] { (item, dto) }, options.Fields, user).GetAwaiter().GetResult();
             }
-            else if (item is Audio)
-            {
-                dto.HasLyrics = _lyricManager.HasLyricFile(item);
-            }
 
             if (item is IItemByName itemByName
                 && options.ContainsField(ItemFields.ItemCounts))
@@ -271,6 +267,11 @@ namespace Emby.Server.Implementations.Dto
                 }
 
                 liveTvManager.AddInfoToRecordingDto(item, dto, activeRecording, user);
+            }
+
+            if (item is Audio audio)
+            {
+                dto.HasLyrics = audio.GetMediaStreams().Any(i => i.Type == MediaStreamType.Lyric);
             }
 
             return dto;

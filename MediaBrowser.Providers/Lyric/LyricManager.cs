@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Lyrics;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Providers.Lyric;
 
@@ -28,43 +29,28 @@ public class LyricManager : ILyricManager
     /// <inheritdoc />
     public async Task<LyricResponse?> GetLyrics(BaseItem item)
     {
-        foreach (ILyricProvider provider in _lyricProviders)
+        var lyricPaths = item.GetMediaStreams().Where(s => s.Type == MediaStreamType.Lyric);
+        foreach (var lyricPath in lyricPaths)
         {
-            var lyrics = await provider.GetLyrics(item).ConfigureAwait(false);
-            if (lyrics is null)
+            foreach (ILyricProvider provider in _lyricProviders)
             {
-                continue;
-            }
-
-            foreach (ILyricParser parser in _lyricParsers)
-            {
-                var result = parser.ParseLyrics(lyrics);
-                if (result is not null)
+                var lyrics = await provider.GetLyrics(lyricPath.Path).ConfigureAwait(false);
+                if (lyrics is null)
                 {
-                    return result;
+                    continue;
+                }
+
+                foreach (ILyricParser parser in _lyricParsers)
+                {
+                    var result = parser.ParseLyrics(lyrics);
+                    if (result is not null)
+                    {
+                        return result;
+                    }
                 }
             }
         }
 
         return null;
-    }
-
-    /// <inheritdoc />
-    public bool HasLyricFile(BaseItem item)
-    {
-        foreach (ILyricProvider provider in _lyricProviders)
-        {
-            if (item is null)
-            {
-                continue;
-            }
-
-            if (provider.HasLyrics(item))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

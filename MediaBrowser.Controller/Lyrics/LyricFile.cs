@@ -1,4 +1,4 @@
-namespace MediaBrowser.Providers.Lyric;
+namespace MediaBrowser.Controller.Lyrics;
 
 /// <summary>
 /// The information for a raw lyrics file before parsing.

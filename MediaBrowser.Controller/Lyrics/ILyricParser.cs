@@ -1,5 +1,4 @@
 using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Providers.Lyric;
 
 namespace MediaBrowser.Controller.Lyrics;
 

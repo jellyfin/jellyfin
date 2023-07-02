@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Resolvers;
 
 namespace MediaBrowser.Providers.Lyric;
@@ -21,16 +22,9 @@ public interface ILyricProvider
     ResolverPriority Priority { get; }
 
     /// <summary>
-    /// Checks if an item has lyrics available.
-    /// </summary>
-    /// <param name="item">The media item.</param>
-    /// <returns>Whether lyrics where found or not.</returns>
-    bool HasLyrics(BaseItem item);
-
-    /// <summary>
     /// Gets the lyrics.
     /// </summary>
-    /// <param name="item">The media item.</param>
+    /// <param name="path">The lyric path.</param>
     /// <returns>A task representing found lyrics.</returns>
-    Task<LyricFile?> GetLyrics(BaseItem item);
+    Task<LyricFile?> GetLyrics(string path);
 }
