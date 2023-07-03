@@ -183,14 +183,8 @@ namespace MediaBrowser.Common.Net
                 }
             }
 
-            if (tmpResult.Count > 0)
-            {
-                result = tmpResult;
-                return true;
-            }
-
-            result = null;
-            return false;
+            result = tmpResult;
+            return tmpResult.Count > 0;
         }
 
         /// <summary>
@@ -307,8 +301,8 @@ namespace MediaBrowser.Common.Net
                 // Is an IP4 or IP4:port
                 if (IPAddress.TryParse(hosts[0].AsSpan().LeftPart('/'), out var address))
                 {
-                    if (((address.AddressFamily == AddressFamily.InterNetwork) && (!isIPv4Enabled && isIPv6Enabled)) ||
-                        ((address.AddressFamily == AddressFamily.InterNetworkV6) && (isIPv4Enabled && !isIPv6Enabled)))
+                    if (((address.AddressFamily == AddressFamily.InterNetwork) && (!isIPv4Enabled && isIPv6Enabled))
+                        || ((address.AddressFamily == AddressFamily.InterNetworkV6) && (isIPv4Enabled && !isIPv6Enabled)))
                     {
                         addresses = Array.Empty<IPAddress>();
                         return false;
