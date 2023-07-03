@@ -1,6 +1,6 @@
 using FsCheck;
 using FsCheck.Xunit;
-using MediaBrowser.Common.Net;
+using Jellyfin.Networking.Extensions;
 using Xunit;
 
 namespace Jellyfin.Networking.Tests
