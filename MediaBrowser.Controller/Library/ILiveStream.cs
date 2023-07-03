@@ -23,6 +23,8 @@ namespace MediaBrowser.Controller.Library
 
         string UniqueId { get; }
 
+        bool AllowCleanup { get; set; }
+
         Task Open(CancellationToken openCancellationToken);
 
         Task Close();

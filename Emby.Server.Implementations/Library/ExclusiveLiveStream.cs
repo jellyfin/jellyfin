@@ -37,6 +37,8 @@ namespace Emby.Server.Implementations.Library
 
         public string UniqueId { get; }
 
+        public bool AllowCleanup { get; set; }
+
         public Task Close()
         {
             return _closeFn();

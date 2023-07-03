@@ -323,6 +323,10 @@ namespace Emby.Server.Implementations.Session
                 {
                     await _mediaSourceManager.CloseLiveStream(session.PlayState.LiveStreamId).ConfigureAwait(false);
                 }
+                else
+                {
+                    await CleanupDanglingStreams();
+                }
 
                 OnSessionEnded(session);
             }
@@ -575,6 +579,66 @@ namespace Emby.Server.Implementations.Session
             {
                 _idleTimer.Dispose();
                 _idleTimer = null;
+            }
+        }
+
+        private async Task CleanupDanglingStreams()
+        {
+            List<KeyValuePair<string, ILiveStream>> openStreams = _mediaSourceManager.GetOpenStreams();
+            List<bool> isStreamActive = new List<bool>(openStreams.Count);
+            isStreamActive.AddRange(Enumerable.Repeat(false, openStreams.Count));
+
+            // Do initial check to find any unclaimed streams
+            int streamIdx = 0;
+            foreach (KeyValuePair<string, ILiveStream> liveStream in openStreams)
+            {
+                if (liveStream.Value.AllowCleanup)
+                {
+                    isStreamActive[streamIdx] = false;
+                    foreach (SessionInfo session in Sessions)
+                    {
+                        if (!string.IsNullOrEmpty(session.PlayState?.LiveStreamId) && session.PlayState.LiveStreamId == liveStream.Key)
+                        {
+                            isStreamActive[streamIdx] = true;
+                            break;
+                        }
+                    }
+                }
+
+                streamIdx++;
+            }
+
+            await Task.Delay(10000);
+
+            // Check again and close inactive streams
+            streamIdx = 0;
+            foreach (KeyValuePair<string, ILiveStream> liveStream in openStreams)
+            {
+                if (liveStream.Value.AllowCleanup)
+                {
+                    foreach (SessionInfo session in Sessions)
+                    {
+                        if (!string.IsNullOrEmpty(session.PlayState?.LiveStreamId) && session.PlayState.LiveStreamId == liveStream.Key)
+                        {
+                            isStreamActive[streamIdx] = true;
+                            break;
+                        }
+                    }
+
+                    if (!isStreamActive[streamIdx])
+                    {
+                        try
+                        {
+                            await _mediaSourceManager.CloseLiveStream(liveStream.Key).ConfigureAwait(false);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error closing live stream");
+                        }
+                    }
+                }
+
+                streamIdx++;
             }
         }
 
@@ -930,6 +994,22 @@ namespace Emby.Server.Implementations.Session
                 session.NowPlayingQueue = info.NowPlayingQueue;
             }
 
+            if (!string.IsNullOrEmpty(info.LiveStreamId))
+            {
+                try
+                {
+                    await _mediaSourceManager.CloseLiveStream(info.LiveStreamId).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error closing live stream");
+                }
+            }
+            else
+            {
+               await CleanupDanglingStreams().ConfigureAwait(false);
+            }
+
             session.PlaylistItemId = info.PlaylistItemId;
 
             RemoveNowPlayingItem(session);
@@ -942,18 +1022,6 @@ namespace Emby.Server.Implementations.Session
                 foreach (var user in users)
                 {
                     playedToCompletion = OnPlaybackStopped(user, libraryItem, info.PositionTicks, info.Failed);
-                }
-            }
-
-            if (!string.IsNullOrEmpty(info.LiveStreamId))
-            {
-                try
-                {
-                    await _mediaSourceManager.CloseLiveStream(info.LiveStreamId).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error closing live stream");
                 }
             }
 

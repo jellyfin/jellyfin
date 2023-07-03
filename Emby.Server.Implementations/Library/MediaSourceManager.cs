@@ -460,7 +460,7 @@ namespace Emby.Server.Implementations.Library
             .ToList();
         }
 
-        public async Task<Tuple<LiveStreamResponse, IDirectStreamProvider>> OpenLiveStreamInternal(LiveStreamRequest request, CancellationToken cancellationToken)
+        public async Task<Tuple<LiveStreamResponse, IDirectStreamProvider>> OpenLiveStreamInternal(LiveStreamRequest request, bool allowCleanup, CancellationToken cancellationToken)
         {
             await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
@@ -474,6 +474,8 @@ namespace Emby.Server.Implementations.Library
                 var currentLiveStreams = _openStreams.Values.ToList();
 
                 liveStream = await provider.OpenMediaSource(keyId, currentLiveStreams, cancellationToken).ConfigureAwait(false);
+
+                liveStream.AllowCleanup = allowCleanup;
 
                 mediaSource = liveStream.MediaSource;
 
@@ -584,7 +586,7 @@ namespace Emby.Server.Implementations.Library
 
         public async Task<LiveStreamResponse> OpenLiveStream(LiveStreamRequest request, CancellationToken cancellationToken)
         {
-            var result = await OpenLiveStreamInternal(request, cancellationToken).ConfigureAwait(false);
+            var result = await OpenLiveStreamInternal(request, true, cancellationToken).ConfigureAwait(false);
             return result.Item1;
         }
 
@@ -836,6 +838,11 @@ namespace Emby.Server.Implementations.Library
             var keyId = key.Substring(splitIndex + 1);
 
             return (provider, keyId);
+        }
+
+        public List<KeyValuePair<string, ILiveStream>> GetOpenStreams()
+        {
+            return _openStreams.ToList();
         }
 
         /// <inheritdoc />

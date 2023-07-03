@@ -90,7 +90,7 @@ namespace MediaBrowser.Controller.Library
         /// <returns>Task&lt;MediaSourceInfo&gt;.</returns>
         Task<LiveStreamResponse> OpenLiveStream(LiveStreamRequest request, CancellationToken cancellationToken);
 
-        Task<Tuple<LiveStreamResponse, IDirectStreamProvider>> OpenLiveStreamInternal(LiveStreamRequest request, CancellationToken cancellationToken);
+        Task<Tuple<LiveStreamResponse, IDirectStreamProvider>> OpenLiveStreamInternal(LiveStreamRequest request, bool allowCleanup, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the live stream.
@@ -132,5 +132,7 @@ namespace MediaBrowser.Controller.Library
         void SetDefaultAudioAndSubtitleStreamIndexes(BaseItem item, MediaSourceInfo source, User user);
 
         Task AddMediaInfoWithProbe(MediaSourceInfo mediaSource, bool isAudio, string cacheKey, bool addProbeDelay, bool isLiveStream, CancellationToken cancellationToken);
+
+        List<KeyValuePair<string, ILiveStream>> GetOpenStreams();
     }
 }
