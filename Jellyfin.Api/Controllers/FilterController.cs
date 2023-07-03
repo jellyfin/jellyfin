@@ -90,6 +90,8 @@ public class FilterController : BaseJellyfinApiController
         }
 
         var itemList = folder.GetItemList(query);
+        var mediaStreams = GetMediaStreams(itemList, BaseItemKind.Movie, BaseItemKind.Episode).ToList();
+
         return new QueryFiltersLegacy
         {
             Years = itemList.Select(i => i.ProductionYear ?? -1)
@@ -116,14 +118,14 @@ public class FilterController : BaseJellyfinApiController
                 .Order()
                 .ToArray(),
 
-            AudioLanguages = GetMediaStreams(itemList, BaseItemKind.Movie, BaseItemKind.Episode)
+            AudioLanguages = mediaStreams
                 .Where(mediaStream => mediaStream.Type == MediaStreamType.Audio)
                 .Select(mediaStream => string.IsNullOrWhiteSpace(mediaStream.Language) ? "und" : mediaStream.Language)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Order()
                 .ToArray(),
 
-            SubtitleLanguages = GetMediaStreams(itemList, BaseItemKind.Movie, BaseItemKind.Episode)
+            SubtitleLanguages = mediaStreams
                 .Where(mediaStream => mediaStream.Type == MediaStreamType.Subtitle)
                 .Select(mediaStream => string.IsNullOrWhiteSpace(mediaStream.Language) ? "und" : mediaStream.Language)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
