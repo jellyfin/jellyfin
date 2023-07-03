@@ -475,8 +475,8 @@ namespace Emby.Server.Implementations
             }
 
             var networkConfiguration = ConfigurationManager.GetNetworkConfiguration();
-            HttpPort = networkConfiguration.ServerPortNumberHttp;
-            HttpsPort = networkConfiguration.ServerPortNumberHttps;
+            HttpPort = networkConfiguration.InternalHttpPort;
+            HttpsPort = networkConfiguration.InternalHttpsPort;
 
             // Safeguard against invalid configuration
             if (HttpPort == HttpsPort)
@@ -785,8 +785,8 @@ namespace Emby.Server.Implementations
             if (HttpPort != 0 && HttpsPort != 0)
             {
                 // Need to restart if ports have changed
-                if (networkConfiguration.ServerPortNumberHttp != HttpPort
-                    || networkConfiguration.ServerPortNumberHttps != HttpsPort)
+                if (networkConfiguration.InternalHttpPort != HttpPort
+                    || networkConfiguration.InternalHttpsPort != HttpsPort)
                 {
                     if (ConfigurationManager.Configuration.IsPortAuthorized)
                     {

@@ -57,17 +57,17 @@ public class MigrateNetworkConfiguration : IMigrationRoutine
             networkConfiguration.EnableRemoteAccess = oldNetworkConfiguration.EnableRemoteAccess;
             networkConfiguration.EnableUPnP = oldNetworkConfiguration.EnableUPnP;
             networkConfiguration.IgnoreVirtualInterfaces = oldNetworkConfiguration.IgnoreVirtualInterfaces;
+            networkConfiguration.InternalHttpPort = oldNetworkConfiguration.HttpServerPortNumber;
+            networkConfiguration.InternalHttpsPort = oldNetworkConfiguration.HttpsPortNumber;
             networkConfiguration.IsRemoteIPFilterBlacklist = oldNetworkConfiguration.IsRemoteIPFilterBlacklist;
             networkConfiguration.KnownProxies = oldNetworkConfiguration.KnownProxies;
             networkConfiguration.LocalNetworkAddresses = oldNetworkConfiguration.LocalNetworkAddresses;
             networkConfiguration.LocalNetworkSubnets = oldNetworkConfiguration.LocalNetworkSubnets;
-            networkConfiguration.PublicPortHttp = oldNetworkConfiguration.PublicPort;
-            networkConfiguration.PublicPortHttps = oldNetworkConfiguration.PublicHttpsPort;
+            networkConfiguration.PublicHttpPort = oldNetworkConfiguration.PublicPort;
+            networkConfiguration.PublicHttpsPort = oldNetworkConfiguration.PublicHttpsPort;
             networkConfiguration.PublishedServerUriBySubnet = oldNetworkConfiguration.PublishedServerUriBySubnet;
             networkConfiguration.RemoteIPFilter = oldNetworkConfiguration.RemoteIPFilter;
             networkConfiguration.RequireHttps = oldNetworkConfiguration.RequireHttps;
-            networkConfiguration.ServerPortNumberHttp = oldNetworkConfiguration.HttpServerPortNumber;
-            networkConfiguration.ServerPortNumberHttps = oldNetworkConfiguration.HttpsPortNumber;
 
             // Migrate old virtual interface name schema
             var oldVirtualInterfaceNames = oldNetworkConfiguration.VirtualInterfaceNames;

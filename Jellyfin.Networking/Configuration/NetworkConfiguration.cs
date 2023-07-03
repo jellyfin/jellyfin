@@ -10,12 +10,12 @@ namespace Jellyfin.Networking.Configuration
     public class NetworkConfiguration
     {
         /// <summary>
-        /// The default value for <see cref="ServerPortNumberHttp"/>.
+        /// The default value for <see cref="InternalHttpPort"/>.
         /// </summary>
         public const int DefaultHttpPort = 8096;
 
         /// <summary>
-        /// The default value for <see cref="PublicPortHttps"/> and <see cref="ServerPortNumberHttps"/>.
+        /// The default value for <see cref="PublicHttpsPort"/> and <see cref="InternalHttpsPort"/>.
         /// </summary>
         public const int DefaultHttpsPort = 8920;
 
@@ -79,28 +79,28 @@ namespace Jellyfin.Networking.Configuration
         public string CertificatePassword { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the HTTP server port number.
+        /// Gets or sets the internal HTTP server port.
         /// </summary>
-        /// <value>The HTTP server port number.</value>
-        public int ServerPortNumberHttp { get; set; } = DefaultHttpPort;
+        /// <value>The HTTP server port.</value>
+        public int InternalHttpPort { get; set; } = DefaultHttpPort;
 
         /// <summary>
-        /// Gets or sets the HTTPS server port number.
+        /// Gets or sets the internal HTTPS server port.
         /// </summary>
-        /// <value>The HTTPS server port number.</value>
-        public int ServerPortNumberHttps { get; set; } = DefaultHttpsPort;
+        /// <value>The HTTPS server port.</value>
+        public int InternalHttpsPort { get; set; } = DefaultHttpsPort;
 
         /// <summary>
-        /// Gets or sets the public mapped port.
+        /// Gets or sets the public HTTP port.
         /// </summary>
-        /// <value>The public mapped port.</value>
-        public int PublicPortHttp { get; set; } = DefaultHttpPort;
+        /// <value>The public HTTP port.</value>
+        public int PublicHttpPort { get; set; } = DefaultHttpPort;
 
         /// <summary>
         /// Gets or sets the public HTTPS port.
         /// </summary>
         /// <value>The public HTTPS port.</value>
-        public int PublicPortHttps { get; set; } = DefaultHttpsPort;
+        public int PublicHttpsPort { get; set; } = DefaultHttpsPort;
 
         /// <summary>
         /// Gets or sets a value indicating whether Autodiscovery is enabled.
