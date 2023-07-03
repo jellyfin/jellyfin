@@ -10,12 +10,12 @@ namespace Jellyfin.Networking.Configuration
     public class NetworkConfiguration
     {
         /// <summary>
-        /// The default value for <see cref="HttpServerPortNumber"/>.
+        /// The default value for <see cref="ServerPortNumberHttp"/>.
         /// </summary>
         public const int DefaultHttpPort = 8096;
 
         /// <summary>
-        /// The default value for <see cref="PublicHttpsPort"/> and <see cref="HttpsPortNumber"/>.
+        /// The default value for <see cref="PublicPortHttps"/> and <see cref="ServerPortNumberHttps"/>.
         /// </summary>
         public const int DefaultHttpsPort = 8920;
 
@@ -79,28 +79,28 @@ namespace Jellyfin.Networking.Configuration
         public string CertificatePassword { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the HTTPS server port number.
-        /// </summary>
-        /// <value>The HTTPS server port number.</value>
-        public int HttpsPortNumber { get; set; } = DefaultHttpsPort;
-
-        /// <summary>
-        /// Gets or sets the public HTTPS port.
-        /// </summary>
-        /// <value>The public HTTPS port.</value>
-        public int PublicHttpsPort { get; set; } = DefaultHttpsPort;
-
-        /// <summary>
         /// Gets or sets the HTTP server port number.
         /// </summary>
         /// <value>The HTTP server port number.</value>
-        public int HttpServerPortNumber { get; set; } = DefaultHttpPort;
+        public int ServerPortNumberHttp { get; set; } = DefaultHttpPort;
+
+        /// <summary>
+        /// Gets or sets the HTTPS server port number.
+        /// </summary>
+        /// <value>The HTTPS server port number.</value>
+        public int ServerPortNumberHttps { get; set; } = DefaultHttpsPort;
 
         /// <summary>
         /// Gets or sets the public mapped port.
         /// </summary>
         /// <value>The public mapped port.</value>
-        public int PublicPort { get; set; } = DefaultHttpPort;
+        public int PublicPortHttp { get; set; } = DefaultHttpPort;
+
+        /// <summary>
+        /// Gets or sets the public HTTPS port.
+        /// </summary>
+        /// <value>The public HTTPS port.</value>
+        public int PublicPortHttps { get; set; } = DefaultHttpsPort;
 
         /// <summary>
         /// Gets or sets a value indicating whether Autodiscovery is enabled.
@@ -113,17 +113,17 @@ namespace Jellyfin.Networking.Configuration
         public bool EnableUPnP { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether IPv6 is enabled or not.
+        /// Gets or sets a value indicating whether IPv6 is enabled.
         /// </summary>
         public bool EnableIPv4 { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets a value indicating whether IPv6 is enabled or not.
+        /// Gets or sets a value indicating whether IPv6 is enabled.
         /// </summary>
         public bool EnableIPv6 { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether access outside of the LAN is permitted.
+        /// Gets or sets a value indicating whether access from outside of the LAN is permitted.
         /// </summary>
         public bool EnableRemoteAccess { get; set; } = true;
 
@@ -138,12 +138,12 @@ namespace Jellyfin.Networking.Configuration
         public string[] LocalNetworkAddresses { get; set; } = Array.Empty<string>();
 
         /// <summary>
-        /// Gets or sets the known proxies. If the proxy is a network, it's added to the KnownNetworks.
+        /// Gets or sets the known proxies.
         /// </summary>
         public string[] KnownProxies { get; set; } = Array.Empty<string>();
 
         /// <summary>
-        /// Gets or sets a value indicating whether address names that match <see cref="VirtualInterfaceNames"/> should be Ignore for the purposes of binding.
+        /// Gets or sets a value indicating whether address names that match <see cref="VirtualInterfaceNames"/> should be ignored for the purposes of binding.
         /// </summary>
         public bool IgnoreVirtualInterfaces { get; set; } = true;
 
