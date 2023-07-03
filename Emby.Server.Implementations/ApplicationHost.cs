@@ -475,8 +475,8 @@ namespace Emby.Server.Implementations
             }
 
             var networkConfiguration = ConfigurationManager.GetNetworkConfiguration();
-            HttpPort = networkConfiguration.HttpServerPortNumber;
-            HttpsPort = networkConfiguration.HttpsPortNumber;
+            HttpPort = networkConfiguration.InternalHttpPort;
+            HttpsPort = networkConfiguration.InternalHttpsPort;
 
             // Safeguard against invalid configuration
             if (HttpPort == HttpsPort)
@@ -785,8 +785,8 @@ namespace Emby.Server.Implementations
             if (HttpPort != 0 && HttpsPort != 0)
             {
                 // Need to restart if ports have changed
-                if (networkConfiguration.HttpServerPortNumber != HttpPort
-                    || networkConfiguration.HttpsPortNumber != HttpsPort)
+                if (networkConfiguration.InternalHttpPort != HttpPort
+                    || networkConfiguration.InternalHttpsPort != HttpsPort)
                 {
                     if (ConfigurationManager.Configuration.IsPortAuthorized)
                     {
@@ -995,7 +995,7 @@ namespace Emby.Server.Implementations
                 return PublishedServerUrl.Trim('/');
             }
 
-            string smart = NetManager.GetBindInterface(remoteAddr, out var port);
+            string smart = NetManager.GetBindAddress(remoteAddr, out var port);
             return GetLocalApiUrl(smart.Trim('/'), null, port);
         }
 
@@ -1006,7 +1006,9 @@ namespace Emby.Server.Implementations
             if (ConfigurationManager.GetNetworkConfiguration().EnablePublishedServerUriByRequest)
             {
                 int? requestPort = request.Host.Port;
-                if ((requestPort == 80 && string.Equals(request.Scheme, "http", StringComparison.OrdinalIgnoreCase)) || (requestPort == 443 && string.Equals(request.Scheme, "https", StringComparison.OrdinalIgnoreCase)))
+                if (requestPort == null
+                    || (requestPort == 80 && string.Equals(request.Scheme, "http", StringComparison.OrdinalIgnoreCase))
+                    || (requestPort == 443 && string.Equals(request.Scheme, "https", StringComparison.OrdinalIgnoreCase)))
                 {
                     requestPort = -1;
                 }
@@ -1027,15 +1029,15 @@ namespace Emby.Server.Implementations
                 return PublishedServerUrl.Trim('/');
             }
 
-            string smart = NetManager.GetBindInterface(hostname, out var port);
+            string smart = NetManager.GetBindAddress(hostname, out var port);
             return GetLocalApiUrl(smart.Trim('/'), null, port);
         }
 
         /// <inheritdoc/>
-        public string GetApiUrlForLocalAccess(IPObject hostname = null, bool allowHttps = true)
+        public string GetApiUrlForLocalAccess(IPAddress ipAddress = null, bool allowHttps = true)
         {
             // With an empty source, the port will be null
-            var smart = NetManager.GetBindInterface(hostname ?? IPHost.None, out _);
+            var smart = NetManager.GetBindAddress(ipAddress, out _, true);
             var scheme = !allowHttps ? Uri.UriSchemeHttp : null;
             int? port = !allowHttps ? HttpPort : null;
             return GetLocalApiUrl(smart, scheme, port);

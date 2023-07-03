@@ -51,7 +51,7 @@ namespace Emby.Server.Implementations.HttpServer
                 using var connection = new WebSocketConnection(
                     _loggerFactory.CreateLogger<WebSocketConnection>(),
                     webSocket,
-                    context.GetNormalizedRemoteIp())
+                    context.GetNormalizedRemoteIP())
                 {
                     OnReceive = ProcessWebSocketMessageReceived
                 };

@@ -4,7 +4,6 @@
 
 using System.Net;
 using MediaBrowser.Common;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Model.System;
 using Microsoft.AspNetCore.Http;
 
@@ -75,10 +74,10 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Gets an URL that can be used to access the API over LAN.
         /// </summary>
-        /// <param name="hostname">An optional hostname to use.</param>
+        /// <param name="ipAddress">An optional IP address to use.</param>
         /// <param name="allowHttps">A value indicating whether to allow HTTPS.</param>
         /// <returns>The API URL.</returns>
-        string GetApiUrlForLocalAccess(IPObject hostname = null, bool allowHttps = true);
+        string GetApiUrlForLocalAccess(IPAddress ipAddress = null, bool allowHttps = true);
 
         /// <summary>
         /// Gets a local (LAN) URL that can be used to access the API.

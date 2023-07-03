@@ -8,7 +8,7 @@ namespace Rssdp
     /// </summary>
     public sealed class DeviceAvailableEventArgs : EventArgs
     {
-        public IPAddress RemoteIpAddress { get; set; }
+        public IPAddress RemoteIPAddress { get; set; }
 
         private readonly DiscoveredSsdpDevice _DiscoveredDevice;
 

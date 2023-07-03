@@ -125,7 +125,7 @@ public static class RequestHelpers
             httpContext.User.GetVersion(),
             httpContext.User.GetDeviceId(),
             httpContext.User.GetDevice(),
-            httpContext.GetNormalizedRemoteIp().ToString(),
+            httpContext.GetNormalizedRemoteIP().ToString(),
             user).ConfigureAwait(false);
 
         if (session is null)

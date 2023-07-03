@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-
 namespace Rssdp.Infrastructure
 {
     /// <summary>
@@ -19,19 +19,27 @@ namespace Rssdp.Infrastructure
         private Timer _BroadcastTimer;
         private object _timerLock = new object();
 
+        private string _OSName;
+
+        private string _OSVersion;
+
         private readonly TimeSpan DefaultSearchWaitTime = TimeSpan.FromSeconds(4);
         private readonly TimeSpan OneSecond = TimeSpan.FromSeconds(1);
 
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public SsdpDeviceLocator(ISsdpCommunicationsServer communicationsServer)
+        public SsdpDeviceLocator(
+            ISsdpCommunicationsServer communicationsServer,
+            string osName,
+            string osVersion)
         {
-            if (communicationsServer == null)
-            {
-                throw new ArgumentNullException(nameof(communicationsServer));
-            }
+            ArgumentNullException.ThrowIfNull(communicationsServer);
+            ArgumentNullException.ThrowIfNullOrEmpty(osName);
+            ArgumentNullException.ThrowIfNullOrEmpty(osVersion);
 
+            _OSName = osName;
+            _OSVersion = osVersion;
             _CommunicationsServer = communicationsServer;
             _CommunicationsServer.ResponseReceived += CommsServer_ResponseReceived;
 
@@ -72,7 +80,7 @@ namespace Rssdp.Infrastructure
         {
             lock (_timerLock)
             {
-                if (_BroadcastTimer == null)
+                if (_BroadcastTimer is null)
                 {
                     _BroadcastTimer = new Timer(OnBroadcastTimerCallback, null, dueTime, period);
                 }
@@ -87,7 +95,7 @@ namespace Rssdp.Infrastructure
         {
             lock (_timerLock)
             {
-                if (_BroadcastTimer != null)
+                if (_BroadcastTimer is not null)
                 {
                     _BroadcastTimer.Dispose();
                     _BroadcastTimer = null;
@@ -148,7 +156,7 @@ namespace Rssdp.Infrastructure
 
         private Task SearchAsync(string searchTarget, TimeSpan searchWaitTime, CancellationToken cancellationToken)
         {
-            if (searchTarget == null)
+            if (searchTarget is null)
             {
                 throw new ArgumentNullException(nameof(searchTarget));
             }
@@ -187,7 +195,7 @@ namespace Rssdp.Infrastructure
         {
             _CommunicationsServer.RequestReceived -= CommsServer_RequestReceived;
             _CommunicationsServer.RequestReceived += CommsServer_RequestReceived;
-            _CommunicationsServer.BeginListeningForBroadcasts();
+            _CommunicationsServer.BeginListeningForMulticast();
         }
 
         /// <summary>
@@ -211,7 +219,7 @@ namespace Rssdp.Infrastructure
         /// Raises the <see cref="DeviceAvailable"/> event.
         /// </summary>
         /// <seealso cref="DeviceAvailable"/>
-        protected virtual void OnDeviceAvailable(DiscoveredSsdpDevice device, bool isNewDevice, IPAddress IpAddress)
+        protected virtual void OnDeviceAvailable(DiscoveredSsdpDevice device, bool isNewDevice, IPAddress IPAddress)
         {
             if (this.IsDisposed)
             {
@@ -219,11 +227,11 @@ namespace Rssdp.Infrastructure
             }
 
             var handlers = this.DeviceAvailable;
-            if (handlers != null)
+            if (handlers is not null)
             {
                 handlers(this, new DeviceAvailableEventArgs(device, isNewDevice)
                 {
-                    RemoteIpAddress = IpAddress
+                    RemoteIPAddress = IPAddress
                 });
             }
         }
@@ -242,7 +250,7 @@ namespace Rssdp.Infrastructure
             }
 
             var handlers = this.DeviceUnavailable;
-            if (handlers != null)
+            if (handlers is not null)
             {
                 handlers(this, new DeviceUnavailableEventArgs(device, expired));
             }
@@ -281,7 +289,7 @@ namespace Rssdp.Infrastructure
 
                 var commsServer = _CommunicationsServer;
                 _CommunicationsServer = null;
-                if (commsServer != null)
+                if (commsServer is not null)
                 {
                     commsServer.ResponseReceived -= this.CommsServer_ResponseReceived;
                     commsServer.RequestReceived -= this.CommsServer_RequestReceived;
@@ -289,13 +297,13 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        private void AddOrUpdateDiscoveredDevice(DiscoveredSsdpDevice device, IPAddress IpAddress)
+        private void AddOrUpdateDiscoveredDevice(DiscoveredSsdpDevice device, IPAddress IPAddress)
         {
             bool isNewDevice = false;
             lock (_Devices)
             {
                 var existingDevice = FindExistingDeviceNotification(_Devices, device.NotificationType, device.Usn);
-                if (existingDevice == null)
+                if (existingDevice is null)
                 {
                     _Devices.Add(device);
                     isNewDevice = true;
@@ -307,17 +315,17 @@ namespace Rssdp.Infrastructure
                 }
             }
 
-            DeviceFound(device, isNewDevice, IpAddress);
+            DeviceFound(device, isNewDevice, IPAddress);
         }
 
-        private void DeviceFound(DiscoveredSsdpDevice device, bool isNewDevice, IPAddress IpAddress)
+        private void DeviceFound(DiscoveredSsdpDevice device, bool isNewDevice, IPAddress IPAddress)
         {
             if (!NotificationTypeMatchesFilter(device))
             {
                 return;
             }
 
-            OnDeviceAvailable(device, isNewDevice, IpAddress);
+            OnDeviceAvailable(device, isNewDevice, IPAddress);
         }
 
         private bool NotificationTypeMatchesFilter(DiscoveredSsdpDevice device)
@@ -329,12 +337,12 @@ namespace Rssdp.Infrastructure
 
         private Task BroadcastDiscoverMessage(string serviceType, TimeSpan mxValue, CancellationToken cancellationToken)
         {
+            const string header = "M-SEARCH * HTTP/1.1";
+
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             values["HOST"] = "239.255.255.250:1900";
-            values["USER-AGENT"] = "UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2";
-            // values["X-EMBY-SERVERID"] = _appHost.SystemId;
-
+            values["USER-AGENT"] = string.Format(CultureInfo.InvariantCulture, "{0}/{1} UPnP/1.0 RSSDP/{2}", _OSName, _OSVersion, SsdpConstants.ServerVersion);
             values["MAN"] = "\"ssdp:discover\"";
 
             // Search target
@@ -343,14 +351,12 @@ namespace Rssdp.Infrastructure
             // Seconds to delay response
             values["MX"] = "3";
 
-            var header = "M-SEARCH * HTTP/1.1";
-
             var message = BuildMessage(header, values);
 
             return _CommunicationsServer.SendMulticastMessage(message, null, cancellationToken);
         }
 
-        private void ProcessSearchResponseMessage(HttpResponseMessage message, IPAddress IpAddress)
+        private void ProcessSearchResponseMessage(HttpResponseMessage message, IPAddress IPAddress)
         {
             if (!message.IsSuccessStatusCode)
             {
@@ -358,7 +364,7 @@ namespace Rssdp.Infrastructure
             }
 
             var location = GetFirstHeaderUriValue("Location", message);
-            if (location != null)
+            if (location is not null)
             {
                 var device = new DiscoveredSsdpDevice()
                 {
@@ -370,11 +376,11 @@ namespace Rssdp.Infrastructure
                     ResponseHeaders = message.Headers
                 };
 
-                AddOrUpdateDiscoveredDevice(device, IpAddress);
+                AddOrUpdateDiscoveredDevice(device, IPAddress);
             }
         }
 
-        private void ProcessNotificationMessage(HttpRequestMessage message, IPAddress IpAddress)
+        private void ProcessNotificationMessage(HttpRequestMessage message, IPAddress IPAddress)
         {
             if (String.Compare(message.Method.Method, "Notify", StringComparison.OrdinalIgnoreCase) != 0)
             {
@@ -384,7 +390,7 @@ namespace Rssdp.Infrastructure
             var notificationType = GetFirstHeaderStringValue("NTS", message);
             if (String.Compare(notificationType, SsdpConstants.SsdpKeepAliveNotification, StringComparison.OrdinalIgnoreCase) == 0)
             {
-                ProcessAliveNotification(message, IpAddress);
+                ProcessAliveNotification(message, IPAddress);
             }
             else if (String.Compare(notificationType, SsdpConstants.SsdpByeByeNotification, StringComparison.OrdinalIgnoreCase) == 0)
             {
@@ -392,10 +398,10 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        private void ProcessAliveNotification(HttpRequestMessage message, IPAddress IpAddress)
+        private void ProcessAliveNotification(HttpRequestMessage message, IPAddress IPAddress)
         {
             var location = GetFirstHeaderUriValue("Location", message);
-            if (location != null)
+            if (location is not null)
             {
                 var device = new DiscoveredSsdpDevice()
                 {
@@ -407,7 +413,7 @@ namespace Rssdp.Infrastructure
                     ResponseHeaders = message.Headers
                 };
 
-                AddOrUpdateDiscoveredDevice(device, IpAddress);
+                AddOrUpdateDiscoveredDevice(device, IPAddress);
             }
         }
 
@@ -445,7 +451,7 @@ namespace Rssdp.Infrastructure
             if (message.Headers.Contains(headerName))
             {
                 message.Headers.TryGetValues(headerName, out values);
-                if (values != null)
+                if (values is not null)
                 {
                     retVal = values.FirstOrDefault();
                 }
@@ -461,7 +467,7 @@ namespace Rssdp.Infrastructure
             if (message.Headers.Contains(headerName))
             {
                 message.Headers.TryGetValues(headerName, out values);
-                if (values != null)
+                if (values is not null)
                 {
                     retVal = values.FirstOrDefault();
                 }
@@ -477,7 +483,7 @@ namespace Rssdp.Infrastructure
             if (request.Headers.Contains(headerName))
             {
                 request.Headers.TryGetValues(headerName, out values);
-                if (values != null)
+                if (values is not null)
                 {
                     value = values.FirstOrDefault();
                 }
@@ -494,7 +500,7 @@ namespace Rssdp.Infrastructure
             if (response.Headers.Contains(headerName))
             {
                 response.Headers.TryGetValues(headerName, out values);
-                if (values != null)
+                if (values is not null)
                 {
                     value = values.FirstOrDefault();
                 }
@@ -506,7 +512,7 @@ namespace Rssdp.Infrastructure
 
         private TimeSpan CacheAgeFromHeader(System.Net.Http.Headers.CacheControlHeaderValue headerValue)
         {
-            if (headerValue == null)
+            if (headerValue is null)
             {
                 return TimeSpan.Zero;
             }
@@ -563,7 +569,7 @@ namespace Rssdp.Infrastructure
                 }
             }
 
-            if (existingDevices != null && existingDevices.Count > 0)
+            if (existingDevices is not null && existingDevices.Count > 0)
             {
                 foreach (var removedDevice in existingDevices)
                 {
@@ -619,7 +625,7 @@ namespace Rssdp.Infrastructure
 
         private void CommsServer_ResponseReceived(object sender, ResponseReceivedEventArgs e)
         {
-            ProcessSearchResponseMessage(e.Message, e.LocalIpAddress);
+            ProcessSearchResponseMessage(e.Message, e.LocalIPAddress);
         }
 
         private void CommsServer_RequestReceived(object sender, RequestReceivedEventArgs e)
