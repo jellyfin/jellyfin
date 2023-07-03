@@ -1,13 +1,13 @@
 #nullable disable
 
-using MediaBrowser.Model.Net;
+using MediaBrowser.Controller.Net.WebSocketMessages;
 
 namespace MediaBrowser.Controller.Net
 {
     /// <summary>
     /// Class WebSocketMessageInfo.
     /// </summary>
-    public class WebSocketMessageInfo : WebSocketMessage<string>
+    public class WebSocketMessageInfo : InboundWebSocketMessage<string>
     {
         /// <summary>
         /// Gets or sets the connection.

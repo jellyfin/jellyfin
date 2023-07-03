@@ -12,6 +12,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
@@ -108,7 +109,7 @@ namespace MediaBrowser.Providers.Manager
             try
             {
                 // Always validate images and check for new locally stored ones.
-                if (ImageProvider.ValidateImages(item, allImageProviders.OfType<ILocalImageProvider>(), refreshOptions.DirectoryService))
+                if (ImageProvider.ValidateImages(item, allImageProviders.OfType<ILocalImageProvider>(), refreshOptions))
                 {
                     updateType |= ItemUpdateType.ImageUpdate;
                 }
@@ -151,7 +152,6 @@ namespace MediaBrowser.Providers.Manager
                         ApplySearchResult(id, refreshOptions.SearchResult);
                     }
 
-                    // await FindIdentities(id, cancellationToken).ConfigureAwait(false);
                     id.IsAutomated = refreshOptions.IsAutomated;
 
                     var result = await RefreshWithProviders(metadataResult, id, refreshOptions, providers, ImageProvider, cancellationToken).ConfigureAwait(false);
@@ -673,6 +673,7 @@ namespace MediaBrowser.Providers.Manager
             }
 
             var hasLocalMetadata = false;
+            var foundImageTypes = new List<ImageType>();
 
             foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>())
             {
@@ -699,6 +700,9 @@ namespace MediaBrowser.Providers.Manager
 
                                 await ProviderManager.SaveImage(item, remoteImage.Url, remoteImage.Type, null, cancellationToken).ConfigureAwait(false);
                                 refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
+
+                                // remember imagetype that has just been downloaded
+                                foundImageTypes.Add(remoteImage.Type);
                             }
                             catch (HttpRequestException ex)
                             {
@@ -706,7 +710,12 @@ namespace MediaBrowser.Providers.Manager
                             }
                         }
 
-                        if (imageService.MergeImages(item, localItem.Images))
+                        if (foundImageTypes.Count > 0)
+                        {
+                            imageService.UpdateReplaceImages(options, foundImageTypes);
+                        }
+
+                        if (imageService.MergeImages(item, localItem.Images, options))
                         {
                             refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
                         }
@@ -869,10 +878,7 @@ namespace MediaBrowser.Providers.Manager
                 var key = providerId.Key;
 
                 // Don't replace existing Id's.
-                if (!lookupInfo.ProviderIds.ContainsKey(key))
-                {
-                    lookupInfo.ProviderIds[key] = providerId.Value;
-                }
+                lookupInfo.ProviderIds.TryAdd(key, providerId.Value);
             }
         }
 

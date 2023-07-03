@@ -19,6 +19,7 @@ jobs:
         if: ${{ github.event_name == 'push' || github.event_name == 'pull_request_target'}}
         with:
           dirtyLabel: 'merge conflict'
+          commentOnDirty: 'This pull request has merge conflicts. Please resolve the conflicts so the PR can be successfully reviewed and merged.'
           repoToken: ${{ secrets.JF_BOT_TOKEN }}
 
   project:

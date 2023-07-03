@@ -113,6 +113,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="imageProcessor">The image processor.</param>
         /// <param name="memoryCache">The memory cache.</param>
         /// <param name="namingOptions">The naming options.</param>
+        /// <param name="directoryService">The directory service.</param>
         public LibraryManager(
             IServerApplicationHost appHost,
             ILoggerFactory loggerFactory,
@@ -128,7 +129,8 @@ namespace Emby.Server.Implementations.Library
             IItemRepository itemRepository,
             IImageProcessor imageProcessor,
             IMemoryCache memoryCache,
-            NamingOptions namingOptions)
+            NamingOptions namingOptions,
+            IDirectoryService directoryService)
         {
             _appHost = appHost;
             _logger = loggerFactory.CreateLogger<LibraryManager>();
@@ -146,7 +148,7 @@ namespace Emby.Server.Implementations.Library
             _memoryCache = memoryCache;
             _namingOptions = namingOptions;
 
-            _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions);
+            _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions, directoryService);
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
 
@@ -356,8 +358,8 @@ namespace Emby.Server.Implementations.Library
             }
 
             var children = item.IsFolder
-                ? ((Folder)item).GetRecursiveChildren(false).ToList()
-                : new List<BaseItem>();
+                ? ((Folder)item).GetRecursiveChildren(false)
+                : Enumerable.Empty<BaseItem>();
 
             foreach (var metadataPath in GetMetadataPaths(item, children))
             {
@@ -537,7 +539,7 @@ namespace Emby.Server.Implementations.Library
                 collectionType = GetContentTypeOverride(fullPath, true);
             }
 
-            var args = new ItemResolveArgs(_configurationManager.ApplicationPaths, directoryService)
+            var args = new ItemResolveArgs(_configurationManager.ApplicationPaths, this)
             {
                 Parent = parent,
                 FileInfo = fileInfo,
@@ -1253,7 +1255,7 @@ namespace Emby.Server.Implementations.Library
                 var parent = GetItemById(query.ParentId);
                 if (parent is not null)
                 {
-                    SetTopParentIdsOrAncestors(query, new List<BaseItem> { parent });
+                    SetTopParentIdsOrAncestors(query, new[] { parent });
                 }
             }
 
@@ -1262,7 +1264,14 @@ namespace Emby.Server.Implementations.Library
                 AddUserToQuery(query, query.User, allowExternalContent);
             }
 
-            return _itemRepository.GetItemList(query);
+            var itemList = _itemRepository.GetItemList(query);
+            var user = query.User;
+            if (user is not null)
+            {
+                return itemList.Where(i => i.IsVisible(user)).ToList();
+            }
+
+            return itemList;
         }
 
         public List<BaseItem> GetItemList(InternalItemsQuery query)
@@ -1277,7 +1286,7 @@ namespace Emby.Server.Implementations.Library
                 var parent = GetItemById(query.ParentId);
                 if (parent is not null)
                 {
-                    SetTopParentIdsOrAncestors(query, new List<BaseItem> { parent });
+                    SetTopParentIdsOrAncestors(query, new[] { parent });
                 }
             }
 
@@ -1435,7 +1444,7 @@ namespace Emby.Server.Implementations.Library
                 var parent = GetItemById(query.ParentId);
                 if (parent is not null)
                 {
-                    SetTopParentIdsOrAncestors(query, new List<BaseItem> { parent });
+                    SetTopParentIdsOrAncestors(query, new[] { parent });
                 }
             }
 
@@ -1455,7 +1464,7 @@ namespace Emby.Server.Implementations.Library
                 _itemRepository.GetItemList(query));
         }
 
-        private void SetTopParentIdsOrAncestors(InternalItemsQuery query, List<BaseItem> parents)
+        private void SetTopParentIdsOrAncestors(InternalItemsQuery query, IReadOnlyCollection<BaseItem> parents)
         {
             if (parents.All(i => i is ICollectionFolder || i is UserView))
             {
@@ -1501,6 +1510,12 @@ namespace Emby.Server.Implementations.Library
                 });
 
                 query.TopParentIds = userViews.SelectMany(i => GetTopParentIdsForQuery(i, user)).ToArray();
+
+                // Prevent searching in all libraries due to empty filter
+                if (query.TopParentIds.Length == 0)
+                {
+                    query.TopParentIds = new[] { Guid.NewGuid() };
+                }
             }
         }
 
@@ -1602,7 +1617,7 @@ namespace Emby.Server.Implementations.Library
             {
                 _logger.LogError(ex, "Error getting intros");
 
-                return new List<IntroInfo>();
+                return Enumerable.Empty<IntroInfo>();
             }
         }
 
@@ -1877,7 +1892,7 @@ namespace Emby.Server.Implementations.Library
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Cannot get image dimensions for {ImagePath}", image.Path);
-                    size = new ImageDimensions(0, 0);
+                    size = default;
                     image.Width = 0;
                     image.Height = 0;
                 }
@@ -2054,7 +2069,9 @@ namespace Emby.Server.Implementations.Library
                     .Find(folder => folder is CollectionFolder) as CollectionFolder;
             }
 
-            return collectionFolder is null ? new LibraryOptions() : collectionFolder.GetLibraryOptions();
+            return collectionFolder is null
+                ? new LibraryOptions()
+                : collectionFolder.GetLibraryOptions();
         }
 
         public string GetContentType(BaseItem item)
@@ -2741,9 +2758,7 @@ namespace Emby.Server.Implementations.Library
                 }
             })
             .Where(i => i is not null)
-            .Where(i => query.User is null ?
-                true :
-                i.IsVisible(query.User))
+            .Where(i => query.User is null || i.IsVisible(query.User))
             .ToList();
         }
 
@@ -2876,7 +2891,7 @@ namespace Emby.Server.Implementations.Library
 
         private async Task SavePeopleMetadataAsync(IEnumerable<PersonInfo> people, CancellationToken cancellationToken)
         {
-            var personsToSave = new List<BaseItem>();
+            List<BaseItem> personsToSave = null;
 
             foreach (var person in people)
             {
@@ -2918,12 +2933,12 @@ namespace Emby.Server.Implementations.Library
 
                 if (saveEntity)
                 {
-                    personsToSave.Add(personEntity);
+                    (personsToSave ??= new()).Add(personEntity);
                     await RunMetadataSavers(personEntity, itemUpdateType).ConfigureAwait(false);
                 }
             }
 
-            if (personsToSave.Count > 0)
+            if (personsToSave is not null)
             {
                 CreateItems(personsToSave, null, CancellationToken.None);
             }
@@ -3085,22 +3100,19 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(path));
             }
 
-            var removeList = new List<NameValuePair>();
+            List<NameValuePair> removeList = null;
 
             foreach (var contentType in _configurationManager.Configuration.ContentTypes)
             {
-                if (string.IsNullOrWhiteSpace(contentType.Name))
-                {
-                    removeList.Add(contentType);
-                }
-                else if (_fileSystem.AreEqual(path, contentType.Name)
+                if (string.IsNullOrWhiteSpace(contentType.Name)
+                    || _fileSystem.AreEqual(path, contentType.Name)
                     || _fileSystem.ContainsSubPath(path, contentType.Name))
                 {
-                    removeList.Add(contentType);
+                    (removeList ??= new()).Add(contentType);
                 }
             }
 
-            if (removeList.Count > 0)
+            if (removeList is not null)
             {
                 _configurationManager.Configuration.ContentTypes = _configurationManager.Configuration.ContentTypes
                     .Except(removeList)

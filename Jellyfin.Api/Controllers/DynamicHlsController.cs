@@ -12,6 +12,8 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.PlaybackDtos;
 using Jellyfin.Api.Models.StreamingDtos;
+using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using Jellyfin.MediaEncoding.Hls.Playlist;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
@@ -19,6 +21,7 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
@@ -1639,9 +1642,11 @@ public class DynamicHlsController : BaseJellyfinApiController
                 Path.GetFileNameWithoutExtension(outputPath));
         }
 
+        var hlsArguments = GetHlsArguments(isEventPlaylist, state.SegmentLength);
+
         return string.Format(
             CultureInfo.InvariantCulture,
-            "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -max_muxing_queue_size {6} -f hls -max_delay 5000000 -hls_time {7} -hls_segment_type {8} -start_number {9}{10} -hls_segment_filename \"{12}\" -hls_playlist_type {11} -hls_list_size 0 -y \"{13}\"",
+            "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -max_muxing_queue_size {6} -f hls -max_delay 5000000 -hls_time {7} -hls_segment_type {8} -start_number {9}{10} -hls_segment_filename \"{11}\" {12} -y \"{13}\"",
             inputModifier,
             _encodingHelper.GetInputArgument(state, _encodingOptions, segmentContainer),
             threads,
@@ -1653,9 +1658,36 @@ public class DynamicHlsController : BaseJellyfinApiController
             segmentFormat,
             startNumber.ToString(CultureInfo.InvariantCulture),
             baseUrlParam,
-            isEventPlaylist ? "event" : "vod",
-            outputTsArg,
-            outputPath).Trim();
+            EncodingUtils.NormalizePath(outputTsArg),
+            hlsArguments,
+            EncodingUtils.NormalizePath(outputPath)).Trim();
+    }
+
+    /// <summary>
+    /// Gets the HLS arguments for transcoding.
+    /// </summary>
+    /// <returns>The command line arguments for HLS transcoding.</returns>
+    private string GetHlsArguments(bool isEventPlaylist, int segmentLength)
+    {
+        var enableThrottling = _encodingOptions.EnableThrottling;
+        var enableSegmentDeletion = _encodingOptions.EnableSegmentDeletion;
+
+        // Only enable segment deletion when throttling is enabled
+        if (enableThrottling && enableSegmentDeletion)
+        {
+            // Store enough segments for configured seconds of playback; this needs to be above throttling settings
+            var segmentCount = _encodingOptions.SegmentKeepSeconds / segmentLength;
+
+            _logger.LogDebug("Using throttling and segment deletion, keeping {0} segments", segmentCount);
+
+            return string.Format(CultureInfo.InvariantCulture, "-hls_list_size {0} -hls_flags delete_segments", segmentCount.ToString(CultureInfo.InvariantCulture));
+        }
+        else
+        {
+            _logger.LogDebug("Using normal playback, is event playlist? {0}", isEventPlaylist);
+
+            return string.Format(CultureInfo.InvariantCulture, "-hls_playlist_type {0} -hls_list_size 0", isEventPlaylist ? "event" : "vod");
+        }
     }
 
     /// <summary>
@@ -1685,14 +1717,25 @@ public class DynamicHlsController : BaseJellyfinApiController
 
             audioTranscodeParams += "-acodec " + audioCodec;
 
-            if (state.OutputAudioBitrate.HasValue)
+            var audioBitrate = state.OutputAudioBitrate;
+            var audioChannels = state.OutputAudioChannels;
+
+            if (audioBitrate.HasValue && !EncodingHelper.LosslessAudioCodecs.Contains(state.ActualOutputAudioCodec, StringComparison.OrdinalIgnoreCase))
             {
-                audioTranscodeParams += " -ab " + state.OutputAudioBitrate.Value.ToString(CultureInfo.InvariantCulture);
+                var vbrParam = _encodingHelper.GetAudioVbrModeParam(audioCodec, audioBitrate.Value / (audioChannels ?? 2));
+                if (_encodingOptions.EnableAudioVbr && vbrParam is not null)
+                {
+                    audioTranscodeParams += vbrParam;
+                }
+                else
+                {
+                    audioTranscodeParams += " -ab " + audioBitrate.Value.ToString(CultureInfo.InvariantCulture);
+                }
             }
 
-            if (state.OutputAudioChannels.HasValue)
+            if (audioChannels.HasValue)
             {
-                audioTranscodeParams += " -ac " + state.OutputAudioChannels.Value.ToString(CultureInfo.InvariantCulture);
+                audioTranscodeParams += " -ac " + audioChannels.Value.ToString(CultureInfo.InvariantCulture);
             }
 
             if (state.OutputAudioSampleRate.HasValue)
@@ -1706,11 +1749,11 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         // dts, flac, opus and truehd are experimental in mp4 muxer
         var strictArgs = string.Empty;
-
-        if (string.Equals(state.ActualOutputAudioCodec, "flac", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(state.ActualOutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(state.ActualOutputAudioCodec, "dts", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(state.ActualOutputAudioCodec, "truehd", StringComparison.OrdinalIgnoreCase))
+        var actualOutputAudioCodec = state.ActualOutputAudioCodec;
+        if (string.Equals(actualOutputAudioCodec, "flac", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(actualOutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(actualOutputAudioCodec, "dts", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(actualOutputAudioCodec, "truehd", StringComparison.OrdinalIgnoreCase))
         {
             strictArgs = " -strict -2";
         }
@@ -1744,10 +1787,17 @@ public class DynamicHlsController : BaseJellyfinApiController
         }
 
         var bitrate = state.OutputAudioBitrate;
-
-        if (bitrate.HasValue)
+        if (bitrate.HasValue && !EncodingHelper.LosslessAudioCodecs.Contains(actualOutputAudioCodec, StringComparison.OrdinalIgnoreCase))
         {
-            args += " -ab " + bitrate.Value.ToString(CultureInfo.InvariantCulture);
+            var vbrParam = _encodingHelper.GetAudioVbrModeParam(audioCodec, bitrate.Value / (channels ?? 2));
+            if (_encodingOptions.EnableAudioVbr && vbrParam is not null)
+            {
+                args += vbrParam;
+            }
+            else
+            {
+                args += " -ab " + bitrate.Value.ToString(CultureInfo.InvariantCulture);
+            }
         }
 
         if (state.OutputAudioSampleRate.HasValue)
@@ -1789,7 +1839,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             || string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase))
         {
             if (EncodingHelper.IsCopyCodec(codec)
-                && (string.Equals(state.VideoStream.VideoRangeType, "DOVI", StringComparison.OrdinalIgnoreCase)
+                && (state.VideoStream.VideoRangeType == VideoRangeType.DOVI
                     || string.Equals(state.VideoStream.CodecTag, "dovi", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(state.VideoStream.CodecTag, "dvh1", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(state.VideoStream.CodecTag, "dvhe", StringComparison.OrdinalIgnoreCase)))
@@ -1840,7 +1890,11 @@ public class DynamicHlsController : BaseJellyfinApiController
             // args += " -mixed-refs 0 -refs 3 -x264opts b_pyramid=0:weightb=0:weightp=0";
 
             // video processing filters.
-            args += _encodingHelper.GetVideoProcessingFilterParam(state, _encodingOptions, codec);
+            var videoProcessParam = _encodingHelper.GetVideoProcessingFilterParam(state, _encodingOptions, codec);
+
+            var negativeMapArgs = _encodingHelper.GetNegativeMapArgsByFilters(state, videoProcessParam);
+
+            args = negativeMapArgs + args + videoProcessParam;
 
             // -start_at_zero is necessary to use with -ss when seeking,
             // otherwise the target position cannot be determined.
@@ -2005,8 +2059,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         {
             return fileSystem.GetFiles(folder, new[] { segmentExtension }, true, false)
                 .Where(i => Path.GetFileNameWithoutExtension(i.Name).StartsWith(filePrefix, StringComparison.OrdinalIgnoreCase))
-                .OrderByDescending(fileSystem.GetLastWriteTimeUtc)
-                .FirstOrDefault();
+                .MaxBy(fileSystem.GetLastWriteTimeUtc);
         }
         catch (IOException)
         {

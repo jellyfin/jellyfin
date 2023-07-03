@@ -316,7 +316,7 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public string GetBindInterface(string source, out int? port)
         {
-            if (!string.IsNullOrEmpty(source) && IPHost.TryParse(source, out IPHost host))
+            if (IPHost.TryParse(source, out IPHost host))
             {
                 return GetBindInterface(host, out port);
             }
@@ -500,10 +500,8 @@ namespace Jellyfin.Networking.Manager
             {
                 return true;
             }
-            else
-            {
-                return address.IsPrivateAddressRange();
-            }
+
+            return address.IsPrivateAddressRange();
         }
 
         /// <inheritdoc/>
@@ -594,6 +592,7 @@ namespace Jellyfin.Networking.Manager
 
             IsIP4Enabled = Socket.OSSupportsIPv4 && config.EnableIPV4;
             IsIP6Enabled = Socket.OSSupportsIPv6 && config.EnableIPV6;
+            HappyEyeballs.HttpClientExtension.UseIPv6 = IsIP6Enabled;
 
             if (!IsIP6Enabled && !IsIP4Enabled)
             {
@@ -838,9 +837,19 @@ namespace Jellyfin.Networking.Manager
             try
             {
                 await Task.Delay(2000).ConfigureAwait(false);
-                InitialiseInterfaces();
-                // Recalculate LAN caches.
-                InitialiseLAN(_configurationManager.GetNetworkConfiguration());
+
+                var config = _configurationManager.GetNetworkConfiguration();
+                // Have we lost IPv6 capability?
+                if (IsIP6Enabled && !Socket.OSSupportsIPv6)
+                {
+                    UpdateSettings(config);
+                }
+                else
+                {
+                    InitialiseInterfaces();
+                    // Recalculate LAN caches.
+                    InitialiseLAN(config);
+                }
 
                 NetworkChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -1019,8 +1028,8 @@ namespace Jellyfin.Networking.Manager
                     _internalInterfaces = CreateCollection(_interfaceAddresses.Where(IsInLocalNetwork));
                 }
 
-                _logger.LogInformation("Defined LAN addresses : {0}", _lanSubnets.AsString());
-                _logger.LogInformation("Defined LAN exclusions : {0}", _excludedSubnets.AsString());
+                _logger.LogInformation("Defined LAN addresses: {0}", _lanSubnets.AsString());
+                _logger.LogInformation("Defined LAN exclusions: {0}", _excludedSubnets.AsString());
                 _logger.LogInformation("Using LAN addresses: {0}", _lanSubnets.Exclude(_excludedSubnets, true).AsNetworks().AsString());
             }
         }
@@ -1145,7 +1154,7 @@ namespace Jellyfin.Networking.Manager
                 }
 
                 _logger.LogDebug("Discovered {0} interfaces.", _interfaceAddresses.Count);
-                _logger.LogDebug("Interfaces addresses : {0}", _interfaceAddresses.AsString());
+                _logger.LogDebug("Interfaces addresses: {0}", _interfaceAddresses.AsString());
             }
         }
 
@@ -1171,13 +1180,15 @@ namespace Jellyfin.Networking.Manager
                     bindPreference = addr.Value;
                     break;
                 }
-                else if ((addr.Key.Address.Equals(IPAddress.Any) || addr.Key.Address.Equals(IPAddress.IPv6Any)) && isInExternalSubnet)
+
+                if ((addr.Key.Address.Equals(IPAddress.Any) || addr.Key.Address.Equals(IPAddress.IPv6Any)) && isInExternalSubnet)
                 {
                     // External.
                     bindPreference = addr.Value;
                     break;
                 }
-                else if (addr.Key.Contains(source))
+
+                if (addr.Key.Contains(source))
                 {
                     // Match ip address.
                     bindPreference = addr.Value;
@@ -1256,8 +1267,7 @@ namespace Jellyfin.Networking.Manager
                     // Look for the best internal address.
                     bindAddress = addresses
                         .Where(p => IsInLocalNetwork(p) && (p.Contains(source) || p.Equals(IPAddress.None)))
-                        .OrderBy(p => p.Tag)
-                        .FirstOrDefault()?.Address;
+                        .MinBy(p => p.Tag)?.Address;
                 }
 
                 if (bindAddress is not null)

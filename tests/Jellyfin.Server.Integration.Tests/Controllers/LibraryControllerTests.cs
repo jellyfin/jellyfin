@@ -37,4 +37,27 @@ public sealed class LibraryControllerTests : IClassFixture<JellyfinApplicationFa
         var response = await client.GetAsync(string.Format(CultureInfo.InvariantCulture, format, Guid.NewGuid())).ConfigureAwait(false);
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
+
+    [Theory]
+    [InlineData("Items/{0}")]
+    [InlineData("Items?ids={0}")]
+    public async Task Delete_NonExistentItemId_Unauthorised(string format)
+    {
+        var client = _factory.CreateClient();
+
+        var response = await client.DeleteAsync(string.Format(CultureInfo.InvariantCulture, format, Guid.NewGuid())).ConfigureAwait(false);
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("Items/{0}")]
+    [InlineData("Items?ids={0}")]
+    public async Task Delete_NonExistentItemId_NotFound(string format)
+    {
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+
+        var response = await client.DeleteAsync(string.Format(CultureInfo.InvariantCulture, format, Guid.NewGuid())).ConfigureAwait(false);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
 }

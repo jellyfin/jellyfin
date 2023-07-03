@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
@@ -98,6 +99,7 @@ public class SearchController : BaseJellyfinApiController
         [FromQuery] bool includeStudios = true,
         [FromQuery] bool includeArtists = true)
     {
+        userId = RequestHelpers.GetUserId(User, userId);
         var result = _searchEngine.GetSearchHints(new SearchQuery
         {
             Limit = limit,
@@ -108,7 +110,7 @@ public class SearchController : BaseJellyfinApiController
             IncludePeople = includePeople,
             IncludeStudios = includeStudios,
             StartIndex = startIndex,
-            UserId = userId ?? Guid.Empty,
+            UserId = userId.Value,
             IncludeItemTypes = includeItemTypes,
             ExcludeItemTypes = excludeItemTypes,
             MediaTypes = mediaTypes,

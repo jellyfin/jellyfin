@@ -3,34 +3,29 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using LrcParser.Model;
 using LrcParser.Parser;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Resolvers;
-using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Lyric;
 
 /// <summary>
-/// LRC Lyric Provider.
+/// LRC Lyric Parser.
 /// </summary>
-public class LrcLyricProvider : ILyricProvider
+public class LrcLyricParser : ILyricParser
 {
-    private readonly ILogger<LrcLyricProvider> _logger;
-
     private readonly LyricParser _lrcLyricParser;
 
+    private static readonly string[] _supportedMediaTypes = { ".lrc", ".elrc" };
     private static readonly string[] _acceptedTimeFormats = { "HH:mm:ss", "H:mm:ss", "mm:ss", "m:ss" };
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="LrcLyricProvider"/> class.
+    /// Initializes a new instance of the <see cref="LrcLyricParser"/> class.
     /// </summary>
-    /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
-    public LrcLyricProvider(ILogger<LrcLyricProvider> logger)
+    public LrcLyricParser()
     {
-        _logger = logger;
         _lrcLyricParser = new LrcParser.Parser.Lrc.LrcParser();
     }
 
@@ -41,37 +36,25 @@ public class LrcLyricProvider : ILyricProvider
     /// Gets the priority.
     /// </summary>
     /// <value>The priority.</value>
-    public ResolverPriority Priority => ResolverPriority.First;
+    public ResolverPriority Priority => ResolverPriority.Fourth;
 
     /// <inheritdoc />
-    public IReadOnlyCollection<string> SupportedMediaTypes { get; } = new[] { "lrc", "elrc" };
-
-    /// <summary>
-    /// Opens lyric file for the requested item, and processes it for API return.
-    /// </summary>
-    /// <param name="item">The item to to process.</param>
-    /// <returns>If provider can determine lyrics, returns a <see cref="LyricResponse"/> with or without metadata; otherwise, null.</returns>
-    public async Task<LyricResponse?> GetLyrics(BaseItem item)
+    public LyricResponse? ParseLyrics(LyricFile lyrics)
     {
-        string? lyricFilePath = this.GetLyricFilePath(item.Path);
-
-        if (string.IsNullOrEmpty(lyricFilePath))
+        if (!_supportedMediaTypes.Contains(Path.GetExtension(lyrics.Name.AsSpan()), StringComparison.OrdinalIgnoreCase))
         {
             return null;
         }
-
-        var fileMetaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        string lrcFileContent = await File.ReadAllTextAsync(lyricFilePath).ConfigureAwait(false);
 
         Song lyricData;
 
         try
         {
-            lyricData = _lrcLyricParser.Decode(lrcFileContent);
+            lyricData = _lrcLyricParser.Decode(lyrics.Content);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _logger.LogError(ex, "Error parsing lyric file {LyricFilePath} from {Provider}", lyricFilePath, Name);
+            // Failed to parse, return null so the next parser will be tried
             return null;
         }
 
@@ -84,6 +67,7 @@ public class LrcLyricProvider : ILyricProvider
             .Select(x => x.Text)
             .ToList();
 
+        var fileMetaData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (string metaDataRow in metaDataRows)
         {
             var index = metaDataRow.IndexOf(':', StringComparison.OrdinalIgnoreCase);
@@ -130,17 +114,10 @@ public class LrcLyricProvider : ILyricProvider
             // Map metaData values from LRC file to LyricMetadata properties
             LyricMetadata lyricMetadata = MapMetadataValues(fileMetaData);
 
-            return new LyricResponse
-            {
-                Metadata = lyricMetadata,
-                Lyrics = lyricList
-            };
+            return new LyricResponse { Metadata = lyricMetadata, Lyrics = lyricList };
         }
 
-        return new LyricResponse
-        {
-            Lyrics = lyricList
-        };
+        return new LyricResponse { Lyrics = lyricList };
     }
 
     /// <summary>

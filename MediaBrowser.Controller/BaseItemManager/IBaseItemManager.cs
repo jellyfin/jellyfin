@@ -10,11 +10,6 @@ namespace MediaBrowser.Controller.BaseItemManager
     public interface IBaseItemManager
     {
         /// <summary>
-        /// Gets the semaphore used to limit the amount of concurrent metadata refreshes.
-        /// </summary>
-        SemaphoreSlim MetadataRefreshThrottler { get; }
-
-        /// <summary>
         /// Is metadata fetcher enabled.
         /// </summary>
         /// <param name="baseItem">The base item.</param>

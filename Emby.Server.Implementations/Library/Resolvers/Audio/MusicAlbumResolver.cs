@@ -25,16 +25,19 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
     {
         private readonly ILogger<MusicAlbumResolver> _logger;
         private readonly NamingOptions _namingOptions;
+        private readonly IDirectoryService _directoryService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MusicAlbumResolver"/> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="namingOptions">The naming options.</param>
-        public MusicAlbumResolver(ILogger<MusicAlbumResolver> logger, NamingOptions namingOptions)
+        /// <param name="directoryService">The directory service.</param>
+        public MusicAlbumResolver(ILogger<MusicAlbumResolver> logger, NamingOptions namingOptions, IDirectoryService directoryService)
         {
             _logger = logger;
             _namingOptions = namingOptions;
+            _directoryService = directoryService;
         }
 
         /// <summary>
@@ -109,7 +112,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 }
 
                 // If args contains music it's a music album
-                if (ContainsMusic(args.FileSystemChildren, true, args.DirectoryService))
+                if (ContainsMusic(args.FileSystemChildren, true, _directoryService))
                 {
                     return true;
                 }

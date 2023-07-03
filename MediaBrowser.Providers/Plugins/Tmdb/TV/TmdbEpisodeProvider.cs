@@ -1,5 +1,3 @@
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -7,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
@@ -87,7 +86,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 return metadataResult;
             }
 
-            info.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out string tmdbId);
+            info.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out string? tmdbId);
 
             var seriesTmdbId = Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture);
             if (seriesTmdbId <= 0)
@@ -170,7 +169,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     {
                         Name = actor.Name.Trim(),
                         Role = actor.Character,
-                        Type = PersonType.Actor,
+                        Type = PersonKind.Actor,
                         SortOrder = actor.Order
                     });
                 }
@@ -184,7 +183,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     {
                         Name = guest.Name.Trim(),
                         Role = guest.Character,
-                        Type = PersonType.GuestStar,
+                        Type = PersonKind.GuestStar,
                         SortOrder = guest.Order
                     });
                 }
@@ -198,7 +197,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     // Normalize this
                     var type = TmdbUtils.MapCrewToPersonType(person);
 
-                    if (!TmdbUtils.WantedCrewTypes.Contains(type, StringComparison.OrdinalIgnoreCase)
+                    if (!TmdbUtils.WantedCrewKinds.Contains(type)
                         && !TmdbUtils.WantedCrewTypes.Contains(person.Job ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                     {
                         continue;

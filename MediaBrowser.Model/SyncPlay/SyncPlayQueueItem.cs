@@ -5,13 +5,13 @@ namespace MediaBrowser.Model.SyncPlay
     /// <summary>
     /// Class QueueItem.
     /// </summary>
-    public class QueueItem
+    public class SyncPlayQueueItem
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="QueueItem"/> class.
+        /// Initializes a new instance of the <see cref="SyncPlayQueueItem"/> class.
         /// </summary>
         /// <param name="itemId">The item identifier.</param>
-        public QueueItem(Guid itemId)
+        public SyncPlayQueueItem(Guid itemId)
         {
             ItemId = itemId;
         }
