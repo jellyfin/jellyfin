@@ -181,6 +181,10 @@ namespace MediaBrowser.Providers.Manager
                 {
                     contentType = "image/png";
                 }
+                else
+                {
+                    throw new HttpRequestException("Invalid image received: contentType not set.", null, response.StatusCode);
+                }
             }
 
             // thetvdb will sometimes serve a rubbish 404 html page with a 200 OK code, because reasons...
