@@ -19,7 +19,7 @@ public static partial class NetworkExtensions
     // Use regular expression as CheckHostName isn't RFC5892 compliant.
     // Modified from gSkinner's expression at https://stackoverflow.com/questions/11809631/fully-qualified-domain-name-validation
     [GeneratedRegex(@"(?im)^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){0,127}(?![0-9]*$)[a-z0-9-]+\.?)(:(\d){1,5}){0,1}$", RegexOptions.IgnoreCase, "en-US")]
-    private static partial Regex fqdnGeneratedRegex();
+    private static partial Regex FqdnGeneratedRegex();
 
     /// <summary>
     /// Returns true if the IPAddress contains an IP6 Local link address.
@@ -256,13 +256,12 @@ public static partial class NetworkExtensions
     /// <returns><c>true</c> if the parsing is successful, <c>false</c> if not.</returns>
     public static bool TryParseHost(ReadOnlySpan<char> host, [NotNullWhen(true)] out IPAddress[]? addresses, bool isIPv4Enabled = true, bool isIPv6Enabled = false)
     {
+        host = host.Trim();
         if (host.IsEmpty)
         {
             addresses = null;
             return false;
         }
-
-        host = host.Trim();
 
         // See if it's an IPv6 with port address e.g. [::1] or [::1]:120.
         if (host[0] == '[')
@@ -286,7 +285,7 @@ public static partial class NetworkExtensions
         if (hosts.Count <= 2)
         {
             // Is hostname or hostname:port
-            if (fqdnGeneratedRegex().IsMatch(hosts[0]))
+            if (FqdnGeneratedRegex().IsMatch(hosts[0]))
             {
                 try
                 {
@@ -295,8 +294,7 @@ public static partial class NetworkExtensions
                 }
                 catch (SocketException)
                 {
-                    // Log and then ignore socket errors, as the result value will just be an empty array.
-                    Console.WriteLine("GetHostAddresses failed.");
+                    // Ignore socket errors, as the result value will just be an empty array.
                 }
             }
 
@@ -337,14 +335,9 @@ public static partial class NetworkExtensions
     public static IPAddress GetBroadcastAddress(IPNetwork network)
     {
         var addressBytes = network.Prefix.GetAddressBytes();
-        if (BitConverter.IsLittleEndian)
-        {
-            addressBytes = addressBytes.Reverse().ToArray();
-        }
-
-        uint iPAddress = BitConverter.ToUInt32(addressBytes, 0);
+        uint ipAddress = BitConverter.ToUInt32(addressBytes, 0);
         uint ipMaskV4 = BitConverter.ToUInt32(CidrToMask(network.PrefixLength, AddressFamily.InterNetwork).GetAddressBytes(), 0);
-        uint broadCastIPAddress = iPAddress | ~ipMaskV4;
+        uint broadCastIPAddress = ipAddress | ~ipMaskV4;
 
         return new IPAddress(BitConverter.GetBytes(broadCastIPAddress));
     }
