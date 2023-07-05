@@ -258,9 +258,9 @@ public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, Albu
 
         if (Plugin.Instance != null && Plugin.Instance.Configuration.GetMissingTrackInfo)
         {
-            if (result.Item.Children.Any(s => s is Audio && s.IndexNumber == null))
+            if (result.Item.Children.Any(s => s is Audio && s.IndexNumber == null) && releaseId != null)
             {
-                var rspobj = _musicBrainzQuery.LookupRelease(Guid.Parse(releaseId ?? string.Empty), Include.Recordings);
+                var rspobj = _musicBrainzQuery.LookupRelease(Guid.Parse(releaseId), Include.Recordings);
 
                 IList<ITrack> tracks = new List<ITrack>();
 
