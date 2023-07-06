@@ -155,11 +155,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 // Caller provides the filename with extension stripped and NOT the parsed filename
                 var parsedName = _libraryManager.ParseName(info.Name);
                 var cleanedName = TmdbUtils.CleanName(parsedName.Name);
-                var searchResults = await _tmdbClientManager.SearchMovieAsync(cleanedName, info.Year ?? parsedName.Year ?? 0, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                var year = info.Year ?? parsedName.Year ?? 0;
+                var searchResults = await _tmdbClientManager.SearchMovieAsync(cleanedName, year, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
 
-                if (searchResults.Count > 0)
+                var bestMatch = TmdbUtils.GetBestMatch(cleanedName, year, searchResults);
+                if (bestMatch != null)
                 {
-                    tmdbId = searchResults[0].Id.ToString(CultureInfo.InvariantCulture);
+                    tmdbId = bestMatch.Id.ToString(CultureInfo.InvariantCulture);
                 }
             }
 

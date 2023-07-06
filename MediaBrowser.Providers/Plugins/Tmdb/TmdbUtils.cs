@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Entities;
 using TMDbLib.Objects.General;
+using TMDbLib.Objects.Search;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb
 {
@@ -13,7 +15,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
     /// </summary>
     public static class TmdbUtils
     {
+        private const int MaxYearDifference = 3;
         private static readonly Regex _nonWords = new(@"[\W_]+", RegexOptions.Compiled);
+        private static readonly Regex _fileSystemInvalid = new("[<>:;?*\\/\"]", RegexOptions.Compiled);
 
         /// <summary>
         /// URL of the TMDb instance to use.
@@ -200,6 +204,80 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             var newRating = ratingPrefix + ratingValue;
 
             return newRating.Replace("DE-", "FSK-", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Removes invalid characters for file names from the search result name for better comparsison.
+        /// </summary>
+        /// <param name="searchResultName">The name from the search result.</param>
+        /// <returns>The input with invalid file name characters removed.</returns>
+        public static string? RemoveInvalidFileCharacters(string? searchResultName)
+        {
+            if (searchResultName == null)
+            {
+                return null;
+            }
+
+            string formatted = _fileSystemInvalid.Replace(searchResultName, string.Empty);
+            return formatted;
+        }
+
+        /// <summary>
+        /// Identifies the nearest match to the search criteria. Addresses issues with search results from TMDB.
+        /// </summary>
+        /// <param name="name">The cleaned up name searched for.</param>
+        /// <param name="year">The year searched for.</param>
+        /// <param name="searchResults">The search results from a Movie or Tv search.</param>
+        /// <returns>The nearest match to the search criteria.</returns>
+        public static SearchMovieTvBase? GetBestMatch(string name, int year, IReadOnlyList<SearchMovieTvBase> searchResults)
+        {
+            List<SearchMovieTvBase> filtered = searchResults.ToList();
+
+            // partial matches can be returned before exact matches. Look for exact matches after removing invalid characters
+            var nearExactMatchFiltered = filtered.Where(s =>
+            {
+                string? resultName;
+                string? resultOriginalName;
+                switch (s)
+                {
+                    case SearchMovie searchMovie:
+                        resultName = searchMovie.Title;
+                        resultOriginalName = searchMovie.OriginalTitle;
+                        break;
+                    case SearchTv searchTv:
+                        resultName = searchTv.Name;
+                        resultOriginalName = searchTv.OriginalName;
+                        break;
+                    default:
+                        return false;
+                }
+
+                return string.Equals(RemoveInvalidFileCharacters(resultName), name, StringComparison.OrdinalIgnoreCase)
+                       || string.Equals(RemoveInvalidFileCharacters(resultOriginalName), name, StringComparison.OrdinalIgnoreCase);
+            }).ToList();
+
+            if (nearExactMatchFiltered.Any())
+            {
+                filtered = nearExactMatchFiltered;
+            }
+
+            // results of search can sometimes include poor matches (e.g. Hercules (2014) yielding Hercules (1997) as the top result
+            if (year > 0)
+            {
+                var yearFiltered = filtered.Where(s =>
+                {
+                    DateTime? searchResultYear = (s as SearchMovie)?.ReleaseDate
+                        ?? (s as SearchTv)?.FirstAirDate;
+                    return searchResultYear.HasValue
+                        && Math.Abs(searchResultYear.Value.Year - year) < MaxYearDifference;
+                }).ToList();
+                if (yearFiltered.Any())
+                {
+                    filtered = yearFiltered.ToList();
+                }
+            }
+
+            return filtered.FirstOrDefault();
         }
     }
 }
