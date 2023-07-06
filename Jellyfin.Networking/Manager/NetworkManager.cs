@@ -8,6 +8,8 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading;
 using Jellyfin.Networking.Configuration;
+using Jellyfin.Networking.Constants;
+using Jellyfin.Networking.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Net;
@@ -316,17 +318,17 @@ namespace Jellyfin.Networking.Manager
                     var fallbackLanSubnets = new List<IPNetwork>();
                     if (IsIPv6Enabled)
                     {
-                        fallbackLanSubnets.Add(new IPNetwork(IPAddress.IPv6Loopback, 128)); // RFC 4291 (Loopback)
-                        fallbackLanSubnets.Add(new IPNetwork(IPAddress.Parse("fe80::"), 10)); // RFC 4291 (Site local)
-                        fallbackLanSubnets.Add(new IPNetwork(IPAddress.Parse("fc00::"), 7)); // RFC 4193 (Unique local)
+                        fallbackLanSubnets.Add(Network.IPv6RFC4291Loopback); // RFC 4291 (Loopback)
+                        fallbackLanSubnets.Add(Network.IPv6RFC4291SiteLocal); // RFC 4291 (Site local)
+                        fallbackLanSubnets.Add(Network.IPv6RFC4193UniqueLocal); // RFC 4193 (Unique local)
                     }
 
                     if (IsIPv4Enabled)
                     {
-                        fallbackLanSubnets.Add(new IPNetwork(IPAddress.Loopback, 8)); // RFC 5735 (Loopback)
-                        fallbackLanSubnets.Add(new IPNetwork(IPAddress.Parse("10.0.0.0"), 8)); // RFC 1918 (private)
-                        fallbackLanSubnets.Add(new IPNetwork(IPAddress.Parse("172.16.0.0"), 12)); // RFC 1918 (private)
-                        fallbackLanSubnets.Add(new IPNetwork(IPAddress.Parse("192.168.0.0"), 16)); // RFC 1918 (private)
+                        fallbackLanSubnets.Add(Network.IPv4RFC5735Loopback); // RFC 5735 (Loopback)
+                        fallbackLanSubnets.Add(Network.IPv4RFC1918PrivateClassA); // RFC 1918 (private Class A)
+                        fallbackLanSubnets.Add(Network.IPv4RFC1918PrivateClassB); // RFC 1918 (private Class B)
+                        fallbackLanSubnets.Add(Network.IPv4RFC1918PrivateClassC); // RFC 1918 (private Class C)
                     }
 
                     _lanSubnets = fallbackLanSubnets;
@@ -369,12 +371,12 @@ namespace Jellyfin.Networking.Manager
 
                     if (bindAddresses.Contains(IPAddress.Loopback))
                     {
-                        interfaces.Add(new IPData(IPAddress.Loopback, new IPNetwork(IPAddress.Loopback, 8), "lo"));
+                        interfaces.Add(new IPData(IPAddress.Loopback, Network.IPv4RFC5735Loopback, "lo"));
                     }
 
                     if (bindAddresses.Contains(IPAddress.IPv6Loopback))
                     {
-                        interfaces.Add(new IPData(IPAddress.IPv6Loopback, new IPNetwork(IPAddress.IPv6Loopback, 128), "lo"));
+                        interfaces.Add(new IPData(IPAddress.IPv6Loopback, Network.IPv6RFC4291Loopback, "lo"));
                     }
                 }
 
@@ -437,7 +439,7 @@ namespace Jellyfin.Networking.Manager
                     {
                         if (IPAddress.TryParse(ip, out var ipp))
                         {
-                            remoteAddressFilter.Add(new IPNetwork(ipp, ipp.AddressFamily == AddressFamily.InterNetwork ? 32 : 128));
+                            remoteAddressFilter.Add(new IPNetwork(ipp, ipp.AddressFamily == AddressFamily.InterNetwork ? Network.MinimumIPv4PrefixSize : Network.MinimumIPv6PrefixSize));
                         }
                     }
 
@@ -477,8 +479,8 @@ namespace Jellyfin.Networking.Manager
                     }
                     else if (string.Equals(identifier, "external", StringComparison.OrdinalIgnoreCase))
                     {
-                        publishedServerUrls[new IPData(IPAddress.Any, new IPNetwork(IPAddress.Any, 0))] = replacement;
-                        publishedServerUrls[new IPData(IPAddress.IPv6Any, new IPNetwork(IPAddress.IPv6Any, 0))] = replacement;
+                        publishedServerUrls[new IPData(IPAddress.Any, Network.IPv4Any)] = replacement;
+                        publishedServerUrls[new IPData(IPAddress.IPv6Any, Network.IPv6Any)] = replacement;
                     }
                     else if (string.Equals(identifier, "internal", StringComparison.OrdinalIgnoreCase))
                     {
@@ -656,12 +658,12 @@ namespace Jellyfin.Networking.Manager
             var loopbackNetworks = new List<IPData>();
             if (IsIPv4Enabled)
             {
-                loopbackNetworks.Add(new IPData(IPAddress.Loopback, new IPNetwork(IPAddress.Loopback, 8), "lo"));
+                loopbackNetworks.Add(new IPData(IPAddress.Loopback, Network.IPv4RFC5735Loopback, "lo"));
             }
 
             if (IsIPv6Enabled)
             {
-                loopbackNetworks.Add(new IPData(IPAddress.IPv6Loopback, new IPNetwork(IPAddress.IPv6Loopback, 128), "lo"));
+                loopbackNetworks.Add(new IPData(IPAddress.IPv6Loopback, Network.IPv6RFC4291Loopback, "lo"));
             }
 
             return loopbackNetworks;
@@ -687,11 +689,11 @@ namespace Jellyfin.Networking.Manager
             if (IsIPv4Enabled && IsIPv6Enabled)
             {
                 // Kestrel source code shows it uses Sockets.DualMode - so this also covers IPAddress.Any by default
-                result.Add(new IPData(IPAddress.IPv6Any, new IPNetwork(IPAddress.IPv6Any, 0)));
+                result.Add(new IPData(IPAddress.IPv6Any, Network.IPv6Any));
             }
             else if (IsIPv4Enabled)
             {
-                result.Add(new IPData(IPAddress.Any, new IPNetwork(IPAddress.Any, 0)));
+                result.Add(new IPData(IPAddress.Any, Network.IPv4Any));
             }
             else if (IsIPv6Enabled)
             {
@@ -1047,7 +1049,7 @@ namespace Jellyfin.Networking.Manager
             }
 
             // Fallback to first external interface.
-            result = NetworkExtensions.FormatIPString(extResult.First().Address);
+            result = NetworkExtensions.FormatIPString(extResult[0].Address);
             _logger.LogDebug("{Source}: Using first external interface as bind address: {Result}", source, result);
             return true;
         }

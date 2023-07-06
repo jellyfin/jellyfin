@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Emby.Dlna.PlayTo;
 using Emby.Dlna.Ssdp;
 using Jellyfin.Networking.Configuration;
+using Jellyfin.Networking.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;

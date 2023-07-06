@@ -21,9 +21,10 @@ using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Networking.Configuration;
+using Jellyfin.Networking.Constants;
+using Jellyfin.Networking.Extensions;
 using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Authentication;
@@ -271,7 +272,7 @@ namespace Jellyfin.Server.Extensions
             {
                 if (IPAddress.TryParse(allowedProxies[i], out var addr))
                 {
-                    AddIPAddress(config, options, addr, addr.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);
+                    AddIPAddress(config, options, addr, addr.AddressFamily == AddressFamily.InterNetwork ? Network.MinimumIPv4PrefixSize : Network.MinimumIPv6PrefixSize);
                 }
                 else if (NetworkExtensions.TryParseToSubnet(allowedProxies[i], out var subnet))
                 {
@@ -284,7 +285,7 @@ namespace Jellyfin.Server.Extensions
                 {
                     foreach (var address in addresses)
                     {
-                        AddIPAddress(config, options, address, address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);
+                        AddIPAddress(config, options, address, address.AddressFamily == AddressFamily.InterNetwork ? Network.MinimumIPv4PrefixSize : Network.MinimumIPv6PrefixSize);
                     }
                 }
             }
@@ -292,17 +293,17 @@ namespace Jellyfin.Server.Extensions
 
         private static void AddIPAddress(NetworkConfiguration config, ForwardedHeadersOptions options, IPAddress addr, int prefixLength)
         {
-            if ((!config.EnableIPv4 && addr.AddressFamily == AddressFamily.InterNetwork) || (!config.EnableIPv6 && addr.AddressFamily == AddressFamily.InterNetworkV6))
-            {
-                return;
-            }
-
             if (addr.IsIPv4MappedToIPv6)
             {
                 addr = addr.MapToIPv4();
             }
 
-            if (prefixLength == 32)
+            if ((!config.EnableIPv4 && addr.AddressFamily == AddressFamily.InterNetwork) || (!config.EnableIPv6 && addr.AddressFamily == AddressFamily.InterNetworkV6))
+            {
+                return;
+            }
+
+            if (prefixLength == Network.MinimumIPv4PrefixSize)
             {
                 options.KnownProxies.Add(addr);
             }
