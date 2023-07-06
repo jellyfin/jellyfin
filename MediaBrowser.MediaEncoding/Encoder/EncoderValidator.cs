@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
-    public class EncoderValidator
+    public partial class EncoderValidator
     {
         private static readonly string[] _requiredDecoders = new[]
         {
@@ -165,6 +165,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public static Version? MaxVersion { get; } = null;
 
+        [GeneratedRegex(@"^ffmpeg version n?((?:[0-9]+\.?)+)")]
+        private static partial Regex FfmpegVersionRegex();
+
+        [GeneratedRegex(@"((?<name>lib\w+)\s+(?<major>[0-9]+)\.\s*(?<minor>[0-9]+))", RegexOptions.Multiline)]
+        private static partial Regex LibraryRegex();
+
         public bool ValidateVersion()
         {
             string output;
@@ -283,7 +289,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         internal Version? GetFFmpegVersionInternal(string output)
         {
             // For pre-built binaries the FFmpeg version should be mentioned at the very start of the output
-            var match = Regex.Match(output, @"^ffmpeg version n?((?:[0-9]+\.?)+)");
+            var match = FfmpegVersionRegex().Match(output);
 
             if (match.Success)
             {
@@ -331,10 +337,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             var map = new Dictionary<string, Version>();
 
-            foreach (Match match in Regex.Matches(
-                output,
-                @"((?<name>lib\w+)\s+(?<major>[0-9]+)\.\s*(?<minor>[0-9]+))",
-                RegexOptions.Multiline))
+            foreach (Match match in LibraryRegex().Matches(output))
             {
                 var version = new Version(
                     int.Parse(match.Groups["major"].ValueSpan, CultureInfo.InvariantCulture),

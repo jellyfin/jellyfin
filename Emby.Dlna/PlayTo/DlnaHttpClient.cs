@@ -31,6 +31,9 @@ namespace Emby.Dlna.PlayTo
             _httpClientFactory = httpClientFactory;
         }
 
+        [GeneratedRegex("(&(?![a-z]*;))")]
+        private static partial Regex EscapeAmpersandRegex();
+
         private static string NormalizeServiceUrl(string baseUrl, string serviceUrl)
         {
             // If it's already a complete url, don't stick anything onto the front of it
@@ -128,12 +131,5 @@ namespace Emby.Dlna.PlayTo
             // Have to await here instead of returning the Task directly, otherwise request would be disposed too soon
             return await SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
         }
-
-        /// <summary>
-        /// Compile-time generated regular expression for escaping ampersands.
-        /// </summary>
-        /// <returns>Compiled regular expression.</returns>
-        [GeneratedRegex("(&(?![a-z]*;))")]
-        private static partial Regex EscapeAmpersandRegex();
     }
 }

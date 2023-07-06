@@ -23,7 +23,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
-    public class EncodingHelper
+    public partial class EncodingHelper
     {
         private const string QsvAlias = "qs";
         private const string VaapiAlias = "va";
@@ -119,6 +119,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             _subtitleEncoder = subtitleEncoder;
             _config = config;
         }
+
+        [GeneratedRegex(@"\s+")]
+        private static partial Regex WhiteSpaceRegex();
 
         public string GetH264Encoder(EncodingJobInfo state, EncodingOptions encodingOptions)
             => GetH26xOrAv1Encoder("libx264", "h264", state, encodingOptions);
@@ -1831,7 +1834,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             var profile = state.GetRequestedProfiles(targetVideoCodec).FirstOrDefault() ?? string.Empty;
-            profile = Regex.Replace(profile, @"\s+", string.Empty);
+            profile = WhiteSpaceRegex().Replace(profile, string.Empty);
 
             // We only transcode to HEVC 8-bit for now, force Main Profile.
             if (profile.Contains("main10", StringComparison.OrdinalIgnoreCase)

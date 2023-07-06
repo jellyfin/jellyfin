@@ -9,8 +9,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
     /// <summary>
     /// TTML subtitle writer.
     /// </summary>
-    public class TtmlWriter : ISubtitleWriter
+    public partial class TtmlWriter : ISubtitleWriter
     {
+        [GeneratedRegex(@"\\n", RegexOptions.IgnoreCase)]
+        private static partial Regex NewLineEscapeRegex();
+
         /// <inheritdoc />
         public void Write(SubtitleTrackInfo info, Stream stream, CancellationToken cancellationToken)
         {
@@ -38,7 +41,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 {
                     var text = trackEvent.Text;
 
-                    text = Regex.Replace(text, @"\\n", "<br/>", RegexOptions.IgnoreCase);
+                    text = NewLineEscapeRegex().Replace(text, "<br/>");
 
                     writer.WriteLine(
                         "<p begin=\"{0}\" dur=\"{1}\">{2}</p>",

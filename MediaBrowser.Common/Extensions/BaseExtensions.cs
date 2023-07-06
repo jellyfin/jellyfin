@@ -8,20 +8,19 @@ namespace MediaBrowser.Common.Extensions
     /// <summary>
     /// Class BaseExtensions.
     /// </summary>
-    public static class BaseExtensions
+    public static partial class BaseExtensions
     {
+        // http://stackoverflow.com/questions/1349023/how-can-i-strip-html-from-text-in-net
+        [GeneratedRegex(@"<(.|\n)*?>")]
+        private static partial Regex StripHtmlRegex();
+
         /// <summary>
         /// Strips the HTML.
         /// </summary>
         /// <param name="htmlString">The HTML string.</param>
         /// <returns><see cref="string" />.</returns>
         public static string StripHtml(this string htmlString)
-        {
-            // http://stackoverflow.com/questions/1349023/how-can-i-strip-html-from-text-in-net
-            const string Pattern = @"<(.|\n)*?>";
-
-            return Regex.Replace(htmlString, Pattern, string.Empty).Trim();
-        }
+            => StripHtmlRegex().Replace(htmlString, string.Empty).Trim();
 
         /// <summary>
         /// Gets the Md5.
