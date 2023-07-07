@@ -104,7 +104,7 @@ public static partial class NetworkExtensions
         Span<byte> bytes = stackalloc byte[mask.AddressFamily == AddressFamily.InterNetwork ? Network.IPv4MaskBytes : Network.IPv6MaskBytes];
         if (!mask.TryWriteBytes(bytes, out var bytesWritten))
         {
-            Console.WriteLine("Unable to write address bytes, only {bytesWritten} bytes written.");
+            Console.WriteLine("Unable to write address bytes, only ${bytesWritten} bytes written.");
         }
 
         var zeroed = false;
