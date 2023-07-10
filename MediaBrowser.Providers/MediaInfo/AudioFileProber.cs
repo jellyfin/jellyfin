@@ -250,14 +250,19 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
 
                     _libraryManager.UpdatePeople(audio, people);
-                    audio.Artists = performers;
-                    audio.AlbumArtists = albumArtists;
+                    // audio.Artists = performers;
+                    audio.Artists = audio.Artists != null ? audio.Artists : performers;
+                    // audio.AlbumArtists = albumArtists;
+                    audio.AlbumArtists = audio.AlbumArtists != null ? audio.AlbumArtists : albumArtists;
                 }
 
-                audio.Name = tags.Title;
-                audio.Album = tags.Album;
-                audio.IndexNumber = Convert.ToInt32(tags.Track);
-                audio.ParentIndexNumber = Convert.ToInt32(tags.Disc);
+                audio.Name = string.IsNullOrEmpty(audio.Name.ToString()) ? tags.Title : audio.Name;
+                // audio.Album = tags.Album;
+                audio.Album = audio.Album != null ? audio.Album : tags.Album;
+                // audio.IndexNumber = Convert.ToInt32(tags.Track);
+                audio.IndexNumber = audio.IndexNumber != null ? audio.IndexNumber : Convert.ToInt32(tags.Track);
+                // audio.ParentIndexNumber = Convert.ToInt32(tags.Disc);
+                audio.ParentIndexNumber = audio.ParentIndexNumber != null ? audio.ParentIndexNumber : Convert.ToInt32(tags.Disc);
 
                 if (tags.Year != 0)
                 {
@@ -271,11 +276,30 @@ namespace MediaBrowser.Providers.MediaInfo
                     audio.Genres = tags.Genres.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
                 }
 
-                audio.SetProviderId(MetadataProvider.MusicBrainzArtist, tags.MusicBrainzArtistId);
-                audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, tags.MusicBrainzReleaseArtistId);
-                audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, tags.MusicBrainzReleaseId);
-                audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, tags.MusicBrainzReleaseGroupId);
-                audio.SetProviderId(MetadataProvider.MusicBrainzTrack, tags.MusicBrainzTrackId);
+                if (!audio.ProviderIds.TryGetValue("MusicBrainzArtist", out var artistValue) || artistValue == null)
+                {
+                    audio.SetProviderId(MetadataProvider.MusicBrainzArtist, tags.MusicBrainzArtistId);
+                }
+
+                if (!audio.ProviderIds.TryGetValue("MusicBrainzAlbumArtist", out var albumArtistValue) || albumArtistValue == null)
+                {
+                    audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, tags.MusicBrainzReleaseArtistId);
+                }
+
+                if (!audio.ProviderIds.TryGetValue("MusicBrainzAlbum", out var albumValue) || albumValue == null)
+                {
+                    audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, tags.MusicBrainzReleaseId);
+                }
+
+                if (!audio.ProviderIds.TryGetValue("MusicBrainzReleaseGroup", out var releaseGroupValue) || releaseGroupValue == null)
+                {
+                    audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, tags.MusicBrainzReleaseGroupId);
+                }
+
+                if (!audio.ProviderIds.TryGetValue("MusicBrainzTrack", out var trackValue) || trackValue == null)
+                {
+                    audio.SetProviderId(MetadataProvider.MusicBrainzTrack, tags.MusicBrainzTrackId);
+                }
             }
         }
     }
