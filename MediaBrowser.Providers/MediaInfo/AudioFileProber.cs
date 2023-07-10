@@ -250,18 +250,13 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
 
                     _libraryManager.UpdatePeople(audio, people);
-                    // audio.Artists = performers;
                     audio.Artists = audio.Artists != null ? audio.Artists : performers;
-                    // audio.AlbumArtists = albumArtists;
                     audio.AlbumArtists = audio.AlbumArtists != null ? audio.AlbumArtists : albumArtists;
                 }
 
-                audio.Name = string.IsNullOrEmpty(audio.Name.ToString()) ? tags.Title : audio.Name;
-                // audio.Album = tags.Album;
+                audio.Name = string.IsNullOrEmpty(audio.Name) ? tags.Title : audio.Name;
                 audio.Album = audio.Album != null ? audio.Album : tags.Album;
-                // audio.IndexNumber = Convert.ToInt32(tags.Track);
                 audio.IndexNumber = audio.IndexNumber != null ? audio.IndexNumber : Convert.ToInt32(tags.Track);
-                // audio.ParentIndexNumber = Convert.ToInt32(tags.Disc);
                 audio.ParentIndexNumber = audio.ParentIndexNumber != null ? audio.ParentIndexNumber : Convert.ToInt32(tags.Disc);
 
                 if (tags.Year != 0)
