@@ -250,8 +250,8 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
 
                     _libraryManager.UpdatePeople(audio, people);
-                    audio.Artists = audio.Artists != null ? audio.Artists : performers;
-                    audio.AlbumArtists = audio.AlbumArtists != null ? audio.AlbumArtists : albumArtists;
+                    audio.Artists ??= performers;
+                    audio.AlbumArtists ??= albumArtists;
                 }
 
                 audio.Name = string.IsNullOrEmpty(audio.Name) ? tags.Title : audio.Name;
