@@ -255,9 +255,9 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
 
                 audio.Name = string.IsNullOrEmpty(audio.Name) ? tags.Title : audio.Name;
-                audio.Album = audio.Album != null ? audio.Album : tags.Album;
-                audio.IndexNumber = audio.IndexNumber != null ? audio.IndexNumber : Convert.ToInt32(tags.Track);
-                audio.ParentIndexNumber = audio.ParentIndexNumber != null ? audio.ParentIndexNumber : Convert.ToInt32(tags.Disc);
+                audio.Album ??= tags.Album;
+                audio.IndexNumber ??= Convert.ToInt32(tags.Track);
+                audio.ParentIndexNumber ??= Convert.ToInt32(tags.Disc);
 
                 if (tags.Year != 0)
                 {
