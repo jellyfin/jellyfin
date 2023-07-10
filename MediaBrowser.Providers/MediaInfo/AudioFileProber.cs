@@ -271,27 +271,27 @@ namespace MediaBrowser.Providers.MediaInfo
                     audio.Genres = tags.Genres.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
                 }
 
-                if (!audio.ProviderIds.TryGetValue("MusicBrainzArtist", out var artistValue) || artistValue == null)
+                if (!audio.TryGetProviderId("MusicBrainzArtist", out var artistValue) || string.IsNullOrEmpty(artistValue))
                 {
                     audio.SetProviderId(MetadataProvider.MusicBrainzArtist, tags.MusicBrainzArtistId);
                 }
 
-                if (!audio.ProviderIds.TryGetValue("MusicBrainzAlbumArtist", out var albumArtistValue) || albumArtistValue == null)
+                if (!audio.TryGetProviderId("MusicBrainzAlbumArtist", out var albumArtistValue) || string.IsNullOrEmpty(albumArtistValue))
                 {
                     audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, tags.MusicBrainzReleaseArtistId);
                 }
 
-                if (!audio.ProviderIds.TryGetValue("MusicBrainzAlbum", out var albumValue) || albumValue == null)
+                if (!audio.TryGetProviderId("MusicBrainzAlbum", out var albumValue) || string.IsNullOrEmpty(albumValue))
                 {
                     audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, tags.MusicBrainzReleaseId);
                 }
 
-                if (!audio.ProviderIds.TryGetValue("MusicBrainzReleaseGroup", out var releaseGroupValue) || releaseGroupValue == null)
+                if (!audio.TryGetProviderId("MusicBrainzReleaseGroup", out var releaseGroupValue) || string.IsNullOrEmpty(releaseGroupValue))
                 {
                     audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, tags.MusicBrainzReleaseGroupId);
                 }
 
-                if (!audio.ProviderIds.TryGetValue("MusicBrainzTrack", out var trackValue) || trackValue == null)
+                if (!audio.TryGetProviderId("MusicBrainzTrack", out var trackValue) || string.IsNullOrEmpty(trackValue))
                 {
                     audio.SetProviderId(MetadataProvider.MusicBrainzTrack, tags.MusicBrainzTrackId);
                 }
