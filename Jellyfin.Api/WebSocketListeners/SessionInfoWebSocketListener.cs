@@ -68,7 +68,11 @@ public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnume
         base.Dispose(dispose);
     }
 
-    private new void Start(WebSocketMessageInfo message)
+    /// <summary>
+    /// Starts sending messages over a session info web socket.
+    /// </summary>
+    /// <param name="message">The message.</param>
+    protected override void Start(WebSocketMessageInfo message)
     {
         if (!message.Connection.AuthorizationInfo.User.HasPermission(PermissionKind.IsAdministrator))
         {
