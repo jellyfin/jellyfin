@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
@@ -39,8 +39,23 @@ public class MigrateNetworkConfiguration : IMigrationRoutine
     {
         string path = Path.Combine(_applicationPaths.ConfigurationDirectoryPath, "network.xml");
         var oldNetworkConfigSerializer = new XmlSerializer(typeof(OldNetworkConfiguration), new XmlRootAttribute("NetworkConfiguration"));
-        using var xmlReader = XmlReader.Create(path);
-        var oldNetworkConfiguration = (OldNetworkConfiguration?)oldNetworkConfigSerializer.Deserialize(xmlReader);
+        OldNetworkConfiguration? oldNetworkConfiguration = null;
+
+        try
+        {
+            using (var xmlReader = XmlReader.Create(path))
+            {
+                oldNetworkConfiguration = (OldNetworkConfiguration?)oldNetworkConfigSerializer.Deserialize(xmlReader);
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "Migrate NetworkConfiguration deserialize Invalid Operation error");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Migrate NetworkConfiguration deserialize error");
+        }
 
         if (oldNetworkConfiguration is not null)
         {
@@ -82,8 +97,10 @@ public class MigrateNetworkConfiguration : IMigrationRoutine
 
             var networkConfigSerializer = new XmlSerializer(typeof(NetworkConfiguration));
             var xmlWriterSettings = new XmlWriterSettings { Indent = true };
-            using var xmlWriter = XmlWriter.Create(path, xmlWriterSettings);
-            networkConfigSerializer.Serialize(xmlWriter, networkConfiguration);
+            using (var xmlWriter = XmlWriter.Create(path, xmlWriterSettings))
+            {
+                networkConfigSerializer.Serialize(xmlWriter, networkConfiguration);
+            }
         }
     }
 
