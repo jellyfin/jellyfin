@@ -2150,6 +2150,7 @@ namespace Emby.Server.Implementations.Data
                     || sortingFields.Contains(ItemSortBy.PlayCount)
                     || sortingFields.Contains(ItemSortBy.DatePlayed)
                     || sortingFields.Contains(ItemSortBy.SeriesDatePlayed)
+                    || sortingFields.Contains(ItemSortBy.Random) // Needed because random sorting uses IsPlayed
                     || query.IsFavoriteOrLiked.HasValue
                     || query.IsFavorite.HasValue
                     || query.IsResumable.HasValue
@@ -2946,7 +2947,7 @@ namespace Emby.Server.Implementations.Data
                 if (hasSimilar)
                 {
                     prepend.Add(("SimilarityScore", SortOrder.Descending));
-                    prepend.Add((ItemSortBy.Random, SortOrder.Ascending));
+                    prepend.Add((ItemSortBy.SortName, SortOrder.Ascending));
                 }
 
                 var arr = new (string, SortOrder)[prepend.Count + orderBy.Count];
@@ -2982,7 +2983,8 @@ namespace Emby.Server.Implementations.Data
 
             if (string.Equals(name, ItemSortBy.Random, StringComparison.OrdinalIgnoreCase))
             {
-                return "RANDOM()";
+                // Prefer unplayed items
+                return "((ABS(RANDOM()) % 65536) + (Select Case When played Then 65536 Else 0 End))";
             }
 
             if (string.Equals(name, ItemSortBy.DatePlayed, StringComparison.OrdinalIgnoreCase))

@@ -236,3 +236,5 @@
  - [Jakob Kukla](https://github.com/jakobkukla)
  - [Utku Özdemir](https://github.com/utkuozdemir)
  - [JPUC1143](https://github.com/Jpuc1143/)
+ - [DavidMikeSimon](https://github.com/DavidMikeSimon)
+
