@@ -56,7 +56,7 @@
     <PackageVersion Include="PlaylistsNET" Version="1.4.0" />
     <PackageVersion Include="prometheus-net.AspNetCore" Version="8.0.0" />
     <PackageVersion Include="prometheus-net.DotNetRuntime" Version="4.4.0" />
-    <PackageVersion Include="prometheus-net" Version="8.0.0" />
+    <PackageVersion Include="prometheus-net" Version="8.0.1" />
     <PackageVersion Include="Serilog.AspNetCore" Version="7.0.0" />
     <PackageVersion Include="Serilog.Enrichers.Thread" Version="3.1.0" />
     <PackageVersion Include="Serilog.Settings.Configuration" Version="7.0.0" />
