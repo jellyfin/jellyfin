@@ -70,32 +70,31 @@ namespace Jellyfin.Server.Migrations.Routines
 
             // Migrate parental rating strings to new levels
             _logger.LogInformation("Recalculating parental rating levels based on rating string.");
-            using (var connection = SQLite3.Open(
+            using var connection = SQLite3.Open(
                 dbPath,
                 ConnectionFlags.ReadWrite,
-                null))
-            {
-                var queryResult = connection.Query("SELECT DISTINCT OfficialRating FROM TypedBaseItems");
-                foreach (var entry in queryResult)
-                {
-                    var ratingString = entry[0].ToString();
-                    if (string.IsNullOrEmpty(ratingString))
-                    {
-                        connection.Execute("UPDATE TypedBaseItems SET InheritedParentalRatingValue = NULL WHERE OfficialRating IS NULL OR OfficialRating='';");
-                    }
-                    else
-                    {
-                        var ratingValue = _localizationManager.GetRatingLevel(ratingString).ToString();
-                        if (string.IsNullOrEmpty(ratingValue))
-                        {
-                            ratingValue = "NULL";
-                        }
+                null);
 
-                        var statement = connection.PrepareStatement("UPDATE TypedBaseItems SET InheritedParentalRatingValue = @Value WHERE OfficialRating = @Rating;");
-                        statement.TryBind("@Value", ratingValue);
-                        statement.TryBind("@Rating", ratingString);
-                        statement.ExecuteQuery();
+            var queryResult = connection.Query("SELECT DISTINCT OfficialRating FROM TypedBaseItems");
+            foreach (var entry in queryResult)
+            {
+                var ratingString = entry[0].ToString();
+                if (string.IsNullOrEmpty(ratingString))
+                {
+                    connection.Execute("UPDATE TypedBaseItems SET InheritedParentalRatingValue = NULL WHERE OfficialRating IS NULL OR OfficialRating='';");
+                }
+                else
+                {
+                    var ratingValue = _localizationManager.GetRatingLevel(ratingString).ToString();
+                    if (string.IsNullOrEmpty(ratingValue))
+                    {
+                        ratingValue = "NULL";
                     }
+
+                    var statement = connection.PrepareStatement("UPDATE TypedBaseItems SET InheritedParentalRatingValue = @Value WHERE OfficialRating = @Rating;");
+                    statement.TryBind("@Value", ratingValue);
+                    statement.TryBind("@Rating", ratingString);
+                    statement.ExecuteQuery();
                 }
             }
         }

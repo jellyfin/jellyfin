@@ -18,22 +18,21 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
         [MemberData(nameof(Parse_MultipleDialogues_TestData))]
         public void Parse_MultipleDialogues_Success(string ssa, IReadOnlyList<SubtitleTrackEvent> expectedSubtitleTrackEvents)
         {
-            using (Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(ssa)))
+            using Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(ssa));
+
+            SubtitleTrackInfo subtitleTrackInfo = _parser.Parse(stream, "ssa");
+
+            Assert.Equal(expectedSubtitleTrackEvents.Count, subtitleTrackInfo.TrackEvents.Count);
+
+            for (int i = 0; i < expectedSubtitleTrackEvents.Count; ++i)
             {
-                SubtitleTrackInfo subtitleTrackInfo = _parser.Parse(stream, "ssa");
+                SubtitleTrackEvent expected = expectedSubtitleTrackEvents[i];
+                SubtitleTrackEvent actual = subtitleTrackInfo.TrackEvents[i];
 
-                Assert.Equal(expectedSubtitleTrackEvents.Count, subtitleTrackInfo.TrackEvents.Count);
-
-                for (int i = 0; i < expectedSubtitleTrackEvents.Count; ++i)
-                {
-                    SubtitleTrackEvent expected = expectedSubtitleTrackEvents[i];
-                    SubtitleTrackEvent actual = subtitleTrackInfo.TrackEvents[i];
-
-                    Assert.Equal(expected.Id, actual.Id);
-                    Assert.Equal(expected.Text, actual.Text);
-                    Assert.Equal(expected.StartPositionTicks, actual.StartPositionTicks);
-                    Assert.Equal(expected.EndPositionTicks, actual.EndPositionTicks);
-                }
+                Assert.Equal(expected.Id, actual.Id);
+                Assert.Equal(expected.Text, actual.Text);
+                Assert.Equal(expected.StartPositionTicks, actual.StartPositionTicks);
+                Assert.Equal(expected.EndPositionTicks, actual.EndPositionTicks);
             }
         }
 
@@ -73,17 +72,16 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
         [Fact]
         public void Parse_Valid_Success()
         {
-            using (var stream = File.OpenRead("Test Data/example.ssa"))
-            {
-                var parsed = _parser.Parse(stream, "ssa");
-                Assert.Single(parsed.TrackEvents);
-                var trackEvent = parsed.TrackEvents[0];
+            using var stream = File.OpenRead("Test Data/example.ssa");
 
-                Assert.Equal("1", trackEvent.Id);
-                Assert.Equal(TimeSpan.Parse("00:00:01.18", CultureInfo.InvariantCulture).Ticks, trackEvent.StartPositionTicks);
-                Assert.Equal(TimeSpan.Parse("00:00:06.85", CultureInfo.InvariantCulture).Ticks, trackEvent.EndPositionTicks);
-                Assert.Equal("{\\pos(400,570)}Like an angel with pity on nobody", trackEvent.Text);
-            }
+            var parsed = _parser.Parse(stream, "ssa");
+            Assert.Single(parsed.TrackEvents);
+            var trackEvent = parsed.TrackEvents[0];
+
+            Assert.Equal("1", trackEvent.Id);
+            Assert.Equal(TimeSpan.Parse("00:00:01.18", CultureInfo.InvariantCulture).Ticks, trackEvent.StartPositionTicks);
+            Assert.Equal(TimeSpan.Parse("00:00:06.85", CultureInfo.InvariantCulture).Ticks, trackEvent.EndPositionTicks);
+            Assert.Equal("{\\pos(400,570)}Like an angel with pity on nobody", trackEvent.Text);
         }
     }
 }
