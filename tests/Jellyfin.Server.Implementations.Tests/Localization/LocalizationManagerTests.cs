@@ -100,7 +100,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             await localizationManager.LoadAll();
             var ratings = localizationManager.GetParentalRatings().ToList();
 
-            Assert.Equal(19, ratings.Count);
+            Assert.Equal(24, ratings.Count);
 
             var fsk = ratings.FirstOrDefault(x => x.Name.Equals("FSK-12", StringComparison.Ordinal));
             Assert.NotNull(fsk);
