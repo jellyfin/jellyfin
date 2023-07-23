@@ -90,7 +90,7 @@ public class SubtitleController : BaseJellyfinApiController
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<Task> DeleteSubtitle(
+    public async Task<ActionResult> DeleteSubtitle(
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] int index)
     {
@@ -101,7 +101,7 @@ public class SubtitleController : BaseJellyfinApiController
             return NotFound();
         }
 
-        _subtitleManager.DeleteSubtitles(item, index);
+        await _subtitleManager.DeleteSubtitles(item, index).ConfigureAwait(false);
         return NoContent();
     }
 
