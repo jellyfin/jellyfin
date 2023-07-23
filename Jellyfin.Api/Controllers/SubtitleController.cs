@@ -416,6 +416,7 @@ public class SubtitleController : BaseJellyfinApiController
                     Format = body.Format,
                     Language = body.Language,
                     IsForced = body.IsForced,
+                    IsHearingImpaired = body.IsHearingImpaired,
                     Stream = memoryStream
                 }).ConfigureAwait(false);
             _providerManager.QueueRefresh(video.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
