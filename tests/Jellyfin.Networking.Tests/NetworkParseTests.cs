@@ -7,6 +7,7 @@ using Jellyfin.Networking.Extensions;
 using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Net;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -54,7 +55,8 @@ namespace Jellyfin.Networking.Tests
             };
 
             NetworkManager.MockNetworkSettings = interfaces;
-            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
+            var startupConf = new Mock<IConfiguration>();
+            using var nm = new NetworkManager(NetworkParseTests.GetMockConfig(conf), startupConf.Object, new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
             Assert.Equal(value, "[" + string.Join(",", nm.GetInternalBindAddresses().Select(x => x.Address + "/" + x.Subnet.PrefixLength)) + "]");
@@ -200,7 +202,8 @@ namespace Jellyfin.Networking.Tests
             };
 
             NetworkManager.MockNetworkSettings = "192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11";
-            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
+            var startupConf = new Mock<IConfiguration>();
+            using var nm = new NetworkManager(NetworkParseTests.GetMockConfig(conf), startupConf.Object, new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
             // Check to see if DNS resolution is working. If not, skip test.
@@ -229,24 +232,24 @@ namespace Jellyfin.Networking.Tests
         [InlineData("192.168.1.1", "192.168.1.0/24", "eth16,eth11", false, "192.168.1.0/24=internal.jellyfin", "internal.jellyfin")]
 
         // User on external network, we're bound internal and external - so result is override.
-        [InlineData("8.8.8.8", "192.168.1.0/24", "eth16,eth11", false, "0.0.0.0=http://helloworld.com", "http://helloworld.com")]
+        [InlineData("8.8.8.8", "192.168.1.0/24", "eth16,eth11", false, "all=http://helloworld.com", "http://helloworld.com")]
 
         // User on internal network, we're bound internal only, but the address isn't in the LAN - so return the override.
-        [InlineData("10.10.10.10", "192.168.1.0/24", "eth16", false, "0.0.0.0=http://internalButNotDefinedAsLan.com", "http://internalButNotDefinedAsLan.com")]
+        [InlineData("10.10.10.10", "192.168.1.0/24", "eth16", false, "external=http://internalButNotDefinedAsLan.com", "http://internalButNotDefinedAsLan.com")]
 
         // User on internal network, no binding specified - so result is the 1st internal.
-        [InlineData("192.168.1.1", "192.168.1.0/24", "", false, "0.0.0.0=http://helloworld.com", "eth16")]
+        [InlineData("192.168.1.1", "192.168.1.0/24", "", false, "external=http://helloworld.com", "eth16")]
 
         // User on external network, internal binding only - so assumption is a proxy forward, return external override.
-        [InlineData("jellyfin.org", "192.168.1.0/24", "eth16", false, "0.0.0.0=http://helloworld.com", "http://helloworld.com")]
+        [InlineData("jellyfin.org", "192.168.1.0/24", "eth16", false, "external=http://helloworld.com", "http://helloworld.com")]
 
         // User on external network, no binding - so result is the 1st external which is overriden.
-        [InlineData("jellyfin.org", "192.168.1.0/24", "", false, "0.0.0.0=http://helloworld.com", "http://helloworld.com")]
+        [InlineData("jellyfin.org", "192.168.1.0/24", "", false, "external=http://helloworld.com", "http://helloworld.com")]
 
-        // User assumed to be internal, no binding - so result is the 1st internal.
-        [InlineData("", "192.168.1.0/24", "", false, "0.0.0.0=http://helloworld.com", "eth16")]
+        // User assumed to be internal, no binding - so result is the 1st matching interface.
+        [InlineData("", "192.168.1.0/24", "", false, "all=http://helloworld.com", "eth16")]
 
-        // User is internal, no binding - so result is the 1st internal, which is then overridden.
+        // User is internal, no binding - so result is the 1st internal interface, which is then overridden.
         [InlineData("192.168.1.1", "192.168.1.0/24", "", false, "eth16=http://helloworld.com", "http://helloworld.com")]
         public void TestBindInterfaceOverrides(string source, string lan, string bindAddresses, bool ipv6enabled, string publishedServers, string result)
         {
@@ -264,7 +267,8 @@ namespace Jellyfin.Networking.Tests
             };
 
             NetworkManager.MockNetworkSettings = "192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11";
-            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
+            var startupConf = new Mock<IConfiguration>();
+            using var nm = new NetworkManager(NetworkParseTests.GetMockConfig(conf), startupConf.Object, new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
             if (nm.TryParseInterface(result, out IReadOnlyList<IPData>? resultObj) && resultObj is not null)
@@ -293,7 +297,9 @@ namespace Jellyfin.Networking.Tests
                 RemoteIPFilter = addresses.Split(','),
                 IsRemoteIPFilterBlacklist = false
             };
-            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
+
+            var startupConf = new Mock<IConfiguration>();
+            using var nm = new NetworkManager(NetworkParseTests.GetMockConfig(conf), startupConf.Object, new NullLogger<NetworkManager>());
 
             Assert.NotEqual(nm.HasRemoteAccess(IPAddress.Parse(remoteIP)), denied);
         }
@@ -314,7 +320,8 @@ namespace Jellyfin.Networking.Tests
                 IsRemoteIPFilterBlacklist = true
             };
 
-            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
+            var startupConf = new Mock<IConfiguration>();
+            using var nm = new NetworkManager(NetworkParseTests.GetMockConfig(conf), startupConf.Object, new NullLogger<NetworkManager>());
 
             Assert.NotEqual(nm.HasRemoteAccess(IPAddress.Parse(remoteIP)), denied);
         }
@@ -334,7 +341,8 @@ namespace Jellyfin.Networking.Tests
             };
 
             NetworkManager.MockNetworkSettings = interfaces;
-            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
+            var startupConf = new Mock<IConfiguration>();
+            using var nm = new NetworkManager(NetworkParseTests.GetMockConfig(conf), startupConf.Object, new NullLogger<NetworkManager>());
 
             var interfaceToUse = nm.GetBindAddress(string.Empty, out _);
 
@@ -358,7 +366,8 @@ namespace Jellyfin.Networking.Tests
             };
 
             NetworkManager.MockNetworkSettings = interfaces;
-            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
+            var startupConf = new Mock<IConfiguration>();
+            using var nm = new NetworkManager(NetworkParseTests.GetMockConfig(conf), startupConf.Object, new NullLogger<NetworkManager>());
 
             var interfaceToUse = nm.GetBindAddress(source, out _);
 

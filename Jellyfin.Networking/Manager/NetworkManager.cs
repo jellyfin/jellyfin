@@ -15,7 +15,9 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 
 namespace Jellyfin.Networking.Manager
 {
@@ -33,12 +35,14 @@ namespace Jellyfin.Networking.Manager
 
         private readonly IConfigurationManager _configurationManager;
 
+        private readonly IConfiguration _startupConfig;
+
         private readonly object _networkEventLock;
 
         /// <summary>
         /// Holds the published server URLs and the IPs to use them on.
         /// </summary>
-        private IReadOnlyDictionary<IPData, string> _publishedServerUrls;
+        private IReadOnlyList<PublishedServerUriOverride> _publishedServerUrls;
 
         private IReadOnlyList<IPNetwork> _remoteAddressFilter;
 
@@ -76,20 +80,22 @@ namespace Jellyfin.Networking.Manager
         /// <summary>
         /// Initializes a new instance of the <see cref="NetworkManager"/> class.
         /// </summary>
-        /// <param name="configurationManager">IServerConfigurationManager instance.</param>
+        /// <param name="configurationManager">The <see cref="IConfigurationManager"/> instance.</param>
+        /// <param name="startupConfig">The <see cref="IConfiguration"/> instance holding startup parameters.</param>
         /// <param name="logger">Logger to use for messages.</param>
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. : Values are set in UpdateSettings function. Compiler doesn't yet recognise this.
-        public NetworkManager(IConfigurationManager configurationManager, ILogger<NetworkManager> logger)
+        public NetworkManager(IConfigurationManager configurationManager, IConfiguration startupConfig, ILogger<NetworkManager> logger)
         {
             ArgumentNullException.ThrowIfNull(logger);
             ArgumentNullException.ThrowIfNull(configurationManager);
 
             _logger = logger;
             _configurationManager = configurationManager;
+            _startupConfig = startupConfig;
             _initLock = new();
             _interfaces = new List<IPData>();
             _macAddresses = new List<PhysicalAddress>();
-            _publishedServerUrls = new Dictionary<IPData, string>();
+            _publishedServerUrls = new List<PublishedServerUriOverride>();
             _networkEventLock = new object();
             _remoteAddressFilter = new List<IPNetwork>();
 
@@ -130,7 +136,7 @@ namespace Jellyfin.Networking.Manager
         /// <summary>
         /// Gets the Published server override list.
         /// </summary>
-        public IReadOnlyDictionary<IPData, string> PublishedServerUrls => _publishedServerUrls;
+        public IReadOnlyList<PublishedServerUriOverride> PublishedServerUrls => _publishedServerUrls;
 
         /// <inheritdoc/>
         public void Dispose()
@@ -193,8 +199,8 @@ namespace Jellyfin.Networking.Manager
                 }
                 else
                 {
-                    InitialiseInterfaces();
-                    InitialiseLan(networkConfig);
+                    InitializeInterfaces();
+                    InitializeLan(networkConfig);
                     EnforceBindSettings(networkConfig);
                 }
 
@@ -210,7 +216,7 @@ namespace Jellyfin.Networking.Manager
         /// Generate a list of all the interface ip addresses and submasks where that are in the active/unknown state.
         /// Generate a list of all active mac addresses that aren't loopback addresses.
         /// </summary>
-        private void InitialiseInterfaces()
+        private void InitializeInterfaces()
         {
             lock (_initLock)
             {
@@ -301,7 +307,7 @@ namespace Jellyfin.Networking.Manager
         /// <summary>
         /// Initialises internal LAN cache.
         /// </summary>
-        private void InitialiseLan(NetworkConfiguration config)
+        private void InitializeLan(NetworkConfiguration config)
         {
             lock (_initLock)
             {
@@ -455,13 +461,29 @@ namespace Jellyfin.Networking.Manager
         /// format is subnet=ipaddress|host|uri
         /// when subnet = 0.0.0.0, any external address matches.
         /// </summary>
-        private void InitialiseOverrides(NetworkConfiguration config)
+        private void InitializeOverrides(NetworkConfiguration config)
         {
             lock (_initLock)
             {
-                var publishedServerUrls = new Dictionary<IPData, string>();
-                var overrides = config.PublishedServerUriBySubnet;
+                var publishedServerUrls = new List<PublishedServerUriOverride>();
 
+                // Prefer startup configuration.
+                var startupOverrideKey = _startupConfig[AddressOverrideKey];
+                if (!string.IsNullOrEmpty(startupOverrideKey))
+                {
+                    publishedServerUrls.Add(
+                        new PublishedServerUriOverride(
+                            new IPData(IPAddress.Any, Network.IPv4Any),
+                            startupOverrideKey));
+                    publishedServerUrls.Add(
+                        new PublishedServerUriOverride(
+                            new IPData(IPAddress.IPv6Any, Network.IPv6Any),
+                            startupOverrideKey));
+                    _publishedServerUrls = publishedServerUrls;
+                    return;
+                }
+
+                var overrides = config.PublishedServerUriBySubnet;
                 foreach (var entry in overrides)
                 {
                     var parts = entry.Split('=');
@@ -475,31 +497,62 @@ namespace Jellyfin.Networking.Manager
                     var identifier = parts[0];
                     if (string.Equals(identifier, "all", StringComparison.OrdinalIgnoreCase))
                     {
-                        publishedServerUrls[new IPData(IPAddress.Broadcast, null)] = replacement;
+                        // Drop any other overrides in case an "all" override exists
+                        publishedServerUrls.Clear();
+                        publishedServerUrls.Add(
+                            new PublishedServerUriOverride(
+                                new IPData(IPAddress.Any, Network.IPv4Any),
+                                replacement));
+                        publishedServerUrls.Add(
+                            new PublishedServerUriOverride(
+                                new IPData(IPAddress.IPv6Any, Network.IPv6Any),
+                                replacement));
+                        break;
                     }
                     else if (string.Equals(identifier, "external", StringComparison.OrdinalIgnoreCase))
                     {
-                        publishedServerUrls[new IPData(IPAddress.Any, Network.IPv4Any)] = replacement;
-                        publishedServerUrls[new IPData(IPAddress.IPv6Any, Network.IPv6Any)] = replacement;
+                        publishedServerUrls.Add(
+                            new PublishedServerUriOverride(
+                                new IPData(IPAddress.Any, Network.IPv4Any),
+                                replacement,
+                                false,
+                                true));
+                        publishedServerUrls.Add(
+                            new PublishedServerUriOverride(
+                                new IPData(IPAddress.IPv6Any, Network.IPv6Any),
+                                replacement,
+                                false,
+                                true));
                     }
                     else if (string.Equals(identifier, "internal", StringComparison.OrdinalIgnoreCase))
                     {
                         foreach (var lan in _lanSubnets)
                         {
                             var lanPrefix = lan.Prefix;
-                            publishedServerUrls[new IPData(lanPrefix, new IPNetwork(lanPrefix, lan.PrefixLength))] = replacement;
+                            publishedServerUrls.Add(
+                                new PublishedServerUriOverride(
+                                    new IPData(lanPrefix, new IPNetwork(lanPrefix, lan.PrefixLength)),
+                                    replacement,
+                                    true,
+                                    false));
                         }
                     }
                     else if (NetworkExtensions.TryParseToSubnet(identifier, out var result) && result is not null)
                     {
                         var data = new IPData(result.Prefix, result);
-                        publishedServerUrls[data] = replacement;
+                        publishedServerUrls.Add(
+                            new PublishedServerUriOverride(
+                                data,
+                                replacement));
                     }
                     else if (TryParseInterface(identifier, out var ifaces))
                     {
                         foreach (var iface in ifaces)
                         {
-                            publishedServerUrls[iface] = replacement;
+                            publishedServerUrls.Add(
+                            new PublishedServerUriOverride(
+                                iface,
+                                replacement));
                         }
                     }
                     else
@@ -531,12 +584,12 @@ namespace Jellyfin.Networking.Manager
             var config = (NetworkConfiguration)configuration;
             HappyEyeballs.HttpClientExtension.UseIPv6 = config.EnableIPv6;
 
-            InitialiseLan(config);
+            InitializeLan(config);
             InitialiseRemote(config);
 
             if (string.IsNullOrEmpty(MockNetworkSettings))
             {
-                InitialiseInterfaces();
+                InitializeInterfaces();
             }
             else // Used in testing only.
             {
@@ -567,7 +620,7 @@ namespace Jellyfin.Networking.Manager
             }
 
             EnforceBindSettings(config);
-            InitialiseOverrides(config);
+            InitializeOverrides(config);
         }
 
         /// <summary>
@@ -892,31 +945,34 @@ namespace Jellyfin.Networking.Manager
             bindPreference = string.Empty;
             int? port = null;
 
-            var validPublishedServerUrls = _publishedServerUrls.Where(x => x.Key.Address.Equals(IPAddress.Any)
-                                                || x.Key.Address.Equals(IPAddress.IPv6Any)
-                                                || x.Key.Subnet.Contains(source))
-                                            .DistinctBy(x => x.Key)
-                                            .OrderBy(x => x.Key.Address.Equals(IPAddress.Any)
-                                                || x.Key.Address.Equals(IPAddress.IPv6Any))
+            // Only consider subnets including the source IP, prefering specific overrides
+            var validPublishedServerUrls = new List<PublishedServerUriOverride>();
+            if (!isInExternalSubnet)
+            {
+                // Only use matching internal subnets
+                // Prefer more specific (bigger subnet prefix) overrides
+                validPublishedServerUrls = _publishedServerUrls.Where(x => x.IsInternalOverride && x.Data.Subnet.Contains(source))
+                                            .OrderByDescending(x => x.Data.Subnet.PrefixLength)
                                             .ToList();
+            }
+            else
+            {
+                // Only use matching external subnets
+                // Prefer more specific (bigger subnet prefix) overrides
+                validPublishedServerUrls = _publishedServerUrls.Where(x => x.IsExternalOverride && x.Data.Subnet.Contains(source))
+                                            .OrderByDescending(x => x.Data.Subnet.PrefixLength)
+                                            .ToList();
+            }
 
-            // Check for user override.
             foreach (var data in validPublishedServerUrls)
             {
-                if (isInExternalSubnet && (data.Key.Address.Equals(IPAddress.Any) || data.Key.Address.Equals(IPAddress.IPv6Any)))
-                {
-                    // External.
-                    bindPreference = data.Value;
-                    break;
-                }
-
-                // Get address interface.
-                var intf = _interfaces.OrderBy(x => x.Index).FirstOrDefault(x => data.Key.Subnet.Contains(x.Address));
+                // Get interface matching override subnet
+                var intf = _interfaces.OrderBy(x => x.Index).FirstOrDefault(x => data.Data.Subnet.Contains(x.Address));
 
                 if (intf?.Address is not null)
                 {
-                    // Match IP address.
-                    bindPreference = data.Value;
+                    // If matching interface is found, use override
+                    bindPreference = data.OverrideUri;
                     break;
                 }
             }
@@ -927,7 +983,7 @@ namespace Jellyfin.Networking.Manager
                 return false;
             }
 
-            // Has it got a port defined?
+            // Handle override specifying port
             var parts = bindPreference.Split(':');
             if (parts.Length > 1)
             {
@@ -935,18 +991,12 @@ namespace Jellyfin.Networking.Manager
                 {
                     bindPreference = parts[0];
                     port = p;
+                    _logger.LogDebug("{Source}: Matching bind address override found: {Address}:{Port}", source, bindPreference, port);
+                    return true;
                 }
             }
 
-            if (port is not null)
-            {
-                _logger.LogDebug("{Source}: Matching bind address override found: {Address}:{Port}", source, bindPreference, port);
-            }
-            else
-            {
-                _logger.LogDebug("{Source}: Matching bind address override found: {Address}", source, bindPreference);
-            }
-
+            _logger.LogDebug("{Source}: Matching bind address override found: {Address}", source, bindPreference);
             return true;
         }
 

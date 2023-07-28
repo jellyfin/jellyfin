@@ -281,7 +281,7 @@ namespace Jellyfin.Server.Extensions
                         AddIPAddress(config, options, subnet.Prefix, subnet.PrefixLength);
                     }
                 }
-                else if (NetworkExtensions.TryParseHost(allowedProxies[i], out var addresses))
+                else if (NetworkExtensions.TryParseHost(allowedProxies[i], out var addresses, config.EnableIPv4, config.EnableIPv6))
                 {
                     foreach (var address in addresses)
                     {
