@@ -13,7 +13,7 @@ RUN yum update -yq \
   && yum install -yq @buildsys-build rpmdevtools yum-plugins-core libcurl-devel fontconfig-devel freetype-devel openssl-devel glibc-devel libicu-devel git wget
 
 # Install DotNET SDK
-RUN wget -q https://download.visualstudio.microsoft.com/download/pr/87a55ae3-917d-449e-a4e8-776f82976e91/03380e598c326c2f9465d262c6a88c45/dotnet-sdk-7.0.305-linux-x64.tar.gz -O dotnet-sdk.tar.gz \
+RUN wget -q https://download.visualstudio.microsoft.com/download/pr/0be7a87e-3a3f-4500-8301-49ccd6f24887/e9e36f35dbaf6625fec3e18f5c2b613f/dotnet-sdk-7.0.306-linux-x64.tar.gz -O dotnet-sdk.tar.gz \
   && mkdir -p dotnet-sdk \
   && tar -xzf dotnet-sdk.tar.gz -C dotnet-sdk \
   && ln -s $( pwd )/dotnet-sdk/dotnet /usr/bin/dotnet
