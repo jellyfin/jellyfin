@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
-using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Authentication;
 using MediaBrowser.Model.Activity;
@@ -14,7 +13,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Security
     /// <summary>
     /// Creates an entry in the activity log when there is a failed login attempt.
     /// </summary>
-    public class AuthenticationFailedLogger : IEventConsumer<GenericEventArgs<AuthenticationRequestEventArgs>>
+    public class AuthenticationFailedLogger : IEventConsumer<AuthenticationRequestEventArgs>
     {
         private readonly ILocalizationManager _localizationManager;
         private readonly IActivityManager _activityManager;
@@ -31,13 +30,13 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Security
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(GenericEventArgs<AuthenticationRequestEventArgs> eventArgs)
+        public async Task OnEvent(AuthenticationRequestEventArgs eventArgs)
         {
             await _activityManager.CreateAsync(new ActivityLog(
                 string.Format(
                     CultureInfo.InvariantCulture,
                     _localizationManager.GetLocalizedString("FailedLoginAttemptWithUserName"),
-                    eventArgs.Argument.Username),
+                    eventArgs.Username),
                 "AuthenticationFailed",
                 Guid.Empty)
             {
@@ -45,7 +44,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Security
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localizationManager.GetLocalizedString("LabelIpAddressValue"),
-                    eventArgs.Argument.RemoteEndPoint),
+                    eventArgs.RemoteEndPoint),
             }).ConfigureAwait(false);
         }
     }

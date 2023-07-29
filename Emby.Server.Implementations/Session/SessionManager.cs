@@ -1463,7 +1463,7 @@ namespace Emby.Server.Implementations.Session
 
             if (user is null)
             {
-                await _eventManager.PublishAsync(new GenericEventArgs<AuthenticationRequestEventArgs>(new AuthenticationRequestEventArgs(request))).ConfigureAwait(false);
+                await _eventManager.PublishAsync(new AuthenticationRequestEventArgs(request)).ConfigureAwait(false);
                 throw new AuthenticationException("Invalid username or password entered.");
             }
 
@@ -1499,7 +1499,7 @@ namespace Emby.Server.Implementations.Session
                 ServerId = _appHost.SystemId
             };
 
-            await _eventManager.PublishAsync(new GenericEventArgs<AuthenticationResultEventArgs>(new AuthenticationResultEventArgs(returnResult))).ConfigureAwait(false);
+            await _eventManager.PublishAsync(new AuthenticationResultEventArgs(returnResult)).ConfigureAwait(false);
             return returnResult;
         }
 

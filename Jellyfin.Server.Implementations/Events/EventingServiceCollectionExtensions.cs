@@ -34,8 +34,8 @@ namespace Jellyfin.Server.Implementations.Events
             collection.AddScoped<IEventConsumer<SubtitleDownloadFailureEventArgs>, SubtitleDownloadFailureLogger>();
 
             // Security consumers
-            collection.AddScoped<IEventConsumer<GenericEventArgs<AuthenticationRequestEventArgs>>, AuthenticationFailedLogger>();
-            collection.AddScoped<IEventConsumer<GenericEventArgs<AuthenticationResultEventArgs>>, AuthenticationSucceededLogger>();
+            collection.AddScoped<IEventConsumer<AuthenticationRequestEventArgs>, AuthenticationFailedLogger>();
+            collection.AddScoped<IEventConsumer<AuthenticationResultEventArgs>, AuthenticationSucceededLogger>();
 
             // Session consumers
             collection.AddScoped<IEventConsumer<PlaybackStartEventArgs>, PlaybackStartLogger>();

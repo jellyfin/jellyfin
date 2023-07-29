@@ -1,3 +1,4 @@
+using System;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
@@ -7,7 +8,7 @@ namespace MediaBrowser.Controller.Events.Authentication;
 /// <summary>
 /// A class representing an authentication result event.
 /// </summary>
-public class AuthenticationResultEventArgs
+public class AuthenticationResultEventArgs : EventArgs
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="AuthenticationResultEventArgs"/> class.

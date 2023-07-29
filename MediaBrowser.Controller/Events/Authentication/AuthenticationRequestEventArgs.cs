@@ -6,7 +6,7 @@ namespace MediaBrowser.Controller.Events.Authentication;
 /// <summary>
 /// A class representing an authentication result event.
 /// </summary>
-public class AuthenticationRequestEventArgs
+public class AuthenticationRequestEventArgs : EventArgs
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="AuthenticationRequestEventArgs"/> class.
