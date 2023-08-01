@@ -1717,16 +1717,21 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         if (!state.IsOutputVideo)
         {
+            var audioTranscodeParams = string.Empty;
+
+            // -vn to drop any video streams
+            audioTranscodeParams += "-vn";
+
             if (EncodingHelper.IsCopyCodec(audioCodec))
             {
                 var bitStreamArgs = EncodingHelper.GetAudioBitStreamArguments(state, state.Request.SegmentContainer, state.MediaSource.Container);
 
-                return "-acodec copy" + bitStreamArgs + strictArgs;
+                audioTranscodeParams += " -acodec copy" + bitStreamArgs + strictArgs;
+
+                return audioTranscodeParams;
             }
 
-            var audioTranscodeParams = string.Empty;
-
-            audioTranscodeParams += "-acodec " + audioCodec + strictArgs;
+            audioTranscodeParams += " -acodec " + audioCodec + strictArgs;
 
             var audioBitrate = state.OutputAudioBitrate;
             var audioChannels = state.OutputAudioChannels;
@@ -1754,7 +1759,6 @@ public class DynamicHlsController : BaseJellyfinApiController
                 audioTranscodeParams += " -ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture);
             }
 
-            audioTranscodeParams += " -vn";
             return audioTranscodeParams;
         }
 
