@@ -198,11 +198,11 @@ public class DynamicHlsHelper
 
         var basicPlaylist = AppendPlaylist(builder, state, playlistUrl, totalBitrate, subtitleGroup);
 
-        // Provide a workaround for the case issue between flac and fLaC.
-        var flacWaPlaylist = ApplyFlacCaseWorkaround(state, basicPlaylist.ToString());
-        if (!string.IsNullOrEmpty(flacWaPlaylist))
+        // Provide a workaround for alternative codec string capitalization.
+        var alternativeCodecCapitalizationPlaylist = ApplyCodecCapitalizationWorkaround(state, basicPlaylist.ToString());
+        if (!string.IsNullOrEmpty(alternativeCodecCapitalizationPlaylist))
         {
-            builder.Append(flacWaPlaylist);
+            builder.Append(alternativeCodecCapitalizationPlaylist);
         }
 
         if (state.VideoStream is not null && state.VideoRequest is not null)
@@ -238,11 +238,11 @@ public class DynamicHlsHelper
                     var sdrTotalBitrate = sdrOutputAudioBitrate + sdrOutputVideoBitrate;
                     var sdrPlaylist = AppendPlaylist(builder, state, sdrVideoUrl, sdrTotalBitrate, subtitleGroup);
 
-                    // Provide a workaround for the case issue between flac and fLaC.
-                    flacWaPlaylist = ApplyFlacCaseWorkaround(state, sdrPlaylist.ToString());
-                    if (!string.IsNullOrEmpty(flacWaPlaylist))
+                    // Provide a workaround for alternative codec string capitalization.
+                    alternativeCodecCapitalizationPlaylist = ApplyCodecCapitalizationWorkaround(state, sdrPlaylist.ToString());
+                    if (!string.IsNullOrEmpty(alternativeCodecCapitalizationPlaylist))
                     {
-                        builder.Append(flacWaPlaylist);
+                        builder.Append(alternativeCodecCapitalizationPlaylist);
                     }
 
                     // Restore the video codec
@@ -275,11 +275,11 @@ public class DynamicHlsHelper
                 var newPlaylist = ReplacePlaylistCodecsField(basicPlaylist, playlistCodecsField, newPlaylistCodecsField);
                 builder.Append(newPlaylist);
 
-                // Provide a workaround for the case issue between flac and fLaC.
-                flacWaPlaylist = ApplyFlacCaseWorkaround(state, newPlaylist);
-                if (!string.IsNullOrEmpty(flacWaPlaylist))
+                // Provide a workaround for alternative codec string capitalization.
+                alternativeCodecCapitalizationPlaylist = ApplyCodecCapitalizationWorkaround(state, newPlaylist);
+                if (!string.IsNullOrEmpty(alternativeCodecCapitalizationPlaylist))
                 {
-                    builder.Append(flacWaPlaylist);
+                    builder.Append(alternativeCodecCapitalizationPlaylist);
                 }
             }
         }
@@ -768,7 +768,7 @@ public class DynamicHlsHelper
             StringComparison.Ordinal);
     }
 
-    private string ApplyFlacCaseWorkaround(StreamState state, string srcPlaylist)
+    private string ApplyCodecCapitalizationWorkaround(StreamState state, string srcPlaylist)
     {
         if (!string.Equals(state.ActualOutputAudioCodec, "flac", StringComparison.OrdinalIgnoreCase))
         {
@@ -779,6 +779,8 @@ public class DynamicHlsHelper
 
         newPlaylist = newPlaylist.Replace(",fLaC\"", ",flac\"", StringComparison.Ordinal);
         newPlaylist = newPlaylist.Replace("\"fLaC\"", "\"flac\"", StringComparison.Ordinal);
+        newPlaylist = newPlaylist.Replace(",Opus\"", ",opus\"", StringComparison.Ordinal);
+        newPlaylist = newPlaylist.Replace("\"Opus\"", "\"opus\"", StringComparison.Ordinal);
 
         return string.Equals(srcPlaylist, newPlaylist, StringComparison.Ordinal) ? string.Empty : newPlaylist;
     }

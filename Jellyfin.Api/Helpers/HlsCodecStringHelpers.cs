@@ -39,7 +39,7 @@ public static class HlsCodecStringHelpers
     /// <summary>
     /// Codec name for OPUS.
     /// </summary>
-    public const string OPUS = "opus";
+    public const string OPUS = "Opus";
 
     /// <summary>
     /// Gets a MP3 codec string.
