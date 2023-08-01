@@ -1704,18 +1704,29 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         var audioCodec = _encodingHelper.GetAudioEncoder(state);
 
+        // dts, flac, opus and truehd are experimental in mp4 muxer
+        var strictArgs = string.Empty;
+        var actualOutputAudioCodec = state.ActualOutputAudioCodec;
+        if (string.Equals(actualOutputAudioCodec, "flac", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(actualOutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(actualOutputAudioCodec, "dts", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(actualOutputAudioCodec, "truehd", StringComparison.OrdinalIgnoreCase))
+        {
+            strictArgs = " -strict -2";
+        }
+
         if (!state.IsOutputVideo)
         {
             if (EncodingHelper.IsCopyCodec(audioCodec))
             {
                 var bitStreamArgs = EncodingHelper.GetAudioBitStreamArguments(state, state.Request.SegmentContainer, state.MediaSource.Container);
 
-                return "-acodec copy -strict -2" + bitStreamArgs;
+                return "-acodec copy" + bitStreamArgs + strictArgs;
             }
 
             var audioTranscodeParams = string.Empty;
 
-            audioTranscodeParams += "-acodec " + audioCodec;
+            audioTranscodeParams += "-acodec " + audioCodec + strictArgs;
 
             var audioBitrate = state.OutputAudioBitrate;
             var audioChannels = state.OutputAudioChannels;
@@ -1745,17 +1756,6 @@ public class DynamicHlsController : BaseJellyfinApiController
 
             audioTranscodeParams += " -vn";
             return audioTranscodeParams;
-        }
-
-        // dts, flac, opus and truehd are experimental in mp4 muxer
-        var strictArgs = string.Empty;
-        var actualOutputAudioCodec = state.ActualOutputAudioCodec;
-        if (string.Equals(actualOutputAudioCodec, "flac", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(actualOutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(actualOutputAudioCodec, "dts", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(actualOutputAudioCodec, "truehd", StringComparison.OrdinalIgnoreCase))
-        {
-            strictArgs = " -strict -2";
         }
 
         if (EncodingHelper.IsCopyCodec(audioCodec))
