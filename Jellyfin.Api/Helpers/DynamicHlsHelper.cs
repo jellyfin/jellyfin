@@ -198,15 +198,15 @@ public class DynamicHlsHelper
 
         var basicPlaylist = AppendPlaylist(builder, state, playlistUrl, totalBitrate, subtitleGroup);
 
+        // Provide a workaround for the case issue between flac and fLaC.
+        var flacWaPlaylist = ApplyFlacCaseWorkaround(state, basicPlaylist.ToString());
+        if (!string.IsNullOrEmpty(flacWaPlaylist))
+        {
+            builder.Append(flacWaPlaylist);
+        }
+
         if (state.VideoStream is not null && state.VideoRequest is not null)
         {
-            // Provide a workaround for the case issue between flac and fLaC.
-            var flacWaPlaylist = ApplyFlacCaseWorkaround(state, basicPlaylist.ToString());
-            if (!string.IsNullOrEmpty(flacWaPlaylist))
-            {
-                builder.Append(flacWaPlaylist);
-            }
-
             var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
 
             // Provide SDR HEVC entrance for backward compatibility.
@@ -775,8 +775,11 @@ public class DynamicHlsHelper
             return string.Empty;
         }
 
-        var newPlaylist = srcPlaylist.Replace(",flac\"", ",fLaC\"", StringComparison.Ordinal);
+        var newPlaylist = srcPlaylist;
 
-        return newPlaylist.Contains(",fLaC\"", StringComparison.Ordinal) ? newPlaylist : string.Empty;
+        newPlaylist = newPlaylist.Replace(",fLaC\"", ",flac\"", StringComparison.Ordinal);
+        newPlaylist = newPlaylist.Replace("\"fLaC\"", "\"flac\"", StringComparison.Ordinal);
+
+        return string.Equals(srcPlaylist, newPlaylist, StringComparison.Ordinal) ? string.Empty : newPlaylist;
     }
 }
