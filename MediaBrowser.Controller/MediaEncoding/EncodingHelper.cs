@@ -37,7 +37,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ISubtitleEncoder _subtitleEncoder;
         private readonly IConfiguration _config;
-        private readonly Version _minKernelVersionAmdVkFmtModifier = new Version(5, 15);
+
         // i915 hang was fixed by linux 6.2 (3f882f2)
         private readonly Version _minKerneli915Hang = new Version(5, 18);
         private readonly Version _maxKerneli915Hang = new Version(6, 1, 3);
@@ -892,8 +892,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 else if (_mediaEncoder.IsVaapiDeviceAmd)
                 {
                     if (IsVulkanFullSupported()
-                        && _mediaEncoder.IsVaapiDeviceSupportVulkanFmtModifier
-                        && Environment.OSVersion.Version >= _minKernelVersionAmdVkFmtModifier)
+                        && _mediaEncoder.IsVaapiDeviceSupportVulkanDrmInterop)
                     {
                         args.Append(GetDrmDeviceArgs(options.VaapiDevice, DrmAlias));
                         args.Append(GetVaapiDeviceArgs(null, null, null, DrmAlias, VaapiAlias));
@@ -4205,14 +4204,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             // prefered vaapi + vulkan filters pipeline
             if (_mediaEncoder.IsVaapiDeviceAmd
                 && isVaapiVkSupported
-                && _mediaEncoder.IsVaapiDeviceSupportVulkanFmtModifier
-                && Environment.OSVersion.Version >= _minKernelVersionAmdVkFmtModifier)
+                && _mediaEncoder.IsVaapiDeviceSupportVulkanDrmInterop)
             {
-                // AMD radeonsi path(Vega/gfx9+, kernel>=5.15), with extra vulkan tonemap and overlay support.
+                // AMD radeonsi path(targeting Polaris/gfx8+), with extra vulkan tonemap and overlay support.
                 return GetAmdVaapiFullVidFiltersPrefered(state, options, vidDecoder, vidEncoder);
             }
 
-            // Intel i965 and Amd radeonsi/r600 path(Polaris/gfx8-), only featuring scale and deinterlace support.
+            // Intel i965 and Amd legacy driver path, only featuring scale and deinterlace support.
             return GetVaapiLimitedVidFiltersPrefered(state, options, vidDecoder, vidEncoder);
         }
 
@@ -4484,7 +4482,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // INPUT vaapi surface(vram)
                 if (doVkTonemap || hasSubs)
                 {
-                    // map from vaapi to vulkan/drm via interop (Vega/gfx9+).
+                    // map from vaapi to vulkan/drm via interop (Polaris/gfx8+).
                     mainFilters.Add("hwmap=derive_device=vulkan");
                     mainFilters.Add("format=vulkan");
                 }
@@ -4513,9 +4511,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (doVkTonemap && !hasSubs)
             {
                 // OUTPUT vaapi(nv12) surface(vram)
-                // map from vulkan/drm to vaapi via interop (Vega/gfx9+).
-                mainFilters.Add("hwmap=derive_device=drm");
-                mainFilters.Add("format=drm_prime");
+                // map from vulkan/drm to vaapi via interop (Polaris/gfx8+).
                 mainFilters.Add("hwmap=derive_device=vaapi");
                 mainFilters.Add("format=vaapi");
 
@@ -4581,9 +4577,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 else if (isVaapiEncoder)
                 {
                     // OUTPUT vaapi(nv12) surface(vram)
-                    // map from vulkan/drm to vaapi via interop (Vega/gfx9+).
-                    overlayFilters.Add("hwmap=derive_device=drm");
-                    overlayFilters.Add("format=drm_prime");
+                    // map from vulkan/drm to vaapi via interop (Polaris/gfx8+).
                     overlayFilters.Add("hwmap=derive_device=vaapi");
                     overlayFilters.Add("format=vaapi");
 
