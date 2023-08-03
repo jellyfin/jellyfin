@@ -919,6 +919,18 @@ namespace Emby.Server.Implementations.Dto
                 {
                     dto.AlbumId = albumParent.Id;
                     dto.AlbumPrimaryImageTag = GetTagAndFillBlurhash(dto, albumParent, ImageType.Primary);
+
+                    var tracks = albumParent.Tracks;
+
+              	    dto.LUFSAlbum = audio.LUFS;
+
+                    foreach (var track in tracks)
+                    {
+                        if (dto.LUFSAlbum > track.LUFS)
+                        {
+                            dto.LUFSAlbum = track.LUFS;
+                        }
+                    }
                 }
 
                 // if (options.ContainsField(ItemFields.MediaSourceCount))
