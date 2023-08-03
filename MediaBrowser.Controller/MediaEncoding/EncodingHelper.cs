@@ -891,6 +891,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
                 else if (_mediaEncoder.IsVaapiDeviceAmd)
                 {
+                    // Disable AMD EFC feature since it's still unstable in upstream Mesa.
+                    Environment.SetEnvironmentVariable("AMD_DEBUG", "noefc");
+
                     if (IsVulkanFullSupported()
                         && _mediaEncoder.IsVaapiDeviceSupportVulkanDrmInterop)
                     {
