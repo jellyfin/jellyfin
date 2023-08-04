@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
@@ -13,6 +14,8 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Providers.Music;
+using TMDbLib.Objects.TvShows;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 {
@@ -102,9 +105,48 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 return metadataResult;
             }
 
-            var episodeResult = await _tmdbClientManager
-                .GetEpisodeAsync(seriesTmdbId, seasonNumber.Value, episodeNumber.Value, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
-                .ConfigureAwait(false);
+            var episodeResult = new TvEpisode();
+            if (!info.IndexNumberEnd.HasValue)
+            {
+                episodeResult = await _tmdbClientManager
+                    .GetEpisodeAsync(seriesTmdbId, seasonNumber.Value, episodeNumber.Value, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                var startindex = episodeNumber;
+                var endindex = info.IndexNumberEnd;
+                List<TvEpisode> result = new List<TvEpisode>();
+                for (int? episode = startindex; episode <= endindex; episode++)
+                {
+                    var episodeInfo = await _tmdbClientManager.GetEpisodeAsync(seriesTmdbId, seasonNumber.Value, episode.Value, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken).ConfigureAwait(false);
+                    if (episodeInfo is not null)
+                    {
+                        result.Add(episodeInfo);
+                    }
+                }
+
+                if (result.Count > 0)
+                {
+                    episodeResult = result[0];
+                }
+                else
+                {
+                    return metadataResult;
+                }
+
+                var name = new StringBuilder(episodeResult.Name);
+                var overview = new StringBuilder(episodeResult.Overview);
+
+                for (int i = 1; i < result.Count; i++)
+                {
+                    name.Append(" / " + result[i].Name);
+                    overview.Append(" / " + result[i].Overview);
+                }
+
+                episodeResult.Name = name.ToString();
+                episodeResult.Overview = overview.ToString();
+            }
 
             if (episodeResult is null)
             {
