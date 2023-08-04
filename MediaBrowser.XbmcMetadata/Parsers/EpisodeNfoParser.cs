@@ -92,9 +92,38 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         reader.MoveToContent();
 
-                        if (reader.ReadToDescendant("episode") && int.TryParse(reader.ReadElementContentAsString(), out var num))
+                        while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                         {
-                            item.Item.IndexNumberEnd = Math.Max(num, item.Item.IndexNumberEnd ?? num);
+                            cancellationToken.ThrowIfCancellationRequested();
+
+                            if (reader.NodeType == XmlNodeType.Element)
+                            {
+                                switch (reader.Name)
+                                {
+                                    case "name":
+                                    case "title":
+                                    case "localtitle":
+                                        item.Item.Name = item.Item.Name + " / " + reader.ReadElementContentAsString();
+                                        break;
+                                    case "episode":
+                                        {
+                                            if (int.TryParse(reader.ReadElementContentAsString(), out var num))
+                                            {
+                                                item.Item.IndexNumberEnd = Math.Max(num, item.Item.IndexNumberEnd ?? num);
+                                            }
+
+                                            break;
+                                        }
+
+                                    case "biography":
+                                    case "plot":
+                                    case "review":
+                                        item.Item.Overview = item.Item.Overview + " / " + reader.ReadElementContentAsString();
+                                        break;
+                                }
+                            }
+
+                            reader.Read();
                         }
                     }
                 }
