@@ -167,6 +167,7 @@
  - [ipitio](https://github.com/ipitio)
  - [TheTyrius](https://github.com/TheTyrius)
  - [tallbl0nde](https://github.com/tallbl0nde)
+ - [scampower3](https://github.com/scampower3)
 
 # Emby Contributors
 
