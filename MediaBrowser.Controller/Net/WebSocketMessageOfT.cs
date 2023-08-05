@@ -6,13 +6,12 @@ namespace MediaBrowser.Controller.Net;
 /// Class WebSocketMessage.
 /// </summary>
 /// <typeparam name="T">The type of the data.</typeparam>
-// TODO make this abstract, remove empty ctor.
-public class WebSocketMessage<T> : WebSocketMessage
+public abstract class WebSocketMessage<T> : WebSocketMessage
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="WebSocketMessage{T}"/> class.
     /// </summary>
-    public WebSocketMessage()
+    protected WebSocketMessage()
     {
     }
 

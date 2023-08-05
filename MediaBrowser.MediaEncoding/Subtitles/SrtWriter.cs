@@ -11,8 +11,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
     /// <summary>
     /// SRT subtitle writer.
     /// </summary>
-    public class SrtWriter : ISubtitleWriter
+    public partial class SrtWriter : ISubtitleWriter
     {
+        [GeneratedRegex(@"\\n", RegexOptions.IgnoreCase)]
+        private static partial Regex NewLineEscapedRegex();
+
         /// <inheritdoc />
         public void Write(SubtitleTrackInfo info, Stream stream, CancellationToken cancellationToken)
         {
@@ -35,7 +38,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     var text = trackEvent.Text;
 
                     // TODO: Not sure how to handle these
-                    text = Regex.Replace(text, @"\\n", " ", RegexOptions.IgnoreCase);
+                    text = NewLineEscapedRegex().Replace(text, " ");
 
                     writer.WriteLine(text);
                     writer.WriteLine();

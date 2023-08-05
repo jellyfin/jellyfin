@@ -1,19 +1,19 @@
 using System.ComponentModel;
-using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Session;
 
 namespace MediaBrowser.Controller.Net.WebSocketMessages.Inbound;
 
 /// <summary>
 /// Sessions start message.
+/// Data is the timing data encoded as "$initialDelay,$interval" in ms.
 /// </summary>
-public class SessionsStartMessage : WebSocketMessage<SessionInfo>, IInboundWebSocketMessage
+public class SessionsStartMessage : InboundWebSocketMessage<string>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="SessionsStartMessage"/> class.
     /// </summary>
-    /// <param name="data">Session info.</param>
-    public SessionsStartMessage(SessionInfo data)
+    /// <param name="data">The timing data encoded as $initialDelay,$interval.</param>
+    public SessionsStartMessage(string data)
         : base(data)
     {
     }

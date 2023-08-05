@@ -10,7 +10,7 @@ namespace Emby.Naming.Audio
     /// <summary>
     /// Helper class to determine if Album is multipart.
     /// </summary>
-    public class AlbumParser
+    public partial class AlbumParser
     {
         private readonly NamingOptions _options;
 
@@ -22,6 +22,9 @@ namespace Emby.Naming.Audio
         {
             _options = options;
         }
+
+        [GeneratedRegex(@"[-\.\(\)\s]+")]
+        private static partial Regex CleanRegex();
 
         /// <summary>
         /// Function that determines if album is multipart.
@@ -42,13 +45,9 @@ namespace Emby.Naming.Audio
 
             // Normalize
             // Remove whitespace
-            filename = filename.Replace('-', ' ');
-            filename = filename.Replace('.', ' ');
-            filename = filename.Replace('(', ' ');
-            filename = filename.Replace(')', ' ');
-            filename = Regex.Replace(filename, @"\s+", " ");
+            filename = CleanRegex().Replace(filename, " ");
 
-            ReadOnlySpan<char> trimmedFilename = filename.TrimStart();
+            ReadOnlySpan<char> trimmedFilename = filename.AsSpan().TrimStart();
 
             foreach (var prefix in _options.AlbumStackingPrefixes)
             {

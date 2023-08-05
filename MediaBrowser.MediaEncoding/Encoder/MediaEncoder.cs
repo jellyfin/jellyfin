@@ -36,7 +36,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
     /// <summary>
     /// Class MediaEncoder.
     /// </summary>
-    public class MediaEncoder : IMediaEncoder, IDisposable
+    public partial class MediaEncoder : IMediaEncoder, IDisposable
     {
         /// <summary>
         /// The default SDR image extraction timeout in milliseconds.
@@ -142,6 +142,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <inheritdoc />
         public bool IsVaapiDeviceSupportVulkanFmtModifier => _isVaapiDeviceSupportVulkanFmtModifier;
 
+        [GeneratedRegex(@"[^\/\\]+?(\.[^\/\\\n.]+)?$")]
+        private static partial Regex FfprobePathRegex();
+
         /// <summary>
         /// Run at startup or if the user removes a Custom path from transcode page.
         /// Sets global variables FFmpegPath.
@@ -176,7 +179,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (_ffmpegPath is not null)
             {
                 // Determine a probe path from the mpeg path
-                _ffprobePath = Regex.Replace(_ffmpegPath, @"[^\/\\]+?(\.[^\/\\\n.]+)?$", @"ffprobe$1");
+                _ffprobePath = FfprobePathRegex().Replace(_ffmpegPath, @"ffprobe$1");
 
                 // Interrogate to understand what coders are supported
                 var validator = new EncoderValidator(_logger, _ffmpegPath);
@@ -416,8 +419,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public Task<MediaInfo> GetMediaInfo(MediaInfoRequest request, CancellationToken cancellationToken)
         {
             var extractChapters = request.MediaType == DlnaProfileType.Video && request.ExtractChapters;
-            string analyzeDuration = string.Empty;
-            string ffmpegAnalyzeDuration = _config.GetFFmpegAnalyzeDuration() ?? string.Empty;
+            var analyzeDuration = string.Empty;
+            var ffmpegAnalyzeDuration = _config.GetFFmpegAnalyzeDuration() ?? string.Empty;
 
             if (request.MediaSource.AnalyzeDurationMs > 0)
             {

@@ -17,7 +17,7 @@ namespace Emby.Dlna.Configuration
             BlastAliveMessages = true;
             SendOnlyMatchedHost = true;
             ClientDiscoveryIntervalSeconds = 60;
-            AliveMessageIntervalSeconds = 1800;
+            AliveMessageIntervalSeconds = 180;
         }
 
         /// <summary>

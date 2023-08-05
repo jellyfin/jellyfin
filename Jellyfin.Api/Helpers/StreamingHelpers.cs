@@ -430,10 +430,15 @@ public static class StreamingHelpers
         {
             var videoCodec = state.Request.VideoCodec;
 
-            if (string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(videoCodec, "hevc", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase))
             {
                 return ".ts";
+            }
+
+            if (string.Equals(videoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(videoCodec, "av1", StringComparison.OrdinalIgnoreCase))
+            {
+                return ".mp4";
             }
 
             if (string.Equals(videoCodec, "theora", StringComparison.OrdinalIgnoreCase))

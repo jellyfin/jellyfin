@@ -20,6 +20,14 @@ namespace Emby.Server.Implementations.IO
         private readonly List<IShortcutHandler> _shortcutHandlers = new List<IShortcutHandler>();
         private readonly string _tempPath;
         private static readonly bool _isEnvironmentCaseInsensitive = OperatingSystem.IsWindows();
+        private static readonly char[] _invalidPathCharacters =
+        {
+            '\"', '<', '>', '|', '\0',
+            (char)1, (char)2, (char)3, (char)4, (char)5, (char)6, (char)7, (char)8, (char)9, (char)10,
+            (char)11, (char)12, (char)13, (char)14, (char)15, (char)16, (char)17, (char)18, (char)19, (char)20,
+            (char)21, (char)22, (char)23, (char)24, (char)25, (char)26, (char)27, (char)28, (char)29, (char)30,
+            (char)31, ':', '*', '?', '\\', '/'
+        };
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ManagedFileSystem"/> class.
@@ -275,8 +283,7 @@ namespace Emby.Server.Implementations.IO
         /// <exception cref="ArgumentNullException">The filename is null.</exception>
         public string GetValidFilename(string filename)
         {
-            var invalid = Path.GetInvalidFileNameChars();
-            var first = filename.IndexOfAny(invalid);
+            var first = filename.IndexOfAny(_invalidPathCharacters);
             if (first == -1)
             {
                 // Fast path for clean strings
@@ -285,7 +292,7 @@ namespace Emby.Server.Implementations.IO
 
             return string.Create(
                 filename.Length,
-                (filename, invalid, first),
+                (filename, _invalidPathCharacters, first),
                 (chars, state) =>
                 {
                     state.filename.AsSpan().CopyTo(chars);
@@ -293,7 +300,7 @@ namespace Emby.Server.Implementations.IO
                     chars[state.first++] = ' ';
 
                     var len = chars.Length;
-                    foreach (var c in state.invalid)
+                    foreach (var c in state._invalidPathCharacters)
                     {
                         for (int i = state.first; i < len; i++)
                         {

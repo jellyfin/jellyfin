@@ -189,7 +189,7 @@ namespace Emby.Dlna.PlayTo
 
                 _sessionManager.UpdateDeviceName(sessionInfo.Id, deviceName);
 
-                string serverAddress = _appHost.GetSmartApiUrl(info.RemoteIpAddress);
+                string serverAddress = _appHost.GetSmartApiUrl(info.RemoteIPAddress);
 
                 controller = new PlayToController(
                     sessionInfo,

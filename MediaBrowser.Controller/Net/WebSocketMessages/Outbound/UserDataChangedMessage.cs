@@ -6,7 +6,7 @@ namespace MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 /// <summary>
 /// User data changed message.
 /// </summary>
-public class UserDataChangedMessage : WebSocketMessage<UserDataChangeInfo>, IOutboundWebSocketMessage
+public class UserDataChangedMessage : OutboundWebSocketMessage<UserDataChangeInfo>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="UserDataChangedMessage"/> class.

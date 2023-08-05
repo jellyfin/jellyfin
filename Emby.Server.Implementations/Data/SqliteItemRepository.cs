@@ -2452,7 +2452,9 @@ namespace Emby.Server.Implementations.Data
                 if (query.SearchTerm.Length > 1)
                 {
                     builder.Append("+ ((CleanName like @SearchTermContains or (OriginalTitle not null and OriginalTitle like @SearchTermContains)) * 10)");
-                    builder.Append("+ ((Tags not null and Tags like @SearchTermContains) * 5)");
+                    builder.Append("+ (SELECT COUNT(1) * 1 from ItemValues where ItemId=Guid and CleanValue like @SearchTermContains)");
+                    builder.Append("+ (SELECT COUNT(1) * 2 from ItemValues where ItemId=Guid and CleanValue like @SearchTermStartsWith)");
+                    builder.Append("+ (SELECT COUNT(1) * 10 from ItemValues where ItemId=Guid and CleanValue like @SearchTermEquals)");
                 }
 
                 builder.Append(") as SearchScore");
@@ -2482,6 +2484,11 @@ namespace Emby.Server.Implementations.Data
             if (commandText.Contains("@SearchTermContains", StringComparison.OrdinalIgnoreCase))
             {
                 statement.TryBind("@SearchTermContains", "%" + searchTerm + "%");
+            }
+
+            if (commandText.Contains("@SearchTermEquals", StringComparison.OrdinalIgnoreCase))
+            {
+                statement.TryBind("@SearchTermEquals", searchTerm);
             }
         }
 

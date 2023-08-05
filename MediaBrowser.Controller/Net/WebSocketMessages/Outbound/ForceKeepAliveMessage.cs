@@ -6,7 +6,7 @@ namespace MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 /// <summary>
 /// Force keep alive websocket messages.
 /// </summary>
-public class ForceKeepAliveMessage : WebSocketMessage<int>, IOutboundWebSocketMessage
+public class ForceKeepAliveMessage : OutboundWebSocketMessage<int>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ForceKeepAliveMessage"/> class.

@@ -27,14 +27,11 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Savers
 {
-    public abstract class BaseNfoSaver : IMetadataFileSaver
+    public abstract partial class BaseNfoSaver : IMetadataFileSaver
     {
         public const string DateAddedFormat = "yyyy-MM-dd HH:mm:ss";
 
         public const string YouTubeWatchUrl = "https://www.youtube.com/watch?v=";
-
-        // filters control characters but allows only properly-formed surrogate sequences
-        private const string _invalidXMLCharsRegex = @"(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F\uFEFF\uFFFE\uFFFF]";
 
         private static readonly HashSet<string> _commonTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -147,6 +144,12 @@ namespace MediaBrowser.XbmcMetadata.Savers
         public string Name => SaverName;
 
         public static string SaverName => "Nfo";
+
+        // filters control characters but allows only properly-formed surrogate sequences
+        // http://web.archive.org/web/20181230211547/https://emby.media/community/index.php?/topic/49071-nfo-not-generated-on-actualize-or-rescan-or-identify
+        // Web Archive version of link since it's not really explained in the thread.
+        [GeneratedRegex(@"(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F\uFEFF\uFFFE\uFFFF]")]
+        private static partial Regex InvalidXMLCharsRegexRegex();
 
         /// <inheritdoc />
         public string GetSavePath(BaseItem item)
@@ -354,9 +357,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                 if (!string.IsNullOrEmpty(stream.Language))
                 {
-                    // http://web.archive.org/web/20181230211547/https://emby.media/community/index.php?/topic/49071-nfo-not-generated-on-actualize-or-rescan-or-identify
-                    // Web Archive version of link since it's not really explained in the thread.
-                    writer.WriteElementString("language", Regex.Replace(stream.Language, _invalidXMLCharsRegex, string.Empty));
+                    writer.WriteElementString("language", InvalidXMLCharsRegexRegex().Replace(stream.Language, string.Empty));
                 }
 
                 var scanType = stream.IsInterlaced ? "interlaced" : "progressive";

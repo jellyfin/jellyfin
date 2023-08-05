@@ -7,7 +7,7 @@ namespace MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 /// <summary>
 /// Scheduled task ended message.
 /// </summary>
-public class ScheduledTaskEndedMessage : WebSocketMessage<TaskResult>, IOutboundWebSocketMessage
+public class ScheduledTaskEndedMessage : OutboundWebSocketMessage<TaskResult>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ScheduledTaskEndedMessage"/> class.

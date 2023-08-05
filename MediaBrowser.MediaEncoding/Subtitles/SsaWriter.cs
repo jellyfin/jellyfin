@@ -11,8 +11,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
     /// <summary>
     /// SSA subtitle writer.
     /// </summary>
-    public class SsaWriter : ISubtitleWriter
+    public partial class SsaWriter : ISubtitleWriter
     {
+        [GeneratedRegex(@"\n", RegexOptions.IgnoreCase)]
+        private static partial Regex NewLineRegex();
+
         /// <inheritdoc />
         public void Write(SubtitleTrackInfo info, Stream stream, CancellationToken cancellationToken)
         {
@@ -40,7 +43,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     var trackEvent = trackEvents[i];
                     var startTime = TimeSpan.FromTicks(trackEvent.StartPositionTicks).ToString(timeFormat, CultureInfo.InvariantCulture);
                     var endTime = TimeSpan.FromTicks(trackEvent.EndPositionTicks).ToString(timeFormat, CultureInfo.InvariantCulture);
-                    var text = Regex.Replace(trackEvent.Text, @"\n", "\\n", RegexOptions.IgnoreCase);
+                    var text = NewLineRegex().Replace(trackEvent.Text, "\\n");
 
                     writer.WriteLine(
                         "Dialogue: 0,{0},{1},Default,{2}",

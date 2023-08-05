@@ -2069,7 +2069,9 @@ namespace Emby.Server.Implementations.Library
                     .Find(folder => folder is CollectionFolder) as CollectionFolder;
             }
 
-            return collectionFolder is null ? new LibraryOptions() : collectionFolder.GetLibraryOptions();
+            return collectionFolder is null
+                ? new LibraryOptions()
+                : collectionFolder.GetLibraryOptions();
         }
 
         public string GetContentType(BaseItem item)

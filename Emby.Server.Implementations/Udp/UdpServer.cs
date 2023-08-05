@@ -37,18 +37,20 @@ namespace Emby.Server.Implementations.Udp
         /// <param name="logger">The logger.</param>
         /// <param name="appHost">The application host.</param>
         /// <param name="configuration">The configuration manager.</param>
+        /// <param name="bindAddress"> The bind address.</param>
         /// <param name="port">The port.</param>
         public UdpServer(
             ILogger logger,
             IServerApplicationHost appHost,
             IConfiguration configuration,
+            IPAddress bindAddress,
             int port)
         {
             _logger = logger;
             _appHost = appHost;
             _config = configuration;
 
-            _endpoint = new IPEndPoint(IPAddress.Any, port);
+            _endpoint = new IPEndPoint(bindAddress, port);
 
             _udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             _udpSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);

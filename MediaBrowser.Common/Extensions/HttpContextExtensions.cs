@@ -25,7 +25,7 @@ namespace MediaBrowser.Common.Extensions
         /// </summary>
         /// <param name="context">The HTTP context.</param>
         /// <returns>The remote caller IP address.</returns>
-        public static IPAddress GetNormalizedRemoteIp(this HttpContext context)
+        public static IPAddress GetNormalizedRemoteIP(this HttpContext context)
         {
             // Default to the loopback address if no RemoteIpAddress is specified (i.e. during integration tests)
             var ip = context.Connection.RemoteIpAddress ?? IPAddress.Loopback;

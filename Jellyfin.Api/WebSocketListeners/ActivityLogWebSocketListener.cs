@@ -1,6 +1,8 @@
 using System;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Session;
@@ -9,7 +11,7 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Api.WebSocketListeners;
 
 /// <summary>
-/// Class SessionInfoWebSocketListener.
+/// Class ActivityLogWebSocketListener.
 /// </summary>
 public class ActivityLogWebSocketListener : BasePeriodicWebSocketListener<ActivityLogEntry[], WebSocketListenerState>
 {
@@ -54,6 +56,20 @@ public class ActivityLogWebSocketListener : BasePeriodicWebSocketListener<Activi
         _activityManager.EntryCreated -= OnEntryCreated;
 
         base.Dispose(dispose);
+    }
+
+    /// <summary>
+    /// Starts sending messages over an activity log web socket.
+    /// </summary>
+    /// <param name="message">The message.</param>
+    protected override void Start(WebSocketMessageInfo message)
+    {
+        if (!message.Connection.AuthorizationInfo.User.HasPermission(PermissionKind.IsAdministrator))
+        {
+            throw new AuthenticationException("Only admin users can retrieve the activity log.");
+        }
+
+        base.Start(message);
     }
 
     private async void OnEntryCreated(object? sender, GenericEventArgs<ActivityLogEntry> e)

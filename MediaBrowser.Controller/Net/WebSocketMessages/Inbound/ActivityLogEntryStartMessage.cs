@@ -1,20 +1,20 @@
-using System.Collections.Generic;
 using System.ComponentModel;
-using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Session;
 
 namespace MediaBrowser.Controller.Net.WebSocketMessages.Inbound;
 
 /// <summary>
 /// Activity log entry start message.
+/// Data is the timing data encoded as "$initialDelay,$interval" in ms.
 /// </summary>
-public class ActivityLogEntryStartMessage : WebSocketMessage<IReadOnlyCollection<ActivityLogEntry>>, IInboundWebSocketMessage
+public class ActivityLogEntryStartMessage : InboundWebSocketMessage<string>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ActivityLogEntryStartMessage"/> class.
+    /// Data is the timing data encoded as "$initialDelay,$interval" in ms.
     /// </summary>
-    /// <param name="data">Collection of activity log entries.</param>
-    public ActivityLogEntryStartMessage(IReadOnlyCollection<ActivityLogEntry> data)
+    /// <param name="data">The timing data encoded as "$initialDelay,$interval".</param>
+    public ActivityLogEntryStartMessage(string data)
         : base(data)
     {
     }

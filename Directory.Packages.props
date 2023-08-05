@@ -10,26 +10,27 @@
     <PackageVersion Include="AutoFixture.Xunit2" Version="4.18.0" />
     <PackageVersion Include="AutoFixture" Version="4.18.0" />
     <PackageVersion Include="BDInfo" Version="0.7.6.2" />
-    <PackageVersion Include="BlurHashSharp.SkiaSharp" Version="1.2.0" />
-    <PackageVersion Include="BlurHashSharp" Version="1.2.0" />
+    <PackageVersion Include="BlurHashSharp.SkiaSharp" Version="1.3.0" />
+    <PackageVersion Include="BlurHashSharp" Version="1.3.0" />
     <PackageVersion Include="CommandLineParser" Version="2.9.1" />
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
     <PackageVersion Include="Diacritics" Version="3.3.18" />
     <PackageVersion Include="DiscUtils.Udf" Version="0.16.13" />
     <PackageVersion Include="DotNet.Glob" Version="3.1.3" />
     <PackageVersion Include="EFCoreSecondLevelCacheInterceptor" Version="3.9.2" />
-    <PackageVersion Include="FsCheck.Xunit" Version="2.16.5" />
+    <PackageVersion Include="FsCheck.Xunit" Version="2.16.6" />
     <PackageVersion Include="Jellyfin.XmlTv" Version="10.8.0" />
     <PackageVersion Include="libse" Version="3.6.13" />
     <PackageVersion Include="LrcParser" Version="2023.524.0" />
     <PackageVersion Include="MetaBrainz.MusicBrainz" Version="5.0.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="7.0.8" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="7.0.8" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="7.0.9" />
+    <PackageVersion Include="Microsoft.AspNetCore.HttpOverrides" Version="2.2.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="7.0.9" />
     <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.4" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.8" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.8" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.8" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.8" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.9" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.9" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.9" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.9" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
@@ -38,14 +39,14 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="7.0.8" />
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="7.0.8" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="7.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="7.0.9" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="7.0.1" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.6.2" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.6.3" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
     <PackageVersion Include="MimeTypes" Version="2.4.0" />
     <PackageVersion Include="Mono.Nat" Version="3.0.4" />
@@ -53,20 +54,22 @@
     <PackageVersion Include="NEbml" Version="0.11.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="PlaylistsNET" Version="1.4.0" />
-    <PackageVersion Include="prometheus-net.AspNetCore" Version="8.0.0" />
+    <PackageVersion Include="prometheus-net.AspNetCore" Version="8.0.1" />
     <PackageVersion Include="prometheus-net.DotNetRuntime" Version="4.4.0" />
-    <PackageVersion Include="prometheus-net" Version="8.0.0" />
+    <PackageVersion Include="prometheus-net" Version="8.0.1" />
     <PackageVersion Include="Serilog.AspNetCore" Version="7.0.0" />
     <PackageVersion Include="Serilog.Enrichers.Thread" Version="3.1.0" />
     <PackageVersion Include="Serilog.Settings.Configuration" Version="7.0.0" />
     <PackageVersion Include="Serilog.Sinks.Async" Version="1.5.0" />
     <PackageVersion Include="Serilog.Sinks.Console" Version="4.1.0" />
     <PackageVersion Include="Serilog.Sinks.File" Version="5.0.0" />
-    <PackageVersion Include="Serilog.Sinks.Graylog" Version="3.0.1" />
+    <PackageVersion Include="Serilog.Sinks.Graylog" Version="3.0.2" />
     <PackageVersion Include="SerilogAnalyzer" Version="0.15.0" />
-    <PackageVersion Include="SharpFuzz" Version="2.0.2" />
+    <PackageVersion Include="SharpFuzz" Version="2.1.1" />
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="2.88.3" />
     <PackageVersion Include="SkiaSharp.Svg" Version="1.60.0" />
+    <PackageVersion Include="SkiaSharp.HarfBuzz" Version="2.88.3" />
+    <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="2.8.2.3" />
     <PackageVersion Include="SkiaSharp" Version="2.88.3" />
     <PackageVersion Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" />
     <PackageVersion Include="SQLitePCL.pretty.netstandard" Version="3.1.0" />
@@ -83,7 +86,7 @@
     <PackageVersion Include="TMDbLib" Version="2.0.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.5.1" />
     <PackageVersion Include="Xunit.Priority" Version="1.1.6" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.0" />
     <PackageVersion Include="Xunit.SkippableFact" Version="1.4.13" />
     <PackageVersion Include="xunit" Version="2.4.2" />
   </ItemGroup>
