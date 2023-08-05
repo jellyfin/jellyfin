@@ -248,34 +248,34 @@ namespace Jellyfin.Networking.Manager
                             {
                                 if (IsIPv4Enabled && info.Address.AddressFamily == AddressFamily.InterNetwork)
                                 {
-                                    var interfaceObject = new IPData(info.Address, new IPNetwork(info.Address, info.PrefixLength), adapter.Name);
-                                    interfaceObject.Index = ipProperties.GetIPv4Properties().Index;
-                                    interfaceObject.Name = adapter.Name;
+                                    var interfaceObject = new IPData(info.Address, new IPNetwork(info.Address, info.PrefixLength), adapter.Name)
+                                    {
+                                        Index = ipProperties.GetIPv4Properties().Index,
+                                        Name = adapter.Name
+                                    };
 
                                     interfaces.Add(interfaceObject);
                                 }
                                 else if (IsIPv6Enabled && info.Address.AddressFamily == AddressFamily.InterNetworkV6)
                                 {
-                                    var interfaceObject = new IPData(info.Address, new IPNetwork(info.Address, info.PrefixLength), adapter.Name);
-                                    interfaceObject.Index = ipProperties.GetIPv6Properties().Index;
-                                    interfaceObject.Name = adapter.Name;
+                                    var interfaceObject = new IPData(info.Address, new IPNetwork(info.Address, info.PrefixLength), adapter.Name)
+                                    {
+                                        Index = ipProperties.GetIPv6Properties().Index,
+                                        Name = adapter.Name
+                                    };
 
                                     interfaces.Add(interfaceObject);
                                 }
                             }
                         }
-#pragma warning disable CA1031 // Do not catch general exception types
                         catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
                         {
                             // Ignore error, and attempt to continue.
                             _logger.LogError(ex, "Error encountered parsing interfaces.");
                         }
                     }
                 }
-#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     _logger.LogError(ex, "Error obtaining interfaces.");
                 }
@@ -285,14 +285,14 @@ namespace Jellyfin.Networking.Manager
                 {
                     _logger.LogWarning("No interface information available. Using loopback interface(s).");
 
-                    if (IsIPv4Enabled && !IsIPv6Enabled)
+                    if (IsIPv4Enabled)
                     {
-                        interfaces.Add(new IPData(IPAddress.Loopback, new IPNetwork(IPAddress.Loopback, 8), "lo"));
+                        interfaces.Add(new IPData(IPAddress.Loopback, Network.IPv4RFC5735Loopback, "lo"));
                     }
 
-                    if (!IsIPv4Enabled && IsIPv6Enabled)
+                    if (IsIPv6Enabled)
                     {
-                        interfaces.Add(new IPData(IPAddress.IPv6Loopback, new IPNetwork(IPAddress.IPv6Loopback, 128), "lo"));
+                        interfaces.Add(new IPData(IPAddress.IPv6Loopback, Network.IPv6RFC4291Loopback, "lo"));
                     }
                 }
 
@@ -305,7 +305,7 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <summary>
-        /// Initialises internal LAN cache.
+        /// Initializes internal LAN cache.
         /// </summary>
         private void InitializeLan(NetworkConfiguration config)
         {
@@ -375,12 +375,12 @@ namespace Jellyfin.Networking.Manager
                         .ToHashSet();
                     interfaces = interfaces.Where(x => bindAddresses.Contains(x.Address)).ToList();
 
-                    if (bindAddresses.Contains(IPAddress.Loopback))
+                    if (bindAddresses.Contains(IPAddress.Loopback) && !interfaces.Any(i => i.Address == IPAddress.Loopback))
                     {
                         interfaces.Add(new IPData(IPAddress.Loopback, Network.IPv4RFC5735Loopback, "lo"));
                     }
 
-                    if (bindAddresses.Contains(IPAddress.IPv6Loopback))
+                    if (bindAddresses.Contains(IPAddress.IPv6Loopback) && !interfaces.Any(i => i.Address == IPAddress.IPv6Loopback))
                     {
                         interfaces.Add(new IPData(IPAddress.IPv6Loopback, Network.IPv6RFC4291Loopback, "lo"));
                     }
@@ -421,7 +421,7 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <summary>
-        /// Initialises the remote address values.
+        /// Initializes the remote address values.
         /// </summary>
         private void InitialiseRemote(NetworkConfiguration config)
         {
@@ -574,7 +574,7 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <summary>
-        /// Reloads all settings and re-initialises the instance.
+        /// Reloads all settings and re-Initializes the instance.
         /// </summary>
         /// <param name="configuration">The <see cref="NetworkConfiguration"/> to use.</param>
         public void UpdateSettings(object configuration)
@@ -605,8 +605,10 @@ namespace Jellyfin.Networking.Manager
                         var index = int.Parse(parts[1], CultureInfo.InvariantCulture);
                         if (address.AddressFamily == AddressFamily.InterNetwork || address.AddressFamily == AddressFamily.InterNetworkV6)
                         {
-                            var data = new IPData(address, subnet, parts[2]);
-                            data.Index = index;
+                            var data = new IPData(address, subnet, parts[2])
+                            {
+                                Index = index
+                            };
                             interfaces.Add(data);
                         }
                     }
@@ -725,20 +727,13 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public IReadOnlyList<IPData> GetAllBindInterfaces(bool individualInterfaces = false)
         {
-            if (_interfaces.Count != 0)
+            if (_interfaces.Count > 0 && individualInterfaces)
             {
                 return _interfaces;
             }
 
             // No bind address and no exclusions, so listen on all interfaces.
             var result = new List<IPData>();
-
-            if (individualInterfaces)
-            {
-                result.AddRange(_interfaces);
-                return result;
-            }
-
             if (IsIPv4Enabled && IsIPv6Enabled)
             {
                 // Kestrel source code shows it uses Sockets.DualMode - so this also covers IPAddress.Any by default

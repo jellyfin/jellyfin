@@ -166,6 +166,8 @@ namespace Emby.Server.Implementations
 
             _xmlSerializer = new MyXmlSerializer();
             ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer, _fileSystemManager);
+            ConfigurationManager.RegisterConfiguration<NetworkConfigurationFactory>();
+            NetManager = new NetworkManager(ConfigurationManager, startupConfig, LoggerFactory.CreateLogger<NetworkManager>());
             _pluginManager = new PluginManager(
                 LoggerFactory.CreateLogger<PluginManager>(),
                 this,

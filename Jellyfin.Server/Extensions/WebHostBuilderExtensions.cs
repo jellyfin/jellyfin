@@ -3,7 +3,6 @@ using System.IO;
 using System.Net;
 using Jellyfin.Server.Helpers;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -36,7 +35,7 @@ public static class WebHostBuilderExtensions
         return builder
             .UseKestrel((builderContext, options) =>
             {
-                var addresses = appHost.NetManager.GetAllBindInterfaces();
+                var addresses = appHost.NetManager.GetAllBindInterfaces(true);
 
                 bool flagged = false;
                 foreach (var netAdd in addresses)
