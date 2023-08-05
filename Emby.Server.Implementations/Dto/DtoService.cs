@@ -922,11 +922,11 @@ namespace Emby.Server.Implementations.Dto
 
                     var tracks = albumParent.Tracks;
 
-              	    dto.LUFSAlbum = audio.LUFS;
-
+                    dto.LUFSAlbum = audio.LUFS;
+                    // Get loudest track so album gain is smallest
                     foreach (var track in tracks)
                     {
-                        if (dto.LUFSAlbum > track.LUFS)
+                        if (track.LUFS > dto.LUFSAlbum)
                         {
                             dto.LUFSAlbum = track.LUFS;
                         }
