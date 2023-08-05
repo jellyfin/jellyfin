@@ -920,17 +920,7 @@ namespace Emby.Server.Implementations.Dto
                     dto.AlbumId = albumParent.Id;
                     dto.AlbumPrimaryImageTag = GetTagAndFillBlurhash(dto, albumParent, ImageType.Primary);
 
-                    var tracks = albumParent.Tracks;
-
-                    dto.LUFSAlbum = audio.LUFS;
-                    // Get loudest track so album gain is smallest
-                    foreach (var track in tracks)
-                    {
-                        if (track.LUFS > dto.LUFSAlbum)
-                        {
-                            dto.LUFSAlbum = track.LUFS;
-                        }
-                    }
+                    dto.LUFSAlbum = albumParent.LUFS;
                 }
 
                 // if (options.ContainsField(ItemFields.MediaSourceCount))

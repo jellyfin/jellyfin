@@ -177,6 +177,11 @@ namespace MediaBrowser.Controller.Entities.Audio
                 var updateType = await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
                 childUpdateType = childUpdateType | updateType;
 
+                if (item.LUFS > LUFS || item == items.OfType<Audio>().First())
+                {
+                    LUFS = item.LUFS;
+                }
+
                 numComplete++;
                 double percent = numComplete;
                 percent /= totalItems;
