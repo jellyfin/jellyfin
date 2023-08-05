@@ -242,34 +242,34 @@ namespace Jellyfin.Networking.Manager
                             {
                                 if (IsIPv4Enabled && info.Address.AddressFamily == AddressFamily.InterNetwork)
                                 {
-                                    var interfaceObject = new IPData(info.Address, new IPNetwork(info.Address, info.PrefixLength), adapter.Name);
-                                    interfaceObject.Index = ipProperties.GetIPv4Properties().Index;
-                                    interfaceObject.Name = adapter.Name;
+                                    var interfaceObject = new IPData(info.Address, new IPNetwork(info.Address, info.PrefixLength), adapter.Name)
+                                    {
+                                        Index = ipProperties.GetIPv4Properties().Index,
+                                        Name = adapter.Name
+                                    };
 
                                     interfaces.Add(interfaceObject);
                                 }
                                 else if (IsIPv6Enabled && info.Address.AddressFamily == AddressFamily.InterNetworkV6)
                                 {
-                                    var interfaceObject = new IPData(info.Address, new IPNetwork(info.Address, info.PrefixLength), adapter.Name);
-                                    interfaceObject.Index = ipProperties.GetIPv6Properties().Index;
-                                    interfaceObject.Name = adapter.Name;
+                                    var interfaceObject = new IPData(info.Address, new IPNetwork(info.Address, info.PrefixLength), adapter.Name)
+                                    {
+                                        Index = ipProperties.GetIPv6Properties().Index,
+                                        Name = adapter.Name
+                                    };
 
                                     interfaces.Add(interfaceObject);
                                 }
                             }
                         }
-#pragma warning disable CA1031 // Do not catch general exception types
                         catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
                         {
                             // Ignore error, and attempt to continue.
                             _logger.LogError(ex, "Error encountered parsing interfaces.");
                         }
                     }
                 }
-#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     _logger.LogError(ex, "Error obtaining interfaces.");
                 }
@@ -552,8 +552,10 @@ namespace Jellyfin.Networking.Manager
                         var index = int.Parse(parts[1], CultureInfo.InvariantCulture);
                         if (address.AddressFamily == AddressFamily.InterNetwork || address.AddressFamily == AddressFamily.InterNetworkV6)
                         {
-                            var data = new IPData(address, subnet, parts[2]);
-                            data.Index = index;
+                            var data = new IPData(address, subnet, parts[2])
+                            {
+                                Index = index
+                            };
                             interfaces.Add(data);
                         }
                     }

@@ -21,12 +21,12 @@ namespace Emby.Server.Implementations.AppBase
     {
         private readonly IFileSystem _fileSystem;
 
-        private readonly ConcurrentDictionary<string, object> _configurations = new ConcurrentDictionary<string, object>();
+        private readonly ConcurrentDictionary<string, object> _configurations = new();
 
         /// <summary>
         /// The _configuration sync lock.
         /// </summary>
-        private readonly object _configurationSyncLock = new object();
+        private readonly object _configurationSyncLock = new();
 
         private ConfigurationStore[] _configurationStores = Array.Empty<ConfigurationStore>();
         private IConfigurationFactory[] _configurationFactories = Array.Empty<IConfigurationFactory>();
@@ -291,13 +291,7 @@ namespace Emby.Server.Implementations.AppBase
 
                     var configurationInfo = Array.Find(
                         configurationManager._configurationStores,
-                        i => string.Equals(i.Key, k, StringComparison.OrdinalIgnoreCase));
-
-                    if (configurationInfo is null)
-                    {
-                        throw new ResourceNotFoundException("Configuration with key " + k + " not found.");
-                    }
-
+                        i => string.Equals(i.Key, k, StringComparison.OrdinalIgnoreCase)) ?? throw new ResourceNotFoundException("Configuration with key " + k + " not found.");
                     var configurationType = configurationInfo.ConfigurationType;
 
                     lock (configurationManager._configurationSyncLock)

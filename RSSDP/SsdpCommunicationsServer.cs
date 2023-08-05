@@ -32,22 +32,22 @@ namespace Rssdp.Infrastructure
          * port to use, we will default to 0 which allows the underlying system to auto-assign a free port.
          */
 
-        private object _BroadcastListenSocketSynchroniser = new object();
-        private List<Socket> _MulticastListenSockets;
+        private readonly object _broadcastListenSocketSynchroniser = new();
+        private List<Socket> _multicastListenSockets;
 
-        private object _SendSocketSynchroniser = new object();
+        private readonly object _sendSocketSynchroniser = new();
         private List<Socket> _sendSockets;
 
-        private HttpRequestParser _RequestParser;
-        private HttpResponseParser _ResponseParser;
+        private readonly HttpRequestParser _requestParser;
+        private readonly HttpResponseParser _responseParser;
         private readonly ILogger _logger;
-        private ISocketFactory _SocketFactory;
+        private readonly ISocketFactory _socketFactory;
         private readonly INetworkManager _networkManager;
 
-        private int _LocalPort;
-        private int _MulticastTtl;
+        private readonly int _localPort;
+        private readonly int _multicastTtl;
 
-        private bool _IsShared;
+        private bool _isShared;
         private readonly bool _enableMultiSocketBinding;
 
         /// <summary>
@@ -88,16 +88,16 @@ namespace Rssdp.Infrastructure
                 throw new ArgumentOutOfRangeException(nameof(multicastTimeToLive), "multicastTimeToLive must be greater than zero.");
             }
 
-            _BroadcastListenSocketSynchroniser = new object();
-            _SendSocketSynchroniser = new object();
+            _broadcastListenSocketSynchroniser = new();
+            _sendSocketSynchroniser = new();
 
-            _LocalPort = localPort;
-            _SocketFactory = socketFactory;
+            _localPort = localPort;
+            _socketFactory = socketFactory;
 
-            _RequestParser = new HttpRequestParser();
-            _ResponseParser = new HttpResponseParser();
+            _requestParser = new();
+            _responseParser = new();
 
-            _MulticastTtl = multicastTimeToLive;
+            _multicastTtl = multicastTimeToLive;
             _networkManager = networkManager;
             _logger = logger;
             _enableMultiSocketBinding = enableMultiSocketBinding;
@@ -111,13 +111,13 @@ namespace Rssdp.Infrastructure
         {
             ThrowIfDisposed();
 
-            lock (_BroadcastListenSocketSynchroniser)
+            lock (_broadcastListenSocketSynchroniser)
             {
-                if (_MulticastListenSockets is null)
+                if (_multicastListenSockets is null)
                 {
                     try
                     {
-                        _MulticastListenSockets = CreateMulticastSocketsAndListen();
+                        _multicastListenSockets = CreateMulticastSocketsAndListen();
                     }
                     catch (SocketException ex)
                     {
@@ -137,17 +137,17 @@ namespace Rssdp.Infrastructure
         /// <exception cref="ObjectDisposedException">Thrown if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true (because <seealso cref="DisposableManagedObjectBase.Dispose()" /> has been called previously).</exception>
         public void StopListeningForMulticast()
         {
-            lock (_BroadcastListenSocketSynchroniser)
+            lock (_broadcastListenSocketSynchroniser)
             {
-                if (_MulticastListenSockets is not null)
+                if (_multicastListenSockets is not null)
                 {
                     _logger.LogInformation("{0} disposing _BroadcastListenSocket", GetType().Name);
-                    foreach (var socket in _MulticastListenSockets)
+                    foreach (var socket in _multicastListenSockets)
                     {
                         socket.Dispose();
                     }
 
-                    _MulticastListenSockets = null;
+                    _multicastListenSockets = null;
                 }
             }
         }
@@ -204,7 +204,7 @@ namespace Rssdp.Infrastructure
         {
             EnsureSendSocketCreated();
 
-            lock (_SendSocketSynchroniser)
+            lock (_sendSocketSynchroniser)
             {
                 var sockets = _sendSockets.Where(s => s.AddressFamily == fromlocalIPAddress.AddressFamily);
 
@@ -282,7 +282,7 @@ namespace Rssdp.Infrastructure
         /// <exception cref="ObjectDisposedException">Thrown if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true (because <seealso cref="DisposableManagedObjectBase.Dispose()" /> has been called previously).</exception>
         public void StopListeningForResponses()
         {
-            lock (_SendSocketSynchroniser)
+            lock (_sendSocketSynchroniser)
             {
                 if (_sendSockets is not null)
                 {
@@ -309,9 +309,9 @@ namespace Rssdp.Infrastructure
         /// </remarks>
         public bool IsShared
         {
-            get { return _IsShared; }
+            get { return _isShared; }
 
-            set { _IsShared = value; }
+            set { _isShared = value; }
         }
 
         /// <summary>
@@ -359,7 +359,7 @@ namespace Rssdp.Infrastructure
                 {
                     try
                     {
-                        var socket = _SocketFactory.CreateUdpMulticastSocket(multicastGroupAddress, intf, _MulticastTtl, SsdpConstants.MulticastPort);
+                        var socket = _socketFactory.CreateUdpMulticastSocket(multicastGroupAddress, intf, _multicastTtl, SsdpConstants.MulticastPort);
                         _ = ListenToSocketInternal(socket);
                         sockets.Add(socket);
                     }
@@ -371,7 +371,7 @@ namespace Rssdp.Infrastructure
             }
             else
             {
-                var socket = _SocketFactory.CreateUdpMulticastSocket(multicastGroupAddress, new IPData(IPAddress.Any, null), _MulticastTtl, SsdpConstants.MulticastPort);
+                var socket = _socketFactory.CreateUdpMulticastSocket(multicastGroupAddress, new IPData(IPAddress.Any, null), _multicastTtl, SsdpConstants.MulticastPort);
                 _ = ListenToSocketInternal(socket);
                 sockets.Add(socket);
             }
@@ -393,7 +393,7 @@ namespace Rssdp.Infrastructure
                 {
                     try
                     {
-                        var socket = _SocketFactory.CreateSsdpUdpSocket(intf, _LocalPort);
+                        var socket = _socketFactory.CreateSsdpUdpSocket(intf, _localPort);
                         _ = ListenToSocketInternal(socket);
                         sockets.Add(socket);
                     }
@@ -405,7 +405,7 @@ namespace Rssdp.Infrastructure
             }
             else
             {
-                var socket = _SocketFactory.CreateSsdpUdpSocket(new IPData(IPAddress.Any, null), _LocalPort);
+                var socket = _socketFactory.CreateSsdpUdpSocket(new IPData(IPAddress.Any, null), _localPort);
                 _ = ListenToSocketInternal(socket);
                 sockets.Add(socket);
             }
@@ -428,10 +428,10 @@ namespace Rssdp.Infrastructure
                     if (result.ReceivedBytes > 0)
                     {
                         var remoteEndpoint = (IPEndPoint)result.RemoteEndPoint;
-                        var localEndpointAdapter = _networkManager.GetAllBindInterfaces().First(a => a.Index == result.PacketInformation.Interface);
+                        var localEndpointAdapter = _networkManager.GetAllBindInterfaces(true).First(a => a.Index == result.PacketInformation.Interface);
 
                         ProcessMessage(
-                            UTF8Encoding.UTF8.GetString(receiveBuffer, 0, result.ReceivedBytes),
+                            Encoding.UTF8.GetString(receiveBuffer, 0, result.ReceivedBytes),
                             remoteEndpoint,
                             localEndpointAdapter.Address);
                     }
@@ -451,7 +451,7 @@ namespace Rssdp.Infrastructure
         {
             if (_sendSockets is null)
             {
-                lock (_SendSocketSynchroniser)
+                lock (_sendSocketSynchroniser)
                 {
                     _sendSockets ??= CreateSendSockets();
                 }
@@ -470,7 +470,7 @@ namespace Rssdp.Infrastructure
                 HttpResponseMessage responseMessage = null;
                 try
                 {
-                    responseMessage = _ResponseParser.Parse(data);
+                    responseMessage = _responseParser.Parse(data);
                 }
                 catch (ArgumentException)
                 {
@@ -487,7 +487,7 @@ namespace Rssdp.Infrastructure
                 HttpRequestMessage requestMessage = null;
                 try
                 {
-                    requestMessage = _RequestParser.Parse(data);
+                    requestMessage = _requestParser.Parse(data);
                 }
                 catch (ArgumentException)
                 {

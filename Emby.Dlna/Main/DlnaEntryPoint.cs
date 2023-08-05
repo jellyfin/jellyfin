@@ -51,7 +51,7 @@ namespace Emby.Dlna.Main
         private readonly IDeviceDiscovery _deviceDiscovery;
         private readonly ISocketFactory _socketFactory;
         private readonly INetworkManager _networkManager;
-        private readonly object _syncLock = new object();
+        private readonly object _syncLock = new();
         private readonly bool _disabled;
 
         private PlayToManager _manager;

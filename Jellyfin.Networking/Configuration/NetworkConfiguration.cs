@@ -153,7 +153,7 @@ namespace Jellyfin.Networking.Configuration
         public string[] VirtualInterfaceNames { get; set; } = new string[] { "veth" };
 
         /// <summary>
-        /// Gets or sets a value indicating whether the published server uri is based on information in HTTP requests.
+        /// Gets or sets a value indicating whether the published server URI is based on information in HTTP requests.
         /// </summary>
         public bool EnablePublishedServerUriByRequest { get; set; } = false;
 

@@ -31,45 +31,45 @@ public static class Network
     /// <summary>
     /// Whole IPv4 address space.
     /// </summary>
-    public static readonly IPNetwork IPv4Any = new IPNetwork(IPAddress.Any, 0);
+    public static readonly IPNetwork IPv4Any = new(IPAddress.Any, 0);
 
     /// <summary>
     /// Whole IPv6 address space.
     /// </summary>
-    public static readonly IPNetwork IPv6Any = new IPNetwork(IPAddress.IPv6Any, 0);
+    public static readonly IPNetwork IPv6Any = new(IPAddress.IPv6Any, 0);
 
     /// <summary>
     /// IPv4 Loopback as defined in RFC 5735.
     /// </summary>
-    public static readonly IPNetwork IPv4RFC5735Loopback = new IPNetwork(IPAddress.Loopback, 8);
+    public static readonly IPNetwork IPv4RFC5735Loopback = new(IPAddress.Loopback, 8);
 
     /// <summary>
     /// IPv4 private class A as defined in RFC 1918.
     /// </summary>
-    public static readonly IPNetwork IPv4RFC1918PrivateClassA = new IPNetwork(IPAddress.Parse("10.0.0.0"), 8);
+    public static readonly IPNetwork IPv4RFC1918PrivateClassA = new(IPAddress.Parse("10.0.0.0"), 8);
 
     /// <summary>
     /// IPv4 private class B as defined in RFC 1918.
     /// </summary>
-    public static readonly IPNetwork IPv4RFC1918PrivateClassB = new IPNetwork(IPAddress.Parse("172.16.0.0"), 12);
+    public static readonly IPNetwork IPv4RFC1918PrivateClassB = new(IPAddress.Parse("172.16.0.0"), 12);
 
     /// <summary>
     /// IPv4 private class C as defined in RFC 1918.
     /// </summary>
-    public static readonly IPNetwork IPv4RFC1918PrivateClassC = new IPNetwork(IPAddress.Parse("192.168.0.0"), 16);
+    public static readonly IPNetwork IPv4RFC1918PrivateClassC = new(IPAddress.Parse("192.168.0.0"), 16);
 
     /// <summary>
     /// IPv6 loopback as defined in RFC 4291.
     /// </summary>
-    public static readonly IPNetwork IPv6RFC4291Loopback = new IPNetwork(IPAddress.IPv6Loopback, 128);
+    public static readonly IPNetwork IPv6RFC4291Loopback = new(IPAddress.IPv6Loopback, 128);
 
     /// <summary>
     /// IPv6 site local as defined in RFC 4291.
     /// </summary>
-    public static readonly IPNetwork IPv6RFC4291SiteLocal = new IPNetwork(IPAddress.Parse("fe80::"), 10);
+    public static readonly IPNetwork IPv6RFC4291SiteLocal = new(IPAddress.Parse("fe80::"), 10);
 
     /// <summary>
     /// IPv6 unique local as defined in RFC 4193.
     /// </summary>
-    public static readonly IPNetwork IPv6RFC4193UniqueLocal = new IPNetwork(IPAddress.Parse("fc00::"), 7);
+    public static readonly IPNetwork IPv6RFC4193UniqueLocal = new(IPAddress.Parse("fc00::"), 7);
 }
