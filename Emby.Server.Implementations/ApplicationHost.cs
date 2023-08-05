@@ -1004,7 +1004,7 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetSmartApiUrl(HttpRequest request)
         {
-            // Return the host in the HTTP request as the API url
+            // Return the host in the HTTP request as the API URL if not configured otherwise
             if (ConfigurationManager.GetNetworkConfiguration().EnablePublishedServerUriByRequest)
             {
                 int? requestPort = request.Host.Port;
@@ -1039,7 +1039,7 @@ namespace Emby.Server.Implementations
         public string GetApiUrlForLocalAccess(IPAddress ipAddress = null, bool allowHttps = true)
         {
             // With an empty source, the port will be null
-            var smart = NetManager.GetBindAddress(ipAddress, out _, true);
+            var smart = NetManager.GetBindAddress(ipAddress, out _, false);
             var scheme = !allowHttps ? Uri.UriSchemeHttp : null;
             int? port = !allowHttps ? HttpPort : null;
             return GetLocalApiUrl(smart, scheme, port);
