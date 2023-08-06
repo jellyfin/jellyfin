@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Xml;
 using MediaBrowser.Common.Configuration;
@@ -81,7 +82,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 }
 
                 // Extract the last episode number from nfo
+                // Retrieves all title and plot tags from the rest of the nfo and concatenates them with the first episode
                 // This is needed because XBMC metadata uses multiple episodedetails blocks instead of episodenumberend tag
+                var name = new StringBuilder(item.Item.Name);
+                var overview = new StringBuilder(item.Item.Overview);
                 while ((index = xmlFile.IndexOf(srch, StringComparison.OrdinalIgnoreCase)) != -1)
                 {
                     xml = xmlFile.Substring(0, index + srch.Length);
@@ -103,7 +107,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                     case "name":
                                     case "title":
                                     case "localtitle":
-                                        item.Item.Name = item.Item.Name + " / " + reader.ReadElementContentAsString();
+                                        name.Append(" / " + reader.ReadElementContentAsString());
                                         break;
                                     case "episode":
                                         {
@@ -118,7 +122,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                     case "biography":
                                     case "plot":
                                     case "review":
-                                        item.Item.Overview = item.Item.Overview + " / " + reader.ReadElementContentAsString();
+                                        overview.Append(" / " + reader.ReadElementContentAsString());
                                         break;
                                 }
                             }
@@ -127,6 +131,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         }
                     }
                 }
+
+                item.Item.Name = name.ToString();
+                item.Item.Overview = overview.ToString();
             }
             catch (XmlException)
             {
