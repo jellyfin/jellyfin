@@ -59,16 +59,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private readonly SemaphoreSlim _thumbnailResourcePool;
 
-        private readonly object _runningProcessesLock = new object();
-        private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
+        private readonly object _runningProcessesLock = new();
+        private readonly List<ProcessWrapper> _runningProcesses = new();
 
         // MediaEncoder is registered as a Singleton
         private readonly JsonSerializerOptions _jsonSerializerOptions;
 
-        private List<string> _encoders = new List<string>();
-        private List<string> _decoders = new List<string>();
-        private List<string> _hwaccels = new List<string>();
-        private List<string> _filters = new List<string>();
+        private List<string> _encoders = new();
+        private List<string> _decoders = new();
+        private List<string> _hwaccels = new();
+        private List<string> _filters = new();
         private IDictionary<int, bool> _filtersWithOption = new Dictionary<int, bool>();
 
         private bool _isPkeyPauseSupported = false;
@@ -78,7 +78,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private bool _isVaapiDeviceInteli965 = false;
         private bool _isVaapiDeviceSupportVulkanDrmInterop = false;
 
-        private static string[] _vulkanExternalMemoryDmaBufExts =
+        private static readonly string[] _vulkanExternalMemoryDmaBufExts =
         {
             "VK_KHR_external_memory_fd",
             "VK_EXT_external_memory_dma_buf",
@@ -735,45 +735,43 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             _logger.LogDebug("{ProcessFileName} {ProcessArguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
-            using (var processWrapper = new ProcessWrapper(process, this))
+            using var processWrapper = new ProcessWrapper(process, this);
+            bool ranToCompletion;
+
+            await _thumbnailResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
             {
-                bool ranToCompletion;
+                StartProcess(processWrapper);
 
-                await _thumbnailResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-                try
+                var timeoutMs = _configurationManager.Configuration.ImageExtractionTimeoutMs;
+                if (timeoutMs <= 0)
                 {
-                    StartProcess(processWrapper);
-
-                    var timeoutMs = _configurationManager.Configuration.ImageExtractionTimeoutMs;
-                    if (timeoutMs <= 0)
-                    {
-                        timeoutMs = enableHdrExtraction ? DefaultHdrImageExtractionTimeout : DefaultSdrImageExtractionTimeout;
-                    }
-
-                    ranToCompletion = await process.WaitForExitAsync(TimeSpan.FromMilliseconds(timeoutMs)).ConfigureAwait(false);
-
-                    if (!ranToCompletion)
-                    {
-                        StopProcess(processWrapper, 1000);
-                    }
-                }
-                finally
-                {
-                    _thumbnailResourcePool.Release();
+                    timeoutMs = enableHdrExtraction ? DefaultHdrImageExtractionTimeout : DefaultSdrImageExtractionTimeout;
                 }
 
-                var exitCode = ranToCompletion ? processWrapper.ExitCode ?? 0 : -1;
-                var file = _fileSystem.GetFileInfo(tempExtractPath);
+                ranToCompletion = await process.WaitForExitAsync(TimeSpan.FromMilliseconds(timeoutMs)).ConfigureAwait(false);
 
-                if (exitCode == -1 || !file.Exists || file.Length == 0)
+                if (!ranToCompletion)
                 {
-                    _logger.LogError("ffmpeg image extraction failed for {Path}", inputPath);
-
-                    throw new FfmpegException(string.Format(CultureInfo.InvariantCulture, "ffmpeg image extraction failed for {0}", inputPath));
+                    StopProcess(processWrapper, 1000);
                 }
-
-                return tempExtractPath;
             }
+            finally
+            {
+                _thumbnailResourcePool.Release();
+            }
+
+            var exitCode = ranToCompletion ? processWrapper.ExitCode ?? 0 : -1;
+            var file = _fileSystem.GetFileInfo(tempExtractPath);
+
+            if (exitCode == -1 || !file.Exists || file.Length == 0)
+            {
+                _logger.LogError("ffmpeg image extraction failed for {Path}", inputPath);
+
+                throw new FfmpegException(string.Format(CultureInfo.InvariantCulture, "ffmpeg image extraction failed for {0}", inputPath));
+            }
+
+            return tempExtractPath;
         }
 
         /// <inheritdoc />
@@ -955,31 +953,29 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             // Generate concat configuration entries for each file and write to file
-            using (StreamWriter sw = new StreamWriter(concatFilePath))
+            using StreamWriter sw = new StreamWriter(concatFilePath);
+            foreach (var path in files)
             {
-                foreach (var path in files)
-                {
-                    var mediaInfoResult = GetMediaInfo(
-                        new MediaInfoRequest
+                var mediaInfoResult = GetMediaInfo(
+                    new MediaInfoRequest
+                    {
+                        MediaType = DlnaProfileType.Video,
+                        MediaSource = new MediaSourceInfo
                         {
-                            MediaType = DlnaProfileType.Video,
-                            MediaSource = new MediaSourceInfo
-                            {
-                                Path = path,
-                                Protocol = MediaProtocol.File,
-                                VideoType = videoType
-                            }
-                        },
-                        CancellationToken.None).GetAwaiter().GetResult();
+                            Path = path,
+                            Protocol = MediaProtocol.File,
+                            VideoType = videoType
+                        }
+                    },
+                    CancellationToken.None).GetAwaiter().GetResult();
 
-                    var duration = TimeSpan.FromTicks(mediaInfoResult.RunTimeTicks.Value).TotalSeconds;
+                var duration = TimeSpan.FromTicks(mediaInfoResult.RunTimeTicks.Value).TotalSeconds;
 
-                    // Add file path stanza to concat configuration
-                    sw.WriteLine("file '{0}'", path);
+                // Add file path stanza to concat configuration
+                sw.WriteLine("file '{0}'", path);
 
-                    // Add duration stanza to concat configuration
-                    sw.WriteLine("duration {0}", duration);
-                }
+                // Add duration stanza to concat configuration
+                sw.WriteLine("duration {0}", duration);
             }
         }
 

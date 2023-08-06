@@ -29,7 +29,7 @@ namespace MediaBrowser.Controller.Entities
     public class CollectionFolder : Folder, ICollectionFolder
     {
         private static readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
-        private static readonly Dictionary<string, LibraryOptions> _libraryOptions = new Dictionary<string, LibraryOptions>();
+        private static readonly Dictionary<string, LibraryOptions> _libraryOptions = new();
         private bool _requiresRefresh;
 
         /// <summary>

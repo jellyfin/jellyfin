@@ -258,10 +258,8 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 {
                     if (!reader.IsEmptyElement)
                     {
-                        using (var subtree = reader.ReadSubtree())
-                        {
-                            FetchFromTaglinesNode(subtree, item);
-                        }
+                        using var subtree = reader.ReadSubtree();
+                        FetchFromTaglinesNode(subtree, item);
                     }
                     else
                     {
@@ -275,10 +273,8 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 {
                     if (!reader.IsEmptyElement)
                     {
-                        using (var subtree = reader.ReadSubtree())
-                        {
-                            FetchFromCountriesNode(subtree);
-                        }
+                        using var subtree = reader.ReadSubtree();
+                        FetchFromCountriesNode(subtree);
                     }
                     else
                     {
@@ -724,14 +720,12 @@ namespace MediaBrowser.LocalMetadata.Parsers
                                 continue;
                             }
 
-                            using (var subReader = reader.ReadSubtree())
-                            {
-                                var child = GetShare(subReader);
+                            using var subReader = reader.ReadSubtree();
+                            var child = GetShare(subReader);
 
-                                if (child is not null)
-                                {
-                                    list.Add(child);
-                                }
+                            if (child is not null)
+                            {
+                                list.Add(child);
                             }
 
                             break;
@@ -936,17 +930,15 @@ namespace MediaBrowser.LocalMetadata.Parsers
                                 continue;
                             }
 
-                            using (var subtree = reader.ReadSubtree())
+                            using var subtree = reader.ReadSubtree();
+                            foreach (var person in GetPersonsFromXmlNode(subtree))
                             {
-                                foreach (var person in GetPersonsFromXmlNode(subtree))
+                                if (string.IsNullOrWhiteSpace(person.Name))
                                 {
-                                    if (string.IsNullOrWhiteSpace(person.Name))
-                                    {
-                                        continue;
-                                    }
-
-                                    item.AddPerson(person);
+                                    continue;
                                 }
+
+                                item.AddPerson(person);
                             }
 
                             break;

@@ -58,12 +58,7 @@ namespace Jellyfin.Api.Auth.FirstTimeSetupPolicy
                 return Task.CompletedTask;
             }
 
-            var user = _userManager.GetUserById(userId);
-            if (user is null)
-            {
-                throw new ResourceNotFoundException();
-            }
-
+            var user = _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException();
             if (user.IsParentalScheduleAllowed())
             {
                 context.Succeed(requirement);

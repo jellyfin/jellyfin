@@ -7,7 +7,7 @@ namespace MediaBrowser.Model.Dlna
 {
     public static class ResolutionNormalizer
     {
-        private static readonly ResolutionConfiguration[] Configurations =
+        private static readonly ResolutionConfiguration[] _configurations =
             new[]
             {
                 new ResolutionConfiguration(426, 320000),
@@ -61,7 +61,7 @@ namespace MediaBrowser.Model.Dlna
         {
             ResolutionConfiguration previousOption = null;
 
-            foreach (var config in Configurations)
+            foreach (var config in _configurations)
             {
                 if (outputBitrate <= config.MaxBitrate)
                 {

@@ -1,5 +1,3 @@
-#pragma warning disable CA1040
-
 namespace MediaBrowser.Controller.Net.WebSocketMessages;
 
 /// <summary>

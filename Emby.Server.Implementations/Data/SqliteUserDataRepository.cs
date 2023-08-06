@@ -38,18 +38,17 @@ namespace Emby.Server.Implementations.Data
         {
             base.Initialize();
 
-            using (var connection = GetConnection())
-            {
-                var userDatasTableExists = TableExists(connection, "UserDatas");
-                var userDataTableExists = TableExists(connection, "userdata");
+            using var connection = GetConnection();
+            var userDatasTableExists = TableExists(connection, "UserDatas");
+            var userDataTableExists = TableExists(connection, "userdata");
 
-                var users = userDatasTableExists ? null : _userManager.Users;
+            var users = userDatasTableExists ? null : _userManager.Users;
 
-                connection.RunInTransaction(
-                    db =>
+            connection.RunInTransaction(
+                db =>
+                {
+                    db.ExecuteAll(string.Join(';', new[]
                     {
-                        db.ExecuteAll(string.Join(';', new[]
-                        {
                             "create table if not exists UserDatas (key nvarchar not null, userId INT not null, rating float null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null, AudioStreamIndex INT, SubtitleStreamIndex INT)",
 
                             "drop index if exists idx_userdata",
@@ -63,47 +62,44 @@ namespace Emby.Server.Implementations.Data
                             "create index if not exists UserDatasIndex2 on UserDatas (key, userId, played)",
                             "create index if not exists UserDatasIndex3 on UserDatas (key, userId, playbackPositionTicks)",
                             "create index if not exists UserDatasIndex4 on UserDatas (key, userId, isFavorite)"
-                        }));
+                    }));
 
-                        if (userDataTableExists)
+                    if (userDataTableExists)
+                    {
+                        var existingColumnNames = GetColumnNames(db, "userdata");
+
+                        AddColumn(db, "userdata", "InternalUserId", "int", existingColumnNames);
+                        AddColumn(db, "userdata", "AudioStreamIndex", "int", existingColumnNames);
+                        AddColumn(db, "userdata", "SubtitleStreamIndex", "int", existingColumnNames);
+
+                        if (!userDatasTableExists)
                         {
-                            var existingColumnNames = GetColumnNames(db, "userdata");
+                            ImportUserIds(db, users);
 
-                            AddColumn(db, "userdata", "InternalUserId", "int", existingColumnNames);
-                            AddColumn(db, "userdata", "AudioStreamIndex", "int", existingColumnNames);
-                            AddColumn(db, "userdata", "SubtitleStreamIndex", "int", existingColumnNames);
-
-                            if (!userDatasTableExists)
-                            {
-                                ImportUserIds(db, users);
-
-                                db.ExecuteAll("INSERT INTO UserDatas (key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex) SELECT key, InternalUserId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex from userdata where InternalUserId not null");
-                            }
+                            db.ExecuteAll("INSERT INTO UserDatas (key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex) SELECT key, InternalUserId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex from userdata where InternalUserId not null");
                         }
-                    },
-                    TransactionMode);
-            }
+                    }
+                },
+                TransactionMode);
         }
 
         private void ImportUserIds(IDatabaseConnection db, IEnumerable<User> users)
         {
             var userIdsWithUserData = GetAllUserIdsWithUserData(db);
 
-            using (var statement = db.PrepareStatement("update userdata set InternalUserId=@InternalUserId where UserId=@UserId"))
+            using var statement = db.PrepareStatement("update userdata set InternalUserId=@InternalUserId where UserId=@UserId");
+            foreach (var user in users)
             {
-                foreach (var user in users)
+                if (!userIdsWithUserData.Contains(user.Id))
                 {
-                    if (!userIdsWithUserData.Contains(user.Id))
-                    {
-                        continue;
-                    }
-
-                    statement.TryBind("@UserId", user.Id);
-                    statement.TryBind("@InternalUserId", user.InternalId);
-
-                    statement.MoveNext();
-                    statement.Reset();
+                    continue;
                 }
+
+                statement.TryBind("@UserId", user.Id);
+                statement.TryBind("@InternalUserId", user.InternalId);
+
+                statement.MoveNext();
+                statement.Reset();
             }
         }
 
@@ -168,67 +164,63 @@ namespace Emby.Server.Implementations.Data
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var connection = GetConnection())
-            {
-                connection.RunInTransaction(
-                    db =>
-                    {
-                        SaveUserData(db, internalUserId, key, userData);
-                    },
-                    TransactionMode);
-            }
+            using var connection = GetConnection();
+            connection.RunInTransaction(
+                db =>
+                {
+                    SaveUserData(db, internalUserId, key, userData);
+                },
+                TransactionMode);
         }
 
         private static void SaveUserData(IDatabaseConnection db, long internalUserId, string key, UserItemData userData)
         {
-            using (var statement = db.PrepareStatement("replace into UserDatas (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex)"))
+            using var statement = db.PrepareStatement("replace into UserDatas (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex)");
+            statement.TryBind("@userId", internalUserId);
+            statement.TryBind("@key", key);
+
+            if (userData.Rating.HasValue)
             {
-                statement.TryBind("@userId", internalUserId);
-                statement.TryBind("@key", key);
-
-                if (userData.Rating.HasValue)
-                {
-                    statement.TryBind("@rating", userData.Rating.Value);
-                }
-                else
-                {
-                    statement.TryBindNull("@rating");
-                }
-
-                statement.TryBind("@played", userData.Played);
-                statement.TryBind("@playCount", userData.PlayCount);
-                statement.TryBind("@isFavorite", userData.IsFavorite);
-                statement.TryBind("@playbackPositionTicks", userData.PlaybackPositionTicks);
-
-                if (userData.LastPlayedDate.HasValue)
-                {
-                    statement.TryBind("@lastPlayedDate", userData.LastPlayedDate.Value.ToDateTimeParamValue());
-                }
-                else
-                {
-                    statement.TryBindNull("@lastPlayedDate");
-                }
-
-                if (userData.AudioStreamIndex.HasValue)
-                {
-                    statement.TryBind("@AudioStreamIndex", userData.AudioStreamIndex.Value);
-                }
-                else
-                {
-                    statement.TryBindNull("@AudioStreamIndex");
-                }
-
-                if (userData.SubtitleStreamIndex.HasValue)
-                {
-                    statement.TryBind("@SubtitleStreamIndex", userData.SubtitleStreamIndex.Value);
-                }
-                else
-                {
-                    statement.TryBindNull("@SubtitleStreamIndex");
-                }
-
-                statement.MoveNext();
+                statement.TryBind("@rating", userData.Rating.Value);
             }
+            else
+            {
+                statement.TryBindNull("@rating");
+            }
+
+            statement.TryBind("@played", userData.Played);
+            statement.TryBind("@playCount", userData.PlayCount);
+            statement.TryBind("@isFavorite", userData.IsFavorite);
+            statement.TryBind("@playbackPositionTicks", userData.PlaybackPositionTicks);
+
+            if (userData.LastPlayedDate.HasValue)
+            {
+                statement.TryBind("@lastPlayedDate", userData.LastPlayedDate.Value.ToDateTimeParamValue());
+            }
+            else
+            {
+                statement.TryBindNull("@lastPlayedDate");
+            }
+
+            if (userData.AudioStreamIndex.HasValue)
+            {
+                statement.TryBind("@AudioStreamIndex", userData.AudioStreamIndex.Value);
+            }
+            else
+            {
+                statement.TryBindNull("@AudioStreamIndex");
+            }
+
+            if (userData.SubtitleStreamIndex.HasValue)
+            {
+                statement.TryBind("@SubtitleStreamIndex", userData.SubtitleStreamIndex.Value);
+            }
+            else
+            {
+                statement.TryBindNull("@SubtitleStreamIndex");
+            }
+
+            statement.MoveNext();
         }
 
         /// <summary>
@@ -238,18 +230,16 @@ namespace Emby.Server.Implementations.Data
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var connection = GetConnection())
-            {
-                connection.RunInTransaction(
-                    db =>
+            using var connection = GetConnection();
+            connection.RunInTransaction(
+                db =>
+                {
+                    foreach (var userItemData in userDataList)
                     {
-                        foreach (var userItemData in userDataList)
-                        {
-                            SaveUserData(db, internalUserId, userItemData.Key, userItemData);
-                        }
-                    },
-                    TransactionMode);
-            }
+                        SaveUserData(db, internalUserId, userItemData.Key, userItemData);
+                    }
+                },
+                TransactionMode);
         }
 
         /// <summary>
@@ -272,21 +262,17 @@ namespace Emby.Server.Implementations.Data
 
             ArgumentException.ThrowIfNullOrEmpty(key);
 
-            using (var connection = GetConnection(true))
+            using var connection = GetConnection(true);
+            using var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where key =@Key and userId=@UserId");
+            statement.TryBind("@UserId", userId);
+            statement.TryBind("@Key", key);
+
+            foreach (var row in statement.ExecuteQuery())
             {
-                using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where key =@Key and userId=@UserId"))
-                {
-                    statement.TryBind("@UserId", userId);
-                    statement.TryBind("@Key", key);
-
-                    foreach (var row in statement.ExecuteQuery())
-                    {
-                        return ReadRow(row);
-                    }
-                }
-
-                return null;
+                return ReadRow(row);
             }
+
+            return null;
         }
 
         public UserItemData GetUserData(long userId, List<string> keys)
@@ -317,14 +303,12 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection())
             {
-                using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where userId=@UserId"))
-                {
-                    statement.TryBind("@UserId", userId);
+                using var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where userId=@UserId");
+                statement.TryBind("@UserId", userId);
 
-                    foreach (var row in statement.ExecuteQuery())
-                    {
-                        list.Add(ReadRow(row));
-                    }
+                foreach (var row in statement.ExecuteQuery())
+                {
+                    list.Add(ReadRow(row));
                 }
             }
 
@@ -338,9 +322,10 @@ namespace Emby.Server.Implementations.Data
         /// <returns>The user item data.</returns>
         private UserItemData ReadRow(IReadOnlyList<ResultSetValue> reader)
         {
-            var userData = new UserItemData();
-
-            userData.Key = reader[0].ToString();
+            var userData = new UserItemData
+            {
+                Key = reader[0].ToString()
+            };
             // userData.UserId = reader[1].ReadGuidFromBlob();
 
             if (reader.TryGetDouble(2, out var rating))

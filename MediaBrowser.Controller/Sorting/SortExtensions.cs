@@ -9,7 +9,7 @@ namespace MediaBrowser.Controller.Sorting
 {
     public static class SortExtensions
     {
-        private static readonly AlphanumericComparator _comparer = new AlphanumericComparator();
+        private static readonly AlphanumericComparator _comparer = new();
 
         public static IEnumerable<T> OrderByString<T>(this IEnumerable<T> list, Func<T, string> getName)
         {

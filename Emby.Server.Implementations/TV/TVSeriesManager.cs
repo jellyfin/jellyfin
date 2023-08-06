@@ -33,13 +33,7 @@ namespace Emby.Server.Implementations.TV
 
         public QueryResult<BaseItem> GetNextUp(NextUpQuery query, DtoOptions options)
         {
-            var user = _userManager.GetUserById(query.UserId);
-
-            if (user is null)
-            {
-                throw new ArgumentException("User not found");
-            }
-
+            var user = _userManager.GetUserById(query.UserId) ?? throw new ArgumentException("User not found");
             string? presentationUniqueKey = null;
             if (query.SeriesId.HasValue && !query.SeriesId.Value.Equals(default))
             {
@@ -82,13 +76,7 @@ namespace Emby.Server.Implementations.TV
 
         public QueryResult<BaseItem> GetNextUp(NextUpQuery request, BaseItem[] parentsFolders, DtoOptions options)
         {
-            var user = _userManager.GetUserById(request.UserId);
-
-            if (user is null)
-            {
-                throw new ArgumentException("User not found");
-            }
-
+            var user = _userManager.GetUserById(request.UserId) ?? throw new ArgumentException("User not found");
             string? presentationUniqueKey = null;
             int? limit = null;
             if (request.SeriesId.HasValue && !request.SeriesId.Value.Equals(default))
@@ -197,13 +185,12 @@ namespace Emby.Server.Implementations.TV
                 {
                     Fields = new[] { ItemFields.SortName },
                     EnableImages = false
-                }
+                },
+                // If rewatching is enabled, sort first by date played and then by season and episode numbers
+                OrderBy = rewatching
+                    ? new[] { (ItemSortBy.DatePlayed, SortOrder.Descending), (ItemSortBy.ParentIndexNumber, SortOrder.Descending), (ItemSortBy.IndexNumber, SortOrder.Descending) }
+                    : new[] { (ItemSortBy.ParentIndexNumber, SortOrder.Descending), (ItemSortBy.IndexNumber, SortOrder.Descending) }
             };
-
-            // If rewatching is enabled, sort first by date played and then by season and episode numbers
-            lastQuery.OrderBy = rewatching
-                ? new[] { (ItemSortBy.DatePlayed, SortOrder.Descending), (ItemSortBy.ParentIndexNumber, SortOrder.Descending), (ItemSortBy.IndexNumber, SortOrder.Descending) }
-                : new[] { (ItemSortBy.ParentIndexNumber, SortOrder.Descending), (ItemSortBy.IndexNumber, SortOrder.Descending) };
 
             var lastWatchedEpisode = _libraryManager.GetItemList(lastQuery).Cast<Episode>().FirstOrDefault();
 

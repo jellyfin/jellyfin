@@ -19,10 +19,8 @@ namespace MediaBrowser.Common.Extensions
         /// <exception cref="InvalidOperationException">If <see cref="Process.EnableRaisingEvents"/> is not set to true for the process.</exception>
         public static async Task<bool> WaitForExitAsync(this Process process, TimeSpan timeout)
         {
-            using (var cancelTokenSource = new CancellationTokenSource(timeout))
-            {
-                return await WaitForExitAsync(process, cancelTokenSource.Token).ConfigureAwait(false);
-            }
+            using var cancelTokenSource = new CancellationTokenSource(timeout);
+            return await WaitForExitAsync(process, cancelTokenSource.Token).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -49,10 +47,8 @@ namespace MediaBrowser.Common.Extensions
             }
 
             // Register with the cancellation token then await
-            using (var cancelRegistration = cancelToken.Register(() => tcs.TrySetResult(process.HasExitedSafe())))
-            {
-                return await tcs.Task.ConfigureAwait(false);
-            }
+            using var cancelRegistration = cancelToken.Register(() => tcs.TrySetResult(process.HasExitedSafe()));
+            return await tcs.Task.ConfigureAwait(false);
         }
 
         /// <summary>

@@ -23,13 +23,13 @@ namespace MediaBrowser.Controller.SyncPlay.Queue
         /// The sorted playlist.
         /// </summary>
         /// <value>The sorted playlist, or play queue of the group.</value>
-        private List<SyncPlayQueueItem> _sortedPlaylist = new List<SyncPlayQueueItem>();
+        private List<SyncPlayQueueItem> _sortedPlaylist = new();
 
         /// <summary>
         /// The shuffled playlist.
         /// </summary>
         /// <value>The shuffled playlist, or play queue of the group.</value>
-        private List<SyncPlayQueueItem> _shuffledPlaylist = new List<SyncPlayQueueItem>();
+        private List<SyncPlayQueueItem> _shuffledPlaylist = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PlayQueueManager" /> class.

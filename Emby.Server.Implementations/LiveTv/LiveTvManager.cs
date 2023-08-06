@@ -241,9 +241,9 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 info = await service.GetChannelStream(channel.ExternalId, mediaSourceId, cancellationToken).ConfigureAwait(false);
                 var openedId = info.Id;
-                Func<Task> closeFn = () => service.CloseLiveStream(openedId, CancellationToken.None);
+                Task CloseFn() => service.CloseLiveStream(openedId, CancellationToken.None);
 
-                liveStream = new ExclusiveLiveStream(info, closeFn);
+                liveStream = new ExclusiveLiveStream(info, CloseFn);
 
                 var startTime = DateTime.UtcNow;
                 await liveStream.Open(cancellationToken).ConfigureAwait(false);
@@ -431,10 +431,7 @@ namespace Emby.Server.Implementations.LiveTv
             var forceUpdate = false;
 
             var id = _tvDtoService.GetInternalChannelId(serviceName, channelInfo.Id);
-
-            var item = _libraryManager.GetItemById(id) as LiveTvChannel;
-
-            if (item is null)
+            if (_libraryManager.GetItemById(id) is not LiveTvChannel item)
             {
                 item = new LiveTvChannel
                 {
@@ -1699,13 +1696,7 @@ namespace Emby.Server.Implementations.LiveTv
 
         public async Task CancelTimer(string id)
         {
-            var timer = await GetTimer(id, CancellationToken.None).ConfigureAwait(false);
-
-            if (timer is null)
-            {
-                throw new ResourceNotFoundException(string.Format(CultureInfo.InvariantCulture, "Timer with Id {0} not found", id));
-            }
-
+            var timer = await GetTimer(id, CancellationToken.None).ConfigureAwait(false) ?? throw new ResourceNotFoundException(string.Format(CultureInfo.InvariantCulture, "Timer with Id {0} not found", id));
             var service = GetService(timer.ServiceName);
 
             await service.CancelTimerAsync(timer.ExternalId, CancellationToken.None).ConfigureAwait(false);
@@ -1718,13 +1709,7 @@ namespace Emby.Server.Implementations.LiveTv
 
         public async Task CancelSeriesTimer(string id)
         {
-            var timer = await GetSeriesTimer(id, CancellationToken.None).ConfigureAwait(false);
-
-            if (timer is null)
-            {
-                throw new ResourceNotFoundException(string.Format(CultureInfo.InvariantCulture, "SeriesTimer with Id {0} not found", id));
-            }
-
+            var timer = await GetSeriesTimer(id, CancellationToken.None).ConfigureAwait(false) ?? throw new ResourceNotFoundException(string.Format(CultureInfo.InvariantCulture, "SeriesTimer with Id {0} not found", id));
             var service = GetService(timer.ServiceName);
 
             await service.CancelSeriesTimerAsync(timer.ExternalId, CancellationToken.None).ConfigureAwait(false);
@@ -1833,7 +1818,7 @@ namespace Emby.Server.Implementations.LiveTv
                     {
                         var internalChannelId = _tvDtoService.GetInternalChannelId(i.Item2.Name, i.Item1.ChannelId);
                         var channel = _libraryManager.GetItemById(internalChannelId);
-                        channelName = channel is null ? null : channel.Name;
+                        channelName = channel?.Name;
                     }
 
                     return _tvDtoService.GetSeriesTimerInfoDto(i.Item1, i.Item2, channelName);
@@ -2144,13 +2129,7 @@ namespace Emby.Server.Implementations.LiveTv
         {
             var parts = id.Split('_', 2);
 
-            var service = _services.FirstOrDefault(i => string.Equals(i.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture), parts[0], StringComparison.OrdinalIgnoreCase));
-
-            if (service is null)
-            {
-                throw new ArgumentException("Service not found.");
-            }
-
+            var service = _services.FirstOrDefault(i => string.Equals(i.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture), parts[0], StringComparison.OrdinalIgnoreCase)) ?? throw new ArgumentException("Service not found.");
             return service.ResetTuner(parts[1], cancellationToken);
         }
 
@@ -2175,13 +2154,7 @@ namespace Emby.Server.Implementations.LiveTv
         {
             info = JsonSerializer.Deserialize<TunerHostInfo>(JsonSerializer.SerializeToUtf8Bytes(info));
 
-            var provider = _tunerHosts.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
-
-            if (provider is null)
-            {
-                throw new ResourceNotFoundException();
-            }
-
+            var provider = _tunerHosts.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase)) ?? throw new ResourceNotFoundException();
             if (provider is IConfigurableTunerHost configurable)
             {
                 await configurable.Validate(info).ConfigureAwait(false);
@@ -2219,17 +2192,11 @@ namespace Emby.Server.Implementations.LiveTv
             // ServerConfiguration.SaveConfiguration crashes during xml serialization for AddListingProvider
             info = JsonSerializer.Deserialize<ListingsProviderInfo>(JsonSerializer.SerializeToUtf8Bytes(info));
 
-            var provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
-
-            if (provider is null)
-            {
-                throw new ResourceNotFoundException(
+            var provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase)) ?? throw new ResourceNotFoundException(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         "Couldn't find provider of type: '{0}'",
                         info.Type));
-            }
-
             await provider.Validate(info, validateLogin, validateListings).ConfigureAwait(false);
 
             LiveTvOptions config = GetConfiguration();
@@ -2331,26 +2298,14 @@ namespace Emby.Server.Implementations.LiveTv
 
             if (string.IsNullOrWhiteSpace(providerId))
             {
-                var provider = _listingProviders.FirstOrDefault(i => string.Equals(providerType, i.Type, StringComparison.OrdinalIgnoreCase));
-
-                if (provider is null)
-                {
-                    throw new ResourceNotFoundException();
-                }
-
+                var provider = _listingProviders.FirstOrDefault(i => string.Equals(providerType, i.Type, StringComparison.OrdinalIgnoreCase)) ?? throw new ResourceNotFoundException();
                 return provider.GetLineups(null, country, location);
             }
             else
             {
                 var info = config.ListingProviders.FirstOrDefault(i => string.Equals(i.Id, providerId, StringComparison.OrdinalIgnoreCase));
 
-                var provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
-
-                if (provider is null)
-                {
-                    throw new ResourceNotFoundException();
-                }
-
+                var provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase)) ?? throw new ResourceNotFoundException();
                 return provider.GetLineups(info, country, location);
             }
         }

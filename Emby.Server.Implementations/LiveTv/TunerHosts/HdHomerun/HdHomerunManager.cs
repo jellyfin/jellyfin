@@ -231,13 +231,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             int offset = WriteHeaderAndPayload(buffer, byteName);
 
             buffer[offset++] = GetSetValue;
-            offset += WriteNullTerminatedString(buffer.Slice(offset), value);
+            offset += WriteNullTerminatedString(buffer[offset..], value);
 
             if (lockkey.HasValue)
             {
                 buffer[offset++] = GetSetLockkey;
                 buffer[offset++] = 4;
-                BinaryPrimitives.WriteUInt32BigEndian(buffer.Slice(offset), lockkey.Value);
+                BinaryPrimitives.WriteUInt32BigEndian(buffer[offset..], lockkey.Value);
                 offset += 4;
             }
 
@@ -246,7 +246,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         internal static int WriteNullTerminatedString(Span<byte> buffer, ReadOnlySpan<char> payload)
         {
-            int len = Encoding.UTF8.GetBytes(payload, buffer.Slice(1)) + 1;
+            int len = Encoding.UTF8.GetBytes(payload, buffer[1..]) + 1;
 
             // TODO: variable length: this can be 2 bytes if len > 127
             // Write length in front of value
@@ -270,7 +270,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             buffer[offset++] = GetSetName;
 
             // Payload length + data
-            int strLen = WriteNullTerminatedString(buffer.Slice(offset), payload);
+            int strLen = WriteNullTerminatedString(buffer[offset..], payload);
             offset += strLen;
 
             return offset;
@@ -279,11 +279,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private static int FinishPacket(Span<byte> buffer, int offset)
         {
             // Payload length
-            BinaryPrimitives.WriteUInt16BigEndian(buffer.Slice(2), (ushort)(offset - 4));
+            BinaryPrimitives.WriteUInt16BigEndian(buffer[2..], (ushort)(offset - 4));
 
             // calculate crc and insert at the end of the message
-            var crc = Crc32.Compute(buffer.Slice(0, offset));
-            BinaryPrimitives.WriteUInt32LittleEndian(buffer.Slice(offset), crc);
+            var crc = Crc32.Compute(buffer[..offset]);
+            BinaryPrimitives.WriteUInt32LittleEndian(buffer[offset..], crc);
 
             return offset + 4;
         }
@@ -314,7 +314,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 return false;
             }
 
-            var msgLength = BinaryPrimitives.ReadUInt16BigEndian(buffer.Slice(2));
+            var msgLength = BinaryPrimitives.ReadUInt16BigEndian(buffer[2..]);
             if (buffer.Length != 2 + 2 + 4 + msgLength)
             {
                 return false;

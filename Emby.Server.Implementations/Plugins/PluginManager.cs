@@ -147,9 +147,7 @@ namespace Emby.Server.Implementations.Plugins
                         loadedAll = false;
                         break;
                     }
-#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         _logger.LogError(ex, "Failed to load assembly {Path}. Unknown exception was thrown. Disabling plugin", file);
                         ChangePluginState(plugin, PluginStatus.Malfunctioned);
@@ -176,9 +174,7 @@ namespace Emby.Server.Implementations.Plugins
                         ChangePluginState(plugin, PluginStatus.NotSupported);
                         break;
                     }
-#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         _logger.LogError(ex, "Failed to load assembly {Path}. Unknown exception was thrown. Disabling plugin", assembly.Location);
                         ChangePluginState(plugin, PluginStatus.Malfunctioned);
@@ -235,9 +231,7 @@ namespace Emby.Server.Implementations.Plugins
                     var instance = (IPluginServiceRegistrator?)Activator.CreateInstance(pluginServiceRegistrator);
                     instance?.RegisterServices(serviceCollection);
                 }
-#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     _logger.LogError(ex, "Error registering plugin services from {Assembly}.", pluginServiceRegistrator.Assembly.FullName);
                     if (ChangePluginState(plugin, PluginStatus.Malfunctioned))
@@ -598,9 +592,7 @@ namespace Emby.Server.Implementations.Plugins
 
                 return instance;
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 _logger.LogError(ex, "Error creating {Type}", type.FullName);
                 if (plugin is not null)
@@ -647,9 +639,7 @@ namespace Emby.Server.Implementations.Plugins
                 Directory.Delete(plugin.Path, true);
                 _logger.LogDebug("Deleted {Path}", plugin.Path);
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 return false;
             }
@@ -687,7 +677,7 @@ namespace Emby.Server.Implementations.Plugins
                         targetAbi = _minimumVersion;
                     }
 
-                    if (!Version.TryParse(manifest.Version, out version))
+                    if (!Version.TryParse(manifest.Version, out _))
                     {
                         manifest.Version = _minimumVersion.ToString();
                     }
@@ -787,9 +777,7 @@ namespace Emby.Server.Implementations.Plugins
                         Directory.Delete(path, true);
                         cleaned = true;
                     }
-#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception e)
-#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         _logger.LogWarning(e, "Unable to delete {Path}", path);
                     }

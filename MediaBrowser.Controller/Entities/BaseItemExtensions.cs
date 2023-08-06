@@ -95,10 +95,7 @@ namespace MediaBrowser.Controller.Entities
                 }
 
                 var p = destProps.Find(x => x.Name == sourceProp.Name);
-                if (p is not null)
-                {
-                    p.SetValue(dest, v);
-                }
+                p?.SetValue(dest, v);
             }
         }
 

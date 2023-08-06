@@ -305,9 +305,7 @@ namespace Emby.Server.Implementations.LiveTv
                 DtoOptions = new DtoOptions(false)
             }).FirstOrDefault();
 
-            if (program is null)
-            {
-                program = _libraryManager.GetItemList(new InternalItemsQuery
+            program ??= _libraryManager.GetItemList(new InternalItemsQuery
                 {
                     IncludeItemTypes = new[] { BaseItemKind.LiveTvProgram },
                     ExternalSeriesId = programSeriesId,
@@ -316,7 +314,6 @@ namespace Emby.Server.Implementations.LiveTv
                     DtoOptions = new DtoOptions(false),
                     Name = string.IsNullOrEmpty(programSeriesId) ? seriesName : null
                 }).FirstOrDefault();
-            }
 
             if (program is not null)
             {

@@ -2417,7 +2417,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string GetAudioFilterParam(EncodingJobInfo state, EncodingOptions encodingOptions)
         {
-            var channels = state.OutputAudioChannels;
+            var channels = state._outputAudioChannels;
 
             var filters = new List<string>();
 
@@ -6168,14 +6168,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return args;
             }
 
-            var channels = state.OutputAudioChannels;
+            var channels = state._outputAudioChannels;
 
             if (channels.HasValue && ((channels.Value != 2 && state.AudioStream.Channels <= 5) || encodingOptions.DownMixStereoAlgorithm == DownMixStereoAlgorithms.None))
             {
                 args += " -ac " + channels.Value;
             }
 
-            var bitrate = state.OutputAudioBitrate;
+            var bitrate = state._outputAudioBitrate;
             if (bitrate.HasValue && !LosslessAudioCodecs.Contains(codec, StringComparison.OrdinalIgnoreCase))
             {
                 var vbrParam = GetAudioVbrModeParam(codec, bitrate.Value / (channels ?? 2));
@@ -6203,8 +6203,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             var audioTranscodeParams = new List<string>();
 
-            var bitrate = state.OutputAudioBitrate;
-            var channels = state.OutputAudioChannels;
+            var bitrate = state._outputAudioBitrate;
+            var channels = state._outputAudioChannels;
             var outputCodec = state.OutputAudioCodec;
 
             if (bitrate.HasValue && !LosslessAudioCodecs.Contains(outputCodec, StringComparison.OrdinalIgnoreCase))
@@ -6222,7 +6222,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (channels.HasValue)
             {
-                audioTranscodeParams.Add("-ac " + state.OutputAudioChannels.Value.ToString(CultureInfo.InvariantCulture));
+                audioTranscodeParams.Add("-ac " + state._outputAudioChannels.Value.ToString(CultureInfo.InvariantCulture));
             }
 
             if (!string.IsNullOrEmpty(outputCodec))

@@ -33,12 +33,7 @@ namespace Jellyfin.Api.Auth.SyncPlayAccessPolicy
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, SyncPlayAccessRequirement requirement)
         {
             var userId = context.User.GetUserId();
-            var user = _userManager.GetUserById(userId);
-            if (user is null)
-            {
-                throw new ResourceNotFoundException();
-            }
-
+            var user = _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException();
             if (requirement.RequiredAccess == SyncPlayAccessRequirementType.HasAccess)
             {
                 if (user.SyncPlayAccess is SyncPlayUserAccessType.CreateAndJoinGroups or SyncPlayUserAccessType.JoinGroups

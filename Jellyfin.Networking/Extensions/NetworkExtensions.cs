@@ -151,7 +151,7 @@ public static partial class NetworkExtensions
             int i = str.IndexOf('%', StringComparison.Ordinal);
             if (i != -1)
             {
-                str = str.Substring(0, i);
+                str = str[..i];
             }
 
             return $"[{str}]";

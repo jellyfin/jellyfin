@@ -8,7 +8,7 @@ namespace MediaBrowser.MediaEncoding.BdInfo;
 /// </summary>
 public class BdInfoFileInfo : BDInfo.IO.IFileInfo
 {
-    private FileSystemMetadata _impl;
+    private readonly FileSystemMetadata _impl;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BdInfoFileInfo" /> class.

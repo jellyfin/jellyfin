@@ -50,8 +50,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
             if (index != -1)
             {
-                xml = xmlFile.Substring(0, index + srch.Length);
-                xmlFile = xmlFile.Substring(index + srch.Length);
+                xml = xmlFile[..(index + srch.Length)];
+                xmlFile = xmlFile[(index + srch.Length)..];
             }
 
             // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
@@ -84,18 +84,16 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 // This is needed because XBMC metadata uses multiple episodedetails blocks instead of episodenumberend tag
                 while ((index = xmlFile.IndexOf(srch, StringComparison.OrdinalIgnoreCase)) != -1)
                 {
-                    xml = xmlFile.Substring(0, index + srch.Length);
-                    xmlFile = xmlFile.Substring(index + srch.Length);
+                    xml = xmlFile[..(index + srch.Length)];
+                    xmlFile = xmlFile[(index + srch.Length)..];
 
-                    using (var stringReader = new StringReader(xml))
-                    using (var reader = XmlReader.Create(stringReader, settings))
+                    using var stringReader = new StringReader(xml);
+                    using var reader = XmlReader.Create(stringReader, settings);
+                    reader.MoveToContent();
+
+                    if (reader.ReadToDescendant("episode") && int.TryParse(reader.ReadElementContentAsString(), out var num))
                     {
-                        reader.MoveToContent();
-
-                        if (reader.ReadToDescendant("episode") && int.TryParse(reader.ReadElementContentAsString(), out var num))
-                        {
-                            item.Item.IndexNumberEnd = Math.Max(num, item.Item.IndexNumberEnd ?? num);
-                        }
+                        item.Item.IndexNumberEnd = Math.Max(num, item.Item.IndexNumberEnd ?? num);
                     }
                 }
             }

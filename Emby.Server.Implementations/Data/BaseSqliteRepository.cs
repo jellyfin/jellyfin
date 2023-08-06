@@ -125,10 +125,8 @@ namespace Emby.Server.Implementations.Data
             ReadConnections = new ConnectionPool(ReadConnectionsCount, CreateReadConnection);
 
             // Configuration and pragmas can affect VACUUM so it needs to be last.
-            using (var connection = GetConnection())
-            {
-                connection.Execute("VACUUM");
-            }
+            using var connection = GetConnection();
+            connection.Execute("VACUUM");
         }
 
         protected ManagedConnection GetConnection(bool readOnly = false)
@@ -224,14 +222,12 @@ namespace Emby.Server.Implementations.Data
             return connection.RunInTransaction(
                 db =>
                 {
-                    using (var statement = PrepareStatement(db, "select DISTINCT tbl_name from sqlite_master"))
+                    using var statement = PrepareStatement(db, "select DISTINCT tbl_name from sqlite_master");
+                    foreach (var row in statement.ExecuteQuery())
                     {
-                        foreach (var row in statement.ExecuteQuery())
+                        if (string.Equals(name, row.GetString(0), StringComparison.OrdinalIgnoreCase))
                         {
-                            if (string.Equals(name, row.GetString(0), StringComparison.OrdinalIgnoreCase))
-                            {
-                                return true;
-                            }
+                            return true;
                         }
                     }
 

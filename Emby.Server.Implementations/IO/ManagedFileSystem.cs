@@ -17,7 +17,7 @@ namespace Emby.Server.Implementations.IO
     {
         private readonly ILogger<ManagedFileSystem> _logger;
 
-        private readonly List<IShortcutHandler> _shortcutHandlers = new List<IShortcutHandler>();
+        private readonly List<IShortcutHandler> _shortcutHandlers = new();
         private readonly string _tempPath;
         private static readonly bool _isEnvironmentCaseInsensitive = OperatingSystem.IsWindows();
         private static readonly char[] _invalidPathCharacters =
@@ -109,7 +109,7 @@ namespace Emby.Server.Implementations.IO
             // relative path
             if (firstChar == '\\')
             {
-                filePath = filePath.Substring(1);
+                filePath = filePath[1..];
             }
 
             try
@@ -246,10 +246,8 @@ namespace Emby.Server.Implementations.IO
                     {
                         try
                         {
-                            using (var fileHandle = File.OpenHandle(fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                            {
-                                result.Length = RandomAccess.GetLength(fileHandle);
-                            }
+                            using var fileHandle = File.OpenHandle(fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                            result.Length = RandomAccess.GetLength(fileHandle);
                         }
                         catch (FileNotFoundException ex)
                         {

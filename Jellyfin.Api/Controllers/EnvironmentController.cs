@@ -170,7 +170,7 @@ public class EnvironmentController : BaseJellyfinApiController
 
             if (index != -1 && path.IndexOf(UncSeparator, StringComparison.OrdinalIgnoreCase) == 0)
             {
-                parent = path.Substring(0, index);
+                parent = path[..index];
 
                 if (string.IsNullOrWhiteSpace(parent.TrimStart(UncSeparator)))
                 {

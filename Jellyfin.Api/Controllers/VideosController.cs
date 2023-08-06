@@ -204,9 +204,7 @@ public class VideosController : BaseJellyfinApiController
         }
 
         var primaryVersion = items.FirstOrDefault(i => i.MediaSourceCount > 1 && string.IsNullOrEmpty(i.PrimaryVersionId));
-        if (primaryVersion is null)
-        {
-            primaryVersion = items
+        primaryVersion ??= items
                 .OrderBy(i =>
                 {
                     if (i.Video3DFormat.HasValue || i.VideoType != VideoType.VideoFile)
@@ -218,7 +216,6 @@ public class VideosController : BaseJellyfinApiController
                 })
                 .ThenByDescending(i => i.GetDefaultVideoStream()?.Width ?? 0)
                 .First();
-        }
 
         var alternateVersionsOfPrimary = primaryVersion.LinkedAlternateVersions.ToList();
 

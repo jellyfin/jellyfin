@@ -11,7 +11,7 @@ namespace Jellyfin.Server.Migrations.Routines
     {
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
-        private readonly RepositoryInfo _defaultRepositoryInfo = new RepositoryInfo
+        private readonly RepositoryInfo _defaultRepositoryInfo = new()
         {
             Name = "Jellyfin Stable",
             Url = "https://repo.jellyfin.org/releases/plugin/manifest-stable.json"

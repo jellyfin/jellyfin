@@ -31,8 +31,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IMediaSourceManager _mediaSourceManager;
 
-        private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks =
-            new ConcurrentDictionary<string, SemaphoreSlim>();
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks = new();
 
         private bool _disposed = false;
 
@@ -61,20 +60,10 @@ namespace MediaBrowser.MediaEncoding.Attachments
             }
 
             var mediaSources = await _mediaSourceManager.GetPlaybackMediaSources(item, null, true, false, cancellationToken).ConfigureAwait(false);
-            var mediaSource = mediaSources
-                .FirstOrDefault(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
-            if (mediaSource is null)
-            {
-                throw new ResourceNotFoundException($"MediaSource {mediaSourceId} not found");
-            }
-
-            var mediaAttachment = mediaSource.MediaAttachments
-                .FirstOrDefault(i => i.Index == attachmentStreamIndex);
-            if (mediaAttachment is null)
-            {
-                throw new ResourceNotFoundException($"MediaSource {mediaSourceId} has no attachment with stream index {attachmentStreamIndex}");
-            }
-
+            var mediaSource = mediaSources.FirstOrDefault(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase))
+                ?? throw new ResourceNotFoundException($"MediaSource {mediaSourceId} not found");
+            var mediaAttachment = mediaSource.MediaAttachments.FirstOrDefault(i => i.Index == attachmentStreamIndex)
+                ?? throw new ResourceNotFoundException($"MediaSource {mediaSourceId} has no attachment with stream index {attachmentStreamIndex}");
             var attachmentStream = await GetAttachmentStream(mediaSource, mediaAttachment, cancellationToken)
                     .ConfigureAwait(false);
 
@@ -391,7 +380,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 filename = (mediaPath + attachmentStreamIndex.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("D", CultureInfo.InvariantCulture);
             }
 
-            var prefix = filename.Substring(0, 1);
+            var prefix = filename[..1];
             return Path.Combine(_appPaths.DataPath, "attachments", prefix, filename);
         }
 

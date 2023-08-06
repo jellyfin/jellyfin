@@ -28,10 +28,9 @@ namespace Emby.Server.Implementations.Sorting
 
             ArgumentNullException.ThrowIfNull(y);
 
-            var episode1 = x as Episode;
             var episode2 = y as Episode;
 
-            if (episode1 is null)
+            if (x is not Episode episode1)
             {
                 if (episode2 is null)
                 {

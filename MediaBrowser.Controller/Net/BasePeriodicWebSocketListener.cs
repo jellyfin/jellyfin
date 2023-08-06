@@ -28,19 +28,18 @@ namespace MediaBrowser.Controller.Net
         /// <summary>
         /// The _active connections.
         /// </summary>
-        private readonly List<Tuple<IWebSocketConnection, CancellationTokenSource, TStateType>> _activeConnections =
-            new List<Tuple<IWebSocketConnection, CancellationTokenSource, TStateType>>();
+        private readonly List<Tuple<IWebSocketConnection, CancellationTokenSource, TStateType>> _activeConnections = new();
 
         /// <summary>
         /// The logger.
         /// </summary>
-        protected ILogger<BasePeriodicWebSocketListener<TReturnDataType, TStateType>> Logger;
+        protected ILogger<BasePeriodicWebSocketListener<TReturnDataType, TStateType>> _logger;
 
         protected BasePeriodicWebSocketListener(ILogger<BasePeriodicWebSocketListener<TReturnDataType, TStateType>> logger)
         {
             ArgumentNullException.ThrowIfNull(logger);
 
-            Logger = logger;
+            _logger = logger;
         }
 
         /// <summary>
@@ -105,7 +104,7 @@ namespace MediaBrowser.Controller.Net
 
             var cancellationTokenSource = new CancellationTokenSource();
 
-            Logger.LogDebug("WS {1} begin transmitting to {0}", message.Connection.RemoteEndPoint, GetType().Name);
+            _logger.LogDebug("WS {1} begin transmitting to {0}", message.Connection.RemoteEndPoint, GetType().Name);
 
             var state = new TStateType
             {
@@ -188,7 +187,7 @@ namespace MediaBrowser.Controller.Net
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error sending web socket message {Name}", Type);
+                _logger.LogError(ex, "Error sending web socket message {Name}", Type);
                 DisposeConnection(tuple);
             }
         }
@@ -216,7 +215,7 @@ namespace MediaBrowser.Controller.Net
         /// <param name="connection">The connection.</param>
         private void DisposeConnection(Tuple<IWebSocketConnection, CancellationTokenSource, TStateType> connection)
         {
-            Logger.LogDebug("WS {1} stop transmitting to {0}", connection.Item1.RemoteEndPoint, GetType().Name);
+            _logger.LogDebug("WS {1} stop transmitting to {0}", connection.Item1.RemoteEndPoint, GetType().Name);
 
             // TODO disposing the connection seems to break websockets in subtle ways, so what is the purpose of this function really...
             // connection.Item1.Dispose();
@@ -229,12 +228,12 @@ namespace MediaBrowser.Controller.Net
             catch (ObjectDisposedException ex)
             {
                 // TODO Investigate and properly fix.
-                Logger.LogError(ex, "Object Disposed");
+                _logger.LogError(ex, "Object Disposed");
             }
             catch (Exception ex)
             {
                 // TODO Investigate and properly fix.
-                Logger.LogError(ex, "Error disposing websocket");
+                _logger.LogError(ex, "Error disposing websocket");
             }
 
             lock (_activeConnections)

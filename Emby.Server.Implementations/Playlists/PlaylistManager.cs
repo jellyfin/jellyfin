@@ -78,12 +78,7 @@ namespace Emby.Server.Implementations.Playlists
             {
                 foreach (var itemId in options.ItemIdList)
                 {
-                    var item = _libraryManager.GetItemById(itemId);
-                    if (item is null)
-                    {
-                        throw new ArgumentException("No item exists with the supplied Id");
-                    }
-
+                    var item = _libraryManager.GetItemById(itemId) ?? throw new ArgumentException("No item exists with the supplied Id");
                     if (!string.IsNullOrEmpty(item.MediaType))
                     {
                         options.MediaType = item.MediaType;
@@ -431,8 +426,10 @@ namespace Emby.Server.Implementations.Playlists
 
             if (string.Equals(".m3u8", extension, StringComparison.OrdinalIgnoreCase))
             {
-                var playlist = new M3uPlaylist();
-                playlist.IsExtended = true;
+                var playlist = new M3uPlaylist
+                {
+                    IsExtended = true
+                };
                 foreach (var child in item.GetLinkedChildren())
                 {
                     var entry = new M3uPlaylistEntry()

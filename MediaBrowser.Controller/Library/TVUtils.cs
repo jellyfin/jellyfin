@@ -13,7 +13,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="day">The day.</param>
         /// <returns>List{DayOfWeek}.</returns>
-        [return: NotNullIfNotNull("day")]
+        [return: NotNullIfNotNull(nameof(day))]
         public static DayOfWeek[]? GetAirDays(string? day)
         {
             if (!string.IsNullOrEmpty(day))

@@ -31,7 +31,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         public static Plugin Instance { get; private set; }
 
         /// <inheritdoc/>
-        public override Guid Id => new Guid("b8715ed1-6c47-4528-9ad3-f72deb539cd4");
+        public override Guid Id => new("b8715ed1-6c47-4528-9ad3-f72deb539cd4");
 
         /// <inheritdoc/>
         public override string Name => "TMDb";

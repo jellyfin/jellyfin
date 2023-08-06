@@ -81,9 +81,7 @@ namespace MediaBrowser.Controller.Entities
                         case ImageOrientation.LeftTop:
                         case ImageOrientation.RightBottom:
                         case ImageOrientation.RightTop:
-                            var temp = height;
-                            height = width;
-                            width = temp;
+                            (width, height) = (height, width);
                             break;
                     }
                 }

@@ -94,13 +94,7 @@ public class ConfigurationController : BaseJellyfinApiController
     public ActionResult UpdateNamedConfiguration([FromRoute, Required] string key, [FromBody, Required] JsonDocument configuration)
     {
         var configurationType = _configurationManager.GetConfigurationType(key);
-        var deserializedConfiguration = configuration.Deserialize(configurationType, _serializerOptions);
-
-        if (deserializedConfiguration is null)
-        {
-            throw new ArgumentException("Body doesn't contain a valid configuration");
-        }
-
+        var deserializedConfiguration = configuration.Deserialize(configurationType, _serializerOptions) ?? throw new ArgumentException("Body doesn't contain a valid configuration");
         _configurationManager.SaveConfiguration(key, deserializedConfiguration);
         return NoContent();
     }

@@ -57,7 +57,7 @@ public class DlnaServerController : BaseJellyfinApiController
     public ActionResult<string> GetDescriptionXml([FromRoute, Required] string serverId)
     {
         var url = GetAbsoluteUri();
-        var serverAddress = url.Substring(0, url.IndexOf("/dlna/", StringComparison.OrdinalIgnoreCase));
+        var serverAddress = url[..url.IndexOf("/dlna/", StringComparison.OrdinalIgnoreCase)];
         var xml = _dlnaManager.GetServerDescriptionXml(Request.Headers, serverId, serverAddress);
         return Ok(xml);
     }
@@ -76,7 +76,6 @@ public class DlnaServerController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
     [Produces(MediaTypeNames.Text.Xml)]
     [ProducesFile(MediaTypeNames.Text.Xml)]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
     public ActionResult<string> GetContentDirectory([FromRoute, Required] string serverId)
     {
         return Ok(_contentDirectory.GetServiceXml());
@@ -96,7 +95,6 @@ public class DlnaServerController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
     [Produces(MediaTypeNames.Text.Xml)]
     [ProducesFile(MediaTypeNames.Text.Xml)]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
     public ActionResult<string> GetMediaReceiverRegistrar([FromRoute, Required] string serverId)
     {
         return Ok(_mediaReceiverRegistrar.GetServiceXml());
@@ -116,7 +114,6 @@ public class DlnaServerController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
     [Produces(MediaTypeNames.Text.Xml)]
     [ProducesFile(MediaTypeNames.Text.Xml)]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
     public ActionResult<string> GetConnectionManager([FromRoute, Required] string serverId)
     {
         return Ok(_connectionManager.GetServiceXml());
@@ -183,7 +180,6 @@ public class DlnaServerController : BaseJellyfinApiController
     [HttpSubscribe("{serverId}/MediaReceiverRegistrar/Events")]
     [HttpUnsubscribe("{serverId}/MediaReceiverRegistrar/Events")]
     [ApiExplorerSettings(IgnoreApi = true)] // Ignore in openapi docs
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
     [Produces(MediaTypeNames.Text.Xml)]
@@ -203,7 +199,6 @@ public class DlnaServerController : BaseJellyfinApiController
     [HttpSubscribe("{serverId}/ContentDirectory/Events")]
     [HttpUnsubscribe("{serverId}/ContentDirectory/Events")]
     [ApiExplorerSettings(IgnoreApi = true)] // Ignore in openapi docs
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
     [Produces(MediaTypeNames.Text.Xml)]
@@ -223,7 +218,6 @@ public class DlnaServerController : BaseJellyfinApiController
     [HttpSubscribe("{serverId}/ConnectionManager/Events")]
     [HttpUnsubscribe("{serverId}/ConnectionManager/Events")]
     [ApiExplorerSettings(IgnoreApi = true)] // Ignore in openapi docs
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
     [Produces(MediaTypeNames.Text.Xml)]
@@ -243,7 +237,6 @@ public class DlnaServerController : BaseJellyfinApiController
     /// <response code="503">DLNA is disabled.</response>
     /// <returns>Icon stream.</returns>
     [HttpGet("{serverId}/icons/{fileName}")]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]

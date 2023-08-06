@@ -45,7 +45,6 @@ public class DisplayPreferencesController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the display preferences on success, or a <see cref="NotFoundResult"/> if the display preferences could not be found.</returns>
     [HttpGet("{displayPreferencesId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "displayPreferencesId", Justification = "Imported from ServiceStack")]
     public ActionResult<DisplayPreferencesDto> GetDisplayPreferences(
         [FromRoute, Required] string displayPreferencesId,
         [FromQuery, Required] Guid userId,
@@ -110,7 +109,6 @@ public class DisplayPreferencesController : BaseJellyfinApiController
     /// <returns>An <see cref="NoContentResult"/> on success.</returns>
     [HttpPost("{displayPreferencesId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "displayPreferencesId", Justification = "Imported from ServiceStack")]
     public ActionResult UpdateDisplayPreferences(
         [FromRoute, Required] string displayPreferencesId,
         [FromQuery, Required] Guid userId,
@@ -177,7 +175,7 @@ public class DisplayPreferencesController : BaseJellyfinApiController
 
         foreach (var key in displayPreferences.CustomPrefs.Keys.Where(key => key.StartsWith("homesection", StringComparison.OrdinalIgnoreCase)))
         {
-            var order = int.Parse(key.AsSpan().Slice("homesection".Length), CultureInfo.InvariantCulture);
+            var order = int.Parse(key.AsSpan()["homesection".Length..], CultureInfo.InvariantCulture);
             if (!Enum.TryParse<HomeSectionType>(displayPreferences.CustomPrefs[key], true, out var type))
             {
                 type = order < 8 ? defaults[order] : HomeSectionType.None;

@@ -17,18 +17,12 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
     public class IdleGroupState : AbstractGroupState
     {
         /// <summary>
-        /// The logger.
-        /// </summary>
-        private readonly ILogger<IdleGroupState> _logger;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="IdleGroupState"/> class.
         /// </summary>
         /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
         public IdleGroupState(ILoggerFactory loggerFactory)
             : base(loggerFactory)
         {
-            _logger = LoggerFactory.CreateLogger<IdleGroupState>();
         }
 
         /// <inheritdoc />

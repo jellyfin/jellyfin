@@ -54,7 +54,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// The participants, or members of the group.
         /// </summary>
         private readonly Dictionary<string, GroupMember> _participants =
-            new Dictionary<string, GroupMember>(StringComparer.OrdinalIgnoreCase);
+            new(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// The internal group state.

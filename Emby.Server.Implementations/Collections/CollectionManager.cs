@@ -214,13 +214,7 @@ namespace Emby.Server.Implementations.Collections
 
             foreach (var id in ids)
             {
-                var item = _libraryManager.GetItemById(id);
-
-                if (item is null)
-                {
-                    throw new ArgumentException("No item exists with the supplied Id");
-                }
-
+                var item = _libraryManager.GetItemById(id) ?? throw new ArgumentException("No item exists with the supplied Id");
                 if (!currentLinkedChildrenIds.Contains(id))
                 {
                     (itemList ??= new()).Add(item);

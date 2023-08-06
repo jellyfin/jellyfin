@@ -28,7 +28,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
     {
         private readonly IImageProcessor _imageProcessor;
 
-        private string[] _validCollectionTypes = new[]
+        private readonly string[] _validCollectionTypes = new[]
         {
                 CollectionType.Movies,
                 CollectionType.HomeVideos,

@@ -39,7 +39,7 @@ namespace MediaBrowser.Model.Dlna
             if (profileContainers is not null && profileContainers.StartsWith('-'))
             {
                 isNegativeList = true;
-                profileContainers = profileContainers.Substring(1);
+                profileContainers = profileContainers[1..];
             }
 
             return ContainsContainer(SplitValue(profileContainers), isNegativeList, inputContainer);

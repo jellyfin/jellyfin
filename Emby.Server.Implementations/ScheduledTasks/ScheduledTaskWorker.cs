@@ -51,7 +51,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <summary>
         /// The _last execution result sync lock.
         /// </summary>
-        private readonly object _lastExecutionResultSyncLock = new object();
+        private readonly object _lastExecutionResultSyncLock = new();
 
         private bool _readFromFile = false;
 
@@ -575,10 +575,9 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 EndTimeUtc = endTime,
                 Status = status,
                 Name = Name,
-                Id = Id
+                Id = Id,
+                Key = ScheduledTask.Key
             };
-
-            result.Key = ScheduledTask.Key;
 
             if (ex is not null)
             {

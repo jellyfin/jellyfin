@@ -25,12 +25,7 @@ namespace Jellyfin.Api.Auth.UserPermissionPolicy
         /// <inheritdoc />
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, UserPermissionRequirement requirement)
         {
-            var user = _userManager.GetUserById(context.User.GetUserId());
-            if (user is null)
-            {
-                throw new ResourceNotFoundException();
-            }
-
+            var user = _userManager.GetUserById(context.User.GetUserId()) ?? throw new ResourceNotFoundException();
             if (user.HasPermission(requirement.RequiredPermission))
             {
                 context.Succeed(requirement);

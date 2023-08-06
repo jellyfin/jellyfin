@@ -12,16 +12,16 @@ namespace MediaBrowser.Controller.Dto
 {
     public class DtoOptions
     {
-        private static readonly ItemFields[] DefaultExcludedFields = new[]
+        private static readonly ItemFields[] _defaultExcludedFields = new[]
         {
             ItemFields.SeasonUserData,
             ItemFields.RefreshState
         };
 
-        private static readonly ImageType[] AllImageTypes = Enum.GetValues<ImageType>();
+        private static readonly ImageType[] _allImageTypes = Enum.GetValues<ImageType>();
 
-        private static readonly ItemFields[] AllItemFields = Enum.GetValues<ItemFields>()
-            .Except(DefaultExcludedFields)
+        private static readonly ItemFields[] _allItemFields = Enum.GetValues<ItemFields>()
+            .Except(_defaultExcludedFields)
             .ToArray();
 
         public DtoOptions()
@@ -36,8 +36,8 @@ namespace MediaBrowser.Controller.Dto
             EnableUserData = true;
             AddCurrentProgram = true;
 
-            Fields = allFields ? AllItemFields : Array.Empty<ItemFields>();
-            ImageTypes = AllImageTypes;
+            Fields = allFields ? _allItemFields : Array.Empty<ItemFields>();
+            ImageTypes = _allImageTypes;
         }
 
         public IReadOnlyList<ItemFields> Fields { get; set; }

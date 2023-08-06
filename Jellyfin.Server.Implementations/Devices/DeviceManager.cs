@@ -185,12 +185,7 @@ namespace Jellyfin.Server.Implementations.Devices
 
                 if (userId.HasValue)
                 {
-                    var user = _userManager.GetUserById(userId.Value);
-                    if (user is null)
-                    {
-                        throw new ResourceNotFoundException();
-                    }
-
+                    var user = _userManager.GetUserById(userId.Value) ?? throw new ResourceNotFoundException();
                     sessions = sessions.Where(i => CanAccessDevice(user, i.DeviceId));
                 }
 

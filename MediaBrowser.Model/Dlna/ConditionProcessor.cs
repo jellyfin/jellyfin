@@ -53,45 +53,27 @@ namespace MediaBrowser.Model.Dlna
             string? videoCodecTag,
             bool? isAvc)
         {
-            switch (condition.Property)
+            return condition.Property switch
             {
-                case ProfileConditionValue.IsInterlaced:
-                    return IsConditionSatisfied(condition, isInterlaced);
-                case ProfileConditionValue.IsAnamorphic:
-                    return IsConditionSatisfied(condition, isAnamorphic);
-                case ProfileConditionValue.IsAvc:
-                    return IsConditionSatisfied(condition, isAvc);
-                case ProfileConditionValue.VideoFramerate:
-                    return IsConditionSatisfied(condition, videoFramerate);
-                case ProfileConditionValue.VideoLevel:
-                    return IsConditionSatisfied(condition, videoLevel);
-                case ProfileConditionValue.VideoProfile:
-                    return IsConditionSatisfied(condition, videoProfile);
-                case ProfileConditionValue.VideoRangeType:
-                    return IsConditionSatisfied(condition, videoRangeType);
-                case ProfileConditionValue.VideoCodecTag:
-                    return IsConditionSatisfied(condition, videoCodecTag);
-                case ProfileConditionValue.PacketLength:
-                    return IsConditionSatisfied(condition, packetLength);
-                case ProfileConditionValue.VideoBitDepth:
-                    return IsConditionSatisfied(condition, videoBitDepth);
-                case ProfileConditionValue.VideoBitrate:
-                    return IsConditionSatisfied(condition, videoBitrate);
-                case ProfileConditionValue.Height:
-                    return IsConditionSatisfied(condition, height);
-                case ProfileConditionValue.Width:
-                    return IsConditionSatisfied(condition, width);
-                case ProfileConditionValue.RefFrames:
-                    return IsConditionSatisfied(condition, refFrames);
-                case ProfileConditionValue.NumAudioStreams:
-                    return IsConditionSatisfied(condition, numAudioStreams);
-                case ProfileConditionValue.NumVideoStreams:
-                    return IsConditionSatisfied(condition, numVideoStreams);
-                case ProfileConditionValue.VideoTimestamp:
-                    return IsConditionSatisfied(condition, timestamp);
-                default:
-                    return true;
-            }
+                ProfileConditionValue.IsInterlaced => IsConditionSatisfied(condition, isInterlaced),
+                ProfileConditionValue.IsAnamorphic => IsConditionSatisfied(condition, isAnamorphic),
+                ProfileConditionValue.IsAvc => IsConditionSatisfied(condition, isAvc),
+                ProfileConditionValue.VideoFramerate => IsConditionSatisfied(condition, videoFramerate),
+                ProfileConditionValue.VideoLevel => IsConditionSatisfied(condition, videoLevel),
+                ProfileConditionValue.VideoProfile => IsConditionSatisfied(condition, videoProfile),
+                ProfileConditionValue.VideoRangeType => IsConditionSatisfied(condition, videoRangeType),
+                ProfileConditionValue.VideoCodecTag => IsConditionSatisfied(condition, videoCodecTag),
+                ProfileConditionValue.PacketLength => IsConditionSatisfied(condition, packetLength),
+                ProfileConditionValue.VideoBitDepth => IsConditionSatisfied(condition, videoBitDepth),
+                ProfileConditionValue.VideoBitrate => IsConditionSatisfied(condition, videoBitrate),
+                ProfileConditionValue.Height => IsConditionSatisfied(condition, height),
+                ProfileConditionValue.Width => IsConditionSatisfied(condition, width),
+                ProfileConditionValue.RefFrames => IsConditionSatisfied(condition, refFrames),
+                ProfileConditionValue.NumAudioStreams => IsConditionSatisfied(condition, numAudioStreams),
+                ProfileConditionValue.NumVideoStreams => IsConditionSatisfied(condition, numVideoStreams),
+                ProfileConditionValue.VideoTimestamp => IsConditionSatisfied(condition, timestamp),
+                _ => true,
+            };
         }
 
         /// <summary>
@@ -103,15 +85,12 @@ namespace MediaBrowser.Model.Dlna
         /// <returns><b>True</b> if the condition is satisfied.</returns>
         public static bool IsImageConditionSatisfied(ProfileCondition condition, int? width, int? height)
         {
-            switch (condition.Property)
+            return condition.Property switch
             {
-                case ProfileConditionValue.Height:
-                    return IsConditionSatisfied(condition, height);
-                case ProfileConditionValue.Width:
-                    return IsConditionSatisfied(condition, width);
-                default:
-                    throw new ArgumentException("Unexpected condition on image file: " + condition.Property);
-            }
+                ProfileConditionValue.Height => IsConditionSatisfied(condition, height),
+                ProfileConditionValue.Width => IsConditionSatisfied(condition, width),
+                _ => throw new ArgumentException("Unexpected condition on image file: " + condition.Property),
+            };
         }
 
         /// <summary>
@@ -125,19 +104,14 @@ namespace MediaBrowser.Model.Dlna
         /// <returns><b>True</b> if the condition is satisfied.</returns>
         public static bool IsAudioConditionSatisfied(ProfileCondition condition, int? audioChannels, int? audioBitrate, int? audioSampleRate, int? audioBitDepth)
         {
-            switch (condition.Property)
+            return condition.Property switch
             {
-                case ProfileConditionValue.AudioBitrate:
-                    return IsConditionSatisfied(condition, audioBitrate);
-                case ProfileConditionValue.AudioChannels:
-                    return IsConditionSatisfied(condition, audioChannels);
-                case ProfileConditionValue.AudioSampleRate:
-                    return IsConditionSatisfied(condition, audioSampleRate);
-                case ProfileConditionValue.AudioBitDepth:
-                    return IsConditionSatisfied(condition, audioBitDepth);
-                default:
-                    throw new ArgumentException("Unexpected condition on audio file: " + condition.Property);
-            }
+                ProfileConditionValue.AudioBitrate => IsConditionSatisfied(condition, audioBitrate),
+                ProfileConditionValue.AudioChannels => IsConditionSatisfied(condition, audioChannels),
+                ProfileConditionValue.AudioSampleRate => IsConditionSatisfied(condition, audioSampleRate),
+                ProfileConditionValue.AudioBitDepth => IsConditionSatisfied(condition, audioBitDepth),
+                _ => throw new ArgumentException("Unexpected condition on audio file: " + condition.Property),
+            };
         }
 
         /// <summary>
@@ -160,23 +134,16 @@ namespace MediaBrowser.Model.Dlna
             string? audioProfile,
             bool? isSecondaryTrack)
         {
-            switch (condition.Property)
+            return condition.Property switch
             {
-                case ProfileConditionValue.AudioProfile:
-                    return IsConditionSatisfied(condition, audioProfile);
-                case ProfileConditionValue.AudioBitrate:
-                    return IsConditionSatisfied(condition, audioBitrate);
-                case ProfileConditionValue.AudioChannels:
-                    return IsConditionSatisfied(condition, audioChannels);
-                case ProfileConditionValue.IsSecondaryAudio:
-                    return IsConditionSatisfied(condition, isSecondaryTrack);
-                case ProfileConditionValue.AudioSampleRate:
-                    return IsConditionSatisfied(condition, audioSampleRate);
-                case ProfileConditionValue.AudioBitDepth:
-                    return IsConditionSatisfied(condition, audioBitDepth);
-                default:
-                    throw new ArgumentException("Unexpected condition on audio file: " + condition.Property);
-            }
+                ProfileConditionValue.AudioProfile => IsConditionSatisfied(condition, audioProfile),
+                ProfileConditionValue.AudioBitrate => IsConditionSatisfied(condition, audioBitrate),
+                ProfileConditionValue.AudioChannels => IsConditionSatisfied(condition, audioChannels),
+                ProfileConditionValue.IsSecondaryAudio => IsConditionSatisfied(condition, isSecondaryTrack),
+                ProfileConditionValue.AudioSampleRate => IsConditionSatisfied(condition, audioSampleRate),
+                ProfileConditionValue.AudioBitDepth => IsConditionSatisfied(condition, audioBitDepth),
+                _ => throw new ArgumentException("Unexpected condition on audio file: " + condition.Property),
+            };
         }
 
         private static bool IsConditionSatisfied(ProfileCondition condition, int? currentValue)
@@ -204,19 +171,14 @@ namespace MediaBrowser.Model.Dlna
 
             if (int.TryParse(condition.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var expected))
             {
-                switch (conditionType)
+                return conditionType switch
                 {
-                    case ProfileConditionType.Equals:
-                        return currentValue.Value.Equals(expected);
-                    case ProfileConditionType.GreaterThanEqual:
-                        return currentValue.Value >= expected;
-                    case ProfileConditionType.LessThanEqual:
-                        return currentValue.Value <= expected;
-                    case ProfileConditionType.NotEquals:
-                        return !currentValue.Value.Equals(expected);
-                    default:
-                        throw new InvalidOperationException("Unexpected ProfileConditionType: " + condition.Condition);
-                }
+                    ProfileConditionType.Equals => currentValue.Value.Equals(expected),
+                    ProfileConditionType.GreaterThanEqual => currentValue.Value >= expected,
+                    ProfileConditionType.LessThanEqual => currentValue.Value <= expected,
+                    ProfileConditionType.NotEquals => !currentValue.Value.Equals(expected),
+                    _ => throw new InvalidOperationException("Unexpected ProfileConditionType: " + condition.Condition),
+                };
             }
 
             return false;
@@ -232,17 +194,13 @@ namespace MediaBrowser.Model.Dlna
 
             string expected = condition.Value;
 
-            switch (condition.Condition)
+            return condition.Condition switch
             {
-                case ProfileConditionType.EqualsAny:
-                    return expected.Split('|').Contains(currentValue, StringComparison.OrdinalIgnoreCase);
-                case ProfileConditionType.Equals:
-                    return string.Equals(currentValue, expected, StringComparison.OrdinalIgnoreCase);
-                case ProfileConditionType.NotEquals:
-                    return !string.Equals(currentValue, expected, StringComparison.OrdinalIgnoreCase);
-                default:
-                    throw new InvalidOperationException("Unexpected ProfileConditionType: " + condition.Condition);
-            }
+                ProfileConditionType.EqualsAny => expected.Split('|').Contains(currentValue, StringComparison.OrdinalIgnoreCase),
+                ProfileConditionType.Equals => string.Equals(currentValue, expected, StringComparison.OrdinalIgnoreCase),
+                ProfileConditionType.NotEquals => !string.Equals(currentValue, expected, StringComparison.OrdinalIgnoreCase),
+                _ => throw new InvalidOperationException("Unexpected ProfileConditionType: " + condition.Condition),
+            };
         }
 
         private static bool IsConditionSatisfied(ProfileCondition condition, bool? currentValue)
@@ -255,15 +213,12 @@ namespace MediaBrowser.Model.Dlna
 
             if (bool.TryParse(condition.Value, out var expected))
             {
-                switch (condition.Condition)
+                return condition.Condition switch
                 {
-                    case ProfileConditionType.Equals:
-                        return currentValue.Value == expected;
-                    case ProfileConditionType.NotEquals:
-                        return currentValue.Value != expected;
-                    default:
-                        throw new InvalidOperationException("Unexpected ProfileConditionType: " + condition.Condition);
-                }
+                    ProfileConditionType.Equals => currentValue.Value == expected,
+                    ProfileConditionType.NotEquals => currentValue.Value != expected,
+                    _ => throw new InvalidOperationException("Unexpected ProfileConditionType: " + condition.Condition),
+                };
             }
 
             return false;
@@ -294,19 +249,14 @@ namespace MediaBrowser.Model.Dlna
 
             if (double.TryParse(condition.Value, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var expected))
             {
-                switch (conditionType)
+                return conditionType switch
                 {
-                    case ProfileConditionType.Equals:
-                        return currentValue.Value.Equals(expected);
-                    case ProfileConditionType.GreaterThanEqual:
-                        return currentValue.Value >= expected;
-                    case ProfileConditionType.LessThanEqual:
-                        return currentValue.Value <= expected;
-                    case ProfileConditionType.NotEquals:
-                        return !currentValue.Value.Equals(expected);
-                    default:
-                        throw new InvalidOperationException("Unexpected ProfileConditionType: " + condition.Condition);
-                }
+                    ProfileConditionType.Equals => currentValue.Value.Equals(expected),
+                    ProfileConditionType.GreaterThanEqual => currentValue.Value >= expected,
+                    ProfileConditionType.LessThanEqual => currentValue.Value <= expected,
+                    ProfileConditionType.NotEquals => !currentValue.Value.Equals(expected),
+                    _ => throw new InvalidOperationException("Unexpected ProfileConditionType: " + condition.Condition),
+                };
             }
 
             return false;
@@ -322,15 +272,12 @@ namespace MediaBrowser.Model.Dlna
 
             var expected = (TransportStreamTimestamp)Enum.Parse(typeof(TransportStreamTimestamp), condition.Value, true);
 
-            switch (condition.Condition)
+            return condition.Condition switch
             {
-                case ProfileConditionType.Equals:
-                    return timestamp == expected;
-                case ProfileConditionType.NotEquals:
-                    return timestamp != expected;
-                default:
-                    throw new InvalidOperationException("Unexpected ProfileConditionType: " + condition.Condition);
-            }
+                ProfileConditionType.Equals => timestamp == expected,
+                ProfileConditionType.NotEquals => timestamp != expected,
+                _ => throw new InvalidOperationException("Unexpected ProfileConditionType: " + condition.Condition),
+            };
         }
 
         private static bool IsConditionSatisfied(ProfileCondition condition, VideoRangeType? currentValue)

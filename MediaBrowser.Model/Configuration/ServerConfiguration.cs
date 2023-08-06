@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable CA1819
 
 using System;
 using MediaBrowser.Model.Drawing;

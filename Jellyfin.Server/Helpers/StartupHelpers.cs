@@ -113,16 +113,10 @@ public static class StartupHelpers
         }
 
         var webDir = options.WebDir ?? Environment.GetEnvironmentVariable("JELLYFIN_WEB_DIR");
-        if (webDir is null)
-        {
-            webDir = Path.Join(AppContext.BaseDirectory, "jellyfin-web");
-        }
+        webDir ??= Path.Join(AppContext.BaseDirectory, "jellyfin-web");
 
         var logDir = options.LogDir ?? Environment.GetEnvironmentVariable("JELLYFIN_LOG_DIR");
-        if (logDir is null)
-        {
-            logDir = Path.Join(dataDir, "log");
-        }
+        logDir ??= Path.Join(dataDir, "log");
 
         // Normalize paths. Only possible with GetFullPath for now - https://github.com/dotnet/runtime/issues/2162
         dataDir = Path.GetFullPath(dataDir);

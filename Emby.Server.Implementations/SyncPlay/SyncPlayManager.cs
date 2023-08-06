@@ -46,20 +46,18 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <summary>
         /// The map between users and counter of active sessions.
         /// </summary>
-        private readonly ConcurrentDictionary<Guid, int> _activeUsers =
-            new ConcurrentDictionary<Guid, int>();
+        private readonly ConcurrentDictionary<Guid, int> _activeUsers = new();
 
         /// <summary>
         /// The map between sessions and groups.
         /// </summary>
         private readonly ConcurrentDictionary<string, Group> _sessionToGroupMap =
-            new ConcurrentDictionary<string, Group>(StringComparer.OrdinalIgnoreCase);
+            new(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// The groups.
         /// </summary>
-        private readonly ConcurrentDictionary<Guid, Group> _groups =
-            new ConcurrentDictionary<Guid, Group>();
+        private readonly ConcurrentDictionary<Guid, Group> _groups = new();
 
         /// <summary>
         /// Lock used for accessing multiple groups at once.
@@ -67,7 +65,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <remarks>
         /// This lock has priority on locks made on <see cref="Group"/>.
         /// </remarks>
-        private readonly object _groupsLock = new object();
+        private readonly object _groupsLock = new();
 
         private bool _disposed = false;
 

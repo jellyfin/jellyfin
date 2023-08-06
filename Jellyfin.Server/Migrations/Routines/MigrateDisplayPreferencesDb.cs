@@ -170,7 +170,7 @@ namespace Jellyfin.Server.Migrations.Routines
 
                     foreach (var key in dto.CustomPrefs.Keys.Where(key => key.StartsWith("landing-", StringComparison.Ordinal)))
                     {
-                        if (!Guid.TryParse(key.AsSpan().Slice("landing-".Length), out var landingItemId))
+                        if (!Guid.TryParse(key.AsSpan()["landing-".Length..], out var landingItemId))
                         {
                             continue;
                         }

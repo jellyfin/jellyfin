@@ -55,7 +55,6 @@ public class HlsSegmentController : BaseJellyfinApiController
     [HttpGet("Audio/{itemId}/hls/{segmentId}/stream.aac", Name = "GetHlsAudioSegmentLegacyAac")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesAudioFile]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "itemId", Justification = "Required for ServiceStack")]
     public ActionResult GetHlsAudioSegmentLegacy([FromRoute, Required] string itemId, [FromRoute, Required] string segmentId)
     {
         // TODO: Deprecate with new iOS app
@@ -82,7 +81,6 @@ public class HlsSegmentController : BaseJellyfinApiController
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesPlaylistFile]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "itemId", Justification = "Required for ServiceStack")]
     public ActionResult GetHlsPlaylistLegacy([FromRoute, Required] string itemId, [FromRoute, Required] string playlistId)
     {
         var file = playlistId + Path.GetExtension(Request.Path);
@@ -131,7 +129,6 @@ public class HlsSegmentController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesVideoFile]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "itemId", Justification = "Required for ServiceStack")]
     public ActionResult GetHlsVideoSegmentLegacy(
         [FromRoute, Required] string itemId,
         [FromRoute, Required] string playlistId,

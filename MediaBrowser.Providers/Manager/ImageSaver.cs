@@ -409,7 +409,6 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            string filename;
             var folderName = item is MusicAlbum ||
                 item is MusicArtist ||
                 item is PhotoAlbum ||
@@ -417,32 +416,16 @@ namespace MediaBrowser.Providers.Manager
                 (saveLocally && _config.Configuration.ImageSavingConvention == ImageSavingConvention.Legacy) ?
                 "folder" :
                 "poster";
-
-            switch (type)
+            var filename = type switch
             {
-                case ImageType.Art:
-                    filename = "clearart";
-                    break;
-                case ImageType.BoxRear:
-                    filename = "back";
-                    break;
-                case ImageType.Thumb:
-                    filename = "landscape";
-                    break;
-                case ImageType.Disc:
-                    filename = item is MusicAlbum ? "cdart" : "disc";
-                    break;
-                case ImageType.Primary:
-                    filename = saveLocally && item is Episode ? Path.GetFileNameWithoutExtension(item.Path) : folderName;
-                    break;
-                case ImageType.Backdrop:
-                    filename = GetBackdropSaveFilename(item.GetImages(type), "backdrop", "backdrop", imageIndex);
-                    break;
-                default:
-                    filename = type.ToString().ToLowerInvariant();
-                    break;
-            }
-
+                ImageType.Art => "clearart",
+                ImageType.BoxRear => "back",
+                ImageType.Thumb => "landscape",
+                ImageType.Disc => item is MusicAlbum ? "cdart" : "disc",
+                ImageType.Primary => saveLocally && item is Episode ? Path.GetFileNameWithoutExtension(item.Path) : folderName,
+                ImageType.Backdrop => GetBackdropSaveFilename(item.GetImages(type), "backdrop", "backdrop", imageIndex),
+                _ => type.ToString().ToLowerInvariant(),
+            };
             if (string.Equals(extension, ".jpeg", StringComparison.OrdinalIgnoreCase))
             {
                 extension = ".jpg";

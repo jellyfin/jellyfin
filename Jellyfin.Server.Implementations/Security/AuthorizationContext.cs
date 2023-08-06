@@ -80,7 +80,6 @@ namespace Jellyfin.Server.Implementations.Security
                 auth.TryGetValue("Token", out token);
             }
 
-#pragma warning disable CA1508 // string.IsNullOrEmpty(token) is always false.
             if (string.IsNullOrEmpty(token))
             {
                 token = headers["X-Emby-Token"];
@@ -118,7 +117,6 @@ namespace Jellyfin.Server.Implementations.Security
                 // Request doesn't contain a token.
                 return authInfo;
             }
-#pragma warning restore CA1508
 
             authInfo.HasToken = true;
             var dbContext = await _jellyfinDbProvider.CreateDbContextAsync().ConfigureAwait(false);

@@ -1,7 +1,5 @@
 #nullable disable
 
-#pragma warning disable CS1591
-
 using System;
 using System.IO;
 using System.Linq;
@@ -19,7 +17,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
     /// </summary>
     public class PlaylistResolver : GenericFolderResolver<Playlist>
     {
-        private string[] _musicPlaylistCollectionTypes =
+        private readonly string[] _musicPlaylistCollectionTypes =
         {
             string.Empty,
             CollectionType.Music

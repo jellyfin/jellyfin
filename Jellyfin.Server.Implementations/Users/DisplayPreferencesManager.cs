@@ -1,7 +1,4 @@
-﻿#pragma warning disable CA1307
-#pragma warning disable CA1309
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Data.Entities;
@@ -32,7 +29,7 @@ namespace Jellyfin.Server.Implementations.Users
             var prefs = _dbContext.DisplayPreferences
                 .Include(pref => pref.HomeSections)
                 .FirstOrDefault(pref =>
-                    pref.UserId.Equals(userId) && string.Equals(pref.Client, client) && pref.ItemId.Equals(itemId));
+                    pref.UserId.Equals(userId) && string.Equals(pref.Client, client, StringComparison.OrdinalIgnoreCase) && pref.ItemId.Equals(itemId));
 
             if (prefs is null)
             {
@@ -47,7 +44,7 @@ namespace Jellyfin.Server.Implementations.Users
         public ItemDisplayPreferences GetItemDisplayPreferences(Guid userId, Guid itemId, string client)
         {
             var prefs = _dbContext.ItemDisplayPreferences
-                .FirstOrDefault(pref => pref.UserId.Equals(userId) && pref.ItemId.Equals(itemId) && string.Equals(pref.Client, client));
+                .FirstOrDefault(pref => pref.UserId.Equals(userId) && pref.ItemId.Equals(itemId) && string.Equals(pref.Client, client, StringComparison.OrdinalIgnoreCase));
 
             if (prefs is null)
             {
@@ -62,7 +59,7 @@ namespace Jellyfin.Server.Implementations.Users
         public IList<ItemDisplayPreferences> ListItemDisplayPreferences(Guid userId, string client)
         {
             return _dbContext.ItemDisplayPreferences
-                .Where(prefs => prefs.UserId.Equals(userId) && !prefs.ItemId.Equals(default) && string.Equals(prefs.Client, client))
+                .Where(prefs => prefs.UserId.Equals(userId) && !prefs.ItemId.Equals(default) && string.Equals(prefs.Client, client, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
 
@@ -72,7 +69,7 @@ namespace Jellyfin.Server.Implementations.Users
             return _dbContext.CustomItemDisplayPreferences
                 .Where(prefs => prefs.UserId.Equals(userId)
                                 && prefs.ItemId.Equals(itemId)
-                                && string.Equals(prefs.Client, client))
+                                && string.Equals(prefs.Client, client, StringComparison.OrdinalIgnoreCase))
                 .ToDictionary(prefs => prefs.Key, prefs => prefs.Value);
         }
 
@@ -82,7 +79,7 @@ namespace Jellyfin.Server.Implementations.Users
             var existingPrefs = _dbContext.CustomItemDisplayPreferences
                 .Where(prefs => prefs.UserId.Equals(userId)
                                 && prefs.ItemId.Equals(itemId)
-                                && string.Equals(prefs.Client, client));
+                                && string.Equals(prefs.Client, client, StringComparison.OrdinalIgnoreCase));
             _dbContext.CustomItemDisplayPreferences.RemoveRange(existingPrefs);
 
             foreach (var (key, value) in customPreferences)

@@ -15,7 +15,7 @@ namespace Emby.Server.Implementations.Devices
     {
         private readonly IApplicationPaths _appPaths;
         private readonly ILogger<DeviceId> _logger;
-        private readonly object _syncLock = new object();
+        private readonly object _syncLock = new();
 
         private string _id;
 
@@ -25,7 +25,7 @@ namespace Emby.Server.Implementations.Devices
             _logger = loggerFactory.CreateLogger<DeviceId>();
         }
 
-        public string Value => _id ?? (_id = GetDeviceId());
+        public string Value => _id ??= GetDeviceId();
 
         private string CachePath => Path.Combine(_appPaths.DataPath, "device.txt");
 

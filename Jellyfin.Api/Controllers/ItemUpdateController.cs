@@ -282,7 +282,7 @@ public class ItemUpdateController : BaseJellyfinApiController
 
         if (item is Series rseries)
         {
-            foreach (Season season in rseries.Children)
+            foreach (Season season in rseries.Children.Cast<Season>())
             {
                 season.OfficialRating = request.OfficialRating;
                 season.CustomRating = request.CustomRating;
@@ -290,7 +290,7 @@ public class ItemUpdateController : BaseJellyfinApiController
                 season.OnMetadataChanged();
                 await season.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
-                foreach (Episode ep in season.Children)
+                foreach (Episode ep in season.Children.Cast<Episode>())
                 {
                     ep.OfficialRating = request.OfficialRating;
                     ep.CustomRating = request.CustomRating;
@@ -302,7 +302,7 @@ public class ItemUpdateController : BaseJellyfinApiController
         }
         else if (item is Season season)
         {
-            foreach (Episode ep in season.Children)
+            foreach (Episode ep in season.Children.Cast<Episode>())
             {
                 ep.OfficialRating = request.OfficialRating;
                 ep.CustomRating = request.CustomRating;

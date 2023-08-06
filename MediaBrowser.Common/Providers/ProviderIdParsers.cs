@@ -30,7 +30,7 @@ namespace MediaBrowser.Common.Providers
                     return false;
                 }
 
-                text = text.Slice(ttPos);
+                text = text[ttPos..];
                 var i = 2;
                 var limit = Math.Min(text.Length, ImdbMaxNumbers + 2);
                 for (; i < limit; i++)
@@ -45,11 +45,11 @@ namespace MediaBrowser.Common.Providers
                 // Skip if more than 8 digits + 2 chars for tt
                 if (i <= ImdbMaxNumbers + 2 && i >= ImdbMinNumbers + 2)
                 {
-                    imdbId = text.Slice(0, i);
+                    imdbId = text[..i];
                     return true;
                 }
 
-                text = text.Slice(i);
+                text = text[i..];
             }
 
             imdbId = default;
@@ -92,7 +92,7 @@ namespace MediaBrowser.Common.Providers
                 return false;
             }
 
-            text = text.Slice(searchPos + searchString.Length);
+            text = text[(searchPos + searchString.Length)..];
 
             int i = 0;
             for (; i < text.Length; i++)
@@ -107,7 +107,7 @@ namespace MediaBrowser.Common.Providers
 
             if (i >= 1)
             {
-                providerId = text.Slice(0, i);
+                providerId = text[..i];
                 return true;
             }
 

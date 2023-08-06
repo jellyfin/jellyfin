@@ -147,7 +147,7 @@ public class DynamicHlsHelper
             return new FileContentResult(Array.Empty<byte>(), MimeTypes.GetMimeType("playlist.m3u8"));
         }
 
-        var totalBitrate = (state.OutputAudioBitrate ?? 0) + (state.OutputVideoBitrate ?? 0);
+        var totalBitrate = (state._outputAudioBitrate ?? 0) + (state.OutputVideoBitrate ?? 0);
 
         var builder = new StringBuilder();
 
@@ -232,7 +232,7 @@ public class DynamicHlsHelper
                     }
                     else
                     {
-                        sdrOutputAudioBitrate = _encodingHelper.GetAudioBitrateParam(state.VideoRequest, state.AudioStream, state.OutputAudioChannels) ?? 0;
+                        sdrOutputAudioBitrate = _encodingHelper.GetAudioBitrateParam(state.VideoRequest, state.AudioStream, state._outputAudioChannels) ?? 0;
                     }
 
                     var sdrTotalBitrate = sdrOutputAudioBitrate + sdrOutputVideoBitrate;

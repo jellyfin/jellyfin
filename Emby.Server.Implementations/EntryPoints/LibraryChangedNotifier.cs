@@ -37,14 +37,14 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <summary>
         /// The library changed sync lock.
         /// </summary>
-        private readonly object _libraryChangedSyncLock = new object();
+        private readonly object _libraryChangedSyncLock = new();
 
-        private readonly List<Folder> _foldersAddedTo = new List<Folder>();
-        private readonly List<Folder> _foldersRemovedFrom = new List<Folder>();
-        private readonly List<BaseItem> _itemsAdded = new List<BaseItem>();
-        private readonly List<BaseItem> _itemsRemoved = new List<BaseItem>();
-        private readonly List<BaseItem> _itemsUpdated = new List<BaseItem>();
-        private readonly ConcurrentDictionary<Guid, DateTime> _lastProgressMessageTimes = new ConcurrentDictionary<Guid, DateTime>();
+        private readonly List<Folder> _foldersAddedTo = new();
+        private readonly List<Folder> _foldersRemovedFrom = new();
+        private readonly List<BaseItem> _itemsAdded = new();
+        private readonly List<BaseItem> _itemsRemoved = new();
+        private readonly List<BaseItem> _itemsUpdated = new();
+        private readonly ConcurrentDictionary<Guid, DateTime> _lastProgressMessageTimes = new();
 
         public LibraryChangedNotifier(
             ILibraryManager libraryManager,
@@ -102,9 +102,11 @@ namespace Emby.Server.Implementations.EntryPoints
 
             _lastProgressMessageTimes.AddOrUpdate(item.Id, _ => DateTime.UtcNow, (_, _) => DateTime.UtcNow);
 
-            var dict = new Dictionary<string, string>();
-            dict["ItemId"] = item.Id.ToString("N", CultureInfo.InvariantCulture);
-            dict["Progress"] = progress.ToString(CultureInfo.InvariantCulture);
+            var dict = new Dictionary<string, string>
+            {
+                ["ItemId"] = item.Id.ToString("N", CultureInfo.InvariantCulture),
+                ["Progress"] = progress.ToString(CultureInfo.InvariantCulture)
+            };
 
             try
             {

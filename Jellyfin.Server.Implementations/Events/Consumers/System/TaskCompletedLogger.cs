@@ -98,7 +98,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.System
             {
                 int months = days / DaysInMonth;
                 values.Add(CreateValueString(months, "month"));
-                days = days % DaysInMonth;
+                days %= DaysInMonth;
             }
 
             // Number of days

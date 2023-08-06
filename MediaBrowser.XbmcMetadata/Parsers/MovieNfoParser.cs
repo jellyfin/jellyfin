@@ -149,31 +149,29 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
             try
             {
-                using (var stringReader = new StringReader("<set>" + xml + "</set>"))
-                using (var reader = XmlReader.Create(stringReader, GetXmlReaderSettings()))
-                {
-                    reader.MoveToContent();
-                    reader.Read();
+                using var stringReader = new StringReader("<set>" + xml + "</set>");
+                using var reader = XmlReader.Create(stringReader, GetXmlReaderSettings());
+                reader.MoveToContent();
+                reader.Read();
 
-                    // Loop through each element
-                    while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+                // Loop through each element
+                while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+                {
+                    if (reader.NodeType == XmlNodeType.Element)
                     {
-                        if (reader.NodeType == XmlNodeType.Element)
+                        switch (reader.Name)
                         {
-                            switch (reader.Name)
-                            {
-                                case "name":
-                                    movie.CollectionName = reader.ReadElementContentAsString();
-                                    break;
-                                default:
-                                    reader.Skip();
-                                    break;
-                            }
+                            case "name":
+                                movie.CollectionName = reader.ReadElementContentAsString();
+                                break;
+                            default:
+                                reader.Skip();
+                                break;
                         }
-                        else
-                        {
-                            reader.Read();
-                        }
+                    }
+                    else
+                    {
+                        reader.Read();
                     }
                 }
             }

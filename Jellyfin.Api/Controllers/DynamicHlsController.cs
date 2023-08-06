@@ -1089,7 +1089,6 @@ public class DynamicHlsController : BaseJellyfinApiController
     [HttpGet("Videos/{itemId}/hls1/{playlistId}/{segmentId}.{container}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesVideoFile]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "playlistId", Justification = "Imported from ServiceStack")]
     public async Task<ActionResult> GetHlsVideoSegment(
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] string playlistId,
@@ -1270,7 +1269,6 @@ public class DynamicHlsController : BaseJellyfinApiController
     [HttpGet("Audio/{itemId}/hls1/{playlistId}/{segmentId}.{container}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesAudioFile]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "playlistId", Justification = "Imported from ServiceStack")]
     public async Task<ActionResult> GetHlsAudioSegment(
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] string playlistId,
@@ -1556,9 +1554,6 @@ public class DynamicHlsController : BaseJellyfinApiController
         return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
     }
 
-    private static double[] GetSegmentLengths(StreamState state)
-        => GetSegmentLengthsInternal(state.RunTimeTicks ?? 0, state.SegmentLength);
-
     internal static double[] GetSegmentLengthsInternal(long runtimeTicks, int segmentlength)
     {
         var segmentLengthTicks = TimeSpan.FromSeconds(segmentlength).Ticks;
@@ -1602,11 +1597,9 @@ public class DynamicHlsController : BaseJellyfinApiController
         var outputPrefix = Path.Combine(directory, outputFileNameWithoutExtension);
         var outputExtension = EncodingHelper.GetSegmentFileExtension(state.Request.SegmentContainer);
         var outputTsArg = outputPrefix + "%d" + outputExtension;
-
-        var segmentFormat = string.Empty;
         var segmentContainer = outputExtension.TrimStart('.');
         var inputModifier = _encodingHelper.GetInputModifier(state, _encodingOptions, segmentContainer);
-
+        string? segmentFormat;
         if (string.Equals(segmentContainer, "ts", StringComparison.OrdinalIgnoreCase))
         {
             segmentFormat = "mpegts";
@@ -1717,8 +1710,8 @@ public class DynamicHlsController : BaseJellyfinApiController
 
             audioTranscodeParams += "-acodec " + audioCodec;
 
-            var audioBitrate = state.OutputAudioBitrate;
-            var audioChannels = state.OutputAudioChannels;
+            var audioBitrate = state._outputAudioBitrate;
+            var audioChannels = state._outputAudioChannels;
 
             if (audioBitrate.HasValue && !EncodingHelper.LosslessAudioCodecs.Contains(state.ActualOutputAudioCodec, StringComparison.OrdinalIgnoreCase))
             {
@@ -1774,7 +1767,7 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         var args = "-codec:a:0 " + audioCodec + strictArgs;
 
-        var channels = state.OutputAudioChannels;
+        var channels = state._outputAudioChannels;
 
         if (channels.HasValue
             && (channels.Value != 2
@@ -1786,7 +1779,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             args += " -ac " + channels.Value;
         }
 
-        var bitrate = state.OutputAudioBitrate;
+        var bitrate = state._outputAudioBitrate;
         if (bitrate.HasValue && !EncodingHelper.LosslessAudioCodecs.Contains(actualOutputAudioCodec, StringComparison.OrdinalIgnoreCase))
         {
             var vbrParam = _encodingHelper.GetAudioVbrModeParam(audioCodec, bitrate.Value / (channels ?? 2));
@@ -2044,7 +2037,7 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         var playlistFilename = Path.GetFileNameWithoutExtension(playlist);
 
-        var indexString = Path.GetFileNameWithoutExtension(file.Name).Substring(playlistFilename.Length);
+        var indexString = Path.GetFileNameWithoutExtension(file.Name)[playlistFilename.Length..];
 
         return int.Parse(indexString, NumberStyles.Integer, CultureInfo.InvariantCulture);
     }

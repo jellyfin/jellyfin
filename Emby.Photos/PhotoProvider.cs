@@ -65,87 +65,85 @@ namespace Emby.Photos
             {
                 try
                 {
-                    using (var file = TagLib.File.Create(item.Path))
+                    using var file = TagLib.File.Create(item.Path);
+                    if (file.GetTag(TagTypes.TiffIFD) is IFDTag tag)
                     {
-                        if (file.GetTag(TagTypes.TiffIFD) is IFDTag tag)
+                        var structure = tag.Structure;
+                        if (structure is not null
+                            && structure.GetEntry(0, (ushort)IFDEntryTag.ExifIFD) is SubIFDEntry exif)
                         {
-                            var structure = tag.Structure;
-                            if (structure is not null
-                                && structure.GetEntry(0, (ushort)IFDEntryTag.ExifIFD) is SubIFDEntry exif)
+                            var exifStructure = exif.Structure;
+                            if (exifStructure is not null)
                             {
-                                var exifStructure = exif.Structure;
-                                if (exifStructure is not null)
+                                var entry = exifStructure.GetEntry(0, (ushort)ExifEntryTag.ApertureValue) as RationalIFDEntry;
+                                if (entry is not null)
                                 {
-                                    var entry = exifStructure.GetEntry(0, (ushort)ExifEntryTag.ApertureValue) as RationalIFDEntry;
-                                    if (entry is not null)
-                                    {
-                                        item.Aperture = (double)entry.Value.Numerator / entry.Value.Denominator;
-                                    }
+                                    item.Aperture = (double)entry.Value.Numerator / entry.Value.Denominator;
+                                }
 
-                                    entry = exifStructure.GetEntry(0, (ushort)ExifEntryTag.ShutterSpeedValue) as RationalIFDEntry;
-                                    if (entry is not null)
-                                    {
-                                        item.ShutterSpeed = (double)entry.Value.Numerator / entry.Value.Denominator;
-                                    }
+                                entry = exifStructure.GetEntry(0, (ushort)ExifEntryTag.ShutterSpeedValue) as RationalIFDEntry;
+                                if (entry is not null)
+                                {
+                                    item.ShutterSpeed = (double)entry.Value.Numerator / entry.Value.Denominator;
                                 }
                             }
                         }
+                    }
 
-                        if (file is TagLib.Image.File image)
+                    if (file is TagLib.Image.File image)
+                    {
+                        item.CameraMake = image.ImageTag.Make;
+                        item.CameraModel = image.ImageTag.Model;
+
+                        item.Width = image.Properties.PhotoWidth;
+                        item.Height = image.Properties.PhotoHeight;
+
+                        var rating = image.ImageTag.Rating;
+                        item.CommunityRating = rating.HasValue ? rating : null;
+
+                        item.Overview = image.ImageTag.Comment;
+
+                        if (!string.IsNullOrWhiteSpace(image.ImageTag.Title)
+                            && !item.LockedFields.Contains(MetadataField.Name))
                         {
-                            item.CameraMake = image.ImageTag.Make;
-                            item.CameraModel = image.ImageTag.Model;
+                            item.Name = image.ImageTag.Title;
+                        }
 
-                            item.Width = image.Properties.PhotoWidth;
-                            item.Height = image.Properties.PhotoHeight;
+                        var dateTaken = image.ImageTag.DateTime;
+                        if (dateTaken.HasValue)
+                        {
+                            item.DateCreated = dateTaken.Value;
+                            item.PremiereDate = dateTaken.Value;
+                            item.ProductionYear = dateTaken.Value.Year;
+                        }
 
-                            var rating = image.ImageTag.Rating;
-                            item.CommunityRating = rating.HasValue ? rating : null;
+                        item.Genres = image.ImageTag.Genres;
+                        item.Tags = image.ImageTag.Keywords;
+                        item.Software = image.ImageTag.Software;
 
-                            item.Overview = image.ImageTag.Comment;
+                        if (image.ImageTag.Orientation == TagLib.Image.ImageOrientation.None)
+                        {
+                            item.Orientation = null;
+                        }
+                        else if (Enum.TryParse(image.ImageTag.Orientation.ToString(), true, out ImageOrientation orientation))
+                        {
+                            item.Orientation = orientation;
+                        }
 
-                            if (!string.IsNullOrWhiteSpace(image.ImageTag.Title)
-                                && !item.LockedFields.Contains(MetadataField.Name))
-                            {
-                                item.Name = image.ImageTag.Title;
-                            }
+                        item.ExposureTime = image.ImageTag.ExposureTime;
+                        item.FocalLength = image.ImageTag.FocalLength;
 
-                            var dateTaken = image.ImageTag.DateTime;
-                            if (dateTaken.HasValue)
-                            {
-                                item.DateCreated = dateTaken.Value;
-                                item.PremiereDate = dateTaken.Value;
-                                item.ProductionYear = dateTaken.Value.Year;
-                            }
+                        item.Latitude = image.ImageTag.Latitude;
+                        item.Longitude = image.ImageTag.Longitude;
+                        item.Altitude = image.ImageTag.Altitude;
 
-                            item.Genres = image.ImageTag.Genres;
-                            item.Tags = image.ImageTag.Keywords;
-                            item.Software = image.ImageTag.Software;
-
-                            if (image.ImageTag.Orientation == TagLib.Image.ImageOrientation.None)
-                            {
-                                item.Orientation = null;
-                            }
-                            else if (Enum.TryParse(image.ImageTag.Orientation.ToString(), true, out ImageOrientation orientation))
-                            {
-                                item.Orientation = orientation;
-                            }
-
-                            item.ExposureTime = image.ImageTag.ExposureTime;
-                            item.FocalLength = image.ImageTag.FocalLength;
-
-                            item.Latitude = image.ImageTag.Latitude;
-                            item.Longitude = image.ImageTag.Longitude;
-                            item.Altitude = image.ImageTag.Altitude;
-
-                            if (image.ImageTag.ISOSpeedRatings.HasValue)
-                            {
-                                item.IsoSpeedRating = Convert.ToInt32(image.ImageTag.ISOSpeedRatings.Value);
-                            }
-                            else
-                            {
-                                item.IsoSpeedRating = null;
-                            }
+                        if (image.ImageTag.ISOSpeedRatings.HasValue)
+                        {
+                            item.IsoSpeedRating = Convert.ToInt32(image.ImageTag.ISOSpeedRatings.Value);
+                        }
+                        else
+                        {
+                            item.IsoSpeedRating = null;
                         }
                     }
                 }

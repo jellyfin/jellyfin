@@ -181,7 +181,7 @@ namespace MediaBrowser.Controller.Entities.TV
         public string FindSeriesPresentationUniqueKey()
         {
             var series = Series;
-            return series is null ? null : series.PresentationUniqueKey;
+            return series?.PresentationUniqueKey;
         }
 
         public string FindSeasonName()

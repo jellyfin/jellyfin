@@ -24,22 +24,18 @@ namespace Jellyfin.Api.Controllers;
 public class RemoteImageController : BaseJellyfinApiController
 {
     private readonly IProviderManager _providerManager;
-    private readonly IServerApplicationPaths _applicationPaths;
     private readonly ILibraryManager _libraryManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RemoteImageController"/> class.
     /// </summary>
     /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
-    /// <param name="applicationPaths">Instance of the <see cref="IServerApplicationPaths"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     public RemoteImageController(
         IProviderManager providerManager,
-        IServerApplicationPaths applicationPaths,
         ILibraryManager libraryManager)
     {
         _providerManager = providerManager;
-        _applicationPaths = applicationPaths;
         _libraryManager = libraryManager;
     }
 
@@ -164,15 +160,5 @@ public class RemoteImageController : BaseJellyfinApiController
 
         await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
         return NoContent();
-    }
-
-    /// <summary>
-    /// Gets the full cache path.
-    /// </summary>
-    /// <param name="filename">The filename.</param>
-    /// <returns>System.String.</returns>
-    private string GetFullCachePath(string filename)
-    {
-        return Path.Combine(_applicationPaths.CachePath, "remote-images", filename.Substring(0, 1), filename);
     }
 }

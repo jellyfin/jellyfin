@@ -15,7 +15,7 @@ namespace Emby.Dlna.Ssdp
 {
     public sealed class DeviceDiscovery : IDeviceDiscovery, IDisposable
     {
-        private readonly object _syncLock = new object();
+        private readonly object _syncLock = new();
 
         private readonly IServerConfigurationManager _config;
 

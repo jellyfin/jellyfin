@@ -549,13 +549,7 @@ namespace Emby.Server.Implementations.Session
                 return users;
             }
 
-            var user = _userManager.GetUserById(session.UserId);
-
-            if (user is null)
-            {
-                throw new InvalidOperationException("User not found");
-            }
-
+            var user = _userManager.GetUserById(session.UserId) ?? throw new InvalidOperationException("User not found");
             users.Add(user);
 
             users.AddRange(session.AdditionalUsers
@@ -1030,14 +1024,8 @@ namespace Emby.Server.Implementations.Session
         private SessionInfo GetSessionToRemoteControl(string sessionId)
         {
             // Accept either device id or session id
-            var session = Sessions.FirstOrDefault(i => string.Equals(i.Id, sessionId, StringComparison.Ordinal));
-
-            if (session is null)
-            {
-                throw new ResourceNotFoundException(
+            var session = Sessions.FirstOrDefault(i => string.Equals(i.Id, sessionId, StringComparison.Ordinal)) ?? throw new ResourceNotFoundException(
                     string.Format(CultureInfo.InvariantCulture, "Session {0} not found.", sessionId));
-            }
-
             return session;
         }
 

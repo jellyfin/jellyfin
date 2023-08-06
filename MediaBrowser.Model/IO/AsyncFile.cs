@@ -10,7 +10,7 @@ namespace MediaBrowser.Model.IO
         /// <summary>
         /// Gets the default <see cref="FileStreamOptions"/> for reading files async.
         /// </summary>
-        public static FileStreamOptions ReadOptions => new FileStreamOptions()
+        public static FileStreamOptions ReadOptions => new()
         {
             Options = FileOptions.Asynchronous
         };
@@ -18,7 +18,7 @@ namespace MediaBrowser.Model.IO
         /// <summary>
         /// Gets the default <see cref="FileStreamOptions"/> for writing files async.
         /// </summary>
-        public static FileStreamOptions WriteOptions => new FileStreamOptions()
+        public static FileStreamOptions WriteOptions => new()
         {
             Mode = FileMode.OpenOrCreate,
             Access = FileAccess.Write,
@@ -32,7 +32,7 @@ namespace MediaBrowser.Model.IO
         /// <param name="path">The file to be opened for reading.</param>
         /// <returns>A read-only <see cref="FileStream" /> on the specified path.</returns>
         public static FileStream OpenRead(string path)
-            => new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+            => new(path, FileMode.Open, FileAccess.Read, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
 
         /// <summary>
         /// Opens an existing file for writing.
@@ -40,6 +40,6 @@ namespace MediaBrowser.Model.IO
         /// <param name="path">The file to be opened for writing.</param>
         /// <returns>An unshared <see cref="FileStream" /> object on the specified path with Write access.</returns>
         public static FileStream OpenWrite(string path)
-            => new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+            => new(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
     }
 }

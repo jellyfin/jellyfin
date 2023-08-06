@@ -47,7 +47,7 @@ namespace Emby.Server.Implementations.Updates
         /// </summary>
         /// <value>The application host.</value>
         private readonly IServerApplicationHost _applicationHost;
-        private readonly object _currentInstallationsLock = new object();
+        private readonly object _currentInstallationsLock = new();
 
         /// <summary>
         /// The current installations.
@@ -520,7 +520,6 @@ namespace Emby.Server.Implementations.Updates
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
             // CA5351: Do Not Use Broken Cryptographic Algorithms
-#pragma warning disable CA5351
             using var md5 = MD5.Create();
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -544,9 +543,7 @@ namespace Emby.Server.Implementations.Updates
                 {
                     Directory.Delete(targetDir, true);
                 }
-#pragma warning disable CA1031 // Do not catch general exception types
                 catch
-#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     // Ignore any exceptions.
                 }

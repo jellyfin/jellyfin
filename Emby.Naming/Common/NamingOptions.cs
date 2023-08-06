@@ -1,5 +1,3 @@
-#pragma warning disable CA1819
-
 using System;
 using System.Collections.Generic;
 using System.Linq;

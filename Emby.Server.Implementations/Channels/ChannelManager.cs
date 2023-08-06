@@ -50,7 +50,7 @@ namespace Emby.Server.Implementations.Channels
         private readonly IFileSystem _fileSystem;
         private readonly IProviderManager _providerManager;
         private readonly IMemoryCache _memoryCache;
-        private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _resourcePool = new(1, 1);
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private bool _disposed = false;
 
@@ -125,12 +125,7 @@ namespace Emby.Server.Implementations.Channels
         /// <inheritdoc />
         public Task DeleteItem(BaseItem item)
         {
-            var internalChannel = _libraryManager.GetItemById(item.ChannelId);
-            if (internalChannel is null)
-            {
-                throw new ArgumentException(nameof(item.ChannelId));
-            }
-
+            var internalChannel = _libraryManager.GetItemById(item.ChannelId) ?? throw new ArgumentException(nameof(item.ChannelId));
             var channel = Channels.FirstOrDefault(i => GetInternalChannelId(i.Name).Equals(internalChannel.Id));
 
             if (channel is not ISupportsDelete supportsDelete)
@@ -445,10 +440,7 @@ namespace Emby.Server.Implementations.Channels
 
             var isNew = false;
             var forceUpdate = false;
-
-            var item = _libraryManager.GetItemById(id) as Channel;
-
-            if (item is null)
+            if (_libraryManager.GetItemById(id) is not Channel item)
             {
                 item = new Channel
                 {
@@ -857,13 +849,7 @@ namespace Emby.Server.Implementations.Channels
 
                 query.FolderId = externalFolderId;
 
-                var result = await channel.GetChannelItems(query, cancellationToken).ConfigureAwait(false);
-
-                if (result is null)
-                {
-                    throw new InvalidOperationException("Channel returned a null result from GetChannelItems");
-                }
-
+                var result = await channel.GetChannelItems(query, cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("Channel returned a null result from GetChannelItems");
                 await CacheResponse(result, cachePath);
 
                 return result;
@@ -1189,26 +1175,14 @@ namespace Emby.Server.Implementations.Channels
             ArgumentNullException.ThrowIfNull(channel);
 
             var result = GetAllChannels()
-                .FirstOrDefault(i => GetInternalChannelId(i.Name).Equals(channel.ChannelId) || string.Equals(i.Name, channel.Name, StringComparison.OrdinalIgnoreCase));
-
-            if (result is null)
-            {
-                throw new ResourceNotFoundException("No channel provider found for channel " + channel.Name);
-            }
-
+                .FirstOrDefault(i => GetInternalChannelId(i.Name).Equals(channel.ChannelId) || string.Equals(i.Name, channel.Name, StringComparison.OrdinalIgnoreCase)) ?? throw new ResourceNotFoundException("No channel provider found for channel " + channel.Name);
             return result;
         }
 
         internal IChannel GetChannelProvider(Guid internalChannelId)
         {
             var result = GetAllChannels()
-                .FirstOrDefault(i => internalChannelId.Equals(GetInternalChannelId(i.Name)));
-
-            if (result is null)
-            {
-                throw new ResourceNotFoundException("No channel provider found for channel id " + internalChannelId);
-            }
-
+                .FirstOrDefault(i => internalChannelId.Equals(GetInternalChannelId(i.Name))) ?? throw new ResourceNotFoundException("No channel provider found for channel id " + internalChannelId);
             return result;
         }
 

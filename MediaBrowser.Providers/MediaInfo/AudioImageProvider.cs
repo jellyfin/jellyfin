@@ -133,7 +133,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 filename = item.Id.ToString("N", CultureInfo.InvariantCulture) + ".jpg";
             }
 
-            var prefix = filename.AsSpan().Slice(0, 1);
+            var prefix = filename.AsSpan()[..1];
 
             return Path.Join(AudioImagesPath, prefix, filename);
         }

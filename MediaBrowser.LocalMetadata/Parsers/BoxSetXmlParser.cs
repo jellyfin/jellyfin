@@ -31,10 +31,8 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                     if (!reader.IsEmptyElement)
                     {
-                        using (var subReader = reader.ReadSubtree())
-                        {
-                            FetchFromCollectionItemsNode(subReader, itemResult);
-                        }
+                        using var subReader = reader.ReadSubtree();
+                        FetchFromCollectionItemsNode(subReader, itemResult);
                     }
                     else
                     {
@@ -67,14 +65,12 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         {
                             if (!reader.IsEmptyElement)
                             {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    var child = GetLinkedChild(subReader);
+                                using var subReader = reader.ReadSubtree();
+                                var child = GetLinkedChild(subReader);
 
-                                    if (child is not null)
-                                    {
-                                        list.Add(child);
-                                    }
+                                if (child is not null)
+                                {
+                                    list.Add(child);
                                 }
                             }
                             else

@@ -13,7 +13,7 @@ namespace Emby.Server.Implementations.Data
         /// This holds all the types in the running assemblies
         /// so that we can de-serialize properly when we don't have strong types.
         /// </summary>
-        private readonly ConcurrentDictionary<string, Type?> _typeMap = new ConcurrentDictionary<string, Type?>();
+        private readonly ConcurrentDictionary<string, Type?> _typeMap = new();
 
         /// <summary>
         /// Gets the type.

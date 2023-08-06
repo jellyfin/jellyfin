@@ -325,7 +325,6 @@ public class SubtitleController : BaseJellyfinApiController
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesPlaylistFile]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
     public async Task<ActionResult> GetSubtitlePlaylist(
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] int index,

@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Querying;

@@ -1,10 +1,8 @@
 using System;
 using System.Globalization;
 using System.IO;
-
 using Emby.Server.Implementations.Data;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Globalization;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
@@ -20,17 +18,14 @@ namespace Jellyfin.Server.Migrations.Routines
         private readonly ILogger<MigrateRatingLevels> _logger;
         private readonly IServerApplicationPaths _applicationPaths;
         private readonly ILocalizationManager _localizationManager;
-        private readonly IItemRepository _repository;
 
         public MigrateRatingLevels(
             IServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
-            ILocalizationManager localizationManager,
-            IItemRepository repository)
+            ILocalizationManager localizationManager)
         {
             _applicationPaths = applicationPaths;
             _localizationManager = localizationManager;
-            _repository = repository;
             _logger = loggerFactory.CreateLogger<MigrateRatingLevels>();
         }
 
@@ -70,32 +65,30 @@ namespace Jellyfin.Server.Migrations.Routines
 
             // Migrate parental rating strings to new levels
             _logger.LogInformation("Recalculating parental rating levels based on rating string.");
-            using (var connection = SQLite3.Open(
+            using var connection = SQLite3.Open(
                 dbPath,
                 ConnectionFlags.ReadWrite,
-                null))
+                null);
+            var queryResult = connection.Query("SELECT DISTINCT OfficialRating FROM TypedBaseItems");
+            foreach (var entry in queryResult)
             {
-                var queryResult = connection.Query("SELECT DISTINCT OfficialRating FROM TypedBaseItems");
-                foreach (var entry in queryResult)
+                var ratingString = entry[0].ToString();
+                if (string.IsNullOrEmpty(ratingString))
                 {
-                    var ratingString = entry[0].ToString();
-                    if (string.IsNullOrEmpty(ratingString))
+                    connection.Execute("UPDATE TypedBaseItems SET InheritedParentalRatingValue = NULL WHERE OfficialRating IS NULL OR OfficialRating='';");
+                }
+                else
+                {
+                    var ratingValue = _localizationManager.GetRatingLevel(ratingString).ToString();
+                    if (string.IsNullOrEmpty(ratingValue))
                     {
-                        connection.Execute("UPDATE TypedBaseItems SET InheritedParentalRatingValue = NULL WHERE OfficialRating IS NULL OR OfficialRating='';");
+                        ratingValue = "NULL";
                     }
-                    else
-                    {
-                        var ratingValue = _localizationManager.GetRatingLevel(ratingString).ToString();
-                        if (string.IsNullOrEmpty(ratingValue))
-                        {
-                            ratingValue = "NULL";
-                        }
 
-                        var statement = connection.PrepareStatement("UPDATE TypedBaseItems SET InheritedParentalRatingValue = @Value WHERE OfficialRating = @Rating;");
-                        statement.TryBind("@Value", ratingValue);
-                        statement.TryBind("@Rating", ratingString);
-                        statement.ExecuteQuery();
-                    }
+                    var statement = connection.PrepareStatement("UPDATE TypedBaseItems SET InheritedParentalRatingValue = @Value WHERE OfficialRating = @Rating;");
+                    statement.TryBind("@Value", ratingValue);
+                    statement.TryBind("@Rating", ratingString);
+                    statement.ExecuteQuery();
                 }
             }
         }

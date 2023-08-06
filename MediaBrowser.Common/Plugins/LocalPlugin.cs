@@ -43,10 +43,7 @@ namespace MediaBrowser.Common.Plugins
         {
             get
             {
-                if (_version is null)
-                {
-                    _version = Version.Parse(Manifest.Version);
-                }
+                _version ??= Version.Parse(Manifest.Version);
 
                 return _version;
             }

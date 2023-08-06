@@ -17,12 +17,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
     /// </summary>
     public class TaskManager : ITaskManager
     {
-        /// <summary>
-        /// The _task queue.
-        /// </summary>
-        private readonly ConcurrentQueue<Tuple<Type, TaskOptions>> _taskQueue =
-            new ConcurrentQueue<Tuple<Type, TaskOptions>>();
-
+        private readonly ConcurrentQueue<Tuple<Type, TaskOptions>> _taskQueue = new();
         private readonly IApplicationPaths _applicationPaths;
         private readonly ILogger<TaskManager> _logger;
 

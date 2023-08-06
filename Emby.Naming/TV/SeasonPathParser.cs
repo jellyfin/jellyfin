@@ -85,7 +85,7 @@ namespace Emby.Naming.TV
 
             if (filename.StartsWith("s", StringComparison.OrdinalIgnoreCase))
             {
-                var testFilename = filename.AsSpan().Slice(1);
+                var testFilename = filename.AsSpan()[1..];
 
                 if (int.TryParse(testFilename, NumberStyles.Integer, CultureInfo.InvariantCulture, out var val))
                 {
@@ -128,7 +128,7 @@ namespace Emby.Naming.TV
                 return false;
             }
 
-            if (int.TryParse(part.Slice(1), NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
+            if (int.TryParse(part[1..], NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
             {
                 seasonNumber = value;
                 return true;

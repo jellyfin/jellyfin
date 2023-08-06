@@ -184,12 +184,10 @@ namespace MediaBrowser.LocalMetadata.Images
             var isInMixedFolder = item.IsInMixedFolder;
 
             PopulatePrimaryImages(item, images, files, imagePrefix, isInMixedFolder);
-
-            var added = false;
             var isEpisode = item is Episode;
             var isSong = item.GetType() == typeof(Audio);
             var isPerson = item is Person;
-
+            bool added;
             // Logo
             if (!isEpisode && !isSong && !isPerson)
             {

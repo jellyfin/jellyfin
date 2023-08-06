@@ -26,7 +26,7 @@ namespace MediaBrowser.Controller.Session
         private readonly ISessionManager _sessionManager;
         private readonly ILogger _logger;
 
-        private readonly object _progressLock = new object();
+        private readonly object _progressLock = new();
         private Timer _progressTimer;
         private PlaybackProgressInfo _lastProgressInfo;
 

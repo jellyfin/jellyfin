@@ -35,9 +35,9 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
         private readonly ILogger<SchedulesDirect> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly SemaphoreSlim _tokenSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _tokenSemaphore = new(1, 1);
 
-        private readonly ConcurrentDictionary<string, NameValuePair> _tokens = new ConcurrentDictionary<string, NameValuePair>();
+        private readonly ConcurrentDictionary<string, NameValuePair> _tokens = new();
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private DateTime _lastErrorResponse;
         private bool _disposed = false;
@@ -344,7 +344,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             if (info.IsSeries)
             {
-                info.SeriesId = programId.Substring(0, 10);
+                info.SeriesId = programId[..10];
 
                 info.SeriesProviderIds[MetadataProvider.Zap2It.ToString()] = info.SeriesId;
 
@@ -639,9 +639,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             CancellationToken cancellationToken)
         {
             using var options = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/token");
-#pragma warning disable CA5350 // SchedulesDirect is always SHA1.
             var hashedPasswordBytes = SHA1.HashData(Encoding.ASCII.GetBytes(password));
-#pragma warning restore CA5350
             // TODO: remove ToLower when Convert.ToHexString supports lowercase
             // Schedules Direct requires the hex to be lowercase
             string hashedPassword = Convert.ToHexString(hashedPasswordBytes).ToLowerInvariant();

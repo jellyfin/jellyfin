@@ -21,8 +21,8 @@ namespace MediaBrowser.Controller.MediaEncoding
     // For now, a common base class until the API and MediaEncoding classes are unified
     public class EncodingJobInfo
     {
-        public int? OutputAudioBitrate;
-        public int? OutputAudioChannels;
+        public int? _outputAudioBitrate;
+        public int? _outputAudioChannels;
 
         private TranscodeReason? _transcodeReasons = null;
 
@@ -142,7 +142,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         public bool IsSegmentedLiveStream
             => TranscodingType != TranscodingJobType.Progressive && !RunTimeTicks.HasValue;
 
-        public int? TotalOutputBitrate => (OutputAudioBitrate ?? 0) + (OutputVideoBitrate ?? 0);
+        public int? TotalOutputBitrate => (_outputAudioBitrate ?? 0) + (OutputVideoBitrate ?? 0);
 
         public int? OutputWidth
         {

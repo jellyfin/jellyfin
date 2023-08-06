@@ -41,7 +41,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         private readonly JsonSerializerOptions _jsonOptions;
 
-        private readonly Dictionary<string, DiscoverResponse> _modelCache = new Dictionary<string, DiscoverResponse>();
+        private readonly Dictionary<string, DiscoverResponse> _modelCache = new();
 
         public HdHomerunHost(
             IServerConfigurationManager config,
@@ -185,8 +185,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 {
                     LiveTvTunerStatus status;
                     var index = stripedLine.IndexOf("Channel", StringComparison.OrdinalIgnoreCase);
-                    var name = stripedLine.Substring(0, index - 1);
-                    var currentChannel = stripedLine.Substring(index + 7);
+                    var name = stripedLine[..(index - 1)];
+                    var currentChannel = stripedLine[(index + 7)..];
                     if (string.Equals(currentChannel, "none", StringComparison.Ordinal))
                     {
                         status = LiveTvTunerStatus.LiveTv;
@@ -300,10 +300,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             // TODO Need faster way to determine UDP vs HTTP
             var channels = await GetChannels(info, true, cancellationToken).ConfigureAwait(false);
-
-            var hdHomerunChannelInfo = channels.FirstOrDefault() as HdHomerunChannelInfo;
-
-            if (hdHomerunChannelInfo is null || hdHomerunChannelInfo.IsLegacyTuner)
+            if (channels.FirstOrDefault() is not HdHomerunChannelInfo hdHomerunChannelInfo || hdHomerunChannelInfo.IsLegacyTuner)
             {
                 return await GetTunerInfosUdp(info, cancellationToken).ConfigureAwait(false);
             }

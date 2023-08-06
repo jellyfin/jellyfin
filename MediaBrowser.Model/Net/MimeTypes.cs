@@ -26,7 +26,7 @@ namespace MediaBrowser.Model.Net
         /// <summary>
         /// Any extension in this list is considered a video file.
         /// </summary>
-        private static readonly HashSet<string> _videoFileExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        private static readonly HashSet<string> _videoFileExtensions = new(StringComparer.OrdinalIgnoreCase)
         {
             ".3gp",
             ".asf",
@@ -62,7 +62,7 @@ namespace MediaBrowser.Model.Net
         /// <summary>
         /// Used for extensions not in <see cref="Model.MimeTypes"/> or to override them.
         /// </summary>
-        private static readonly Dictionary<string, string> _mimeTypeLookup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        private static readonly Dictionary<string, string> _mimeTypeLookup = new(StringComparer.OrdinalIgnoreCase)
         {
             // Type application
             { ".azw3", "application/vnd.amazon.ebook" },
@@ -95,7 +95,7 @@ namespace MediaBrowser.Model.Net
             { ".xsp", "audio/xsp" },
         };
 
-        private static readonly Dictionary<string, string> _extensionLookup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        private static readonly Dictionary<string, string> _extensionLookup = new(StringComparer.OrdinalIgnoreCase)
         {
             // Type application
             { "application/x-cbz", ".cbz" },
@@ -139,7 +139,7 @@ namespace MediaBrowser.Model.Net
         /// <param name="filename">The filename to find the MIME type of.</param>
         /// <param name="defaultValue">The default value to return if no fitting MIME type is found.</param>
         /// <returns>The correct MIME type for the given filename, or <paramref name="defaultValue"/> if it wasn't found.</returns>
-        [return: NotNullIfNotNull("defaultValue")]
+        [return: NotNullIfNotNull(nameof(defaultValue))]
         public static string? GetMimeType(string filename, string? defaultValue = null)
         {
             ArgumentException.ThrowIfNullOrEmpty(filename);

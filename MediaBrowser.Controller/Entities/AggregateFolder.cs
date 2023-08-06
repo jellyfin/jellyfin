@@ -22,12 +22,12 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class AggregateFolder : Folder
     {
-        private readonly object _childIdsLock = new object();
+        private readonly object _childIdsLock = new();
 
         /// <summary>
         /// The _virtual children.
         /// </summary>
-        private readonly ConcurrentBag<BaseItem> _virtualChildren = new ConcurrentBag<BaseItem>();
+        private readonly ConcurrentBag<BaseItem> _virtualChildren = new();
         private bool _requiresRefresh;
         private Guid[] _childrenIds = null;
 

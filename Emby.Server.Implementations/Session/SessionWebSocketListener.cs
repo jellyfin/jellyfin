@@ -36,17 +36,17 @@ namespace Emby.Server.Implementations.Session
         /// <summary>
         /// Lock used for accessing the KeepAlive cancellation token.
         /// </summary>
-        private readonly object _keepAliveLock = new object();
+        private readonly object _keepAliveLock = new();
 
         /// <summary>
         /// The WebSocket watchlist.
         /// </summary>
-        private readonly HashSet<IWebSocketConnection> _webSockets = new HashSet<IWebSocketConnection>();
+        private readonly HashSet<IWebSocketConnection> _webSockets = new();
 
         /// <summary>
         /// Lock used for accessing the WebSockets watchlist.
         /// </summary>
-        private readonly object _webSocketsLock = new object();
+        private readonly object _webSocketsLock = new();
 
         private readonly ISessionManager _sessionManager;
         private readonly ILogger<SessionWebSocketListener> _logger;

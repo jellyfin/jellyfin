@@ -30,7 +30,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private readonly ILogger _logger;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IServerApplicationPaths _appPaths;
-        private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource<bool> _taskCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private bool _hasExited;
@@ -312,15 +312,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             try
             {
-                using (var reader = new StreamReader(source))
+                using var reader = new StreamReader(source);
+                await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
                 {
-                    await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
-                    {
-                        var bytes = Encoding.UTF8.GetBytes(Environment.NewLine + line);
+                    var bytes = Encoding.UTF8.GetBytes(Environment.NewLine + line);
 
-                        await target.WriteAsync(bytes.AsMemory()).ConfigureAwait(false);
-                        await target.FlushAsync().ConfigureAwait(false);
-                    }
+                    await target.WriteAsync(bytes.AsMemory()).ConfigureAwait(false);
+                    await target.FlushAsync().ConfigureAwait(false);
                 }
             }
             catch (Exception ex)

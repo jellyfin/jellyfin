@@ -107,12 +107,7 @@ public static class RequestHelpers
             return true;
         }
 
-        var user = userManager.GetUserById(userId);
-        if (user is null)
-        {
-            throw new ResourceNotFoundException();
-        }
-
+        var user = userManager.GetUserById(userId) ?? throw new ResourceNotFoundException();
         return user.EnableUserPreferenceAccess;
     }
 
@@ -126,13 +121,7 @@ public static class RequestHelpers
             httpContext.User.GetDeviceId(),
             httpContext.User.GetDevice(),
             httpContext.GetNormalizedRemoteIP().ToString(),
-            user).ConfigureAwait(false);
-
-        if (session is null)
-        {
-            throw new ResourceNotFoundException("Session not found.");
-        }
-
+            user).ConfigureAwait(false) ?? throw new ResourceNotFoundException("Session not found.");
         return session;
     }
 

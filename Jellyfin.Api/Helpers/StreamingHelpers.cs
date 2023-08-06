@@ -184,16 +184,16 @@ public static class StreamingHelpers
         var outputAudioCodec = streamingRequest.AudioCodec;
         if (EncodingHelper.LosslessAudioCodecs.Contains(outputAudioCodec))
         {
-            state.OutputAudioBitrate = state.AudioStream.BitRate ?? 0;
+            state._outputAudioBitrate = state.AudioStream.BitRate ?? 0;
         }
         else
         {
-            state.OutputAudioBitrate = encodingHelper.GetAudioBitrateParam(streamingRequest.AudioBitRate, streamingRequest.AudioCodec, state.AudioStream, state.OutputAudioChannels) ?? 0;
+            state._outputAudioBitrate = encodingHelper.GetAudioBitrateParam(streamingRequest.AudioBitRate, streamingRequest.AudioCodec, state.AudioStream, state._outputAudioChannels) ?? 0;
         }
 
         state.OutputAudioCodec = outputAudioCodec;
         state.OutputContainer = (containerInternal ?? string.Empty).TrimStart('.');
-        state.OutputAudioChannels = encodingHelper.GetNumAudioChannelsParam(state, state.AudioStream, state.OutputAudioCodec);
+        state._outputAudioChannels = encodingHelper.GetNumAudioChannelsParam(state, state.AudioStream, state.OutputAudioCodec);
 
         if (state.VideoRequest is not null)
         {
@@ -303,9 +303,9 @@ public static class StreamingHelpers
                 profile,
                 state.OutputContainer,
                 audioCodec,
-                state.OutputAudioBitrate,
+                state._outputAudioBitrate,
                 state.OutputAudioSampleRate,
-                state.OutputAudioChannels,
+                state._outputAudioChannels,
                 state.OutputAudioBitDepth,
                 isStaticallyStreamed,
                 state.RunTimeTicks,
@@ -333,16 +333,16 @@ public static class StreamingHelpers
             return null;
         }
 
-        const string npt = "npt=";
-        if (!value.StartsWith(npt, StringComparison.OrdinalIgnoreCase))
+        const string Npt = "npt=";
+        if (!value.StartsWith(Npt, StringComparison.OrdinalIgnoreCase))
         {
             throw new ArgumentException("Invalid timeseek header");
         }
 
         var index = value.IndexOf('-');
         value = index == -1
-            ? value.Slice(npt.Length)
-            : value.Slice(npt.Length, index - npt.Length);
+            ? value[Npt.Length..]
+            : value[Npt.Length..index];
         if (!value.Contains(':'))
         {
             // Parses npt times in the format of '417.33'
@@ -541,7 +541,7 @@ public static class StreamingHelpers
         var videoCodec = state.ActualOutputVideoCodec;
 
         var mediaProfile = !state.IsVideoRequest
-            ? profile.GetAudioMediaProfile(state.OutputContainer, audioCodec, state.OutputAudioChannels, state.OutputAudioBitrate, state.OutputAudioSampleRate, state.OutputAudioBitDepth)
+            ? profile.GetAudioMediaProfile(state.OutputContainer, audioCodec, state._outputAudioChannels, state._outputAudioBitrate, state.OutputAudioSampleRate, state.OutputAudioBitDepth)
             : profile.GetVideoMediaProfile(
                 state.OutputContainer,
                 audioCodec,

@@ -17,7 +17,7 @@ namespace Jellyfin.Server.Migrations.Routines
         /// <summary>
         /// File history for logging.json as existed during this migration creation. The contents for each has been minified.
         /// </summary>
-        private readonly List<string> _defaultConfigHistory = new List<string>
+        private readonly List<string> _defaultConfigHistory = new()
         {
             // 9a6c27947353585391e211aa88b925f81e8cd7b9
             @"{""Serilog"":{""MinimumLevel"":{""Default"":""Information"",""Override"":{""Microsoft"":""Warning"",""System"":""Warning""}},""WriteTo"":[{""Name"":""Console"",""Args"":{""outputTemplate"":""[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message:lj}{NewLine}{Exception}""}},{""Name"":""Async"",""Args"":{""configure"":[{""Name"":""File"",""Args"":{""path"":""%JELLYFIN_LOG_DIR%//log_.log"",""rollingInterval"":""Day"",""retainedFileCountLimit"":3,""rollOnFileSizeLimit"":true,""fileSizeLimitBytes"":100000000,""outputTemplate"":""[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message}{NewLine}{Exception}""}}]}}],""Enrich"":[""FromLogContext"",""WithThreadId""]}}",

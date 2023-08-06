@@ -40,8 +40,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <summary>
         /// The _semaphoreLocks.
         /// </summary>
-        private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks =
-            new ConcurrentDictionary<string, SemaphoreSlim>();
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks = new();
 
         public SubtitleEncoder(
             ILogger<SubtitleEncoder> logger,
@@ -147,10 +146,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 return subtitle.Stream;
             }
 
-            using (var stream = subtitle.Stream)
-            {
-                return ConvertSubtitles(stream, inputFormat, outputFormat, startTimeTicks, endTimeTicks, preserveOriginalTimestamps, cancellationToken);
-            }
+            using var stream = subtitle.Stream;
+            return ConvertSubtitles(stream, inputFormat, outputFormat, startTimeTicks, endTimeTicks, preserveOriginalTimestamps, cancellationToken);
         }
 
         private async Task<(Stream Stream, string Format)> GetSubtitleStream(
@@ -169,20 +166,18 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             if (fileInfo.IsExternal)
             {
-                using (var stream = await GetStream(fileInfo.Path, fileInfo.Protocol, cancellationToken).ConfigureAwait(false))
+                using var stream = await GetStream(fileInfo.Path, fileInfo.Protocol, cancellationToken).ConfigureAwait(false);
+                var result = CharsetDetector.DetectFromStream(stream).Detected;
+                stream.Position = 0;
+
+                if (result is not null)
                 {
-                    var result = CharsetDetector.DetectFromStream(stream).Detected;
-                    stream.Position = 0;
+                    _logger.LogDebug("charset {CharSet} detected for {Path}", result.EncodingName, fileInfo.Path);
 
-                    if (result is not null)
-                    {
-                        _logger.LogDebug("charset {CharSet} detected for {Path}", result.EncodingName, fileInfo.Path);
+                    using var reader = new StreamReader(stream, result.Encoding);
+                    var text = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
 
-                        using var reader = new StreamReader(stream, result.Encoding);
-                        var text = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
-
-                        return new MemoryStream(Encoding.UTF8.GetBytes(text));
-                    }
+                    return new MemoryStream(Encoding.UTF8.GetBytes(text));
                 }
             }
 
@@ -680,7 +675,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 ReadOnlySpan<char> filename = (mediaSource.Path + "_" + subtitleStreamIndex.ToString(CultureInfo.InvariantCulture) + "_" + date.Ticks.ToString(CultureInfo.InvariantCulture) + ticksParam).GetMD5() + outputSubtitleExtension;
 
-                var prefix = filename.Slice(0, 1);
+                var prefix = filename[..1];
 
                 return Path.Join(SubtitleCachePath, prefix, filename);
             }
@@ -688,7 +683,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 ReadOnlySpan<char> filename = (mediaSource.Path + "_" + subtitleStreamIndex.ToString(CultureInfo.InvariantCulture)).GetMD5() + outputSubtitleExtension;
 
-                var prefix = filename.Slice(0, 1);
+                var prefix = filename[..1];
 
                 return Path.Join(SubtitleCachePath, prefix, filename);
             }
@@ -707,22 +702,20 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     .ConfigureAwait(false);
             }
 
-            using (var stream = await GetStream(path, mediaSource.Protocol, cancellationToken).ConfigureAwait(false))
+            using var stream = await GetStream(path, mediaSource.Protocol, cancellationToken).ConfigureAwait(false);
+            var charset = CharsetDetector.DetectFromStream(stream).Detected?.EncodingName ?? string.Empty;
+
+            // UTF16 is automatically converted to UTF8 by FFmpeg, do not specify a character encoding
+            if ((path.EndsWith(".ass", StringComparison.Ordinal) || path.EndsWith(".ssa", StringComparison.Ordinal) || path.EndsWith(".srt", StringComparison.Ordinal))
+                && (string.Equals(charset, "utf-16le", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(charset, "utf-16be", StringComparison.OrdinalIgnoreCase)))
             {
-                var charset = CharsetDetector.DetectFromStream(stream).Detected?.EncodingName ?? string.Empty;
-
-                // UTF16 is automatically converted to UTF8 by FFmpeg, do not specify a character encoding
-                if ((path.EndsWith(".ass", StringComparison.Ordinal) || path.EndsWith(".ssa", StringComparison.Ordinal) || path.EndsWith(".srt", StringComparison.Ordinal))
-                    && (string.Equals(charset, "utf-16le", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(charset, "utf-16be", StringComparison.OrdinalIgnoreCase)))
-                {
-                    charset = string.Empty;
-                }
-
-                _logger.LogDebug("charset {0} detected for {Path}", charset, path);
-
-                return charset;
+                charset = string.Empty;
             }
+
+            _logger.LogDebug("charset {0} detected for {Path}", charset, path);
+
+            return charset;
         }
 
         private async Task<Stream> GetStream(string path, MediaProtocol protocol, CancellationToken cancellationToken)

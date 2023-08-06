@@ -481,7 +481,7 @@ public class TranscodingJobHelper : IDisposable
                 CompletionPercentage = percentComplete,
                 Width = state.OutputWidth,
                 Height = state.OutputHeight,
-                AudioChannels = state.OutputAudioChannels,
+                AudioChannels = state._outputAudioChannels,
                 IsAudioDirect = EncodingHelper.IsCopyCodec(state.OutputAudioCodec),
                 IsVideoDirect = EncodingHelper.IsCopyCodec(state.OutputVideoCodec),
                 HardwareAccelerationType = hardwareAccelerationType,

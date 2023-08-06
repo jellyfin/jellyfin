@@ -156,9 +156,9 @@ namespace MediaBrowser.Controller.Entities.TV
 
             var user = query.User;
 
-            Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
+            bool Filter(BaseItem i) => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
 
-            var items = GetEpisodes(user, query.DtoOptions).Where(filter);
+            var items = GetEpisodes(user, query.DtoOptions).Where(Filter);
 
             return PostFilterAndSort(items, query, false);
         }
@@ -208,7 +208,7 @@ namespace MediaBrowser.Controller.Entities.TV
         public string FindSeriesPresentationUniqueKey()
         {
             var series = Series;
-            return series is null ? null : series.PresentationUniqueKey;
+            return series?.PresentationUniqueKey;
         }
 
         public string FindSeriesName()

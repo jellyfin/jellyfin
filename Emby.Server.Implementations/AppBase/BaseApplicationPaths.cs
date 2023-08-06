@@ -10,8 +10,6 @@ namespace Emby.Server.Implementations.AppBase
     /// </summary>
     public abstract class BaseApplicationPaths : IApplicationPaths
     {
-        private string _dataPath;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationPaths"/> class.
         /// </summary>
@@ -32,8 +30,7 @@ namespace Emby.Server.Implementations.AppBase
             ConfigurationDirectoryPath = configurationDirectoryPath;
             CachePath = cacheDirectoryPath;
             WebPath = webDirectoryPath;
-
-            _dataPath = Directory.CreateDirectory(Path.Combine(ProgramDataPath, "data")).FullName;
+            DataPath = Directory.CreateDirectory(Path.Combine(ProgramDataPath, "data")).FullName;
         }
 
         /// <summary>
@@ -55,7 +52,7 @@ namespace Emby.Server.Implementations.AppBase
         /// Gets the folder path to the data directory.
         /// </summary>
         /// <value>The data directory.</value>
-        public string DataPath => _dataPath;
+        public string DataPath { get; }
 
         /// <inheritdoc />
         public string VirtualDataPath => "%AppDataPath%";

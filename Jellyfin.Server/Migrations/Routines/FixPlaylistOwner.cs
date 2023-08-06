@@ -1,12 +1,10 @@
 using System;
 using System.Linq;
 using System.Threading;
-
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
-using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Migrations.Routines;
 
@@ -15,16 +13,13 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// </summary>
 internal class FixPlaylistOwner : IMigrationRoutine
 {
-    private readonly ILogger<RemoveDuplicateExtras> _logger;
     private readonly ILibraryManager _libraryManager;
     private readonly IPlaylistManager _playlistManager;
 
     public FixPlaylistOwner(
-        ILogger<RemoveDuplicateExtras> logger,
         ILibraryManager libraryManager,
         IPlaylistManager playlistManager)
     {
-        _logger = logger;
         _libraryManager = libraryManager;
         _playlistManager = playlistManager;
     }

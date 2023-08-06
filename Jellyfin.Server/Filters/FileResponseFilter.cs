@@ -10,7 +10,7 @@ namespace Jellyfin.Server.Filters
     public class FileResponseFilter : IOperationFilter
     {
         private const string SuccessCode = "200";
-        private static readonly OpenApiMediaType _openApiMediaType = new OpenApiMediaType
+        private static readonly OpenApiMediaType _openApiMediaType = new()
         {
             Schema = new OpenApiSchema
             {

@@ -14,7 +14,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
     public class TimerManager : ItemDataProvider<TimerInfo>
     {
-        private readonly ConcurrentDictionary<string, Timer> _timers = new ConcurrentDictionary<string, Timer>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, Timer> _timers = new(StringComparer.OrdinalIgnoreCase);
 
         public TimerManager(ILogger logger, string dataPath)
             : base(logger, dataPath, (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase))

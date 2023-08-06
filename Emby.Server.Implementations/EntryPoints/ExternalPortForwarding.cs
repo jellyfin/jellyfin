@@ -1,7 +1,5 @@
 #nullable disable
 
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -27,7 +25,7 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly ILogger<ExternalPortForwarding> _logger;
         private readonly IServerConfigurationManager _config;
 
-        private readonly ConcurrentDictionary<IPEndPoint, byte> _createdRules = new ConcurrentDictionary<IPEndPoint, byte>();
+        private readonly ConcurrentDictionary<IPEndPoint, byte> _createdRules = new();
 
         private Timer _timer;
         private string _configIdentifier;

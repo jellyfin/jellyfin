@@ -175,7 +175,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var updateType = await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
-                childUpdateType = childUpdateType | updateType;
+                childUpdateType |= updateType;
 
                 numComplete++;
                 double percent = numComplete;
@@ -189,8 +189,10 @@ namespace MediaBrowser.Controller.Entities.Audio
             var parentRefreshOptions = refreshOptions;
             if (childUpdateType > ItemUpdateType.None)
             {
-                parentRefreshOptions = new MetadataRefreshOptions(refreshOptions);
-                parentRefreshOptions.MetadataRefreshMode = MetadataRefreshMode.FullRefresh;
+                parentRefreshOptions = new MetadataRefreshOptions(refreshOptions)
+                {
+                    MetadataRefreshMode = MetadataRefreshMode.FullRefresh
+                };
             }
 
             // Refresh current item

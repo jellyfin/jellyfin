@@ -112,12 +112,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 movieResults = result?.MovieResults;
             }
 
-            if (movieResults is null)
-            {
-                movieResults = await _tmdbClientManager
-                    .SearchMovieAsync(searchInfo.Name, searchInfo.Year ?? 0, searchInfo.MetadataLanguage, cancellationToken)
-                    .ConfigureAwait(false);
-            }
+            movieResults ??= await _tmdbClientManager
+                .SearchMovieAsync(searchInfo.Name, searchInfo.Year ?? 0, searchInfo.MetadataLanguage, cancellationToken)
+                .ConfigureAwait(false);
 
             var len = movieResults.Count;
             var remoteSearchResults = new RemoteSearchResult[len];

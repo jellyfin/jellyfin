@@ -46,8 +46,6 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new AuthenticationException("Specified user does not exist.");
             }
 
-            bool success = false;
-
             // As long as jellyfin supports password-less users, we need this little block here to accommodate
             if (!HasPassword(resolvedUser) && string.IsNullOrEmpty(password))
             {
@@ -64,7 +62,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             PasswordHash readyHash = PasswordHash.Parse(resolvedUser.Password);
-            success = _cryptographyProvider.Verify(readyHash, password);
+            var success = _cryptographyProvider.Verify(readyHash, password);
 
             if (!success)
             {

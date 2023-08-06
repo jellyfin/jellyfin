@@ -25,7 +25,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
         private readonly NamingOptions _namingOptions;
         private readonly IDirectoryService _directoryService;
 
-        private static readonly HashSet<string> _ignoreFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        private static readonly HashSet<string> _ignoreFiles = new(StringComparer.OrdinalIgnoreCase)
         {
             "folder",
             "thumb",

@@ -32,7 +32,7 @@ namespace MediaBrowser.Providers.Manager
         private readonly ILogger _logger;
         private readonly IProviderManager _providerManager;
         private readonly IFileSystem _fileSystem;
-        private static readonly ImageType[] AllImageTypes = Enum.GetValues<ImageType>();
+        private static readonly ImageType[] _allImageTypes = Enum.GetValues<ImageType>();
 
         /// <summary>
         /// Image types that are only one per item.
@@ -395,7 +395,7 @@ namespace MediaBrowser.Providers.Manager
                 if (refreshOptions.ReplaceAllImages)
                 {
                     refreshOptions.ReplaceAllImages = false;
-                    refreshOptions.ReplaceImages = AllImageTypes.ToList();
+                    refreshOptions.ReplaceImages = _allImageTypes.ToList();
                 }
 
                 refreshOptions.ReplaceImages = refreshOptions.ReplaceImages.Except(dontReplaceImages).ToList();
@@ -575,8 +575,7 @@ namespace MediaBrowser.Providers.Manager
 
             if (item is IItemByName and not MusicArtist)
             {
-                var hasDualAccess = item as IHasDualAccess;
-                if (hasDualAccess is null || hasDualAccess.IsAccessedByName)
+                if (item is not IHasDualAccess hasDualAccess || hasDualAccess.IsAccessedByName)
                 {
                     return true;
                 }

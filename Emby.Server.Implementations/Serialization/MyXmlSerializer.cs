@@ -15,8 +15,7 @@ namespace Emby.Server.Implementations.Serialization
     {
         // Need to cache these
         // http://dotnetcodebox.blogspot.com/2013/01/xmlserializer-class-may-result-in.html
-        private static readonly ConcurrentDictionary<string, XmlSerializer> _serializers =
-            new ConcurrentDictionary<string, XmlSerializer>();
+        private static readonly ConcurrentDictionary<string, XmlSerializer> _serializers = new();
 
         private static XmlSerializer GetSerializer(Type type)
             => _serializers.GetOrAdd(
@@ -43,11 +42,9 @@ namespace Emby.Server.Implementations.Serialization
         /// <returns>System.Object.</returns>
         public object? DeserializeFromStream(Type type, Stream stream)
         {
-            using (var reader = XmlReader.Create(stream))
-            {
-                var netSerializer = GetSerializer(type);
-                return netSerializer.Deserialize(reader);
-            }
+            using var reader = XmlReader.Create(stream);
+            var netSerializer = GetSerializer(type);
+            return netSerializer.Deserialize(reader);
         }
 
         /// <summary>
@@ -57,12 +54,10 @@ namespace Emby.Server.Implementations.Serialization
         /// <param name="stream">The stream.</param>
         public void SerializeToStream(object obj, Stream stream)
         {
-            using (var writer = new StreamWriter(stream, null, IODefaults.StreamWriterBufferSize, true))
-            using (var textWriter = new XmlTextWriter(writer))
-            {
-                textWriter.Formatting = Formatting.Indented;
-                SerializeToWriter(obj, textWriter);
-            }
+            using var writer = new StreamWriter(stream, null, IODefaults.StreamWriterBufferSize, true);
+            using var textWriter = new XmlTextWriter(writer);
+            textWriter.Formatting = Formatting.Indented;
+            SerializeToWriter(obj, textWriter);
         }
 
         /// <summary>
@@ -72,10 +67,8 @@ namespace Emby.Server.Implementations.Serialization
         /// <param name="file">The file.</param>
         public void SerializeToFile(object obj, string file)
         {
-            using (var stream = new FileStream(file, FileMode.Create, FileAccess.Write))
-            {
-                SerializeToStream(obj, stream);
-            }
+            using var stream = new FileStream(file, FileMode.Create, FileAccess.Write);
+            SerializeToStream(obj, stream);
         }
 
         /// <summary>
@@ -86,10 +79,8 @@ namespace Emby.Server.Implementations.Serialization
         /// <returns>System.Object.</returns>
         public object? DeserializeFromFile(Type type, string file)
         {
-            using (var stream = File.OpenRead(file))
-            {
-                return DeserializeFromStream(type, stream);
-            }
+            using var stream = File.OpenRead(file);
+            return DeserializeFromStream(type, stream);
         }
 
         /// <summary>
@@ -100,10 +91,8 @@ namespace Emby.Server.Implementations.Serialization
         /// <returns>System.Object.</returns>
         public object? DeserializeFromBytes(Type type, byte[] buffer)
         {
-            using (var stream = new MemoryStream(buffer, 0, buffer.Length, false, true))
-            {
-                return DeserializeFromStream(type, stream);
-            }
+            using var stream = new MemoryStream(buffer, 0, buffer.Length, false, true);
+            return DeserializeFromStream(type, stream);
         }
     }
 }

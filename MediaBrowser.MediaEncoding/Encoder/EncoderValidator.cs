@@ -337,7 +337,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             var map = new Dictionary<string, Version>();
 
-            foreach (Match match in LibraryRegex().Matches(output))
+            foreach (Match match in LibraryRegex().Matches(output).Cast<Match>())
             {
                 var version = new Version(
                     int.Parse(match.Groups["major"].ValueSpan, CultureInfo.InvariantCulture),
@@ -554,7 +554,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private string GetProcessOutput(string path, string arguments, bool readStdErr, string? testKey)
         {
             var redirectStandardIn = !string.IsNullOrEmpty(testKey);
-            using (var process = new Process
+            using var process = new Process
             {
                 StartInfo = new ProcessStartInfo(path, arguments)
                 {
@@ -566,21 +566,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     RedirectStandardOutput = true,
                     RedirectStandardError = true
                 }
-            })
+            };
+            _logger.LogDebug("Running {Path} {Arguments}", path, arguments);
+
+            process.Start();
+
+            if (redirectStandardIn)
             {
-                _logger.LogDebug("Running {Path} {Arguments}", path, arguments);
-
-                process.Start();
-
-                if (redirectStandardIn)
-                {
-                    using var writer = process.StandardInput;
-                    writer.Write(testKey);
-                }
-
-                using var reader = readStdErr ? process.StandardError : process.StandardOutput;
-                return reader.ReadToEnd();
+                using var writer = process.StandardInput;
+                writer.Write(testKey);
             }
+
+            using var reader = readStdErr ? process.StandardError : process.StandardOutput;
+            return reader.ReadToEnd();
         }
     }
 }

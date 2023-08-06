@@ -7,8 +7,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
     public partial class LegacyHdHomerunChannelCommands : IHdHomerunChannelCommands
     {
-        private string? _channel;
-        private string? _program;
+        private readonly string? _channel;
+        private readonly string? _program;
 
         public LegacyHdHomerunChannelCommands(string url)
         {

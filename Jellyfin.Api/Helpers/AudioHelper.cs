@@ -115,12 +115,7 @@ public class AudioHelper
         {
             StreamingHelpers.AddDlnaHeaders(state, _httpContextAccessor.HttpContext.Response.Headers, true, streamingRequest.StartTimeTicks, _httpContextAccessor.HttpContext.Request, _dlnaManager);
 
-            var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfo(streamingRequest.LiveStreamId);
-            if (liveStreamInfo is null)
-            {
-                throw new FileNotFoundException();
-            }
-
+            var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfo(streamingRequest.LiveStreamId) ?? throw new FileNotFoundException();
             var liveStream = new ProgressiveFileStream(liveStreamInfo.GetStream());
             // TODO (moved from MediaBrowser.Api): Don't hardcode contentType
             return new FileStreamResult(liveStream, MimeTypes.GetMimeType("file.ts"));

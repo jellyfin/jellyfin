@@ -50,10 +50,8 @@ namespace Emby.Server.Implementations.AppBase
                 Directory.CreateDirectory(directory);
 
                 // Save it after load in case we got new items
-                using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
-                {
-                    fs.Write(newBytes);
-                }
+                using var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+                fs.Write(newBytes);
             }
 
             return configuration;

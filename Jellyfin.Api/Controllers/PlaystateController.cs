@@ -229,7 +229,6 @@ public class PlaystateController : BaseJellyfinApiController
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Users/{userId}/PlayingItems/{itemId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Required for ServiceStack")]
     public async Task<ActionResult> OnPlaybackStart(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] Guid itemId,
@@ -279,7 +278,6 @@ public class PlaystateController : BaseJellyfinApiController
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Users/{userId}/PlayingItems/{itemId}/Progress")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Required for ServiceStack")]
     public async Task<ActionResult> OnPlaybackProgress(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] Guid itemId,
@@ -331,7 +329,6 @@ public class PlaystateController : BaseJellyfinApiController
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("Users/{userId}/PlayingItems/{itemId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Required for ServiceStack")]
     public async Task<ActionResult> OnPlaybackStopped(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] Guid itemId,

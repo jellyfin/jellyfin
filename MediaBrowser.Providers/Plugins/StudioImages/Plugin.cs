@@ -37,7 +37,7 @@ namespace MediaBrowser.Providers.Plugins.StudioImages
         public static Plugin Instance { get; private set; }
 
         /// <inheritdoc/>
-        public override Guid Id => new Guid("872a7849-1171-458d-a6fb-3de3d442ad30");
+        public override Guid Id => new("872a7849-1171-458d-a6fb-3de3d442ad30");
 
         /// <inheritdoc/>
         public override string Name => "Studio Images";
