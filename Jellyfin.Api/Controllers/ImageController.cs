@@ -93,8 +93,6 @@ public class ImageController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
     public async Task<ActionResult> PostUserImage(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] ImageType imageType,
@@ -153,8 +151,6 @@ public class ImageController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
     public async Task<ActionResult> PostUserImageByIndex(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] ImageType imageType,
@@ -209,8 +205,6 @@ public class ImageController : BaseJellyfinApiController
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("Users/{userId}/Images/{imageType}")]
     [Authorize]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> DeleteUserImage(
@@ -253,8 +247,6 @@ public class ImageController : BaseJellyfinApiController
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpDelete("Users/{userId}/Images/{imageType}/{index}")]
     [Authorize]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> DeleteUserImageByIndex(
@@ -356,7 +348,6 @@ public class ImageController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
     public async Task<ActionResult> SetItemImage(
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] ImageType imageType)
@@ -399,7 +390,6 @@ public class ImageController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
     public async Task<ActionResult> SetItemImageByIndex(
         [FromRoute, Required] Guid itemId,
         [FromRoute, Required] ImageType imageType,
@@ -2013,7 +2003,7 @@ public class ImageController : BaseJellyfinApiController
             int index = type.IndexOf(';', StringComparison.Ordinal);
             if (index != -1)
             {
-                supportedFormats[i] = type.Substring(0, index);
+                supportedFormats[i] = type[..index];
             }
         }
 

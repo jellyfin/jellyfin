@@ -411,12 +411,7 @@ public class SkiaEncoder : IImageEncoder
         var blur = options.Blur ?? 0;
         var hasIndicator = options.UnplayedCount.HasValue || !options.PercentPlayed.Equals(0);
 
-        using var bitmap = GetBitmap(inputPath, autoOrient, orientation);
-        if (bitmap is null)
-        {
-            throw new InvalidDataException($"Skia unable to read image {inputPath}");
-        }
-
+        using var bitmap = GetBitmap(inputPath, autoOrient, orientation) ?? throw new InvalidDataException($"Skia unable to read image {inputPath}");
         var originalImageSize = new ImageDimensions(bitmap.Width, bitmap.Height);
 
         if (options.HasDefaultOptions(inputPath, originalImageSize) && !autoOrient)
@@ -489,10 +484,8 @@ public class SkiaEncoder : IImageEncoder
         Directory.CreateDirectory(directory);
         using (var outputStream = new SKFileWStream(outputPath))
         {
-            using (var pixmap = new SKPixmap(new SKImageInfo(width, height), saveBitmap.GetPixels()))
-            {
-                pixmap.Encode(outputStream, skiaOutputFormat, quality);
-            }
+            using var pixmap = new SKPixmap(new SKImageInfo(width, height), saveBitmap.GetPixels());
+            pixmap.Encode(outputStream, skiaOutputFormat, quality);
         }
 
         return outputPath;

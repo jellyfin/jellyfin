@@ -49,7 +49,7 @@ namespace MediaBrowser.Controller.Entities
         public static readonly string[] SupportedImageExtensions
             = new[] { ".png", ".jpg", ".jpeg", ".webp", ".tbn", ".gif" };
 
-        private static readonly List<string> _supportedExtensions = new List<string>(SupportedImageExtensions)
+        private static readonly List<string> _supportedExtensions = new(SupportedImageExtensions)
         {
             ".nfo",
             ".xml",
@@ -955,13 +955,13 @@ namespace MediaBrowser.Controller.Entities
                 var isDigit = char.IsDigit(name[i]);
                 if (isDigit != isDigitChunk)
                 {
-                    AppendChunk(builder, isDigitChunk, name.Slice(chunkStart, i - chunkStart));
+                    AppendChunk(builder, isDigitChunk, name[chunkStart..i]);
                     chunkStart = i;
                     isDigitChunk = isDigit;
                 }
             }
 
-            AppendChunk(builder, isDigitChunk, name.Slice(chunkStart));
+            AppendChunk(builder, isDigitChunk, name[chunkStart..]);
 
             // logger.LogDebug("ModifySortChunks Start: {0} End: {1}", name, builder.ToString());
             return builder.ToString().RemoveDiacritics();
@@ -2427,9 +2427,7 @@ namespace MediaBrowser.Controller.Entities
             var id = LibraryManager.GetNewItemId(path, typeof(Video));
 
             // Try to retrieve it from the db. If we don't find it, use the resolved version
-            var video = LibraryManager.GetItemById(id) as Video;
-
-            if (video is null)
+            if (LibraryManager.GetItemById(id) is not Video video)
             {
                 video = LibraryManager.ResolvePath(FileSystem.GetFileSystemInfo(path)) as Video;
 

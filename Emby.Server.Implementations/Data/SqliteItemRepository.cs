@@ -436,130 +436,128 @@ namespace Emby.Server.Implementations.Data
                 "CREATE INDEX IF NOT EXISTS idx_PeopleNameListOrder ON People(Name, ListOrder)"
             };
 
-            using (var connection = GetConnection())
-            {
-                connection.RunQueries(queries);
+            using var connection = GetConnection();
+            connection.RunQueries(queries);
 
-                connection.RunInTransaction(
-                    db =>
-                    {
-                        var existingColumnNames = GetColumnNames(db, "AncestorIds");
-                        AddColumn(db, "AncestorIds", "AncestorIdText", "Text", existingColumnNames);
+            connection.RunInTransaction(
+                db =>
+                {
+                    var existingColumnNames = GetColumnNames(db, "AncestorIds");
+                    AddColumn(db, "AncestorIds", "AncestorIdText", "Text", existingColumnNames);
 
-                        existingColumnNames = GetColumnNames(db, "TypedBaseItems");
+                    existingColumnNames = GetColumnNames(db, "TypedBaseItems");
 
-                        AddColumn(db, "TypedBaseItems", "Path", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "StartDate", "DATETIME", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "EndDate", "DATETIME", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "ChannelId", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "IsMovie", "BIT", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "CommunityRating", "Float", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "CustomRating", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "IndexNumber", "INT", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "IsLocked", "BIT", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "Name", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "OfficialRating", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "MediaType", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "Overview", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "ParentIndexNumber", "INT", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "PremiereDate", "DATETIME", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "ProductionYear", "INT", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "ParentId", "GUID", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "Genres", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "SortName", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "ForcedSortName", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "RunTimeTicks", "BIGINT", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "DateCreated", "DATETIME", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "DateModified", "DATETIME", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "IsSeries", "BIT", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "EpisodeTitle", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "IsRepeat", "BIT", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "PreferredMetadataLanguage", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "PreferredMetadataCountryCode", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "DateLastRefreshed", "DATETIME", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "DateLastSaved", "DATETIME", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "IsInMixedFolder", "BIT", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "LockedFields", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "Studios", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "Audio", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "ExternalServiceId", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "Tags", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "IsFolder", "BIT", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "InheritedParentalRatingValue", "INT", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "UnratedType", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "TopParentId", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "TrailerTypes", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "CriticRating", "Float", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "CleanName", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "PresentationUniqueKey", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "OriginalTitle", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "PrimaryVersionId", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "DateLastMediaAdded", "DATETIME", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "Album", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "LUFS", "Float", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "IsVirtualItem", "BIT", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "SeriesName", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "UserDataKey", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "SeasonName", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "SeasonId", "GUID", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "SeriesId", "GUID", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "ExternalSeriesId", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "Tagline", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "ProviderIds", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "Images", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "ProductionLocations", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "ExtraIds", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "TotalBitrate", "INT", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "ExtraType", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "Artists", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "AlbumArtists", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "ExternalId", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "SeriesPresentationUniqueKey", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "ShowId", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "OwnerId", "Text", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "Width", "INT", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "Height", "INT", existingColumnNames);
-                        AddColumn(db, "TypedBaseItems", "Size", "BIGINT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Path", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "StartDate", "DATETIME", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "EndDate", "DATETIME", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ChannelId", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "IsMovie", "BIT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "CommunityRating", "Float", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "CustomRating", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "IndexNumber", "INT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "IsLocked", "BIT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Name", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "OfficialRating", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "MediaType", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Overview", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ParentIndexNumber", "INT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "PremiereDate", "DATETIME", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ProductionYear", "INT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ParentId", "GUID", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Genres", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "SortName", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ForcedSortName", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "RunTimeTicks", "BIGINT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "DateCreated", "DATETIME", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "DateModified", "DATETIME", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "IsSeries", "BIT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "EpisodeTitle", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "IsRepeat", "BIT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "PreferredMetadataLanguage", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "PreferredMetadataCountryCode", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "DateLastRefreshed", "DATETIME", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "DateLastSaved", "DATETIME", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "IsInMixedFolder", "BIT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "LockedFields", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Studios", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Audio", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ExternalServiceId", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Tags", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "IsFolder", "BIT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "InheritedParentalRatingValue", "INT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "UnratedType", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "TopParentId", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "TrailerTypes", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "CriticRating", "Float", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "CleanName", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "PresentationUniqueKey", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "OriginalTitle", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "PrimaryVersionId", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "DateLastMediaAdded", "DATETIME", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Album", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "LUFS", "Float", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "IsVirtualItem", "BIT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "SeriesName", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "UserDataKey", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "SeasonName", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "SeasonId", "GUID", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "SeriesId", "GUID", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ExternalSeriesId", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Tagline", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ProviderIds", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Images", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ProductionLocations", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ExtraIds", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "TotalBitrate", "INT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ExtraType", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Artists", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "AlbumArtists", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ExternalId", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "SeriesPresentationUniqueKey", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ShowId", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "OwnerId", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Width", "INT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Height", "INT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Size", "BIGINT", existingColumnNames);
 
-                        existingColumnNames = GetColumnNames(db, "ItemValues");
-                        AddColumn(db, "ItemValues", "CleanValue", "Text", existingColumnNames);
+                    existingColumnNames = GetColumnNames(db, "ItemValues");
+                    AddColumn(db, "ItemValues", "CleanValue", "Text", existingColumnNames);
 
-                        existingColumnNames = GetColumnNames(db, ChaptersTableName);
-                        AddColumn(db, ChaptersTableName, "ImageDateModified", "DATETIME", existingColumnNames);
+                    existingColumnNames = GetColumnNames(db, ChaptersTableName);
+                    AddColumn(db, ChaptersTableName, "ImageDateModified", "DATETIME", existingColumnNames);
 
-                        existingColumnNames = GetColumnNames(db, "MediaStreams");
-                        AddColumn(db, "MediaStreams", "IsAvc", "BIT", existingColumnNames);
-                        AddColumn(db, "MediaStreams", "TimeBase", "TEXT", existingColumnNames);
-                        AddColumn(db, "MediaStreams", "CodecTimeBase", "TEXT", existingColumnNames);
-                        AddColumn(db, "MediaStreams", "Title", "TEXT", existingColumnNames);
-                        AddColumn(db, "MediaStreams", "NalLengthSize", "TEXT", existingColumnNames);
-                        AddColumn(db, "MediaStreams", "Comment", "TEXT", existingColumnNames);
-                        AddColumn(db, "MediaStreams", "CodecTag", "TEXT", existingColumnNames);
-                        AddColumn(db, "MediaStreams", "PixelFormat", "TEXT", existingColumnNames);
-                        AddColumn(db, "MediaStreams", "BitDepth", "INT", existingColumnNames);
-                        AddColumn(db, "MediaStreams", "RefFrames", "INT", existingColumnNames);
-                        AddColumn(db, "MediaStreams", "KeyFrames", "TEXT", existingColumnNames);
-                        AddColumn(db, "MediaStreams", "IsAnamorphic", "BIT", existingColumnNames);
+                    existingColumnNames = GetColumnNames(db, "MediaStreams");
+                    AddColumn(db, "MediaStreams", "IsAvc", "BIT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "TimeBase", "TEXT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "CodecTimeBase", "TEXT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "Title", "TEXT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "NalLengthSize", "TEXT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "Comment", "TEXT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "CodecTag", "TEXT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "PixelFormat", "TEXT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "BitDepth", "INT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "RefFrames", "INT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "KeyFrames", "TEXT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "IsAnamorphic", "BIT", existingColumnNames);
 
-                        AddColumn(db, "MediaStreams", "ColorPrimaries", "TEXT", existingColumnNames);
-                        AddColumn(db, "MediaStreams", "ColorSpace", "TEXT", existingColumnNames);
-                        AddColumn(db, "MediaStreams", "ColorTransfer", "TEXT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "ColorPrimaries", "TEXT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "ColorSpace", "TEXT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "ColorTransfer", "TEXT", existingColumnNames);
 
-                        AddColumn(db, "MediaStreams", "DvVersionMajor", "INT", existingColumnNames);
-                        AddColumn(db, "MediaStreams", "DvVersionMinor", "INT", existingColumnNames);
-                        AddColumn(db, "MediaStreams", "DvProfile", "INT", existingColumnNames);
-                        AddColumn(db, "MediaStreams", "DvLevel", "INT", existingColumnNames);
-                        AddColumn(db, "MediaStreams", "RpuPresentFlag", "INT", existingColumnNames);
-                        AddColumn(db, "MediaStreams", "ElPresentFlag", "INT", existingColumnNames);
-                        AddColumn(db, "MediaStreams", "BlPresentFlag", "INT", existingColumnNames);
-                        AddColumn(db, "MediaStreams", "DvBlSignalCompatibilityId", "INT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "DvVersionMajor", "INT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "DvVersionMinor", "INT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "DvProfile", "INT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "DvLevel", "INT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "RpuPresentFlag", "INT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "ElPresentFlag", "INT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "BlPresentFlag", "INT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "DvBlSignalCompatibilityId", "INT", existingColumnNames);
 
-                        AddColumn(db, "MediaStreams", "IsHearingImpaired", "BIT", existingColumnNames);
-                    },
-                    TransactionMode);
+                    AddColumn(db, "MediaStreams", "IsHearingImpaired", "BIT", existingColumnNames);
+                },
+                TransactionMode);
 
-                connection.RunQueries(postQueries);
-            }
+            connection.RunQueries(postQueries);
         }
 
         public void SaveImages(BaseItem item)
@@ -568,21 +566,17 @@ namespace Emby.Server.Implementations.Data
 
             CheckDisposed();
 
-            using (var connection = GetConnection())
-            {
-                connection.RunInTransaction(
-                    db =>
-                    {
-                        using (var saveImagesStatement = PrepareStatement(db, "Update TypedBaseItems set Images=@Images where guid=@Id"))
-                        {
-                            saveImagesStatement.TryBind("@Id", item.Id);
-                            saveImagesStatement.TryBind("@Images", SerializeImages(item.ImageInfos));
+            using var connection = GetConnection();
+            connection.RunInTransaction(
+                db =>
+                {
+                    using var saveImagesStatement = PrepareStatement(db, "Update TypedBaseItems set Images=@Images where guid=@Id");
+                    saveImagesStatement.TryBind("@Id", item.Id);
+                    saveImagesStatement.TryBind("@Images", SerializeImages(item.ImageInfos));
 
-                            saveImagesStatement.MoveNext();
-                        }
-                    },
-                    TransactionMode);
-            }
+                    saveImagesStatement.MoveNext();
+                },
+                TransactionMode);
         }
 
         /// <summary>
@@ -618,47 +612,43 @@ namespace Emby.Server.Implementations.Data
                 tuples[i] = (item, ancestorIds, topParent, userdataKey, inheritedTags);
             }
 
-            using (var connection = GetConnection())
-            {
-                connection.RunInTransaction(
-                    db =>
-                    {
-                        SaveItemsInTransaction(db, tuples);
-                    },
-                    TransactionMode);
-            }
+            using var connection = GetConnection();
+            connection.RunInTransaction(
+                db =>
+                {
+                    SaveItemsInTransaction(db, tuples);
+                },
+                TransactionMode);
         }
 
         private void SaveItemsInTransaction(IDatabaseConnection db, IEnumerable<(BaseItem Item, List<Guid> AncestorIds, BaseItem TopParent, string UserDataKey, List<string> InheritedTags)> tuples)
         {
-            using (var saveItemStatement = PrepareStatement(db, SaveItemCommandText))
-            using (var deleteAncestorsStatement = PrepareStatement(db, "delete from AncestorIds where ItemId=@ItemId"))
+            using var saveItemStatement = PrepareStatement(db, SaveItemCommandText);
+            using var deleteAncestorsStatement = PrepareStatement(db, "delete from AncestorIds where ItemId=@ItemId");
+            var requiresReset = false;
+            foreach (var tuple in tuples)
             {
-                var requiresReset = false;
-                foreach (var tuple in tuples)
+                if (requiresReset)
                 {
-                    if (requiresReset)
-                    {
-                        saveItemStatement.Reset();
-                    }
-
-                    var item = tuple.Item;
-                    var topParent = tuple.TopParent;
-                    var userDataKey = tuple.UserDataKey;
-
-                    SaveItem(item, topParent, userDataKey, saveItemStatement);
-
-                    var inheritedTags = tuple.InheritedTags;
-
-                    if (item.SupportsAncestors)
-                    {
-                        UpdateAncestors(item.Id, tuple.AncestorIds, db, deleteAncestorsStatement);
-                    }
-
-                    UpdateItemValues(item.Id, GetItemValuesToSave(item, inheritedTags), db);
-
-                    requiresReset = true;
+                    saveItemStatement.Reset();
                 }
+
+                var item = tuple.Item;
+                var topParent = tuple.TopParent;
+                var userDataKey = tuple.UserDataKey;
+
+                SaveItem(item, topParent, userDataKey, saveItemStatement);
+
+                var inheritedTags = tuple.InheritedTags;
+
+                if (item.SupportsAncestors)
+                {
+                    UpdateAncestors(item.Id, tuple.AncestorIds, db, deleteAncestorsStatement);
+                }
+
+                UpdateItemValues(item.Id, GetItemValuesToSave(item, inheritedTags), db);
+
+                requiresReset = true;
             }
         }
 
@@ -794,7 +784,7 @@ namespace Emby.Server.Implementations.Data
                 saveItemStatement.TryBindNull("@Height");
             }
 
-            if (item.DateLastRefreshed != default(DateTime))
+            if (item.DateLastRefreshed != default)
             {
                 saveItemStatement.TryBind("@DateLastRefreshed", item.DateLastRefreshed);
             }
@@ -803,7 +793,7 @@ namespace Emby.Server.Implementations.Data
                 saveItemStatement.TryBindNull("@DateLastRefreshed");
             }
 
-            if (item.DateLastSaved != default(DateTime))
+            if (item.DateLastSaved != default)
             {
                 saveItemStatement.TryBind("@DateLastSaved", item.DateLastSaved);
             }
@@ -1075,7 +1065,7 @@ namespace Emby.Server.Implementations.Data
                 var providerDelimiterIndex = part.IndexOf('=');
                 if (providerDelimiterIndex != -1 && providerDelimiterIndex == part.LastIndexOf('='))
                 {
-                    item.SetProviderId(part.Slice(0, providerDelimiterIndex).ToString(), part.Slice(providerDelimiterIndex + 1).ToString());
+                    item.SetProviderId(part[..providerDelimiterIndex].ToString(), part[(providerDelimiterIndex + 1)..].ToString());
                 }
             }
         }
@@ -1287,15 +1277,13 @@ namespace Emby.Server.Implementations.Data
 
             CheckDisposed();
 
-            using (var connection = GetConnection(true))
-            using (var statement = PrepareStatement(connection, _retrieveItemColumnsSelectQuery))
-            {
-                statement.TryBind("@guid", id);
+            using var connection = GetConnection(true);
+            using var statement = PrepareStatement(connection, _retrieveItemColumnsSelectQuery);
+            statement.TryBind("@guid", id);
 
-                foreach (var row in statement.ExecuteQuery())
-                {
-                    return GetItem(row, new InternalItemsQuery());
-                }
+            foreach (var row in statement.ExecuteQuery())
+            {
+                return GetItem(row, new InternalItemsQuery());
             }
 
             return null;
@@ -1997,16 +1985,14 @@ namespace Emby.Server.Implementations.Data
         {
             CheckDisposed();
 
-            using (var connection = GetConnection(true))
-            using (var statement = PrepareStatement(connection, "select StartPositionTicks,Name,ImagePath,ImageDateModified from " + ChaptersTableName + " where ItemId = @ItemId and ChapterIndex=@ChapterIndex"))
-            {
-                statement.TryBind("@ItemId", item.Id);
-                statement.TryBind("@ChapterIndex", index);
+            using var connection = GetConnection(true);
+            using var statement = PrepareStatement(connection, "select StartPositionTicks,Name,ImagePath,ImageDateModified from " + ChaptersTableName + " where ItemId = @ItemId and ChapterIndex=@ChapterIndex");
+            statement.TryBind("@ItemId", item.Id);
+            statement.TryBind("@ChapterIndex", index);
 
-                foreach (var row in statement.ExecuteQuery())
-                {
-                    return GetChapter(row, item);
-                }
+            foreach (var row in statement.ExecuteQuery())
+            {
+                return GetChapter(row, item);
             }
 
             return null;
@@ -2073,18 +2059,16 @@ namespace Emby.Server.Implementations.Data
 
             var idBlob = id.ToByteArray();
 
-            using (var connection = GetConnection())
-            {
-                connection.RunInTransaction(
-                    db =>
-                    {
-                        // First delete chapters
-                        db.Execute("delete from " + ChaptersTableName + " where ItemId=@ItemId", idBlob);
+            using var connection = GetConnection();
+            connection.RunInTransaction(
+                db =>
+                {
+                    // First delete chapters
+                    db.Execute("delete from " + ChaptersTableName + " where ItemId=@ItemId", idBlob);
 
-                        InsertChapters(idBlob, chapters, db);
-                    },
-                    TransactionMode);
-            }
+                    InsertChapters(idBlob, chapters, db);
+                },
+                TransactionMode);
         }
 
         private void InsertChapters(byte[] idBlob, IReadOnlyList<ChapterInfo> chapters, IDatabaseConnection db)
@@ -4690,15 +4674,13 @@ LEFT JOIN ItemValues ON (AncestorIds.AncestorId = ItemValues.ItemId)
 where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type = 4 "
                 });
 
-            using (var connection = GetConnection())
-            {
-                connection.RunInTransaction(
-                    db =>
-                    {
-                        connection.ExecuteAll(sql);
-                    },
-                    TransactionMode);
-            }
+            using var connection = GetConnection();
+            connection.RunInTransaction(
+                db =>
+                {
+                    connection.ExecuteAll(sql);
+                },
+                TransactionMode);
         }
 
         public void DeleteItem(Guid id)
@@ -4710,44 +4692,40 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             CheckDisposed();
 
-            using (var connection = GetConnection())
-            {
-                connection.RunInTransaction(
-                    db =>
-                    {
-                        Span<byte> idBlob = stackalloc byte[16];
-                        id.TryWriteBytes(idBlob);
+            using var connection = GetConnection();
+            connection.RunInTransaction(
+                db =>
+                {
+                    Span<byte> idBlob = stackalloc byte[16];
+                    id.TryWriteBytes(idBlob);
 
-                        // Delete people
-                        ExecuteWithSingleParam(db, "delete from People where ItemId=@Id", idBlob);
+                    // Delete people
+                    ExecuteWithSingleParam(db, "delete from People where ItemId=@Id", idBlob);
 
-                        // Delete chapters
-                        ExecuteWithSingleParam(db, "delete from " + ChaptersTableName + " where ItemId=@Id", idBlob);
+                    // Delete chapters
+                    ExecuteWithSingleParam(db, "delete from " + ChaptersTableName + " where ItemId=@Id", idBlob);
 
-                        // Delete media streams
-                        ExecuteWithSingleParam(db, "delete from mediastreams where ItemId=@Id", idBlob);
+                    // Delete media streams
+                    ExecuteWithSingleParam(db, "delete from mediastreams where ItemId=@Id", idBlob);
 
-                        // Delete ancestors
-                        ExecuteWithSingleParam(db, "delete from AncestorIds where ItemId=@Id", idBlob);
+                    // Delete ancestors
+                    ExecuteWithSingleParam(db, "delete from AncestorIds where ItemId=@Id", idBlob);
 
-                        // Delete item values
-                        ExecuteWithSingleParam(db, "delete from ItemValues where ItemId=@Id", idBlob);
+                    // Delete item values
+                    ExecuteWithSingleParam(db, "delete from ItemValues where ItemId=@Id", idBlob);
 
-                        // Delete the item
-                        ExecuteWithSingleParam(db, "delete from TypedBaseItems where guid=@Id", idBlob);
-                    },
-                    TransactionMode);
-            }
+                    // Delete the item
+                    ExecuteWithSingleParam(db, "delete from TypedBaseItems where guid=@Id", idBlob);
+                },
+                TransactionMode);
         }
 
         private void ExecuteWithSingleParam(IDatabaseConnection db, string query, ReadOnlySpan<byte> value)
         {
-            using (var statement = PrepareStatement(db, query))
-            {
-                statement.TryBind("@Id", value);
+            using var statement = PrepareStatement(db, query);
+            statement.TryBind("@Id", value);
 
-                statement.MoveNext();
-            }
+            statement.MoveNext();
         }
 
         public List<string> GetPeopleNames(InternalPeopleQuery query)
@@ -4933,24 +4911,22 @@ AND Type = @InternalPersonType)");
             // Remove last ,
             insertText.Length--;
 
-            using (var statement = PrepareStatement(db, insertText.ToString()))
+            using var statement = PrepareStatement(db, insertText.ToString());
+            statement.TryBind("@ItemId", itemIdBlob);
+
+            for (var i = 0; i < ancestorIds.Count; i++)
             {
-                statement.TryBind("@ItemId", itemIdBlob);
+                var index = i.ToString(CultureInfo.InvariantCulture);
 
-                for (var i = 0; i < ancestorIds.Count; i++)
-                {
-                    var index = i.ToString(CultureInfo.InvariantCulture);
+                var ancestorId = ancestorIds[i];
+                ancestorId.TryWriteBytes(itemIdBlob);
 
-                    var ancestorId = ancestorIds[i];
-                    ancestorId.TryWriteBytes(itemIdBlob);
-
-                    statement.TryBind("@AncestorId" + index, itemIdBlob);
-                    statement.TryBind("@AncestorIdText" + index, ancestorId.ToString("N", CultureInfo.InvariantCulture));
-                }
-
-                statement.Reset();
-                statement.MoveNext();
+                statement.TryBind("@AncestorId" + index, itemIdBlob);
+                statement.TryBind("@AncestorIdText" + index, ancestorId.ToString("N", CultureInfo.InvariantCulture));
             }
+
+            statement.Reset();
+            statement.MoveNext();
         }
 
         public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery query)
@@ -5264,67 +5240,63 @@ AND Type = @InternalPersonType)");
                     {
                         if (!isReturningZeroItems)
                         {
-                            using (var statement = PrepareStatement(db, commandText))
+                            using var statement = PrepareStatement(db, commandText);
+                            statement.TryBind("@SelectType", returnType);
+                            if (EnableJoinUserData(query))
                             {
-                                statement.TryBind("@SelectType", returnType);
-                                if (EnableJoinUserData(query))
+                                statement.TryBind("@UserId", query.User.InternalId);
+                            }
+
+                            if (typeSubQuery is not null)
+                            {
+                                GetWhereClauses(typeSubQuery, null);
+                            }
+
+                            BindSimilarParams(query, statement);
+                            BindSearchParams(query, statement);
+                            GetWhereClauses(innerQuery, statement);
+                            GetWhereClauses(outerQuery, statement);
+
+                            var hasEpisodeAttributes = HasEpisodeAttributes(query);
+                            var hasProgramAttributes = HasProgramAttributes(query);
+                            var hasServiceName = HasServiceName(query);
+                            var hasStartDate = HasStartDate(query);
+                            var hasTrailerTypes = HasTrailerTypes(query);
+                            var hasArtistFields = HasArtistFields(query);
+                            var hasSeriesFields = HasSeriesFields(query);
+
+                            foreach (var row in statement.ExecuteQuery())
+                            {
+                                var item = GetItem(row, query, hasProgramAttributes, hasEpisodeAttributes, hasServiceName, hasStartDate, hasTrailerTypes, hasArtistFields, hasSeriesFields);
+                                if (item is not null)
                                 {
-                                    statement.TryBind("@UserId", query.User.InternalId);
-                                }
+                                    var countStartColumn = columns.Count - 1;
 
-                                if (typeSubQuery is not null)
-                                {
-                                    GetWhereClauses(typeSubQuery, null);
-                                }
-
-                                BindSimilarParams(query, statement);
-                                BindSearchParams(query, statement);
-                                GetWhereClauses(innerQuery, statement);
-                                GetWhereClauses(outerQuery, statement);
-
-                                var hasEpisodeAttributes = HasEpisodeAttributes(query);
-                                var hasProgramAttributes = HasProgramAttributes(query);
-                                var hasServiceName = HasServiceName(query);
-                                var hasStartDate = HasStartDate(query);
-                                var hasTrailerTypes = HasTrailerTypes(query);
-                                var hasArtistFields = HasArtistFields(query);
-                                var hasSeriesFields = HasSeriesFields(query);
-
-                                foreach (var row in statement.ExecuteQuery())
-                                {
-                                    var item = GetItem(row, query, hasProgramAttributes, hasEpisodeAttributes, hasServiceName, hasStartDate, hasTrailerTypes, hasArtistFields, hasSeriesFields);
-                                    if (item is not null)
-                                    {
-                                        var countStartColumn = columns.Count - 1;
-
-                                        list.Add((item, GetItemCounts(row, countStartColumn, typesToCount)));
-                                    }
+                                    list.Add((item, GetItemCounts(row, countStartColumn, typesToCount)));
                                 }
                             }
                         }
 
                         if (query.EnableTotalRecordCount)
                         {
-                            using (var statement = PrepareStatement(db, countText))
+                            using var statement = PrepareStatement(db, countText);
+                            statement.TryBind("@SelectType", returnType);
+                            if (EnableJoinUserData(query))
                             {
-                                statement.TryBind("@SelectType", returnType);
-                                if (EnableJoinUserData(query))
-                                {
-                                    statement.TryBind("@UserId", query.User.InternalId);
-                                }
-
-                                if (typeSubQuery is not null)
-                                {
-                                    GetWhereClauses(typeSubQuery, null);
-                                }
-
-                                BindSimilarParams(query, statement);
-                                BindSearchParams(query, statement);
-                                GetWhereClauses(innerQuery, statement);
-                                GetWhereClauses(outerQuery, statement);
-
-                                result.TotalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
+                                statement.TryBind("@UserId", query.User.InternalId);
                             }
+
+                            if (typeSubQuery is not null)
+                            {
+                                GetWhereClauses(typeSubQuery, null);
+                            }
+
+                            BindSimilarParams(query, statement);
+                            BindSearchParams(query, statement);
+                            GetWhereClauses(innerQuery, statement);
+                            GetWhereClauses(outerQuery, statement);
+
+                            result.TotalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
                         }
                     },
                     ReadTransactionMode);
@@ -5504,20 +5476,18 @@ AND Type = @InternalPersonType)");
 
             CheckDisposed();
 
-            using (var connection = GetConnection())
-            {
-                connection.RunInTransaction(
-                    db =>
-                    {
-                        var itemIdBlob = itemId.ToByteArray();
+            using var connection = GetConnection();
+            connection.RunInTransaction(
+                db =>
+                {
+                    var itemIdBlob = itemId.ToByteArray();
 
-                        // First delete chapters
-                        db.Execute("delete from People where ItemId=@ItemId", itemIdBlob);
+                    // First delete chapters
+                    db.Execute("delete from People where ItemId=@ItemId", itemIdBlob);
 
-                        InsertPeople(itemIdBlob, people, db);
-                    },
-                    TransactionMode);
-            }
+                    InsertPeople(itemIdBlob, people, db);
+                },
+                TransactionMode);
         }
 
         private void InsertPeople(byte[] idBlob, List<PersonInfo> people, IDatabaseConnection db)
@@ -5617,32 +5587,30 @@ AND Type = @InternalPersonType)");
 
             cmdText += " order by StreamIndex ASC";
 
-            using (var connection = GetConnection(true))
+            using var connection = GetConnection(true);
+            var list = new List<MediaStream>();
+
+            using (var statement = PrepareStatement(connection, cmdText))
             {
-                var list = new List<MediaStream>();
+                statement.TryBind("@ItemId", query.ItemId);
 
-                using (var statement = PrepareStatement(connection, cmdText))
+                if (query.Type.HasValue)
                 {
-                    statement.TryBind("@ItemId", query.ItemId);
-
-                    if (query.Type.HasValue)
-                    {
-                        statement.TryBind("@StreamType", query.Type.Value.ToString());
-                    }
-
-                    if (query.Index.HasValue)
-                    {
-                        statement.TryBind("@StreamIndex", query.Index.Value);
-                    }
-
-                    foreach (var row in statement.ExecuteQuery())
-                    {
-                        list.Add(GetMediaStream(row));
-                    }
+                    statement.TryBind("@StreamType", query.Type.Value.ToString());
                 }
 
-                return list;
+                if (query.Index.HasValue)
+                {
+                    statement.TryBind("@StreamIndex", query.Index.Value);
+                }
+
+                foreach (var row in statement.ExecuteQuery())
+                {
+                    list.Add(GetMediaStream(row));
+                }
             }
+
+            return list;
         }
 
         public void SaveMediaStreams(Guid id, IReadOnlyList<MediaStream> streams, CancellationToken cancellationToken)
@@ -5658,20 +5626,18 @@ AND Type = @InternalPersonType)");
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var connection = GetConnection())
+            using var connection = GetConnection();
+            connection.RunInTransaction(
+            db =>
             {
-                connection.RunInTransaction(
-                db =>
-                {
-                    var itemIdBlob = id.ToByteArray();
+                var itemIdBlob = id.ToByteArray();
 
-                    // Delete existing mediastreams
-                    db.Execute("delete from mediastreams where ItemId=@ItemId", itemIdBlob);
+                // Delete existing mediastreams
+                db.Execute("delete from mediastreams where ItemId=@ItemId", itemIdBlob);
 
-                    InsertMediaStreams(itemIdBlob, streams, db);
-                },
-                TransactionMode);
-            }
+                InsertMediaStreams(itemIdBlob, streams, db);
+            },
+            TransactionMode);
         }
 
         private void InsertMediaStreams(byte[] idBlob, IReadOnlyList<MediaStream> streams, IDatabaseConnection db)
@@ -5788,10 +5754,9 @@ AND Type = @InternalPersonType)");
         {
             var item = new MediaStream
             {
-                Index = reader[1].ToInt()
+                Index = reader[1].ToInt(),
+                Type = Enum.Parse<MediaStreamType>(reader[2].ToString(), true)
             };
-
-            item.Type = Enum.Parse<MediaStreamType>(reader[2].ToString(), true);
 
             if (reader.TryGetString(3, out var codec))
             {
@@ -6043,19 +6008,17 @@ AND Type = @InternalPersonType)");
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var connection = GetConnection())
+            using var connection = GetConnection();
+            connection.RunInTransaction(
+            db =>
             {
-                connection.RunInTransaction(
-                db =>
-                {
-                    var itemIdBlob = id.ToByteArray();
+                var itemIdBlob = id.ToByteArray();
 
-                    db.Execute("delete from mediaattachments where ItemId=@ItemId", itemIdBlob);
+                db.Execute("delete from mediaattachments where ItemId=@ItemId", itemIdBlob);
 
-                    InsertMediaAttachments(itemIdBlob, attachments, db, cancellationToken);
-                },
-                TransactionMode);
-            }
+                InsertMediaAttachments(itemIdBlob, attachments, db, cancellationToken);
+            },
+            TransactionMode);
         }
 
         private void InsertMediaAttachments(

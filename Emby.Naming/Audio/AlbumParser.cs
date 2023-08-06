@@ -56,7 +56,7 @@ namespace Emby.Naming.Audio
                     continue;
                 }
 
-                var tmp = trimmedFilename.Slice(prefix.Length).Trim();
+                var tmp = trimmedFilename[prefix.Length..].Trim();
 
                 if (int.TryParse(tmp.LeftPart(' '), CultureInfo.InvariantCulture, out _))
                 {
