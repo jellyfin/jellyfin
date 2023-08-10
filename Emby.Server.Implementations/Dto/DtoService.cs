@@ -920,7 +920,7 @@ namespace Emby.Server.Implementations.Dto
                     dto.AlbumId = albumParent.Id;
                     dto.AlbumPrimaryImageTag = GetTagAndFillBlurhash(dto, albumParent, ImageType.Primary);
 
-                    dto.LUFSAlbum = albumParent.LUFS;
+                    dto.AlbumLUFS = albumParent.LUFS;
                 }
 
                 // if (options.ContainsField(ItemFields.MediaSourceCount))
