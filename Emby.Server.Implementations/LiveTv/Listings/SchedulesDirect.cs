@@ -466,7 +466,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             foreach (var i in programIds)
             {
                 str.Append('"')
-                    .Append(i.AsSpan().Slice(0, 10))
+                    .Append(i[..10])
                     .Append("\",");
             }
 
