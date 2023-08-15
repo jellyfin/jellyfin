@@ -2043,7 +2043,7 @@ namespace Emby.Server.Implementations.Data
                     insertText.AppendFormat(CultureInfo.InvariantCulture, "(@ItemId, @ChapterIndex{0}, @StartPositionTicks{0}, @Name{0}, @ImagePath{0}, @ImageDateModified{0}),", i.ToString(CultureInfo.InvariantCulture));
                 }
 
-                insertText.Length -= 1; // Remove last ,
+                insertText.Length -= 1; // Remove trailing comma
 
                 using (var statement = PrepareStatement(db, insertText.ToString()))
                 {
@@ -3542,7 +3542,6 @@ namespace Emby.Server.Implementations.Data
                     statement?.TryBind(paramName, "%" + trailerTypes[i] + "%");
                 }
 
-                // Remove last " OR "
                 clauseBuilder.Length -= Or.Length;
                 clauseBuilder.Append(')');
 
@@ -3590,7 +3589,6 @@ namespace Emby.Server.Implementations.Data
                     }
                 }
 
-                // Remove last " OR "
                 clauseBuilder.Length -= Or.Length;
                 clauseBuilder.Append(')');
 
@@ -3958,7 +3956,7 @@ namespace Emby.Server.Implementations.Data
                     statement?.TryBind(ParamName + i, query.BlockUnratedItems[i].ToString());
                 }
 
-                // Remove last,
+                // Remove trailing comma
                 clauseBuilder.Length--;
                 clauseBuilder.Append("))");
 
@@ -4860,7 +4858,7 @@ AND Type = @InternalPersonType)");
                     i.ToString(CultureInfo.InvariantCulture));
             }
 
-            // Remove last ,
+            // Remove trailing comma
             insertText.Length--;
 
             using (var statement = PrepareStatement(db, insertText.ToString()))
@@ -5388,7 +5386,7 @@ AND Type = @InternalPersonType)");
                         i);
                 }
 
-                // Remove last comma
+                // Remove trailing comma
                 insertText.Length--;
 
                 using (var statement = PrepareStatement(db, insertText.ToString()))
@@ -5469,7 +5467,7 @@ AND Type = @InternalPersonType)");
                         i.ToString(CultureInfo.InvariantCulture));
                 }
 
-                // Remove last comma
+                // Remove trailing comma
                 insertText.Length--;
 
                 using (var statement = PrepareStatement(db, insertText.ToString()))
