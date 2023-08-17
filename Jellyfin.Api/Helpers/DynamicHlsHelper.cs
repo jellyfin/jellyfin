@@ -307,7 +307,7 @@ public class DynamicHlsHelper
             AppendPlaylist(builder, state, variantUrl, newBitrate, subtitleGroup);
         }
 
-        if (!isLiveStream && (state.VideoRequest?.EnableTrickplay).GetValueOrDefault(false))
+        if (!isLiveStream && (state.VideoRequest?.EnableTrickplay ?? false))
         {
             var sourceId = Guid.Parse(state.Request.MediaSourceId);
             var trickplayResolutions = await _trickplayManager.GetTrickplayResolutions(sourceId).ConfigureAwait(false);
@@ -565,7 +565,7 @@ public class DynamicHlsHelper
                 state.Request.MediaSourceId,
                 user.GetToken());
 
-            var line = string.Format(
+            builder.AppendFormat(
                 CultureInfo.InvariantCulture,
                 playlistFormat,
                 trickplayInfo.Bandwidth.ToString(CultureInfo.InvariantCulture),
@@ -573,7 +573,7 @@ public class DynamicHlsHelper
                 trickplayInfo.Height.ToString(CultureInfo.InvariantCulture),
                 url);
 
-            builder.AppendLine(line);
+            builder.AppendLine();
         }
     }
 
