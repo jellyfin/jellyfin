@@ -1033,6 +1033,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 try
                 {
+                    process.StandardOutput.Dispose();
+                }
+                catch
+                {
+                }
+
+                try
+                {
                     process.Dispose();
                 }
                 catch
