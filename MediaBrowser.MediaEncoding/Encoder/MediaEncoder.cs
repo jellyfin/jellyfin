@@ -511,7 +511,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             using (var processWrapper = new ProcessWrapper(process, this))
             {
                 StartProcess(processWrapper);
-                await process.StandardOutput.BaseStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+                using var reader = process.StandardOutput;
+                await reader.BaseStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
                 memoryStream.Seek(0, SeekOrigin.Begin);
                 InternalMediaInfoResult result;
                 try
@@ -1029,14 +1030,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 lock (_mediaEncoder._runningProcessesLock)
                 {
                     _mediaEncoder._runningProcesses.Remove(this);
-                }
-
-                try
-                {
-                    process.StandardOutput.Dispose();
-                }
-                catch
-                {
                 }
 
                 try
