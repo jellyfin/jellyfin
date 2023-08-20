@@ -1311,20 +1311,20 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            return !(type == typeof(Season)
-                || type == typeof(MusicArtist)
-                || type == typeof(Person)
-                || type == typeof(MusicGenre)
-                || type == typeof(Genre)
-                || type == typeof(Studio)
-                || type == typeof(PlaylistsFolder)
-                || type == typeof(PhotoAlbum)
-                || type == typeof(Year)
-                || type == typeof(Book)
-                || type == typeof(LiveTvProgram)
-                || type == typeof(AudioBook)
-                || type == typeof(Audio)
-                || type == typeof(MusicAlbum));
+            return type != typeof(Season)
+                && type != typeof(MusicArtist)
+                && type != typeof(Person)
+                && type != typeof(MusicGenre)
+                && type != typeof(Genre)
+                && type != typeof(Studio)
+                && type != typeof(PlaylistsFolder)
+                && type != typeof(PhotoAlbum)
+                && type != typeof(Year)
+                && type != typeof(Book)
+                && type != typeof(LiveTvProgram)
+                && type != typeof(AudioBook)
+                && type != typeof(Audio)
+                && type != typeof(MusicAlbum);
         }
 
         private BaseItem GetItem(IReadOnlyList<ResultSetValue> reader, InternalItemsQuery query)
