@@ -572,24 +572,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 process.Start();
 
-                if (!string.IsNullOrEmpty(testKey))
+                if (redirectStandardIn)
                 {
-                    process.StandardInput.Write(testKey);
+                    using var writer = process.StandardInput;
+                    writer.Write(testKey);
                 }
 
-                var reader = readStdErr ? process.StandardError : process.StandardOutput;
-                try
-                {
-                    return reader.ReadToEnd();
-                }
-                finally
-                {
-                    reader.Dispose();
-                    if (redirectStandardIn)
-                    {
-                        process.StandardInput.Dispose();
-                    }
-                }
+                using var reader = readStdErr ? process.StandardError : process.StandardOutput;
+                return reader.ReadToEnd();
             }
         }
     }
