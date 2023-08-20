@@ -553,7 +553,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private string GetProcessOutput(string path, string arguments, bool readStdErr, string? testKey)
         {
-            using (var process = new Process()
+            var redirectStandardIn = !string.IsNullOrEmpty(testKey);
+            using (var process = new Process
             {
                 StartInfo = new ProcessStartInfo(path, arguments)
                 {
@@ -561,7 +562,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     UseShellExecute = false,
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false,
-                    RedirectStandardInput = !string.IsNullOrEmpty(testKey),
+                    RedirectStandardInput = redirectStandardIn,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true
                 }
@@ -571,12 +572,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 process.Start();
 
-                if (!string.IsNullOrEmpty(testKey))
+                if (redirectStandardIn)
                 {
-                    process.StandardInput.Write(testKey);
+                    using var writer = process.StandardInput;
+                    writer.Write(testKey);
                 }
 
-                return readStdErr ? process.StandardError.ReadToEnd() : process.StandardOutput.ReadToEnd();
+                using var reader = readStdErr ? process.StandardError : process.StandardOutput;
+                return reader.ReadToEnd();
             }
         }
     }

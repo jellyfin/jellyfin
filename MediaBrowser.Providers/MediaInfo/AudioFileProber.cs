@@ -130,7 +130,8 @@ namespace MediaBrowser.Providers.MediaInfo
                         throw;
                     }
 
-                    output = await process.StandardError.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+                    using var reader = process.StandardError;
+                    output = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
                     cancellationToken.ThrowIfCancellationRequested();
                     MatchCollection split = LUFSRegex().Matches(output);
 
