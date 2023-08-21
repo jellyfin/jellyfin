@@ -45,10 +45,9 @@ namespace Emby.Server.Implementations.Data
 
                 var users = userDatasTableExists ? null : _userManager.Users;
                 using var transaction = connection.BeginTransaction();
-                connection.Execute(string.Join(';', new[]
-                {
+                connection.Execute(string.Join(
+                    ';',
                     "create table if not exists UserDatas (key nvarchar not null, userId INT not null, rating float null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null, AudioStreamIndex INT, SubtitleStreamIndex INT)",
-
                     "drop index if exists idx_userdata",
                     "drop index if exists idx_userdata1",
                     "drop index if exists idx_userdata2",
@@ -59,11 +58,11 @@ namespace Emby.Server.Implementations.Data
                     "create unique index if not exists UserDatasIndex1 on UserDatas (key, userId)",
                     "create index if not exists UserDatasIndex2 on UserDatas (key, userId, played)",
                     "create index if not exists UserDatasIndex3 on UserDatas (key, userId, playbackPositionTicks)",
-                    "create index if not exists UserDatasIndex4 on UserDatas (key, userId, isFavorite)"
-                }));
+                    "create index if not exists UserDatasIndex4 on UserDatas (key, userId, isFavorite)"));
 
                 if (!userDataTableExists)
                 {
+                    transaction.Commit();
                     return;
                 }
 
