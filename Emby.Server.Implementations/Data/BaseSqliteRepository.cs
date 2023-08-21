@@ -101,6 +101,7 @@ namespace Emby.Server.Implementations.Data
         protected SqliteConnection GetConnection(bool readOnly = false)
         {
             var connection = new SqliteConnection($"Filename={DbFilePath}");
+            connection.Open();
 
             if (CacheSize.HasValue)
             {
@@ -134,7 +135,6 @@ namespace Emby.Server.Implementations.Data
 
             connection.Execute("PRAGMA temp_store=" + (int)TempStore);
 
-            connection.Open();
             return connection;
         }
 
