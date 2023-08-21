@@ -4697,7 +4697,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             var list = new List<PersonInfo>();
             using (var connection = GetConnection())
-            using (var statement = PrepareStatement(connection, commandText))
+            using (var statement = PrepareStatement(connection, commandText.ToString()))
             {
                 // Run this again to bind the params
                 GetPeopleWhereClauses(query, statement);
