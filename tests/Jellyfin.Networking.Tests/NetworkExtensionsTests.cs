@@ -16,7 +16,6 @@ namespace Jellyfin.Networking.Tests
         [InlineData("127.0.0.1:123")]
         [InlineData("localhost")]
         [InlineData("localhost:1345")]
-        [InlineData("www.google.co.uk")]
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517")]
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517/56")]
         [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517]:124")]

@@ -291,18 +291,8 @@ public static partial class NetworkExtensions
             {
                 try
                 {
-                    var addressList = new List<IPAddress>();
-                    if (isIPv4Enabled)
-                    {
-                        addressList.AddRange(Dns.GetHostAddresses(firstPart, AddressFamily.InterNetwork));
-                    }
-
-                    if (isIPv6Enabled)
-                    {
-                        addressList.AddRange(Dns.GetHostAddresses(firstPart, AddressFamily.InterNetworkV6));
-                    }
-
-                    addresses = addressList.ToArray();
+                    // .NET automatically filters only supported returned addresses based on OS support.
+                    addresses = Dns.GetHostAddresses(firstPart);
                     return true;
                 }
                 catch (SocketException)
