@@ -98,7 +98,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        protected SqliteConnection GetConnection(bool readOnly = false)
+        protected SqliteConnection GetConnection()
         {
             var connection = new SqliteConnection($"Filename={DbFilePath}");
             connection.Open();
