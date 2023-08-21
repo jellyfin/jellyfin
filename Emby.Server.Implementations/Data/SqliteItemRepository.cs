@@ -2066,7 +2066,7 @@ namespace Emby.Server.Implementations.Data
                     db =>
                     {
                         // First delete chapters
-                        var command = db.PrepareStatement($"delete from {ChaptersTableName} where ItemId=@ItemId");
+                        using var command = db.PrepareStatement($"delete from {ChaptersTableName} where ItemId=@ItemId");
                         command.TryBind("@ItemId", id);
                         command.ExecuteNonQuery();
 
