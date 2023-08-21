@@ -68,7 +68,7 @@ namespace Emby.Server.Implementations.Data
                 sqliteConnection.Open();
             }
 
-            var command = sqliteConnection.CreateCommand();
+            using var command = sqliteConnection.CreateCommand();
             command.CommandText = commandText;
             using (var reader = command.ExecuteReader())
             {
@@ -82,7 +82,7 @@ namespace Emby.Server.Implementations.Data
         public static void Execute(this SqliteConnection sqliteConnection, string commandText)
         {
             sqliteConnection.EnsureOpen();
-            var command = sqliteConnection.CreateCommand();
+            using var command = sqliteConnection.CreateCommand();
             command.CommandText = commandText;
             command.ExecuteNonQuery();
         }
@@ -109,7 +109,7 @@ namespace Emby.Server.Implementations.Data
         {
             sqliteConnection.EnsureOpen();
 
-            var command = sqliteConnection.CreateCommand();
+            using var command = sqliteConnection.CreateCommand();
             command.CommandText = commandText;
             command.ExecuteNonQuery();
         }
@@ -333,7 +333,7 @@ namespace Emby.Server.Implementations.Data
         public static void MoveNext(this SqliteCommand sqliteCommand)
         {
             sqliteCommand.Prepare();
-            var result = sqliteCommand.ExecuteNonQuery();
+            sqliteCommand.ExecuteNonQuery();
         }
 
         public static byte[] GetBlob(this SqliteDataReader reader, int index)
