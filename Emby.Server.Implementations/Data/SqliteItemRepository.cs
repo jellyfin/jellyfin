@@ -5917,7 +5917,7 @@ AND Type = @InternalPersonType)");
                 item.DvBlSignalCompatibilityId = dvBlSignalCompatibilityId;
             }
 
-            item.IsHearingImpaired = reader.GetBoolean(43);
+            item.IsHearingImpaired = reader.TryGetBoolean(43, out var result) && result;
 
             if (item.Type == MediaStreamType.Subtitle)
             {

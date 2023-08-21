@@ -100,41 +100,41 @@ namespace Emby.Server.Implementations.Data
 
         protected SqliteConnection GetConnection(bool readOnly = false)
         {
-            var writeConnection = new SqliteConnection($"Filename={DbFilePath}");
+            var connection = new SqliteConnection($"Filename={DbFilePath}");
 
             if (CacheSize.HasValue)
             {
-                writeConnection.Execute("PRAGMA cache_size=" + CacheSize.Value);
+                connection.Execute("PRAGMA cache_size=" + CacheSize.Value);
             }
 
             if (!string.IsNullOrWhiteSpace(LockingMode))
             {
-                writeConnection.Execute("PRAGMA locking_mode=" + LockingMode);
+                connection.Execute("PRAGMA locking_mode=" + LockingMode);
             }
 
             if (!string.IsNullOrWhiteSpace(JournalMode))
             {
-                writeConnection.Execute("PRAGMA journal_mode=" + JournalMode);
+                connection.Execute("PRAGMA journal_mode=" + JournalMode);
             }
 
             if (JournalSizeLimit.HasValue)
             {
-                writeConnection.Execute("PRAGMA journal_size_limit=" + JournalSizeLimit.Value);
+                connection.Execute("PRAGMA journal_size_limit=" + JournalSizeLimit.Value);
             }
 
             if (Synchronous.HasValue)
             {
-                writeConnection.Execute("PRAGMA synchronous=" + (int)Synchronous.Value);
+                connection.Execute("PRAGMA synchronous=" + (int)Synchronous.Value);
             }
 
             if (PageSize.HasValue)
             {
-                writeConnection.Execute("PRAGMA page_size=" + PageSize.Value);
+                connection.Execute("PRAGMA page_size=" + PageSize.Value);
             }
 
-            writeConnection.Execute("PRAGMA temp_store=" + (int)TempStore);
+            connection.Execute("PRAGMA temp_store=" + (int)TempStore);
 
-            return writeConnection;
+            return connection;
         }
 
         public SqliteCommand PrepareStatement(SqliteConnection connection, string sql)
