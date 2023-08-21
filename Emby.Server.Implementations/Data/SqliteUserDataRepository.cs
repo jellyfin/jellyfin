@@ -44,43 +44,45 @@ namespace Emby.Server.Implementations.Data
                 var userDataTableExists = TableExists(connection, "userdata");
 
                 var users = userDatasTableExists ? null : _userManager.Users;
+                using var transaction = connection.BeginTransaction();
+                connection.ExecuteAll(string.Join(';', new[]
+                {
+                    "create table if not exists UserDatas (key nvarchar not null, userId INT not null, rating float null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null, AudioStreamIndex INT, SubtitleStreamIndex INT)",
 
-                connection.RunInTransaction(
-                    db =>
-                    {
-                        db.ExecuteAll(string.Join(';', new[]
-                        {
-                            "create table if not exists UserDatas (key nvarchar not null, userId INT not null, rating float null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null, AudioStreamIndex INT, SubtitleStreamIndex INT)",
+                    "drop index if exists idx_userdata",
+                    "drop index if exists idx_userdata1",
+                    "drop index if exists idx_userdata2",
+                    "drop index if exists userdataindex1",
+                    "drop index if exists userdataindex",
+                    "drop index if exists userdataindex3",
+                    "drop index if exists userdataindex4",
+                    "create unique index if not exists UserDatasIndex1 on UserDatas (key, userId)",
+                    "create index if not exists UserDatasIndex2 on UserDatas (key, userId, played)",
+                    "create index if not exists UserDatasIndex3 on UserDatas (key, userId, playbackPositionTicks)",
+                    "create index if not exists UserDatasIndex4 on UserDatas (key, userId, isFavorite)"
+                }));
 
-                            "drop index if exists idx_userdata",
-                            "drop index if exists idx_userdata1",
-                            "drop index if exists idx_userdata2",
-                            "drop index if exists userdataindex1",
-                            "drop index if exists userdataindex",
-                            "drop index if exists userdataindex3",
-                            "drop index if exists userdataindex4",
-                            "create unique index if not exists UserDatasIndex1 on UserDatas (key, userId)",
-                            "create index if not exists UserDatasIndex2 on UserDatas (key, userId, played)",
-                            "create index if not exists UserDatasIndex3 on UserDatas (key, userId, playbackPositionTicks)",
-                            "create index if not exists UserDatasIndex4 on UserDatas (key, userId, isFavorite)"
-                        }));
+                if (!userDataTableExists)
+                {
+                    return;
+                }
 
-                        if (userDataTableExists)
-                        {
-                            var existingColumnNames = GetColumnNames(db, "userdata");
+                var existingColumnNames = GetColumnNames(connection, "userdata");
 
-                            AddColumn(db, "userdata", "InternalUserId", "int", existingColumnNames);
-                            AddColumn(db, "userdata", "AudioStreamIndex", "int", existingColumnNames);
-                            AddColumn(db, "userdata", "SubtitleStreamIndex", "int", existingColumnNames);
+                AddColumn(connection, "userdata", "InternalUserId", "int", existingColumnNames);
+                AddColumn(connection, "userdata", "AudioStreamIndex", "int", existingColumnNames);
+                AddColumn(connection, "userdata", "SubtitleStreamIndex", "int", existingColumnNames);
 
-                            if (!userDatasTableExists)
-                            {
-                                ImportUserIds(db, users);
+                if (userDatasTableExists)
+                {
+                    return;
+                }
 
-                                db.ExecuteAll("INSERT INTO UserDatas (key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex) SELECT key, InternalUserId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex from userdata where InternalUserId not null");
-                            }
-                        }
-                    });
+                ImportUserIds(connection, users);
+
+                connection.ExecuteAll("INSERT INTO UserDatas (key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex) SELECT key, InternalUserId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex from userdata where InternalUserId not null");
+
+                transaction.Commit();
             }
         }
 
@@ -99,7 +101,6 @@ namespace Emby.Server.Implementations.Data
 
                     statement.TryBind("@UserId", user.Id);
                     statement.TryBind("@InternalUserId", user.InternalId);
-                    statement.Prepare();
 
                     statement.ExecuteNonQuery();
                 }
@@ -168,12 +169,10 @@ namespace Emby.Server.Implementations.Data
             cancellationToken.ThrowIfCancellationRequested();
 
             using (var connection = GetConnection())
+            using (var transaction = connection.BeginTransaction())
             {
-                connection.RunInTransaction(
-                    db =>
-                    {
-                        SaveUserData(db, internalUserId, key, userData);
-                    });
+                SaveUserData(connection, internalUserId, key, userData);
+                transaction.Commit();
             }
         }
 
@@ -225,7 +224,7 @@ namespace Emby.Server.Implementations.Data
                     statement.TryBindNull("@SubtitleStreamIndex");
                 }
 
-                statement.MoveNext();
+                statement.ExecuteNonQuery();
             }
         }
 
@@ -237,15 +236,14 @@ namespace Emby.Server.Implementations.Data
             cancellationToken.ThrowIfCancellationRequested();
 
             using (var connection = GetConnection())
+            using (var transaction = connection.BeginTransaction())
             {
-                connection.RunInTransaction(
-                    db =>
-                    {
-                        foreach (var userItemData in userDataList)
-                        {
-                            SaveUserData(db, internalUserId, userItemData.Key, userItemData);
-                        }
-                    });
+                foreach (var userItemData in userDataList)
+                {
+                    SaveUserData(connection, internalUserId, userItemData.Key, userItemData);
+                }
+
+                transaction.Commit();
             }
         }
 

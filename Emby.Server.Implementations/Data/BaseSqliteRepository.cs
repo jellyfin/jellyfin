@@ -146,22 +146,16 @@ namespace Emby.Server.Implementations.Data
 
         protected bool TableExists(SqliteConnection connection, string name)
         {
-            return connection.RunInTransaction(
-                db =>
+            using var statement = PrepareStatement(connection, "select DISTINCT tbl_name from sqlite_master");
+            foreach (var row in statement.ExecuteQuery())
+            {
+                if (string.Equals(name, row.GetString(0), StringComparison.OrdinalIgnoreCase))
                 {
-                    using (var statement = PrepareStatement(db, "select DISTINCT tbl_name from sqlite_master"))
-                    {
-                        foreach (var row in statement.ExecuteQuery())
-                        {
-                            if (string.Equals(name, row.GetString(0), StringComparison.OrdinalIgnoreCase))
-                            {
-                                return true;
-                            }
-                        }
-                    }
+                    return true;
+                }
+            }
 
-                    return false;
-                });
+            return false;
         }
 
         protected List<string> GetColumnNames(SqliteConnection connection, string table)

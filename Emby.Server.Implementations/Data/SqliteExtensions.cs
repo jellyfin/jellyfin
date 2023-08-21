@@ -87,24 +87,6 @@ namespace Emby.Server.Implementations.Data
             command.ExecuteNonQuery();
         }
 
-        public static void RunInTransaction(this SqliteConnection sqliteConnection, Action<SqliteConnection> action)
-        {
-            sqliteConnection.EnsureOpen();
-
-            using var transaction = sqliteConnection.BeginTransaction();
-            action(sqliteConnection);
-            transaction.Commit();
-        }
-
-        public static bool RunInTransaction(this SqliteConnection sqliteConnection, Func<SqliteConnection, bool> action)
-        {
-            sqliteConnection.EnsureOpen();
-            using var transaction = sqliteConnection.BeginTransaction();
-            var result = action(sqliteConnection);
-            transaction.Commit();
-            return result;
-        }
-
         public static void ExecuteAll(this SqliteConnection sqliteConnection, string commandText)
         {
             sqliteConnection.EnsureOpen();
@@ -117,11 +99,9 @@ namespace Emby.Server.Implementations.Data
         public static void RunQueries(this SqliteConnection connection, string[] queries)
         {
             ArgumentNullException.ThrowIfNull(queries);
-
-            connection.RunInTransaction(conn =>
-            {
-                conn.ExecuteAll(string.Join(';', queries));
-            });
+            using var transaction = connection.BeginTransaction();
+            connection.ExecuteAll(string.Join(';', queries));
+            transaction.Commit();
         }
 
         public static string ToDateTimeParamValue(this DateTime dateValue)
@@ -139,17 +119,6 @@ namespace Emby.Server.Implementations.Data
 
         private static string GetDateTimeKindFormat(DateTimeKind kind)
             => (kind == DateTimeKind.Utc) ? DatetimeFormatUtc : DatetimeFormatLocal;
-
-        public static DateTime ReadDateTime(this SqliteDataReader result)
-        {
-            var dateText = result.ToString();
-
-            return DateTime.ParseExact(
-                dateText!,
-                _datetimeFormats,
-                DateTimeFormatInfo.InvariantInfo,
-                DateTimeStyles.AdjustToUniversal);
-        }
 
         public static bool TryReadDateTime(this SqliteDataReader reader, int index, out DateTime result)
         {
@@ -256,12 +225,6 @@ namespace Emby.Server.Implementations.Data
             return true;
         }
 
-        [Conditional("DEBUG")]
-        private static void CheckName(string name)
-        {
-            throw new ArgumentException("Invalid param name: " + name, nameof(name));
-        }
-
         public static void TryBind(this SqliteCommand statement, string name, Guid value)
         {
             statement.TryBind(name, value, true);
@@ -327,19 +290,6 @@ namespace Emby.Server.Implementations.Data
             var command = sqliteConnection.CreateCommand();
             command.CommandText = sql;
             return command;
-        }
-
-        // Hacky
-        public static void MoveNext(this SqliteCommand sqliteCommand)
-        {
-            sqliteCommand.Prepare();
-            sqliteCommand.ExecuteNonQuery();
-        }
-
-        public static byte[] GetBlob(this SqliteDataReader reader, int index)
-        {
-            // Have to reset to casting as there isn't a publicly available GetBlob method
-            return (byte[])reader.GetValue(index);
         }
     }
 }
