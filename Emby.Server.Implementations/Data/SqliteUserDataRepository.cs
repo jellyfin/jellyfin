@@ -11,8 +11,8 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
-using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Data
 {
@@ -80,12 +80,11 @@ namespace Emby.Server.Implementations.Data
                                 db.ExecuteAll("INSERT INTO UserDatas (key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex) SELECT key, InternalUserId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex from userdata where InternalUserId not null");
                             }
                         }
-                    },
-                    TransactionMode);
+                    });
             }
         }
 
-        private void ImportUserIds(IDatabaseConnection db, IEnumerable<User> users)
+        private void ImportUserIds(SqliteConnection db, IEnumerable<User> users)
         {
             var userIdsWithUserData = GetAllUserIdsWithUserData(db);
 
@@ -100,14 +99,14 @@ namespace Emby.Server.Implementations.Data
 
                     statement.TryBind("@UserId", user.Id);
                     statement.TryBind("@InternalUserId", user.InternalId);
+                    statement.Prepare();
 
-                    statement.MoveNext();
-                    statement.Reset();
+                    statement.ExecuteNonQuery();
                 }
             }
         }
 
-        private List<Guid> GetAllUserIdsWithUserData(IDatabaseConnection db)
+        private List<Guid> GetAllUserIdsWithUserData(SqliteConnection db)
         {
             var list = new List<Guid>();
 
@@ -117,7 +116,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     try
                     {
-                        list.Add(row[0].ReadGuidFromBlob());
+                        list.Add(row.GetGuid(0));
                     }
                     catch (Exception ex)
                     {
@@ -174,12 +173,11 @@ namespace Emby.Server.Implementations.Data
                     db =>
                     {
                         SaveUserData(db, internalUserId, key, userData);
-                    },
-                    TransactionMode);
+                    });
             }
         }
 
-        private static void SaveUserData(IDatabaseConnection db, long internalUserId, string key, UserItemData userData)
+        private static void SaveUserData(SqliteConnection db, long internalUserId, string key, UserItemData userData)
         {
             using (var statement = db.PrepareStatement("replace into UserDatas (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex)"))
             {
@@ -247,8 +245,7 @@ namespace Emby.Server.Implementations.Data
                         {
                             SaveUserData(db, internalUserId, userItemData.Key, userItemData);
                         }
-                    },
-                    TransactionMode);
+                    });
             }
         }
 
@@ -336,7 +333,7 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="reader">The list of result set values.</param>
         /// <returns>The user item data.</returns>
-        private UserItemData ReadRow(IReadOnlyList<ResultSetValue> reader)
+        private UserItemData ReadRow(SqliteDataReader reader)
         {
             var userData = new UserItemData();
 
@@ -348,10 +345,10 @@ namespace Emby.Server.Implementations.Data
                 userData.Rating = rating;
             }
 
-            userData.Played = reader[3].ToBool();
-            userData.PlayCount = reader[4].ToInt();
-            userData.IsFavorite = reader[5].ToBool();
-            userData.PlaybackPositionTicks = reader[6].ToInt64();
+            userData.Played = reader.GetBoolean(3);
+            userData.PlayCount = reader.GetInt32(4);
+            userData.IsFavorite = reader.GetBoolean(5);
+            userData.PlaybackPositionTicks = reader.GetInt64(6);
 
             if (reader.TryReadDateTime(7, out var lastPlayedDate))
             {

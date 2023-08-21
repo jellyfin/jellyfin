@@ -4,6 +4,7 @@ using Emby.Server.Implementations.Data;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json;
+using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Controller;

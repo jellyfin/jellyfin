@@ -35,9 +35,9 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Data
 {
@@ -555,8 +555,7 @@ namespace Emby.Server.Implementations.Data
                         AddColumn(db, "MediaStreams", "DvBlSignalCompatibilityId", "INT", existingColumnNames);
 
                         AddColumn(db, "MediaStreams", "IsHearingImpaired", "BIT", existingColumnNames);
-                    },
-                    TransactionMode);
+                    });
 
                 connection.RunQueries(postQueries);
             }
@@ -580,8 +579,7 @@ namespace Emby.Server.Implementations.Data
 
                             saveImagesStatement.MoveNext();
                         }
-                    },
-                    TransactionMode);
+                    });
             }
         }
 
@@ -624,12 +622,11 @@ namespace Emby.Server.Implementations.Data
                     db =>
                     {
                         SaveItemsInTransaction(db, tuples);
-                    },
-                    TransactionMode);
+                    });
             }
         }
 
-        private void SaveItemsInTransaction(IDatabaseConnection db, IEnumerable<(BaseItem Item, List<Guid> AncestorIds, BaseItem TopParent, string UserDataKey, List<string> InheritedTags)> tuples)
+        private void SaveItemsInTransaction(SqliteConnection db, IEnumerable<(BaseItem Item, List<Guid> AncestorIds, BaseItem TopParent, string UserDataKey, List<string> InheritedTags)> tuples)
         {
             using (var saveItemStatement = PrepareStatement(db, SaveItemCommandText))
             using (var deleteAncestorsStatement = PrepareStatement(db, "delete from AncestorIds where ItemId=@ItemId"))
@@ -639,7 +636,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     if (requiresReset)
                     {
-                        saveItemStatement.Reset();
+                        // TODO saveItemStatement.Parameters.Clear();
                     }
 
                     var item = tuple.Item;
@@ -677,7 +674,7 @@ namespace Emby.Server.Implementations.Data
             return _appHost.ExpandVirtualPath(path);
         }
 
-        private void SaveItem(BaseItem item, BaseItem topParent, string userDataKey, IStatement saveItemStatement)
+        private void SaveItem(BaseItem item, BaseItem topParent, string userDataKey, SqliteCommand saveItemStatement)
         {
             Type type = item.GetType();
 
@@ -1389,12 +1386,12 @@ namespace Emby.Server.Implementations.Data
             return true;
         }
 
-        private BaseItem GetItem(IReadOnlyList<ResultSetValue> reader, InternalItemsQuery query)
+        private BaseItem GetItem(SqliteDataReader reader, InternalItemsQuery query)
         {
             return GetItem(reader, query, HasProgramAttributes(query), HasEpisodeAttributes(query), HasServiceName(query), HasStartDate(query), HasTrailerTypes(query), HasArtistFields(query), HasSeriesFields(query));
         }
 
-        private BaseItem GetItem(IReadOnlyList<ResultSetValue> reader, InternalItemsQuery query, bool enableProgramAttributes, bool hasEpisodeAttributes, bool hasServiceName, bool queryHasStartDate, bool hasTrailerTypes, bool hasArtistFields, bool hasSeriesFields)
+        private BaseItem GetItem(SqliteDataReader reader, InternalItemsQuery query, bool enableProgramAttributes, bool hasEpisodeAttributes, bool hasServiceName, bool queryHasStartDate, bool hasTrailerTypes, bool hasArtistFields, bool hasSeriesFields)
         {
             var typeString = reader.GetString(0);
 
@@ -1411,7 +1408,7 @@ namespace Emby.Server.Implementations.Data
             {
                 try
                 {
-                    item = JsonSerializer.Deserialize(reader[1].ToBlob(), type, _jsonOptions) as BaseItem;
+                    item = JsonSerializer.Deserialize(reader.GetStream(1), type, _jsonOptions) as BaseItem;
                 }
                 catch (JsonException ex)
                 {
@@ -1452,17 +1449,9 @@ namespace Emby.Server.Implementations.Data
                 item.EndDate = endDate;
             }
 
-            var channelId = reader[index];
-            if (!channelId.IsDbNull())
+            if (reader.TryGetGuid(index, out var guid))
             {
-                if (!Utf8Parser.TryParse(channelId.ToBlob(), out Guid value, out _, standardFormat: 'N'))
-                {
-                    var str = reader.GetString(index);
-                    Logger.LogWarning("{ChannelId} isn't in the expected format", str);
-                    value = new Guid(str);
-                }
-
-                item.ChannelId = value;
+                item.ChannelId = guid;
             }
 
             index++;
@@ -2018,7 +2007,7 @@ namespace Emby.Server.Implementations.Data
         /// <param name="reader">The reader.</param>
         /// <param name="item">The item.</param>
         /// <returns>ChapterInfo.</returns>
-        private ChapterInfo GetChapter(IReadOnlyList<ResultSetValue> reader, BaseItem item)
+        private ChapterInfo GetChapter(SqliteDataReader reader, BaseItem item)
         {
             var chapter = new ChapterInfo
             {
@@ -2071,23 +2060,22 @@ namespace Emby.Server.Implementations.Data
 
             ArgumentNullException.ThrowIfNull(chapters);
 
-            var idBlob = id.ToByteArray();
-
             using (var connection = GetConnection())
             {
                 connection.RunInTransaction(
                     db =>
                     {
                         // First delete chapters
-                        db.Execute("delete from " + ChaptersTableName + " where ItemId=@ItemId", idBlob);
+                        var command = db.PrepareStatement($"delete from {ChaptersTableName} where ItemId=@ItemId");
+                        command.TryBind("@ItemId", id);
+                        command.ExecuteNonQuery();
 
-                        InsertChapters(idBlob, chapters, db);
-                    },
-                    TransactionMode);
+                        InsertChapters(id, chapters, db);
+                    });
             }
         }
 
-        private void InsertChapters(byte[] idBlob, IReadOnlyList<ChapterInfo> chapters, IDatabaseConnection db)
+        private void InsertChapters(Guid idBlob, IReadOnlyList<ChapterInfo> chapters, SqliteConnection db)
         {
             var startIndex = 0;
             var limit = 100;
@@ -2126,7 +2114,7 @@ namespace Emby.Server.Implementations.Data
                         chapterIndex++;
                     }
 
-                    statement.Reset();
+                    // TODO statement.Parameters.Clear();
                     statement.MoveNext();
                 }
 
@@ -2463,7 +2451,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        private void BindSearchParams(InternalItemsQuery query, IStatement statement)
+        private void BindSearchParams(InternalItemsQuery query, SqliteCommand statement)
         {
             var searchTerm = query.SearchTerm;
 
@@ -2475,7 +2463,7 @@ namespace Emby.Server.Implementations.Data
             searchTerm = FixUnicodeChars(searchTerm);
             searchTerm = GetCleanValue(searchTerm);
 
-            var commandText = statement.SQL;
+            var commandText = statement.CommandText;
             if (commandText.Contains("@SearchTermStartsWith", StringComparison.OrdinalIgnoreCase))
             {
                 statement.TryBind("@SearchTermStartsWith", searchTerm + "%");
@@ -2492,7 +2480,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        private void BindSimilarParams(InternalItemsQuery query, IStatement statement)
+        private void BindSimilarParams(InternalItemsQuery query, SqliteCommand statement)
         {
             var item = query.SimilarTo;
 
@@ -2501,7 +2489,7 @@ namespace Emby.Server.Implementations.Data
                 return;
             }
 
-            var commandText = statement.SQL;
+            var commandText = statement.CommandText;
 
             if (commandText.Contains("@ItemOfficialRating", StringComparison.OrdinalIgnoreCase))
             {
@@ -2598,7 +2586,7 @@ namespace Emby.Server.Implementations.Data
                 // Running this again will bind the params
                 GetWhereClauses(query, statement);
 
-                return statement.ExecuteQuery().SelectScalarInt().First();
+                return statement.SelectScalarInt();
             }
         }
 
@@ -2916,11 +2904,10 @@ namespace Emby.Server.Implementations.Data
                                 // Running this again will bind the params
                                 GetWhereClauses(query, statement);
 
-                                result.TotalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
+                                result.TotalRecordCount = statement.SelectScalarInt();
                             }
                         }
-                    },
-                    ReadTransactionMode);
+                    });
             }
 
             result.StartIndex = query.StartIndex ?? 0;
@@ -3188,7 +3175,7 @@ namespace Emby.Server.Implementations.Data
 
                 foreach (var row in statement.ExecuteQuery())
                 {
-                    list.Add(row[0].ReadGuidFromBlob());
+                    list.Add(row.GetGuid(0));
                 }
             }
 
@@ -3224,7 +3211,7 @@ namespace Emby.Server.Implementations.Data
         }
 
 #nullable enable
-        private List<string> GetWhereClauses(InternalItemsQuery query, IStatement? statement)
+        private List<string> GetWhereClauses(InternalItemsQuery query, SqliteCommand? statement)
         {
             if (query.IsResumable ?? false)
             {
@@ -3647,8 +3634,7 @@ namespace Emby.Server.Implementations.Data
 
                     if (statement is not null)
                     {
-                        query.PersonIds[i].TryWriteBytes(idBytes);
-                        statement.TryBind(paramName, idBytes);
+                        statement.TryBind(paramName, query.PersonIds[i]);
                     }
                 }
 
@@ -4696,8 +4682,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     db =>
                     {
                         connection.ExecuteAll(sql);
-                    },
-                    TransactionMode);
+                    });
             }
         }
 
@@ -4735,16 +4720,15 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
                         // Delete the item
                         ExecuteWithSingleParam(db, "delete from TypedBaseItems where guid=@Id", idBlob);
-                    },
-                    TransactionMode);
+                    });
             }
         }
 
-        private void ExecuteWithSingleParam(IDatabaseConnection db, string query, ReadOnlySpan<byte> value)
+        private void ExecuteWithSingleParam(SqliteConnection db, string query, ReadOnlySpan<byte> value)
         {
             using (var statement = PrepareStatement(db, query))
             {
-                statement.TryBind("@Id", value);
+                statement.TryBind("@Id", value.ToArray());
 
                 statement.MoveNext();
             }
@@ -4826,7 +4810,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             return list;
         }
 
-        private List<string> GetPeopleWhereClauses(InternalPeopleQuery query, IStatement statement)
+        private List<string> GetPeopleWhereClauses(InternalPeopleQuery query, SqliteCommand statement)
         {
             var whereClauses = new List<string>();
 
@@ -4896,7 +4880,7 @@ AND Type = @InternalPersonType)");
             return whereClauses;
         }
 
-        private void UpdateAncestors(Guid itemId, List<Guid> ancestorIds, IDatabaseConnection db, IStatement deleteAncestorsStatement)
+        private void UpdateAncestors(Guid itemId, List<Guid> ancestorIds, SqliteConnection db, SqliteCommand deleteAncestorsStatement)
         {
             if (itemId.Equals(default))
             {
@@ -4907,12 +4891,14 @@ AND Type = @InternalPersonType)");
 
             CheckDisposed();
 
-            Span<byte> itemIdBlob = stackalloc byte[16];
-            itemId.TryWriteBytes(itemIdBlob);
+            // TODO how to handle span?
+            Span<byte> itemIdBlob2 = stackalloc byte[16];
+            itemId.TryWriteBytes(itemIdBlob2);
+            var itemIdBlob = Encoding.ASCII.GetBytes(itemId.ToString());
 
             // First delete
-            deleteAncestorsStatement.Reset();
-            deleteAncestorsStatement.TryBind("@ItemId", itemIdBlob);
+            // TODO deleteAncestorsStatement.Parameters.Clear();
+            deleteAncestorsStatement.TryBind("@ItemId", itemId);
             deleteAncestorsStatement.MoveNext();
 
             if (ancestorIds.Count == 0)
@@ -4942,13 +4928,13 @@ AND Type = @InternalPersonType)");
                     var index = i.ToString(CultureInfo.InvariantCulture);
 
                     var ancestorId = ancestorIds[i];
-                    ancestorId.TryWriteBytes(itemIdBlob);
+                    itemIdBlob = Encoding.ASCII.GetBytes(itemId.ToString());
 
-                    statement.TryBind("@AncestorId" + index, itemIdBlob);
+                    statement.TryBind("@AncestorId" + index, ancestorId);
                     statement.TryBind("@AncestorIdText" + index, ancestorId.ToString("N", CultureInfo.InvariantCulture));
                 }
 
-                statement.Reset();
+                // TODO statement.Parameters.Clear();
                 statement.MoveNext();
             }
         }
@@ -5323,11 +5309,10 @@ AND Type = @InternalPersonType)");
                                 GetWhereClauses(innerQuery, statement);
                                 GetWhereClauses(outerQuery, statement);
 
-                                result.TotalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
+                                result.TotalRecordCount = statement.SelectScalarInt();
                             }
                         }
-                    },
-                    ReadTransactionMode);
+                    });
             }
 
             if (result.TotalRecordCount == 0)
@@ -5341,7 +5326,7 @@ AND Type = @InternalPersonType)");
             return result;
         }
 
-        private static ItemCounts GetItemCounts(IReadOnlyList<ResultSetValue> reader, int countStartColumn, BaseItemKind[] typesToCount)
+        private static ItemCounts GetItemCounts(SqliteDataReader reader, int countStartColumn, BaseItemKind[] typesToCount)
         {
             var counts = new ItemCounts();
 
@@ -5420,7 +5405,7 @@ AND Type = @InternalPersonType)");
             return list;
         }
 
-        private void UpdateItemValues(Guid itemId, List<(int MagicNumber, string Value)> values, IDatabaseConnection db)
+        private void UpdateItemValues(Guid itemId, List<(int MagicNumber, string Value)> values, SqliteConnection db)
         {
             if (itemId.Equals(default))
             {
@@ -5434,12 +5419,14 @@ AND Type = @InternalPersonType)");
             var guidBlob = itemId.ToByteArray();
 
             // First delete
-            db.Execute("delete from ItemValues where ItemId=@Id", guidBlob);
+            using var command = db.PrepareStatement("delete from ItemValues where ItemId=@Id");
+            command.TryBind("@Id", guidBlob);
+            command.ExecuteNonQuery();
 
             InsertItemValues(guidBlob, values, db);
         }
 
-        private void InsertItemValues(byte[] idBlob, List<(int MagicNumber, string Value)> values, IDatabaseConnection db)
+        private void InsertItemValues(byte[] idBlob, List<(int MagicNumber, string Value)> values, SqliteConnection db)
         {
             const int Limit = 100;
             var startIndex = 0;
@@ -5484,7 +5471,7 @@ AND Type = @InternalPersonType)");
                         statement.TryBind("@CleanValue" + index, GetCleanValue(itemValue));
                     }
 
-                    statement.Reset();
+                    // TODO statement.Parameters.Clear();
                     statement.MoveNext();
                 }
 
@@ -5512,15 +5499,17 @@ AND Type = @InternalPersonType)");
                         var itemIdBlob = itemId.ToByteArray();
 
                         // First delete chapters
-                        db.Execute("delete from People where ItemId=@ItemId", itemIdBlob);
+                        using var command = db.CreateCommand();
+                        command.CommandText = "delete from People where ItemId=@ItemId";
+                        command.TryBind("@ItemId", itemIdBlob);
+                        command.ExecuteNonQuery();
 
                         InsertPeople(itemIdBlob, people, db);
-                    },
-                    TransactionMode);
+                    });
             }
         }
 
-        private void InsertPeople(byte[] idBlob, List<PersonInfo> people, IDatabaseConnection db)
+        private void InsertPeople(byte[] idBlob, List<PersonInfo> people, SqliteConnection db)
         {
             const int Limit = 100;
             var startIndex = 0;
@@ -5561,7 +5550,6 @@ AND Type = @InternalPersonType)");
                         listIndex++;
                     }
 
-                    statement.Reset();
                     statement.MoveNext();
                 }
 
@@ -5570,7 +5558,7 @@ AND Type = @InternalPersonType)");
             }
         }
 
-        private PersonInfo GetPerson(IReadOnlyList<ResultSetValue> reader)
+        private PersonInfo GetPerson(SqliteDataReader reader)
         {
             var item = new PersonInfo
             {
@@ -5666,15 +5654,16 @@ AND Type = @InternalPersonType)");
                     var itemIdBlob = id.ToByteArray();
 
                     // Delete existing mediastreams
-                    db.Execute("delete from mediastreams where ItemId=@ItemId", itemIdBlob);
+                    using var command = db.PrepareStatement("delete from mediastreams where ItemId=@ItemId");
+                    command.TryBind("@ItemId", itemIdBlob);
+                    command.ExecuteNonQuery();
 
                     InsertMediaStreams(itemIdBlob, streams, db);
-                },
-                TransactionMode);
+                });
             }
         }
 
-        private void InsertMediaStreams(byte[] idBlob, IReadOnlyList<MediaStream> streams, IDatabaseConnection db)
+        private void InsertMediaStreams(byte[] idBlob, IReadOnlyList<MediaStream> streams, SqliteConnection db)
         {
             const int Limit = 10;
             var startIndex = 0;
@@ -5770,7 +5759,7 @@ AND Type = @InternalPersonType)");
                         statement.TryBind("@IsHearingImpaired" + index, stream.IsHearingImpaired);
                     }
 
-                    statement.Reset();
+                    // TODO statement.Parameters.Clear();
                     statement.MoveNext();
                 }
 
@@ -5784,14 +5773,13 @@ AND Type = @InternalPersonType)");
         /// </summary>
         /// <param name="reader">The reader.</param>
         /// <returns>MediaStream.</returns>
-        private MediaStream GetMediaStream(IReadOnlyList<ResultSetValue> reader)
+        private MediaStream GetMediaStream(SqliteDataReader reader)
         {
             var item = new MediaStream
             {
-                Index = reader[1].ToInt()
+                Index = reader.GetInt32(1),
+                Type = Enum.Parse<MediaStreamType>(reader.GetString(2), true)
             };
-
-            item.Type = Enum.Parse<MediaStreamType>(reader[2].ToString(), true);
 
             if (reader.TryGetString(3, out var codec))
             {
@@ -6050,18 +6038,19 @@ AND Type = @InternalPersonType)");
                 {
                     var itemIdBlob = id.ToByteArray();
 
-                    db.Execute("delete from mediaattachments where ItemId=@ItemId", itemIdBlob);
+                    using var command = db.PrepareStatement("delete from mediaattachments where ItemId=@ItemId");
+                    command.TryBind("@ItemId", itemIdBlob);
+                    command.ExecuteNonQuery();
 
                     InsertMediaAttachments(itemIdBlob, attachments, db, cancellationToken);
-                },
-                TransactionMode);
+                });
             }
         }
 
         private void InsertMediaAttachments(
             byte[] idBlob,
             IReadOnlyList<MediaAttachment> attachments,
-            IDatabaseConnection db,
+            SqliteConnection db,
             CancellationToken cancellationToken)
         {
             const int InsertAtOnce = 10;
@@ -6111,7 +6100,7 @@ AND Type = @InternalPersonType)");
                         statement.TryBind("@MIMEType" + index, attachment.MimeType);
                     }
 
-                    statement.Reset();
+                    // TODO statement.Parameters.Clear();
                     statement.MoveNext();
                 }
 
@@ -6124,11 +6113,11 @@ AND Type = @InternalPersonType)");
         /// </summary>
         /// <param name="reader">The reader.</param>
         /// <returns>MediaAttachment.</returns>
-        private MediaAttachment GetMediaAttachment(IReadOnlyList<ResultSetValue> reader)
+        private MediaAttachment GetMediaAttachment(SqliteDataReader reader)
         {
             var item = new MediaAttachment
             {
-                Index = reader[1].ToInt()
+                Index = reader.GetInt32(1)
             };
 
             if (reader.TryGetString(2, out var codec))

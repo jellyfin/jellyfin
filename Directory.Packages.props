@@ -27,6 +27,7 @@
     <PackageVersion Include="Microsoft.AspNetCore.HttpOverrides" Version="2.2.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="7.0.10" />
     <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.4" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.10" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.10" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.10" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.10" />

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Data.Entities.Security;
+using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;

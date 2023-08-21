@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 
 using Emby.Server.Implementations.Data;
+using Jellyfin.Server.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Globalization;
@@ -91,7 +92,7 @@ namespace Jellyfin.Server.Migrations.Routines
                             ratingValue = "NULL";
                         }
 
-                        var statement = connection.PrepareStatement("UPDATE TypedBaseItems SET InheritedParentalRatingValue = @Value WHERE OfficialRating = @Rating;");
+                        using var statement = connection.PrepareStatement("UPDATE TypedBaseItems SET InheritedParentalRatingValue = @Value WHERE OfficialRating = @Rating;");
                         statement.TryBind("@Value", ratingValue);
                         statement.TryBind("@Rating", ratingString);
                         statement.ExecuteQuery();

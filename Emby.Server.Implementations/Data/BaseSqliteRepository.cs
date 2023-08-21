@@ -5,8 +5,8 @@
 using System;
 using System.Collections.Generic;
 using Jellyfin.Extensions;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
-using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Data
 {
@@ -44,24 +44,6 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <value>The logger.</value>
         protected ILogger<BaseSqliteRepository> Logger { get; }
-
-        /// <summary>
-        /// Gets the default connection flags.
-        /// </summary>
-        /// <value>The default connection flags.</value>
-        protected virtual ConnectionFlags DefaultConnectionFlags => ConnectionFlags.NoMutex;
-
-        /// <summary>
-        /// Gets the transaction mode.
-        /// </summary>
-        /// <value>The transaction mode.</value>>
-        protected TransactionMode TransactionMode => TransactionMode.Deferred;
-
-        /// <summary>
-        /// Gets the transaction mode for read-only operations.
-        /// </summary>
-        /// <value>The transaction mode.</value>
-        protected TransactionMode ReadTransactionMode => TransactionMode.Deferred;
 
         /// <summary>
         /// Gets the cache size.
@@ -107,23 +89,8 @@ namespace Emby.Server.Implementations.Data
         /// <see cref="SynchronousMode"/>
         protected virtual SynchronousMode? Synchronous => SynchronousMode.Normal;
 
-        /// <summary>
-        /// Gets or sets the write lock.
-        /// </summary>
-        /// <value>The write lock.</value>
-        protected ConnectionPool WriteConnections { get; set; }
-
-        /// <summary>
-        /// Gets or sets the write connection.
-        /// </summary>
-        /// <value>The write connection.</value>
-        protected ConnectionPool ReadConnections { get; set; }
-
         public virtual void Initialize()
         {
-            WriteConnections = new ConnectionPool(WriteConnectionsCount, CreateWriteConnection);
-            ReadConnections = new ConnectionPool(ReadConnectionsCount, CreateReadConnection);
-
             // Configuration and pragmas can affect VACUUM so it needs to be last.
             using (var connection = GetConnection())
             {
@@ -131,15 +98,9 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        protected ManagedConnection GetConnection(bool readOnly = false)
-            => readOnly ? ReadConnections.GetConnection() : WriteConnections.GetConnection();
-
-        protected SQLiteDatabaseConnection CreateWriteConnection()
+        protected SqliteConnection GetConnection(bool readOnly = false)
         {
-            var writeConnection = SQLite3.Open(
-                DbFilePath,
-                DefaultConnectionFlags | ConnectionFlags.Create | ConnectionFlags.ReadWrite,
-                null);
+            var writeConnection = new SqliteConnection($"Filename={DbFilePath}");
 
             if (CacheSize.HasValue)
             {
@@ -176,50 +137,14 @@ namespace Emby.Server.Implementations.Data
             return writeConnection;
         }
 
-        protected SQLiteDatabaseConnection CreateReadConnection()
+        public SqliteCommand PrepareStatement(SqliteConnection connection, string sql)
         {
-            var connection = SQLite3.Open(
-                DbFilePath,
-                DefaultConnectionFlags | ConnectionFlags.ReadOnly,
-                null);
-
-            if (CacheSize.HasValue)
-            {
-                connection.Execute("PRAGMA cache_size=" + CacheSize.Value);
-            }
-
-            if (!string.IsNullOrWhiteSpace(LockingMode))
-            {
-                connection.Execute("PRAGMA locking_mode=" + LockingMode);
-            }
-
-            if (!string.IsNullOrWhiteSpace(JournalMode))
-            {
-                connection.Execute("PRAGMA journal_mode=" + JournalMode);
-            }
-
-            if (JournalSizeLimit.HasValue)
-            {
-                connection.Execute("PRAGMA journal_size_limit=" + JournalSizeLimit.Value);
-            }
-
-            if (Synchronous.HasValue)
-            {
-                connection.Execute("PRAGMA synchronous=" + (int)Synchronous.Value);
-            }
-
-            connection.Execute("PRAGMA temp_store=" + (int)TempStore);
-
-            return connection;
+            var command = connection.CreateCommand();
+            command.CommandText = sql;
+            return command;
         }
 
-        public IStatement PrepareStatement(ManagedConnection connection, string sql)
-            => connection.PrepareStatement(sql);
-
-        public IStatement PrepareStatement(IDatabaseConnection connection, string sql)
-            => connection.PrepareStatement(sql);
-
-        protected bool TableExists(ManagedConnection connection, string name)
+        protected bool TableExists(SqliteConnection connection, string name)
         {
             return connection.RunInTransaction(
                 db =>
@@ -236,11 +161,10 @@ namespace Emby.Server.Implementations.Data
                     }
 
                     return false;
-                },
-                ReadTransactionMode);
+                });
         }
 
-        protected List<string> GetColumnNames(IDatabaseConnection connection, string table)
+        protected List<string> GetColumnNames(SqliteConnection connection, string table)
         {
             var columnNames = new List<string>();
 
@@ -255,7 +179,7 @@ namespace Emby.Server.Implementations.Data
             return columnNames;
         }
 
-        protected void AddColumn(IDatabaseConnection connection, string table, string columnName, string type, List<string> existingColumnNames)
+        protected void AddColumn(SqliteConnection connection, string table, string columnName, string type, List<string> existingColumnNames)
         {
             if (existingColumnNames.Contains(columnName, StringComparison.OrdinalIgnoreCase))
             {
@@ -289,12 +213,6 @@ namespace Emby.Server.Implementations.Data
             if (_disposed)
             {
                 return;
-            }
-
-            if (dispose)
-            {
-                WriteConnections.Dispose();
-                ReadConnections.Dispose();
             }
 
             _disposed = true;
