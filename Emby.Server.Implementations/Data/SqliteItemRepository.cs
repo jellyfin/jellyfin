@@ -26,7 +26,6 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Extensions;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
@@ -1305,88 +1304,27 @@ namespace Emby.Server.Implementations.Data
         {
             if (_config.Configuration.SkipDeserializationForBasicTypes)
             {
-                if (type == typeof(Channel))
-                {
-                    return false;
-                }
-
-                if (type == typeof(UserRootFolder))
+                if (type == typeof(Channel)
+                    || type == typeof(UserRootFolder))
                 {
                     return false;
                 }
             }
 
-            if (type == typeof(Season))
-            {
-                return false;
-            }
-
-            if (type == typeof(MusicArtist))
-            {
-                return false;
-            }
-
-            if (type == typeof(Person))
-            {
-                return false;
-            }
-
-            if (type == typeof(MusicGenre))
-            {
-                return false;
-            }
-
-            if (type == typeof(Genre))
-            {
-                return false;
-            }
-
-            if (type == typeof(Studio))
-            {
-                return false;
-            }
-
-            if (type == typeof(PlaylistsFolder))
-            {
-                return false;
-            }
-
-            if (type == typeof(PhotoAlbum))
-            {
-                return false;
-            }
-
-            if (type == typeof(Year))
-            {
-                return false;
-            }
-
-            if (type == typeof(Book))
-            {
-                return false;
-            }
-
-            if (type == typeof(LiveTvProgram))
-            {
-                return false;
-            }
-
-            if (type == typeof(AudioBook))
-            {
-                return false;
-            }
-
-            if (type == typeof(Audio))
-            {
-                return false;
-            }
-
-            if (type == typeof(MusicAlbum))
-            {
-                return false;
-            }
-
-            return true;
+            return type != typeof(Season)
+                && type != typeof(MusicArtist)
+                && type != typeof(Person)
+                && type != typeof(MusicGenre)
+                && type != typeof(Genre)
+                && type != typeof(Studio)
+                && type != typeof(PlaylistsFolder)
+                && type != typeof(PhotoAlbum)
+                && type != typeof(Year)
+                && type != typeof(Book)
+                && type != typeof(LiveTvProgram)
+                && type != typeof(AudioBook)
+                && type != typeof(Audio)
+                && type != typeof(MusicAlbum);
         }
 
         private BaseItem GetItem(IReadOnlyList<ResultSetValue> reader, InternalItemsQuery query)
@@ -2105,7 +2043,7 @@ namespace Emby.Server.Implementations.Data
                     insertText.AppendFormat(CultureInfo.InvariantCulture, "(@ItemId, @ChapterIndex{0}, @StartPositionTicks{0}, @Name{0}, @ImagePath{0}, @ImageDateModified{0}),", i.ToString(CultureInfo.InvariantCulture));
                 }
 
-                insertText.Length -= 1; // Remove last ,
+                insertText.Length -= 1; // Remove trailing comma
 
                 using (var statement = PrepareStatement(db, insertText.ToString()))
                 {
@@ -3604,7 +3542,6 @@ namespace Emby.Server.Implementations.Data
                     statement?.TryBind(paramName, "%" + trailerTypes[i] + "%");
                 }
 
-                // Remove last " OR "
                 clauseBuilder.Length -= Or.Length;
                 clauseBuilder.Append(')');
 
@@ -3652,7 +3589,6 @@ namespace Emby.Server.Implementations.Data
                     }
                 }
 
-                // Remove last " OR "
                 clauseBuilder.Length -= Or.Length;
                 clauseBuilder.Append(')');
 
@@ -3819,215 +3755,219 @@ namespace Emby.Server.Implementations.Data
 
             if (query.ArtistIds.Length > 0)
             {
-                var clauses = new List<string>();
-                var index = 0;
-                foreach (var artistId in query.ArtistIds)
+                clauseBuilder.Append('(');
+                for (var i = 0; i < query.ArtistIds.Length; i++)
                 {
-                    var paramName = "@ArtistIds" + index;
-                    clauses.Add("(guid in (select itemid from ItemValues where CleanValue = (select CleanName from TypedBaseItems where guid=" + paramName + ") and Type<=1))");
-                    statement?.TryBind(paramName, artistId);
-                    index++;
+                    clauseBuilder.Append("(guid in (select itemid from ItemValues where CleanValue = (select CleanName from TypedBaseItems where guid=@ArtistIds")
+                        .Append(i)
+                        .Append(") and Type<=1)) OR ");
+                    statement?.TryBind("@ArtistIds" + i, query.ArtistIds[i]);
                 }
 
-                var clause = "(" + string.Join(" OR ", clauses) + ")";
-                whereClauses.Add(clause);
+                clauseBuilder.Length -= Or.Length;
+                whereClauses.Add(clauseBuilder.Append(')').ToString());
+                clauseBuilder.Length = 0;
             }
 
             if (query.AlbumArtistIds.Length > 0)
             {
-                var clauses = new List<string>();
-                var index = 0;
-                foreach (var artistId in query.AlbumArtistIds)
+                clauseBuilder.Append('(');
+                for (var i = 0; i < query.AlbumArtistIds.Length; i++)
                 {
-                    var paramName = "@ArtistIds" + index;
-                    clauses.Add("(guid in (select itemid from ItemValues where CleanValue = (select CleanName from TypedBaseItems where guid=" + paramName + ") and Type=1))");
-                    statement?.TryBind(paramName, artistId);
-                    index++;
+                    clauseBuilder.Append("(guid in (select itemid from ItemValues where CleanValue = (select CleanName from TypedBaseItems where guid=@ArtistIds")
+                        .Append(i)
+                        .Append(") and Type=1)) OR ");
+                    statement?.TryBind("@ArtistIds" + i, query.AlbumArtistIds[i]);
                 }
 
-                var clause = "(" + string.Join(" OR ", clauses) + ")";
-                whereClauses.Add(clause);
+                clauseBuilder.Length -= Or.Length;
+                whereClauses.Add(clauseBuilder.Append(')').ToString());
+                clauseBuilder.Length = 0;
             }
 
             if (query.ContributingArtistIds.Length > 0)
             {
-                var clauses = new List<string>();
-                var index = 0;
-                foreach (var artistId in query.ContributingArtistIds)
+                clauseBuilder.Append('(');
+                for (var i = 0; i < query.ContributingArtistIds.Length; i++)
                 {
-                    var paramName = "@ArtistIds" + index;
-                    clauses.Add("((select CleanName from TypedBaseItems where guid=" + paramName + ") in (select CleanValue from ItemValues where ItemId=Guid and Type=0) AND (select CleanName from TypedBaseItems where guid=" + paramName + ") not in (select CleanValue from ItemValues where ItemId=Guid and Type=1))");
-                    statement?.TryBind(paramName, artistId);
-                    index++;
+                    clauseBuilder.Append("((select CleanName from TypedBaseItems where guid=@ArtistIds")
+                        .Append(i)
+                        .Append(") in (select CleanValue from ItemValues where ItemId=Guid and Type=0) AND (select CleanName from TypedBaseItems where guid=@ArtistIds")
+                        .Append(i)
+                        .Append(") not in (select CleanValue from ItemValues where ItemId=Guid and Type=1)) OR ");
+                    statement?.TryBind("@ArtistIds" + i, query.ContributingArtistIds[i]);
                 }
 
-                var clause = "(" + string.Join(" OR ", clauses) + ")";
-                whereClauses.Add(clause);
+                clauseBuilder.Length -= Or.Length;
+                whereClauses.Add(clauseBuilder.Append(')').ToString());
+                clauseBuilder.Length = 0;
             }
 
             if (query.AlbumIds.Length > 0)
             {
-                var clauses = new List<string>();
-                var index = 0;
-                foreach (var albumId in query.AlbumIds)
+                clauseBuilder.Append('(');
+                for (var i = 0; i < query.AlbumIds.Length; i++)
                 {
-                    var paramName = "@AlbumIds" + index;
-                    clauses.Add("Album in (select Name from typedbaseitems where guid=" + paramName + ")");
-                    statement?.TryBind(paramName, albumId);
-                    index++;
+                    clauseBuilder.Append("Album in (select Name from typedbaseitems where guid=@AlbumIds")
+                        .Append(i)
+                        .Append(") OR ");
+                    statement?.TryBind("@AlbumIds" + i, query.AlbumIds[i]);
                 }
 
-                var clause = "(" + string.Join(" OR ", clauses) + ")";
-                whereClauses.Add(clause);
+                clauseBuilder.Length -= Or.Length;
+                whereClauses.Add(clauseBuilder.Append(')').ToString());
+                clauseBuilder.Length = 0;
             }
 
             if (query.ExcludeArtistIds.Length > 0)
             {
-                var clauses = new List<string>();
-                var index = 0;
-                foreach (var artistId in query.ExcludeArtistIds)
+                clauseBuilder.Append('(');
+                for (var i = 0; i < query.ExcludeArtistIds.Length; i++)
                 {
-                    var paramName = "@ExcludeArtistId" + index;
-                    clauses.Add("(guid not in (select itemid from ItemValues where CleanValue = (select CleanName from TypedBaseItems where guid=" + paramName + ") and Type<=1))");
-                    statement?.TryBind(paramName, artistId);
-                    index++;
+                    clauseBuilder.Append("(guid not in (select itemid from ItemValues where CleanValue = (select CleanName from TypedBaseItems where guid=@ExcludeArtistId")
+                        .Append(i)
+                        .Append(") and Type<=1)) OR ");
+                    statement?.TryBind("@ExcludeArtistId" + i, query.ExcludeArtistIds[i]);
                 }
 
-                var clause = "(" + string.Join(" OR ", clauses) + ")";
-                whereClauses.Add(clause);
+                clauseBuilder.Length -= Or.Length;
+                whereClauses.Add(clauseBuilder.Append(')').ToString());
+                clauseBuilder.Length = 0;
             }
 
             if (query.GenreIds.Count > 0)
             {
-                var clauses = new List<string>();
-                var index = 0;
-                foreach (var genreId in query.GenreIds)
+                clauseBuilder.Append('(');
+                for (var i = 0; i < query.GenreIds.Count; i++)
                 {
-                    var paramName = "@GenreId" + index;
-                    clauses.Add("(guid in (select itemid from ItemValues where CleanValue = (select CleanName from TypedBaseItems where guid=" + paramName + ") and Type=2))");
-                    statement?.TryBind(paramName, genreId);
-                    index++;
+                    clauseBuilder.Append("(guid in (select itemid from ItemValues where CleanValue = (select CleanName from TypedBaseItems where guid=@GenreId")
+                        .Append(i)
+                        .Append(") and Type=2)) OR ");
+                    statement?.TryBind("@GenreId" + i, query.GenreIds[i]);
                 }
 
-                var clause = "(" + string.Join(" OR ", clauses) + ")";
-                whereClauses.Add(clause);
+                clauseBuilder.Length -= Or.Length;
+                whereClauses.Add(clauseBuilder.Append(')').ToString());
+                clauseBuilder.Length = 0;
             }
 
             if (query.Genres.Count > 0)
             {
-                var clauses = new List<string>();
-                var index = 0;
-                foreach (var item in query.Genres)
+                clauseBuilder.Append('(');
+                for (var i = 0; i < query.Genres.Count; i++)
                 {
-                    clauses.Add("@Genre" + index + " in (select CleanValue from ItemValues where ItemId=Guid and Type=2)");
-                    statement?.TryBind("@Genre" + index, GetCleanValue(item));
-                    index++;
+                    clauseBuilder.Append("@Genre")
+                        .Append(i)
+                        .Append(" in (select CleanValue from ItemValues where ItemId=Guid and Type=2) OR ");
+                    statement?.TryBind("@Genre" + i, GetCleanValue(query.Genres[i]));
                 }
 
-                var clause = "(" + string.Join(" OR ", clauses) + ")";
-                whereClauses.Add(clause);
+                clauseBuilder.Length -= Or.Length;
+                whereClauses.Add(clauseBuilder.Append(')').ToString());
+                clauseBuilder.Length = 0;
             }
 
             if (tags.Count > 0)
             {
-                var clauses = new List<string>();
-                var index = 0;
-                foreach (var item in tags)
+                clauseBuilder.Append('(');
+                for (var i = 0; i < tags.Count; i++)
                 {
-                    clauses.Add("@Tag" + index + " in (select CleanValue from ItemValues where ItemId=Guid and Type=4)");
-                    statement?.TryBind("@Tag" + index, GetCleanValue(item));
-                    index++;
+                    clauseBuilder.Append("@Tag")
+                        .Append(i)
+                        .Append(" in (select CleanValue from ItemValues where ItemId=Guid and Type=4) OR ");
+                    statement?.TryBind("@Tag" + i, GetCleanValue(tags[i]));
                 }
 
-                var clause = "(" + string.Join(" OR ", clauses) + ")";
-                whereClauses.Add(clause);
+                clauseBuilder.Length -= Or.Length;
+                whereClauses.Add(clauseBuilder.Append(')').ToString());
+                clauseBuilder.Length = 0;
             }
 
             if (excludeTags.Count > 0)
             {
-                var clauses = new List<string>();
-                var index = 0;
-                foreach (var item in excludeTags)
+                clauseBuilder.Append('(');
+                for (var i = 0; i < excludeTags.Count; i++)
                 {
-                    clauses.Add("@ExcludeTag" + index + " not in (select CleanValue from ItemValues where ItemId=Guid and Type=4)");
-                    statement?.TryBind("@ExcludeTag" + index, GetCleanValue(item));
-                    index++;
+                    clauseBuilder.Append("@ExcludeTag")
+                        .Append(i)
+                        .Append(" not in (select CleanValue from ItemValues where ItemId=Guid and Type=4) OR ");
+                    statement?.TryBind("@ExcludeTag" + i, GetCleanValue(excludeTags[i]));
                 }
 
-                var clause = "(" + string.Join(" OR ", clauses) + ")";
-                whereClauses.Add(clause);
+                clauseBuilder.Length -= Or.Length;
+                whereClauses.Add(clauseBuilder.Append(')').ToString());
+                clauseBuilder.Length = 0;
             }
 
             if (query.StudioIds.Length > 0)
             {
-                var clauses = new List<string>();
-                var index = 0;
-                foreach (var studioId in query.StudioIds)
+                clauseBuilder.Append('(');
+                for (var i = 0; i < query.StudioIds.Length; i++)
                 {
-                    var paramName = "@StudioId" + index;
-                    clauses.Add("(guid in (select itemid from ItemValues where CleanValue = (select CleanName from TypedBaseItems where guid=" + paramName + ") and Type=3))");
-                    statement?.TryBind(paramName, studioId);
-                    index++;
+                    clauseBuilder.Append("(guid in (select itemid from ItemValues where CleanValue = (select CleanName from TypedBaseItems where guid=@StudioId")
+                        .Append(i)
+                        .Append(") and Type=3)) OR ");
+                    statement?.TryBind("@StudioId" + i, query.StudioIds[i]);
                 }
 
-                var clause = "(" + string.Join(" OR ", clauses) + ")";
-                whereClauses.Add(clause);
+                clauseBuilder.Length -= Or.Length;
+                whereClauses.Add(clauseBuilder.Append(')').ToString());
+                clauseBuilder.Length = 0;
             }
 
             if (query.OfficialRatings.Length > 0)
             {
-                var clauses = new List<string>();
-                var index = 0;
-                foreach (var item in query.OfficialRatings)
+                clauseBuilder.Append('(');
+                for (var i = 0; i < query.OfficialRatings.Length; i++)
                 {
-                    clauses.Add("OfficialRating=@OfficialRating" + index);
-                    statement?.TryBind("@OfficialRating" + index, item);
-                    index++;
+                    clauseBuilder.Append("OfficialRating=@OfficialRating").Append(i).Append(Or);
+                    statement?.TryBind("@OfficialRating" + i, query.OfficialRatings[i]);
                 }
 
-                var clause = "(" + string.Join(" OR ", clauses) + ")";
-                whereClauses.Add(clause);
+                clauseBuilder.Length -= Or.Length;
+                whereClauses.Add(clauseBuilder.Append(')').ToString());
+                clauseBuilder.Length = 0;
             }
 
-            var ratingClauseBuilder = new StringBuilder("(");
+            clauseBuilder.Append('(');
             if (query.HasParentalRating ?? false)
             {
-                ratingClauseBuilder.Append("InheritedParentalRatingValue not null");
+                clauseBuilder.Append("InheritedParentalRatingValue not null");
                 if (query.MinParentalRating.HasValue)
                 {
-                    ratingClauseBuilder.Append(" AND InheritedParentalRatingValue >= @MinParentalRating");
+                    clauseBuilder.Append(" AND InheritedParentalRatingValue >= @MinParentalRating");
                     statement?.TryBind("@MinParentalRating", query.MinParentalRating.Value);
                 }
 
                 if (query.MaxParentalRating.HasValue)
                 {
-                    ratingClauseBuilder.Append(" AND InheritedParentalRatingValue <= @MaxParentalRating");
+                    clauseBuilder.Append(" AND InheritedParentalRatingValue <= @MaxParentalRating");
                     statement?.TryBind("@MaxParentalRating", query.MaxParentalRating.Value);
                 }
             }
             else if (query.BlockUnratedItems.Length > 0)
             {
-                var paramName = "@UnratedType";
-                var index = 0;
-                string blockedUnratedItems = string.Join(',', query.BlockUnratedItems.Select(_ => paramName + index++));
-                ratingClauseBuilder.Append("(InheritedParentalRatingValue is null AND UnratedType not in (" + blockedUnratedItems + "))");
+                const string ParamName = "@UnratedType";
+                clauseBuilder.Append("(InheritedParentalRatingValue is null AND UnratedType not in (");
 
-                if (statement is not null)
+                for (int i = 0; i < query.BlockUnratedItems.Length; i++)
                 {
-                    for (var ind = 0; ind < query.BlockUnratedItems.Length; ind++)
-                    {
-                        statement.TryBind(paramName + ind, query.BlockUnratedItems[ind].ToString());
-                    }
+                    clauseBuilder.Append(ParamName).Append(i).Append(',');
+                    statement?.TryBind(ParamName + i, query.BlockUnratedItems[i].ToString());
                 }
+
+                // Remove trailing comma
+                clauseBuilder.Length--;
+                clauseBuilder.Append("))");
 
                 if (query.MinParentalRating.HasValue || query.MaxParentalRating.HasValue)
                 {
-                    ratingClauseBuilder.Append(" OR (");
+                    clauseBuilder.Append(" OR (");
                 }
 
                 if (query.MinParentalRating.HasValue)
                 {
-                    ratingClauseBuilder.Append("InheritedParentalRatingValue >= @MinParentalRating");
+                    clauseBuilder.Append("InheritedParentalRatingValue >= @MinParentalRating");
                     statement?.TryBind("@MinParentalRating", query.MinParentalRating.Value);
                 }
 
@@ -4035,50 +3975,50 @@ namespace Emby.Server.Implementations.Data
                 {
                     if (query.MinParentalRating.HasValue)
                     {
-                        ratingClauseBuilder.Append(" AND ");
+                        clauseBuilder.Append(" AND ");
                     }
 
-                    ratingClauseBuilder.Append("InheritedParentalRatingValue <= @MaxParentalRating");
+                    clauseBuilder.Append("InheritedParentalRatingValue <= @MaxParentalRating");
                     statement?.TryBind("@MaxParentalRating", query.MaxParentalRating.Value);
                 }
 
                 if (query.MinParentalRating.HasValue || query.MaxParentalRating.HasValue)
                 {
-                    ratingClauseBuilder.Append(")");
+                    clauseBuilder.Append(')');
                 }
 
                 if (!(query.MinParentalRating.HasValue || query.MaxParentalRating.HasValue))
                 {
-                    ratingClauseBuilder.Append(" OR InheritedParentalRatingValue not null");
+                    clauseBuilder.Append(" OR InheritedParentalRatingValue not null");
                 }
             }
             else if (query.MinParentalRating.HasValue)
             {
-                ratingClauseBuilder.Append("InheritedParentalRatingValue is null OR (InheritedParentalRatingValue >= @MinParentalRating");
+                clauseBuilder.Append("InheritedParentalRatingValue is null OR (InheritedParentalRatingValue >= @MinParentalRating");
                 statement?.TryBind("@MinParentalRating", query.MinParentalRating.Value);
 
                 if (query.MaxParentalRating.HasValue)
                 {
-                    ratingClauseBuilder.Append(" AND InheritedParentalRatingValue <= @MaxParentalRating");
+                    clauseBuilder.Append(" AND InheritedParentalRatingValue <= @MaxParentalRating");
                     statement?.TryBind("@MaxParentalRating", query.MaxParentalRating.Value);
                 }
 
-                ratingClauseBuilder.Append(")");
+                clauseBuilder.Append(')');
             }
             else if (query.MaxParentalRating.HasValue)
             {
-                ratingClauseBuilder.Append("InheritedParentalRatingValue is null OR InheritedParentalRatingValue <= @MaxParentalRating");
+                clauseBuilder.Append("InheritedParentalRatingValue is null OR InheritedParentalRatingValue <= @MaxParentalRating");
                 statement?.TryBind("@MaxParentalRating", query.MaxParentalRating.Value);
             }
             else if (!query.HasParentalRating ?? false)
             {
-                ratingClauseBuilder.Append("InheritedParentalRatingValue is null");
+                clauseBuilder.Append("InheritedParentalRatingValue is null");
             }
 
-            var ratingClauseString = ratingClauseBuilder.ToString();
-            if (!string.Equals(ratingClauseString, "(", StringComparison.OrdinalIgnoreCase))
+            if (clauseBuilder.Length > 1)
             {
-                whereClauses.Add(ratingClauseString + ")");
+                whereClauses.Add(clauseBuilder.Append(')').ToString());
+                clauseBuilder.Length = 0;
             }
 
             if (query.HasOfficialRating.HasValue)
@@ -4565,7 +4505,6 @@ namespace Emby.Server.Implementations.Data
 
             return whereClauses;
         }
-#nullable disable
 
         /// <summary>
         /// Formats a where clause for the specified provider.
@@ -4582,6 +4521,7 @@ namespace Emby.Server.Implementations.Data
                 provider);
         }
 
+#nullable disable
         private List<string> GetItemByNameTypesInQuery(InternalItemsQuery query)
         {
             var list = new List<string>();
@@ -4661,24 +4601,17 @@ namespace Emby.Server.Implementations.Data
                 return true;
             }
 
-            if (query.IncludeItemTypes.Contains(BaseItemKind.Episode)
+            return query.IncludeItemTypes.Contains(BaseItemKind.Episode)
                 || query.IncludeItemTypes.Contains(BaseItemKind.Video)
                 || query.IncludeItemTypes.Contains(BaseItemKind.Movie)
                 || query.IncludeItemTypes.Contains(BaseItemKind.MusicVideo)
                 || query.IncludeItemTypes.Contains(BaseItemKind.Series)
-                || query.IncludeItemTypes.Contains(BaseItemKind.Season))
-            {
-                return true;
-            }
-
-            return false;
+                || query.IncludeItemTypes.Contains(BaseItemKind.Season);
         }
 
         public void UpdateInheritedValues()
         {
-            string sql = string.Join(
-                ';',
-                new string[]
+            var queries = new string[]
                 {
                     "delete from ItemValues where type = 6",
 
@@ -4688,16 +4621,11 @@ namespace Emby.Server.Implementations.Data
 FROM AncestorIds
 LEFT JOIN ItemValues ON (AncestorIds.AncestorId = ItemValues.ItemId)
 where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type = 4 "
-                });
+                };
 
             using (var connection = GetConnection())
             {
-                connection.RunInTransaction(
-                    db =>
-                    {
-                        connection.ExecuteAll(sql);
-                    },
-                    TransactionMode);
+                connection.RunQueries(queries);
             }
         }
 
@@ -4794,25 +4722,25 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             CheckDisposed();
 
-            var commandText = "select ItemId, Name, Role, PersonType, SortOrder from People p";
+            StringBuilder commandText = new StringBuilder("select ItemId, Name, Role, PersonType, SortOrder from People p");
 
             var whereClauses = GetPeopleWhereClauses(query, null);
 
             if (whereClauses.Count != 0)
             {
-                commandText += "  where " + string.Join(" AND ", whereClauses);
+                commandText.Append("  where ").AppendJoin(" AND ", whereClauses);
             }
 
-            commandText += " order by ListOrder";
+            commandText.Append(" order by ListOrder");
 
             if (query.Limit > 0)
             {
-                commandText += " LIMIT " + query.Limit;
+                commandText.Append(" LIMIT ").Append(query.Limit);
             }
 
             var list = new List<PersonInfo>();
             using (var connection = GetConnection(true))
-            using (var statement = PrepareStatement(connection, commandText))
+            using (var statement = PrepareStatement(connection, commandText.ToString()))
             {
                 // Run this again to bind the params
                 GetPeopleWhereClauses(query, statement);
@@ -4930,7 +4858,7 @@ AND Type = @InternalPersonType)");
                     i.ToString(CultureInfo.InvariantCulture));
             }
 
-            // Remove last ,
+            // Remove trailing comma
             insertText.Length--;
 
             using (var statement = PrepareStatement(db, insertText.ToString()))
@@ -5458,7 +5386,7 @@ AND Type = @InternalPersonType)");
                         i);
                 }
 
-                // Remove last comma
+                // Remove trailing comma
                 insertText.Length--;
 
                 using (var statement = PrepareStatement(db, insertText.ToString()))
@@ -5539,7 +5467,7 @@ AND Type = @InternalPersonType)");
                         i.ToString(CultureInfo.InvariantCulture));
                 }
 
-                // Remove last comma
+                // Remove trailing comma
                 insertText.Length--;
 
                 using (var statement = PrepareStatement(db, insertText.ToString()))
@@ -5788,10 +5716,9 @@ AND Type = @InternalPersonType)");
         {
             var item = new MediaStream
             {
-                Index = reader[1].ToInt()
+                Index = reader[1].ToInt(),
+                Type = Enum.Parse<MediaStreamType>(reader[2].ToString(), true)
             };
-
-            item.Type = Enum.Parse<MediaStreamType>(reader[2].ToString(), true);
 
             if (reader.TryGetString(3, out var codec))
             {
@@ -6012,7 +5939,7 @@ AND Type = @InternalPersonType)");
             using (var connection = GetConnection(true))
             using (var statement = PrepareStatement(connection, cmdText))
             {
-                statement.TryBind("@ItemId", query.ItemId.ToByteArray());
+                statement.TryBind("@ItemId", query.ItemId);
 
                 if (query.Index.HasValue)
                 {
@@ -6073,14 +6000,13 @@ AND Type = @InternalPersonType)");
 
                 for (var i = startIndex; i < endIndex; i++)
                 {
-                    var index = i.ToString(CultureInfo.InvariantCulture);
                     insertText.Append("(@ItemId, ");
 
                     foreach (var column in _mediaAttachmentSaveColumns.Skip(1))
                     {
                         insertText.Append('@')
                             .Append(column)
-                            .Append(index)
+                            .Append(i)
                             .Append(',');
                     }
 
