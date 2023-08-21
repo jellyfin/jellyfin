@@ -4891,11 +4891,6 @@ AND Type = @InternalPersonType)");
 
             CheckDisposed();
 
-            // TODO how to handle span?
-            Span<byte> itemIdBlob2 = stackalloc byte[16];
-            itemId.TryWriteBytes(itemIdBlob2);
-            var itemIdBlob = Encoding.ASCII.GetBytes(itemId.ToString());
-
             // First delete
             // TODO deleteAncestorsStatement.Parameters.Clear();
             deleteAncestorsStatement.TryBind("@ItemId", itemId);
@@ -4921,14 +4916,13 @@ AND Type = @InternalPersonType)");
 
             using (var statement = PrepareStatement(db, insertText.ToString()))
             {
-                statement.TryBind("@ItemId", itemIdBlob);
+                statement.TryBind("@ItemId", itemId);
 
                 for (var i = 0; i < ancestorIds.Count; i++)
                 {
                     var index = i.ToString(CultureInfo.InvariantCulture);
 
                     var ancestorId = ancestorIds[i];
-                    itemIdBlob = Encoding.ASCII.GetBytes(itemId.ToString());
 
                     statement.TryBind("@AncestorId" + index, ancestorId);
                     statement.TryBind("@AncestorIdText" + index, ancestorId.ToString("N", CultureInfo.InvariantCulture));
@@ -5416,17 +5410,15 @@ AND Type = @InternalPersonType)");
 
             CheckDisposed();
 
-            var guidBlob = itemId.ToByteArray();
-
             // First delete
             using var command = db.PrepareStatement("delete from ItemValues where ItemId=@Id");
-            command.TryBind("@Id", guidBlob);
+            command.TryBind("@Id", itemId);
             command.ExecuteNonQuery();
 
-            InsertItemValues(guidBlob, values, db);
+            InsertItemValues(itemId, values, db);
         }
 
-        private void InsertItemValues(byte[] idBlob, List<(int MagicNumber, string Value)> values, SqliteConnection db)
+        private void InsertItemValues(Guid id, List<(int MagicNumber, string Value)> values, SqliteConnection db)
         {
             const int Limit = 100;
             var startIndex = 0;
@@ -5450,7 +5442,7 @@ AND Type = @InternalPersonType)");
 
                 using (var statement = PrepareStatement(db, insertText.ToString()))
                 {
-                    statement.TryBind("@ItemId", idBlob);
+                    statement.TryBind("@ItemId", id);
 
                     for (var i = startIndex; i < endIndex; i++)
                     {
@@ -5496,20 +5488,18 @@ AND Type = @InternalPersonType)");
                 connection.RunInTransaction(
                     db =>
                     {
-                        var itemIdBlob = itemId.ToByteArray();
-
                         // First delete chapters
                         using var command = db.CreateCommand();
                         command.CommandText = "delete from People where ItemId=@ItemId";
-                        command.TryBind("@ItemId", itemIdBlob);
+                        command.TryBind("@ItemId", itemId);
                         command.ExecuteNonQuery();
 
-                        InsertPeople(itemIdBlob, people, db);
+                        InsertPeople(itemId, people, db);
                     });
             }
         }
 
-        private void InsertPeople(byte[] idBlob, List<PersonInfo> people, SqliteConnection db)
+        private void InsertPeople(Guid id, List<PersonInfo> people, SqliteConnection db)
         {
             const int Limit = 100;
             var startIndex = 0;
@@ -5533,7 +5523,7 @@ AND Type = @InternalPersonType)");
 
                 using (var statement = PrepareStatement(db, insertText.ToString()))
                 {
-                    statement.TryBind("@ItemId", idBlob);
+                    statement.TryBind("@ItemId", id);
 
                     for (var i = startIndex; i < endIndex; i++)
                     {
@@ -5651,19 +5641,17 @@ AND Type = @InternalPersonType)");
                 connection.RunInTransaction(
                 db =>
                 {
-                    var itemIdBlob = id.ToByteArray();
-
                     // Delete existing mediastreams
                     using var command = db.PrepareStatement("delete from mediastreams where ItemId=@ItemId");
-                    command.TryBind("@ItemId", itemIdBlob);
+                    command.TryBind("@ItemId", id);
                     command.ExecuteNonQuery();
 
-                    InsertMediaStreams(itemIdBlob, streams, db);
+                    InsertMediaStreams(id, streams, db);
                 });
             }
         }
 
-        private void InsertMediaStreams(byte[] idBlob, IReadOnlyList<MediaStream> streams, SqliteConnection db)
+        private void InsertMediaStreams(Guid id, IReadOnlyList<MediaStream> streams, SqliteConnection db)
         {
             const int Limit = 10;
             var startIndex = 0;
@@ -5695,7 +5683,7 @@ AND Type = @InternalPersonType)");
 
                 using (var statement = PrepareStatement(db, insertText.ToString()))
                 {
-                    statement.TryBind("@ItemId", idBlob);
+                    statement.TryBind("@ItemId", id);
 
                     for (var i = startIndex; i < endIndex; i++)
                     {
@@ -5731,6 +5719,7 @@ AND Type = @InternalPersonType)");
 
                         statement.TryBind("@PixelFormat" + index, stream.PixelFormat);
                         statement.TryBind("@BitDepth" + index, stream.BitDepth);
+                        statement.TryBind("@IsAnamorphic" + index, stream.IsAnamorphic);
                         statement.TryBind("@IsExternal" + index, stream.IsExternal);
                         statement.TryBind("@RefFrames" + index, stream.RefFrames);
 
@@ -6000,7 +5989,7 @@ AND Type = @InternalPersonType)");
             using (var connection = GetConnection(true))
             using (var statement = PrepareStatement(connection, cmdText))
             {
-                statement.TryBind("@ItemId", query.ItemId.ToByteArray());
+                statement.TryBind("@ItemId", query.ItemId);
 
                 if (query.Index.HasValue)
                 {
@@ -6036,19 +6025,17 @@ AND Type = @InternalPersonType)");
                 connection.RunInTransaction(
                 db =>
                 {
-                    var itemIdBlob = id.ToByteArray();
-
                     using var command = db.PrepareStatement("delete from mediaattachments where ItemId=@ItemId");
-                    command.TryBind("@ItemId", itemIdBlob);
+                    command.TryBind("@ItemId", id);
                     command.ExecuteNonQuery();
 
-                    InsertMediaAttachments(itemIdBlob, attachments, db, cancellationToken);
+                    InsertMediaAttachments(id, attachments, db, cancellationToken);
                 });
             }
         }
 
         private void InsertMediaAttachments(
-            byte[] idBlob,
+            Guid id,
             IReadOnlyList<MediaAttachment> attachments,
             SqliteConnection db,
             CancellationToken cancellationToken)
@@ -6084,7 +6071,7 @@ AND Type = @InternalPersonType)");
 
                 using (var statement = PrepareStatement(db, insertText.ToString()))
                 {
-                    statement.TryBind("@ItemId", idBlob);
+                    statement.TryBind("@ItemId", id);
 
                     for (var i = startIndex; i < endIndex; i++)
                     {

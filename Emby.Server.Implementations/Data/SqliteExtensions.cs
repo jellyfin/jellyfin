@@ -264,17 +264,10 @@ namespace Emby.Server.Implementations.Data
 
         public static void TryBind(this SqliteCommand statement, string name, Guid value)
         {
-            if (statement.Parameters.Contains(name))
-            {
-                statement.Parameters[name].Value = value;
-            }
-            else
-            {
-                statement.Parameters.Add(new SqliteParameter(name, SqliteType.Blob) { Value = value });
-            }
+            statement.TryBind(name, value, true);
         }
 
-        public static void TryBind(this SqliteCommand statement, string name, object? value)
+        public static void TryBind(this SqliteCommand statement, string name, object? value, bool isBlob = false)
         {
             var preparedValue = value ?? DBNull.Value;
             if (statement.Parameters.Contains(name))
@@ -283,7 +276,14 @@ namespace Emby.Server.Implementations.Data
             }
             else
             {
-                statement.Parameters.AddWithValue(name, preparedValue);
+                if (isBlob)
+                {
+                    statement.Parameters.Add(new SqliteParameter(name, SqliteType.Blob) { Value = value });
+                }
+                else
+                {
+                    statement.Parameters.AddWithValue(name, preparedValue);
+                }
             }
         }
 
