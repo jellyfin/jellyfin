@@ -437,128 +437,126 @@ namespace Emby.Server.Implementations.Data
             };
 
             using (var connection = GetConnection())
+            using (var transaction = connection.BeginTransaction())
             {
-                connection.RunQueries(queries);
+                connection.Execute(string.Join(';', queries));
 
-                using (var transaction = connection.BeginTransaction())
-                {
-                    var existingColumnNames = GetColumnNames(connection, "AncestorIds");
-                    AddColumn(connection, "AncestorIds", "AncestorIdText", "Text", existingColumnNames);
+                var existingColumnNames = GetColumnNames(connection, "AncestorIds");
+                AddColumn(connection, "AncestorIds", "AncestorIdText", "Text", existingColumnNames);
 
-                    existingColumnNames = GetColumnNames(connection, "TypedBaseItems");
+                existingColumnNames = GetColumnNames(connection, "TypedBaseItems");
 
-                    AddColumn(connection, "TypedBaseItems", "Path", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "StartDate", "DATETIME", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "EndDate", "DATETIME", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "ChannelId", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "IsMovie", "BIT", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "CommunityRating", "Float", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "CustomRating", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "IndexNumber", "INT", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "IsLocked", "BIT", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "Name", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "OfficialRating", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "MediaType", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "Overview", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "ParentIndexNumber", "INT", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "PremiereDate", "DATETIME", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "ProductionYear", "INT", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "ParentId", "GUID", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "Genres", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "SortName", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "ForcedSortName", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "RunTimeTicks", "BIGINT", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "DateCreated", "DATETIME", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "DateModified", "DATETIME", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "IsSeries", "BIT", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "EpisodeTitle", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "IsRepeat", "BIT", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "PreferredMetadataLanguage", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "PreferredMetadataCountryCode", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "DateLastRefreshed", "DATETIME", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "DateLastSaved", "DATETIME", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "IsInMixedFolder", "BIT", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "LockedFields", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "Studios", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "Audio", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "ExternalServiceId", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "Tags", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "IsFolder", "BIT", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "InheritedParentalRatingValue", "INT", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "UnratedType", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "TopParentId", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "TrailerTypes", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "CriticRating", "Float", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "CleanName", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "PresentationUniqueKey", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "OriginalTitle", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "PrimaryVersionId", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "DateLastMediaAdded", "DATETIME", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "Album", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "LUFS", "Float", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "IsVirtualItem", "BIT", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "SeriesName", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "UserDataKey", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "SeasonName", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "SeasonId", "GUID", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "SeriesId", "GUID", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "ExternalSeriesId", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "Tagline", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "ProviderIds", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "Images", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "ProductionLocations", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "ExtraIds", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "TotalBitrate", "INT", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "ExtraType", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "Artists", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "AlbumArtists", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "ExternalId", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "SeriesPresentationUniqueKey", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "ShowId", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "OwnerId", "Text", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "Width", "INT", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "Height", "INT", existingColumnNames);
-                    AddColumn(connection, "TypedBaseItems", "Size", "BIGINT", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "Path", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "StartDate", "DATETIME", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "EndDate", "DATETIME", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "ChannelId", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "IsMovie", "BIT", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "CommunityRating", "Float", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "CustomRating", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "IndexNumber", "INT", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "IsLocked", "BIT", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "Name", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "OfficialRating", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "MediaType", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "Overview", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "ParentIndexNumber", "INT", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "PremiereDate", "DATETIME", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "ProductionYear", "INT", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "ParentId", "GUID", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "Genres", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "SortName", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "ForcedSortName", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "RunTimeTicks", "BIGINT", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "DateCreated", "DATETIME", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "DateModified", "DATETIME", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "IsSeries", "BIT", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "EpisodeTitle", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "IsRepeat", "BIT", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "PreferredMetadataLanguage", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "PreferredMetadataCountryCode", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "DateLastRefreshed", "DATETIME", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "DateLastSaved", "DATETIME", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "IsInMixedFolder", "BIT", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "LockedFields", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "Studios", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "Audio", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "ExternalServiceId", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "Tags", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "IsFolder", "BIT", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "InheritedParentalRatingValue", "INT", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "UnratedType", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "TopParentId", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "TrailerTypes", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "CriticRating", "Float", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "CleanName", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "PresentationUniqueKey", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "OriginalTitle", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "PrimaryVersionId", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "DateLastMediaAdded", "DATETIME", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "Album", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "LUFS", "Float", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "IsVirtualItem", "BIT", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "SeriesName", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "UserDataKey", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "SeasonName", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "SeasonId", "GUID", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "SeriesId", "GUID", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "ExternalSeriesId", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "Tagline", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "ProviderIds", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "Images", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "ProductionLocations", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "ExtraIds", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "TotalBitrate", "INT", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "ExtraType", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "Artists", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "AlbumArtists", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "ExternalId", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "SeriesPresentationUniqueKey", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "ShowId", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "OwnerId", "Text", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "Width", "INT", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "Height", "INT", existingColumnNames);
+                AddColumn(connection, "TypedBaseItems", "Size", "BIGINT", existingColumnNames);
 
-                    existingColumnNames = GetColumnNames(connection, "ItemValues");
-                    AddColumn(connection, "ItemValues", "CleanValue", "Text", existingColumnNames);
+                existingColumnNames = GetColumnNames(connection, "ItemValues");
+                AddColumn(connection, "ItemValues", "CleanValue", "Text", existingColumnNames);
 
-                    existingColumnNames = GetColumnNames(connection, ChaptersTableName);
-                    AddColumn(connection, ChaptersTableName, "ImageDateModified", "DATETIME", existingColumnNames);
+                existingColumnNames = GetColumnNames(connection, ChaptersTableName);
+                AddColumn(connection, ChaptersTableName, "ImageDateModified", "DATETIME", existingColumnNames);
 
-                    existingColumnNames = GetColumnNames(connection, "MediaStreams");
-                    AddColumn(connection, "MediaStreams", "IsAvc", "BIT", existingColumnNames);
-                    AddColumn(connection, "MediaStreams", "TimeBase", "TEXT", existingColumnNames);
-                    AddColumn(connection, "MediaStreams", "CodecTimeBase", "TEXT", existingColumnNames);
-                    AddColumn(connection, "MediaStreams", "Title", "TEXT", existingColumnNames);
-                    AddColumn(connection, "MediaStreams", "NalLengthSize", "TEXT", existingColumnNames);
-                    AddColumn(connection, "MediaStreams", "Comment", "TEXT", existingColumnNames);
-                    AddColumn(connection, "MediaStreams", "CodecTag", "TEXT", existingColumnNames);
-                    AddColumn(connection, "MediaStreams", "PixelFormat", "TEXT", existingColumnNames);
-                    AddColumn(connection, "MediaStreams", "BitDepth", "INT", existingColumnNames);
-                    AddColumn(connection, "MediaStreams", "RefFrames", "INT", existingColumnNames);
-                    AddColumn(connection, "MediaStreams", "KeyFrames", "TEXT", existingColumnNames);
-                    AddColumn(connection, "MediaStreams", "IsAnamorphic", "BIT", existingColumnNames);
+                existingColumnNames = GetColumnNames(connection, "MediaStreams");
+                AddColumn(connection, "MediaStreams", "IsAvc", "BIT", existingColumnNames);
+                AddColumn(connection, "MediaStreams", "TimeBase", "TEXT", existingColumnNames);
+                AddColumn(connection, "MediaStreams", "CodecTimeBase", "TEXT", existingColumnNames);
+                AddColumn(connection, "MediaStreams", "Title", "TEXT", existingColumnNames);
+                AddColumn(connection, "MediaStreams", "NalLengthSize", "TEXT", existingColumnNames);
+                AddColumn(connection, "MediaStreams", "Comment", "TEXT", existingColumnNames);
+                AddColumn(connection, "MediaStreams", "CodecTag", "TEXT", existingColumnNames);
+                AddColumn(connection, "MediaStreams", "PixelFormat", "TEXT", existingColumnNames);
+                AddColumn(connection, "MediaStreams", "BitDepth", "INT", existingColumnNames);
+                AddColumn(connection, "MediaStreams", "RefFrames", "INT", existingColumnNames);
+                AddColumn(connection, "MediaStreams", "KeyFrames", "TEXT", existingColumnNames);
+                AddColumn(connection, "MediaStreams", "IsAnamorphic", "BIT", existingColumnNames);
 
-                    AddColumn(connection, "MediaStreams", "ColorPrimaries", "TEXT", existingColumnNames);
-                    AddColumn(connection, "MediaStreams", "ColorSpace", "TEXT", existingColumnNames);
-                    AddColumn(connection, "MediaStreams", "ColorTransfer", "TEXT", existingColumnNames);
+                AddColumn(connection, "MediaStreams", "ColorPrimaries", "TEXT", existingColumnNames);
+                AddColumn(connection, "MediaStreams", "ColorSpace", "TEXT", existingColumnNames);
+                AddColumn(connection, "MediaStreams", "ColorTransfer", "TEXT", existingColumnNames);
 
-                    AddColumn(connection, "MediaStreams", "DvVersionMajor", "INT", existingColumnNames);
-                    AddColumn(connection, "MediaStreams", "DvVersionMinor", "INT", existingColumnNames);
-                    AddColumn(connection, "MediaStreams", "DvProfile", "INT", existingColumnNames);
-                    AddColumn(connection, "MediaStreams", "DvLevel", "INT", existingColumnNames);
-                    AddColumn(connection, "MediaStreams", "RpuPresentFlag", "INT", existingColumnNames);
-                    AddColumn(connection, "MediaStreams", "ElPresentFlag", "INT", existingColumnNames);
-                    AddColumn(connection, "MediaStreams", "BlPresentFlag", "INT", existingColumnNames);
-                    AddColumn(connection, "MediaStreams", "DvBlSignalCompatibilityId", "INT", existingColumnNames);
+                AddColumn(connection, "MediaStreams", "DvVersionMajor", "INT", existingColumnNames);
+                AddColumn(connection, "MediaStreams", "DvVersionMinor", "INT", existingColumnNames);
+                AddColumn(connection, "MediaStreams", "DvProfile", "INT", existingColumnNames);
+                AddColumn(connection, "MediaStreams", "DvLevel", "INT", existingColumnNames);
+                AddColumn(connection, "MediaStreams", "RpuPresentFlag", "INT", existingColumnNames);
+                AddColumn(connection, "MediaStreams", "ElPresentFlag", "INT", existingColumnNames);
+                AddColumn(connection, "MediaStreams", "BlPresentFlag", "INT", existingColumnNames);
+                AddColumn(connection, "MediaStreams", "DvBlSignalCompatibilityId", "INT", existingColumnNames);
 
-                    AddColumn(connection, "MediaStreams", "IsHearingImpaired", "BIT", existingColumnNames);
+                AddColumn(connection, "MediaStreams", "IsHearingImpaired", "BIT", existingColumnNames);
 
-                    transaction.Commit();
-                }
+                connection.Execute(string.Join(';', postQueries));
 
-                connection.RunQueries(postQueries);
+                transaction.Commit();
             }
         }
 
@@ -674,7 +672,7 @@ namespace Emby.Server.Implementations.Data
 
             if (TypeRequiresDeserialization(type))
             {
-                saveItemStatement.TryBind("@data", JsonSerializer.SerializeToUtf8Bytes(item, type, _jsonOptions));
+                saveItemStatement.TryBind("@data", JsonSerializer.SerializeToUtf8Bytes(item, type, _jsonOptions), true);
             }
             else
             {
@@ -4656,7 +4654,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 """;
             using var connection = GetConnection();
             using var transaction = connection.BeginTransaction();
-            connection.ExecuteAll(Statements);
+            connection.Execute(Statements);
             transaction.Commit();
         }
 

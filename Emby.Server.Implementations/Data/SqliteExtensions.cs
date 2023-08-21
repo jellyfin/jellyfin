@@ -53,14 +53,6 @@ namespace Emby.Server.Implementations.Data
             "yy-MM-dd"
         };
 
-        private static void EnsureOpen(this SqliteConnection sqliteConnection)
-        {
-            if (sqliteConnection.State == ConnectionState.Closed)
-            {
-                sqliteConnection.Open();
-            }
-        }
-
         public static IEnumerable<SqliteDataReader> Query(this SqliteConnection sqliteConnection, string commandText)
         {
             if (sqliteConnection.State != ConnectionState.Open)
@@ -81,27 +73,9 @@ namespace Emby.Server.Implementations.Data
 
         public static void Execute(this SqliteConnection sqliteConnection, string commandText)
         {
-            sqliteConnection.EnsureOpen();
             using var command = sqliteConnection.CreateCommand();
             command.CommandText = commandText;
             command.ExecuteNonQuery();
-        }
-
-        public static void ExecuteAll(this SqliteConnection sqliteConnection, string commandText)
-        {
-            sqliteConnection.EnsureOpen();
-
-            using var command = sqliteConnection.CreateCommand();
-            command.CommandText = commandText;
-            command.ExecuteNonQuery();
-        }
-
-        public static void RunQueries(this SqliteConnection connection, string[] queries)
-        {
-            ArgumentNullException.ThrowIfNull(queries);
-            using var transaction = connection.BeginTransaction();
-            connection.ExecuteAll(string.Join(';', queries));
-            transaction.Commit();
         }
 
         public static string ToDateTimeParamValue(this DateTime dateValue)
@@ -239,6 +213,7 @@ namespace Emby.Server.Implementations.Data
             }
             else
             {
+                // Blobs aren't always detected automatically
                 if (isBlob)
                 {
                     statement.Parameters.Add(new SqliteParameter(name, SqliteType.Blob) { Value = value });
@@ -247,18 +222,6 @@ namespace Emby.Server.Implementations.Data
                 {
                     statement.Parameters.AddWithValue(name, preparedValue);
                 }
-            }
-        }
-
-        public static void TryBind(this SqliteCommand statement, string name, byte[] value)
-        {
-            if (statement.Parameters.Contains(name))
-            {
-                statement.Parameters[name].Value = value;
-            }
-            else
-            {
-                statement.Parameters.Add(new SqliteParameter(name, SqliteType.Blob, value.Length) { Value = value });
             }
         }
 
@@ -286,7 +249,6 @@ namespace Emby.Server.Implementations.Data
 
         public static SqliteCommand PrepareStatement(this SqliteConnection sqliteConnection, string sql)
         {
-            sqliteConnection.EnsureOpen();
             var command = sqliteConnection.CreateCommand();
             command.CommandText = sql;
             return command;

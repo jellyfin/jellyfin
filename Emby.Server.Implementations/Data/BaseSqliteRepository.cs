@@ -134,6 +134,7 @@ namespace Emby.Server.Implementations.Data
 
             connection.Execute("PRAGMA temp_store=" + (int)TempStore);
 
+            connection.Open();
             return connection;
         }
 

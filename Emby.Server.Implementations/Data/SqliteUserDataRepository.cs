@@ -45,7 +45,7 @@ namespace Emby.Server.Implementations.Data
 
                 var users = userDatasTableExists ? null : _userManager.Users;
                 using var transaction = connection.BeginTransaction();
-                connection.ExecuteAll(string.Join(';', new[]
+                connection.Execute(string.Join(';', new[]
                 {
                     "create table if not exists UserDatas (key nvarchar not null, userId INT not null, rating float null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null, AudioStreamIndex INT, SubtitleStreamIndex INT)",
 
@@ -80,7 +80,7 @@ namespace Emby.Server.Implementations.Data
 
                 ImportUserIds(connection, users);
 
-                connection.ExecuteAll("INSERT INTO UserDatas (key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex) SELECT key, InternalUserId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex from userdata where InternalUserId not null");
+                connection.Execute("INSERT INTO UserDatas (key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex) SELECT key, InternalUserId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex from userdata where InternalUserId not null");
 
                 transaction.Commit();
             }
