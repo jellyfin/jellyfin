@@ -66,11 +66,11 @@
     <PackageVersion Include="Serilog.Sinks.Graylog" Version="3.0.2" />
     <PackageVersion Include="SerilogAnalyzer" Version="0.15.0" />
     <PackageVersion Include="SharpFuzz" Version="2.1.1" />
-    <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="2.88.3" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="2.88.4" />
     <PackageVersion Include="SkiaSharp.Svg" Version="1.60.0" />
-    <PackageVersion Include="SkiaSharp.HarfBuzz" Version="2.88.3" />
-    <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="2.8.2.3" />
-    <PackageVersion Include="SkiaSharp" Version="2.88.3" />
+    <PackageVersion Include="SkiaSharp.HarfBuzz" Version="2.88.4" />
+    <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="2.8.2.4" />
+    <PackageVersion Include="SkiaSharp" Version="2.88.4" />
     <PackageVersion Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" />
     <PackageVersion Include="SQLitePCL.pretty.netstandard" Version="3.1.0" />
     <PackageVersion Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.5" />
