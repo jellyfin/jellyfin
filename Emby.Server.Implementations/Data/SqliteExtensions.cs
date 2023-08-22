@@ -243,6 +243,7 @@ namespace Emby.Server.Implementations.Data
         public static int SelectScalarInt(this SqliteCommand command)
         {
             var result = command.ExecuteScalar();
+            // Can't be null since the method is used to retrieve Count
             return Convert.ToInt32(result!, CultureInfo.InvariantCulture);
         }
 
