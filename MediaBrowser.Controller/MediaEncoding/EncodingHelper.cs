@@ -2692,7 +2692,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             string args = string.Empty;
 
             // http://ffmpeg.org/ffmpeg-all.html#toc-Complex-filtergraphs-1
-            if (state.VideoStream != null && videoProcessFilters.Contains("-filter_complex", StringComparison.Ordinal))
+            if (state.VideoStream is not null && videoProcessFilters.Contains("-filter_complex", StringComparison.Ordinal))
             {
                 int videoStreamIndex = FindIndex(state.MediaSource.MediaStreams, state.VideoStream);
 

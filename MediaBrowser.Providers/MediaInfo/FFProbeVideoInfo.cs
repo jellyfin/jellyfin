@@ -128,7 +128,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     var m2ts = _mediaEncoder.GetPrimaryPlaylistM2tsFiles(item.Path);
 
                     // Return if no playable .m2ts files are found
-                    if (blurayDiscInfo == null || blurayDiscInfo.Files.Length == 0 || m2ts.Count == 0)
+                    if (blurayDiscInfo is null || blurayDiscInfo.Files.Length == 0 || m2ts.Count == 0)
                     {
                         _logger.LogError("No playable .m2ts files found in Blu-ray structure, skipping FFprobe.");
                         return ItemUpdateType.MetadataImport;
