@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -227,7 +228,13 @@ namespace MediaBrowser.Providers.TV
                 }
                 else
                 {
-                    existingSeason.Name = GetValidSeasonNameForSeries(series, seasonName, seasonNumber);
+                    var name = GetValidSeasonNameForSeries(series, seasonName, seasonNumber);
+                    if (string.Equals(existingSeason.Name, name, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    existingSeason.Name = name;
                     await existingSeason.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
                 }
             }

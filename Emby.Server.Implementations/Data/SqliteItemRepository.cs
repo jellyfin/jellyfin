@@ -564,11 +564,12 @@ namespace Emby.Server.Implementations.Data
 
             CheckDisposed();
 
+            var images = SerializeImages(item.ImageInfos);
             using var connection = GetConnection();
             using var transaction = connection.BeginTransaction();
             using var saveImagesStatement = PrepareStatement(connection, "Update TypedBaseItems set Images=@Images where guid=@Id");
             saveImagesStatement.TryBind("@Id", item.Id);
-            saveImagesStatement.TryBind("@Images", SerializeImages(item.ImageInfos));
+            saveImagesStatement.TryBind("@Images", images);
 
             saveImagesStatement.ExecuteNonQuery();
             transaction.Commit();
