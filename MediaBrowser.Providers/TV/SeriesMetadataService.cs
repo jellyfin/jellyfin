@@ -214,11 +214,10 @@ namespace MediaBrowser.Providers.TV
             {
                 // Null season numbers will have a 'dummy' season created because seasons are always required.
                 var existingSeason = seasons.FirstOrDefault(i => i.IndexNumber == seasonNumber);
-                string? seasonName = null;
 
-                if (seasonNumber.HasValue && seasonNames.TryGetValue(seasonNumber.Value, out var tmp))
+                if (!seasonNumber.HasValue || !seasonNames.TryGetValue(seasonNumber.Value, out var seasonName))
                 {
-                    seasonName = tmp;
+                    seasonName = GetValidSeasonNameForSeries(series, null, seasonNumber);
                 }
 
                 if (existingSeason is null)
@@ -228,13 +227,12 @@ namespace MediaBrowser.Providers.TV
                 }
                 else
                 {
-                    var name = GetValidSeasonNameForSeries(series, seasonName, seasonNumber);
-                    if (string.Equals(existingSeason.Name, name, StringComparison.Ordinal))
+                    if (string.Equals(existingSeason.Name, seasonName, StringComparison.Ordinal))
                     {
                         continue;
                     }
 
-                    existingSeason.Name = name;
+                    existingSeason.Name = seasonName;
                     await existingSeason.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
                 }
             }
@@ -254,7 +252,6 @@ namespace MediaBrowser.Providers.TV
             int? seasonNumber,
             CancellationToken cancellationToken)
         {
-            seasonName = GetValidSeasonNameForSeries(series, seasonName, seasonNumber);
             Logger.LogInformation("Creating Season {SeasonName} entry for {SeriesName}", seasonName, series.Name);
 
             var season = new Season
