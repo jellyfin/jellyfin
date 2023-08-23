@@ -225,13 +225,8 @@ namespace MediaBrowser.Providers.TV
                     var season = await CreateSeasonAsync(series, seasonName, seasonNumber, cancellationToken).ConfigureAwait(false);
                     series.AddChild(season);
                 }
-                else
+                else if (!string.Equals(existingSeason.Name, seasonName, StringComparison.Ordinal))
                 {
-                    if (string.Equals(existingSeason.Name, seasonName, StringComparison.Ordinal))
-                    {
-                        continue;
-                    }
-
                     existingSeason.Name = seasonName;
                     await existingSeason.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
                 }
