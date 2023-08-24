@@ -73,7 +73,7 @@
     <PackageVersion Include="SkiaSharp" Version="2.88.5" />
     <PackageVersion Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" />
     <PackageVersion Include="SQLitePCL.pretty.netstandard" Version="3.1.0" />
-    <PackageVersion Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.5" />
+    <PackageVersion Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.6" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.507" />
     <PackageVersion Include="Swashbuckle.AspNetCore.ReDoc" Version="6.4.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.2.3" />
