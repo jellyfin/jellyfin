@@ -624,7 +624,8 @@ namespace Emby.Server.Implementations.Data
                 {
                     if (requiresReset)
                     {
-                        // TODO saveItemStatement.Parameters.Clear();
+                        saveItemStatement.Parameters.Clear();
+                        deleteAncestorsStatement.Parameters.Clear();
                     }
 
                     var item = tuple.Item;
@@ -2037,7 +2038,6 @@ namespace Emby.Server.Implementations.Data
                         chapterIndex++;
                     }
 
-                    // TODO statement.Parameters.Clear();
                     statement.ExecuteNonQuery();
                 }
 
@@ -4793,7 +4793,6 @@ AND Type = @InternalPersonType)");
             CheckDisposed();
 
             // First delete
-            // TODO deleteAncestorsStatement.Parameters.Clear();
             deleteAncestorsStatement.TryBind("@ItemId", itemId);
             deleteAncestorsStatement.ExecuteNonQuery();
 
@@ -4829,7 +4828,6 @@ AND Type = @InternalPersonType)");
                     statement.TryBind("@AncestorIdText" + index, ancestorId.ToString("N", CultureInfo.InvariantCulture));
                 }
 
-                // TODO statement.Parameters.Clear();
                 statement.ExecuteNonQuery();
             }
         }
@@ -5363,7 +5361,6 @@ AND Type = @InternalPersonType)");
                         statement.TryBind("@CleanValue" + index, GetCleanValue(itemValue));
                     }
 
-                    // TODO statement.Parameters.Clear();
                     statement.ExecuteNonQuery();
                 }
 
@@ -5642,7 +5639,6 @@ AND Type = @InternalPersonType)");
                         statement.TryBind("@IsHearingImpaired" + index, stream.IsHearingImpaired);
                     }
 
-                    // TODO statement.Parameters.Clear();
                     statement.ExecuteNonQuery();
                 }
 
@@ -5979,7 +5975,6 @@ AND Type = @InternalPersonType)");
                         statement.TryBind("@MIMEType" + index, attachment.MimeType);
                     }
 
-                    // TODO statement.Parameters.Clear();
                     statement.ExecuteNonQuery();
                 }
 
