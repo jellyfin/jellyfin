@@ -833,7 +833,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
             catch (AuthenticationException ex)
             {
-                _logger.LogError(ex, "Error authenticating with provider {Provider}", provider.Name);
+                _logger.LogDebug(ex, "Error authenticating with provider {Provider}", provider.Name);
 
                 return (username, false);
             }
