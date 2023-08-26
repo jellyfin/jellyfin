@@ -333,7 +333,7 @@ namespace MediaBrowser.Controller.Entities
 
         protected override bool IsActiveRecording()
         {
-            return LiveTvManager.GetActiveRecordingInfo(Path) != null;
+            return LiveTvManager.GetActiveRecordingInfo(Path) is not null;
         }
 
         public override bool CanDelete()

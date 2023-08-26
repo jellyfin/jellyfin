@@ -1006,7 +1006,7 @@ namespace Emby.Server.Implementations
             if (ConfigurationManager.GetNetworkConfiguration().EnablePublishedServerUriByRequest)
             {
                 int? requestPort = request.Host.Port;
-                if (requestPort == null
+                if (requestPort is null
                     || (requestPort == 80 && string.Equals(request.Scheme, "http", StringComparison.OrdinalIgnoreCase))
                     || (requestPort == 443 && string.Equals(request.Scheme, "https", StringComparison.OrdinalIgnoreCase)))
                 {
@@ -1190,7 +1190,7 @@ namespace Emby.Server.Implementations
                 }
             }
 
-            if (_sessionManager != null)
+            if (_sessionManager is not null)
             {
                 // used for closing websockets
                 foreach (var session in _sessionManager.Sessions)

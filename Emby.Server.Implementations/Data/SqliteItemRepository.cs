@@ -1971,18 +1971,7 @@ namespace Emby.Server.Implementations.Data
             if (reader.TryGetString(2, out var imagePath))
             {
                 chapter.ImagePath = imagePath;
-
-                if (!string.IsNullOrEmpty(chapter.ImagePath))
-                {
-                    try
-                    {
-                        chapter.ImageTag = _imageProcessor.GetImageCacheTag(item, chapter);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError(ex, "Failed to create image cache tag.");
-                    }
-                }
+                chapter.ImageTag = _imageProcessor.GetImageCacheTag(item, chapter);
             }
 
             if (reader.TryReadDateTime(3, out var imageDateModified))
