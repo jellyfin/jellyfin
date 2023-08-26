@@ -358,7 +358,7 @@ namespace Emby.Server.Implementations.Library
 
             var children = item.IsFolder
                 ? ((Folder)item).GetRecursiveChildren(false)
-                : Enumerable.Empty<BaseItem>();
+                : Array.Empty<BaseItem>();
 
             foreach (var metadataPath in GetMetadataPaths(item, children))
             {

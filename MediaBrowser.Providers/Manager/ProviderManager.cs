@@ -807,13 +807,11 @@ namespace MediaBrowser.Providers.Manager
             where TLookupType : ItemLookupInfo
         {
             var results = await provider.GetSearchResults(searchInfo, cancellationToken).ConfigureAwait(false);
-
-            foreach (var item in results)
+            return results.Select(result =>
             {
-                item.SearchProviderName = provider.Name;
-            }
-
-            return results;
+                result.SearchProviderName = provider.Name;
+                return result;
+            });
         }
 
         private IEnumerable<IExternalId> GetExternalIds(IHasProviderIds item)
