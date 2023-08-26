@@ -556,7 +556,7 @@ namespace MediaBrowser.Model.Dlna
         private static void SetStreamInfoOptionsFromDirectPlayProfile(MediaOptions options, MediaSourceInfo item, StreamInfo playlistItem, DirectPlayProfile? directPlayProfile)
         {
             var container = NormalizeMediaSourceFormatIntoSingleContainer(item.Container, options.Profile, DlnaProfileType.Video, directPlayProfile);
-            var protocol = "http";
+            var protocol = MediaStreamProtocol.Http;
 
             item.TranscodingContainer = container;
             item.TranscodingSubProtocol = protocol;
@@ -647,7 +647,7 @@ namespace MediaBrowser.Model.Dlna
 
                     if (directPlay == PlayMethod.DirectPlay)
                     {
-                        playlistItem.SubProtocol = "http";
+                        playlistItem.SubProtocol = MediaStreamProtocol.Http;
 
                         var audioStreamIndex = directPlayInfo.AudioStreamIndex ?? audioStream?.Index;
                         if (audioStreamIndex.HasValue)
@@ -802,7 +802,7 @@ namespace MediaBrowser.Model.Dlna
             var videoCodecs = ContainerProfile.SplitValue(videoCodec);
 
             // Enforce HLS video codec restrictions
-            if (string.Equals(playlistItem.SubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
+            if (playlistItem.SubProtocol == MediaStreamProtocol.Hls)
             {
                 videoCodecs = videoCodecs.Where(codec => _supportedHlsVideoCodecs.Contains(codec)).ToArray();
             }
@@ -844,7 +844,7 @@ namespace MediaBrowser.Model.Dlna
             var audioCodecs = ContainerProfile.SplitValue(audioCodec);
 
             // Enforce HLS audio codec restrictions
-            if (string.Equals(playlistItem.SubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
+            if (playlistItem.SubProtocol == MediaStreamProtocol.Hls)
             {
                 if (string.Equals(playlistItem.Container, "mp4", StringComparison.OrdinalIgnoreCase))
                 {
@@ -1362,9 +1362,9 @@ namespace MediaBrowser.Model.Dlna
             PlayMethod playMethod,
             ITranscoderSupport transcoderSupport,
             string? outputContainer,
-            string? transcodingSubProtocol)
+            MediaStreamProtocol? transcodingSubProtocol)
         {
-            if (!subtitleStream.IsExternal && (playMethod != PlayMethod.Transcode || !string.Equals(transcodingSubProtocol, "hls", StringComparison.OrdinalIgnoreCase)))
+            if (!subtitleStream.IsExternal && (playMethod != PlayMethod.Transcode || transcodingSubProtocol != MediaStreamProtocol.Hls))
             {
                 // Look for supported embedded subs of the same format
                 foreach (var profile in subtitleProfiles)

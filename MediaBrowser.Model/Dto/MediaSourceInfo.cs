@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Jellyfin.Data.Enums;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
@@ -102,7 +104,7 @@ namespace MediaBrowser.Model.Dto
 
         public string TranscodingUrl { get; set; }
 
-        public string TranscodingSubProtocol { get; set; }
+        public MediaStreamProtocol TranscodingSubProtocol { get; set; }
 
         public string TranscodingContainer { get; set; }
 
