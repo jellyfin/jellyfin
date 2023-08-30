@@ -1703,19 +1703,18 @@ public class DynamicHlsController : BaseJellyfinApiController
         }
 
         var audioCodec = _encodingHelper.GetAudioEncoder(state);
+        var bitStreamArgs = EncodingHelper.GetAudioBitStreamArguments(state, state.Request.SegmentContainer, state.MediaSource.Container);
 
         if (!state.IsOutputVideo)
         {
             if (EncodingHelper.IsCopyCodec(audioCodec))
             {
-                var bitStreamArgs = EncodingHelper.GetAudioBitStreamArguments(state, state.Request.SegmentContainer, state.MediaSource.Container);
-
                 return "-acodec copy -strict -2" + bitStreamArgs;
             }
 
             var audioTranscodeParams = string.Empty;
 
-            audioTranscodeParams += "-acodec " + audioCodec;
+            audioTranscodeParams += "-acodec " + audioCodec + bitStreamArgs;
 
             var audioBitrate = state.OutputAudioBitrate;
             var audioChannels = state.OutputAudioChannels;
@@ -1761,7 +1760,6 @@ public class DynamicHlsController : BaseJellyfinApiController
         if (EncodingHelper.IsCopyCodec(audioCodec))
         {
             var videoCodec = _encodingHelper.GetVideoEncoder(state, _encodingOptions);
-            var bitStreamArgs = EncodingHelper.GetAudioBitStreamArguments(state, state.Request.SegmentContainer, state.MediaSource.Container);
             var copyArgs = "-codec:a:0 copy" + bitStreamArgs + strictArgs;
 
             if (EncodingHelper.IsCopyCodec(videoCodec) && state.EnableBreakOnNonKeyFrames(videoCodec))
@@ -1772,7 +1770,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             return copyArgs;
         }
 
-        var args = "-codec:a:0 " + audioCodec + strictArgs;
+        var args = "-codec:a:0 " + audioCodec + bitStreamArgs + strictArgs;
 
         var channels = state.OutputAudioChannels;
 
