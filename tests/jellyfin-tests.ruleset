@@ -19,4 +19,10 @@
     <!-- CA2234: Pass system uri objects instead of strings -->
     <Rule Id="CA2234" Action="Info" />
   </Rules>
+
+  <!-- xUnit -->
+  <Rules AnalyzerId="xUnit" RuleNamespace="xUnit">
+    <!-- Test methods must have a supported return type. -->
+    <Rule Id="xUnit1028" Action="None" />
+  </Rules>
 </RuleSet>
