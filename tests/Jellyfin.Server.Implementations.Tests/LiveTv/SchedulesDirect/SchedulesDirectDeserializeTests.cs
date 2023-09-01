@@ -96,7 +96,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
             var days = JsonSerializer.Deserialize<IReadOnlyList<DayDto>>(bytes, _jsonOptions);
 
             Assert.NotNull(days);
-            Assert.Equal(1, days!.Count);
+            Assert.Single(days);
 
             var dayDto = days[0];
             Assert.Equal("20454", dayDto.StationId);
@@ -110,7 +110,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
             Assert.Equal(2, dayDto.Programs[0].AudioProperties.Count);
             Assert.Equal("stereo", dayDto.Programs[0].AudioProperties[0]);
             Assert.Equal("cc", dayDto.Programs[0].AudioProperties[1]);
-            Assert.Equal(1, dayDto.Programs[0].VideoProperties.Count);
+            Assert.Single(dayDto.Programs[0].VideoProperties);
             Assert.Equal("hdtv", dayDto.Programs[0].VideoProperties[0]);
         }
 
@@ -126,13 +126,13 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
             Assert.NotNull(programDtos);
             Assert.Equal(2, programDtos!.Count);
             Assert.Equal("EP000000060003", programDtos[0].ProgramId);
-            Assert.Equal(1, programDtos[0].Titles.Count);
+            Assert.Single(programDtos[0].Titles);
             Assert.Equal("'Allo 'Allo!", programDtos[0].Titles[0].Title120);
             Assert.Equal("Series", programDtos[0].EventDetails?.SubType);
             Assert.Equal("en", programDtos[0].Descriptions?.Description1000[0].DescriptionLanguage);
             Assert.Equal("A disguised British Intelligence officer is sent to help the airmen.", programDtos[0].Descriptions?.Description1000[0].Description);
             Assert.Equal(new DateTime(1985, 11, 04), programDtos[0].OriginalAirDate);
-            Assert.Equal(1, programDtos[0].Genres.Count);
+            Assert.Single(programDtos[0].Genres);
             Assert.Equal("Sitcom", programDtos[0].Genres[0]);
             Assert.Equal("The Poloceman Cometh", programDtos[0].EpisodeTitle150);
             Assert.Equal(2, programDtos[0].Metadata[0].Gracenote?.Season);
@@ -161,7 +161,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
             var showImagesDtos = JsonSerializer.Deserialize<IReadOnlyList<ShowImagesDto>>(bytes, _jsonOptions);
 
             Assert.NotNull(showImagesDtos);
-            Assert.Equal(1, showImagesDtos!.Count);
+            Assert.Single(showImagesDtos!);
             Assert.Equal("SH00712240", showImagesDtos[0].ProgramId);
             Assert.Equal(4, showImagesDtos[0].Data.Count);
             Assert.Equal("135", showImagesDtos[0].Data[0].Width);

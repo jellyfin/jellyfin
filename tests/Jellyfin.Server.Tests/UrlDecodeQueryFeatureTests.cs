@@ -22,7 +22,7 @@ namespace Jellyfin.Server.Tests
             Assert.Single(test.Query);
             var (k, v) = test.Query.First();
             Assert.Equal(key, k);
-            Assert.Empty(v);
+            Assert.True(StringValues.IsNullOrEmpty(v));
         }
     }
 }
