@@ -1458,15 +1458,12 @@ public class DynamicHlsController : BaseJellyfinApiController
             _logger.LogDebug("returning {0} [it exists, try 1]", segmentPath);
             return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
         }
-        else if (HttpContext.Request.Headers.ContainsKey("X-Buffer-Only"))
-        {
-            return new StatusCodeResult(412);
-        }
 
         var transcodingLock = _transcodingJobHelper.GetTranscodingLock(playlistPath);
         await transcodingLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         var released = false;
         var startTranscoding = false;
+        bool bufferOnly = HttpContext.Request.Headers.ContainsKey("X-Buffer-Only");
 
         try
         {
@@ -1483,7 +1480,11 @@ public class DynamicHlsController : BaseJellyfinApiController
                 var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
                 var segmentGapRequiringTranscodingChange = 24 / state.SegmentLength;
 
-                if (segmentId == -1)
+                if (bufferOnly)
+                {
+                    _logger.LogDebug("Segment requested for buffering, skipping trancode");
+                }
+                else if (segmentId == -1)
                 {
                     _logger.LogDebug("Starting transcoding because fmp4 init file is being requested");
                     startTranscoding = true;
@@ -1553,6 +1554,12 @@ public class DynamicHlsController : BaseJellyfinApiController
             {
                 transcodingLock.Release();
             }
+        }
+
+        if (bufferOnly)
+        {
+            _logger.LogDebug("Client requested fragment for buffering, which is not yet ready - returning 412.");
+            return new StatusCodeResult(412);
         }
 
         _logger.LogDebug("returning {0} [general case]", segmentPath);
