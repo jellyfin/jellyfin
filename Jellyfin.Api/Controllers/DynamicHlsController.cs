@@ -1458,6 +1458,10 @@ public class DynamicHlsController : BaseJellyfinApiController
             _logger.LogDebug("returning {0} [it exists, try 1]", segmentPath);
             return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
         }
+        else if (HttpContext.Request.Headers.ContainsKey("X-Buffer-Only"))
+        {
+            return new StatusCodeResult(412);
+        }
 
         var transcodingLock = _transcodingJobHelper.GetTranscodingLock(playlistPath);
         await transcodingLock.WaitAsync(cancellationToken).ConfigureAwait(false);
