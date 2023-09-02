@@ -1216,6 +1216,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             int bitrate = state.OutputVideoBitrate.Value;
 
+            // Bit rate under 1000k is not allowed in h264_qsv
+            if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
+            {
+                bitrate = Math.Max(bitrate, 1000);
+            }
+
             // Currently use the same buffer size for all encoders
             int bufsize = bitrate * 2;
 
