@@ -85,6 +85,7 @@ public static class FileStreamResponseHelpers
         httpContext.Response.Headers[HeaderNames.AcceptRanges] = "none";
 
         var contentType = state.GetMimeType(outputPath);
+        bool bufferOnly = httpContext.Request.Headers.ContainsKey("X-Buffer-Only");
 
         // Headers only
         if (isHeadRequest)
@@ -100,6 +101,11 @@ public static class FileStreamResponseHelpers
             TranscodingJobDto? job;
             if (!File.Exists(outputPath))
             {
+                if (bufferOnly)
+                {
+                    return new StatusCodeResult(412);
+                }
+
                 job = await transcodingJobHelper.StartFfMpeg(state, outputPath, ffmpegCommandLineArguments, httpContext.Request, transcodingJobType, cancellationTokenSource).ConfigureAwait(false);
             }
             else
