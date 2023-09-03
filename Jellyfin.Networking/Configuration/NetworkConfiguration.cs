@@ -164,7 +164,7 @@ namespace Jellyfin.Networking.Configuration
         public string[] PublishedServerUriBySubnet { get; set; } = Array.Empty<string>();
 
         /// <summary>
-        /// Gets or sets the filter for remote IP connectivity. Used in conjuntion with <seealso cref="IsRemoteIPFilterBlacklist"/>.
+        /// Gets or sets the filter for remote IP connectivity. Used in conjunction with <seealso cref="IsRemoteIPFilterBlacklist"/>.
         /// </summary>
         public string[] RemoteIPFilter { get; set; } = Array.Empty<string>();
 
