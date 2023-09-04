@@ -1064,11 +1064,7 @@ namespace Emby.Server.Implementations.Dto
 
                 if (options.ContainsField(ItemFields.Trickplay))
                 {
-                    var manifest = _trickplayManager.GetTrickplayManifest(item).GetAwaiter().GetResult();
-
-                    // To stay consistent with other fields, this must go from a Guid to a non-dashed string.
-                    // This does not seem to occur automatically to dictionaries like it does with other Guid fields.
-                    dto.Trickplay = manifest.ToDictionary(x => x.Key.ToString("N", CultureInfo.InvariantCulture), y => y.Value);
+                    dto.Trickplay = _trickplayManager.GetTrickplayManifest(item).GetAwaiter().GetResult();
                 }
 
                 if (video.ExtraType.HasValue)

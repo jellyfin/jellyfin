@@ -54,7 +54,7 @@ public interface ITrickplayManager
     /// </summary>
     /// <param name="item">The item.</param>
     /// <returns>A map of media source id to a map of tile width to trickplay info.</returns>
-    Task<Dictionary<Guid, Dictionary<int, TrickplayInfo>>> GetTrickplayManifest(BaseItem item);
+    Task<Dictionary<string, Dictionary<int, TrickplayInfo>>> GetTrickplayManifest(BaseItem item);
 
     /// <summary>
     /// Gets the path to a trickplay tile image.
