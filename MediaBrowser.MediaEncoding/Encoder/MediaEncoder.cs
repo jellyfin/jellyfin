@@ -925,8 +925,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        var jpegCount = _fileSystem.GetFilePaths(targetDirectory)
-                            .Count(i => string.Equals(Path.GetExtension(i), ".jpg", StringComparison.OrdinalIgnoreCase));
+                        var jpegCount = _fileSystem.GetFilePaths(targetDirectory).Count();
 
                         isResponsive = jpegCount > lastCount;
                         lastCount = jpegCount;

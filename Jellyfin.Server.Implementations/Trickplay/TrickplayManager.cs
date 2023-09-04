@@ -239,7 +239,7 @@ public class TrickplayManager : ITrickplayManager
             var tilePath = Path.Combine(workDir, $"{i}.jpg");
 
             imageOptions.OutputPath = tilePath;
-            imageOptions.InputPaths = images.Skip(i * thumbnailsPerTile).Take(thumbnailsPerTile).ToList();
+            imageOptions.InputPaths = images.GetRange(i * thumbnailsPerTile, Math.Min(thumbnailsPerTile, images.Count - (i * thumbnailsPerTile)));
 
             // Generate image and use returned height for tiles info
             var height = _imageEncoder.CreateTrickplayTile(imageOptions, options.JpegQuality, trickplayInfo.Width, trickplayInfo.Height != 0 ? trickplayInfo.Height : null);
