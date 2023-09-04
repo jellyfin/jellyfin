@@ -720,7 +720,7 @@ namespace MediaBrowser.Providers.Manager
                             refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
                         }
 
-                        MergeData(localItem, temp, Array.Empty<MetadataField>(), !options.ReplaceAllMetadata, true);
+                        MergeData(localItem, temp, Array.Empty<MetadataField>(), options.ReplaceAllMetadata, true);
                         refreshResult.UpdateType |= ItemUpdateType.MetadataImport;
 
                         // Only one local provider allowed per item

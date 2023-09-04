@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Authentication;
@@ -39,14 +40,18 @@ namespace Jellyfin.Server.Implementations.Users
 
         /// <inheritdoc />
         // This is the version that we need to use for local users. Because reasons.
-        public Task<ProviderAuthenticationResult> Authenticate(string username, string password, User resolvedUser)
+        public Task<ProviderAuthenticationResult> Authenticate(string username, string password, User? resolvedUser)
         {
-            if (resolvedUser is null)
+            [DoesNotReturn]
+            static void ThrowAuthenticationException()
             {
-                throw new AuthenticationException("Specified user does not exist.");
+                throw new AuthenticationException("Invalid username or password");
             }
 
-            bool success = false;
+            if (resolvedUser is null)
+            {
+                ThrowAuthenticationException();
+            }
 
             // As long as jellyfin supports password-less users, we need this little block here to accommodate
             if (!HasPassword(resolvedUser) && string.IsNullOrEmpty(password))
@@ -60,15 +65,13 @@ namespace Jellyfin.Server.Implementations.Users
             // Handle the case when the stored password is null, but the user tried to login with a password
             if (resolvedUser.Password is null)
             {
-                throw new AuthenticationException("Invalid username or password");
+                ThrowAuthenticationException();
             }
 
             PasswordHash readyHash = PasswordHash.Parse(resolvedUser.Password);
-            success = _cryptographyProvider.Verify(readyHash, password);
-
-            if (!success)
+            if (!_cryptographyProvider.Verify(readyHash, password))
             {
-                throw new AuthenticationException("Invalid username or password");
+                ThrowAuthenticationException();
             }
 
             // Migrate old hashes to the new default

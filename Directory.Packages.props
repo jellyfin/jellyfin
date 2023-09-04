@@ -23,14 +23,15 @@
     <PackageVersion Include="libse" Version="3.6.13" />
     <PackageVersion Include="LrcParser" Version="2023.524.0" />
     <PackageVersion Include="MetaBrainz.MusicBrainz" Version="5.0.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="7.0.9" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="7.0.10" />
     <PackageVersion Include="Microsoft.AspNetCore.HttpOverrides" Version="2.2.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="7.0.9" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="7.0.10" />
     <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.4" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.9" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.9" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.9" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.9" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.10" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.10" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.10" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.10" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
@@ -39,14 +40,14 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="7.0.9" />
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="7.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="7.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="7.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="7.0.1" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.6.3" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
     <PackageVersion Include="MimeTypes" Version="2.4.0" />
     <PackageVersion Include="Mono.Nat" Version="3.0.4" />
@@ -59,21 +60,19 @@
     <PackageVersion Include="prometheus-net" Version="8.0.1" />
     <PackageVersion Include="Serilog.AspNetCore" Version="7.0.0" />
     <PackageVersion Include="Serilog.Enrichers.Thread" Version="3.1.0" />
-    <PackageVersion Include="Serilog.Settings.Configuration" Version="7.0.0" />
+    <PackageVersion Include="Serilog.Settings.Configuration" Version="7.0.1" />
     <PackageVersion Include="Serilog.Sinks.Async" Version="1.5.0" />
     <PackageVersion Include="Serilog.Sinks.Console" Version="4.1.0" />
     <PackageVersion Include="Serilog.Sinks.File" Version="5.0.0" />
     <PackageVersion Include="Serilog.Sinks.Graylog" Version="3.0.2" />
     <PackageVersion Include="SerilogAnalyzer" Version="0.15.0" />
     <PackageVersion Include="SharpFuzz" Version="2.1.1" />
-    <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="2.88.3" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="2.88.5" />
     <PackageVersion Include="SkiaSharp.Svg" Version="1.60.0" />
-    <PackageVersion Include="SkiaSharp.HarfBuzz" Version="2.88.3" />
-    <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="2.8.2.3" />
-    <PackageVersion Include="SkiaSharp" Version="2.88.3" />
+    <PackageVersion Include="SkiaSharp.HarfBuzz" Version="2.88.5" />
+    <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="2.8.2.5" />
+    <PackageVersion Include="SkiaSharp" Version="2.88.5" />
     <PackageVersion Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" />
-    <PackageVersion Include="SQLitePCL.pretty.netstandard" Version="3.1.0" />
-    <PackageVersion Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.5" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.507" />
     <PackageVersion Include="Swashbuckle.AspNetCore.ReDoc" Version="6.4.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.2.3" />

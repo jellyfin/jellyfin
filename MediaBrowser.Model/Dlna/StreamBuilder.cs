@@ -135,7 +135,7 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            if (transcodingProfile != null)
+            if (transcodingProfile is not null)
             {
                 if (!item.SupportsTranscoding)
                 {
@@ -759,7 +759,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 // prefer direct copy profile
                 float videoFramerate = videoStream?.AverageFrameRate ?? videoStream?.RealFrameRate ?? 0;
-                TransportStreamTimestamp? timestamp = videoStream == null ? TransportStreamTimestamp.None : item.Timestamp;
+                TransportStreamTimestamp? timestamp = videoStream is null ? TransportStreamTimestamp.None : item.Timestamp;
                 int? numAudioStreams = item.GetStreamCount(MediaStreamType.Audio);
                 int? numVideoStreams = item.GetStreamCount(MediaStreamType.Video);
 
