@@ -153,7 +153,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             // Return the original if the same format is being requested
             // Character encoding was already handled in GetSubtitleStream
-            if (string.Equals(inputFormat, outputFormat, StringComparison.OrdinalIgnoreCase))
+            // If subtitle file has an offset then we must run conversion process to honor the offset
+            if (!subtitleStream.Offset.HasValue && string.Equals(inputFormat, outputFormat, StringComparison.OrdinalIgnoreCase))
             {
                 return subtitle.Stream;
             }
