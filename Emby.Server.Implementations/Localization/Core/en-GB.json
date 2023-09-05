@@ -124,5 +124,6 @@
     "TaskKeyframeExtractorDescription": "Extracts keyframes from video files to create more precise HLS playlists. This task may run for a long time.",
     "TaskKeyframeExtractor": "Keyframe Extractor",
     "External": "External",
-    "HearingImpaired": "Hearing Impaired"
+    "HearingImpaired": "Hearing Impaired",
+    "Offset": "Offset"
 }

@@ -121,6 +121,7 @@ namespace MediaBrowser.Providers.MediaInfo
                                 mediaStream.IsDefault = pathInfo.IsDefault || mediaStream.IsDefault;
                                 mediaStream.IsForced = pathInfo.IsForced || mediaStream.IsForced;
                                 mediaStream.IsHearingImpaired = pathInfo.IsHearingImpaired || mediaStream.IsHearingImpaired;
+                                mediaStream.Offset = pathInfo.Offset;
 
                                 mediaStreams.Add(MergeMetadata(mediaStream, pathInfo));
                             }

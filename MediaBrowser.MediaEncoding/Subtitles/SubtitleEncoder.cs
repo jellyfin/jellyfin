@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities.Libraries;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -67,6 +68,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             Stream stream,
             string inputFormat,
             string outputFormat,
+            int? offset,
             long startTimeTicks,
             long endTimeTicks,
             bool preserveOriginalTimestamps,
@@ -77,6 +79,15 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             try
             {
                 var trackInfo = _subtitleParser.Parse(stream, inputFormat);
+
+                if (offset.HasValue)
+                {
+                    foreach (var trackEvent in trackInfo.TrackEvents)
+                    {
+                        trackEvent.EndPositionTicks += offset.Value * 10000;
+                        trackEvent.StartPositionTicks += offset.Value * 10000;
+                    }
+                }
 
                 FilterEvents(trackInfo, startTimeTicks, endTimeTicks, preserveOriginalTimestamps);
 
@@ -149,7 +160,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             using (var stream = subtitle.Stream)
             {
-                return ConvertSubtitles(stream, inputFormat, outputFormat, startTimeTicks, endTimeTicks, preserveOriginalTimestamps, cancellationToken);
+                return ConvertSubtitles(stream, inputFormat, outputFormat, subtitleStream.Offset, startTimeTicks, endTimeTicks, preserveOriginalTimestamps, cancellationToken);
             }
         }
 
@@ -194,6 +205,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             MediaStream subtitleStream,
             CancellationToken cancellationToken)
         {
+            _logger.LogWarning("GetReadableFile");
+
             if (!subtitleStream.IsExternal || subtitleStream.Path.EndsWith(".mks", StringComparison.OrdinalIgnoreCase))
             {
                 string outputFormat;
@@ -241,6 +254,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             // Fallback to ffmpeg conversion
             if (!_subtitleParser.SupportsFileExtension(currentFormat))
             {
+                _logger.LogWarning("ffmpeg conversion");
+
                 // Convert
                 var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, ".srt");
 

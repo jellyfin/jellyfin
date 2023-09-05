@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using Emby.Naming.Common;
@@ -109,6 +110,11 @@ namespace Emby.Naming.ExternalFiles
                     else if (_namingOptions.MediaHearingImpairedFlags.Any(s => currentSliceWithoutSeparator.Contains(s, StringComparison.OrdinalIgnoreCase)))
                     {
                         pathInfo.IsHearingImpaired = true;
+                        extraString = extraString.Replace(currentSlice, string.Empty, StringComparison.OrdinalIgnoreCase);
+                    }
+                    else if (_namingOptions.MediaOffsetFlags.Any(s => currentSliceWithoutSeparator.Contains(s, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        pathInfo.Offset = int.Parse(currentSliceWithoutSeparator.AsSpan().Slice(6), CultureInfo.InvariantCulture);
                         extraString = extraString.Replace(currentSlice, string.Empty, StringComparison.OrdinalIgnoreCase);
                     }
                     else
