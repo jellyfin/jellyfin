@@ -60,6 +60,6 @@ namespace Emby.Naming.ExternalFiles
         /// Gets or sets a value indicating the desired offset of this instance.
         /// </summary>
         /// <value>The number of milliseconds of the offset.</value>
-        public int Offset { get; set; }
+        public int? Offset { get; set; }
     }
 }
