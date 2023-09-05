@@ -1519,24 +1519,9 @@ namespace Emby.Server.Implementations.Session
                     DeviceId = deviceId
                 }).ConfigureAwait(false)).Items;
 
-            foreach (var auth in allExistingForDevice)
-            {
-                if (existing is null || !string.Equals(auth.AccessToken, existing.AccessToken, StringComparison.Ordinal))
-                {
-                    try
-                    {
-                        await Logout(auth).ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error while logging out.");
-                    }
-                }
-            }
-
             if (existing is not null)
             {
-                _logger.LogInformation("Reissuing access token: {Token}", existing.AccessToken);
+                _logger.LogInformation("Reusing existing access token: {Token}", existing.AccessToken);
                 return existing.AccessToken;
             }
 
