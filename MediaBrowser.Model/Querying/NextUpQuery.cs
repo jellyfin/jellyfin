@@ -14,6 +14,7 @@ namespace MediaBrowser.Model.Querying
             EnableTotalRecordCount = true;
             DisableFirstEpisode = false;
             NextUpDateCutoff = DateTime.MinValue;
+            EnableResumable = false;
             EnableRewatching = false;
         }
 
@@ -82,6 +83,11 @@ namespace MediaBrowser.Model.Querying
         /// Gets or sets a value indicating the oldest date for a show to appear in Next Up.
         /// </summary>
         public DateTime NextUpDateCutoff { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to include resumable episodes as next up.
+        /// </summary>
+        public bool EnableResumable { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether getting rewatching next up list.
