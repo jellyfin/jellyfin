@@ -1513,12 +1513,6 @@ namespace Emby.Server.Implementations.Session
                     Limit = 1
                 }).ConfigureAwait(false)).Items.FirstOrDefault();
 
-            var allExistingForDevice = (await _deviceManager.GetDevices(
-                new DeviceQuery
-                {
-                    DeviceId = deviceId
-                }).ConfigureAwait(false)).Items;
-
             if (existing is not null)
             {
                 _logger.LogInformation("Reusing existing access token: {Token}", existing.AccessToken);
