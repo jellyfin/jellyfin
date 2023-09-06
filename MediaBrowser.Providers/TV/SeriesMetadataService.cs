@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -213,11 +214,10 @@ namespace MediaBrowser.Providers.TV
             {
                 // Null season numbers will have a 'dummy' season created because seasons are always required.
                 var existingSeason = seasons.FirstOrDefault(i => i.IndexNumber == seasonNumber);
-                string? seasonName = null;
 
-                if (seasonNumber.HasValue && seasonNames.TryGetValue(seasonNumber.Value, out var tmp))
+                if (!seasonNumber.HasValue || !seasonNames.TryGetValue(seasonNumber.Value, out var seasonName))
                 {
-                    seasonName = tmp;
+                    seasonName = GetValidSeasonNameForSeries(series, null, seasonNumber);
                 }
 
                 if (existingSeason is null)
@@ -225,9 +225,9 @@ namespace MediaBrowser.Providers.TV
                     var season = await CreateSeasonAsync(series, seasonName, seasonNumber, cancellationToken).ConfigureAwait(false);
                     series.AddChild(season);
                 }
-                else
+                else if (!string.Equals(existingSeason.Name, seasonName, StringComparison.Ordinal))
                 {
-                    existingSeason.Name = GetValidSeasonNameForSeries(series, seasonName, seasonNumber);
+                    existingSeason.Name = seasonName;
                     await existingSeason.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
                 }
             }
@@ -247,7 +247,6 @@ namespace MediaBrowser.Providers.TV
             int? seasonNumber,
             CancellationToken cancellationToken)
         {
-            seasonName = GetValidSeasonNameForSeries(series, seasonName, seasonNumber);
             Logger.LogInformation("Creating Season {SeasonName} entry for {SeriesName}", seasonName, series.Name);
 
             var season = new Season

@@ -130,7 +130,8 @@ namespace MediaBrowser.Providers.MediaInfo
                         throw;
                     }
 
-                    output = await process.StandardError.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+                    using var reader = process.StandardError;
+                    output = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
                     cancellationToken.ThrowIfCancellationRequested();
                     MatchCollection split = LUFSRegex().Matches(output);
 
@@ -223,30 +224,39 @@ namespace MediaBrowser.Providers.MediaInfo
                     var albumArtists = tags.AlbumArtists;
                     foreach (var albumArtist in albumArtists)
                     {
-                        PeopleHelper.AddPerson(people, new PersonInfo
+                        if (!string.IsNullOrEmpty(albumArtist))
                         {
-                            Name = albumArtist,
-                            Type = PersonKind.AlbumArtist
-                        });
+                            PeopleHelper.AddPerson(people, new PersonInfo
+                            {
+                                Name = albumArtist,
+                                Type = PersonKind.AlbumArtist
+                            });
+                        }
                     }
 
                     var performers = tags.Performers;
                     foreach (var performer in performers)
                     {
-                        PeopleHelper.AddPerson(people, new PersonInfo
+                        if (!string.IsNullOrEmpty(performer))
                         {
-                            Name = performer,
-                            Type = PersonKind.Artist
-                        });
+                            PeopleHelper.AddPerson(people, new PersonInfo
+                            {
+                                Name = performer,
+                                Type = PersonKind.Artist
+                            });
+                        }
                     }
 
                     foreach (var composer in tags.Composers)
                     {
-                        PeopleHelper.AddPerson(people, new PersonInfo
+                        if (!string.IsNullOrEmpty(composer))
                         {
-                            Name = composer,
-                            Type = PersonKind.Composer
-                        });
+                            PeopleHelper.AddPerson(people, new PersonInfo
+                            {
+                                Name = composer,
+                                Type = PersonKind.Composer
+                            });
+                        }
                     }
 
                     _libraryManager.UpdatePeople(audio, people);

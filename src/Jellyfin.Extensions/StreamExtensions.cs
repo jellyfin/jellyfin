@@ -38,7 +38,7 @@ namespace Jellyfin.Extensions
         public static IEnumerable<string> ReadAllLines(this TextReader reader)
         {
             string? line;
-            while ((line = reader.ReadLine()) != null)
+            while ((line = reader.ReadLine()) is not null)
             {
                 yield return line;
             }
@@ -52,7 +52,7 @@ namespace Jellyfin.Extensions
         public static async IAsyncEnumerable<string> ReadAllLinesAsync(this TextReader reader)
         {
             string? line;
-            while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) != null)
+            while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) is not null)
             {
                 yield return line;
             }

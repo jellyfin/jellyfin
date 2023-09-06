@@ -494,7 +494,7 @@ public class UserController : BaseJellyfinApiController
         var isLocal = HttpContext.IsLocal()
                       || _networkManager.IsInLocalNetwork(ip);
 
-        if (isLocal)
+        if (!isLocal)
         {
             _logger.LogWarning("Password reset process initiated from outside the local network with IP: {IP}", ip);
         }

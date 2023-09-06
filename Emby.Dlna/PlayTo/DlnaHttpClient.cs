@@ -57,6 +57,7 @@ namespace Emby.Dlna.PlayTo
             response.EnsureSuccessStatusCode();
             await using MemoryStream ms = new MemoryStream();
             await response.Content.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
+            ms.Position = 0;
             try
             {
                 return await XDocument.LoadAsync(

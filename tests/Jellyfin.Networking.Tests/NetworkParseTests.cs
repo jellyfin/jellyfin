@@ -97,7 +97,7 @@ namespace Jellyfin.Networking.Tests
         /// Checks if IPv4 address is within a defined subnet.
         /// </summary>
         /// <param name="netMask">Network mask.</param>
-        /// <param name="IPAddress">IP Address.</param>
+        /// <param name="ipAddress">IP Address.</param>
         [Theory]
         [InlineData("192.168.5.85/24", "192.168.5.1")]
         [InlineData("192.168.5.85/24", "192.168.5.254")]
@@ -211,7 +211,7 @@ namespace Jellyfin.Networking.Tests
 
             if (nm.TryParseInterface(result, out var resultObj))
             {
-                result = resultObj.First().Address.ToString();
+                result = resultObj[0].Address.ToString();
                 var intf = nm.GetBindAddress(source, out _);
 
                 Assert.Equal(intf, result);
@@ -270,7 +270,7 @@ namespace Jellyfin.Networking.Tests
             if (nm.TryParseInterface(result, out IReadOnlyList<IPData>? resultObj) && resultObj is not null)
             {
                 // Parse out IPAddresses so we can do a string comparison (ignore subnet masks).
-                result = resultObj.First().Address.ToString();
+                result = resultObj[0].Address.ToString();
             }
 
             var intf = nm.GetBindAddress(source, out int? _);

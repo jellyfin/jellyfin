@@ -903,10 +903,11 @@ namespace Emby.Server.Implementations.Dto
                 dto.IsPlaceHolder = supportsPlaceHolders.IsPlaceHolder;
             }
 
+            dto.LUFS = item.LUFS;
+
             // Add audio info
             if (item is Audio audio)
             {
-                dto.LUFS = audio.LUFS;
                 dto.Album = audio.Album;
                 if (audio.ExtraType.HasValue)
                 {

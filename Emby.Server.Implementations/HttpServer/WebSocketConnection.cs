@@ -12,6 +12,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Net.WebSocketMessages;
 using MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 using MediaBrowser.Model.Session;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.HttpServer
@@ -43,14 +44,17 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="socket">The socket.</param>
+        /// <param name="authorizationInfo">The authorization information.</param>
         /// <param name="remoteEndPoint">The remote end point.</param>
         public WebSocketConnection(
             ILogger<WebSocketConnection> logger,
             WebSocket socket,
+            AuthorizationInfo authorizationInfo,
             IPAddress? remoteEndPoint)
         {
             _logger = logger;
             _socket = socket;
+            AuthorizationInfo = authorizationInfo;
             RemoteEndPoint = remoteEndPoint;
 
             _jsonOptions = JsonDefaults.Options;
@@ -60,30 +64,22 @@ namespace Emby.Server.Implementations.HttpServer
         /// <inheritdoc />
         public event EventHandler<EventArgs>? Closed;
 
-        /// <summary>
-        /// Gets the remote end point.
-        /// </summary>
+        /// <inheritdoc />
+        public AuthorizationInfo AuthorizationInfo { get; }
+
+        /// <inheritdoc />
         public IPAddress? RemoteEndPoint { get; }
 
-        /// <summary>
-        /// Gets or sets the receive action.
-        /// </summary>
-        /// <value>The receive action.</value>
+        /// <inheritdoc />
         public Func<WebSocketMessageInfo, Task>? OnReceive { get; set; }
 
-        /// <summary>
-        /// Gets the last activity date.
-        /// </summary>
-        /// <value>The last activity date.</value>
+        /// <inheritdoc />
         public DateTime LastActivityDate { get; private set; }
 
         /// <inheritdoc />
         public DateTime LastKeepAliveDate { get; set; }
 
-        /// <summary>
-        /// Gets the state.
-        /// </summary>
-        /// <value>The state.</value>
+        /// <inheritdoc />
         public WebSocketState State => _socket.State;
 
         /// <inheritdoc />
@@ -101,7 +97,7 @@ namespace Emby.Server.Implementations.HttpServer
         }
 
         /// <inheritdoc />
-        public async Task ProcessAsync(CancellationToken cancellationToken = default)
+        public async Task ReceiveAsync(CancellationToken cancellationToken = default)
         {
             var pipe = new Pipe();
             var writer = pipe.Writer;
