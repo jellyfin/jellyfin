@@ -139,8 +139,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
                 for (int i = 1; i < result.Count; i++)
                 {
-                    name.Append(" / " + result[i].Name);
-                    overview.Append(" / " + result[i].Overview);
+                    name.Append(" / ").Append(result[i].Name);
+                    overview.Append(" / ").Append(result[i].Overview);
                 }
 
                 episodeResult.Name = name.ToString();
