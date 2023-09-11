@@ -107,7 +107,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                     case "name":
                                     case "title":
                                     case "localtitle":
-                                        name.Append(" / " + reader.ReadElementContentAsString());
+                                        name.Append(" / ").Append(reader.ReadElementContentAsString());
                                         break;
                                     case "episode":
                                         {
@@ -122,7 +122,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                     case "biography":
                                     case "plot":
                                     case "review":
-                                        overview.Append(" / " + reader.ReadElementContentAsString());
+                                        overview.Append(" / ").Append(reader.ReadElementContentAsString());
                                         break;
                                 }
                             }
