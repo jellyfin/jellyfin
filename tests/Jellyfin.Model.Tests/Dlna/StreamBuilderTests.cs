@@ -488,16 +488,16 @@ namespace Jellyfin.Model.Tests
         private static async ValueTask<T> TestData<T>(string name)
         {
             var path = Path.Join("Test Data", typeof(T).Name + "-" + name + ".json");
-            using (var stream = File.OpenRead(path))
-            {
-                var value = await JsonSerializer.DeserializeAsync<T>(stream, JsonDefaults.Options);
-                if (value is not null)
-                {
-                    return value;
-                }
 
-                throw new SerializationException("Invalid test data: " + name);
+            using var stream = File.OpenRead(path);
+
+            var value = await JsonSerializer.DeserializeAsync<T>(stream, JsonDefaults.Options);
+            if (value is not null)
+            {
+                return value;
             }
+
+            throw new SerializationException("Invalid test data: " + name);
         }
 
         private StreamBuilder GetStreamBuilder()

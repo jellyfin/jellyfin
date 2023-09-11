@@ -489,10 +489,8 @@ public class SkiaEncoder : IImageEncoder
         Directory.CreateDirectory(directory);
         using (var outputStream = new SKFileWStream(outputPath))
         {
-            using (var pixmap = new SKPixmap(new SKImageInfo(width, height), saveBitmap.GetPixels()))
-            {
-                pixmap.Encode(outputStream, skiaOutputFormat, quality);
-            }
+            using var pixmap = new SKPixmap(new SKImageInfo(width, height), saveBitmap.GetPixels());
+            pixmap.Encode(outputStream, skiaOutputFormat, quality);
         }
 
         return outputPath;

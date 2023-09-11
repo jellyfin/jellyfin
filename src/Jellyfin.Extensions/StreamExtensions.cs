@@ -26,10 +26,8 @@ namespace Jellyfin.Extensions
         /// <returns>All lines in the stream.</returns>
         public static string[] ReadAllLines(this Stream stream, Encoding encoding)
         {
-            using (StreamReader reader = new StreamReader(stream, encoding))
-            {
-                return ReadAllLines(reader).ToArray();
-            }
+            using StreamReader reader = new StreamReader(stream, encoding);
+            return ReadAllLines(reader).ToArray();
         }
 
         /// <summary>
