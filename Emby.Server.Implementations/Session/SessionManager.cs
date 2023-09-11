@@ -1509,14 +1509,20 @@ namespace Emby.Server.Implementations.Session
                 new DeviceQuery
                 {
                     DeviceId = deviceId,
-                    UserId = user.Id,
-                    Limit = 1
-                }).ConfigureAwait(false)).Items.FirstOrDefault();
+                    UserId = user.Id
+                }).ConfigureAwait(false)).Items;
 
-            if (existing is not null)
+            foreach (var auth in existing)
             {
-                _logger.LogInformation("Reusing existing access token: {Token}", existing.AccessToken);
-                return existing.AccessToken;
+                try
+                {
+                    // Logout any existing sessions for the user on this device
+                    await Logout(auth).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error while logging out existing session.");
+                }
             }
 
             _logger.LogInformation("Creating new access token for user {0}", user.Id);
