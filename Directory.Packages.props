@@ -87,6 +87,6 @@
     <PackageVersion Include="Xunit.Priority" Version="1.1.6" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.0" />
     <PackageVersion Include="Xunit.SkippableFact" Version="1.4.13" />
-    <PackageVersion Include="xunit" Version="2.4.2" />
+    <PackageVersion Include="xunit" Version="2.5.0" />
   </ItemGroup>
 </Project>
