@@ -677,7 +677,7 @@ namespace Emby.Server.Implementations.Plugins
                 }
                 catch (JsonException ex)
                 {
-                    _logger.LogError(ex, "Error deserializing {Json}.", Encoding.UTF8.GetString(data!));
+                    _logger.LogError(ex, "Error deserializing {Json}.", Encoding.UTF8.GetString(data));
                 }
 
                 if (manifest is not null)

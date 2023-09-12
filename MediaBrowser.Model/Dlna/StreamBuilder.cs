@@ -179,15 +179,9 @@ namespace MediaBrowser.Model.Dlna
         {
             ValidateMediaOptions(options, true);
 
-            var mediaSources = new List<MediaSourceInfo>();
-            foreach (var mediaSourceInfo in options.MediaSources)
-            {
-                if (string.IsNullOrEmpty(options.MediaSourceId)
-                    || string.Equals(mediaSourceInfo.Id, options.MediaSourceId, StringComparison.OrdinalIgnoreCase))
-                {
-                    mediaSources.Add(mediaSourceInfo);
-                }
-            }
+            var mediaSources = string.IsNullOrEmpty(options.MediaSourceId)
+                ? options.MediaSources
+                : options.MediaSources.Where(x => string.Equals(x.Id, options.MediaSourceId, StringComparison.OrdinalIgnoreCase));
 
             var streams = new List<StreamInfo>();
             foreach (var mediaSourceInfo in mediaSources)
@@ -216,7 +210,7 @@ namespace MediaBrowser.Model.Dlna
             return streams.OrderBy(i =>
             {
                 // Nothing beats direct playing a file
-                if (i.PlayMethod == PlayMethod.DirectPlay && i.MediaSource.Protocol == MediaProtocol.File)
+                if (i.PlayMethod == PlayMethod.DirectPlay && i.MediaSource?.Protocol == MediaProtocol.File)
                 {
                     return 0;
                 }
@@ -235,7 +229,7 @@ namespace MediaBrowser.Model.Dlna
                 }
             }).ThenBy(i =>
             {
-                switch (i.MediaSource.Protocol)
+                switch (i.MediaSource?.Protocol)
                 {
                     case MediaProtocol.File:
                         return 0;
@@ -246,7 +240,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 if (maxBitrate > 0)
                 {
-                    if (i.MediaSource.Bitrate.HasValue)
+                    if (i.MediaSource?.Bitrate is not null)
                     {
                         return Math.Abs(i.MediaSource.Bitrate.Value - maxBitrate);
                     }
@@ -585,10 +579,10 @@ namespace MediaBrowser.Model.Dlna
                 MediaSource = item,
                 RunTimeTicks = item.RunTimeTicks,
                 Context = options.Context,
-                DeviceProfile = options.Profile
+                DeviceProfile = options.Profile,
+                SubtitleStreamIndex = options.SubtitleStreamIndex ?? GetDefaultSubtitleStreamIndex(item, options.Profile.SubtitleProfiles)
             };
 
-            playlistItem.SubtitleStreamIndex = options.SubtitleStreamIndex ?? GetDefaultSubtitleStreamIndex(item, options.Profile.SubtitleProfiles);
             var subtitleStream = playlistItem.SubtitleStreamIndex.HasValue ? item.GetMediaStream(MediaStreamType.Subtitle, playlistItem.SubtitleStreamIndex.Value) : null;
 
             var audioStream = item.GetDefaultAudioStream(options.AudioStreamIndex ?? item.DefaultAudioStreamIndex);
@@ -659,7 +653,8 @@ namespace MediaBrowser.Model.Dlna
                         if (audioStreamIndex.HasValue)
                         {
                             playlistItem.AudioStreamIndex = audioStreamIndex;
-                            playlistItem.AudioCodecs = new[] { item.GetMediaStream(MediaStreamType.Audio, audioStreamIndex.Value)?.Codec };
+                            var audioCodec = item.GetMediaStream(MediaStreamType.Audio, audioStreamIndex.Value)?.Codec;
+                            playlistItem.AudioCodecs = audioCodec is null ? Array.Empty<string>() : new[] { audioCodec };
                         }
                     }
                     else if (directPlay == PlayMethod.DirectStream)
@@ -842,7 +837,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (videoStream is not null && videoStream.Level != 0)
             {
-                playlistItem.SetOption(qualifier, "level", videoStream.Level.ToString());
+                playlistItem.SetOption(qualifier, "level", videoStream.Level.ToString() ?? string.Empty);
             }
 
             // Prefer matching audio codecs, could do better here
@@ -871,7 +866,7 @@ namespace MediaBrowser.Model.Dlna
 
                 // Copy matching audio codec options
                 playlistItem.AudioSampleRate = audioStream.SampleRate;
-                playlistItem.SetOption(qualifier, "audiochannels", audioStream.Channels.ToString());
+                playlistItem.SetOption(qualifier, "audiochannels", audioStream.Channels.ToString() ?? string.Empty);
 
                 if (!string.IsNullOrEmpty(audioStream.Profile))
                 {
@@ -880,7 +875,7 @@ namespace MediaBrowser.Model.Dlna
 
                 if (audioStream.Level != 0)
                 {
-                    playlistItem.SetOption(audioStream.Codec, "level", audioStream.Level.ToString());
+                    playlistItem.SetOption(audioStream.Codec, "level", audioStream.Level.ToString() ?? string.Empty);
                 }
             }
 
