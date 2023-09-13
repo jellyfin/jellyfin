@@ -157,7 +157,7 @@ namespace Emby.Server.Implementations
             _fileSystemManager = new ManagedFileSystem(LoggerFactory.CreateLogger<ManagedFileSystem>(), applicationPaths);
 
             Logger = LoggerFactory.CreateLogger<ApplicationHost>();
-            _fileSystemManager.AddShortcutHandler(new MbLinkShortcutHandler(_fileSystemManager));
+            _fileSystemManager.AddShortcutHandler(new MbLinkShortcutHandler());
             _deviceId = new DeviceId(ApplicationPaths, LoggerFactory);
 
             ApplicationVersion = typeof(ApplicationHost).Assembly.GetName().Version;

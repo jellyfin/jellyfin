@@ -608,7 +608,7 @@ namespace Emby.Server.Implementations.Library
             var originalList = paths.ToList();
 
             var list = originalList.Where(i => i.IsDirectory)
-                .Select(i => _fileSystem.NormalizePath(i.FullName))
+                .Select(i => Path.TrimEndingDirectorySeparator(i.FullName))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 

@@ -52,6 +52,8 @@
     <Rule Id="SA1204" Action="None" />
     <!-- disable warning SA1309: Fields must not begin with an underscore -->
     <Rule Id="SA1309" Action="None" />
+    <!-- disable warning SA1311: Static readonly fields should begin with upper-case letter -->
+    <Rule Id="SA1311" Action="None" />
     <!-- disable warning SA1413: Use trailing comma in multi-line initializers -->
     <Rule Id="SA1413" Action="None" />
     <!-- disable warning SA1512: Single-line comments must not be followed by blank line -->

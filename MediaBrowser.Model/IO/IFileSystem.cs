@@ -117,13 +117,6 @@ namespace MediaBrowser.Model.IO
         bool ContainsSubPath(string parentPath, string path);
 
         /// <summary>
-        /// Normalizes the path.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>System.String.</returns>
-        string NormalizePath(string path);
-
-        /// <summary>
         /// Gets the file name without extension.
         /// </summary>
         /// <param name="info">The information.</param>
