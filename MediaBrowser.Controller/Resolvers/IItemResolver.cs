@@ -24,7 +24,7 @@ namespace MediaBrowser.Controller.Resolvers
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns>BaseItem.</returns>
-        BaseItem ResolvePath(ItemResolveArgs args);
+        BaseItem? ResolvePath(ItemResolveArgs args);
     }
 
     public interface IMultiItemResolver
