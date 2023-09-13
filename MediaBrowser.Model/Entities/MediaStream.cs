@@ -357,7 +357,7 @@ namespace MediaBrowser.Model.Entities
 
                         if (Offset.HasValue && Offset != 0)
                         {
-                            attributes.Add((string.IsNullOrEmpty(LocalizedOffset) ? "Offset" : LocalizedOffset) + " " + $"{Offset / 1000f:0.#}" + "s");
+                            attributes.Add((string.IsNullOrEmpty(LocalizedOffset) ? "Offset" : LocalizedOffset) + " " + (Offset > 0 ? "+" : string.Empty) + $"{Offset / 1000f:0.#}" + "s");
                         }
 
                         if (IsDefault)
