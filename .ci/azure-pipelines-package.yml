@@ -168,6 +168,7 @@ jobs:
 - job: CollectArtifacts
   timeoutInMinutes: 20
   displayName: 'Collect Artifacts'
+  condition: succeededOrFailed()
   continueOnError: true
   dependsOn:
   - BuildPackage
