@@ -37,10 +37,10 @@ namespace Jellyfin.Data.Entities.Libraries
         /// Gets or sets the path.
         /// </summary>
         /// <remarks>
-        /// Required, Max length = 65535.
+        /// Required, Max length = <see cref="ushort.MaxValue"/>.
         /// </remarks>
-        [MaxLength(65535)]
-        [StringLength(65535)]
+        [MaxLength(ushort.MaxValue)]
+        [StringLength(ushort.MaxValue)]
         public string Path { get; set; }
 
         /// <summary>

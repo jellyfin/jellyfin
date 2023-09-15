@@ -49,10 +49,10 @@ namespace Jellyfin.Data.Entities
         /// Gets or sets the value of this preference.
         /// </summary>
         /// <remarks>
-        /// Required, Max length = 65535.
+        /// Required, Max length = <see cref="ushort.MaxValue"/>.
         /// </remarks>
-        [MaxLength(65535)]
-        [StringLength(65535)]
+        [MaxLength(ushort.MaxValue)]
+        [StringLength(ushort.MaxValue)]
         public string Value { get; set; }
 
         /// <inheritdoc/>

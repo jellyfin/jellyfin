@@ -20,20 +20,20 @@ namespace Jellyfin.Data.Entities.Libraries
         /// Gets or sets the description.
         /// </summary>
         /// <remarks>
-        /// Max length = 65535.
+        /// Max length = <see cref="ushort.MaxValue"/>.
         /// </remarks>
-        [MaxLength(65535)]
-        [StringLength(65535)]
+        [MaxLength(ushort.MaxValue)]
+        [StringLength(ushort.MaxValue)]
         public string? Description { get; set; }
 
         /// <summary>
         /// Gets or sets the headquarters.
         /// </summary>
         /// <remarks>
-        /// Max length = 255.
+        /// Max length = <see cref="byte.MaxValue"/>.
         /// </remarks>
-        [MaxLength(255)]
-        [StringLength(255)]
+        [MaxLength(byte.MaxValue)]
+        [StringLength(byte.MaxValue)]
         public string? Headquarters { get; set; }
 
         /// <summary>

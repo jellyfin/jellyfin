@@ -31,10 +31,10 @@ namespace Jellyfin.Data.Entities.Libraries
         /// Gets or sets the name.
         /// </summary>
         /// <remarks>
-        /// Indexed, Required, Max length = 255.
+        /// Indexed, Required, Max length = <see cref="byte.MaxValue"/>.
         /// </remarks>
-        [MaxLength(255)]
-        [StringLength(255)]
+        [MaxLength(byte.MaxValue)]
+        [StringLength(byte.MaxValue)]
         public string Name { get; set; }
 
         /// <inheritdoc />

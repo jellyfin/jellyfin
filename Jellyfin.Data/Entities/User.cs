@@ -75,20 +75,20 @@ namespace Jellyfin.Data.Entities
         /// Gets or sets the user's name.
         /// </summary>
         /// <remarks>
-        /// Required, Max length = 255.
+        /// Required, Max length = <see cref="byte.MaxValue"/>.
         /// </remarks>
-        [MaxLength(255)]
-        [StringLength(255)]
+        [MaxLength(byte.MaxValue)]
+        [StringLength(byte.MaxValue)]
         public string Username { get; set; }
 
         /// <summary>
         /// Gets or sets the user's password, or <c>null</c> if none is set.
         /// </summary>
         /// <remarks>
-        /// Max length = 65535.
+        /// Max length = <see cref="ushort.MaxValue"/>.
         /// </remarks>
-        [MaxLength(65535)]
-        [StringLength(65535)]
+        [MaxLength(ushort.MaxValue)]
+        [StringLength(ushort.MaxValue)]
         public string? Password { get; set; }
 
         /// <summary>
@@ -103,30 +103,30 @@ namespace Jellyfin.Data.Entities
         /// Gets or sets the audio language preference.
         /// </summary>
         /// <remarks>
-        /// Max length = 255.
+        /// Max length = <see cref="byte.MaxValue"/>.
         /// </remarks>
-        [MaxLength(255)]
-        [StringLength(255)]
+        [MaxLength(byte.MaxValue)]
+        [StringLength(byte.MaxValue)]
         public string? AudioLanguagePreference { get; set; }
 
         /// <summary>
         /// Gets or sets the authentication provider id.
         /// </summary>
         /// <remarks>
-        /// Required, Max length = 255.
+        /// Required, Max length = <see cref="byte.MaxValue"/>.
         /// </remarks>
-        [MaxLength(255)]
-        [StringLength(255)]
+        [MaxLength(byte.MaxValue)]
+        [StringLength(byte.MaxValue)]
         public string AuthenticationProviderId { get; set; }
 
         /// <summary>
         /// Gets or sets the password reset provider id.
         /// </summary>
         /// <remarks>
-        /// Required, Max length = 255.
+        /// Required, Max length = <see cref="byte.MaxValue"/>.
         /// </remarks>
-        [MaxLength(255)]
-        [StringLength(255)]
+        [MaxLength(byte.MaxValue)]
+        [StringLength(byte.MaxValue)]
         public string PasswordResetProviderId { get; set; }
 
         /// <summary>
@@ -177,10 +177,10 @@ namespace Jellyfin.Data.Entities
         /// Gets or sets the subtitle language preference.
         /// </summary>
         /// <remarks>
-        /// Max length = 255.
+        /// Max length = <see cref="byte.MaxValue"/>.
         /// </remarks>
-        [MaxLength(255)]
-        [StringLength(255)]
+        [MaxLength(byte.MaxValue)]
+        [StringLength(byte.MaxValue)]
         public string? SubtitleLanguagePreference { get; set; }
 
         /// <summary>

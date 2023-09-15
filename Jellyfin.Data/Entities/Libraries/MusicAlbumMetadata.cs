@@ -22,20 +22,20 @@ namespace Jellyfin.Data.Entities.Libraries
         /// Gets or sets the barcode.
         /// </summary>
         /// <remarks>
-        /// Max length = 255.
+        /// Max length = <see cref="byte.MaxValue"/>.
         /// </remarks>
-        [MaxLength(255)]
-        [StringLength(255)]
+        [MaxLength(byte.MaxValue)]
+        [StringLength(byte.MaxValue)]
         public string? Barcode { get; set; }
 
         /// <summary>
         /// Gets or sets the label number.
         /// </summary>
         /// <remarks>
-        /// Max length = 255.
+        /// Max length = <see cref="byte.MaxValue"/>.
         /// </remarks>
-        [MaxLength(255)]
-        [StringLength(255)]
+        [MaxLength(byte.MaxValue)]
+        [StringLength(byte.MaxValue)]
         public string? LabelNumber { get; set; }
 
         /// <summary>

@@ -39,10 +39,10 @@ namespace Jellyfin.Data.Entities
         /// Gets or sets the group's name.
         /// </summary>
         /// <remarks>
-        /// Required, Max length = 255.
+        /// Required, Max length = <see cref="byte.MaxValue"/>.
         /// </remarks>
-        [MaxLength(255)]
-        [StringLength(255)]
+        [MaxLength(byte.MaxValue)]
+        [StringLength(byte.MaxValue)]
         public string Name { get; set; }
 
         /// <inheritdoc />
