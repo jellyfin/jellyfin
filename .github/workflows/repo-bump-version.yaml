@@ -33,7 +33,7 @@ jobs:
           yq-version: v4.9.8
 
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4
         with:
           ref: ${{ env.TAG_BRANCH }}
 
@@ -66,7 +66,7 @@ jobs:
       NEXT_VERSION: ${{ github.event.inputs.NEXT_VERSION }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4
         with:
           ref: ${{ env.TAG_BRANCH }}
 
