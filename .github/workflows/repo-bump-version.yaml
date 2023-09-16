@@ -21,7 +21,7 @@ jobs:
       TAG_BRANCH: ${{ github.event.release.target_commitish }}
     steps:
       - name: Wait for deploy checks to finish
-        uses: jitterbit/await-check-suites@v1
+        uses: jitterbit/await-check-suites@292a541bb7618078395b2ce711a0d89cfb8a568a # v1
         with:
           ref: ${{ env.TAG_BRANCH }}
           intervalSeconds: 60
