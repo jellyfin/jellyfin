@@ -44,6 +44,12 @@ namespace MediaBrowser.Controller.Playlists
         /// <summary>
         /// Gets the playlists folder.
         /// </summary>
+        /// <returns>Folder.</returns>
+        Folder GetPlaylistsFolder();
+
+        /// <summary>
+        /// Gets the playlists folder for a user.
+        /// </summary>
         /// <param name="userId">The user identifier.</param>
         /// <returns>Folder.</returns>
         Folder GetPlaylistsFolder(Guid userId);
