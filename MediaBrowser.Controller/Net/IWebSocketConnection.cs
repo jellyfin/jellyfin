@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Net;
 using System.Net.WebSockets;
@@ -9,6 +7,9 @@ using MediaBrowser.Controller.Net.WebSocketMessages;
 
 namespace MediaBrowser.Controller.Net
 {
+    /// <summary>
+    /// Interface for WebSocket connections.
+    /// </summary>
     public interface IWebSocketConnection : IAsyncDisposable, IDisposable
     {
         /// <summary>
@@ -41,6 +42,11 @@ namespace MediaBrowser.Controller.Net
         WebSocketState State { get; }
 
         /// <summary>
+        /// Gets the authorization information.
+        /// </summary>
+        public AuthorizationInfo AuthorizationInfo { get; }
+
+        /// <summary>
         /// Gets the remote end point.
         /// </summary>
         /// <value>The remote end point.</value>
@@ -65,6 +71,11 @@ namespace MediaBrowser.Controller.Net
         /// <exception cref="ArgumentNullException">The message is null.</exception>
         Task SendAsync<T>(OutboundWebSocketMessage<T> message, CancellationToken cancellationToken);
 
-        Task ProcessAsync(CancellationToken cancellationToken = default);
+        /// <summary>
+        /// Receives a message asynchronously.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task ReceiveAsync(CancellationToken cancellationToken = default);
     }
 }

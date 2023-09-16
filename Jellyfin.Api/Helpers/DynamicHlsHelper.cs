@@ -198,13 +198,6 @@ public class DynamicHlsHelper
 
         var basicPlaylist = AppendPlaylist(builder, state, playlistUrl, totalBitrate, subtitleGroup);
 
-        // Provide a workaround for alternative codec string capitalization.
-        var alternativeCodecCapitalizationPlaylist = ApplyCodecCapitalizationWorkaround(state, basicPlaylist.ToString());
-        if (!string.IsNullOrEmpty(alternativeCodecCapitalizationPlaylist))
-        {
-            builder.Append(alternativeCodecCapitalizationPlaylist);
-        }
-
         if (state.VideoStream is not null && state.VideoRequest is not null)
         {
             var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
@@ -236,14 +229,7 @@ public class DynamicHlsHelper
                     }
 
                     var sdrTotalBitrate = sdrOutputAudioBitrate + sdrOutputVideoBitrate;
-                    var sdrPlaylist = AppendPlaylist(builder, state, sdrVideoUrl, sdrTotalBitrate, subtitleGroup);
-
-                    // Provide a workaround for alternative codec string capitalization.
-                    alternativeCodecCapitalizationPlaylist = ApplyCodecCapitalizationWorkaround(state, sdrPlaylist.ToString());
-                    if (!string.IsNullOrEmpty(alternativeCodecCapitalizationPlaylist))
-                    {
-                        builder.Append(alternativeCodecCapitalizationPlaylist);
-                    }
+                    AppendPlaylist(builder, state, sdrVideoUrl, sdrTotalBitrate, subtitleGroup);
 
                     // Restore the video codec
                     state.OutputVideoCodec = "copy";
@@ -274,13 +260,6 @@ public class DynamicHlsHelper
                 state.VideoStream.Level = originalLevel;
                 var newPlaylist = ReplacePlaylistCodecsField(basicPlaylist, playlistCodecsField, newPlaylistCodecsField);
                 builder.Append(newPlaylist);
-
-                // Provide a workaround for alternative codec string capitalization.
-                alternativeCodecCapitalizationPlaylist = ApplyCodecCapitalizationWorkaround(state, newPlaylist);
-                if (!string.IsNullOrEmpty(alternativeCodecCapitalizationPlaylist))
-                {
-                    builder.Append(alternativeCodecCapitalizationPlaylist);
-                }
             }
         }
 
@@ -693,7 +672,7 @@ public class DynamicHlsHelper
             // Currently we only transcode to 8 bits AV1
             int bitDepth = 8;
             if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
-                && state.VideoStream != null
+                && state.VideoStream is not null
                 && state.VideoStream.BitDepth.HasValue)
             {
                 bitDepth = state.VideoStream.BitDepth.Value;
@@ -766,22 +745,5 @@ public class DynamicHlsHelper
             oldValue.ToString(),
             newValue.ToString(),
             StringComparison.Ordinal);
-    }
-
-    private string ApplyCodecCapitalizationWorkaround(StreamState state, string srcPlaylist)
-    {
-        if (!string.Equals(state.ActualOutputAudioCodec, "flac", StringComparison.OrdinalIgnoreCase))
-        {
-            return string.Empty;
-        }
-
-        var newPlaylist = srcPlaylist;
-
-        newPlaylist = newPlaylist.Replace(",fLaC\"", ",flac\"", StringComparison.Ordinal);
-        newPlaylist = newPlaylist.Replace("\"fLaC\"", "\"flac\"", StringComparison.Ordinal);
-        newPlaylist = newPlaylist.Replace(",Opus\"", ",opus\"", StringComparison.Ordinal);
-        newPlaylist = newPlaylist.Replace("\"Opus\"", "\"opus\"", StringComparison.Ordinal);
-
-        return string.Equals(srcPlaylist, newPlaylist, StringComparison.Ordinal) ? string.Empty : newPlaylist;
     }
 }

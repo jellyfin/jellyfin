@@ -3,6 +3,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -23,14 +24,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {
     public abstract class BaseTunerHost
     {
-        private readonly IMemoryCache _memoryCache;
+        private readonly ConcurrentDictionary<string, List<ChannelInfo>> _cache;
 
-        protected BaseTunerHost(IServerConfigurationManager config, ILogger<BaseTunerHost> logger, IFileSystem fileSystem, IMemoryCache memoryCache)
+        protected BaseTunerHost(IServerConfigurationManager config, ILogger<BaseTunerHost> logger, IFileSystem fileSystem)
         {
             Config = config;
             Logger = logger;
-            _memoryCache = memoryCache;
             FileSystem = fileSystem;
+            _cache = new ConcurrentDictionary<string, List<ChannelInfo>>();
         }
 
         protected IServerConfigurationManager Config { get; }
@@ -51,7 +52,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         {
             var key = tuner.Id;
 
-            if (enableCache && !string.IsNullOrEmpty(key) && _memoryCache.TryGetValue(key, out List<ChannelInfo> cache))
+            if (enableCache && !string.IsNullOrEmpty(key) && _cache.TryGetValue(key, out List<ChannelInfo> cache))
             {
                 return cache;
             }
@@ -61,7 +62,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             if (!string.IsNullOrEmpty(key) && list.Count > 0)
             {
-                _memoryCache.Set(key, list);
+                _cache[key] = list;
             }
 
             return list;

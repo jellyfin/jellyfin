@@ -76,12 +76,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private bool _isVaapiDeviceAmd = false;
         private bool _isVaapiDeviceInteliHD = false;
         private bool _isVaapiDeviceInteli965 = false;
-        private bool _isVaapiDeviceSupportVulkanFmtModifier = false;
+        private bool _isVaapiDeviceSupportVulkanDrmInterop = false;
 
-        private static string[] _vulkanFmtModifierExts =
+        private static string[] _vulkanExternalMemoryDmaBufExts =
         {
-            "VK_KHR_sampler_ycbcr_conversion",
-            "VK_EXT_image_drm_format_modifier",
             "VK_KHR_external_memory_fd",
             "VK_EXT_external_memory_dma_buf",
             "VK_KHR_external_semaphore_fd",
@@ -140,7 +138,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public bool IsVaapiDeviceInteli965 => _isVaapiDeviceInteli965;
 
         /// <inheritdoc />
-        public bool IsVaapiDeviceSupportVulkanFmtModifier => _isVaapiDeviceSupportVulkanFmtModifier;
+        public bool IsVaapiDeviceSupportVulkanDrmInterop => _isVaapiDeviceSupportVulkanDrmInterop;
 
         [GeneratedRegex(@"[^\/\\]+?(\.[^\/\\\n.]+)?$")]
         private static partial Regex FfprobePathRegex();
@@ -204,7 +202,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     _isVaapiDeviceAmd = validator.CheckVaapiDeviceByDriverName("Mesa Gallium driver", options.VaapiDevice);
                     _isVaapiDeviceInteliHD = validator.CheckVaapiDeviceByDriverName("Intel iHD driver", options.VaapiDevice);
                     _isVaapiDeviceInteli965 = validator.CheckVaapiDeviceByDriverName("Intel i965 driver", options.VaapiDevice);
-                    _isVaapiDeviceSupportVulkanFmtModifier = validator.CheckVulkanDrmDeviceByExtensionName(options.VaapiDevice, _vulkanFmtModifierExts);
+                    _isVaapiDeviceSupportVulkanDrmInterop = validator.CheckVulkanDrmDeviceByExtensionName(options.VaapiDevice, _vulkanExternalMemoryDmaBufExts);
 
                     if (_isVaapiDeviceAmd)
                     {
@@ -219,9 +217,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         _logger.LogInformation("VAAPI device {RenderNodePath} is Intel GPU (i965)", options.VaapiDevice);
                     }
 
-                    if (_isVaapiDeviceSupportVulkanFmtModifier)
+                    if (_isVaapiDeviceSupportVulkanDrmInterop)
                     {
-                        _logger.LogInformation("VAAPI device {RenderNodePath} supports Vulkan DRM format modifier", options.VaapiDevice);
+                        _logger.LogInformation("VAAPI device {RenderNodePath} supports Vulkan DRM interop", options.VaapiDevice);
                     }
                 }
             }
@@ -513,7 +511,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             using (var processWrapper = new ProcessWrapper(process, this))
             {
                 StartProcess(processWrapper);
-                await process.StandardOutput.BaseStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+                using var reader = process.StandardOutput;
+                await reader.BaseStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
                 memoryStream.Seek(0, SeekOrigin.Begin);
                 InternalMediaInfoResult result;
                 try
