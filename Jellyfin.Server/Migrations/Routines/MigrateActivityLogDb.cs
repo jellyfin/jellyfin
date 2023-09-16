@@ -64,6 +64,8 @@ namespace Jellyfin.Server.Migrations.Routines
             using (var connection = new SqliteConnection($"Filename={Path.Combine(dataPath, DbFilename)}"))
             {
                 using var userDbConnection = new SqliteConnection($"Filename={Path.Combine(dataPath, "users.db")}");
+                connection.Open();
+                userDbConnection.Open();
                 _logger.LogWarning("Migrating the activity database may take a while, do not stop Jellyfin.");
                 using var dbContext = _provider.CreateDbContext();
 
