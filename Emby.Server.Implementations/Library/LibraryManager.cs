@@ -3,6 +3,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -63,7 +64,7 @@ namespace Emby.Server.Implementations.Library
         private const string ShortcutFileExtension = ".mblink";
 
         private readonly ILogger<LibraryManager> _logger;
-        private readonly IMemoryCache _memoryCache;
+        private readonly ConcurrentDictionary<Guid, BaseItem> _cache;
         private readonly ITaskManager _taskManager;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataRepository;
@@ -111,7 +112,6 @@ namespace Emby.Server.Implementations.Library
         /// <param name="mediaEncoder">The media encoder.</param>
         /// <param name="itemRepository">The item repository.</param>
         /// <param name="imageProcessor">The image processor.</param>
-        /// <param name="memoryCache">The memory cache.</param>
         /// <param name="namingOptions">The naming options.</param>
         /// <param name="directoryService">The directory service.</param>
         public LibraryManager(
@@ -128,7 +128,6 @@ namespace Emby.Server.Implementations.Library
             IMediaEncoder mediaEncoder,
             IItemRepository itemRepository,
             IImageProcessor imageProcessor,
-            IMemoryCache memoryCache,
             NamingOptions namingOptions,
             IDirectoryService directoryService)
         {
@@ -145,7 +144,7 @@ namespace Emby.Server.Implementations.Library
             _mediaEncoder = mediaEncoder;
             _itemRepository = itemRepository;
             _imageProcessor = imageProcessor;
-            _memoryCache = memoryCache;
+            _cache = new ConcurrentDictionary<Guid, BaseItem>();
             _namingOptions = namingOptions;
 
             _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions, directoryService);
@@ -300,7 +299,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            _memoryCache.Set(item.Id, item);
+            _cache[item.Id] = item;
         }
 
         public void DeleteItem(BaseItem item, DeleteOptions options)
@@ -359,7 +358,7 @@ namespace Emby.Server.Implementations.Library
 
             var children = item.IsFolder
                 ? ((Folder)item).GetRecursiveChildren(false)
-                : Enumerable.Empty<BaseItem>();
+                : Array.Empty<BaseItem>();
 
             foreach (var metadataPath in GetMetadataPaths(item, children))
             {
@@ -441,7 +440,7 @@ namespace Emby.Server.Implementations.Library
                 _itemRepository.DeleteItem(child.Id);
             }
 
-            _memoryCache.Remove(item.Id);
+            _cache.TryRemove(item.Id, out _);
 
             ReportItemRemoved(item, parent);
         }
@@ -1233,7 +1232,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentException("Guid can't be empty", nameof(id));
             }
 
-            if (_memoryCache.TryGetValue(id, out BaseItem item))
+            if (_cache.TryGetValue(id, out BaseItem item))
             {
                 return item;
             }

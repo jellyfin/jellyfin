@@ -1864,7 +1864,7 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="ArgumentException">Backdrops should be accessed using Item.Backdrops.</exception>
         public bool HasImage(ImageType type, int imageIndex)
         {
-            return GetImageInfo(type, imageIndex) != null;
+            return GetImageInfo(type, imageIndex) is not null;
         }
 
         public void SetImage(ItemImageInfo image, int index)

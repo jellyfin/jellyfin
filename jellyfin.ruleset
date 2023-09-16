@@ -89,6 +89,8 @@
     <Rule Id="CA1727" Action="Error" />
     <!-- error on CA1813: Avoid unsealed attributes -->
     <Rule Id="CA1813" Action="Error" />
+    <!-- error on CA1834: Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string -->
+    <Rule Id="CA1834" Action="Error" />
     <!-- error on CA1843: Do not use 'WaitAll' with a single task -->
     <Rule Id="CA1843" Action="Error" />
     <!-- error on CA1845: Use span-based 'string.Concat' -->

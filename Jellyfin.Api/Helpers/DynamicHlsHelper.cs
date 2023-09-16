@@ -693,7 +693,7 @@ public class DynamicHlsHelper
             // Currently we only transcode to 8 bits AV1
             int bitDepth = 8;
             if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
-                && state.VideoStream != null
+                && state.VideoStream is not null
                 && state.VideoStream.BitDepth.HasValue)
             {
                 bitDepth = state.VideoStream.BitDepth.Value;

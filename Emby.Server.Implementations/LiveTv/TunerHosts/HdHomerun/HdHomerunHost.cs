@@ -50,9 +50,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             IHttpClientFactory httpClientFactory,
             IServerApplicationHost appHost,
             ISocketFactory socketFactory,
-            IStreamHelper streamHelper,
-            IMemoryCache memoryCache)
-            : base(config, logger, fileSystem, memoryCache)
+            IStreamHelper streamHelper)
+            : base(config, logger, fileSystem)
         {
             _httpClientFactory = httpClientFactory;
             _appHost = appHost;

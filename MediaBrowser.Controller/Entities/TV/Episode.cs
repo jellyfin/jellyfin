@@ -99,7 +99,7 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [JsonIgnore]
-        public bool IsInSeasonFolder => FindParent<Season>() != null;
+        public bool IsInSeasonFolder => FindParent<Season>() is not null;
 
         [JsonIgnore]
         public string SeriesPresentationUniqueKey { get; set; }
