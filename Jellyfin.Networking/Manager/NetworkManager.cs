@@ -474,11 +474,15 @@ namespace Jellyfin.Networking.Manager
                     publishedServerUrls.Add(
                         new PublishedServerUriOverride(
                             new IPData(IPAddress.Any, Network.IPv4Any),
-                            startupOverrideKey));
+                            startupOverrideKey,
+                            true,
+                            true));
                     publishedServerUrls.Add(
                         new PublishedServerUriOverride(
                             new IPData(IPAddress.IPv6Any, Network.IPv6Any),
-                            startupOverrideKey));
+                            startupOverrideKey,
+                            true,
+                            true));
                     _publishedServerUrls = publishedServerUrls;
                     return;
                 }
@@ -502,11 +506,15 @@ namespace Jellyfin.Networking.Manager
                         publishedServerUrls.Add(
                             new PublishedServerUriOverride(
                                 new IPData(IPAddress.Any, Network.IPv4Any),
-                                replacement));
+                                replacement,
+                                true,
+                                true));
                         publishedServerUrls.Add(
                             new PublishedServerUriOverride(
                                 new IPData(IPAddress.IPv6Any, Network.IPv6Any),
-                                replacement));
+                                replacement,
+                                true,
+                                true));
                         break;
                     }
                     else if (string.Equals(identifier, "external", StringComparison.OrdinalIgnoreCase))
@@ -543,7 +551,9 @@ namespace Jellyfin.Networking.Manager
                         publishedServerUrls.Add(
                             new PublishedServerUriOverride(
                                 data,
-                                replacement));
+                                replacement,
+                                true,
+                                true));
                     }
                     else if (TryParseInterface(identifier, out var ifaces))
                     {
@@ -552,7 +562,9 @@ namespace Jellyfin.Networking.Manager
                             publishedServerUrls.Add(
                             new PublishedServerUriOverride(
                                 iface,
-                                replacement));
+                                replacement,
+                                true,
+                                true));
                         }
                     }
                     else
@@ -941,7 +953,7 @@ namespace Jellyfin.Networking.Manager
             int? port = null;
 
             // Only consider subnets including the source IP, prefering specific overrides
-            var validPublishedServerUrls = new List<PublishedServerUriOverride>();
+            List<PublishedServerUriOverride> validPublishedServerUrls;
             if (!isInExternalSubnet)
             {
                 // Only use matching internal subnets

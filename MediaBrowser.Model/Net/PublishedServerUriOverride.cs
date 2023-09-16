@@ -12,7 +12,7 @@ public class PublishedServerUriOverride
     /// <param name="overrideUri">The override.</param>
     /// <param name="internalOverride">A value indicating whether the override is for internal requests.</param>
     /// <param name="externalOverride">A value indicating whether the override is for external requests.</param>
-    public PublishedServerUriOverride(IPData data, string overrideUri, bool internalOverride = true, bool externalOverride = true)
+    public PublishedServerUriOverride(IPData data, string overrideUri, bool internalOverride, bool externalOverride)
     {
         Data = data;
         OverrideUri = overrideUri;
