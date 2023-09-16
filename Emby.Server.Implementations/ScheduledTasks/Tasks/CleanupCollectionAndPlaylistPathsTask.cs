@@ -72,7 +72,7 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
         var collectionsFolder = await _collectionManager.GetCollectionsFolder(false).ConfigureAwait(false);
         if (collectionsFolder is null)
         {
-            _logger.LogDebug("There is no collection folder to be found");
+            _logger.LogDebug("There is no collections folder to be found");
         }
         else
         {
@@ -92,12 +92,12 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
         var playlistsFolder = _playlistManager.GetPlaylistsFolder();
         if (playlistsFolder is null)
         {
-            _logger.LogDebug("There is no collection folder to be found");
+            _logger.LogDebug("There is no playlists folder to be found");
             return;
         }
 
         var playlists = playlistsFolder.Children.OfType<Playlist>().ToArray();
-        _logger.LogDebug("Found {PlaylistLength} boxsets", playlists.Length);
+        _logger.LogDebug("Found {PlaylistLength} playlists", playlists.Length);
 
         for (var index = 0; index < playlists.Length; index++)
         {
@@ -109,7 +109,8 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
         }
     }
 
-    private void CleanupLinkedChildren<T>(T folder, CancellationToken cancellationToken) where T : Folder
+    private void CleanupLinkedChildren<T>(T folder, CancellationToken cancellationToken)
+        where T : Folder
     {
         var itemsToRemove = new List<LinkedChild>();
         foreach (var linkedChild in folder.LinkedChildren)
