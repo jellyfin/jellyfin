@@ -66,7 +66,8 @@ namespace Jellyfin.Server.Migrations.Routines
 
             // Migrate parental rating strings to new levels
             _logger.LogInformation("Recalculating parental rating levels based on rating string.");
-            using (var connection = new SqliteConnection($"Filename={dbPath}"))
+            using var connection = new SqliteConnection($"Filename={dbPath}");
+            connection.Open();
             using (var transaction = connection.BeginTransaction())
             {
                 var queryResult = connection.Query("SELECT DISTINCT OfficialRating FROM TypedBaseItems");
