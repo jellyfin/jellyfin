@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Net;
 using System.Net.Sockets;
@@ -7,6 +5,9 @@ using MediaBrowser.Model.Net;
 
 namespace Emby.Server.Implementations.Net
 {
+    /// <summary>
+    /// Factory class to create different kinds of sockets.
+    /// </summary>
     public class SocketFactory : ISocketFactory
     {
         /// <inheritdoc />
@@ -83,7 +84,7 @@ namespace Emby.Server.Implementations.Net
             try
             {
                 var interfaceIndex = bindInterface.Index;
-                var interfaceIndexSwapped = (int)IPAddress.HostToNetworkOrder(interfaceIndex);
+                var interfaceIndexSwapped = IPAddress.HostToNetworkOrder(interfaceIndex);
 
                 socket.MulticastLoopback = false;
                 socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);

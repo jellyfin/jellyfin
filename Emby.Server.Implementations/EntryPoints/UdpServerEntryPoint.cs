@@ -18,7 +18,7 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.EntryPoints
 {
     /// <summary>
-    /// Class UdpServerEntryPoint.
+    /// Class responsible for registering all UDP broadcast endpoints and their handlers.
     /// </summary>
     public sealed class UdpServerEntryPoint : IServerEntryPoint
     {
@@ -119,7 +119,7 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(this.GetType().Name);
+                throw new ObjectDisposedException(GetType().Name);
             }
         }
 

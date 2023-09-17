@@ -88,14 +88,14 @@ namespace Rssdp.Infrastructure
                 throw new ArgumentOutOfRangeException(nameof(multicastTimeToLive), "multicastTimeToLive must be greater than zero.");
             }
 
-            _BroadcastListenSocketSynchroniser = new object();
-            _SendSocketSynchroniser = new object();
+            _BroadcastListenSocketSynchroniser = new();
+            _SendSocketSynchroniser = new();
 
             _LocalPort = localPort;
             _SocketFactory = socketFactory;
 
-            _RequestParser = new HttpRequestParser();
-            _ResponseParser = new HttpResponseParser();
+            _RequestParser = new();
+            _ResponseParser = new();
 
             _MulticastTtl = multicastTimeToLive;
             _networkManager = networkManager;
@@ -431,7 +431,7 @@ namespace Rssdp.Infrastructure
                         var localEndpointAdapter = _networkManager.GetAllBindInterfaces().First(a => a.Index == result.PacketInformation.Interface);
 
                         ProcessMessage(
-                            UTF8Encoding.UTF8.GetString(receiveBuffer, 0, result.ReceivedBytes),
+                            Encoding.UTF8.GetString(receiveBuffer, 0, result.ReceivedBytes),
                             remoteEndpoint,
                             localEndpointAdapter.Address);
                     }
@@ -511,7 +511,7 @@ namespace Rssdp.Infrastructure
                 return;
             }
 
-            var handlers = this.RequestReceived;
+            var handlers = RequestReceived;
             if (handlers is not null)
             {
                 handlers(this, new RequestReceivedEventArgs(data, remoteEndPoint, receivedOnlocalIPAddress));
@@ -520,7 +520,7 @@ namespace Rssdp.Infrastructure
 
         private void OnResponseReceived(HttpResponseMessage data, IPEndPoint endPoint, IPAddress localIPAddress)
         {
-            var handlers = this.ResponseReceived;
+            var handlers = ResponseReceived;
             if (handlers is not null)
             {
                 handlers(this, new ResponseReceivedEventArgs(data, endPoint)
