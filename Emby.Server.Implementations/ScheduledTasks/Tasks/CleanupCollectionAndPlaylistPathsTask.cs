@@ -112,7 +112,7 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
     private void CleanupLinkedChildren<T>(T folder, CancellationToken cancellationToken)
         where T : Folder
     {
-        List<LinkedChild> itemsToRemove = null;
+        List<LinkedChild>? itemsToRemove = null;
         foreach (var linkedChild in folder.LinkedChildren)
         {
             if (!File.Exists(folder.Path))
