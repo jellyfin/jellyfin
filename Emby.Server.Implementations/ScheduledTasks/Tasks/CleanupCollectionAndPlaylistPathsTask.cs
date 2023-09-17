@@ -136,7 +136,6 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
                 },
                 RefreshPriority.High);
 
-            itemsToRemove.Clear();
         }
     }
 
