@@ -6,7 +6,7 @@ namespace MediaBrowser.Model.Configuration
     {
         public MetadataConfiguration()
         {
-            UseFileCreationTimeForDateAdded = true;
+            UseFileCreationTimeForDateAdded = false;
         }
 
         public bool UseFileCreationTimeForDateAdded { get; set; }
