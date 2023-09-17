@@ -202,8 +202,11 @@ namespace Emby.Dlna.Main
                 if (_communicationsServer is null)
                 {
                     var enableMultiSocketBinding = OperatingSystem.IsWindows() || OperatingSystem.IsLinux();
-
-                    _communicationsServer = new SsdpCommunicationsServer(_socketFactory, _networkManager, _logger, enableMultiSocketBinding)
+                    _communicationsServer = new SsdpCommunicationsServer(
+                        _socketFactory,
+                        _networkManager,
+                        _logger,
+                        enableMultiSocketBinding)
                     {
                         IsShared = true
                     };
@@ -213,7 +216,7 @@ namespace Emby.Dlna.Main
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error starting ssdp handlers");
+                _logger.LogError(ex, "Error starting SSDP handlers");
             }
         }
 

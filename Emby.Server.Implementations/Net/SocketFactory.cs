@@ -39,7 +39,8 @@ namespace Emby.Server.Implementations.Net
         /// <inheritdoc />
         public Socket CreateSsdpUdpSocket(IPData bindInterface, int localPort)
         {
-            ArgumentNullException.ThrowIfNull(bindInterface.Address);
+            var interfaceAddress = bindInterface.Address;
+            ArgumentNullException.ThrowIfNull(interfaceAddress);
 
             if (localPort < 0)
             {
@@ -50,7 +51,7 @@ namespace Emby.Server.Implementations.Net
             try
             {
                 socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                socket.Bind(new IPEndPoint(bindInterface.Address, localPort));
+                socket.Bind(new IPEndPoint(interfaceAddress, localPort));
 
                 return socket;
             }
@@ -92,7 +93,7 @@ namespace Emby.Server.Implementations.Net
                 socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, multicastTimeToLive);
                 socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastInterface, interfaceIndexSwapped);
                 socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(multicastAddress, interfaceIndex));
-                socket.Bind(new IPEndPoint(multicastAddress, localPort));
+                socket.Bind(new IPEndPoint(bindIPAddress, localPort));
 
                 return socket;
             }

@@ -32,10 +32,10 @@ namespace Rssdp.Infrastructure
          * port to use, we will default to 0 which allows the underlying system to auto-assign a free port.
          */
 
-        private object _BroadcastListenSocketSynchroniser = new object();
+        private object _BroadcastListenSocketSynchroniser = new();
         private List<Socket> _MulticastListenSockets;
 
-        private object _SendSocketSynchroniser = new object();
+        private object _SendSocketSynchroniser = new();
         private List<Socket> _sendSockets;
 
         private HttpRequestParser _RequestParser;
@@ -423,7 +423,7 @@ namespace Rssdp.Infrastructure
             {
                 try
                 {
-                    var result = await socket.ReceiveMessageFromAsync(receiveBuffer, SocketFlags.None, new IPEndPoint(IPAddress.Any, 0), CancellationToken.None).ConfigureAwait(false);;
+                    var result = await socket.ReceiveMessageFromAsync(receiveBuffer, SocketFlags.None, new IPEndPoint(IPAddress.Parse(SsdpConstants.MulticastLocalAdminAddress), 0), CancellationToken.None).ConfigureAwait(false);;
 
                     if (result.ReceivedBytes > 0)
                     {
