@@ -112,17 +112,17 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
     private void CleanupLinkedChildren<T>(T folder, CancellationToken cancellationToken)
         where T : Folder
     {
-        var itemsToRemove = new List<LinkedChild>();
+        List<LinkedChild> itemsToRemove = null;
         foreach (var linkedChild in folder.LinkedChildren)
         {
             if (!File.Exists(folder.Path))
             {
                 _logger.LogInformation("Item in {FolderName} cannot be found at {ItemPath}", folder.Name, linkedChild.Path);
-                itemsToRemove.Add(linkedChild);
+                (itemsToRemove ??= new List<LinkedChild>()).Add(linkedChild);
             }
         }
 
-        if (itemsToRemove.Count != 0)
+        if (itemsToRemove is not null)
         {
             _logger.LogDebug("Updating {FolderName}", folder.Name);
             folder.LinkedChildren = folder.LinkedChildren.Except(itemsToRemove).ToArray();
