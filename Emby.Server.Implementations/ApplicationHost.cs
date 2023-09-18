@@ -642,16 +642,39 @@ namespace Emby.Server.Implementations
         {
             if (string.IsNullOrWhiteSpace(networkConfiguration.CertificatePemKeyPath) && string.IsNullOrWhiteSpace(networkConfiguration.CertificatePath))
             {
+                Logger.LogInformation("No pem or pfx certificate provided.");
                 return null;
             }
 
-            if (File.Exists(networkConfiguration.CertificatePemKeyPath) && File.Exists(networkConfiguration.CertificatePemPath))
+            if (!string.IsNullOrWhiteSpace(networkConfiguration.CertificatePemKeyPath))
             {
-                return GetPemCertificate(networkConfiguration.CertificatePemKeyPath, networkConfiguration.CertificatePemPath, networkConfiguration.CertificatePassword);
+                if (string.IsNullOrWhiteSpace(networkConfiguration.CertificatePemPath))
+                {
+                    Logger.LogError("Provided a PemKey but not a Pem certificate. Please provide both.");
+                    return null;
+                }
+
+                if (File.Exists(networkConfiguration.CertificatePemKeyPath) && File.Exists(networkConfiguration.CertificatePemPath))
+                {
+                    Logger.LogInformation("PEM key and PEM cert provided. Try load Certificates.");
+                    try
+                    {
+                        return GetPemCertificate(networkConfiguration.CertificatePemKeyPath, networkConfiguration.CertificatePemPath, networkConfiguration.CertificatePassword);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, "Error loading cert from {CertificateLocation} and {CertificateKeyLocation}", networkConfiguration.CertificatePemPath, networkConfiguration.CertificatePemKeyPath);
+                        return null;
+                    }
+                }
+
+                Logger.LogError("Error loading cert from {CertificateLocation} and {CertificateKeyLocation}. Files do not exist.", networkConfiguration.CertificatePemPath, networkConfiguration.CertificatePemKeyPath);
+                return null;
             }
 
             if (File.Exists(networkConfiguration.CertificatePath))
             {
+                Logger.LogInformation("Pfx certificate provided. Try load Certificate.");
                 try
                 {
                     return GetPfxCertificate(networkConfiguration.CertificatePath, networkConfiguration.CertificatePassword);
@@ -872,12 +895,13 @@ namespace Emby.Server.Implementations
         /// <exception cref="FileNotFoundException">The certificate path doesn't exist.</exception>
         private bool ValidateSslCertificate(NetworkConfiguration networkConfig)
         {
+            using var x509Certificate2 = GetCertificate(networkConfig);
             if (!string.IsNullOrWhiteSpace(networkConfig.CertificatePath))
             {
                 var newPath = networkConfig.CertificatePath;
 
                 if (!string.IsNullOrWhiteSpace(newPath)
-                    && !string.Equals(Certificate.Thumbprint, GetCertificate(networkConfig)?.Thumbprint, StringComparison.Ordinal))
+                    && !string.Equals(Certificate?.Thumbprint, x509Certificate2?.Thumbprint, StringComparison.Ordinal))
                 {
                     if (File.Exists(newPath))
                     {
@@ -896,7 +920,7 @@ namespace Emby.Server.Implementations
                 var newPath = networkConfig.CertificatePemPath;
 
                 if (!string.IsNullOrWhiteSpace(newPath)
-                    && !string.Equals(Certificate.Thumbprint, GetCertificate(networkConfig)?.Thumbprint, StringComparison.Ordinal))
+                    && !string.Equals(Certificate?.Thumbprint, x509Certificate2?.Thumbprint, StringComparison.Ordinal))
                 {
                     if (File.Exists(newPath) && File.Exists(networkConfig.CertificatePemKeyPath))
                     {
