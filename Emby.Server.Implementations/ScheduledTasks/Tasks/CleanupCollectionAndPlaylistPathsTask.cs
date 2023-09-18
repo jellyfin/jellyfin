@@ -135,7 +135,6 @@ public class CleanupCollectionAndPlaylistPathsTask : IScheduledTask
                     ForceSave = true
                 },
                 RefreshPriority.High);
-
         }
     }
 
