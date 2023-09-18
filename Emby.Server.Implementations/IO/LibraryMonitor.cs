@@ -380,7 +380,6 @@ namespace Emby.Server.Implementations.IO
                 }
             }
 
-            // Avoid implicitly captured closure
             CreateRefresher(path);
         }
 
@@ -414,7 +413,8 @@ namespace Emby.Server.Implementations.IO
                     }
 
                     // They are siblings. Rebase the refresher to the parent folder.
-                    if (parentPath is not null && string.Equals(parentPath, Path.GetDirectoryName(refresher.Path), StringComparison.Ordinal))
+                    if (parentPath is not null
+                        && Path.GetDirectoryName(refresher.Path.AsSpan()).Equals(parentPath, StringComparison.Ordinal))
                     {
                         refresher.ResetPath(parentPath, path);
                         return;
