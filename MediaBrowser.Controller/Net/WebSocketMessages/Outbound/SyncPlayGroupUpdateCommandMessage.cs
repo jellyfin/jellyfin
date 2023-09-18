@@ -7,7 +7,7 @@ namespace MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 /// <summary>
 /// Untyped sync play command.
 /// </summary>
-public class SyncPlayGroupUpdateCommandMessage : WebSocketMessage<GroupUpdate>, IOutboundWebSocketMessage
+public class SyncPlayGroupUpdateCommandMessage : OutboundWebSocketMessage<GroupUpdate>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="SyncPlayGroupUpdateCommandMessage"/> class.

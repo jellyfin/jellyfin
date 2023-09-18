@@ -293,7 +293,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 return true;
             }
 
-            if (string.Equals(format, SubtitleFormat.VTT, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(format, SubtitleFormat.VTT, StringComparison.OrdinalIgnoreCase) || string.Equals(format, SubtitleFormat.WEBVTT, StringComparison.OrdinalIgnoreCase))
             {
                 value = new VttWriter();
                 return true;

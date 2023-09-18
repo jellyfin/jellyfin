@@ -7,7 +7,7 @@ namespace MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 /// <summary>
 /// Timer cancelled message.
 /// </summary>
-public class TimerCancelledMessage : WebSocketMessage<TimerEventInfo>, IOutboundWebSocketMessage
+public class TimerCancelledMessage : OutboundWebSocketMessage<TimerEventInfo>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="TimerCancelledMessage"/> class.

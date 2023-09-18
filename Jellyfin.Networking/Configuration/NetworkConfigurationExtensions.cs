@@ -14,7 +14,7 @@ namespace Jellyfin.Networking.Configuration
         /// <returns>The <see cref="NetworkConfiguration"/>.</returns>
         public static NetworkConfiguration GetNetworkConfiguration(this IConfigurationManager config)
         {
-            return config.GetConfiguration<NetworkConfiguration>("network");
+            return config.GetConfiguration<NetworkConfiguration>(NetworkConfigurationStore.StoreKey);
         }
     }
 }

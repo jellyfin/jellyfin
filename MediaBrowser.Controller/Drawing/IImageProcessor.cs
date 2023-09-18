@@ -66,7 +66,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <returns>Guid.</returns>
         string GetImageCacheTag(BaseItem item, ItemImageInfo image);
 
-        string GetImageCacheTag(BaseItem item, ChapterInfo chapter);
+        string? GetImageCacheTag(BaseItem item, ChapterInfo chapter);
 
         string? GetImageCacheTag(User user);
 

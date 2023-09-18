@@ -25,6 +25,10 @@ ifeq ($(HOST_ARCH),arm64)
     # Building ARM
     DOTNETRUNTIME := debian-arm64
 endif
+ifeq ($(HOST_ARCH),aarch64)
+    # Building ARM
+    DOTNETRUNTIME := debian-arm64
+endif
 
 export DH_VERBOSE=1
 export DOTNET_CLI_TELEMETRY_OPTOUT=1

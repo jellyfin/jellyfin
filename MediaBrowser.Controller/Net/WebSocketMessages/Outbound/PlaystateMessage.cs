@@ -6,7 +6,7 @@ namespace MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 /// <summary>
 /// Playstate message.
 /// </summary>
-public class PlaystateMessage : WebSocketMessage<PlaystateRequest>, IOutboundWebSocketMessage
+public class PlaystateMessage : OutboundWebSocketMessage<PlaystateRequest>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="PlaystateMessage"/> class.

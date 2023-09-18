@@ -18,12 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../Emby.Server.Implementations/Emby.Server.Implementations.csproj" />
-    <ProjectReference Include="../../MediaBrowser.Common/MediaBrowser.Common.csproj" />
+    <ProjectReference Include="../../Jellyfin.Networking/Jellyfin.Networking.csproj" />
   </ItemGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>DEBUG</DefineConstants>
-  </PropertyGroup>
 
 </Project>

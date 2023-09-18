@@ -1,4 +1,3 @@
-using System;
 using System.Text.Json.Serialization;
 using MediaBrowser.Model.Session;
 
@@ -14,11 +13,6 @@ public abstract class WebSocketMessage
     /// TODO make this abstract and get only.
     /// </summary>
     public virtual SessionMessageType MessageType { get; set; }
-
-    /// <summary>
-    /// Gets or sets the message id.
-    /// </summary>
-    public Guid MessageId { get; set; }
 
     /// <summary>
     /// Gets or sets the server id.

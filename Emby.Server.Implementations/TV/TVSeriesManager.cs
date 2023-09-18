@@ -135,13 +135,13 @@ namespace Emby.Server.Implementations.TV
 
         private IEnumerable<Episode> GetNextUpEpisodes(NextUpQuery request, User user, IReadOnlyList<string> seriesKeys, DtoOptions dtoOptions)
         {
-            var allNextUp = seriesKeys.Select(i => GetNextUp(i, user, dtoOptions, false));
+            var allNextUp = seriesKeys.Select(i => GetNextUp(i, user, dtoOptions, request.EnableResumable, false));
 
             if (request.EnableRewatching)
             {
-                allNextUp = allNextUp.Concat(
-                    seriesKeys.Select(i => GetNextUp(i, user, dtoOptions, true)))
-                .OrderByDescending(i => i.LastWatchedDate);
+                allNextUp = allNextUp
+                    .Concat(seriesKeys.Select(i => GetNextUp(i, user, dtoOptions, false, true)))
+                    .OrderByDescending(i => i.LastWatchedDate);
             }
 
             // If viewing all next up for all series, remove first episodes
@@ -183,7 +183,7 @@ namespace Emby.Server.Implementations.TV
         /// Gets the next up.
         /// </summary>
         /// <returns>Task{Episode}.</returns>
-        private (DateTime LastWatchedDate, Func<Episode?> GetEpisodeFunction) GetNextUp(string seriesKey, User user, DtoOptions dtoOptions, bool rewatching)
+        private (DateTime LastWatchedDate, Func<Episode?> GetEpisodeFunction) GetNextUp(string seriesKey, User user, DtoOptions dtoOptions, bool includeResumable, bool includePlayed)
         {
             var lastQuery = new InternalItemsQuery(user)
             {
@@ -200,8 +200,8 @@ namespace Emby.Server.Implementations.TV
                 }
             };
 
-            // If rewatching is enabled, sort first by date played and then by season and episode numbers
-            lastQuery.OrderBy = rewatching
+            // If including played results, sort first by date played and then by season and episode numbers
+            lastQuery.OrderBy = includePlayed
                 ? new[] { (ItemSortBy.DatePlayed, SortOrder.Descending), (ItemSortBy.ParentIndexNumber, SortOrder.Descending), (ItemSortBy.IndexNumber, SortOrder.Descending) }
                 : new[] { (ItemSortBy.ParentIndexNumber, SortOrder.Descending), (ItemSortBy.IndexNumber, SortOrder.Descending) };
 
@@ -216,7 +216,7 @@ namespace Emby.Server.Implementations.TV
                     IncludeItemTypes = new[] { BaseItemKind.Episode },
                     OrderBy = new[] { (ItemSortBy.ParentIndexNumber, SortOrder.Ascending), (ItemSortBy.IndexNumber, SortOrder.Ascending) },
                     Limit = 1,
-                    IsPlayed = rewatching,
+                    IsPlayed = includePlayed,
                     IsVirtualItem = false,
                     ParentIndexNumberNotEquals = 0,
                     DtoOptions = dtoOptions
@@ -240,7 +240,7 @@ namespace Emby.Server.Implementations.TV
                         SeriesPresentationUniqueKey = seriesKey,
                         ParentIndexNumber = 0,
                         IncludeItemTypes = new[] { BaseItemKind.Episode },
-                        IsPlayed = rewatching,
+                        IsPlayed = includePlayed,
                         IsVirtualItem = false,
                         DtoOptions = dtoOptions
                     })
@@ -269,7 +269,7 @@ namespace Emby.Server.Implementations.TV
                     nextEpisode = sortedConsideredEpisodes.FirstOrDefault();
                 }
 
-                if (nextEpisode is not null)
+                if (nextEpisode is not null && !includeResumable)
                 {
                     var userData = _userDataManager.GetUserData(user, nextEpisode);
 

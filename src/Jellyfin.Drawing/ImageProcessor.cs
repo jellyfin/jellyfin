@@ -13,7 +13,6 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -112,10 +111,8 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
     public async Task ProcessImage(ImageProcessingOptions options, Stream toStream)
     {
         var file = await ProcessImage(options).ConfigureAwait(false);
-        using (var fileStream = AsyncFile.OpenRead(file.Path))
-        {
-            await fileStream.CopyToAsync(toStream).ConfigureAwait(false);
-        }
+        using var fileStream = AsyncFile.OpenRead(file.Path);
+        await fileStream.CopyToAsync(toStream).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -437,8 +434,13 @@ public sealed class ImageProcessor : IImageProcessor, IDisposable
         => (item.Path + image.DateModified.Ticks).GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
     /// <inheritdoc />
-    public string GetImageCacheTag(BaseItem item, ChapterInfo chapter)
+    public string? GetImageCacheTag(BaseItem item, ChapterInfo chapter)
     {
+        if (chapter.ImagePath is null)
+        {
+            return null;
+        }
+
         return GetImageCacheTag(item, new ItemImageInfo
         {
             Path = chapter.ImagePath,

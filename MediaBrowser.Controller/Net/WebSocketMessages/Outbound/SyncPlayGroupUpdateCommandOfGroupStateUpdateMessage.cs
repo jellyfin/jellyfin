@@ -8,7 +8,7 @@ namespace MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 /// Sync play group update command with group state update.
 /// GroupUpdateTypes: StateUpdate.
 /// </summary>
-public class SyncPlayGroupUpdateCommandOfGroupStateUpdateMessage : WebSocketMessage<GroupUpdate<GroupStateUpdate>>, IOutboundWebSocketMessage
+public class SyncPlayGroupUpdateCommandOfGroupStateUpdateMessage : OutboundWebSocketMessage<GroupUpdate<GroupStateUpdate>>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="SyncPlayGroupUpdateCommandOfGroupStateUpdateMessage"/> class.

@@ -1,9 +1,8 @@
-namespace MediaBrowser.Controller.Net.WebSocketMessages;
+﻿namespace MediaBrowser.Controller.Net.WebSocketMessages;
 
 /// <summary>
-/// Class representing the list of outbound websocket message types.
-/// Only used in openapi generation.
+/// Inbound websocket message.
 /// </summary>
-public class InboundWebSocketMessage : WebSocketMessage
+public class InboundWebSocketMessage : WebSocketMessage, IInboundWebSocketMessage
 {
 }

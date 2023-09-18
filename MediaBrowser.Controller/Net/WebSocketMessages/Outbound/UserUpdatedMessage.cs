@@ -7,7 +7,7 @@ namespace MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 /// <summary>
 /// User updated message.
 /// </summary>
-public class UserUpdatedMessage : WebSocketMessage<UserDto>, IOutboundWebSocketMessage
+public class UserUpdatedMessage : OutboundWebSocketMessage<UserDto>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="UserUpdatedMessage"/> class.

@@ -13,10 +13,10 @@ namespace MediaBrowser.Model.Dlna
 
         public Dictionary<string, string> Headers { get; set; }
 
-        public IPAddress LocalIpAddress { get; set; }
+        public IPAddress LocalIPAddress { get; set; }
 
         public int LocalPort { get; set; }
 
-        public IPAddress RemoteIpAddress { get; set; }
+        public IPAddress RemoteIPAddress { get; set; }
     }
 }
