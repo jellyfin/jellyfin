@@ -52,7 +52,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
                 Url = "192.168.1.182"
             };
 
-            var modelInfo = await _hdHomerunHost.GetModelInfo(host, true, CancellationToken.None).ConfigureAwait(false);
+            var modelInfo = await _hdHomerunHost.GetModelInfo(host, true, CancellationToken.None);
             Assert.Equal("HDHomeRun PRIME", modelInfo.FriendlyName);
             Assert.Equal("HDHR3-CC", modelInfo.ModelNumber);
             Assert.Equal("hdhomerun3_cablecard", modelInfo.FirmwareName);
@@ -72,7 +72,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
                 Url = "10.10.10.100"
             };
 
-            var modelInfo = await _hdHomerunHost.GetModelInfo(host, true, CancellationToken.None).ConfigureAwait(false);
+            var modelInfo = await _hdHomerunHost.GetModelInfo(host, true, CancellationToken.None);
             Assert.Equal("HDHomeRun DUAL", modelInfo.FriendlyName);
             Assert.Equal("HDHR3-US", modelInfo.ModelNumber);
             Assert.Equal("hdhomerun3_atsc", modelInfo.FirmwareName);
@@ -103,7 +103,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
                 Url = "192.168.1.182"
             };
 
-            var channels = await _hdHomerunHost.GetLineup(host, CancellationToken.None).ConfigureAwait(false);
+            var channels = await _hdHomerunHost.GetLineup(host, CancellationToken.None);
             Assert.Equal(6, channels.Count);
             Assert.Equal("4.1", channels[0].GuideNumber);
             Assert.Equal("WCMH-DT", channels[0].GuideName);
@@ -133,7 +133,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
                 ImportFavoritesOnly = true
             };
 
-            var channels = await _hdHomerunHost.GetLineup(host, CancellationToken.None).ConfigureAwait(false);
+            var channels = await _hdHomerunHost.GetLineup(host, CancellationToken.None);
             Assert.Single(channels);
             Assert.Equal("4.1", channels[0].GuideNumber);
             Assert.Equal("WCMH-DT", channels[0].GuideName);
@@ -145,7 +145,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
         [Fact]
         public async Task TryGetTunerHostInfo_Valid_Success()
         {
-            var host = await _hdHomerunHost.TryGetTunerHostInfo("192.168.1.182", CancellationToken.None).ConfigureAwait(false);
+            var host = await _hdHomerunHost.TryGetTunerHostInfo("192.168.1.182", CancellationToken.None);
             Assert.Equal(_hdHomerunHost.Type, host.Type);
             Assert.Equal("192.168.1.182", host.Url);
             Assert.Equal("HDHomeRun PRIME", host.FriendlyName);
