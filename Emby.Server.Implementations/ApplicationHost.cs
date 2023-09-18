@@ -849,7 +849,7 @@ namespace Emby.Server.Implementations
 
             if (ValidateSslCertificate(networkConfiguration))
             {
-                requiresRestart = true;
+                UpdateHttpsCertificate(networkConfiguration);
             }
 
             if (requiresRestart)
@@ -858,6 +858,11 @@ namespace Emby.Server.Implementations
 
                 NotifyPendingRestart();
             }
+        }
+
+        private void UpdateHttpsCertificate(NetworkConfiguration networkConfiguration)
+        {
+            Certificate = GetCertificate(networkConfiguration);
         }
 
         /// <summary>

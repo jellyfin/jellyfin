@@ -48,7 +48,10 @@ public static class WebHostBuilderExtensions
                         options.Listen(
                             netAdd.Address,
                             appHost.HttpsPort,
-                            listenOptions => listenOptions.UseHttps(appHost.Certificate));
+                            listenOptions => listenOptions.UseHttps(httpsConnectionOptions =>
+                            {
+                                httpsConnectionOptions.ServerCertificateSelector = (context, s) => appHost.Certificate;
+                            }));
                     }
                     else if (builderContext.HostingEnvironment.IsDevelopment())
                     {
