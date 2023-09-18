@@ -32,6 +32,16 @@ namespace Jellyfin.Networking.Configuration
         public string CertificatePath { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the filesystem path of an X.509 pem certificate to use for SSL.
+        /// </summary>
+        public string CertificatePemPath { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the filesystem path of an X.509 pem key to use for SSL.
+        /// </summary>
+        public string CertificatePemKeyPath { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets the password required to access the X.509 certificate data in the file specified by <see cref="CertificatePath"/>.
         /// </summary>
         public string CertificatePassword { get; set; } = string.Empty;

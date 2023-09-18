@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -270,8 +271,6 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string Name => ApplicationProductName;
 
-        private string CertificatePath { get; set; }
-
         public X509Certificate2 Certificate { get; private set; }
 
         /// <inheritdoc/>
@@ -485,8 +484,7 @@ namespace Emby.Server.Implementations
                 HttpsPort = NetworkConfiguration.DefaultHttpsPort;
             }
 
-            CertificatePath = networkConfiguration.CertificatePath;
-            Certificate = GetCertificate(CertificatePath, networkConfiguration.CertificatePassword);
+            Certificate = GetCertificate(networkConfiguration);
 
             RegisterServices(serviceCollection);
 
@@ -640,37 +638,88 @@ namespace Emby.Server.Implementations
             FindParts();
         }
 
-        private X509Certificate2 GetCertificate(string path, string password)
+        private X509Certificate2 GetCertificate(NetworkConfiguration networkConfiguration)
         {
-            if (string.IsNullOrWhiteSpace(path))
+            if (string.IsNullOrWhiteSpace(networkConfiguration.CertificatePemKeyPath) && string.IsNullOrWhiteSpace(networkConfiguration.CertificatePath))
             {
                 return null;
             }
 
-            try
+            if (File.Exists(networkConfiguration.CertificatePemKeyPath) && File.Exists(networkConfiguration.CertificatePemPath))
             {
-                if (!File.Exists(path))
-                {
-                    return null;
-                }
-
-                // Don't use an empty string password
-                password = string.IsNullOrWhiteSpace(password) ? null : password;
-
-                var localCert = new X509Certificate2(path, password, X509KeyStorageFlags.UserKeySet);
-                if (!localCert.HasPrivateKey)
-                {
-                    Logger.LogError("No private key included in SSL cert {CertificateLocation}.", path);
-                    return null;
-                }
-
-                return localCert;
+                return GetPemCertificate(networkConfiguration.CertificatePemKeyPath, networkConfiguration.CertificatePemPath, networkConfiguration.CertificatePassword);
             }
-            catch (Exception ex)
+
+            if (File.Exists(networkConfiguration.CertificatePath))
             {
-                Logger.LogError(ex, "Error loading cert from {CertificateLocation}", path);
+                try
+                {
+                    return GetPfxCertificate(networkConfiguration.CertificatePath, networkConfiguration.CertificatePassword);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error loading cert from {CertificateLocation}", networkConfiguration.CertificatePath);
+                    return null;
+                }
+            }
+
+            Logger.LogError("Unsupported extension in SSL cert {CertificateLocation}.", networkConfiguration.CertificatePath);
+            return null;
+        }
+
+        private X509Certificate2 GetPfxCertificate(string certKeyPath, string password)
+        {
+            // Explicit pem support for kestrel.
+            X509Certificate2 localCert = null;
+
+            // Don't use an empty string password
+            password = string.IsNullOrWhiteSpace(password) ? null : password;
+
+            localCert = new X509Certificate2(certKeyPath, password, X509KeyStorageFlags.UserKeySet);
+            if (!localCert.HasPrivateKey)
+            {
+                Logger.LogError("No private key included in SSL cert {CertificateLocation}.", certKeyPath);
                 return null;
             }
+
+            return localCert;
+        }
+
+        private X509Certificate2 GetPemCertificate(string certKeyPath, string certPath, string password)
+        {
+            var publicPemBytes = File.ReadAllBytes(certPath);
+            using var publicX509 = new X509Certificate2(publicPemBytes, password);
+            var privateKeyText = File.ReadAllText(certKeyPath);
+            var privateKeyBlocks = privateKeyText.Split("-", StringSplitOptions.RemoveEmptyEntries);
+            var privateKeyBytes = Convert.FromBase64String(privateKeyBlocks[1]);
+
+            using RSA rsa = RSA.Create();
+            if (privateKeyBlocks[0] == "BEGIN PRIVATE KEY")
+            {
+                rsa.ImportPkcs8PrivateKey(privateKeyBytes, out _);
+            }
+            else if (privateKeyBlocks[0] == "BEGIN RSA PRIVATE KEY")
+            {
+                rsa.ImportRSAPrivateKey(privateKeyBytes, out _);
+            }
+            else
+            {
+                Logger.LogError("Unsupported private key type: {CertHeader}. Jellyfin only supports PKCS8 and RSA.", privateKeyBlocks[0]);
+                return null;
+            }
+
+            var localCert = publicX509.CopyWithPrivateKey(rsa);
+            // this is dumb i know but to get pem working on WINDOWS of all things, its required to be provided in x509 pfx format otherwise it wants to load it from cert store.
+            // alternative would be to allow kestrel load it via static config.
+            var cert = new X509Certificate2(localCert.Export(X509ContentType.Pkcs12));
+
+            if (!cert.HasPrivateKey)
+            {
+                Logger.LogError("No private key included in SSL cert {CertificateLocation}.", certKeyPath);
+                return null;
+            }
+
+            return cert;
         }
 
         /// <summary>
@@ -818,21 +867,43 @@ namespace Emby.Server.Implementations
         /// <exception cref="FileNotFoundException">The certificate path doesn't exist.</exception>
         private bool ValidateSslCertificate(NetworkConfiguration networkConfig)
         {
-            var newPath = networkConfig.CertificatePath;
-
-            if (!string.IsNullOrWhiteSpace(newPath)
-                && !string.Equals(CertificatePath, newPath, StringComparison.Ordinal))
+            if (!string.IsNullOrWhiteSpace(networkConfig.CertificatePath))
             {
-                if (File.Exists(newPath))
-                {
-                    return true;
-                }
+                var newPath = networkConfig.CertificatePath;
 
-                throw new FileNotFoundException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "Certificate file '{0}' does not exist.",
-                        newPath));
+                if (!string.IsNullOrWhiteSpace(newPath)
+                    && !string.Equals(Certificate.Thumbprint, GetCertificate(networkConfig)?.Thumbprint, StringComparison.Ordinal))
+                {
+                    if (File.Exists(newPath))
+                    {
+                        return true;
+                    }
+
+                    throw new FileNotFoundException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "Certificate file '{0}' does not exist.",
+                            newPath));
+                }
+            }
+            else if (!string.IsNullOrWhiteSpace(networkConfig.CertificatePemPath))
+            {
+                var newPath = networkConfig.CertificatePemPath;
+
+                if (!string.IsNullOrWhiteSpace(newPath)
+                    && !string.Equals(Certificate.Thumbprint, GetCertificate(networkConfig)?.Thumbprint, StringComparison.Ordinal))
+                {
+                    if (File.Exists(newPath) && File.Exists(networkConfig.CertificatePemKeyPath))
+                    {
+                        return true;
+                    }
+
+                    throw new FileNotFoundException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "Certificate file '{0}' does not exist.",
+                            newPath));
+                }
             }
 
             return false;
