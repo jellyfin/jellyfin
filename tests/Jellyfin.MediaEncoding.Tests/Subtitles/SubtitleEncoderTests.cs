@@ -97,7 +97,7 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
         {
             var fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
             var subtitleEncoder = fixture.Create<SubtitleEncoder>();
-            var result = await subtitleEncoder.GetReadableFile(mediaSource, subtitleStream, CancellationToken.None).ConfigureAwait(false);
+            var result = await subtitleEncoder.GetReadableFile(mediaSource, subtitleStream, CancellationToken.None);
             Assert.Equal(subtitleInfo.Path, result.Path);
             Assert.Equal(subtitleInfo.Protocol, result.Protocol);
             Assert.Equal(subtitleInfo.Format, result.Format);

@@ -82,7 +82,7 @@ namespace Jellyfin.Providers.Tests.Manager
             AddParts(providerManager, metadataServices: servicesList.Select(s => s.Object).ToArray());
 
             var refreshOptions = new MetadataRefreshOptions(Mock.Of<IDirectoryService>(MockBehavior.Strict));
-            var actual = await providerManager.RefreshSingleItem(item, refreshOptions, CancellationToken.None).ConfigureAwait(false);
+            var actual = await providerManager.RefreshSingleItem(item, refreshOptions, CancellationToken.None);
 
             Assert.Equal(ItemUpdateType.MetadataDownload, actual);
             for (var i = 0; i < servicesList.Length; i++)
@@ -105,7 +105,7 @@ namespace Jellyfin.Providers.Tests.Manager
             AddParts(providerManager, metadataServices: servicesList.Select(s => s.Object).ToArray());
 
             var refreshOptions = new MetadataRefreshOptions(Mock.Of<IDirectoryService>(MockBehavior.Strict));
-            var actual = await providerManager.RefreshSingleItem(item, refreshOptions, CancellationToken.None).ConfigureAwait(false);
+            var actual = await providerManager.RefreshSingleItem(item, refreshOptions, CancellationToken.None);
 
             var expectedResult = serviceFound ? ItemUpdateType.MetadataDownload : ItemUpdateType.None;
             Assert.Equal(expectedResult, actual);

@@ -27,9 +27,9 @@ namespace Jellyfin.Server.Integration.Tests
         {
             var client = _factory.CreateClient();
 
-            var response = await client.GetAsync("Encoder/UrlDecode?" + sourceUrl).ConfigureAwait(false);
+            var response = await client.GetAsync("Encoder/UrlDecode?" + sourceUrl);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            string reply = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string reply = await response.Content.ReadAsStringAsync();
             Assert.Equal(unencodedUrl, reply);
         }
 
@@ -40,9 +40,9 @@ namespace Jellyfin.Server.Integration.Tests
         {
             var client = _factory.CreateClient();
 
-            var response = await client.GetAsync("Encoder/UrlArrayDecode?" + sourceUrl).ConfigureAwait(false);
+            var response = await client.GetAsync("Encoder/UrlArrayDecode?" + sourceUrl);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            string reply = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string reply = await response.Content.ReadAsStringAsync();
             Assert.Equal(unencodedUrl, reply);
         }
     }

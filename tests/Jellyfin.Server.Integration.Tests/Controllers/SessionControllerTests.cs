@@ -19,9 +19,9 @@ public class SessionControllerTests : IClassFixture<JellyfinApplicationFactory>
     public async Task GetSessions_NonExistentUserId_NotFound()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-        using var response = await client.GetAsync($"Session/Sessions?userId={Guid.NewGuid()}").ConfigureAwait(false);
+        using var response = await client.GetAsync($"Session/Sessions?userId={Guid.NewGuid()}");
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 }

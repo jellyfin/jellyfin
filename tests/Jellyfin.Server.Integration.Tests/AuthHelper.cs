@@ -21,10 +21,10 @@ namespace Jellyfin.Server.Integration.Tests
         public static async Task<string> CompleteStartupAsync(HttpClient client)
         {
             var jsonOptions = JsonDefaults.Options;
-            var userResponse = await client.GetByteArrayAsync("/Startup/User").ConfigureAwait(false);
+            var userResponse = await client.GetByteArrayAsync("/Startup/User");
             var user = JsonSerializer.Deserialize<StartupUserDto>(userResponse, jsonOptions);
 
-            using var completeResponse = await client.PostAsync("/Startup/Complete", new ByteArrayContent(Array.Empty<byte>())).ConfigureAwait(false);
+            using var completeResponse = await client.PostAsync("/Startup/Complete", new ByteArrayContent(Array.Empty<byte>()));
             Assert.Equal(HttpStatusCode.NoContent, completeResponse.StatusCode);
 
             using var content = JsonContent.Create(
@@ -36,20 +36,20 @@ namespace Jellyfin.Server.Integration.Tests
                 options: jsonOptions);
             content.Headers.Add("X-Emby-Authorization", DummyAuthHeader);
 
-            using var authResponse = await client.PostAsync("/Users/AuthenticateByName", content).ConfigureAwait(false);
+            using var authResponse = await client.PostAsync("/Users/AuthenticateByName", content);
             var auth = await JsonSerializer.DeserializeAsync<AuthenticationResultDto>(
-                await authResponse.Content.ReadAsStreamAsync().ConfigureAwait(false),
-                jsonOptions).ConfigureAwait(false);
+                await authResponse.Content.ReadAsStreamAsync(),
+                jsonOptions);
 
             return auth!.AccessToken;
         }
 
         public static async Task<UserDto> GetUserDtoAsync(HttpClient client)
         {
-            using var response = await client.GetAsync("Users/Me").ConfigureAwait(false);
+            using var response = await client.GetAsync("Users/Me");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var userDto = await JsonSerializer.DeserializeAsync<UserDto>(
-                    await response.Content.ReadAsStreamAsync().ConfigureAwait(false), JsonDefaults.Options).ConfigureAwait(false);
+                    await response.Content.ReadAsStreamAsync(), JsonDefaults.Options);
             Assert.NotNull(userDto);
             return userDto;
         }
@@ -58,15 +58,15 @@ namespace Jellyfin.Server.Integration.Tests
         {
             if (userId.Equals(default))
             {
-                var userDto = await GetUserDtoAsync(client).ConfigureAwait(false);
+                var userDto = await GetUserDtoAsync(client);
                 userId = userDto.Id;
             }
 
-            var response = await client.GetAsync($"Users/{userId}/Items/Root").ConfigureAwait(false);
+            var response = await client.GetAsync($"Users/{userId}/Items/Root");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var rootDto = await JsonSerializer.DeserializeAsync<BaseItemDto>(
-                    await response.Content.ReadAsStreamAsync().ConfigureAwait(false),
-                    JsonDefaults.Options).ConfigureAwait(false);
+                    await response.Content.ReadAsStreamAsync(),
+                    JsonDefaults.Options);
             Assert.NotNull(rootDto);
             return rootDto;
         }
