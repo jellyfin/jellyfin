@@ -20,22 +20,48 @@ namespace Emby.Server.Implementations.Net
                 throw new ArgumentException("localPort cannot be less than zero.", nameof(localPort));
             }
 
+            int min = 33000;
+            int max = 34000;
+            int remainingAttempts = 1;
+            Random rnd = new Random();
+
+            if (localPort == 0 && min != 0 && max != 0)
+            {
+                // If a min and max is set, try to use a port within that range
+                remainingAttempts = 5;
+                localPort = rnd.Next(min, max);
+            }
+
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            try
-            {
-                socket.EnableBroadcast = true;
-                socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 1);
-                socket.Bind(new IPEndPoint(IPAddress.Any, localPort));
 
-                return socket;
-            }
-            catch
+            while (remainingAttempts > 0)
             {
-                socket.Dispose();
+                remainingAttempts--;
+                try
+                {
+                    socket.EnableBroadcast = true;
+                    socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                    socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 1);
+                    socket.Bind(new IPEndPoint(IPAddress.Any, localPort));
+                    break;
+                }
+                catch
+                {
+                    socket?.Dispose();
 
-                throw;
+                    if (remainingAttempts > 0)
+                    {
+                        // Try another port in the range, with a new socket.
+                        socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                        localPort = rnd.Next(min, max);
+                        continue;
+                    }
+
+                    throw;
+                }
             }
+
+            return socket;
         }
 
         /// <inheritdoc />
