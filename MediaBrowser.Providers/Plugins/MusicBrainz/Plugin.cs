@@ -43,7 +43,7 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     public override Guid Id => new Guid("8c95c4d2-e50c-4fb0-a4f3-6c06ff0f9a1a");
     
     /// <inheritdoc />
-    public override string imageUrl=> "https://repo.jellyfin.org/releases/plugin/images/jellyfin-plugin-musicbrainz.png";
+    public override string imageUrl => "https://repo.jellyfin.org/releases/plugin/images/jellyfin-plugin-musicbrainz.png";
 
     /// <inheritdoc />
     public override string Name => "MusicBrainz";
