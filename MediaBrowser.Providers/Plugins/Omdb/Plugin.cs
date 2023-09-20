@@ -22,6 +22,8 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         public override Guid Id => new Guid("a628c0da-fac5-4c7e-9d1a-7134223f14c8");
 
+        public override string imageUrl=> "https://repo.jellyfin.org/releases/plugin/images/jellyfin-plugin-omdb.png";
+
         public override string Name => "OMDb";
 
         public override string Description => "Get metadata for movies and other video content from OMDb.";
