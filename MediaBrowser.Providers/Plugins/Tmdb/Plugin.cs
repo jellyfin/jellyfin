@@ -34,6 +34,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         public override Guid Id => new Guid("b8715ed1-6c47-4528-9ad3-f72deb539cd4");
 
         /// <inheritdoc/>
+        public override string imageUrl=> "https://repo.jellyfin.org/releases/plugin/images/jellyfin-plugin-tmdb.png";
+
+        /// <inheritdoc/>
         public override string Name => "TMDb";
 
         /// <inheritdoc/>
