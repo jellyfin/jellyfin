@@ -208,6 +208,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
+                case "displayafterseason":
                 case "airsafter_season":
                     {
                         var val = reader.ReadElementContentAsString();
