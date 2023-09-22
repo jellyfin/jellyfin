@@ -486,24 +486,10 @@ namespace Emby.Server.Implementations.IO
         }
 
         /// <inheritdoc />
-        public virtual string NormalizePath(string path)
-        {
-            ArgumentException.ThrowIfNullOrEmpty(path);
-
-            if (path.EndsWith(":\\", StringComparison.OrdinalIgnoreCase))
-            {
-                return path;
-            }
-
-            return Path.TrimEndingDirectorySeparator(path);
-        }
-
-        /// <inheritdoc />
         public virtual bool AreEqual(string path1, string path2)
         {
-            return string.Equals(
-                NormalizePath(path1),
-                NormalizePath(path2),
+            return Path.TrimEndingDirectorySeparator(path1).Equals(
+                Path.TrimEndingDirectorySeparator(path2),
                 _isEnvironmentCaseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
         }
 
