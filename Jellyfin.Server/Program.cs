@@ -89,12 +89,6 @@ namespace Jellyfin.Server
         private static async Task StartApp(StartupOptions options)
         {
             _startTimestamp = Stopwatch.GetTimestamp();
-
-            // Log all uncaught exceptions to std error
-            static void UnhandledExceptionToConsole(object sender, UnhandledExceptionEventArgs e) =>
-                Console.Error.WriteLine("Unhandled Exception\n" + e.ExceptionObject);
-            AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionToConsole;
-
             ServerApplicationPaths appPaths = StartupHelpers.CreateApplicationPaths(options);
 
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
@@ -112,8 +106,7 @@ namespace Jellyfin.Server
             StartupHelpers.InitializeLoggingFramework(startupConfig, appPaths);
             _logger = _loggerFactory.CreateLogger("Main");
 
-            // Log uncaught exceptions to the logging instead of std error
-            AppDomain.CurrentDomain.UnhandledException -= UnhandledExceptionToConsole;
+            // Use the logging framework for uncaught exceptions instead of std error
             AppDomain.CurrentDomain.UnhandledException += (_, e)
                 => _logger.LogCritical((Exception)e.ExceptionObject, "Unhandled Exception");
 
