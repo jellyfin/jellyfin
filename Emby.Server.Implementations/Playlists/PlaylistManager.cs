@@ -518,6 +518,11 @@ namespace Emby.Server.Implementations.Playlists
             return relativePath;
         }
 
+        public Folder GetPlaylistsFolder()
+        {
+            return GetPlaylistsFolder(Guid.Empty);
+        }
+
         public Folder GetPlaylistsFolder(Guid userId)
         {
             const string TypeName = "PlaylistsFolder";
