@@ -968,7 +968,8 @@ namespace Emby.Server.Implementations
                 ServerName = FriendlyName,
                 LocalAddress = GetSmartApiUrl(request),
                 SupportsLibraryMonitor = true,
-                PackageName = _startupOptions.PackageName
+                PackageName = _startupOptions.PackageName,
+                CastReceiverApplications = ConfigurationManager.Configuration.CastReceiverApplications
             };
         }
 

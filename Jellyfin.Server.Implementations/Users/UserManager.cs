@@ -15,6 +15,7 @@ using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
@@ -45,6 +46,7 @@ namespace Jellyfin.Server.Implementations.Users
         private readonly InvalidAuthProvider _invalidAuthProvider;
         private readonly DefaultAuthenticationProvider _defaultAuthenticationProvider;
         private readonly DefaultPasswordResetProvider _defaultPasswordResetProvider;
+        private readonly IServerConfigurationManager _serverConfigurationManager;
 
         private readonly IDictionary<Guid, User> _users;
 
@@ -58,6 +60,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <param name="appHost">The application host.</param>
         /// <param name="imageProcessor">The image processor.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="serverConfigurationManager">The system config manager.</param>
         public UserManager(
             IDbContextFactory<JellyfinDbContext> dbProvider,
             IEventManager eventManager,
@@ -65,7 +68,8 @@ namespace Jellyfin.Server.Implementations.Users
             INetworkManager networkManager,
             IApplicationHost appHost,
             IImageProcessor imageProcessor,
-            ILogger<UserManager> logger)
+            ILogger<UserManager> logger,
+            IServerConfigurationManager serverConfigurationManager)
         {
             _dbProvider = dbProvider;
             _eventManager = eventManager;
@@ -74,6 +78,7 @@ namespace Jellyfin.Server.Implementations.Users
             _appHost = appHost;
             _imageProcessor = imageProcessor;
             _logger = logger;
+            _serverConfigurationManager = serverConfigurationManager;
 
             _passwordResetProviders = appHost.GetExports<IPasswordResetProvider>();
             _authenticationProviders = appHost.GetExports<IAuthenticationProvider>();
@@ -320,7 +325,10 @@ namespace Jellyfin.Server.Implementations.Users
                     OrderedViews = user.GetPreferenceValues<Guid>(PreferenceKind.OrderedViews),
                     GroupedFolders = user.GetPreferenceValues<Guid>(PreferenceKind.GroupedFolders),
                     MyMediaExcludes = user.GetPreferenceValues<Guid>(PreferenceKind.MyMediaExcludes),
-                    LatestItemsExcludes = user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes)
+                    LatestItemsExcludes = user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes),
+                    CastReceiverId = string.IsNullOrEmpty(user.CastReceiverId)
+                        ? _serverConfigurationManager.Configuration.CastReceiverApplications.FirstOrDefault()?.Id
+                        : user.CastReceiverId
                 },
                 Policy = new UserPolicy
                 {
@@ -608,6 +616,10 @@ namespace Jellyfin.Server.Implementations.Users
                 user.EnableNextEpisodeAutoPlay = config.EnableNextEpisodeAutoPlay;
                 user.RememberSubtitleSelections = config.RememberSubtitleSelections;
                 user.SubtitleLanguagePreference = config.SubtitleLanguagePreference;
+                if (!string.IsNullOrEmpty(config.CastReceiverId))
+                {
+                    user.CastReceiverId = config.CastReceiverId;
+                }
 
                 user.SetPreference(PreferenceKind.OrderedViews, config.OrderedViews);
                 user.SetPreference(PreferenceKind.GroupedFolders, config.GroupedFolders);
