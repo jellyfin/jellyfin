@@ -189,12 +189,12 @@ public partial class StripCollageBuilder
 
                 // Scale image. The FromBitmap creates a copy
                 var imageInfo = new SKImageInfo(cellWidth, cellHeight, currentBitmap.ColorType, currentBitmap.AlphaType, currentBitmap.ColorSpace);
-                using var resizedBitmap = SKBitmap.FromImage(SkiaEncoder.ResizeImage(currentBitmap, imageInfo));
+                using var resizeImage = SkiaEncoder.ResizeImage(currentBitmap, imageInfo);
 
                 // draw this image into the strip at the next position
                 var xPos = x * cellWidth;
                 var yPos = y * cellHeight;
-                canvas.DrawBitmap(resizedBitmap, xPos, yPos);
+                canvas.DrawImage(resizeImage, xPos, yPos);
             }
         }
 
