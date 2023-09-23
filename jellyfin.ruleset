@@ -173,4 +173,18 @@
     <!-- error on RS0030: Do not used banned APIs -->
     <Rule Id="RS0030" Action="Error" />
   </Rules>
+
+  <Rules AnalyzerId="IDisposableAnalyzers" RuleNamespace="IDisposableAnalyzers.Correctness">
+    <!-- disable warning IDISP001: Dispose created -->
+    <Rule Id="IDISP001" Action="Info" />
+    <!-- TODO: Enable when false positives are fixed -->
+    <!-- disable warning IDISP003: Dispose previous before re-assigning -->
+    <Rule Id="IDISP003" Action="Info" />
+    <!-- disable warning IDISP004: Don't ignore created IDisposable -->
+    <Rule Id="IDISP004" Action="Info" />
+    <!-- disable warning IDISP007: Don't dispose injected -->
+    <Rule Id="IDISP007" Action="Info" />
+    <!-- disable warning IDISP008: Don't assign member with injected and created disposables -->
+    <Rule Id="IDISP008" Action="Info" />
+  </Rules>
 </RuleSet>
