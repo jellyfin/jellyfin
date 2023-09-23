@@ -328,7 +328,8 @@ namespace Jellyfin.Server.Implementations.Users
                     LatestItemsExcludes = user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes),
                     CastReceiverId = string.IsNullOrEmpty(user.CastReceiverId)
                         ? _serverConfigurationManager.Configuration.CastReceiverApplications.FirstOrDefault()?.Id
-                        : user.CastReceiverId
+                        : _serverConfigurationManager.Configuration.CastReceiverApplications.FirstOrDefault(c => string.Equals(c.Id, user.CastReceiverId, StringComparison.Ordinal))?.Id
+                          ?? _serverConfigurationManager.Configuration.CastReceiverApplications.FirstOrDefault()?.Id
                 },
                 Policy = new UserPolicy
                 {
@@ -616,7 +617,10 @@ namespace Jellyfin.Server.Implementations.Users
                 user.EnableNextEpisodeAutoPlay = config.EnableNextEpisodeAutoPlay;
                 user.RememberSubtitleSelections = config.RememberSubtitleSelections;
                 user.SubtitleLanguagePreference = config.SubtitleLanguagePreference;
-                if (!string.IsNullOrEmpty(config.CastReceiverId))
+
+                // Only set cast receiver id if it is passed in and it exists in the server config.
+                if (!string.IsNullOrEmpty(config.CastReceiverId)
+                    && _serverConfigurationManager.Configuration.CastReceiverApplications.Any(c => string.Equals(c.Id, config.CastReceiverId, StringComparison.Ordinal)))
                 {
                     user.CastReceiverId = config.CastReceiverId;
                 }
