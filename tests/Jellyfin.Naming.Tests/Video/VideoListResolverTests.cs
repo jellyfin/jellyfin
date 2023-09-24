@@ -92,7 +92,7 @@ namespace Jellyfin.Naming.Tests.Video
 
             var s01e04 = result.FirstOrDefault(x => string.Equals(x.Name, "Grey's Anatomy (2005) - s01e04", StringComparison.Ordinal));
             Assert.NotNull(s01e04);
-            Assert.Equal(1, s01e04!.AlternateVersions.Count);
+            Assert.Single(s01e04!.AlternateVersions);
         }
 
         [Fact]
@@ -121,7 +121,7 @@ namespace Jellyfin.Naming.Tests.Video
 
             var s01e04 = result.FirstOrDefault(x => string.Equals(x.Name, "Grey's Anatomy (2005) s01e04", StringComparison.Ordinal));
             Assert.NotNull(s01e04);
-            Assert.Equal(1, s01e04!.AlternateVersions.Count);
+            Assert.Single(s01e04!.AlternateVersions);
         }
 
         [Fact]
