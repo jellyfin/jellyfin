@@ -1,4 +1,4 @@
-FROM centos:7
+FROM centos:8
 # Docker build arguments
 ARG SOURCE_DIR=/jellyfin
 ARG ARTIFACT_DIR=/dist
