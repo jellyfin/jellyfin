@@ -1823,6 +1823,8 @@ namespace Emby.Server.Implementations.Session
             {
                 await session.DisposeAsync().ConfigureAwait(false);
             }
+
+            _activeConnections.Clear();
         }
     }
 }
