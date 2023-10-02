@@ -38,15 +38,14 @@ namespace Emby.Server.Implementations.Channels
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The completed task.</returns>
-        public Task Run(IProgress<double> progress, CancellationToken cancellationToken)
+        public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            CleanDatabase(cancellationToken);
+            await CleanDatabaseAsync(cancellationToken);
 
             progress.Report(100);
-            return Task.CompletedTask;
         }
 
-        private void CleanDatabase(CancellationToken cancellationToken)
+        private async Task CleanDatabaseAsync(CancellationToken cancellationToken)
         {
             var installedChannelIds = ((ChannelManager)_channelManager).GetInstalledChannelIds();
 
@@ -60,11 +59,11 @@ namespace Emby.Server.Implementations.Channels
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                CleanChannel((Channel)channel, cancellationToken);
+                await CleanChannelAsync((Channel)channel, cancellationToken);
             }
         }
 
-        private void CleanChannel(Channel channel, CancellationToken cancellationToken)
+        private async Task CleanChannelAsync(Channel channel, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Cleaning channel {0} from database", channel.Id);
 
@@ -78,23 +77,21 @@ namespace Emby.Server.Implementations.Channels
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                _libraryManager.DeleteItem(
+                await _libraryManager.DeleteItemAsync(
                     item,
                     new DeleteOptions
                     {
                         DeleteFileLocation = false
-                    },
-                    false);
+                    });
             }
 
             // Finally, delete the channel itself
-            _libraryManager.DeleteItem(
+            await _libraryManager.DeleteItemAsync(
                 channel,
                 new DeleteOptions
                 {
                     DeleteFileLocation = false
-                },
-                false);
+                });
         }
     }
 }

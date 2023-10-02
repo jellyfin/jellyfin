@@ -290,31 +290,24 @@ namespace MediaBrowser.Controller.Library
         /// Registers the item.
         /// </summary>
         /// <param name="item">The item.</param>
-        void RegisterItem(BaseItem item);
+        void RegisterItemInCache(BaseItem item);
 
         /// <summary>
         /// Deletes the item.
         /// </summary>
         /// <param name="item">Item to delete.</param>
         /// <param name="options">Options to use for deletion.</param>
-        void DeleteItem(BaseItem item, DeleteOptions options);
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task DeleteItemAsync(BaseItem item, DeleteOptions options);
 
         /// <summary>
         /// Deletes the item.
         /// </summary>
         /// <param name="item">Item to delete.</param>
-        /// <param name="options">Options to use for deletion.</param>
-        /// <param name="notifyParentItem">Notify parent of deletion.</param>
-        void DeleteItem(BaseItem item, DeleteOptions options, bool notifyParentItem);
-
-        /// <summary>
-        /// Deletes the item.
-        /// </summary>
-        /// <param name="item">Item to delete.</param>
-        /// <param name="options">Options to use for deletion.</param>
         /// <param name="parent">Parent of item.</param>
-        /// <param name="notifyParentItem">Notify parent of deletion.</param>
-        void DeleteItem(BaseItem item, DeleteOptions options, BaseItem parent, bool notifyParentItem);
+        /// <param name="options">Options to use for deletion.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task DeleteItemAsync(BaseItem item, BaseItem parent, DeleteOptions options);
 
         /// <summary>
         /// Gets the named view.

@@ -1499,7 +1499,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     .Skip(seriesTimer.KeepUpTo - 1)
                     .ToList();
 
-                DeleteLibraryItemsForTimers(timersToDelete);
+                await DeleteLibraryItemsForTimers(timersToDelete);
 
                 if (_libraryManager.FindByPath(seriesPath, true) is not Folder librarySeries)
                 {
@@ -1523,13 +1523,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     try
                     {
-                        _libraryManager.DeleteItem(
+                        await _libraryManager.DeleteItemAsync(
                             item,
                             new DeleteOptions
                             {
                                 DeleteFileLocation = true
-                            },
-                            true);
+                            });
                     }
                     catch (Exception ex)
                     {
@@ -1543,7 +1542,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private void DeleteLibraryItemsForTimers(List<TimerInfo> timers)
+        private async Task DeleteLibraryItemsForTimers(List<TimerInfo> timers)
         {
             foreach (var timer in timers)
             {
@@ -1554,7 +1553,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 try
                 {
-                    DeleteLibraryItemForTimer(timer);
+                    await DeleteLibraryItemForTimer(timer);
                 }
                 catch (Exception ex)
                 {
@@ -1563,19 +1562,18 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private void DeleteLibraryItemForTimer(TimerInfo timer)
+        private async Task DeleteLibraryItemForTimer(TimerInfo timer)
         {
             var libraryItem = _libraryManager.FindByPath(timer.RecordingPath, false);
 
             if (libraryItem is not null)
             {
-                _libraryManager.DeleteItem(
+                await _libraryManager.DeleteItemAsync(
                     libraryItem,
                     new DeleteOptions
                     {
                         DeleteFileLocation = true
-                    },
-                    true);
+                    });
             }
             else if (File.Exists(timer.RecordingPath))
             {

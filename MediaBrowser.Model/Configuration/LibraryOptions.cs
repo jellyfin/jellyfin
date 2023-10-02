@@ -92,6 +92,8 @@ namespace MediaBrowser.Model.Configuration
 
         public TypeOptions[] TypeOptions { get; set; }
 
+        public bool RemoveEmptyMediaFoldersOnItemDelete { get; set; }
+
         public TypeOptions? GetTypeOptions(string type)
         {
             foreach (var options in TypeOptions)

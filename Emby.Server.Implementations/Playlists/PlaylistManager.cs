@@ -553,15 +553,14 @@ namespace Emby.Server.Implementations.Playlists
                 else if (!playlist.OpenAccess)
                 {
                     // Remove playlist if not shared
-                    _libraryManager.DeleteItem(
+                    await _libraryManager.DeleteItemAsync(
                         playlist,
+                        playlist.GetParent(),
                         new DeleteOptions
                         {
                             DeleteFileLocation = false,
                             DeleteFromExternalProvider = false
-                        },
-                        playlist.GetParent(),
-                        false);
+                        });
                 }
             }
         }

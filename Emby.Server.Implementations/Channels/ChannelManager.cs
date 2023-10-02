@@ -761,15 +761,14 @@ namespace Emby.Server.Implementations.Channels
                     var deadItem = _libraryManager.GetItemById(deadId);
                     if (deadItem is not null)
                     {
-                        _libraryManager.DeleteItem(
+                        await _libraryManager.DeleteItemAsync(
                             deadItem,
+                            parentItem,
                             new DeleteOptions
                             {
                                 DeleteFileLocation = false,
                                 DeleteFromExternalProvider = false
-                            },
-                            parentItem,
-                            false);
+                            });
                     }
                 }
             }

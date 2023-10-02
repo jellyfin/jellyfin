@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
@@ -758,7 +758,7 @@ public class LiveTvController : BaseJellyfinApiController
     [Authorize(Policy = Policies.LiveTvManagement)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult DeleteRecording([FromRoute, Required] Guid recordingId)
+    public async Task<ActionResult> DeleteRecording([FromRoute, Required] Guid recordingId)
     {
         var item = _libraryManager.GetItemById(recordingId);
         if (item is null)
@@ -766,10 +766,11 @@ public class LiveTvController : BaseJellyfinApiController
             return NotFound();
         }
 
-        _libraryManager.DeleteItem(item, new DeleteOptions
-        {
-            DeleteFileLocation = false
-        });
+        await _libraryManager.DeleteItemAsync(item, new DeleteOptions
+            {
+                DeleteFileLocation = false
+            })
+            .ConfigureAwait(false);
 
         return NoContent();
     }

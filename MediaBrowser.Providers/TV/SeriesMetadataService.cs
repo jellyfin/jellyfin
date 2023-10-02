@@ -40,8 +40,8 @@ namespace MediaBrowser.Providers.TV
         {
             await base.AfterMetadataRefresh(item, refreshOptions, cancellationToken).ConfigureAwait(false);
 
-            RemoveObsoleteEpisodes(item);
-            RemoveObsoleteSeasons(item);
+            await RemoveObsoleteEpisodes(item).ConfigureAwait(false);
+            await RemoveObsoleteSeasons(item).ConfigureAwait(false);
             await UpdateAndCreateSeasonsAsync(item, cancellationToken).ConfigureAwait(false);
         }
 
@@ -99,7 +99,7 @@ namespace MediaBrowser.Providers.TV
             }
         }
 
-        private void RemoveObsoleteSeasons(Series series)
+        private async Task RemoveObsoleteSeasons(Series series)
         {
             // TODO Legacy. It's not really "physical" seasons as any virtual seasons are always converted to non-virtual in UpdateAndCreateSeasonsAsync.
             var physicalSeasonNumbers = new HashSet<int>();
@@ -125,18 +125,18 @@ namespace MediaBrowser.Providers.TV
                 {
                     Logger.LogInformation("Removing virtual season {SeasonNumber} in series {SeriesName}", virtualSeason.IndexNumber, series.Name);
 
-                    LibraryManager.DeleteItem(
+                    await LibraryManager.DeleteItemAsync(
                         virtualSeason,
                         new DeleteOptions
                         {
                             DeleteFileLocation = true
-                        },
-                        false);
+                        })
+                        .ConfigureAwait(false);
                 }
             }
         }
 
-        private void RemoveObsoleteEpisodes(Series series)
+        private async Task RemoveObsoleteEpisodes(Series series)
         {
             var episodes = series.GetEpisodes(null, new DtoOptions()).OfType<Episode>().ToList();
             var numberOfEpisodes = episodes.Count;
@@ -153,7 +153,7 @@ namespace MediaBrowser.Providers.TV
                 // Virtual episodes without an episode number are practically orphaned and should be deleted
                 if (!currentEpisode.IndexNumber.HasValue)
                 {
-                    DeleteEpisode(currentEpisode);
+                    await DeleteEpisode(currentEpisode).ConfigureAwait(false);
                     continue;
                 }
 
@@ -168,13 +168,13 @@ namespace MediaBrowser.Providers.TV
                         continue;
                     }
 
-                    DeleteEpisode(currentEpisode);
+                    await DeleteEpisode(currentEpisode).ConfigureAwait(false);
                     break;
                 }
             }
         }
 
-        private void DeleteEpisode(Episode episode)
+        private async Task DeleteEpisode(Episode episode)
         {
             Logger.LogInformation(
                 "Removing virtual episode S{SeasonNumber}E{EpisodeNumber} in series {SeriesName}",
@@ -182,13 +182,13 @@ namespace MediaBrowser.Providers.TV
                 episode.IndexNumber,
                 episode.SeriesName);
 
-            LibraryManager.DeleteItem(
+            await LibraryManager.DeleteItemAsync(
                 episode,
                 new DeleteOptions
                 {
                     DeleteFileLocation = true
-                },
-                false);
+                })
+                .ConfigureAwait(false);
         }
 
         /// <summary>

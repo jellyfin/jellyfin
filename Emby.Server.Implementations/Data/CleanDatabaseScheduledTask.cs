@@ -22,11 +22,10 @@ namespace Emby.Server.Implementations.Data
 
         public Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            CleanDeadItems(cancellationToken, progress);
-            return Task.CompletedTask;
+            return CleanDeadItemsAsync(cancellationToken, progress);
         }
 
-        private void CleanDeadItems(CancellationToken cancellationToken, IProgress<double> progress)
+        private async Task CleanDeadItemsAsync(CancellationToken cancellationToken, IProgress<double> progress)
         {
             var itemIds = _libraryManager.GetItemIds(new InternalItemsQuery
             {
@@ -48,7 +47,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     _logger.LogInformation("Cleaning item {0} type: {1} path: {2}", item.Name, item.GetType().Name, item.Path ?? string.Empty);
 
-                    _libraryManager.DeleteItem(item, new DeleteOptions
+                    await _libraryManager.DeleteItemAsync(item, new DeleteOptions
                     {
                         DeleteFileLocation = false
                     });

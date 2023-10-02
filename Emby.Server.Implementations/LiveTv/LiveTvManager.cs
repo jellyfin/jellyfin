@@ -1080,8 +1080,8 @@ namespace Emby.Server.Implementations.LiveTv
 
             if (cleanDatabase)
             {
-                CleanDatabaseInternal(newChannelIdList.ToArray(), new[] { BaseItemKind.LiveTvChannel }, progress, cancellationToken);
-                CleanDatabaseInternal(newProgramIdList.ToArray(), new[] { BaseItemKind.LiveTvProgram }, progress, cancellationToken);
+                await CleanDatabaseInternal(newChannelIdList.ToArray(), new[] { BaseItemKind.LiveTvChannel }, progress, cancellationToken);
+                await CleanDatabaseInternal(newProgramIdList.ToArray(), new[] { BaseItemKind.LiveTvProgram }, progress, cancellationToken);
             }
 
             var coreService = _services.OfType<EmbyTV.EmbyTV>().FirstOrDefault();
@@ -1256,7 +1256,7 @@ namespace Emby.Server.Implementations.LiveTv
             return new Tuple<List<Guid>, List<Guid>>(channels, programs);
         }
 
-        private void CleanDatabaseInternal(Guid[] currentIdList, BaseItemKind[] validTypes, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task CleanDatabaseInternal(Guid[] currentIdList, BaseItemKind[] validTypes, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var list = _itemRepo.GetItemIdsList(new InternalItemsQuery
             {
@@ -1282,14 +1282,13 @@ namespace Emby.Server.Implementations.LiveTv
 
                     if (item is not null)
                     {
-                        _libraryManager.DeleteItem(
+                        await _libraryManager.DeleteItemAsync(
                             item,
                             new DeleteOptions
                             {
                                 DeleteFileLocation = false,
                                 DeleteFromExternalProvider = false
-                            },
-                            false);
+                            });
                     }
                 }
 

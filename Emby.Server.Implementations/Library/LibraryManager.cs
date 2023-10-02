@@ -146,7 +146,6 @@ namespace Emby.Server.Implementations.Library
             _imageProcessor = imageProcessor;
             _cache = new ConcurrentDictionary<Guid, BaseItem>();
             _namingOptions = namingOptions;
-
             _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions, directoryService);
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
@@ -302,64 +301,137 @@ namespace Emby.Server.Implementations.Library
             _cache[item.Id] = item;
         }
 
-        public void DeleteItem(BaseItem item, DeleteOptions options)
+        public Task DeleteItemAsync(BaseItem item, DeleteOptions options)
         {
-            DeleteItem(item, options, false);
-        }
-
-        public void DeleteItem(BaseItem item, DeleteOptions options, bool notifyParentItem)
-        {
-            ArgumentNullException.ThrowIfNull(item);
-
             var parent = item.GetOwner() ?? item.GetParent();
-
-            DeleteItem(item, options, parent, notifyParentItem);
+            return DeleteItemAsync(item, parent, options);
         }
 
-        public void DeleteItem(BaseItem item, DeleteOptions options, BaseItem parent, bool notifyParentItem)
+        public async Task DeleteItemAsync(BaseItem item, BaseItem parent, DeleteOptions options)
         {
             ArgumentNullException.ThrowIfNull(item);
 
-            if (item.SourceType == SourceType.Channel)
+            _logger.LogInformation(
+                "Removing item, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                item.GetType().Name,
+                item.Name ?? "Unknown name",
+                item.Path ?? string.Empty,
+                item.Id);
+
+            if (item.SourceType == SourceType.Channel && options.DeleteFromExternalProvider)
             {
-                if (options.DeleteFromExternalProvider)
+                try
                 {
-                    try
-                    {
-                        BaseItem.ChannelManager.DeleteItem(item).GetAwaiter().GetResult();
-                    }
-                    catch (ArgumentException)
-                    {
-                        // channel no longer installed
-                    }
+                    await BaseItem.ChannelManager.DeleteItem(item);
                 }
-
-                options.DeleteFileLocation = false;
-            }
-
-            if (item is LiveTvProgram)
-            {
-                _logger.LogDebug(
-                    "Removing item, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
-                    item.GetType().Name,
-                    item.Name ?? "Unknown name",
-                    item.Path ?? string.Empty,
-                    item.Id);
-            }
-            else
-            {
-                _logger.LogInformation(
-                    "Removing item, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
-                    item.GetType().Name,
-                    item.Name ?? "Unknown name",
-                    item.Path ?? string.Empty,
-                    item.Id);
+                catch (ArgumentException)
+                {
+                    // channel no longer installed
+                }
             }
 
             var children = item.IsFolder
                 ? ((Folder)item).GetRecursiveChildren(false)
                 : Array.Empty<BaseItem>();
 
+            DeleteItemMetadataPaths(item, children);
+
+            if (options.DeleteFileLocation && item.IsFileProtocol)
+            {
+                DeleteItemFromDisk(item);
+            }
+
+            _itemRepository.DeleteItem(item.Id);
+            foreach (var child in children)
+            {
+                _itemRepository.DeleteItem(child.Id);
+            }
+
+            item.SetParent(null);
+
+            _cache.TryRemove(item.Id, out _);
+
+            ReportItemRemoved(item, parent);
+
+            // Delete empty media folders if collection option is enabled.
+            // Don't delete the top level folder. We don't want for users to have to re-create
+            // folders where they might be auto-sorting media into.
+            if (parent.IsFolder && !parent.IsTopParent)
+            {
+                var siblingItems = (parent as Folder)?.Children;
+                if (!siblingItems.Any())
+                {
+                    var itemCollections = GetCollectionFolders(item);
+                    var collectionOptions = itemCollections.Select(x => CollectionFolder.GetLibraryOptions(x.Path));
+                    if (collectionOptions.Any(x => x.RemoveEmptyMediaFoldersOnItemDelete))
+                    {
+                        _logger.LogInformation(
+                            "Removing empty media folder, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                            parent.GetType().Name,
+                            parent.Name ?? "Unknown name",
+                            parent.Path ?? string.Empty,
+                            parent.Id);
+
+                        await DeleteItemAsync(parent, options);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Delete an item from disk. Sub items of a directory are deleted recursively.
+        /// </summary>
+        /// <param name="item">The item to be deleted.</param>
+        private void DeleteItemFromDisk(BaseItem item)
+        {
+            // Assume only the first is required
+            // Add this flag to GetDeletePaths if required in the future
+            var isRequiredForDelete = true;
+
+            foreach (var fileSystemInfo in item.GetDeletePaths())
+            {
+                if (Directory.Exists(fileSystemInfo.FullName) || File.Exists(fileSystemInfo.FullName))
+                {
+                    try
+                    {
+                        _logger.LogInformation(
+                            "Deleting item path, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                            item.GetType().Name,
+                            item.Name ?? "Unknown name",
+                            fileSystemInfo.FullName,
+                            item.Id);
+
+                        if (fileSystemInfo.IsDirectory)
+                        {
+                            Directory.Delete(fileSystemInfo.FullName, true);
+                        }
+                        else
+                        {
+                            File.Delete(fileSystemInfo.FullName);
+                        }
+                    }
+                    catch (IOException)
+                    {
+                        if (isRequiredForDelete)
+                        {
+                            throw;
+                        }
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        if (isRequiredForDelete)
+                        {
+                            throw;
+                        }
+                    }
+                }
+
+                isRequiredForDelete = false;
+            }
+        }
+
+        private void DeleteItemMetadataPaths(BaseItem item, IList<BaseItem> children)
+        {
             foreach (var metadataPath in GetMetadataPaths(item, children))
             {
                 if (!Directory.Exists(metadataPath))
@@ -383,66 +455,6 @@ namespace Emby.Server.Implementations.Library
                     _logger.LogError(ex, "Error deleting {MetadataPath}", metadataPath);
                 }
             }
-
-            if (options.DeleteFileLocation && item.IsFileProtocol)
-            {
-                // Assume only the first is required
-                // Add this flag to GetDeletePaths if required in the future
-                var isRequiredForDelete = true;
-
-                foreach (var fileSystemInfo in item.GetDeletePaths())
-                {
-                    if (Directory.Exists(fileSystemInfo.FullName) || File.Exists(fileSystemInfo.FullName))
-                    {
-                        try
-                        {
-                            _logger.LogInformation(
-                                "Deleting item path, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
-                                item.GetType().Name,
-                                item.Name ?? "Unknown name",
-                                fileSystemInfo.FullName,
-                                item.Id);
-
-                            if (fileSystemInfo.IsDirectory)
-                            {
-                                Directory.Delete(fileSystemInfo.FullName, true);
-                            }
-                            else
-                            {
-                                File.Delete(fileSystemInfo.FullName);
-                            }
-                        }
-                        catch (IOException)
-                        {
-                            if (isRequiredForDelete)
-                            {
-                                throw;
-                            }
-                        }
-                        catch (UnauthorizedAccessException)
-                        {
-                            if (isRequiredForDelete)
-                            {
-                                throw;
-                            }
-                        }
-                    }
-
-                    isRequiredForDelete = false;
-                }
-            }
-
-            item.SetParent(null);
-
-            _itemRepository.DeleteItem(item.Id);
-            foreach (var child in children)
-            {
-                _itemRepository.DeleteItem(child.Id);
-            }
-
-            _cache.TryRemove(item.Id, out _);
-
-            ReportItemRemoved(item, parent);
         }
 
         private static IEnumerable<string> GetMetadataPaths(BaseItem item, IEnumerable<BaseItem> children)

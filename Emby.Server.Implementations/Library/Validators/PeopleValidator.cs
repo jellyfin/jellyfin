@@ -105,13 +105,12 @@ namespace Emby.Server.Implementations.Library.Validators
                     item.Name,
                     item.GetType().Name);
 
-                _libraryManager.DeleteItem(
+                await _libraryManager.DeleteItemAsync(
                     item,
                     new DeleteOptions
                     {
                         DeleteFileLocation = false
-                    },
-                    false);
+                    });
             }
 
             progress.Report(100);
