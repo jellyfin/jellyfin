@@ -146,9 +146,16 @@ cd Jellyfin.Server/bin/Debug/net7.0 # Change into the build output directory
 
 Building and running the server from Github Codespaces require you to install the recommended VS-Code extensions as listed in the `.vscode/extensions.json` file. VsCode should ask you to install them each time you open the Server repro on GH-Codespaces.
 
-As Jellyfin will run on a container on a github hosted server, JF needs to handle 2 things differently.
+As Jellyfin will run on a container on a github hosted server, JF needs to handle 3 things differently.
 1. Address Binding.
-Github will put all networked services behind a reverse proxy and will only autodetect it correctly if it will bind to `Ipv4.Any` 
+Github will put all networked services behind a reverse proxy and will only autodetect it correctly if it will bind to `Ipv4.Any`. Because of this, there is an adapted `BindAllNetworkManager` that will overwrite all set bindings and bind to any IPV4 address.
+**NOTE:** If you want to access the JF instance from outside, like with a WebClient on another PC, remember to set the "ports" in the lower VsCode window to public.
+
+2. FFmpeg installation.
+Because sometimes you need FFMPEG to test certain cases, follow the instructions from the wiki on the dev enviorment:
+https://jellyfin.org/docs/general/installation/linux/#ffmpeg-installation
+
+**NOTE:** When first opening the server instance with any WebUI, you will be send to the login instead of the setup page. Refresh the login page once and you should be redirected to the Setup.
 
 ### Running The Tests
 
