@@ -134,7 +134,7 @@ namespace MediaBrowser.Controller.Entities
             // In theory this can be removed eventually.
             foreach (var item in Children)
             {
-                LibraryManager.RegisterItem(item);
+                LibraryManager.RegisterItemInCache(item);
             }
         }
     }

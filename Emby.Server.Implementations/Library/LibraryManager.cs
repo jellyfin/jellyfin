@@ -280,7 +280,7 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        public void RegisterItem(BaseItem item)
+        public void RegisterItemInCache(BaseItem item)
         {
             ArgumentNullException.ThrowIfNull(item);
 
@@ -760,7 +760,7 @@ namespace Emby.Server.Implementations.Library
 
             rootFolder.AddVirtualChild(folder);
 
-            RegisterItem(folder);
+            RegisterItemInCache(folder);
 
             return rootFolder;
         }
@@ -1241,7 +1241,7 @@ namespace Emby.Server.Implementations.Library
 
             if (item is not null)
             {
-                RegisterItem(item);
+                RegisterItemInCache(item);
             }
 
             return item;
@@ -1785,7 +1785,7 @@ namespace Emby.Server.Implementations.Library
 
             foreach (var item in items)
             {
-                RegisterItem(item);
+                RegisterItemInCache(item);
             }
 
             if (ItemAdded is not null)
@@ -1850,7 +1850,7 @@ namespace Emby.Server.Implementations.Library
             // Skip image processing if current or live tv source
             if (outdated.Length == 0 || item.SourceType != SourceType.Library)
             {
-                RegisterItem(item);
+                RegisterItemInCache(item);
                 return;
             }
 
@@ -1917,7 +1917,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             _itemRepository.SaveImages(item);
-            RegisterItem(item);
+            RegisterItemInCache(item);
         }
 
         /// <inheritdoc />
