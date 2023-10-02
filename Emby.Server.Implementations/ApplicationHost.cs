@@ -203,10 +203,10 @@ namespace Emby.Server.Implementations
         public bool HasPendingRestart { get; private set; }
 
         /// <inheritdoc />
-        public bool IsShuttingDown { get; set; }
+        public bool IsShuttingDown { get; private set; }
 
         /// <inheritdoc />
-        public bool ShouldRestart { get; set; }
+        public bool ShouldRestart { get; private set; }
 
         /// <summary>
         /// Gets the logger.
