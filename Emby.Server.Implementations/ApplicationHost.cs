@@ -101,6 +101,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Prometheus.DotNetRuntime;
 using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
@@ -848,6 +849,24 @@ namespace Emby.Server.Implementations
             {
                 EventHelper.QueueEventIfNotNull(HasPendingRestartChanged, this, EventArgs.Empty, Logger);
             }
+        }
+
+        /// <inheritdoc />
+        public void Restart()
+        {
+            ShouldRestart = true;
+            Shutdown();
+        }
+
+        /// <inheritdoc />
+        public void Shutdown()
+        {
+            Task.Run(async () =>
+            {
+                await Task.Delay(100).ConfigureAwait(false);
+                IsShuttingDown = true;
+                Resolve<IHostApplicationLifetime>().StopApplication();
+            });
         }
 
         /// <summary>

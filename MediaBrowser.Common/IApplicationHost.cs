@@ -41,15 +41,15 @@ namespace MediaBrowser.Common
         bool HasPendingRestart { get; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is currently shutting down.
+        /// Gets a value indicating whether this instance is currently shutting down.
         /// </summary>
         /// <value><c>true</c> if this instance is shutting down; otherwise, <c>false</c>.</value>
-        bool IsShuttingDown { get; set; }
+        bool IsShuttingDown { get; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the application should restart.
+        /// Gets a value indicating whether the application should restart.
         /// </summary>
-        bool ShouldRestart { get; set; }
+        bool ShouldRestart { get; }
 
         /// <summary>
         /// Gets the application version.
@@ -92,6 +92,11 @@ namespace MediaBrowser.Common
         void NotifyPendingRestart();
 
         /// <summary>
+        /// Restarts this instance.
+        /// </summary>
+        void Restart();
+
+        /// <summary>
         /// Gets the exports.
         /// </summary>
         /// <typeparam name="T">The type.</typeparam>
@@ -121,6 +126,11 @@ namespace MediaBrowser.Common
         /// <typeparam name="T">The <c>Type</c>.</typeparam>
         /// <returns>``0.</returns>
         T Resolve<T>();
+
+        /// <summary>
+        /// Shuts down.
+        /// </summary>
+        void Shutdown();
 
         /// <summary>
         /// Initializes this instance.

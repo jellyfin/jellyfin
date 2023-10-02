@@ -4,7 +4,6 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
-using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Configuration;
@@ -18,7 +17,6 @@ using MediaBrowser.Model.System;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Controllers;
@@ -33,7 +31,6 @@ public class SystemController : BaseJellyfinApiController
     private readonly IFileSystem _fileSystem;
     private readonly INetworkManager _network;
     private readonly ILogger<SystemController> _logger;
-    private readonly IHostApplicationLifetime _hostApplicationLifetime;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SystemController"/> class.
@@ -43,21 +40,18 @@ public class SystemController : BaseJellyfinApiController
     /// <param name="fileSystem">Instance of <see cref="IFileSystem"/> interface.</param>
     /// <param name="network">Instance of <see cref="INetworkManager"/> interface.</param>
     /// <param name="logger">Instance of <see cref="ILogger{SystemController}"/> interface.</param>
-    /// <param name="hostApplicationLifetime">Instance of <see cref="IHostApplicationLifetime"/> interface.</param>
     public SystemController(
         IServerConfigurationManager serverConfigurationManager,
         IServerApplicationHost appHost,
         IFileSystem fileSystem,
         INetworkManager network,
-        ILogger<SystemController> logger,
-        IHostApplicationLifetime hostApplicationLifetime)
+        ILogger<SystemController> logger)
     {
         _appPaths = serverConfigurationManager.ApplicationPaths;
         _appHost = appHost;
         _fileSystem = fileSystem;
         _network = network;
         _logger = logger;
-        _hostApplicationLifetime = hostApplicationLifetime;
     }
 
     /// <summary>
@@ -112,13 +106,7 @@ public class SystemController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public ActionResult RestartApplication()
     {
-        Task.Run(async () =>
-        {
-            await Task.Delay(100).ConfigureAwait(false);
-            _appHost.ShouldRestart = true;
-            _appHost.IsShuttingDown = true;
-            _hostApplicationLifetime.StopApplication();
-        });
+        _appHost.Restart();
         return NoContent();
     }
 
@@ -134,12 +122,7 @@ public class SystemController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public ActionResult ShutdownApplication()
     {
-        Task.Run(async () =>
-        {
-            await Task.Delay(100).ConfigureAwait(false);
-            _appHost.IsShuttingDown = true;
-            _hostApplicationLifetime.StopApplication();
-        });
+        _appHost.Shutdown();
         return NoContent();
     }
 
