@@ -142,6 +142,14 @@ cd Jellyfin.Server/bin/Debug/net7.0 # Change into the build output directory
 
 2. Execute the build output. On Linux, Mac, etc. use `./jellyfin` and on Windows use `jellyfin.exe`.
 
+### Running from GH-Codespaces
+
+Building and running the server from Github Codespaces require you to install the recommended VS-Code extensions as listed in the `.vscode/extensions.json` file. VsCode should ask you to install them each time you open the Server repro on GH-Codespaces.
+
+As Jellyfin will run on a container on a github hosted server, JF needs to handle 2 things differently.
+1. Address Binding.
+Github will put all networked services behind a reverse proxy and will only autodetect it correctly if it will bind to `Ipv4.Any` 
+
 ### Running The Tests
 
 This repository also includes unit tests that are used to validate functionality as part of a CI pipeline on Azure. There are several ways to run these tests.
