@@ -3,28 +3,27 @@
     "Jellyfin.Server": {
       "commandName": "Project",
       "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "JELLYFIN_WEB_DIR": "C:\\Users\\devon\\source\\repos\\jellyfin-web\\dist"
-      },
-      "applicationUrl": "http://localhost:8096"
-    },
-    "Jellyfin.Server (nowebclient)": {
-      "commandName": "Project",
-      "commandLineArgs": "--nowebclient",
+      "applicationUrl": "http://localhost:8096",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "Jellyfin.Server (API Docs)": {
+    "Jellyfin.Server (nowebclient)": {
       "commandName": "Project",
-      "commandLineArgs": "--nowebclient",
-      "launchBrowser": true,
-      "launchUrl": "api-docs/swagger",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "http://localhost:8096"
+      "commandLineArgs": "--nowebclient"
+    },
+    "Jellyfin.Server (API Docs)": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "api-docs/swagger",
+      "applicationUrl": "http://localhost:8096",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "commandLineArgs": "--nowebclient"
     }
   }
 }
