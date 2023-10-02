@@ -6242,6 +6242,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                 audioTranscodeParams.Add("-acodec " + GetAudioEncoder(state));
             }
 
+            if (GetAudioEncoder(state).StartsWith("pcm_", StringComparison.Ordinal))
+            {
+                audioTranscodeParams.Add(string.Concat("-f ", GetAudioEncoder(state).Substring(4)));
+                audioTranscodeParams.Add("-ar " + state.BaseRequest.AudioBitRate);
+            }
+
             if (!string.Equals(outputCodec, "opus", StringComparison.OrdinalIgnoreCase))
             {
                 // opus only supports specific sampling rates
