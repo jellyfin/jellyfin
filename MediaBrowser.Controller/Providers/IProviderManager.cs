@@ -208,5 +208,9 @@ namespace MediaBrowser.Controller.Providers
         void OnRefreshComplete(BaseItem item);
 
         double? GetRefreshProgress(Guid id);
+
+        void DeleteMetadata(BaseItem item);
+
+        void DeleteAllImages(BaseItem item);
     }
 }

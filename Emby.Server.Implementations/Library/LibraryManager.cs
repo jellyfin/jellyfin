@@ -37,6 +37,7 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
+using MediaBrowser.Model;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
@@ -46,6 +47,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Tasks;
+using MediaBrowser.Providers.Manager;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
@@ -334,12 +336,8 @@ namespace Emby.Server.Implementations.Library
                 ? ((Folder)item).GetRecursiveChildren(false)
                 : Array.Empty<BaseItem>();
 
+            // delete legacy metadata paths
             DeleteItemMetadataPaths(item, children);
-
-            if (options.DeleteFileLocation && item.IsFileProtocol)
-            {
-                DeleteItemFromDisk(item);
-            }
 
             _itemRepository.DeleteItem(item.Id);
             foreach (var child in children)
@@ -347,34 +345,70 @@ namespace Emby.Server.Implementations.Library
                 _itemRepository.DeleteItem(child.Id);
             }
 
-            _cache.TryRemove(item.Id, out _);
-            ReportItemRemoved(item, parent);
-
-            // Delete empty media folders if collection option is enabled.
-            // Don't delete the top level folder. We don't want for users to have to re-create
-            // folders where they might be auto-sorting media into.
-            if (parent != null && parent.IsFolder && !parent.IsTopParent)
+            if (options.DeleteFileLocation && item.IsFileProtocol)
             {
-                var siblingItems = (parent as Folder)?.Children;
-                if (!siblingItems.Any())
-                {
-                    var itemCollections = GetCollectionFolders(item);
-                    var collectionOptions = itemCollections.Select(x => CollectionFolder.GetLibraryOptions(x.Path));
-                    if (collectionOptions.Any(x => x.RemoveEmptyMediaFoldersOnItemDelete))
-                    {
-                        _logger.LogInformation(
-                            "Removing empty media folder, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
-                            parent.GetType().Name,
-                            parent.Name ?? "Unknown name",
-                            parent.Path ?? string.Empty,
-                            parent.Id);
+                DeleteItemFromDisk(item);
 
-                        await DeleteItemAsync(parent, options);
+                _providerManagerFactory.Value.DeleteMetadata(item);
+
+                // metadata providers do not deal with locally saved images, we have to do that separately.
+                if (GetLibraryOptions(item).SaveLocalMetadata)
+                {
+                    _providerManagerFactory.Value.DeleteAllImages(item);
+                }
+
+                if (parent != null && parent.IsFolder && !parent.IsTopParent)
+                {
+                    var siblingItems = (parent as Folder)?.Children;
+                    var hasSiblingFiles = siblingItems.Any(x => !x.IsFolder && x.IsFileProtocol);
+                    var hasNonEmptySiblingFolders = siblingItems.Any(x => x is Folder f && f.Children.Any());
+
+                    if (!hasSiblingFiles && !hasNonEmptySiblingFolders)
+                    {
+                        // there are no other sibling media items, so let's at least clean up the metadata
+                        // and images for the parent folder.
+                        _providerManagerFactory.Value.DeleteMetadata(parent);
+                        _providerManagerFactory.Value.DeleteAllImages(parent);
+
+                        await TryDeleteEmptyMediaFolderAsync(parent, options);
                     }
                 }
             }
 
+            _cache.TryRemove(item.Id, out _);
+            ReportItemRemoved(item, parent);
+
             item.SetParent(null);
+        }
+
+        private async Task TryDeleteEmptyMediaFolderAsync(BaseItem folder, DeleteOptions options)
+        {
+            // Check the file system for remaining files.
+            // use default ignore rules to ignore hidden and special files.
+
+            var remainingFiles = _fileSystem.GetFiles(folder.Path, false)
+                    .Where(x => !IgnoreFile(x, folder));
+
+            if (remainingFiles.Any())
+            {
+                _logger.LogInformation(
+                    "Unable to clean up media folder due to presence of possible user files. Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                    folder.GetType().Name,
+                    folder.Name ?? "Unknown name",
+                    folder.Path ?? string.Empty,
+                    folder.Id);
+
+                return;
+            }
+
+            _logger.LogInformation(
+                "Removing empty media folder, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                folder.GetType().Name,
+                folder.Name ?? "Unknown name",
+                folder.Path ?? string.Empty,
+                folder.Id);
+
+            await DeleteItemAsync(folder, options);
         }
 
         /// <summary>

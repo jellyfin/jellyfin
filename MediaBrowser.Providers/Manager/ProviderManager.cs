@@ -198,7 +198,8 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public Task SaveImage(BaseItem item, Stream source, string mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken)
         {
-            return new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, source, mimeType, type, imageIndex, cancellationToken);
+            return new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger)
+                .SaveImage(item, source, mimeType, type, imageIndex, cancellationToken);
         }
 
         /// <inheritdoc/>
@@ -210,7 +211,8 @@ namespace MediaBrowser.Providers.Manager
             }
 
             var fileStream = AsyncFile.OpenRead(source);
-            return new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken);
+            return new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger)
+                .SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken);
         }
 
         /// <inheritdoc/>
@@ -218,6 +220,17 @@ namespace MediaBrowser.Providers.Manager
         {
             return new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger)
                 .SaveImage(source, path);
+        }
+
+        /// <summary>
+        /// Deletes all images associated with the item.
+        /// </summary>
+        /// <param name="item">The item for which to delete all images.</param>
+        public void DeleteAllImages(BaseItem item)
+        {
+            var imageProvider = new ItemImageProvider(_logger, this, _fileSystem);
+
+            imageProvider.RemoveImages(item);
         }
 
         /// <inheritdoc/>
@@ -634,6 +647,31 @@ namespace MediaBrowser.Providers.Manager
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Error in metadata saver");
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Delete any metadata files saved by the configured metadata file savers for the given item.
+        /// </summary>
+        /// <param name="item">The item for which to delete metadata.</param>
+        public void DeleteMetadata(BaseItem item)
+        {
+            if (item == null || !_savers.Any())
+            {
+                return;
+            }
+
+            var libraryOptions = _libraryManager.GetLibraryOptions(item);
+            foreach (var saver in _savers.Where(x => IsSaverEnabledForItem(x, item, libraryOptions, ItemUpdateType.MetadataDownload, true)))
+            {
+                if (saver is IMetadataFileSaver fileSaver)
+                {
+                    var path = fileSaver.GetSavePath(item);
+                    if (_fileSystem.FileExists(path))
+                    {
+                        _fileSystem.DeleteFile(path);
                     }
                 }
             }
