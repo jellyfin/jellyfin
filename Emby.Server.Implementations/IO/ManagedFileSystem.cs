@@ -517,7 +517,10 @@ namespace Emby.Server.Implementations.IO
         public virtual void DeleteFile(string path)
         {
             SetAttributes(path, false, false);
-            File.Delete(path);
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
         }
 
         /// <inheritdoc />
