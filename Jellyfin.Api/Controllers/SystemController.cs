@@ -4,7 +4,6 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
-using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Configuration;
@@ -107,11 +106,7 @@ public class SystemController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public ActionResult RestartApplication()
     {
-        Task.Run(async () =>
-        {
-            await Task.Delay(100).ConfigureAwait(false);
-            _appHost.Restart();
-        });
+        _appHost.Restart();
         return NoContent();
     }
 
@@ -127,11 +122,7 @@ public class SystemController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public ActionResult ShutdownApplication()
     {
-        Task.Run(async () =>
-        {
-            await Task.Delay(100).ConfigureAwait(false);
-            await _appHost.Shutdown().ConfigureAwait(false);
-        });
+        _appHost.Shutdown();
         return NoContent();
     }
 

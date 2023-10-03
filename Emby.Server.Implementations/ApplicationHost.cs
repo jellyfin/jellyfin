@@ -12,7 +12,6 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna;
 using Emby.Dlna.Main;
@@ -102,6 +101,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Prometheus.DotNetRuntime;
 using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
@@ -112,7 +112,7 @@ namespace Emby.Server.Implementations
     /// <summary>
     /// Class CompositionRoot.
     /// </summary>
-    public abstract class ApplicationHost : IServerApplicationHost, IAsyncDisposable, IDisposable
+    public abstract class ApplicationHost : IServerApplicationHost, IDisposable
     {
         /// <summary>
         /// The disposable parts.
@@ -127,7 +127,6 @@ namespace Emby.Server.Implementations
         private readonly IPluginManager _pluginManager;
 
         private List<Type> _creatingInstances;
-        private ISessionManager _sessionManager;
 
         /// <summary>
         /// Gets or sets all concrete types.
@@ -172,6 +171,8 @@ namespace Emby.Server.Implementations
                 ConfigurationManager.Configuration,
                 ApplicationPaths.PluginsPath,
                 ApplicationVersion);
+
+            _disposableParts.TryAdd((PluginManager)_pluginManager, byte.MinValue);
         }
 
         /// <summary>
@@ -203,6 +204,9 @@ namespace Emby.Server.Implementations
 
         /// <inheritdoc />
         public bool IsShuttingDown { get; private set; }
+
+        /// <inheritdoc />
+        public bool ShouldRestart { get; private set; }
 
         /// <summary>
         /// Gets the logger.
@@ -406,11 +410,9 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Runs the startup tasks.
         /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns><see cref="Task" />.</returns>
-        public async Task RunStartupTasksAsync(CancellationToken cancellationToken)
+        public async Task RunStartupTasksAsync()
         {
-            cancellationToken.ThrowIfCancellationRequested();
             Logger.LogInformation("Running startup tasks");
 
             Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
@@ -424,8 +426,6 @@ namespace Emby.Server.Implementations
 
             var entryPoints = GetExports<IServerEntryPoint>();
 
-            cancellationToken.ThrowIfCancellationRequested();
-
             var stopWatch = new Stopwatch();
             stopWatch.Start();
 
@@ -434,8 +434,6 @@ namespace Emby.Server.Implementations
 
             Logger.LogInformation("Core startup complete");
             CoreStartupHasCompleted = true;
-
-            cancellationToken.ThrowIfCancellationRequested();
 
             stopWatch.Restart();
 
@@ -632,8 +630,6 @@ namespace Emby.Server.Implementations
 
             var localizationManager = (LocalizationManager)Resolve<ILocalizationManager>();
             await localizationManager.LoadAll().ConfigureAwait(false);
-
-            _sessionManager = Resolve<ISessionManager>();
 
             SetStaticProperties();
 
@@ -855,37 +851,23 @@ namespace Emby.Server.Implementations
             }
         }
 
-        /// <summary>
-        /// Restarts this instance.
-        /// </summary>
+        /// <inheritdoc />
         public void Restart()
         {
-            if (IsShuttingDown)
-            {
-                return;
-            }
-
-            IsShuttingDown = true;
-            _pluginManager.UnloadAssemblies();
-
-            Task.Run(async () =>
-            {
-                try
-                {
-                    await _sessionManager.SendServerRestartNotification(CancellationToken.None).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Error sending server restart notification");
-                }
-
-                Logger.LogInformation("Calling RestartInternal");
-
-                RestartInternal();
-            });
+            ShouldRestart = true;
+            Shutdown();
         }
 
-        protected abstract void RestartInternal();
+        /// <inheritdoc />
+        public void Shutdown()
+        {
+            Task.Run(async () =>
+            {
+                await Task.Delay(100).ConfigureAwait(false);
+                IsShuttingDown = true;
+                Resolve<IHostApplicationLifetime>().StopApplication();
+            });
+        }
 
         /// <summary>
         /// Gets the composable part assemblies.
@@ -1065,30 +1047,6 @@ namespace Emby.Server.Implementations
             }.ToString().TrimEnd('/');
         }
 
-        /// <inheritdoc />
-        public async Task Shutdown()
-        {
-            if (IsShuttingDown)
-            {
-                return;
-            }
-
-            IsShuttingDown = true;
-
-            try
-            {
-                await _sessionManager.SendServerShutdownNotification(CancellationToken.None).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error sending server shutdown notification");
-            }
-
-            ShutdownInternal();
-        }
-
-        protected abstract void ShutdownInternal();
-
         public IEnumerable<Assembly> GetApiPluginAssemblies()
         {
             var assemblies = _allConcreteTypes
@@ -1151,53 +1109,6 @@ namespace Emby.Server.Implementations
             }
 
             _disposed = true;
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            await DisposeAsyncCore().ConfigureAwait(false);
-            Dispose(false);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Used to perform asynchronous cleanup of managed resources or for cascading calls to <see cref="DisposeAsync"/>.
-        /// </summary>
-        /// <returns>A ValueTask.</returns>
-        protected virtual async ValueTask DisposeAsyncCore()
-        {
-            var type = GetType();
-
-            Logger.LogInformation("Disposing {Type}", type.Name);
-
-            foreach (var (part, _) in _disposableParts)
-            {
-                var partType = part.GetType();
-                if (partType == type)
-                {
-                    continue;
-                }
-
-                Logger.LogInformation("Disposing {Type}", partType.Name);
-
-                try
-                {
-                    part.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Error disposing {Type}", partType.Name);
-                }
-            }
-
-            if (_sessionManager is not null)
-            {
-                // used for closing websockets
-                foreach (var session in _sessionManager.Sessions)
-                {
-                    await session.DisposeAsync().ConfigureAwait(false);
-                }
-            }
         }
     }
 }

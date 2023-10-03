@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MediaBrowser.Common
@@ -46,6 +45,11 @@ namespace MediaBrowser.Common
         /// </summary>
         /// <value><c>true</c> if this instance is shutting down; otherwise, <c>false</c>.</value>
         bool IsShuttingDown { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the application should restart.
+        /// </summary>
+        bool ShouldRestart { get; }
 
         /// <summary>
         /// Gets the application version.
@@ -126,8 +130,7 @@ namespace MediaBrowser.Common
         /// <summary>
         /// Shuts down.
         /// </summary>
-        /// <returns>A task.</returns>
-        Task Shutdown();
+        void Shutdown();
 
         /// <summary>
         /// Initializes this instance.

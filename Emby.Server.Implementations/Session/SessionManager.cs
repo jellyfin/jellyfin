@@ -36,6 +36,7 @@ using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.SyncPlay;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 
@@ -44,7 +45,7 @@ namespace Emby.Server.Implementations.Session
     /// <summary>
     /// Class SessionManager.
     /// </summary>
-    public class SessionManager : ISessionManager, IDisposable
+    public sealed class SessionManager : ISessionManager, IAsyncDisposable
     {
         private readonly IUserDataManager _userDataManager;
         private readonly ILogger<SessionManager> _logger;
@@ -57,11 +58,9 @@ namespace Emby.Server.Implementations.Session
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IServerApplicationHost _appHost;
         private readonly IDeviceManager _deviceManager;
-
-        /// <summary>
-        /// The active connections.
-        /// </summary>
-        private readonly ConcurrentDictionary<string, SessionInfo> _activeConnections = new(StringComparer.OrdinalIgnoreCase);
+        private readonly CancellationTokenRegistration _shutdownCallback;
+        private readonly ConcurrentDictionary<string, SessionInfo> _activeConnections
+            = new(StringComparer.OrdinalIgnoreCase);
 
         private Timer _idleTimer;
 
@@ -79,7 +78,8 @@ namespace Emby.Server.Implementations.Session
             IImageProcessor imageProcessor,
             IServerApplicationHost appHost,
             IDeviceManager deviceManager,
-            IMediaSourceManager mediaSourceManager)
+            IMediaSourceManager mediaSourceManager,
+            IHostApplicationLifetime hostApplicationLifetime)
         {
             _logger = logger;
             _eventManager = eventManager;
@@ -92,6 +92,7 @@ namespace Emby.Server.Implementations.Session
             _appHost = appHost;
             _deviceManager = deviceManager;
             _mediaSourceManager = mediaSourceManager;
+            _shutdownCallback = hostApplicationLifetime.ApplicationStopping.Register(OnApplicationStopping);
 
             _deviceManager.DeviceOptionsUpdated += OnDeviceManagerDeviceOptionsUpdated;
         }
@@ -149,36 +150,6 @@ namespace Emby.Server.Implementations.Session
                     }
                 }
             }
-        }
-
-        /// <inheritdoc />
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and optionally managed resources.
-        /// </summary>
-        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                _idleTimer?.Dispose();
-            }
-
-            _idleTimer = null;
-
-            _deviceManager.DeviceOptionsUpdated -= OnDeviceManagerDeviceOptionsUpdated;
-
-            _disposed = true;
         }
 
         private void CheckDisposed()
@@ -1331,32 +1302,6 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <summary>
-        /// Sends the server shutdown notification.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public Task SendServerShutdownNotification(CancellationToken cancellationToken)
-        {
-            CheckDisposed();
-
-            return SendMessageToSessions(Sessions, SessionMessageType.ServerShuttingDown, string.Empty, cancellationToken);
-        }
-
-        /// <summary>
-        /// Sends the server restart notification.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public Task SendServerRestartNotification(CancellationToken cancellationToken)
-        {
-            CheckDisposed();
-
-            _logger.LogDebug("Beginning SendServerRestartNotification");
-
-            return SendMessageToSessions(Sessions, SessionMessageType.ServerRestarting, string.Empty, cancellationToken);
-        }
-
-        /// <summary>
         /// Adds the additional user.
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
@@ -1832,6 +1777,54 @@ namespace Emby.Server.Implementations.Session
             var sessions = Sessions.Where(i => string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase));
 
             return SendMessageToSessions(sessions, name, data, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async ValueTask DisposeAsync()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            foreach (var session in _activeConnections.Values)
+            {
+                await session.DisposeAsync().ConfigureAwait(false);
+            }
+
+            if (_idleTimer is not null)
+            {
+                await _idleTimer.DisposeAsync().ConfigureAwait(false);
+                _idleTimer = null;
+            }
+
+            await _shutdownCallback.DisposeAsync().ConfigureAwait(false);
+
+            _deviceManager.DeviceOptionsUpdated -= OnDeviceManagerDeviceOptionsUpdated;
+            _disposed = true;
+        }
+
+        private async void OnApplicationStopping()
+        {
+            _logger.LogInformation("Sending shutdown notifications");
+            try
+            {
+                var messageType = _appHost.ShouldRestart ? SessionMessageType.ServerRestarting : SessionMessageType.ServerShuttingDown;
+
+                await SendMessageToSessions(Sessions, messageType, string.Empty, CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending server shutdown notifications");
+            }
+
+            // Close open websockets to allow Kestrel to shut down cleanly
+            foreach (var session in _activeConnections.Values)
+            {
+                await session.DisposeAsync().ConfigureAwait(false);
+            }
+
+            _activeConnections.Clear();
         }
     }
 }
