@@ -347,16 +347,13 @@ namespace Emby.Server.Implementations.Library
                 _itemRepository.DeleteItem(child.Id);
             }
 
-            item.SetParent(null);
-
             _cache.TryRemove(item.Id, out _);
-
             ReportItemRemoved(item, parent);
 
             // Delete empty media folders if collection option is enabled.
             // Don't delete the top level folder. We don't want for users to have to re-create
             // folders where they might be auto-sorting media into.
-            if (parent.IsFolder && !parent.IsTopParent)
+            if (parent != null && parent.IsFolder && !parent.IsTopParent)
             {
                 var siblingItems = (parent as Folder)?.Children;
                 if (!siblingItems.Any())
@@ -376,6 +373,8 @@ namespace Emby.Server.Implementations.Library
                     }
                 }
             }
+
+            item.SetParent(null);
         }
 
         /// <summary>
