@@ -951,27 +951,27 @@ namespace Emby.Server.Implementations.Session
 
         private bool OnPlaybackStopped(User user, BaseItem item, long? positionTicks, bool playbackFailed)
         {
-            bool playedToCompletion = false;
-
-            if (!playbackFailed)
+            if (playbackFailed)
             {
-                var data = _userDataManager.GetUserData(user, item);
-
-                if (positionTicks.HasValue)
-                {
-                    playedToCompletion = _userDataManager.UpdatePlayState(item, data, positionTicks.Value);
-                }
-                else
-                {
-                    // If the client isn't able to report this, then we'll just have to make an assumption
-                    data.PlayCount++;
-                    data.Played = item.SupportsPlayedStatus;
-                    data.PlaybackPositionTicks = 0;
-                    playedToCompletion = true;
-                }
-
-                _userDataManager.SaveUserData(user, item, data, UserDataSaveReason.PlaybackFinished, CancellationToken.None);
+                return false;
             }
+
+            var data = _userDataManager.GetUserData(user, item);
+            bool playedToCompletion;
+            if (positionTicks.HasValue)
+            {
+                playedToCompletion = _userDataManager.UpdatePlayState(item, data, positionTicks.Value);
+            }
+            else
+            {
+                // If the client isn't able to report this, then we'll just have to make an assumption
+                data.PlayCount++;
+                data.Played = item.SupportsPlayedStatus;
+                data.PlaybackPositionTicks = 0;
+                playedToCompletion = true;
+            }
+
+            _userDataManager.SaveUserData(user, item, data, UserDataSaveReason.PlaybackFinished, CancellationToken.None);
 
             return playedToCompletion;
         }

@@ -120,7 +120,6 @@ namespace Emby.Server.Implementations
         private readonly ConcurrentDictionary<IDisposable, byte> _disposableParts = new();
         private readonly DeviceId _deviceId;
 
-        private readonly IFileSystem _fileSystemManager;
         private readonly IConfiguration _startupConfig;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IStartupOptions _startupOptions;
@@ -153,10 +152,8 @@ namespace Emby.Server.Implementations
             LoggerFactory = loggerFactory;
             _startupOptions = options;
             _startupConfig = startupConfig;
-            _fileSystemManager = new ManagedFileSystem(LoggerFactory.CreateLogger<ManagedFileSystem>(), applicationPaths);
 
             Logger = LoggerFactory.CreateLogger<ApplicationHost>();
-            _fileSystemManager.AddShortcutHandler(new MbLinkShortcutHandler());
             _deviceId = new DeviceId(ApplicationPaths, LoggerFactory);
 
             ApplicationVersion = typeof(ApplicationHost).Assembly.GetName().Version;
@@ -164,7 +161,7 @@ namespace Emby.Server.Implementations
             ApplicationUserAgent = Name.Replace(' ', '-') + "/" + ApplicationVersionString;
 
             _xmlSerializer = new MyXmlSerializer();
-            ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer, _fileSystemManager);
+            ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer);
             _pluginManager = new PluginManager(
                 LoggerFactory.CreateLogger<PluginManager>(),
                 this,
@@ -507,7 +504,9 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton(_pluginManager);
             serviceCollection.AddSingleton<IApplicationPaths>(ApplicationPaths);
 
-            serviceCollection.AddSingleton(_fileSystemManager);
+            serviceCollection.AddSingleton<IFileSystem, ManagedFileSystem>();
+            serviceCollection.AddSingleton<IShortcutHandler, MbLinkShortcutHandler>();
+
             serviceCollection.AddSingleton<TmdbClientManager>();
 
             serviceCollection.AddSingleton(NetManager);
@@ -681,7 +680,7 @@ namespace Emby.Server.Implementations
             BaseItem.ProviderManager = Resolve<IProviderManager>();
             BaseItem.LocalizationManager = Resolve<ILocalizationManager>();
             BaseItem.ItemRepository = Resolve<IItemRepository>();
-            BaseItem.FileSystem = _fileSystemManager;
+            BaseItem.FileSystem = Resolve<IFileSystem>();
             BaseItem.UserDataManager = Resolve<IUserDataManager>();
             BaseItem.ChannelManager = Resolve<IChannelManager>();
             Video.LiveTvManager = Resolve<ILiveTvManager>();
