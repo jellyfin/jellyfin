@@ -46,7 +46,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Tasks;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using EpisodeInfo = Emby.Naming.TV.EpisodeInfo;
@@ -839,19 +838,12 @@ namespace Emby.Server.Implementations.Library
         {
             var path = Person.GetPath(name);
             var id = GetItemByNameId<Person>(path);
-            if (GetItemById(id) is not Person item)
+            if (GetItemById(id) is Person item)
             {
-                item = new Person
-                {
-                    Name = name,
-                    Id = id,
-                    DateCreated = DateTime.UtcNow,
-                    DateModified = DateTime.UtcNow,
-                    Path = path
-                };
+                return item;
             }
 
-            return item;
+            return null;
         }
 
         /// <summary>
@@ -2900,9 +2892,18 @@ namespace Emby.Server.Implementations.Library
                 var saveEntity = false;
                 var personEntity = GetPerson(person.Name);
 
-                // if PresentationUniqueKey is empty it's likely a new item.
-                if (string.IsNullOrEmpty(personEntity.PresentationUniqueKey))
+                if (personEntity is null)
                 {
+                    var path = Person.GetPath(person.Name);
+                    personEntity = new Person()
+                    {
+                        Name = person.Name,
+                        Id = GetItemByNameId<Person>(path),
+                        DateCreated = DateTime.UtcNow,
+                        DateModified = DateTime.UtcNow,
+                        Path = path
+                    };
+
                     personEntity.PresentationUniqueKey = personEntity.CreatePresentationUniqueKey();
                     saveEntity = true;
                 }
