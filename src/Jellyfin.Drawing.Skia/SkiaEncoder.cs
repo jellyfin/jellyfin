@@ -200,20 +200,10 @@ public class SkiaEncoder : IImageEncoder
     {
         if (!orientation.HasValue)
         {
-            return SKEncodedOrigin.TopLeft;
+            return SKEncodedOrigin.Default;
         }
 
-        return orientation.Value switch
-        {
-            ImageOrientation.TopRight => SKEncodedOrigin.TopRight,
-            ImageOrientation.RightTop => SKEncodedOrigin.RightTop,
-            ImageOrientation.RightBottom => SKEncodedOrigin.RightBottom,
-            ImageOrientation.LeftTop => SKEncodedOrigin.LeftTop,
-            ImageOrientation.LeftBottom => SKEncodedOrigin.LeftBottom,
-            ImageOrientation.BottomRight => SKEncodedOrigin.BottomRight,
-            ImageOrientation.BottomLeft => SKEncodedOrigin.BottomLeft,
-            _ => SKEncodedOrigin.TopLeft
-        };
+        return (SKEncodedOrigin)orientation.Value;
     }
 
     /// <summary>

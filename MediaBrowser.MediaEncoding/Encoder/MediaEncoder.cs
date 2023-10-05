@@ -650,15 +650,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             ArgumentException.ThrowIfNullOrEmpty(inputPath);
 
-            var outputExtension = targetFormat switch
-            {
-                ImageFormat.Bmp => ".bmp",
-                ImageFormat.Gif => ".gif",
-                ImageFormat.Jpg => ".jpg",
-                ImageFormat.Png => ".png",
-                ImageFormat.Webp => ".webp",
-                _ => ".jpg"
-            };
+            var outputExtension = targetFormat?.GetExtension() ?? ".jpg";
 
             var tempExtractPath = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid() + outputExtension);
             Directory.CreateDirectory(Path.GetDirectoryName(tempExtractPath));
