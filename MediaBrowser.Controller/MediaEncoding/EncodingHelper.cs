@@ -6244,7 +6244,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (GetAudioEncoder(state).StartsWith("pcm_", StringComparison.Ordinal))
             {
-                audioTranscodeParams.Add(string.Concat("-f ", GetAudioEncoder(state).Substring(4)));
+                audioTranscodeParams.Add(string.Concat("-f ", GetAudioEncoder(state).AsSpan(4)));
                 audioTranscodeParams.Add("-ar " + state.BaseRequest.AudioBitRate);
             }
 
