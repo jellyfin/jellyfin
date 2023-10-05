@@ -38,25 +38,25 @@ public partial class StripCollageBuilder
     {
         ArgumentNullException.ThrowIfNull(outputPath);
 
-        var ext = Path.GetExtension(outputPath);
+        var ext = Path.GetExtension(outputPath.AsSpan());
 
-        if (string.Equals(ext, ".jpg", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(ext, ".jpeg", StringComparison.OrdinalIgnoreCase))
+        if (ext.Equals(".jpg", StringComparison.OrdinalIgnoreCase)
+            || ext.Equals(".jpeg", StringComparison.OrdinalIgnoreCase))
         {
             return SKEncodedImageFormat.Jpeg;
         }
 
-        if (string.Equals(ext, ".webp", StringComparison.OrdinalIgnoreCase))
+        if (ext.Equals(".webp", StringComparison.OrdinalIgnoreCase))
         {
             return SKEncodedImageFormat.Webp;
         }
 
-        if (string.Equals(ext, ".gif", StringComparison.OrdinalIgnoreCase))
+        if (ext.Equals(".gif", StringComparison.OrdinalIgnoreCase))
         {
             return SKEncodedImageFormat.Gif;
         }
 
-        if (string.Equals(ext, ".bmp", StringComparison.OrdinalIgnoreCase))
+        if (ext.Equals(".bmp", StringComparison.OrdinalIgnoreCase))
         {
             return SKEncodedImageFormat.Bmp;
         }
