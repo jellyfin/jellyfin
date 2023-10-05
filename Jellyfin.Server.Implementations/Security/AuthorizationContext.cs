@@ -49,7 +49,7 @@ namespace Jellyfin.Server.Implementations.Security
         /// <summary>
         /// Gets the authorization.
         /// </summary>
-        /// <param name="httpContext">The HTTP req.</param>
+        /// <param name="httpContext">The HTTP context.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
         private async Task<AuthorizationInfo> GetAuthorization(HttpContext httpContext)
         {
