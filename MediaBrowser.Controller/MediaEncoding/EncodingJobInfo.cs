@@ -137,6 +137,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public long? StartTimeTicks => BaseRequest.StartTimeTicks;
 
+        public long? EndTimeTicks => BaseRequest.EndTimeTicks;
+
         public bool CopyTimestamps => BaseRequest.CopyTimestamps;
 
         public bool IsSegmentedLiveStream

@@ -97,6 +97,8 @@ public static class FileStreamResponseHelpers
         await transcodingLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
         try
         {
+            await transcodingJobHelper.KillTranscodingJobs(state.Request.DeviceId, state.Request.PlaySessionId, outputPath, p => true).ConfigureAwait(false);
+
             TranscodingJobDto? job;
             if (!File.Exists(outputPath))
             {

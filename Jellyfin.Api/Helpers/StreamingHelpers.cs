@@ -63,11 +63,16 @@ public static class StreamingHelpers
     {
         var httpRequest = httpContext.Request;
         // Parse the DLNA time seek header
+        var timeSeek = httpRequest.Headers["TimeSeekRange.dlna.org"];
+        (long? startTimeTicks, long? endTimeTicks) = ParseTimeSeekHeader(timeSeek.ToString());
         if (!streamingRequest.StartTimeTicks.HasValue)
         {
-            var timeSeek = httpRequest.Headers["TimeSeekRange.dlna.org"];
+            streamingRequest.StartTimeTicks = startTimeTicks;
+        }
 
-            streamingRequest.StartTimeTicks = ParseTimeSeekHeader(timeSeek.ToString());
+        if (!streamingRequest.EndTimeTicks.HasValue)
+        {
+            streamingRequest.EndTimeTicks = endTimeTicks;
         }
 
         if (!string.IsNullOrWhiteSpace(streamingRequest.Params))
@@ -326,11 +331,11 @@ public static class StreamingHelpers
     /// </summary>
     /// <param name="value">The time seek header string.</param>
     /// <returns>A nullable <see cref="long"/> representing the seek time in ticks.</returns>
-    private static long? ParseTimeSeekHeader(ReadOnlySpan<char> value)
+    private static (long? StartTimeTicks, long? EndTimeTicks) ParseTimeSeekHeader(ReadOnlySpan<char> value)
     {
         if (value.IsEmpty)
         {
-            return null;
+            return (null, null);
         }
 
         const string npt = "npt=";
@@ -339,30 +344,45 @@ public static class StreamingHelpers
             throw new ArgumentException("Invalid timeseek header");
         }
 
-        var index = value.IndexOf('-');
-        value = index == -1
-            ? value.Slice(npt.Length)
-            : value.Slice(npt.Length, index - npt.Length);
-        if (!value.Contains(':'))
+        long? ParseValue(ReadOnlySpan<char> value)
         {
-            // Parses npt times in the format of '417.33'
-            if (double.TryParse(value, CultureInfo.InvariantCulture, out var seconds))
+            if (!value.Contains(':'))
             {
-                return TimeSpan.FromSeconds(seconds).Ticks;
+                // Parses npt times in the format of '417.33'
+                if (double.TryParse(value, CultureInfo.InvariantCulture, out var seconds))
+                {
+                    return TimeSpan.FromSeconds(seconds).Ticks;
+                }
+
+                throw new ArgumentException("Invalid timeseek header");
             }
 
-            throw new ArgumentException("Invalid timeseek header");
+            try
+            {
+                // Parses npt times in the format of '10:19:25.7'
+                return TimeSpan.Parse(value, CultureInfo.InvariantCulture).Ticks;
+            }
+            catch
+            {
+                throw new ArgumentException("Invalid timeseek header");
+            }
         }
 
-        try
+        long? startTimeTick, endTimeTick;
+        var index = value.IndexOf('-');
+        if (index == -1)
         {
-            // Parses npt times in the format of '10:19:25.7'
-            return TimeSpan.Parse(value, CultureInfo.InvariantCulture).Ticks;
+            startTimeTick = ParseValue(value.Slice(npt.Length));
+            endTimeTick = null;
         }
-        catch
+        else
         {
-            throw new ArgumentException("Invalid timeseek header");
+            startTimeTick = ParseValue(value.Slice(npt.Length, index - npt.Length));
+            var endTimeTickStr = value.Slice(index + 1).Trim();
+            endTimeTick = endTimeTickStr.IsEmpty ? null : ParseValue(endTimeTickStr);
         }
+
+        return (startTimeTick, endTimeTick);
     }
 
     /// <summary>
@@ -506,7 +526,7 @@ public static class StreamingHelpers
     /// <returns>The complete file path, including the folder, for the transcoding file.</returns>
     private static string GetOutputFilePath(StreamState state, string outputFileExtension, IServerConfigurationManager serverConfigurationManager, string? deviceId, string? playSessionId)
     {
-        var data = $"{state.MediaPath}-{state.UserAgent}-{deviceId!}-{playSessionId!}";
+        var data = $"{state.MediaPath}-{state.StartTimeTicks}-{state.EndTimeTicks}-{state.UserAgent}-{deviceId!}-{playSessionId!}";
 
         var filename = data.GetMD5().ToString("N", CultureInfo.InvariantCulture);
         var ext = outputFileExtension?.ToLowerInvariant();

@@ -230,6 +230,23 @@ public class TranscodingJobHelper : IDisposable
     }
 
     /// <summary>
+    /// Kills the transcoding jobs except those with an specific output path.
+    /// </summary>
+    /// <param name="deviceId">The device id.</param>
+    /// <param name="playSessionId">The play session identifier.</param>
+    /// <param name="excludeOutputPath">The output path not to kill.</param>
+    /// <param name="deleteFiles">The delete files.</param>
+    /// <returns>Task.</returns>
+    public Task KillTranscodingJobs(string deviceId, string? playSessionId, string excludeOutputPath, Func<string, bool> deleteFiles)
+    {
+        return KillTranscodingJobs(
+            j => (string.IsNullOrWhiteSpace(playSessionId)
+                ? string.Equals(deviceId, j.DeviceId, StringComparison.OrdinalIgnoreCase)
+                : string.Equals(playSessionId, j.PlaySessionId, StringComparison.OrdinalIgnoreCase)) && !string.Equals(j.Path, excludeOutputPath, StringComparison.OrdinalIgnoreCase),
+            deleteFiles);
+    }
+
+    /// <summary>
     /// Kills the transcoding jobs.
     /// </summary>
     /// <param name="killJob">The kill job.</param>

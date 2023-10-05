@@ -474,12 +474,8 @@ public class VideosController : BaseJellyfinApiController
         }
 
         var outputPath = state.OutputFilePath;
-        var outputPathExists = System.IO.File.Exists(outputPath);
 
-        var transcodingJob = _transcodingJobHelper.GetTranscodingJob(outputPath, TranscodingJobType.Progressive);
-        var isTranscodeCached = outputPathExists && transcodingJob is not null;
-
-        StreamingHelpers.AddDlnaHeaders(state, Response.Headers, (@static.HasValue && @static.Value) || isTranscodeCached, state.Request.StartTimeTicks, Request, _dlnaManager);
+        StreamingHelpers.AddDlnaHeaders(state, Response.Headers, @static.HasValue && @static.Value, state.Request.StartTimeTicks, Request, _dlnaManager);
 
         // Static stream
         if (@static.HasValue && @static.Value)

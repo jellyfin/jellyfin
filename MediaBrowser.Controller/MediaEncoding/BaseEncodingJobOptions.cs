@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 
 #pragma warning disable CS1591
 
@@ -102,6 +102,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// </summary>
         /// <value>The start time ticks.</value>
         public long? StartTimeTicks { get; set; }
+
+        /// <summary>
+        /// Gets or sets the end time ticks.
+        /// </summary>
+        /// <value>The end time ticks.</value>
+        public long? EndTimeTicks { get; set; }
 
         /// <summary>
         /// Gets or sets the width.
