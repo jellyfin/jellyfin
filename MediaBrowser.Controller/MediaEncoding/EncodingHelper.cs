@@ -5697,20 +5697,12 @@ namespace MediaBrowser.Controller.MediaEncoding
             inputModifier = inputModifier.Trim();
 
             // Apply -probesize if configured
-            var probeSizeArgument = string.Empty;
             var ffmpegProbeSize = _config.GetFFmpegProbeSize();
 
             if (!string.IsNullOrEmpty(ffmpegProbeSize))
             {
-                probeSizeArgument = $"-probesize {probeSizeArgument}";
+                inputModifier += $" -probesize {ffmpegProbeSize}";
             }
-
-            if (!string.IsNullOrEmpty(probeSizeArgument))
-            {
-                inputModifier += $" {probeSizeArgument}";
-            }
-
-            inputModifier = inputModifier.Trim();
 
             var userAgentParam = GetUserAgentParam(state);
 
