@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Xml;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
@@ -104,4 +106,40 @@ public static class XmlReaderExtensions
             ImageUrl = imageUrl
         };
     }
+
+    /// <summary>
+    /// Used to split names of comma or pipe delimited genres and people.
+    /// </summary>
+    /// <param name="reader">The <see cref="XmlReader"/>.</param>
+    /// <returns>IEnumerable{System.String}.</returns>
+    public static IEnumerable<string> GetStringArray(this XmlReader reader)
+    {
+        ArgumentNullException.ThrowIfNull(reader);
+        var value = reader.ReadElementContentAsString();
+
+        // Only split by comma if there is no pipe in the string
+        // We have to be careful to not split names like Matthew, Jr.
+        var separator = !value.Contains('|', StringComparison.Ordinal)
+            && !value.Contains(';', StringComparison.Ordinal)
+                ? new[] { ',' }
+                : new[] { '|', ';' };
+
+        foreach (var part in value.Trim().Trim(separator).Split(separator))
+        {
+            if (!string.IsNullOrWhiteSpace(part))
+            {
+                yield return part.Trim();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Parses a <see cref="PersonInfo"/> array from the xml node.
+    /// </summary>
+    /// <param name="reader">The <see cref="XmlReader"/>.</param>
+    /// <param name="personKind">The <see cref="PersonKind"/>.</param>
+    /// <returns>The <see cref="IEnumerable{PersonInfo}"/>.</returns>
+    public static IEnumerable<PersonInfo> GetPersonArray(this XmlReader reader, PersonKind personKind)
+        => reader.GetStringArray()
+            .Select(part => new PersonInfo { Name = part, Type = personKind });
 }

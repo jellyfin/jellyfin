@@ -354,93 +354,40 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 }
 
                 case "Network":
-                {
-                    foreach (var name in SplitNames(reader.ReadElementContentAsString()))
+                    foreach (var name in reader.GetStringArray())
                     {
-                        if (string.IsNullOrWhiteSpace(name))
-                        {
-                            continue;
-                        }
-
                         item.AddStudio(name);
                     }
 
                     break;
-                }
-
                 case "Director":
-                {
-                    foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonKind.Director }))
+                    foreach (var director in reader.GetPersonArray(PersonKind.Director))
                     {
-                        if (string.IsNullOrWhiteSpace(p.Name))
-                        {
-                            continue;
-                        }
-
-                        itemResult.AddPerson(p);
+                        itemResult.AddPerson(director);
                     }
 
                     break;
-                }
-
                 case "Writer":
-                {
-                    foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonKind.Writer }))
+                    foreach (var writer in reader.GetPersonArray(PersonKind.Writer))
                     {
-                        if (string.IsNullOrWhiteSpace(p.Name))
-                        {
-                            continue;
-                        }
-
-                        itemResult.AddPerson(p);
+                        itemResult.AddPerson(writer);
                     }
 
                     break;
-                }
-
                 case "Actors":
-                {
-                    var actors = reader.ReadInnerXml();
-
-                    if (actors.Contains('<', StringComparison.Ordinal))
+                    foreach (var actor in reader.GetPersonArray(PersonKind.Actor))
                     {
-                        // This is one of the mis-named "Actors" full nodes created by MB2
-                        // Create a reader and pass it to the persons node processor
-                        using var xmlReader = XmlReader.Create(new StringReader($"<Persons>{actors}</Persons>"));
-                        FetchDataFromPersonsNode(xmlReader, itemResult);
-                    }
-                    else
-                    {
-                        // Old-style piped string
-                        foreach (var p in SplitNames(actors).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonKind.Actor }))
-                        {
-                            if (string.IsNullOrWhiteSpace(p.Name))
-                            {
-                                continue;
-                            }
-
-                            itemResult.AddPerson(p);
-                        }
+                        itemResult.AddPerson(actor);
                     }
 
                     break;
-                }
-
                 case "GuestStars":
-                {
-                    foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonKind.GuestStar }))
+                    foreach (var guestStar in reader.GetPersonArray(PersonKind.GuestStar))
                     {
-                        if (string.IsNullOrWhiteSpace(p.Name))
-                        {
-                            continue;
-                        }
-
-                        itemResult.AddPerson(p);
+                        itemResult.AddPerson(guestStar);
                     }
 
                     break;
-                }
-
                 case "Trailer":
                 {
                     var val = reader.ReadElementContentAsString();
@@ -1128,35 +1075,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Used to split names of comma or pipe delimited genres and people.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns>IEnumerable{System.String}.</returns>
-        private IEnumerable<string> SplitNames(string value)
-        {
-            // Only split by comma if there is no pipe in the string
-            // We have to be careful to not split names like Matthew, Jr.
-            var separator = !value.Contains('|', StringComparison.Ordinal)
-                            && !value.Contains(';', StringComparison.Ordinal) ? new[] { ',' } : new[] { '|', ';' };
-
-            value = value.Trim().Trim(separator);
-
-            return string.IsNullOrWhiteSpace(value) ? Array.Empty<string>() : Split(value, separator, StringSplitOptions.RemoveEmptyEntries);
-        }
-
-        /// <summary>
-        /// Provides an additional overload for string.split.
-        /// </summary>
-        /// <param name="val">The val.</param>
-        /// <param name="separators">The separators.</param>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String[][].</returns>
-        private string[] Split(string val, char[] separators, StringSplitOptions options)
-        {
-            return val.Split(separators, options);
         }
     }
 }

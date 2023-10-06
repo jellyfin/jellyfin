@@ -527,21 +527,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 case "director":
+                    foreach (var director in reader.GetPersonArray(PersonKind.Director))
                     {
-                        var val = reader.ReadElementContentAsString();
-                        foreach (var p in SplitNames(val).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonKind.Director }))
-                        {
-                            if (string.IsNullOrWhiteSpace(p.Name))
-                            {
-                                continue;
-                            }
-
-                            itemResult.AddPerson(p);
-                        }
-
-                        break;
+                        itemResult.AddPerson(director);
                     }
 
+                    break;
                 case "credits":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -566,21 +557,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 case "writer":
+                    foreach (var writer in reader.GetPersonArray(PersonKind.Writer))
                     {
-                        var val = reader.ReadElementContentAsString();
-                        foreach (var p in SplitNames(val).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonKind.Writer }))
-                        {
-                            if (string.IsNullOrWhiteSpace(p.Name))
-                            {
-                                continue;
-                            }
-
-                            itemResult.AddPerson(p);
-                        }
-
-                        break;
+                        itemResult.AddPerson(writer);
                     }
 
+                    break;
                 case "actor":
                     var person = reader.GetPersonFromXmlNode();
                     if (person is not null)
@@ -1191,24 +1173,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 IgnoreProcessingInstructions = true,
                 IgnoreComments = true
             };
-
-        /// <summary>
-        /// Used to split names of comma or pipe delimited genres and people.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns>IEnumerable{System.String}.</returns>
-        private IEnumerable<string> SplitNames(string value)
-        {
-            // Only split by comma if there is no pipe in the string
-            // We have to be careful to not split names like Matthew, Jr.
-            var separator = !value.Contains('|', StringComparison.Ordinal) && !value.Contains(';', StringComparison.Ordinal)
-                ? new[] { ',' }
-                : new[] { '|', ';' };
-
-            value = value.Trim().Trim(separator);
-
-            return string.IsNullOrWhiteSpace(value) ? Array.Empty<string>() : value.Split(separator, StringSplitOptions.RemoveEmptyEntries);
-        }
 
         /// <summary>
         /// Parses the <see cref="ImageType"/> from the NFO aspect property.
