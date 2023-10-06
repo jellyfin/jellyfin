@@ -5,6 +5,7 @@ using System.Threading;
 using System.Xml;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using Microsoft.Extensions.Logging;
@@ -237,17 +238,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 case "showtitle":
-                    {
-                        var showtitle = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(showtitle))
-                        {
-                            item.SeriesName = showtitle;
-                        }
-
-                        break;
-                    }
-
+                    item.SeriesName = reader.ReadNormalizedString();
+                    break;
                 default:
                     base.FetchDataFromXmlNode(reader, itemResult);
                     break;

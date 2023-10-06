@@ -276,27 +276,16 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                     break;
                 case "originaltitle":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrEmpty(val))
-                        {
-                            item.OriginalTitle = val;
-                        }
-
-                        break;
-                    }
-
+                    item.OriginalTitle = reader.ReadNormalizedString();
+                    break;
                 case "name":
                 case "title":
                 case "localtitle":
-                    item.Name = reader.ReadElementContentAsString();
+                    item.Name = reader.ReadNormalizedString();
                     break;
-
                 case "sortname":
-                    item.SortName = reader.ReadElementContentAsString();
+                    item.SortName = reader.ReadNormalizedString();
                     break;
-
                 case "criticrating":
                     {
                         var text = reader.ReadElementContentAsString();
@@ -310,40 +299,16 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 case "sorttitle":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.ForcedSortName = val;
-                        }
-
-                        break;
-                    }
-
+                    item.ForcedSortName = reader.ReadNormalizedString();
+                    break;
                 case "biography":
                 case "plot":
                 case "review":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.Overview = val;
-                        }
-
-                        break;
-                    }
-
+                    item.Overview = reader.ReadNormalizedString();
+                    break;
                 case "language":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        item.PreferredMetadataLanguage = val;
-
-                        break;
-                    }
-
+                    item.PreferredMetadataLanguage = reader.ReadNormalizedString();
+                    break;
                 case "watched":
                     {
                         var val = reader.ReadElementContentAsBoolean();
@@ -386,14 +351,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                     break;
                 case "countrycode":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        item.PreferredMetadataCountryCode = val;
-
-                        break;
-                    }
-
+                    item.PreferredMetadataCountryCode = reader.ReadNormalizedString();
+                    break;
                 case "lockedfields":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -415,9 +374,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 case "tagline":
-                    item.Tagline = reader.ReadElementContentAsString();
+                    item.Tagline = reader.ReadNormalizedString();
                     break;
-
                 case "country":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -434,29 +392,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 case "mpaa":
-                    {
-                        var rating = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(rating))
-                        {
-                            item.OfficialRating = rating;
-                        }
-
-                        break;
-                    }
-
+                    item.OfficialRating = reader.ReadNormalizedString();
+                    break;
                 case "customrating":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.CustomRating = val;
-                        }
-
-                        break;
-                    }
-
+                    item.CustomRating = reader.ReadNormalizedString();
+                    break;
                 case "runtime":
                     {
                         var text = reader.ReadElementContentAsString();
@@ -470,18 +410,13 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 case "aspectratio":
+                    var aspectRatio = reader.ReadNormalizedString();
+                    if (!string.IsNullOrEmpty(aspectRatio) && item is IHasAspectRatio hasAspectRatio)
                     {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val)
-                            && item is IHasAspectRatio hasAspectRatio)
-                        {
-                            hasAspectRatio.AspectRatio = val;
-                        }
-
-                        break;
+                        hasAspectRatio.AspectRatio = aspectRatio;
                     }
 
+                    break;
                 case "lockdata":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -495,17 +430,13 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 case "studio":
+                    var studio = reader.ReadNormalizedString();
+                    if (!string.IsNullOrEmpty(studio))
                     {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.AddStudio(val);
-                        }
-
-                        break;
+                        item.AddStudio(studio);
                     }
 
+                    break;
                 case "director":
                     foreach (var director in reader.GetPersonArray(PersonKind.Director))
                     {
@@ -552,31 +483,24 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                     break;
                 case "trailer":
+                    var trailer = reader.ReadNormalizedString();
+                    if (!string.IsNullOrEmpty(trailer))
                     {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            val = val.Replace("plugin://plugin.video.youtube/?action=play_video&videoid=", BaseNfoSaver.YouTubeWatchUrl, StringComparison.OrdinalIgnoreCase);
-
-                            item.AddTrailerUrl(val);
-                        }
-
-                        break;
+                        item.AddTrailerUrl(trailer.Replace(
+                            "plugin://plugin.video.youtube/?action=play_video&videoid=",
+                            BaseNfoSaver.YouTubeWatchUrl,
+                            StringComparison.OrdinalIgnoreCase));
                     }
 
+                    break;
                 case "displayorder":
+                    var displayOrder = reader.ReadNormalizedString();
+                    if (!string.IsNullOrEmpty(displayOrder) && item is IHasDisplayOrder hasDisplayOrder)
                     {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (item is IHasDisplayOrder hasDisplayOrder && !string.IsNullOrWhiteSpace(val))
-                        {
-                            hasDisplayOrder.DisplayOrder = val;
-                        }
-
-                        break;
+                        hasDisplayOrder.DisplayOrder = displayOrder;
                     }
 
+                    break;
                 case "year":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -656,16 +580,13 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 case "style":
                 case "tag":
+                    var tag = reader.ReadNormalizedString();
+                    if (!string.IsNullOrEmpty(tag))
                     {
-                        var val = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.AddTag(val);
-                        }
-
-                        break;
+                        item.AddTag(tag);
                     }
 
+                    break;
                 case "fileinfo":
                     {
                         if (!reader.IsEmptyElement)

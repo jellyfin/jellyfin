@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Xml;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using Microsoft.Extensions.Logging;
@@ -56,17 +57,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 case "seasonname":
-                    {
-                        var name = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(name))
-                        {
-                            item.Name = name;
-                        }
-
-                        break;
-                    }
-
+                    item.Name = reader.ReadNormalizedString();
+                    break;
                 default:
                     base.FetchDataFromXmlNode(reader, itemResult);
                     break;

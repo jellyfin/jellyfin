@@ -15,6 +15,18 @@ namespace MediaBrowser.Controller.Extensions;
 public static class XmlReaderExtensions
 {
     /// <summary>
+    /// Reads a trimmed string from the current node.
+    /// </summary>
+    /// <param name="reader">The <see cref="XmlReader"/>.</param>
+    /// <returns>The trimmed content.</returns>
+    public static string ReadNormalizedString(this XmlReader reader)
+    {
+        ArgumentNullException.ThrowIfNull(reader);
+
+        return reader.ReadElementContentAsString().Trim();
+    }
+
+    /// <summary>
     /// Parses a <see cref="DateTime"/> from the current node.
     /// </summary>
     /// <param name="reader">The <see cref="XmlReader"/>.</param>
