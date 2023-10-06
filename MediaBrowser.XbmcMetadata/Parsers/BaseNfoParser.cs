@@ -268,7 +268,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             switch (reader.Name)
             {
                 case "dateadded":
-                    if (reader.TryReadDateTime(Logger, out var dateCreated))
+                    if (reader.TryReadDateTime(out var dateCreated))
                     {
                         item.DateCreated = dateCreated;
                     }
@@ -327,7 +327,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                     break;
                 case "lastplayed":
-                    if (reader.TryReadDateTime(Logger, out var lastPlayed)
+                    if (reader.TryReadDateTime(out var lastPlayed)
                         && Guid.TryParse(nfoConfiguration.UserId, out var lastPlayedUserId))
                     {
                         var user = _userManager.GetUserById(lastPlayedUserId);

@@ -130,7 +130,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
             switch (reader.Name)
             {
                 case "Added":
-                    if (reader.TryReadDateTime(Logger, out var dateCreated))
+                    if (reader.TryReadDateTime(out var dateCreated))
                     {
                         item.DateCreated = dateCreated;
                     }
