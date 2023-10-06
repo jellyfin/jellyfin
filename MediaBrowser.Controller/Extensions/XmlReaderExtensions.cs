@@ -122,16 +122,11 @@ public static class XmlReaderExtensions
             {
                 case "name":
                 case "Name":
-                    name = subtree.ReadElementContentAsString();
+                    name = subtree.ReadNormalizedString();
                     break;
                 case "role":
                 case "Role":
-                    var roleValue = subtree.ReadElementContentAsString();
-                    if (!string.IsNullOrWhiteSpace(roleValue))
-                    {
-                        role = roleValue;
-                    }
-
+                    role = subtree.ReadNormalizedString();
                     break;
                 case "type":
                 case "Type":
@@ -140,23 +135,14 @@ public static class XmlReaderExtensions
                 case "order":
                 case "sortorder":
                 case "SortOrder":
-                    if (int.TryParse(
-                        subtree.ReadElementContentAsString(),
-                        NumberStyles.Integer,
-                        CultureInfo.InvariantCulture,
-                        out var intVal))
+                    if (subtree.TryReadInt(out var sortOrderVal))
                     {
-                        sortOrder = intVal;
+                        sortOrder = sortOrderVal;
                     }
 
                     break;
                 case "thumb":
-                    var thumb = subtree.ReadElementContentAsString();
-                    if (!string.IsNullOrWhiteSpace(thumb))
-                    {
-                        imageUrl = thumb;
-                    }
-
+                    imageUrl = subtree.ReadNormalizedString();
                     break;
                 default:
                     subtree.Skip();
