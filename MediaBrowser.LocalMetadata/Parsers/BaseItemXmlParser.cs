@@ -253,17 +253,8 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                     break;
                 case "LockData":
-                {
-                    var val = reader.ReadElementContentAsString();
-
-                    if (!string.IsNullOrWhiteSpace(val))
-                    {
-                        item.IsLocked = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
-                    }
-
+                    item.IsLocked = string.Equals(reader.ReadElementContentAsString(), "true", StringComparison.OrdinalIgnoreCase);
                     break;
-                }
-
                 case "Network":
                     foreach (var name in reader.GetStringArray())
                     {
@@ -857,11 +848,8 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             item.UserId = reader.ReadNormalizedString();
                             break;
                         case "CanEdit":
-                        {
                             item.CanEdit = string.Equals(reader.ReadElementContentAsString(), "true", StringComparison.OrdinalIgnoreCase);
                             break;
-                        }
-
                         default:
                             reader.Skip();
                             break;
