@@ -201,7 +201,7 @@ namespace Emby.Dlna.Main
             {
                 if (_communicationsServer is null)
                 {
-                    var enableMultiSocketBinding = OperatingSystem.IsLinux();
+                    var enableMultiSocketBinding = OperatingSystem.IsWindows() || OperatingSystem.IsLinux();
                     _communicationsServer = new SsdpCommunicationsServer(
                         _socketFactory,
                         _networkManager,
