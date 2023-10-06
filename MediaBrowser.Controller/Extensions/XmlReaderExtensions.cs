@@ -27,6 +27,19 @@ public static class XmlReaderExtensions
     }
 
     /// <summary>
+    /// Reads an int from the current node.
+    /// </summary>
+    /// <param name="reader">The <see cref="XmlReader"/>.</param>
+    /// <param name="value">The parsed <c>int</c>.</param>
+    /// <returns>A value indicating whether the parsing succeeded.</returns>
+    public static bool TryReadInt(this XmlReader reader, out int value)
+    {
+        ArgumentNullException.ThrowIfNull(reader);
+
+        return int.TryParse(reader.ReadElementContentAsString(), CultureInfo.InvariantCulture, out value);
+    }
+
+    /// <summary>
     /// Parses a <see cref="DateTime"/> from the current node.
     /// </summary>
     /// <param name="reader">The <see cref="XmlReader"/>.</param>

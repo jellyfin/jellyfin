@@ -325,20 +325,16 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 case "playcount":
+                    if (reader.TryReadInt(out var count)
+                        && Guid.TryParse(nfoConfiguration.UserId, out var playCountUserId))
                     {
-                        var val = reader.ReadElementContentAsString();
-                        if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var count)
-                            && Guid.TryParse(nfoConfiguration.UserId, out var playCountUserId))
-                        {
-                            var user = _userManager.GetUserById(playCountUserId);
-                            userData = _userDataManager.GetUserData(user, item);
-                            userData.PlayCount = count;
-                            _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
-                        }
-
-                        break;
+                        var user = _userManager.GetUserById(playCountUserId);
+                        userData = _userDataManager.GetUserData(user, item);
+                        userData.PlayCount = count;
+                        _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
                     }
 
+                    break;
                 case "lastplayed":
                     if (reader.TryReadDateTime(Logger, out var lastPlayed)
                         && Guid.TryParse(nfoConfiguration.UserId, out var lastPlayedUserId))
@@ -398,17 +394,13 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     item.CustomRating = reader.ReadNormalizedString();
                     break;
                 case "runtime":
+                    var runtimeText = reader.ReadElementContentAsString();
+                    if (int.TryParse(runtimeText.AsSpan().LeftPart(' '), NumberStyles.Integer, CultureInfo.InvariantCulture, out var runtime))
                     {
-                        var text = reader.ReadElementContentAsString();
-
-                        if (int.TryParse(text.AsSpan().LeftPart(' '), NumberStyles.Integer, CultureInfo.InvariantCulture, out var runtime))
-                        {
-                            item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
-                        }
-
-                        break;
+                        item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
                     }
 
+                    break;
                 case "aspectratio":
                     var aspectRatio = reader.ReadNormalizedString();
                     if (!string.IsNullOrEmpty(aspectRatio) && item is IHasAspectRatio hasAspectRatio)
@@ -502,17 +494,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                     break;
                 case "year":
+                    if (reader.TryReadInt(out var productionYear) && productionYear > 1850)
                     {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (int.TryParse(val, out var productionYear) && productionYear > 1850)
-                        {
-                            item.ProductionYear = productionYear;
-                        }
-
-                        break;
+                        item.ProductionYear = productionYear;
                     }
 
+                    break;
                 case "rating":
                     {
                         var rating = reader.ReadElementContentAsString();

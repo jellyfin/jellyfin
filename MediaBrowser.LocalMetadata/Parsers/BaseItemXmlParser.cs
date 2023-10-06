@@ -234,20 +234,16 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     item.CustomRating = reader.ReadNormalizedString();
                     break;
                 case "RunningTime":
-                {
-                    var text = reader.ReadElementContentAsString();
-
-                    if (!string.IsNullOrWhiteSpace(text))
+                    var runtimeText = reader.ReadElementContentAsString();
+                    if (!string.IsNullOrWhiteSpace(runtimeText))
                     {
-                        if (int.TryParse(text.AsSpan().LeftPart(' '), NumberStyles.Integer, CultureInfo.InvariantCulture, out var runtime))
+                        if (int.TryParse(runtimeText.AsSpan().LeftPart(' '), NumberStyles.Integer, CultureInfo.InvariantCulture, out var runtime))
                         {
                             item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
                         }
                     }
 
                     break;
-                }
-
                 case "AspectRatio":
                     var aspectRatio = reader.ReadNormalizedString();
                     if (!string.IsNullOrEmpty(aspectRatio) && item is IHasAspectRatio hasAspectRatio)
@@ -256,7 +252,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     }
 
                     break;
-
                 case "LockData":
                 {
                     var val = reader.ReadElementContentAsString();
@@ -336,20 +331,12 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 }
 
                 case "ProductionYear":
-                {
-                    var val = reader.ReadElementContentAsString();
-
-                    if (!string.IsNullOrWhiteSpace(val))
+                    if (reader.TryReadInt(out var productionYear) && productionYear > 1850)
                     {
-                        if (int.TryParse(val, out var productionYear) && productionYear > 1850)
-                        {
-                            item.ProductionYear = productionYear;
-                        }
+                        item.ProductionYear = productionYear;
                     }
 
                     break;
-                }
-
                 case "Rating":
                 case "IMDBrating":
                 {

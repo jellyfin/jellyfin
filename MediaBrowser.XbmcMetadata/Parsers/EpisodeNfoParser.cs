@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Xml;
@@ -113,130 +112,49 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             switch (reader.Name)
             {
                 case "season":
+                    if (reader.TryReadInt(out var seasonNumber))
                     {
-                        var number = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(number))
-                        {
-                            if (int.TryParse(number, out var num))
-                            {
-                                item.ParentIndexNumber = num;
-                            }
-                        }
-
-                        break;
+                        item.ParentIndexNumber = seasonNumber;
                     }
 
+                    break;
                 case "episode":
+                    if (reader.TryReadInt(out var episodeNumber))
                     {
-                        var number = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(number))
-                        {
-                            if (int.TryParse(number, out var num))
-                            {
-                                item.IndexNumber = num;
-                            }
-                        }
-
-                        break;
+                        item.IndexNumber = episodeNumber;
                     }
 
+                    break;
                 case "episodenumberend":
+                    if (reader.TryReadInt(out var episodeNumberEnd))
                     {
-                        var number = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(number))
-                        {
-                            if (int.TryParse(number, out var num))
-                            {
-                                item.IndexNumberEnd = num;
-                            }
-                        }
-
-                        break;
+                        item.IndexNumberEnd = episodeNumberEnd;
                     }
 
+                    break;
                 case "airsbefore_episode":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            // int.TryParse is local aware, so it can be problematic, force us culture
-                            if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var rval))
-                            {
-                                item.AirsBeforeEpisodeNumber = rval;
-                            }
-                        }
-
-                        break;
-                    }
-
-                case "airsafter_season":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            // int.TryParse is local aware, so it can be problematic, force us culture
-                            if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var rval))
-                            {
-                                item.AirsAfterSeasonNumber = rval;
-                            }
-                        }
-
-                        break;
-                    }
-
-                case "airsbefore_season":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            // int.TryParse is local aware, so it can be problematic, force us culture
-                            if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var rval))
-                            {
-                                item.AirsBeforeSeasonNumber = rval;
-                            }
-                        }
-
-                        break;
-                    }
-
-                case "displayseason":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            // int.TryParse is local aware, so it can be problematic, force us culture
-                            if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var rval))
-                            {
-                                item.AirsBeforeSeasonNumber = rval;
-                            }
-                        }
-
-                        break;
-                    }
-
                 case "displayepisode":
+                    if (reader.TryReadInt(out var airsBeforeEpisode))
                     {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            // int.TryParse is local aware, so it can be problematic, force us culture
-                            if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var rval))
-                            {
-                                item.AirsBeforeEpisodeNumber = rval;
-                            }
-                        }
-
-                        break;
+                        item.AirsBeforeEpisodeNumber = airsBeforeEpisode;
                     }
 
+                    break;
+                case "airsafter_season":
+                    if (reader.TryReadInt(out var airsAfterSeason))
+                    {
+                        item.AirsAfterSeasonNumber = airsAfterSeason;
+                    }
+
+                    break;
+                case "airsbefore_season":
+                case "displayseason":
+                    if (reader.TryReadInt(out var airsBeforeSeason))
+                    {
+                        item.AirsBeforeSeasonNumber = airsBeforeSeason;
+                    }
+
+                    break;
                 case "showtitle":
                     item.SeriesName = reader.ReadNormalizedString();
                     break;

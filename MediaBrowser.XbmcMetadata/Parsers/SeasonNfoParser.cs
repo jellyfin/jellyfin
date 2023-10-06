@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Xml;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
@@ -42,20 +41,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             switch (reader.Name)
             {
                 case "seasonnumber":
+                    if (reader.TryReadInt(out var seasonNumber))
                     {
-                        var number = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(number))
-                        {
-                            if (int.TryParse(number, NumberStyles.Integer, CultureInfo.InvariantCulture, out var num))
-                            {
-                                item.IndexNumber = num;
-                            }
-                        }
-
-                        break;
+                        item.IndexNumber = seasonNumber;
                     }
 
+                    break;
                 case "seasonname":
                     item.Name = reader.ReadNormalizedString();
                     break;
