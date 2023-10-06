@@ -37,7 +37,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ISubtitleEncoder _subtitleEncoder;
         private readonly IConfiguration _config;
-        private readonly Version _minKernelVersionAmdVkFmtModifier = new Version(5, 15);
+        private readonly IConfigurationManager _configurationManager;
+
         // i915 hang was fixed by linux 6.2 (3f882f2)
         private readonly Version _minKerneli915Hang = new Version(5, 18);
         private readonly Version _maxKerneli915Hang = new Version(6, 1, 3);
@@ -47,6 +48,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly Version _minFFmpegHwaUnsafeOutput = new Version(6, 0);
         private readonly Version _minFFmpegOclCuTonemapMode = new Version(5, 1, 3);
         private readonly Version _minFFmpegSvtAv1Params = new Version(5, 1);
+        private readonly Version _minFFmpegVaapiH26xEncA53CcSei = new Version(6, 0);
 
         private static readonly string[] _videoProfilesH264 = new[]
         {
@@ -112,12 +114,14 @@ namespace MediaBrowser.Controller.MediaEncoding
             IApplicationPaths appPaths,
             IMediaEncoder mediaEncoder,
             ISubtitleEncoder subtitleEncoder,
-            IConfiguration config)
+            IConfiguration config,
+            IConfigurationManager configurationManager)
         {
             _appPaths = appPaths;
             _mediaEncoder = mediaEncoder;
             _subtitleEncoder = subtitleEncoder;
             _config = config;
+            _configurationManager = configurationManager;
         }
 
         [GeneratedRegex(@"\s+")]
@@ -891,9 +895,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
                 else if (_mediaEncoder.IsVaapiDeviceAmd)
                 {
+                    // Disable AMD EFC feature since it's still unstable in upstream Mesa.
+                    Environment.SetEnvironmentVariable("AMD_DEBUG", "noefc");
+
                     if (IsVulkanFullSupported()
-                        && _mediaEncoder.IsVaapiDeviceSupportVulkanFmtModifier
-                        && Environment.OSVersion.Version >= _minKernelVersionAmdVkFmtModifier)
+                        && _mediaEncoder.IsVaapiDeviceSupportVulkanDrmInterop)
                     {
                         args.Append(GetDrmDeviceArgs(options.VaapiDevice, DrmAlias));
                         args.Append(GetVaapiDeviceArgs(null, null, null, DrmAlias, VaapiAlias));
@@ -1056,7 +1062,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (state.MediaSource.VideoType == VideoType.Dvd || state.MediaSource.VideoType == VideoType.BluRay)
             {
-                var tmpConcatPath = Path.Join(options.TranscodingTempPath, state.MediaSource.Id + ".concat");
+                var tmpConcatPath = Path.Join(_configurationManager.GetTranscodePath(), state.MediaSource.Id + ".concat");
                 _mediaEncoder.GenerateConcatConfig(state.MediaSource, tmpConcatPath);
                 arg.Append(" -f concat -safe 0 -i ")
                     .Append(tmpConcatPath);
@@ -1210,6 +1216,12 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             int bitrate = state.OutputVideoBitrate.Value;
+
+            // Bit rate under 1000k is not allowed in h264_qsv
+            if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
+            {
+                bitrate = Math.Max(bitrate, 1000);
+            }
 
             // Currently use the same buffer size for all encoders
             int bufsize = bitrate * 2;
@@ -1457,8 +1469,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 args += keyFrameArg + gopArg;
             }
 
-            // global_header produced by AMD VA-API encoder causes non-playable fMP4 on iOS
-            if (codec.Contains("vaapi", StringComparison.OrdinalIgnoreCase)
+            // global_header produced by AMD HEVC VA-API encoder causes non-playable fMP4 on iOS
+            if (string.Equals(codec, "hevc_vaapi", StringComparison.OrdinalIgnoreCase)
                 && _mediaEncoder.IsVaapiDeviceAmd)
             {
                 args += " -flags:v -global_header";
@@ -1905,7 +1917,9 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (!string.IsNullOrEmpty(profile))
             {
-                if (!string.Equals(videoEncoder, "h264_v4l2m2m", StringComparison.OrdinalIgnoreCase))
+                // Currently there's no profile option in av1_nvenc encoder
+                if (!(string.Equals(videoEncoder, "av1_nvenc", StringComparison.OrdinalIgnoreCase)
+                      || string.Equals(videoEncoder, "h264_v4l2m2m", StringComparison.OrdinalIgnoreCase)))
                 {
                     param += " -profile:v:0 " + profile;
                 }
@@ -1991,6 +2005,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && _mediaEncoder.EncoderVersion >= _minFFmpegSvtAv1Params)
             {
                 param += " -svtav1-params:0 rc=1:tune=0:film-grain=0:enable-overlays=1:enable-tf=0";
+            }
+
+            /* Access unit too large: 8192 < 20880 error */
+            if ((string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(videoEncoder, "hevc_vaapi", StringComparison.OrdinalIgnoreCase)) &&
+                 _mediaEncoder.EncoderVersion >= _minFFmpegVaapiH26xEncA53CcSei)
+            {
+                param += " -sei -a53_cc";
             }
 
             return param;
@@ -2690,7 +2712,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             string args = string.Empty;
 
             // http://ffmpeg.org/ffmpeg-all.html#toc-Complex-filtergraphs-1
-            if (state.VideoStream != null && videoProcessFilters.Contains("-filter_complex", StringComparison.Ordinal))
+            if (state.VideoStream is not null && videoProcessFilters.Contains("-filter_complex", StringComparison.Ordinal))
             {
                 int videoStreamIndex = FindIndex(state.MediaSource.MediaStreams, state.VideoStream);
 
@@ -3809,12 +3831,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                         // map from d3d11va to qsv.
                         mainFilters.Add("hwmap=derive_device=qsv");
                     }
-                    else
-                    {
-                        // Insert a qsv scaler to sync the decoder surface,
-                        // msdk will passthrough this internally.
-                        mainFilters.Add("hwmap=derive_device=qsv,scale_qsv");
-                    }
                 }
 
                 // hw deint
@@ -4205,14 +4221,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             // prefered vaapi + vulkan filters pipeline
             if (_mediaEncoder.IsVaapiDeviceAmd
                 && isVaapiVkSupported
-                && _mediaEncoder.IsVaapiDeviceSupportVulkanFmtModifier
-                && Environment.OSVersion.Version >= _minKernelVersionAmdVkFmtModifier)
+                && _mediaEncoder.IsVaapiDeviceSupportVulkanDrmInterop)
             {
-                // AMD radeonsi path(Vega/gfx9+, kernel>=5.15), with extra vulkan tonemap and overlay support.
+                // AMD radeonsi path(targeting Polaris/gfx8+), with extra vulkan tonemap and overlay support.
                 return GetAmdVaapiFullVidFiltersPrefered(state, options, vidDecoder, vidEncoder);
             }
 
-            // Intel i965 and Amd radeonsi/r600 path(Polaris/gfx8-), only featuring scale and deinterlace support.
+            // Intel i965 and Amd legacy driver path, only featuring scale and deinterlace support.
             return GetVaapiLimitedVidFiltersPrefered(state, options, vidDecoder, vidEncoder);
         }
 
@@ -4484,7 +4499,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // INPUT vaapi surface(vram)
                 if (doVkTonemap || hasSubs)
                 {
-                    // map from vaapi to vulkan/drm via interop (Vega/gfx9+).
+                    // map from vaapi to vulkan/drm via interop (Polaris/gfx8+).
                     mainFilters.Add("hwmap=derive_device=vulkan");
                     mainFilters.Add("format=vulkan");
                 }
@@ -4513,9 +4528,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (doVkTonemap && !hasSubs)
             {
                 // OUTPUT vaapi(nv12) surface(vram)
-                // map from vulkan/drm to vaapi via interop (Vega/gfx9+).
-                mainFilters.Add("hwmap=derive_device=drm");
-                mainFilters.Add("format=drm_prime");
+                // map from vulkan/drm to vaapi via interop (Polaris/gfx8+).
                 mainFilters.Add("hwmap=derive_device=vaapi");
                 mainFilters.Add("format=vaapi");
 
@@ -4581,9 +4594,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 else if (isVaapiEncoder)
                 {
                     // OUTPUT vaapi(nv12) surface(vram)
-                    // map from vulkan/drm to vaapi via interop (Vega/gfx9+).
-                    overlayFilters.Add("hwmap=derive_device=drm");
-                    overlayFilters.Add("format=drm_prime");
+                    // map from vulkan/drm to vaapi via interop (Polaris/gfx8+).
                     overlayFilters.Add("hwmap=derive_device=vaapi");
                     overlayFilters.Add("format=vaapi");
 
@@ -5244,10 +5255,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     if (isD3d11Supported && isCodecAvailable)
                     {
-                        // set -threads 3 to intel d3d11va decoder explicitly. Lower threads may result in dead lock.
-                        // on newer devices such as Xe, the larger the init_pool_size, the longer the initialization time for opencl to derive from d3d11.
                         return " -hwaccel d3d11va" + (outputHwSurface ? " -hwaccel_output_format d3d11" : string.Empty)
-                            + (profileMismatch ? " -hwaccel_flags +allow_profile_mismatch" : string.Empty) + " -threads 3" + (isAv1 ? " -c:v av1" : string.Empty);
+                            + (profileMismatch ? " -hwaccel_flags +allow_profile_mismatch" : string.Empty) + " -threads 2" + (isAv1 ? " -c:v av1" : string.Empty);
                     }
                 }
                 else
@@ -5681,7 +5690,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // Apply -analyzeduration as per the environment variable,
             // otherwise ffmpeg will break on certain files due to default value is 0.
-            // The default value of -probesize is more than enough, so leave it as is.
             var ffmpegAnalyzeDuration = _config.GetFFmpegAnalyzeDuration() ?? string.Empty;
 
             if (state.MediaSource.AnalyzeDurationMs > 0)
@@ -5699,6 +5707,14 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             inputModifier = inputModifier.Trim();
+
+            // Apply -probesize if configured
+            var ffmpegProbeSize = _config.GetFFmpegProbeSize();
+
+            if (!string.IsNullOrEmpty(ffmpegProbeSize))
+            {
+                inputModifier += $" -probesize {ffmpegProbeSize}";
+            }
 
             var userAgentParam = GetUserAgentParam(state);
 

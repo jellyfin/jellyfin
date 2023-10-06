@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -11,7 +10,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Library;
-using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Extensions.Json.Converters;
 using MediaBrowser.Common;
@@ -30,7 +28,7 @@ namespace Emby.Server.Implementations.Plugins
     /// <summary>
     /// Defines the <see cref="PluginManager" />.
     /// </summary>
-    public class PluginManager : IPluginManager
+    public sealed class PluginManager : IPluginManager, IDisposable
     {
         private const string MetafileName = "meta.json";
 
@@ -188,15 +186,6 @@ namespace Emby.Server.Implementations.Plugins
                     _logger.LogInformation("Loaded assembly {Assembly} from {Path}", assembly.FullName, assembly.Location);
                     yield return assembly;
                 }
-            }
-        }
-
-        /// <inheritdoc />
-        public void UnloadAssemblies()
-        {
-            foreach (var assemblyLoadContext in _assemblyLoadContexts)
-            {
-                assemblyLoadContext.Unload();
             }
         }
 
@@ -441,6 +430,15 @@ namespace Emby.Server.Implementations.Plugins
             return SaveManifest(manifest, path);
         }
 
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            foreach (var assemblyLoadContext in _assemblyLoadContexts)
+            {
+                assemblyLoadContext.Unload();
+            }
+        }
+
         /// <summary>
         /// Reconciles the manifest against any properties that exist locally in a pre-packaged meta.json found at the path.
         /// If no file is found, no reconciliation occurs.
@@ -677,7 +675,7 @@ namespace Emby.Server.Implementations.Plugins
                 }
                 catch (JsonException ex)
                 {
-                    _logger.LogError(ex, "Error deserializing {Json}.", Encoding.UTF8.GetString(data!));
+                    _logger.LogError(ex, "Error deserializing {Json}.", Encoding.UTF8.GetString(data));
                 }
 
                 if (manifest is not null)

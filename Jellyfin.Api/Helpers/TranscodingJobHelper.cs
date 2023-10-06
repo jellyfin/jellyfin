@@ -620,7 +620,7 @@ public class TranscodingJobHelper : IDisposable
         state.TranscodingJob = transcodingJob;
 
         // Important - don't await the log task or we won't be able to kill FFmpeg when the user stops playback
-        _ = new JobLogger(_logger).StartStreamingLog(state, process.StandardError.BaseStream, logStream);
+        _ = new JobLogger(_logger).StartStreamingLog(state, process.StandardError, logStream);
 
         // Wait for the file to exist before proceeding
         var ffmpegTargetFile = state.WaitForPath ?? outputPath;

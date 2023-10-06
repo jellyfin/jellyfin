@@ -9,6 +9,7 @@ namespace MediaBrowser.Model.MediaInfo
         public const string SSA = "ssa";
         public const string ASS = "ass";
         public const string VTT = "vtt";
+        public const string WEBVTT = "webvtt";
         public const string TTML = "ttml";
     }
 }

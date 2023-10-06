@@ -59,7 +59,7 @@ namespace Jellyfin.Extensions.Json.Converters
                 var typedValueIndex = 0;
                 for (var i = 0; i < stringEntries.Length; i++)
                 {
-                    if (parsedValues[i] != null)
+                    if (parsedValues[i] is not null)
                     {
                         typedValues.SetValue(parsedValues[i], typedValueIndex);
                         typedValueIndex++;

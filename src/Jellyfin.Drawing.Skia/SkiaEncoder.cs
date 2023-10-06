@@ -122,8 +122,8 @@ public class SkiaEncoder : IImageEncoder
             var svg = new SKSvg();
             try
             {
-                svg.Load(path);
-                return new ImageDimensions(Convert.ToInt32(svg.Picture.CullRect.Width), Convert.ToInt32(svg.Picture.CullRect.Height));
+                using var picture = svg.Load(path);
+                return new ImageDimensions(Convert.ToInt32(picture.CullRect.Width), Convert.ToInt32(picture.CullRect.Height));
             }
             catch (FormatException skiaColorException)
             {
@@ -432,7 +432,8 @@ public class SkiaEncoder : IImageEncoder
 
         // scale image (the FromImage creates a copy)
         var imageInfo = new SKImageInfo(width, height, bitmap.ColorType, bitmap.AlphaType, bitmap.ColorSpace);
-        using var resizedBitmap = SKBitmap.FromImage(ResizeImage(bitmap, imageInfo));
+        using var resizedImage = ResizeImage(bitmap, imageInfo);
+        using var resizedBitmap = SKBitmap.FromImage(resizedImage);
 
         // If all we're doing is resizing then we can stop now
         if (!hasBackgroundColor && !hasForegroundColor && blur == 0 && !hasIndicator)
@@ -489,10 +490,8 @@ public class SkiaEncoder : IImageEncoder
         Directory.CreateDirectory(directory);
         using (var outputStream = new SKFileWStream(outputPath))
         {
-            using (var pixmap = new SKPixmap(new SKImageInfo(width, height), saveBitmap.GetPixels()))
-            {
-                pixmap.Encode(outputStream, skiaOutputFormat, quality);
-            }
+            using var pixmap = new SKPixmap(new SKImageInfo(width, height), saveBitmap.GetPixels());
+            pixmap.Encode(outputStream, skiaOutputFormat, quality);
         }
 
         return outputPath;

@@ -4,15 +4,16 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Emby.Server.Implementations.Data;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SQLitePCL.pretty;
 
 namespace Jellyfin.Server.Migrations.Routines
 {
@@ -83,22 +84,23 @@ namespace Jellyfin.Server.Migrations.Routines
             var displayPrefs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var customDisplayPrefs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var dbFilePath = Path.Combine(_paths.DataPath, DbFilename);
-            using (var connection = SQLite3.Open(dbFilePath, ConnectionFlags.ReadOnly, null))
+            using (var connection = new SqliteConnection($"Filename={dbFilePath}"))
             {
+                connection.Open();
                 using var dbContext = _provider.CreateDbContext();
 
                 var results = connection.Query("SELECT * FROM userdisplaypreferences");
                 foreach (var result in results)
                 {
-                    var dto = JsonSerializer.Deserialize<DisplayPreferencesDto>(result[3].ToBlob(), _jsonOptions);
+                    var dto = JsonSerializer.Deserialize<DisplayPreferencesDto>(result.GetStream(3), _jsonOptions);
                     if (dto is null)
                     {
                         continue;
                     }
 
-                    var itemId = new Guid(result[1].ToBlob());
-                    var dtoUserId = new Guid(result[1].ToBlob());
-                    var client = result[2].ToString();
+                    var itemId = result.GetGuid(1);
+                    var dtoUserId = itemId;
+                    var client = result.GetString(2);
                     var displayPreferencesKey = $"{dtoUserId}|{itemId}|{client}";
                     if (displayPrefs.Contains(displayPreferencesKey))
                     {

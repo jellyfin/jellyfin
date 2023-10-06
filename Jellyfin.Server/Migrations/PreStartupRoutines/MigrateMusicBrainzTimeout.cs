@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
@@ -59,21 +59,17 @@ public class MigrateMusicBrainzTimeout : IMigrationRoutine
 
     private OldMusicBrainzConfiguration? ReadOld(string path)
     {
-        using (var xmlReader = XmlReader.Create(path))
-        {
-            var serverConfigSerializer = new XmlSerializer(typeof(OldMusicBrainzConfiguration), new XmlRootAttribute("PluginConfiguration"));
-            return serverConfigSerializer.Deserialize(xmlReader) as OldMusicBrainzConfiguration;
-        }
+        using var xmlReader = XmlReader.Create(path);
+        var serverConfigSerializer = new XmlSerializer(typeof(OldMusicBrainzConfiguration), new XmlRootAttribute("PluginConfiguration"));
+        return serverConfigSerializer.Deserialize(xmlReader) as OldMusicBrainzConfiguration;
     }
 
     private void WriteNew(string path, PluginConfiguration newPluginConfiguration)
     {
         var pluginConfigurationSerializer = new XmlSerializer(typeof(PluginConfiguration), new XmlRootAttribute("PluginConfiguration"));
         var xmlWriterSettings = new XmlWriterSettings { Indent = true };
-        using (var xmlWriter = XmlWriter.Create(path, xmlWriterSettings))
-        {
-            pluginConfigurationSerializer.Serialize(xmlWriter, newPluginConfiguration);
-        }
+        using var xmlWriter = XmlWriter.Create(path, xmlWriterSettings);
+        pluginConfigurationSerializer.Serialize(xmlWriter, newPluginConfiguration);
     }
 
 #pragma warning disable

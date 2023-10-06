@@ -59,6 +59,7 @@ namespace Jellyfin.Server.Extensions
             serviceCollection.AddSingleton<IAuthorizationHandler, FirstTimeSetupHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, AnonymousLanAccessHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, SyncPlayAccessHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessOrRequiresElevationHandler>();
 
             return serviceCollection.AddAuthorizationCore(options =>
             {
@@ -276,7 +277,7 @@ namespace Jellyfin.Server.Extensions
                 }
                 else if (NetworkExtensions.TryParseToSubnet(allowedProxies[i], out var subnet))
                 {
-                    if (subnet != null)
+                    if (subnet is not null)
                     {
                         AddIPAddress(config, options, subnet.Prefix, subnet.PrefixLength);
                     }

@@ -96,7 +96,7 @@ namespace MediaBrowser.Controller.Net
         /// Starts sending messages over a web socket.
         /// </summary>
         /// <param name="message">The message.</param>
-        private void Start(WebSocketMessageInfo message)
+        protected virtual void Start(WebSocketMessageInfo message)
         {
             var vals = message.Data.Split(',');
 

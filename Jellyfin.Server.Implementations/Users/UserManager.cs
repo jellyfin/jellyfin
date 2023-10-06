@@ -20,7 +20,6 @@ using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Users;
 using Microsoft.EntityFrameworkCore;
@@ -35,7 +34,6 @@ namespace Jellyfin.Server.Implementations.Users
     {
         private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
         private readonly IEventManager _eventManager;
-        private readonly ICryptoProvider _cryptoProvider;
         private readonly INetworkManager _networkManager;
         private readonly IApplicationHost _appHost;
         private readonly IImageProcessor _imageProcessor;
@@ -53,7 +51,6 @@ namespace Jellyfin.Server.Implementations.Users
         /// </summary>
         /// <param name="dbProvider">The database provider.</param>
         /// <param name="eventManager">The event manager.</param>
-        /// <param name="cryptoProvider">The cryptography provider.</param>
         /// <param name="networkManager">The network manager.</param>
         /// <param name="appHost">The application host.</param>
         /// <param name="imageProcessor">The image processor.</param>
@@ -61,7 +58,6 @@ namespace Jellyfin.Server.Implementations.Users
         public UserManager(
             IDbContextFactory<JellyfinDbContext> dbProvider,
             IEventManager eventManager,
-            ICryptoProvider cryptoProvider,
             INetworkManager networkManager,
             IApplicationHost appHost,
             IImageProcessor imageProcessor,
@@ -69,7 +65,6 @@ namespace Jellyfin.Server.Implementations.Users
         {
             _dbProvider = dbProvider;
             _eventManager = eventManager;
-            _cryptoProvider = cryptoProvider;
             _networkManager = networkManager;
             _appHost = appHost;
             _imageProcessor = imageProcessor;
@@ -384,7 +379,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             var user = Users.FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
-            var authResult = await AuthenticateLocalUser(username, password, user, remoteEndPoint)
+            var authResult = await AuthenticateLocalUser(username, password, user)
                 .ConfigureAwait(false);
             var authenticationProvider = authResult.AuthenticationProvider;
             var success = authResult.Success;
@@ -787,8 +782,7 @@ namespace Jellyfin.Server.Implementations.Users
         private async Task<(IAuthenticationProvider? AuthenticationProvider, string Username, bool Success)> AuthenticateLocalUser(
                 string username,
                 string password,
-                User? user,
-                string remoteEndPoint)
+                User? user)
         {
             bool success = false;
             IAuthenticationProvider? authenticationProvider = null;
@@ -833,7 +827,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
             catch (AuthenticationException ex)
             {
-                _logger.LogError(ex, "Error authenticating with provider {Provider}", provider.Name);
+                _logger.LogDebug(ex, "Error authenticating with provider {Provider}", provider.Name);
 
                 return (username, false);
             }

@@ -166,6 +166,8 @@
  - [RealGreenDragon](https://github.com/RealGreenDragon)
  - [ipitio](https://github.com/ipitio)
  - [TheTyrius](https://github.com/TheTyrius)
+ - [tallbl0nde](https://github.com/tallbl0nde)
+ - [sleepycatcoding](https://github.com/sleepycatcoding)
 
 # Emby Contributors
 
@@ -236,3 +238,4 @@
  - [Jakob Kukla](https://github.com/jakobkukla)
  - [Utku Özdemir](https://github.com/utkuozdemir)
  - [JPUC1143](https://github.com/Jpuc1143/)
+ - [0x25CBFC4F](https://github.com/0x25CBFC4F)

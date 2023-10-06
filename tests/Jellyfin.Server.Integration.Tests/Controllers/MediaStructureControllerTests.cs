@@ -26,10 +26,10 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         public async Task RenameVirtualFolder_WhiteSpaceName_ReturnsBadRequest()
         {
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
             using var postContent = new ByteArrayContent(Array.Empty<byte>());
-            var response = await client.PostAsync("Library/VirtualFolders/Name?name=+&newName=test", postContent).ConfigureAwait(false);
+            var response = await client.PostAsync("Library/VirtualFolders/Name?name=+&newName=test", postContent);
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
@@ -38,10 +38,10 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         public async Task RenameVirtualFolder_WhiteSpaceNewName_ReturnsBadRequest()
         {
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
             using var postContent = new ByteArrayContent(Array.Empty<byte>());
-            var response = await client.PostAsync("Library/VirtualFolders/Name?name=test&newName=+", postContent).ConfigureAwait(false);
+            var response = await client.PostAsync("Library/VirtualFolders/Name?name=test&newName=+", postContent);
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
@@ -50,10 +50,10 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         public async Task RenameVirtualFolder_NameDoesntExist_ReturnsNotFound()
         {
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
             using var postContent = new ByteArrayContent(Array.Empty<byte>());
-            var response = await client.PostAsync("Library/VirtualFolders/Name?name=doesnt+exist&newName=test", postContent).ConfigureAwait(false);
+            var response = await client.PostAsync("Library/VirtualFolders/Name?name=doesnt+exist&newName=test", postContent);
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
@@ -62,7 +62,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         public async Task AddMediaPath_PathDoesntExist_ReturnsNotFound()
         {
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
             var data = new MediaPathDto()
             {
@@ -70,7 +70,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
                 Path = "/this/path/doesnt/exist"
             };
 
-            var response = await client.PostAsJsonAsync("Library/VirtualFolders/Paths", data, _jsonOptions).ConfigureAwait(false);
+            var response = await client.PostAsJsonAsync("Library/VirtualFolders/Paths", data, _jsonOptions);
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
@@ -79,7 +79,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         public async Task UpdateMediaPath_WhiteSpaceName_ReturnsBadRequest()
         {
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
             var data = new UpdateMediaPathRequestDto()
             {
@@ -87,7 +87,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
                 PathInfo = new MediaPathInfo("test")
             };
 
-            var response = await client.PostAsJsonAsync("Library/VirtualFolders/Paths/Update", data, _jsonOptions).ConfigureAwait(false);
+            var response = await client.PostAsJsonAsync("Library/VirtualFolders/Paths/Update", data, _jsonOptions);
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
@@ -96,9 +96,9 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         public async Task RemoveMediaPath_WhiteSpaceName_ReturnsBadRequest()
         {
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-            var response = await client.DeleteAsync("Library/VirtualFolders/Paths?name=+").ConfigureAwait(false);
+            var response = await client.DeleteAsync("Library/VirtualFolders/Paths?name=+");
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
@@ -107,9 +107,9 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         public async Task RemoveMediaPath_PathDoesntExist_ReturnsNotFound()
         {
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-            var response = await client.DeleteAsync("Library/VirtualFolders/Paths?name=none&path=%2Fthis%2Fpath%2Fdoesnt%2Fexist").ConfigureAwait(false);
+            var response = await client.DeleteAsync("Library/VirtualFolders/Paths?name=none&path=%2Fthis%2Fpath%2Fdoesnt%2Fexist");
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }

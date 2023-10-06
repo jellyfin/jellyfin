@@ -1651,7 +1651,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             _encodingHelper.GetInputArgument(state, _encodingOptions, segmentContainer),
             threads,
             mapArgs,
-            GetVideoArguments(state, startNumber, isEventPlaylist),
+            GetVideoArguments(state, startNumber, isEventPlaylist, segmentContainer),
             GetAudioArguments(state),
             maxMuxingQueueSize,
             state.SegmentLength.ToString(CultureInfo.InvariantCulture),
@@ -1703,19 +1703,18 @@ public class DynamicHlsController : BaseJellyfinApiController
         }
 
         var audioCodec = _encodingHelper.GetAudioEncoder(state);
+        var bitStreamArgs = EncodingHelper.GetAudioBitStreamArguments(state, state.Request.SegmentContainer, state.MediaSource.Container);
 
         if (!state.IsOutputVideo)
         {
             if (EncodingHelper.IsCopyCodec(audioCodec))
             {
-                var bitStreamArgs = EncodingHelper.GetAudioBitStreamArguments(state, state.Request.SegmentContainer, state.MediaSource.Container);
-
                 return "-acodec copy -strict -2" + bitStreamArgs;
             }
 
             var audioTranscodeParams = string.Empty;
 
-            audioTranscodeParams += "-acodec " + audioCodec;
+            audioTranscodeParams += "-acodec " + audioCodec + bitStreamArgs;
 
             var audioBitrate = state.OutputAudioBitrate;
             var audioChannels = state.OutputAudioChannels;
@@ -1761,7 +1760,6 @@ public class DynamicHlsController : BaseJellyfinApiController
         if (EncodingHelper.IsCopyCodec(audioCodec))
         {
             var videoCodec = _encodingHelper.GetVideoEncoder(state, _encodingOptions);
-            var bitStreamArgs = EncodingHelper.GetAudioBitStreamArguments(state, state.Request.SegmentContainer, state.MediaSource.Container);
             var copyArgs = "-codec:a:0 copy" + bitStreamArgs + strictArgs;
 
             if (EncodingHelper.IsCopyCodec(videoCodec) && state.EnableBreakOnNonKeyFrames(videoCodec))
@@ -1772,7 +1770,7 @@ public class DynamicHlsController : BaseJellyfinApiController
             return copyArgs;
         }
 
-        var args = "-codec:a:0 " + audioCodec + strictArgs;
+        var args = "-codec:a:0 " + audioCodec + bitStreamArgs + strictArgs;
 
         var channels = state.OutputAudioChannels;
 
@@ -1816,8 +1814,9 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="state">The <see cref="StreamState"/>.</param>
     /// <param name="startNumber">The first number in the hls sequence.</param>
     /// <param name="isEventPlaylist">Whether the playlist is EVENT or VOD.</param>
+    /// <param name="segmentContainer">The segment container.</param>
     /// <returns>The command line arguments for video transcoding.</returns>
-    private string GetVideoArguments(StreamState state, int startNumber, bool isEventPlaylist)
+    private string GetVideoArguments(StreamState state, int startNumber, bool isEventPlaylist, string segmentContainer)
     {
         if (state.VideoStream is null)
         {
@@ -1909,7 +1908,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         }
 
         // TODO why was this not enabled for VOD?
-        if (isEventPlaylist)
+        if (isEventPlaylist && string.Equals(segmentContainer, "ts", StringComparison.OrdinalIgnoreCase))
         {
             args += " -flags -global_header";
         }
