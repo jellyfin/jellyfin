@@ -419,6 +419,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var extractChapters = request.MediaType == DlnaProfileType.Video && request.ExtractChapters;
             var analyzeDuration = string.Empty;
             var ffmpegAnalyzeDuration = _config.GetFFmpegAnalyzeDuration() ?? string.Empty;
+            var ffmpegProbeSize = _config.GetFFmpegProbeSize() ?? string.Empty;
+            var extraArgs = string.Empty;
 
             if (request.MediaSource.AnalyzeDurationMs > 0)
             {
@@ -429,12 +431,22 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 analyzeDuration = "-analyzeduration " + ffmpegAnalyzeDuration;
             }
 
+            if (!string.IsNullOrEmpty(analyzeDuration))
+            {
+                extraArgs = analyzeDuration;
+            }
+
+            if (!string.IsNullOrEmpty(ffmpegProbeSize))
+            {
+                extraArgs += " -probesize " + ffmpegProbeSize;
+            }
+
             return GetMediaInfoInternal(
                 GetInputArgument(request.MediaSource.Path, request.MediaSource),
                 request.MediaSource.Path,
                 request.MediaSource.Protocol,
                 extractChapters,
-                analyzeDuration,
+                extraArgs,
                 request.MediaType == DlnaProfileType.Audio,
                 request.MediaSource.VideoType,
                 cancellationToken);
