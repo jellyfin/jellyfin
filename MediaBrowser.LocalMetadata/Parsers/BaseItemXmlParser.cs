@@ -9,6 +9,7 @@ using System.Xml;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -929,29 +930,13 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     {
                         case "Person":
                         case "Actor":
-                        {
-                            if (reader.IsEmptyElement)
+                            var person = reader.GetPersonFromXmlNode();
+                            if (person is not null)
                             {
-                                reader.Read();
-                                continue;
-                            }
-
-                            using (var subtree = reader.ReadSubtree())
-                            {
-                                foreach (var person in GetPersonsFromXmlNode(subtree))
-                                {
-                                    if (string.IsNullOrWhiteSpace(person.Name))
-                                    {
-                                        continue;
-                                    }
-
-                                    item.AddPerson(person);
-                                }
+                                item.AddPerson(person);
                             }
 
                             break;
-                        }
-
                         default:
                             reader.Skip();
                             break;
@@ -1039,83 +1024,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     reader.Read();
                 }
             }
-        }
-
-        /// <summary>
-        /// Gets the persons from XML node.
-        /// </summary>
-        /// <param name="reader">The reader.</param>
-        /// <returns>IEnumerable{PersonInfo}.</returns>
-        private IEnumerable<PersonInfo> GetPersonsFromXmlNode(XmlReader reader)
-        {
-            var name = string.Empty;
-            var type = PersonKind.Actor; // If type is not specified assume actor
-            var role = string.Empty;
-            int? sortOrder = null;
-
-            reader.MoveToContent();
-            reader.Read();
-
-            // Loop through each element
-            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
-            {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "Name":
-                            name = reader.ReadElementContentAsString();
-                            break;
-
-                        case "Type":
-                        {
-                            var val = reader.ReadElementContentAsString();
-                            _ = Enum.TryParse(val, true, out type);
-
-                            break;
-                        }
-
-                        case "Role":
-                        {
-                            var val = reader.ReadElementContentAsString();
-
-                            if (!string.IsNullOrWhiteSpace(val))
-                            {
-                                role = val;
-                            }
-
-                            break;
-                        }
-
-                        case "SortOrder":
-                        {
-                            var val = reader.ReadElementContentAsString();
-
-                            if (!string.IsNullOrWhiteSpace(val))
-                            {
-                                if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intVal))
-                                {
-                                    sortOrder = intVal;
-                                }
-                            }
-
-                            break;
-                        }
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
-                else
-                {
-                    reader.Read();
-                }
-            }
-
-            var personInfo = new PersonInfo { Name = name.Trim(), Role = role, Type = type, SortOrder = sortOrder };
-
-            return new[] { personInfo };
         }
 
         /// <summary>

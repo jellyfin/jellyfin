@@ -13,6 +13,7 @@ using MediaBrowser.Common.Providers;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -581,27 +582,13 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 case "actor":
+                    var person = reader.GetPersonFromXmlNode();
+                    if (person is not null)
                     {
-                        if (!reader.IsEmptyElement)
-                        {
-                            using (var subtree = reader.ReadSubtree())
-                            {
-                                var person = GetPersonFromXmlNode(subtree);
-
-                                if (!string.IsNullOrWhiteSpace(person.Name))
-                                {
-                                    itemResult.AddPerson(person);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            reader.Read();
-                        }
-
-                        break;
+                        itemResult.AddPerson(person);
                     }
 
+                    break;
                 case "trailer":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -1194,102 +1181,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     reader.Read();
                 }
             }
-        }
-
-        /// <summary>
-        /// Gets the persons from a XML node.
-        /// </summary>
-        /// <param name="reader">The <see cref="XmlReader"/>.</param>
-        /// <returns>IEnumerable{PersonInfo}.</returns>
-        private PersonInfo GetPersonFromXmlNode(XmlReader reader)
-        {
-            var name = string.Empty;
-            var type = PersonKind.Actor;  // If type is not specified assume actor
-            var role = string.Empty;
-            int? sortOrder = null;
-            string? imageUrl = null;
-
-            reader.MoveToContent();
-            reader.Read();
-
-            // Loop through each element
-            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
-            {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "name":
-                            name = reader.ReadElementContentAsString();
-                            break;
-
-                        case "role":
-                            {
-                                var val = reader.ReadElementContentAsString();
-
-                                if (!string.IsNullOrWhiteSpace(val))
-                                {
-                                    role = val;
-                                }
-
-                                break;
-                            }
-
-                        case "type":
-                            {
-                                var val = reader.ReadElementContentAsString();
-                                if (!Enum.TryParse(val, true, out type))
-                                {
-                                    type = PersonKind.Actor;
-                                }
-
-                                break;
-                            }
-
-                        case "order":
-                        case "sortorder":
-                            {
-                                var val = reader.ReadElementContentAsString();
-
-                                if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intVal))
-                                {
-                                    sortOrder = intVal;
-                                }
-
-                                break;
-                            }
-
-                        case "thumb":
-                            {
-                                var val = reader.ReadElementContentAsString();
-
-                                if (!string.IsNullOrWhiteSpace(val))
-                                {
-                                    imageUrl = val;
-                                }
-
-                                break;
-                            }
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
-                else
-                {
-                    reader.Read();
-                }
-            }
-
-            return new PersonInfo
-            {
-                Name = name.Trim(),
-                Role = role,
-                Type = type,
-                SortOrder = sortOrder,
-                ImageUrl = imageUrl
-            };
         }
 
         internal XmlReaderSettings GetXmlReaderSettings()
