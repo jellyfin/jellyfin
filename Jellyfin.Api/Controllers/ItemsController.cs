@@ -871,7 +871,8 @@ public class ItemsController : BaseJellyfinApiController
             IncludeItemTypes = includeItemTypes,
             ExcludeItemTypes = excludeItemTypes,
             SearchTerm = searchTerm,
-            ExcludeItemIds = excludeItemIds
+            ExcludeItemIds = excludeItemIds,
+            IsExcludedFromContinueWatching = false
         });
 
         var returnItems = _dtoService.GetBaseItemDtos(itemsResult.Items, dtoOptions, user);

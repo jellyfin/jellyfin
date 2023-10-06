@@ -177,7 +177,7 @@ namespace Emby.Server.Implementations.Data
 
         private static void SaveUserData(SqliteConnection db, long internalUserId, string key, UserItemData userData)
         {
-            using (var statement = db.PrepareStatement("replace into UserDatas (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex)"))
+            using (var statement = db.PrepareStatement("replace into UserDatas (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex, excludedFromContinueWatching) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex,@excludedFromContinueWatching)"))
             {
                 statement.TryBind("@userId", internalUserId);
                 statement.TryBind("@key", key);
@@ -222,6 +222,8 @@ namespace Emby.Server.Implementations.Data
                 {
                     statement.TryBindNull("@SubtitleStreamIndex");
                 }
+
+                statement.TryBind("@excludedFromContinueWatching", userData.IsExcludedFromContinueWatching);
 
                 statement.ExecuteNonQuery();
             }
