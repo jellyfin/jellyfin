@@ -3624,6 +3624,20 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
+            if (query.IsExcludedFromContinueWatching.HasValue)
+            {
+                if (query.IsExcludedFromContinueWatching.Value)
+                {
+                    whereClauses.Add("excludedFromContinueWatching=@IsExcludedFromContinueWatching");
+                    statement?.TryBind("@IsExcludedFromContinueWatching", query.IsExcludedFromContinueWatching.Value);
+                }
+                else
+                {
+                    whereClauses.Add("(excludedFromContinueWatching is null or excludedFromContinueWatching=@IsExcludedFromContinueWatching)");
+                    statement?.TryBind("@IsExcludedFromContinueWatching", query.IsExcludedFromContinueWatching.Value);
+                }
+            }
+
             if (query.IsLiked.HasValue)
             {
                 if (query.IsLiked.Value)
