@@ -268,23 +268,13 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
             switch (reader.Name)
             {
-                // DateCreated
                 case "dateadded":
+                    if (reader.TryReadDateTime(Logger, out var dateCreated))
                     {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var added))
-                        {
-                            item.DateCreated = added;
-                        }
-                        else
-                        {
-                            Logger.LogWarning("Invalid Added value found: {Value}", val);
-                        }
-
-                        break;
+                        item.DateCreated = dateCreated;
                     }
 
+                    break;
                 case "originaltitle":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -373,9 +363,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var val = reader.ReadElementContentAsString();
                         if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var count)
-                            && Guid.TryParse(nfoConfiguration.UserId, out var guid))
+                            && Guid.TryParse(nfoConfiguration.UserId, out var playCountUserId))
                         {
-                            var user = _userManager.GetUserById(guid);
+                            var user = _userManager.GetUserById(playCountUserId);
                             userData = _userDataManager.GetUserData(user, item);
                             userData.PlayCount = count;
                             _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
@@ -385,26 +375,16 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 case "lastplayed":
+                    if (reader.TryReadDateTime(Logger, out var lastPlayed)
+                        && Guid.TryParse(nfoConfiguration.UserId, out var lastPlayedUserId))
                     {
-                        var val = reader.ReadElementContentAsString();
-                        if (Guid.TryParse(nfoConfiguration.UserId, out var guid))
-                        {
-                            if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var added))
-                            {
-                                var user = _userManager.GetUserById(guid);
-                                userData = _userDataManager.GetUserData(user, item);
-                                userData.LastPlayedDate = added;
-                                _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
-                           }
-                            else
-                            {
-                                Logger.LogWarning("Invalid lastplayed value found: {Value}", val);
-                            }
-                        }
-
-                        break;
+                        var user = _userManager.GetUserById(lastPlayedUserId);
+                        userData = _userDataManager.GetUserData(user, item);
+                        userData.LastPlayedDate = lastPlayed;
+                        _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
                     }
 
+                    break;
                 case "countrycode":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -641,34 +621,20 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 case "formed":
                 case "premiered":
                 case "releasedate":
+                    if (reader.TryReadDateTimeExact(nfoConfiguration.ReleaseDateFormat, out var releaseDate))
                     {
-                        var formatString = nfoConfiguration.ReleaseDateFormat;
-
-                        var val = reader.ReadElementContentAsString();
-
-                        if (DateTime.TryParseExact(val, formatString, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var date) && date.Year > 1850)
-                        {
-                            item.PremiereDate = date;
-                            item.ProductionYear = date.Year;
-                        }
-
-                        break;
+                        item.PremiereDate = releaseDate;
+                        item.ProductionYear = releaseDate.Year;
                     }
 
+                    break;
                 case "enddate":
+                    if (reader.TryReadDateTimeExact(nfoConfiguration.ReleaseDateFormat, out var endDate))
                     {
-                        var formatString = nfoConfiguration.ReleaseDateFormat;
-
-                        var val = reader.ReadElementContentAsString();
-
-                        if (DateTime.TryParseExact(val, formatString, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var date) && date.Year > 1850)
-                        {
-                            item.EndDate = date;
-                        }
-
-                        break;
+                        item.EndDate = endDate;
                     }
 
+                    break;
                 case "genre":
                     {
                         var val = reader.ReadElementContentAsString();

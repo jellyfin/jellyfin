@@ -129,26 +129,13 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
             switch (reader.Name)
             {
-                // DateCreated
                 case "Added":
-                {
-                    var val = reader.ReadElementContentAsString();
-
-                    if (!string.IsNullOrWhiteSpace(val))
+                    if (reader.TryReadDateTime(Logger, out var dateCreated))
                     {
-                        if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out var added))
-                        {
-                            item.DateCreated = added;
-                        }
-                        else
-                        {
-                            Logger.LogWarning("Invalid Added value found: {Value}", val);
-                        }
+                        item.DateCreated = dateCreated;
                     }
 
                     break;
-                }
-
                 case "OriginalTitle":
                 {
                     var val = reader.ReadElementContentAsString();
@@ -465,37 +452,21 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 case "BirthDate":
                 case "PremiereDate":
                 case "FirstAired":
-                {
-                    var firstAired = reader.ReadElementContentAsString();
-
-                    if (!string.IsNullOrWhiteSpace(firstAired))
+                    if (reader.TryReadDateTimeExact("yyyy-MM-dd", out var firstAired))
                     {
-                        if (DateTime.TryParseExact(firstAired, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal | DateTimeStyles.AdjustToUniversal, out var airDate) && airDate.Year > 1850)
-                        {
-                            item.PremiereDate = airDate;
-                            item.ProductionYear = airDate.Year;
-                        }
+                        item.PremiereDate = firstAired;
+                        item.ProductionYear = firstAired.Year;
                     }
 
                     break;
-                }
-
                 case "DeathDate":
                 case "EndDate":
-                {
-                    var firstAired = reader.ReadElementContentAsString();
-
-                    if (!string.IsNullOrWhiteSpace(firstAired))
+                    if (reader.TryReadDateTimeExact("yyyy-MM-dd", out var endDate))
                     {
-                        if (DateTime.TryParseExact(firstAired, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal | DateTimeStyles.AdjustToUniversal, out var airDate) && airDate.Year > 1850)
-                        {
-                            item.EndDate = airDate;
-                        }
+                        item.EndDate = endDate;
                     }
 
                     break;
-                }
-
                 case "CollectionNumber":
                     var tmdbCollection = reader.ReadElementContentAsString();
                     if (!string.IsNullOrWhiteSpace(tmdbCollection))

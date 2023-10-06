@@ -5,6 +5,7 @@ using System.Linq;
 using System.Xml;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Extensions;
 
@@ -13,6 +14,52 @@ namespace MediaBrowser.Controller.Extensions;
 /// </summary>
 public static class XmlReaderExtensions
 {
+    /// <summary>
+    /// Parses a <see cref="DateTime"/> from the current node.
+    /// </summary>
+    /// <param name="reader">The <see cref="XmlReader"/>.</param>
+    /// <param name="logger">The <see cref="ILogger"/> to use on failure.</param>
+    /// <param name="value">The parsed <see cref="DateTime"/>.</param>
+    /// <returns>A value indicating whether the parsing succeeded.</returns>
+    public static bool TryReadDateTime(this XmlReader reader, ILogger logger, out DateTime value)
+    {
+        ArgumentNullException.ThrowIfNull(reader);
+        ArgumentNullException.ThrowIfNull(logger);
+
+        var text = reader.ReadElementContentAsString();
+        if (DateTime.TryParse(
+                text,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+                out value))
+        {
+            return true;
+        }
+
+        logger.LogWarning("Invalid date: {Date}", text);
+        return false;
+    }
+
+    /// <summary>
+    /// Parses a <see cref="DateTime"/> from the current node.
+    /// </summary>
+    /// <param name="reader">The <see cref="XmlReader"/>.</param>
+    /// <param name="formatString">The date format string.</param>
+    /// <param name="value">The parsed <see cref="DateTime"/>.</param>
+    /// <returns>A value indicating whether the parsing succeeded.</returns>
+    public static bool TryReadDateTimeExact(this XmlReader reader, string formatString, out DateTime value)
+    {
+        ArgumentNullException.ThrowIfNull(reader);
+        ArgumentNullException.ThrowIfNull(formatString);
+
+        return DateTime.TryParseExact(
+            reader.ReadElementContentAsString(),
+            formatString,
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+            out value);
+    }
+
     /// <summary>
     /// Parses a <see cref="PersonInfo"/> from the xml node.
     /// </summary>
