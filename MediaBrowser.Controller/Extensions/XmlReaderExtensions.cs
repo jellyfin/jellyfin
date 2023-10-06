@@ -147,7 +147,7 @@ public static class XmlReaderExtensions
 
         return new PersonInfo
         {
-            Name = name.Trim(),
+            Name = name,
             Role = role,
             Type = type,
             SortOrder = sortOrder,
