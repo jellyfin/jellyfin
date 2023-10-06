@@ -65,7 +65,7 @@ namespace Emby.Server.Implementations.EntryPoints
             _configurationManager = configurationManager;
             _networkManager = networkManager;
             _udpServers = new List<UdpServer>();
-            _enableMultiSocketBinding = OperatingSystem.IsWindows() || OperatingSystem.IsLinux();
+            _enableMultiSocketBinding = OperatingSystem.IsLinux();
         }
 
         /// <inheritdoc />
