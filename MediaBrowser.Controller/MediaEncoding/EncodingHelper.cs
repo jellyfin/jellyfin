@@ -5690,7 +5690,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // Apply -analyzeduration as per the environment variable,
             // otherwise ffmpeg will break on certain files due to default value is 0.
-            // The default value of -probesize is more than enough, so leave it as is.
             var ffmpegAnalyzeDuration = _config.GetFFmpegAnalyzeDuration() ?? string.Empty;
 
             if (state.MediaSource.AnalyzeDurationMs > 0)
@@ -5708,6 +5707,14 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             inputModifier = inputModifier.Trim();
+
+            // Apply -probesize if configured
+            var ffmpegProbeSize = _config.GetFFmpegProbeSize();
+
+            if (!string.IsNullOrEmpty(ffmpegProbeSize))
+            {
+                inputModifier += $" -probesize {ffmpegProbeSize}";
+            }
 
             var userAgentParam = GetUserAgentParam(state);
 
@@ -6240,6 +6247,12 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (!string.IsNullOrEmpty(outputCodec))
             {
                 audioTranscodeParams.Add("-acodec " + GetAudioEncoder(state));
+            }
+
+            if (GetAudioEncoder(state).StartsWith("pcm_", StringComparison.Ordinal))
+            {
+                audioTranscodeParams.Add(string.Concat("-f ", GetAudioEncoder(state).AsSpan(4)));
+                audioTranscodeParams.Add("-ar " + state.BaseRequest.AudioBitRate);
             }
 
             if (!string.Equals(outputCodec, "opus", StringComparison.OrdinalIgnoreCase))
