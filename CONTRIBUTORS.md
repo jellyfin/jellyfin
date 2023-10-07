@@ -168,6 +168,9 @@
  - [TheTyrius](https://github.com/TheTyrius)
  - [tallbl0nde](https://github.com/tallbl0nde)
  - [sleepycatcoding](https://github.com/sleepycatcoding)
+ - [Nate G](https://github.com/GGProGaming)
+ - [BrennanWoodbury](https://github.com/BrennanWoodbury)
+ - [westonhowe98](https://github.com/westonhowe98)
 
 # Emby Contributors
 
@@ -239,6 +242,3 @@
  - [Utku Özdemir](https://github.com/utkuozdemir)
  - [JPUC1143](https://github.com/Jpuc1143/)
  - [0x25CBFC4F](https://github.com/0x25CBFC4F)
- - [Nate G](https://github.com/GGProGaming)
- - [BrennanWoodbury](https://github.com/BrennanWoodbury)
- - [westonhowe98](https://github.com/westonhowe98)
