@@ -199,7 +199,8 @@ namespace Emby.Server.Implementations.Library
                 Rating = data.Rating,
                 Played = data.Played,
                 LastPlayedDate = data.LastPlayedDate,
-                Key = data.Key
+                Key = data.Key,
+                IsExcludedFromContinueWatching = data.IsExcludedFromContinueWatching
             };
         }
 

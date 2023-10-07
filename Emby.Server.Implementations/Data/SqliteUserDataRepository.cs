@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using BDInfo;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -281,7 +282,7 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection())
             {
-                using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where key =@Key and userId=@UserId"))
+                using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex,excludedFromContinueWatching from UserDatas where key =@Key and userId=@UserId"))
                 {
                     statement.TryBind("@UserId", userId);
                     statement.TryBind("@Key", key);
@@ -324,7 +325,7 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection())
             {
-                using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where userId=@UserId"))
+                using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex,excludedFromContinueWatching from UserDatas where userId=@UserId"))
                 {
                     statement.TryBind("@UserId", userId);
 
@@ -345,6 +346,15 @@ namespace Emby.Server.Implementations.Data
         /// <returns>The user item data.</returns>
         private UserItemData ReadRow(SqliteDataReader reader)
         {
+            int columns = reader.FieldCount;
+            int i;
+            for (i = 0; i < columns; i++)
+            {
+                Console.Write(reader.GetName(i));
+                Console.Write('\t');
+                Console.WriteLine(reader.GetValue(i));
+            }
+
             var userData = new UserItemData();
 
             userData.Key = reader[0].ToString();
@@ -373,6 +383,11 @@ namespace Emby.Server.Implementations.Data
             if (reader.TryGetInt32(9, out var subtitleStreamIndex))
             {
                 userData.SubtitleStreamIndex = subtitleStreamIndex;
+            }
+
+            if (reader.TryGetBoolean(10, out var excludedFromContinueWatching))
+            {
+                userData.IsExcludedFromContinueWatching = excludedFromContinueWatching;
             }
 
             return userData;
