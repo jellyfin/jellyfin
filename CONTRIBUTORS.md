@@ -168,6 +168,7 @@
  - [TheTyrius](https://github.com/TheTyrius)
  - [tallbl0nde](https://github.com/tallbl0nde)
  - [sleepycatcoding](https://github.com/sleepycatcoding)
+ - [Pithaya](https://github.com/Pithaya)
 
 # Emby Contributors
 
