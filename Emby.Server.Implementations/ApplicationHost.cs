@@ -411,6 +411,7 @@ namespace Emby.Server.Implementations
         public async Task RunStartupTasksAsync()
         {
             Logger.LogInformation("Running startup tasks");
+            Resolve<ILibraryRoot>().Initialize();
 
             Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
 
@@ -436,6 +437,7 @@ namespace Emby.Server.Implementations
 
             await Task.WhenAll(StartEntryPoints(entryPoints, false)).ConfigureAwait(false);
             Logger.LogInformation("Executed all post-startup entry points in {Elapsed:g}", stopWatch.Elapsed);
+
             stopWatch.Stop();
         }
 
@@ -632,8 +634,6 @@ namespace Emby.Server.Implementations
             await localizationManager.LoadAll().ConfigureAwait(false);
 
             SetStaticProperties();
-
-            Resolve<ILibraryRoot>().Initialize();
 
             FindParts();
         }
