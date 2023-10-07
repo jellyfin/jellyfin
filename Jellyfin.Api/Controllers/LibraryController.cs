@@ -151,8 +151,8 @@ public class LibraryController : BaseJellyfinApiController
 
         var item = itemId.Equals(default)
             ? (userId.Value.Equals(default)
-                ? _libraryManager.RootFolder
-                : _libraryManager.GetUserRootFolder())
+                ? LibraryRoot.RootFolder
+                : LibraryRoot.UserRootFolder)
             : _libraryManager.GetItemById(itemId);
 
         if (item is null)
@@ -218,8 +218,8 @@ public class LibraryController : BaseJellyfinApiController
 
         var item = itemId.Equals(default)
             ? (userId.Value.Equals(default)
-                ? _libraryManager.RootFolder
-                : _libraryManager.GetUserRootFolder())
+                ? LibraryRoot.RootFolder
+                : LibraryRoot.UserRootFolder)
             : _libraryManager.GetItemById(itemId);
 
         if (item is null)
@@ -506,7 +506,7 @@ public class LibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<IEnumerable<string>> GetPhysicalPaths()
     {
-        return Ok(_libraryManager.RootFolder.Children
+        return Ok(LibraryRoot.RootFolder.Children
             .SelectMany(c => c.PhysicalLocations));
     }
 
@@ -521,7 +521,7 @@ public class LibraryController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetMediaFolders([FromQuery] bool? isHidden)
     {
-        var items = _libraryManager.GetUserRootFolder().Children.Concat(_libraryManager.RootFolder.VirtualChildren).OrderBy(i => i.SortName).ToList();
+        var items = LibraryRoot.UserRootFolder.Children.Concat(LibraryRoot.RootFolder.VirtualChildren).OrderBy(i => i.SortName).ToList();
 
         if (isHidden.HasValue)
         {
@@ -703,8 +703,8 @@ public class LibraryController : BaseJellyfinApiController
         userId = RequestHelpers.GetUserId(User, userId);
         var item = itemId.Equals(default)
             ? (userId.Value.Equals(default)
-                ? _libraryManager.RootFolder
-                : _libraryManager.GetUserRootFolder())
+                ? LibraryRoot.RootFolder
+                : LibraryRoot.UserRootFolder)
             : _libraryManager.GetItemById(itemId);
 
         if (item is null)
@@ -899,7 +899,7 @@ public class LibraryController : BaseJellyfinApiController
     private BaseItem? TranslateParentItem(BaseItem item, User user)
     {
         return item.GetParent() is AggregateFolder
-            ? _libraryManager.GetUserRootFolder().GetChildren(user, true)
+            ? LibraryRoot.UserRootFolder.GetChildren(user, true)
                 .FirstOrDefault(i => i.PhysicalLocations.Contains(item.Path))
             : item;
     }

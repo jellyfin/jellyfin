@@ -382,7 +382,7 @@ namespace Emby.Server.Implementations.EntryPoints
             newAndRemoved.AddRange(foldersAddedTo);
             newAndRemoved.AddRange(foldersRemovedFrom);
 
-            var allUserRootChildren = _libraryManager.GetUserRootFolder().GetChildren(user, true).OfType<Folder>().ToList();
+            var allUserRootChildren = LibraryRoot.UserRootFolder.GetChildren(user, true).OfType<Folder>().ToList();
 
             return new LibraryUpdateInfo
             {
@@ -450,7 +450,7 @@ namespace Emby.Server.Implementations.EntryPoints
             // If the physical root changed, return the user root
             if (item is AggregateFolder)
             {
-                return new[] { _libraryManager.GetUserRootFolder() as T };
+                return new[] { LibraryRoot.UserRootFolder as T };
             }
 
             // Return it only if it's in the user's library

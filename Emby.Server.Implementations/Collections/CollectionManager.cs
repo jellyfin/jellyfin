@@ -71,7 +71,7 @@ namespace Emby.Server.Implementations.Collections
 
         private IEnumerable<Folder> FindFolders(string path)
         {
-            return _libraryManager
+            return LibraryRoot
                 .RootFolder
                 .Children
                 .OfType<Folder>()

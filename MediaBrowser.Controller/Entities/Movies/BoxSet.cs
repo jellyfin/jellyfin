@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Querying;
 
@@ -190,7 +191,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         private Guid[] GetLibraryFolderIds(User user)
         {
-            return LibraryManager.GetUserRootFolder().GetChildren(user, true)
+            return LibraryRoot.UserRootFolder.GetChildren(user, true)
                 .Select(i => i.Id)
                 .ToArray();
         }

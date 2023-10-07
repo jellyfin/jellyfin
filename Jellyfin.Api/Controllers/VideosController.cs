@@ -111,8 +111,8 @@ public class VideosController : BaseJellyfinApiController
 
         var item = itemId.Equals(default)
             ? (userId.Value.Equals(default)
-                ? _libraryManager.RootFolder
-                : _libraryManager.GetUserRootFolder())
+                ? LibraryRoot.RootFolder
+                : LibraryRoot.UserRootFolder)
             : _libraryManager.GetItemById(itemId);
 
         var dtoOptions = new DtoOptions();

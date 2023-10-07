@@ -16,7 +16,6 @@ using Emby.Naming.Common;
 using Emby.Naming.TV;
 using Emby.Server.Implementations.Library.Resolvers;
 using Emby.Server.Implementations.Library.Validators;
-using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.ScheduledTasks.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
@@ -80,19 +79,7 @@ namespace Emby.Server.Implementations.Library
         private readonly NamingOptions _namingOptions;
         private readonly ExtraResolver _extraResolver;
 
-        /// <summary>
-        /// The _root folder sync lock.
-        /// </summary>
-        private readonly object _rootFolderSyncLock = new object();
-        private readonly object _userRootFolderSyncLock = new object();
-
         private readonly TimeSpan _viewRefreshInterval = TimeSpan.FromHours(24);
-
-        /// <summary>
-        /// The _root folder.
-        /// </summary>
-        private volatile AggregateFolder _rootFolder;
-        private volatile UserRootFolder _userRootFolder;
 
         private bool _wizardCompleted;
 
@@ -168,26 +155,6 @@ namespace Emby.Server.Implementations.Library
         /// Occurs when [item removed].
         /// </summary>
         public event EventHandler<ItemChangeEventArgs> ItemRemoved;
-
-        /// <summary>
-        /// Gets the root folder.
-        /// </summary>
-        /// <value>The root folder.</value>
-        public AggregateFolder RootFolder
-        {
-            get
-            {
-                if (_rootFolder is null)
-                {
-                    lock (_rootFolderSyncLock)
-                    {
-                        _rootFolder ??= CreateRootFolder();
-                    }
-                }
-
-                return _rootFolder;
-            }
-        }
 
         private ILibraryMonitor LibraryMonitor => _libraryMonitorFactory.Value;
 
@@ -701,116 +668,6 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        /// <summary>
-        /// Creates the root media folder.
-        /// </summary>
-        /// <returns>AggregateFolder.</returns>
-        /// <exception cref="InvalidOperationException">Cannot create the root folder until plugins have loaded.</exception>
-        public AggregateFolder CreateRootFolder()
-        {
-            var rootFolderPath = _configurationManager.ApplicationPaths.RootFolderPath;
-
-            Directory.CreateDirectory(rootFolderPath);
-
-            var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ??
-                             ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath)))
-                             .DeepCopy<Folder, AggregateFolder>();
-
-            // In case program data folder was moved
-            if (!string.Equals(rootFolder.Path, rootFolderPath, StringComparison.Ordinal))
-            {
-                _logger.LogInformation("Resetting root folder path to {0}", rootFolderPath);
-                rootFolder.Path = rootFolderPath;
-            }
-
-            // Add in the plug-in folders
-            var path = Path.Combine(_configurationManager.ApplicationPaths.DataPath, "playlists");
-
-            Directory.CreateDirectory(path);
-
-            Folder folder = new PlaylistsFolder
-            {
-                Path = path
-            };
-
-            if (folder.Id.Equals(default))
-            {
-                if (string.IsNullOrEmpty(folder.Path))
-                {
-                    folder.Id = GetNewItemId(folder.GetType().Name, folder.GetType());
-                }
-                else
-                {
-                    folder.Id = GetNewItemId(folder.Path, folder.GetType());
-                }
-            }
-
-            var dbItem = GetItemById(folder.Id) as BasePluginFolder;
-
-            if (dbItem is not null && string.Equals(dbItem.Path, folder.Path, StringComparison.OrdinalIgnoreCase))
-            {
-                folder = dbItem;
-            }
-
-            if (!folder.ParentId.Equals(rootFolder.Id))
-            {
-                folder.ParentId = rootFolder.Id;
-                folder.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, CancellationToken.None).GetAwaiter().GetResult();
-            }
-
-            rootFolder.AddVirtualChild(folder);
-
-            RegisterItem(folder);
-
-            return rootFolder;
-        }
-
-        public Folder GetUserRootFolder()
-        {
-            if (_userRootFolder is null)
-            {
-                lock (_userRootFolderSyncLock)
-                {
-                    if (_userRootFolder is null)
-                    {
-                        var userRootPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
-
-                        _logger.LogDebug("Creating userRootPath at {Path}", userRootPath);
-                        Directory.CreateDirectory(userRootPath);
-
-                        var newItemId = GetNewItemId(userRootPath, typeof(UserRootFolder));
-                        UserRootFolder tmpItem = null;
-                        try
-                        {
-                            tmpItem = GetItemById(newItemId) as UserRootFolder;
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error creating UserRootFolder {Path}", newItemId);
-                        }
-
-                        if (tmpItem is null)
-                        {
-                            _logger.LogDebug("Creating new userRootFolder with DeepCopy");
-                            tmpItem = ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(userRootPath))).DeepCopy<Folder, UserRootFolder>();
-                        }
-
-                        // In case program data folder was moved
-                        if (!string.Equals(tmpItem.Path, userRootPath, StringComparison.Ordinal))
-                        {
-                            _logger.LogInformation("Resetting user root folder path to {0}", userRootPath);
-                            tmpItem.Path = userRootPath;
-                        }
-
-                        _userRootFolder = tmpItem;
-                        _logger.LogDebug("Setting userRootFolder: {Folder}", _userRootFolder);
-                    }
-                }
-            }
-
-            return _userRootFolder;
-        }
-
         public BaseItem FindByPath(string path, bool? isFolder)
         {
             // If this returns multiple items it could be tricky figuring out which one is correct.
@@ -1026,25 +883,25 @@ namespace Emby.Server.Implementations.Library
 
         private async Task ValidateTopLibraryFolders(CancellationToken cancellationToken)
         {
-            await RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+            await LibraryRoot.RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
             // Start by just validating the children of the root, but go no further
-            await RootFolder.ValidateChildren(
+            await LibraryRoot.RootFolder.ValidateChildren(
                 new SimpleProgress<double>(),
                 new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
                 recursive: false,
                 cancellationToken).ConfigureAwait(false);
 
-            await GetUserRootFolder().RefreshMetadata(cancellationToken).ConfigureAwait(false);
+            await LibraryRoot.UserRootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
-            await GetUserRootFolder().ValidateChildren(
+            await LibraryRoot.UserRootFolder.ValidateChildren(
                 new SimpleProgress<double>(),
                 new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
                 recursive: false,
                 cancellationToken).ConfigureAwait(false);
 
             // Quickly scan CollectionFolders for changes
-            foreach (var folder in GetUserRootFolder().Children.OfType<Folder>())
+            foreach (var folder in LibraryRoot.UserRootFolder.Children.OfType<Folder>())
             {
                 await folder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
             }
@@ -1061,7 +918,7 @@ namespace Emby.Server.Implementations.Library
             innerProgress.RegisterAction(pct => progress.Report(pct * 0.96));
 
             // Validate the entire media library
-            await RootFolder.ValidateChildren(innerProgress, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), recursive: true, cancellationToken).ConfigureAwait(false);
+            await LibraryRoot.RootFolder.ValidateChildren(innerProgress, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), recursive: true, cancellationToken).ConfigureAwait(false);
 
             progress.Report(96);
 
@@ -1145,7 +1002,7 @@ namespace Emby.Server.Implementations.Library
         public List<VirtualFolderInfo> GetVirtualFolders(bool includeRefreshState)
         {
             _logger.LogDebug("Getting topLibraryFolders");
-            var topLibraryFolders = GetUserRootFolder().Children.ToList();
+            var topLibraryFolders = LibraryRoot.UserRootFolder.Children.ToList();
 
             _logger.LogDebug("Getting refreshQueue");
             var refreshQueue = includeRefreshState ? ProviderManager.GetRefreshQueue() : null;
@@ -1554,7 +1411,7 @@ namespace Emby.Server.Implementations.Library
                 if (user is not null && !string.IsNullOrEmpty(view.ViewType) && UserView.IsEligibleForGrouping(view.ViewType)
                     && user.GetPreference(PreferenceKind.GroupedFolders).Length > 0)
                 {
-                    return GetUserRootFolder()
+                    return LibraryRoot.UserRootFolder
                         .GetChildren(user, true)
                         .OfType<CollectionFolder>()
                         .Where(i => string.IsNullOrEmpty(i.CollectionType) || string.Equals(i.CollectionType, view.ViewType, StringComparison.OrdinalIgnoreCase))
@@ -2013,7 +1870,7 @@ namespace Emby.Server.Implementations.Library
 
         public List<Folder> GetCollectionFolders(BaseItem item)
         {
-            return GetCollectionFolders(item, GetUserRootFolder().Children.OfType<Folder>());
+            return GetCollectionFolders(item, LibraryRoot.UserRootFolder.Children.OfType<Folder>());
         }
 
         public List<Folder> GetCollectionFolders(BaseItem item, IEnumerable<Folder> allUserRootChildren)
@@ -2151,7 +2008,7 @@ namespace Emby.Server.Implementations.Library
                 item = parent;
             }
 
-            return GetUserRootFolder().Children
+            return LibraryRoot.UserRootFolder.Children
                 .OfType<ICollectionFolder>()
                 .Where(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(item.Path))
                 .Select(i => i.CollectionType)
@@ -2424,10 +2281,10 @@ namespace Emby.Server.Implementations.Library
 
             if (userId.HasValue && !userId.Equals(default))
             {
-                return GetUserRootFolder();
+                return LibraryRoot.UserRootFolder;
             }
 
-            return RootFolder;
+            return LibraryRoot.RootFolder;
         }
 
         /// <inheritdoc />
@@ -3032,7 +2889,7 @@ namespace Emby.Server.Implementations.Library
 
         private void SyncLibraryOptionsToLocations(string virtualFolderPath, LibraryOptions options)
         {
-            var topLibraryFolders = GetUserRootFolder().Children.ToList();
+            var topLibraryFolders = LibraryRoot.UserRootFolder.Children.ToList();
             var info = GetVirtualFolderInfo(virtualFolderPath, topLibraryFolders, null);
 
             if (info.Locations.Length > 0 && info.Locations.Length != options.PathInfos.Length)

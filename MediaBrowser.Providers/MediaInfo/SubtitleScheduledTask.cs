@@ -72,7 +72,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             var dict = new Dictionary<Guid, BaseItem>();
 
-            foreach (var library in _libraryManager.RootFolder.Children.ToList())
+            foreach (var library in LibraryRoot.RootFolder.Children.ToList())
             {
                 var libraryOptions = _libraryManager.GetLibraryOptions(library);
 

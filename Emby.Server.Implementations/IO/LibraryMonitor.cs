@@ -122,7 +122,7 @@ namespace Emby.Server.Implementations.IO
 
             var pathsToWatch = new List<string>();
 
-            var paths = _libraryManager
+            var paths = LibraryRoot
                 .RootFolder
                 .Children
                 .Where(IsLibraryMonitorEnabled)

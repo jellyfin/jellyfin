@@ -772,7 +772,7 @@ namespace Emby.Dlna.ContentDirectory
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetFolders(User user, int? startIndex, int? limit)
         {
-            var folders = _libraryManager.GetUserRootFolder().GetChildren(user, true);
+            var folders = LibraryRoot.UserRootFolder.GetChildren(user, true);
             var totalRecordCount = folders.Count;
             // Handle paging
             var items = folders
@@ -1216,7 +1216,7 @@ namespace Emby.Dlna.ContentDirectory
         private ServerItem GetItemFromObjectId(string id)
         {
             return DidlBuilder.IsIdRoot(id)
-                 ? new ServerItem(_libraryManager.GetUserRootFolder(), null)
+                 ? new ServerItem(LibraryRoot.UserRootFolder, null)
                  : ParseItemId(id);
         }
 
@@ -1256,7 +1256,7 @@ namespace Emby.Dlna.ContentDirectory
 
             Logger.LogError("Error parsing item Id: {Id}. Returning user root folder.", id);
 
-            return new ServerItem(_libraryManager.GetUserRootFolder(), null);
+            return new ServerItem(LibraryRoot.UserRootFolder, null);
         }
     }
 }

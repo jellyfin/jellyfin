@@ -543,6 +543,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddTransient(provider => new Lazy<IProviderManager>(provider.GetRequiredService<IProviderManager>));
             serviceCollection.AddTransient(provider => new Lazy<IUserViewManager>(provider.GetRequiredService<IUserViewManager>));
             serviceCollection.AddSingleton<ILibraryManager, LibraryManager>();
+            serviceCollection.AddSingleton<ILibraryRoot, LibraryRoot>();
             serviceCollection.AddSingleton<NamingOptions>();
 
             serviceCollection.AddSingleton<IMusicManager, MusicManager>();
@@ -631,6 +632,8 @@ namespace Emby.Server.Implementations
             await localizationManager.LoadAll().ConfigureAwait(false);
 
             SetStaticProperties();
+
+            Resolve<ILibraryRoot>().Initialize();
 
             FindParts();
         }

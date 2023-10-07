@@ -330,7 +330,7 @@ namespace MediaBrowser.Controller.Entities
                 return PhysicalFolderIds.Select(i => LibraryManager.GetItemById(i)).OfType<Folder>();
             }
 
-            var rootChildren = LibraryManager.RootFolder.Children
+            var rootChildren = LibraryRoot.RootFolder.Children
                 .OfType<Folder>()
                 .ToList();
 

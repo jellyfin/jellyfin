@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
@@ -91,7 +92,7 @@ namespace MediaBrowser.Controller.Entities
         protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
         {
             var list = base.GetEligibleChildrenForRecursiveChildren(user).ToList();
-            list.AddRange(LibraryManager.RootFolder.VirtualChildren);
+            list.AddRange(LibraryRoot.RootFolder.VirtualChildren);
 
             return list;
         }

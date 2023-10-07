@@ -49,7 +49,7 @@ namespace Emby.Server.Implementations.Library.Validators
         {
             var collectionNameMoviesMap = new Dictionary<string, HashSet<Guid>>();
 
-            foreach (var library in _libraryManager.RootFolder.Children)
+            foreach (var library in LibraryRoot.RootFolder.Children)
             {
                 if (!_libraryManager.GetLibraryOptions(library).AutomaticallyAddToCollection)
                 {

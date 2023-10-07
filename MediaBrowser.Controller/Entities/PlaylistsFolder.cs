@@ -5,11 +5,10 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Querying;
 
-namespace Emby.Server.Implementations.Playlists
+namespace MediaBrowser.Controller.Entities
 {
     public class PlaylistsFolder : BasePluginFolder
     {

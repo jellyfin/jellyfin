@@ -266,7 +266,7 @@ public class ItemsController : BaseJellyfinApiController
 
         if (item is not Folder folder)
         {
-            folder = _libraryManager.GetUserRootFolder();
+            folder = LibraryRoot.UserRootFolder;
         }
 
         string? collectionType = null;
@@ -838,7 +838,7 @@ public class ItemsController : BaseJellyfinApiController
         var excludeFolderIds = user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes);
         if (parentIdGuid.Equals(default) && excludeFolderIds.Length > 0)
         {
-            ancestorIds = _libraryManager.GetUserRootFolder().GetChildren(user, true)
+            ancestorIds = LibraryRoot.UserRootFolder.GetChildren(user, true)
                 .Where(i => i is Folder)
                 .Where(i => !excludeFolderIds.Contains(i.Id))
                 .Select(i => i.Id)

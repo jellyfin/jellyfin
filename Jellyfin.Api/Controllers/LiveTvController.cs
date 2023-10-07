@@ -212,7 +212,7 @@ public class LiveTvController : BaseJellyfinApiController
             ? null
             : _userManager.GetUserById(userId.Value);
         var item = channelId.Equals(default)
-            ? _libraryManager.GetUserRootFolder()
+            ? LibraryRoot.UserRootFolder
             : _libraryManager.GetItemById(channelId);
 
         var dtoOptions = new DtoOptions()
@@ -407,7 +407,7 @@ public class LiveTvController : BaseJellyfinApiController
         var user = userId.Value.Equals(default)
             ? null
             : _userManager.GetUserById(userId.Value);
-        var item = recordingId.Equals(default) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(recordingId);
+        var item = recordingId.Equals(default) ? LibraryRoot.UserRootFolder : _libraryManager.GetItemById(recordingId);
 
         var dtoOptions = new DtoOptions()
             .AddClientFields(User);

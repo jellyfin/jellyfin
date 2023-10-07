@@ -45,12 +45,6 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         event EventHandler<ItemChangeEventArgs> ItemRemoved;
 
-        /// <summary>
-        /// Gets the root folder.
-        /// </summary>
-        /// <value>The root folder.</value>
-        AggregateFolder RootFolder { get; }
-
         bool IsScanRunning { get; }
 
         /// <summary>
@@ -202,12 +196,6 @@ namespace MediaBrowser.Controller.Library
         IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<string> sortBy, SortOrder sortOrder);
 
         IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<(string OrderBy, SortOrder SortOrder)> orderBy);
-
-        /// <summary>
-        /// Gets the user root folder.
-        /// </summary>
-        /// <returns>UserRootFolder.</returns>
-        Folder GetUserRootFolder();
 
         /// <summary>
         /// Creates the item.

@@ -51,7 +51,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentException("User id specified in the query does not exist.", nameof(query));
             }
 
-            var folders = _libraryManager.GetUserRootFolder()
+            var folders = LibraryRoot.UserRootFolder
                 .GetChildren(user, true)
                 .OfType<Folder>()
                 .ToList();
@@ -287,7 +287,7 @@ namespace Emby.Server.Implementations.Library
 
             if (parents.Count == 0)
             {
-                parents = _libraryManager.GetUserRootFolder().GetChildren(user, true)
+                parents = LibraryRoot.UserRootFolder.GetChildren(user, true)
                     .Where(i => i is Folder)
                     .Where(i => !user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes)
                         .Contains(i.Id))

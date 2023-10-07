@@ -121,7 +121,7 @@ public class UserViewsController : BaseJellyfinApiController
             return NotFound();
         }
 
-        return Ok(_libraryManager.GetUserRootFolder()
+        return Ok(LibraryRoot.UserRootFolder
             .GetChildren(user, true)
             .OfType<Folder>()
             .Where(UserView.IsEligibleForGrouping)

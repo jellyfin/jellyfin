@@ -85,7 +85,7 @@ public class UserLibraryController : BaseJellyfinApiController
         }
 
         var item = itemId.Equals(default)
-            ? _libraryManager.GetUserRootFolder()
+            ? LibraryRoot.UserRootFolder
             : _libraryManager.GetItemById(itemId);
 
         if (item is null)
@@ -123,7 +123,7 @@ public class UserLibraryController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var item = _libraryManager.GetUserRootFolder();
+        var item = LibraryRoot.UserRootFolder;
         var dtoOptions = new DtoOptions().AddClientFields(User);
         return _dtoService.GetBaseItemDto(item, dtoOptions, user);
     }
@@ -146,7 +146,7 @@ public class UserLibraryController : BaseJellyfinApiController
         }
 
         var item = itemId.Equals(default)
-            ? _libraryManager.GetUserRootFolder()
+            ? LibraryRoot.UserRootFolder
             : _libraryManager.GetItemById(itemId);
 
         if (item is null)
@@ -186,7 +186,7 @@ public class UserLibraryController : BaseJellyfinApiController
         }
 
         var item = itemId.Equals(default)
-            ? _libraryManager.GetUserRootFolder()
+            ? LibraryRoot.UserRootFolder
             : _libraryManager.GetItemById(itemId);
 
         if (item is null)
@@ -222,7 +222,7 @@ public class UserLibraryController : BaseJellyfinApiController
         }
 
         var item = itemId.Equals(default)
-            ? _libraryManager.GetUserRootFolder()
+            ? LibraryRoot.UserRootFolder
             : _libraryManager.GetItemById(itemId);
 
         if (item is null)
@@ -258,7 +258,7 @@ public class UserLibraryController : BaseJellyfinApiController
         }
 
         var item = itemId.Equals(default)
-            ? _libraryManager.GetUserRootFolder()
+            ? LibraryRoot.UserRootFolder
             : _libraryManager.GetItemById(itemId);
 
         if (item is null)
@@ -295,7 +295,7 @@ public class UserLibraryController : BaseJellyfinApiController
         }
 
         var item = itemId.Equals(default)
-            ? _libraryManager.GetUserRootFolder()
+            ? LibraryRoot.UserRootFolder
             : _libraryManager.GetItemById(itemId);
 
         if (item is null)
@@ -331,7 +331,7 @@ public class UserLibraryController : BaseJellyfinApiController
         }
 
         var item = itemId.Equals(default)
-            ? _libraryManager.GetUserRootFolder()
+            ? LibraryRoot.UserRootFolder
             : _libraryManager.GetItemById(itemId);
 
         if (item is null)
@@ -376,7 +376,7 @@ public class UserLibraryController : BaseJellyfinApiController
         }
 
         var item = itemId.Equals(default)
-            ? _libraryManager.GetUserRootFolder()
+            ? LibraryRoot.UserRootFolder
             : _libraryManager.GetItemById(itemId);
 
         if (item is null)
@@ -559,7 +559,7 @@ public class UserLibraryController : BaseJellyfinApiController
         }
 
         var item = itemId.Equals(default)
-            ? _libraryManager.GetUserRootFolder()
+            ? LibraryRoot.UserRootFolder
             : _libraryManager.GetItemById(itemId);
 
         if (item is null)

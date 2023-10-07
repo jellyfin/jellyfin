@@ -835,7 +835,7 @@ namespace MediaBrowser.Controller.Entities
 
         public bool CanDelete(User user)
         {
-            var allCollectionFolders = LibraryManager.GetUserRootFolder().Children.OfType<Folder>().ToList();
+            var allCollectionFolders = LibraryRoot.UserRootFolder.Children.OfType<Folder>().ToList();
 
             return CanDelete(user, allCollectionFolders);
         }
@@ -1306,7 +1306,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (itemCollectionFolders.Count > 0)
                 {
-                    var userCollectionFolders = LibraryManager.GetUserRootFolder().GetChildren(user, true).Select(i => i.Id).ToList();
+                    var userCollectionFolders = LibraryRoot.UserRootFolder.GetChildren(user, true).Select(i => i.Id).ToList();
                     if (!itemCollectionFolders.Any(userCollectionFolders.Contains))
                     {
                         return false;
