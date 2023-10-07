@@ -1745,11 +1745,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // Values 0-3, 0 being highest quality but slower
                 var profileScore = 0;
 
-                string crf;
                 var qmin = "0";
                 var qmax = "50";
-
-                crf = "10";
+                var crf = "10";
 
                 if (isVc1)
                 {
