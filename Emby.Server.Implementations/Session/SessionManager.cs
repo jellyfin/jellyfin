@@ -19,6 +19,7 @@ using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
@@ -48,6 +49,7 @@ namespace Emby.Server.Implementations.Session
     public sealed class SessionManager : ISessionManager, IAsyncDisposable
     {
         private readonly IUserDataManager _userDataManager;
+        private readonly IServerConfigurationManager _config;
         private readonly ILogger<SessionManager> _logger;
         private readonly IEventManager _eventManager;
         private readonly ILibraryManager _libraryManager;
@@ -63,6 +65,7 @@ namespace Emby.Server.Implementations.Session
             = new(StringComparer.OrdinalIgnoreCase);
 
         private Timer _idleTimer;
+        private Timer _inactiveTimer;
 
         private DtoOptions _itemInfoDtoOptions;
         private bool _disposed = false;
@@ -71,6 +74,7 @@ namespace Emby.Server.Implementations.Session
             ILogger<SessionManager> logger,
             IEventManager eventManager,
             IUserDataManager userDataManager,
+            IServerConfigurationManager config,
             ILibraryManager libraryManager,
             IUserManager userManager,
             IMusicManager musicManager,
@@ -84,6 +88,7 @@ namespace Emby.Server.Implementations.Session
             _logger = logger;
             _eventManager = eventManager;
             _userDataManager = userDataManager;
+            _config = config;
             _libraryManager = libraryManager;
             _userManager = userManager;
             _musicManager = musicManager;
@@ -369,6 +374,15 @@ namespace Emby.Server.Implementations.Session
                 session.LastPlaybackCheckIn = DateTime.UtcNow;
             }
 
+            if (info.IsPaused && session.LastPausedDate is null)
+            {
+                session.LastPausedDate = DateTime.UtcNow;
+            }
+            else if (!info.IsPaused)
+            {
+                session.LastPausedDate = null;
+            }
+
             session.PlayState.IsPaused = info.IsPaused;
             session.PlayState.PositionTicks = info.PositionTicks;
             session.PlayState.MediaSourceId = info.MediaSourceId;
@@ -536,9 +550,18 @@ namespace Emby.Server.Implementations.Session
             return users;
         }
 
-        private void StartIdleCheckTimer()
+        private void StartCheckTimers()
         {
             _idleTimer ??= new Timer(CheckForIdlePlayback, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
+
+            if (_config.Configuration.InactiveSessionThreshold > 0)
+            {
+                _inactiveTimer ??= new Timer(CheckForInactiveSteams, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+            }
+            else
+            {
+                StopInactiveCheckTimer();
+            }
         }
 
         private void StopIdleCheckTimer()
@@ -547,6 +570,15 @@ namespace Emby.Server.Implementations.Session
             {
                 _idleTimer.Dispose();
                 _idleTimer = null;
+            }
+        }
+
+        private void StopInactiveCheckTimer()
+        {
+            if (_inactiveTimer is not null)
+            {
+                _inactiveTimer.Dispose();
+                _inactiveTimer = null;
             }
         }
 
@@ -585,10 +617,53 @@ namespace Emby.Server.Implementations.Session
                 playingSessions = Sessions.Where(i => i.NowPlayingItem is not null)
                     .ToList();
             }
-
-            if (playingSessions.Count == 0)
+            else
             {
                 StopIdleCheckTimer();
+            }
+        }
+
+        private async void CheckForInactiveSteams(object state)
+        {
+            var pausedSessions = Sessions.Where(i =>
+                    i.NowPlayingItem is not null
+                    && i.PlayState.IsPaused
+                    && i.LastPausedDate is not null)
+                .ToList();
+
+            if (pausedSessions.Count > 0)
+            {
+                var inactiveSessions = pausedSessions.Where(i => (DateTime.UtcNow - i.LastPausedDate).Value.TotalMinutes > _config.Configuration.InactiveSessionThreshold).ToList();
+
+                foreach (var session in inactiveSessions)
+                {
+                    _logger.LogDebug("Session {Session} has been inactive for {InactiveTime} minutes. Stopping it.", session.Id, _config.Configuration.InactiveSessionThreshold);
+
+                    try
+                    {
+                        await SendPlaystateCommand(
+                            session.Id,
+                            session.Id,
+                            new PlaystateRequest()
+                            {
+                                Command = PlaystateCommand.Stop,
+                                ControllingUserId = session.UserId.ToString(),
+                                SeekPositionTicks = session.PlayState?.PositionTicks
+                            },
+                            CancellationToken.None).ConfigureAwait(true);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogDebug(ex, "Error calling SendPlaystateCommand for stopping inactive session {Session}.", session.Id);
+                    }
+                }
+            }
+
+            var playingSessions = Sessions.Where(i => i.NowPlayingItem is not null)
+                .ToList();
+            if (playingSessions.Count == 0)
+            {
+                StopInactiveCheckTimer();
             }
         }
 
@@ -668,7 +743,7 @@ namespace Emby.Server.Implementations.Session
                 eventArgs,
                 _logger);
 
-            StartIdleCheckTimer();
+            StartCheckTimers();
         }
 
         /// <summary>
@@ -762,7 +837,7 @@ namespace Emby.Server.Implementations.Session
                 session.StartAutomaticProgress(info);
             }
 
-            StartIdleCheckTimer();
+            StartCheckTimers();
         }
 
         private void OnPlaybackProgress(User user, BaseItem item, PlaybackProgressInfo info)
@@ -1796,6 +1871,12 @@ namespace Emby.Server.Implementations.Session
             {
                 await _idleTimer.DisposeAsync().ConfigureAwait(false);
                 _idleTimer = null;
+            }
+
+            if(_inactiveTimer is not null)
+            {
+                await _inactiveTimer.DisposeAsync().ConfigureAwait(false);
+                _inactiveTimer = null;
             }
 
             await _shutdownCallback.DisposeAsync().ConfigureAwait(false);
