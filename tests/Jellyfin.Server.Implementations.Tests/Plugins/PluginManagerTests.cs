@@ -119,8 +119,8 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
         [InlineData("C:\\some.dll")] // Windows root path.
         [InlineData("test.txt")] // Not a DLL
         [InlineData(".././.././../some.dll")] // Traversal with current and parent
-        [InlineData("..\\.\\..\\.\\..\\some.dll")] // Windows traversal with current and parent
-        [InlineData("\\\\network\\resource.dll")] // UNC Path
+        [InlineData(@"..\.\..\.\..\some.dll")] // Windows traversal with current and parent
+        [InlineData(@"\\network\resource.dll")] // UNC Path
         [InlineData("https://jellyfin.org/some.dll")] // URL
         [InlineData("~/some.dll")] // Tilde poses a shell expansion risk, but is a valid path character.
         public void Constructor_DiscoversUnsafePluginAssembly_Status_Malfunctioned(string unsafePath)

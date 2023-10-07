@@ -2947,7 +2947,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 return string.Format(
                     CultureInfo.InvariantCulture,
-                    "scale=trunc(min(max(iw\\,ih*a)\\,min({0}\\,{1}*a))/{2})*{2}:trunc(min(max(iw/a\\,ih)\\,min({0}/a\\,{1}))/2)*2",
+                    @"scale=trunc(min(max(iw\,ih*a)\,min({0}\,{1}*a))/{2})*{2}:trunc(min(max(iw/a\,ih)\,min({0}/a\,{1}))/2)*2",
                     maxWidthParam,
                     maxHeightParam,
                     scaleVal);
@@ -2989,7 +2989,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 return string.Format(
                     CultureInfo.InvariantCulture,
-                    "scale=trunc(min(max(iw\\,ih*a)\\,{0})/{1})*{1}:trunc(ow/a/2)*2",
+                    @"scale=trunc(min(max(iw\,ih*a)\,{0})/{1})*{1}:trunc(ow/a/2)*2",
                     maxWidthParam,
                     scaleVal);
             }
@@ -3001,7 +3001,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 return string.Format(
                     CultureInfo.InvariantCulture,
-                    "scale=trunc(oh*a/{1})*{1}:min(max(iw/a\\,ih)\\,{0})",
+                    @"scale=trunc(oh*a/{1})*{1}:min(max(iw/a\,ih)\,{0})",
                     maxHeightParam,
                     scaleVal);
             }
@@ -3021,19 +3021,19 @@ namespace MediaBrowser.Controller.MediaEncoding
                 switch (threedFormat.Value)
                 {
                     case Video3DFormat.HalfSideBySide:
-                        filter = "crop=iw/2:ih:0:0,scale=(iw*2):ih,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1,scale={0}:trunc({0}/dar/2)*2";
+                        filter = @"crop=iw/2:ih:0:0,scale=(iw*2):ih,setdar=dar=a,crop=min(iw\,ih*dar):min(ih\,iw/dar):(iw-min(iw\,iw*sar))/2:(ih - min (ih\,ih/sar))/2,setsar=sar=1,scale={0}:trunc({0}/dar/2)*2";
                         // hsbs crop width in half,scale to correct size, set the display aspect,crop out any black bars we may have made the scale width to requestedWidth. Work out the correct height based on the display aspect it will maintain the aspect where -1 in this case (3d) may not.
                         break;
                     case Video3DFormat.FullSideBySide:
-                        filter = "crop=iw/2:ih:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1,scale={0}:trunc({0}/dar/2)*2";
+                        filter = @"crop=iw/2:ih:0:0,setdar=dar=a,crop=min(iw\,ih*dar):min(ih\,iw/dar):(iw-min(iw\,iw*sar))/2:(ih - min (ih\,ih/sar))/2,setsar=sar=1,scale={0}:trunc({0}/dar/2)*2";
                         // fsbs crop width in half,set the display aspect,crop out any black bars we may have made the scale width to requestedWidth.
                         break;
                     case Video3DFormat.HalfTopAndBottom:
-                        filter = "crop=iw:ih/2:0:0,scale=(iw*2):ih),setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1,scale={0}:trunc({0}/dar/2)*2";
+                        filter = @"crop=iw:ih/2:0:0,scale=(iw*2):ih),setdar=dar=a,crop=min(iw\,ih*dar):min(ih\,iw/dar):(iw-min(iw\,iw*sar))/2:(ih - min (ih\,ih/sar))/2,setsar=sar=1,scale={0}:trunc({0}/dar/2)*2";
                         // htab crop height in half,scale to correct size, set the display aspect,crop out any black bars we may have made the scale width to requestedWidth
                         break;
                     case Video3DFormat.FullTopAndBottom:
-                        filter = "crop=iw:ih/2:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1,scale={0}:trunc({0}/dar/2)*2";
+                        filter = @"crop=iw:ih/2:0:0,setdar=dar=a,crop=min(iw\,ih*dar):min(ih\,iw/dar):(iw-min(iw\,iw*sar))/2:(ih - min (ih\,ih/sar))/2,setsar=sar=1,scale={0}:trunc({0}/dar/2)*2";
                         // ftab crop height in half, set the display aspect,crop out any black bars we may have made the scale width to requestedWidth
                         break;
                     default:

@@ -58,7 +58,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _mediaSourceManager = mediaSourceManager;
         }
 
-        [GeneratedRegex("I:\\s+(.*?)\\s+LUFS")]
+        [GeneratedRegex(@"I:\s+(.*?)\s+LUFS")]
         private static partial Regex LUFSRegex();
 
         /// <summary>

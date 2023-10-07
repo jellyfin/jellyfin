@@ -376,7 +376,7 @@ namespace Emby.Naming.Common
                     IsNamed = true,
                     SupportsAbsoluteEpisodeNumbers = false
                 },
-                new EpisodeExpression("[\\/._ -]p(?:ar)?t[_. -]()([ivx]+|[0-9]+)([._ -][^\\/]*)$")
+                new EpisodeExpression(@"[\/._ -]p(?:ar)?t[_. -]()([ivx]+|[0-9]+)([._ -][^\/]*)$")
                 {
                     SupportsAbsoluteEpisodeNumbers = true
                 },
