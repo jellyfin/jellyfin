@@ -524,14 +524,15 @@ namespace Emby.Server.Implementations.Updates
             using var md5 = MD5.Create();
             cancellationToken.ThrowIfCancellationRequested();
 
-            var hash = Convert.ToHexString(md5.ComputeHash(stream));
-            if (!string.Equals(package.Checksum, hash, StringComparison.OrdinalIgnoreCase))
+            var hash = await md5.ComputeHashAsync(stream, cancellationToken).ConfigureAwait(false);
+            var hashHex = Convert.ToHexString(hash);
+            if (!string.Equals(package.Checksum, hashHex, StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogError(
                     "The checksums didn't match while installing {Package}, expected: {Expected}, got: {Received}",
                     package.Name,
                     package.Checksum,
-                    hash);
+                    hashHex);
                 throw new InvalidDataException("The checksum of the received data doesn't match.");
             }
 
