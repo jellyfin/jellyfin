@@ -84,16 +84,24 @@ namespace Emby.Server.Implementations.Net
 
             try
             {
-                var interfaceIndex = bindInterface.Index;
-                var interfaceIndexSwapped = IPAddress.HostToNetworkOrder(interfaceIndex);
-
                 socket.MulticastLoopback = false;
                 socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.PacketInformation, true);
-                socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, multicastTimeToLive);
-                socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastInterface, interfaceIndexSwapped);
-                socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(multicastAddress, interfaceIndex));
-                socket.Bind(new IPEndPoint(bindIPAddress, localPort));
+
+                if (OperatingSystem.IsLinux())
+                {
+                    socket.Bind(new IPEndPoint(multicastAddress, localPort));
+                }
+                else
+                {
+                    var interfaceIndex = bindInterface.Index;
+                    var interfaceIndexSwapped = IPAddress.HostToNetworkOrder(interfaceIndex);
+
+                    socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.PacketInformation, true);
+                    socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, multicastTimeToLive);
+                    socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastInterface, interfaceIndexSwapped);
+                    socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(multicastAddress, interfaceIndex));
+                    socket.Bind(new IPEndPoint(bindIPAddress, localPort));
+                }
 
                 return socket;
             }

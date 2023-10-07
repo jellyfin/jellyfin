@@ -64,8 +64,11 @@ namespace Rssdp.Infrastructure
         /// Minimum constructor.
         /// </summary>
         /// <exception cref="ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
-        public SsdpCommunicationsServer(ISocketFactory socketFactory,
-            INetworkManager networkManager, ILogger logger, bool enableMultiSocketBinding)
+        public SsdpCommunicationsServer(
+            ISocketFactory socketFactory,
+            INetworkManager networkManager,
+            ILogger logger,
+            bool enableMultiSocketBinding)
             : this(socketFactory, 0, SsdpConstants.SsdpDefaultMulticastTimeToLive, networkManager, logger, enableMultiSocketBinding)
         {
 
@@ -76,7 +79,13 @@ namespace Rssdp.Infrastructure
         /// </summary>
         /// <exception cref="ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="multicastTimeToLive"/> argument is less than or equal to zero.</exception>
-        public SsdpCommunicationsServer(ISocketFactory socketFactory, int localPort, int multicastTimeToLive, INetworkManager networkManager, ILogger logger, bool enableMultiSocketBinding)
+        public SsdpCommunicationsServer(
+            ISocketFactory socketFactory,
+            int localPort,
+            int multicastTimeToLive,
+            INetworkManager networkManager,
+            ILogger logger,
+            bool enableMultiSocketBinding)
         {
             if (socketFactory is null)
             {
@@ -423,7 +432,7 @@ namespace Rssdp.Infrastructure
             {
                 try
                 {
-                    var result = await socket.ReceiveMessageFromAsync(receiveBuffer, SocketFlags.None, new IPEndPoint(IPAddress.Parse(SsdpConstants.MulticastLocalAdminAddress), 0), CancellationToken.None).ConfigureAwait(false);;
+                    var result = await socket.ReceiveMessageFromAsync(receiveBuffer, new IPEndPoint(IPAddress.Any, _LocalPort), CancellationToken.None).ConfigureAwait(false);;
 
                     if (result.ReceivedBytes > 0)
                     {
