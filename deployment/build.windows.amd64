@@ -6,12 +6,30 @@ set -o errexit
 set -o xtrace
 
 # Version variables
+
+# Figure out the latest version by sorting based on the date then version number
+# ideally we should just have a symlink called latest that points to the latest version...
+JELLYFIN_WEB_LATEST_VERSION=$(curl -q https://repo.jellyfin.org/releases/server/portable/versions/unstable/web/ | grep -oP 'href="\K[0-9]+\.[0-9]+' | sort -t. -rn -k1,1 -k2,2 | head -1)
+
+JELLYFIN_WEB_FILENAME="jellyfin-web_${JELLYFIN_WEB_LATEST_VERSION}_portable.tar.gz"
+JELLYFIN_WEB_URL="https://repo.jellyfin.org/releases/server/portable/versions/unstable/web/${JELLYFIN_WEB_LATEST_VERSION}/${JELLYFIN_WEB_FILENAME}"
+
+JELLYFIN_INSTALLER_VERSION=master
+JELLYFIN_INSTALLER_URL="https://github.com/jellyfin/jellyfin-server-windows"
+
+JELLYFIN_UX_VERSION=master
+JELLYFIN_UX_URL="https://github.com/jellyfin/jellyfin-ux"
+
 NSSM_VERSION="nssm-2.24-101-g897c7ad"
 NSSM_URL="http://files.evilt.win/nssm/${NSSM_VERSION}.zip"
+
+NSIS_VERSION="3.09"
+NSIS_URL="https://download.sourceforge.net/project/nsis/NSIS%203/${NSIS_VERSION}/nsis-${NSIS_VERSION}.zip"
+
 FFMPEG_URL="https://repo.jellyfin.org/releases/server/windows/ffmpeg/jellyfin-ffmpeg-portable_win64.zip";
 
 # Move to source directory
-pushd ${SOURCE_DIR}
+cd ${SOURCE_DIR}
 
 # Get version
 if [[ ${IS_UNSTABLE} == 'yes' ]]; then
@@ -20,33 +38,75 @@ else
     version="$( grep "version:" ./build.yaml | sed -E 's/version: "([0-9\.]+.*)"/\1/' )"
 fi
 
-output_dir="dist/jellyfin-server_${version}"
+mkdir -p ${ARTIFACT_DIR}/
+output_dir="${SOURCE_DIR}/dist/jellyfin-server_${version}"
+mkdir -p ${output_dir}
+
+# Prepare addins working directory
+addin_build_dir="$( mktemp -d )"
+
+# # Workaround https://github.com/dotnet/core/issues/7868
+OLD_XDG_DATA_HOME="${XDG_DATA_HOME}"
+export XDG_DATA_HOME=${addin_build_dir}
+export DOTNET_CLI_HOME=${addin_build_dir}/.dotnet
 
 # Build binary
 dotnet publish Jellyfin.Server --configuration Release --self-contained --runtime win-x64 --output ${output_dir}/ -p:DebugSymbols=false -p:DebugType=none -p:UseAppHost=true
 
-# Prepare addins
-addin_build_dir="$( mktemp -d )"
-wget ${NSSM_URL} -O ${addin_build_dir}/nssm.zip
-wget ${FFMPEG_URL} -O ${addin_build_dir}/jellyfin-ffmpeg.zip
+# NSSM
+wget -q ${NSSM_URL} -O ${addin_build_dir}/nssm.zip
 unzip ${addin_build_dir}/nssm.zip -d ${addin_build_dir}
 cp ${addin_build_dir}/${NSSM_VERSION}/win64/nssm.exe ${output_dir}/nssm.exe
+
+# FFMPEG
+wget -q ${FFMPEG_URL} -O ${addin_build_dir}/jellyfin-ffmpeg.zip
 unzip ${addin_build_dir}/jellyfin-ffmpeg.zip -d ${addin_build_dir}/jellyfin-ffmpeg
 cp ${addin_build_dir}/jellyfin-ffmpeg/* ${output_dir}
+
+# Web files
+pushd ${addin_build_dir}
+wget -q "${JELLYFIN_WEB_URL}"
+wget -q "${JELLYFIN_WEB_URL}.sha256sum"
+sha256sum -c ${JELLYFIN_WEB_FILENAME}.sha256sum
+tar -xzf ${JELLYFIN_WEB_FILENAME}
+
+rm jellyfin-web*.tar.gz*
+cp -r jellyfin-web* ${output_dir}/jellyfin-web
+popd
+
+# UX and license for installer
+cp ${SOURCE_DIR}/LICENSE ${output_dir}/LICENSE
+
+git clone ${JELLYFIN_UX_URL} ${addin_build_dir}/jellyfin-ux
+pushd ${addin_build_dir}/jellyfin-ux
+git checkout ${JELLYFIN_UX_VERSION}
+popd
+
+# Installer deps
+git clone ${JELLYFIN_INSTALLER_URL} ${addin_build_dir}/jellyfin-installer
+pushd ${addin_build_dir}/jellyfin-installer
+git checkout ${JELLYFIN_INSTALLER_VERSION}
+dotnet publish Jellyfin.Windows.Tray --configuration Release --runtime win-x64 --output ${output_dir}/ -p:DebugSymbols=false -p:DebugType=none -p:UseAppHost=true
+popd
+
+# Run makensis
+InstallLocation=${output_dir} ProgramData="C:\ProgramData" makensis \
+    -Dx64 -DUXPATH=${addin_build_dir}/jellyfin-ux \
+    ${addin_build_dir}/jellyfin-installer/nsis/jellyfin.nsi
+
+mv ${addin_build_dir}/jellyfin-installer/nsis/jellyfin*windows-x64.exe ${ARTIFACT_DIR}/jellyfin-${version}-windows-x64.exe
+
 rm -rf ${addin_build_dir}
+export XDG_DATA_HOME="${OLD_XDG_DATA_HOME}"
 
 # Create zip package
-pushd dist
+pushd "${SOURCE_DIR}/dist"
 zip -qr jellyfin-server_${version}.portable.zip jellyfin-server_${version}
+mv jellyfin[-_]*.zip ${ARTIFACT_DIR}/
 popd
-rm -rf ${output_dir}
 
-# Move the artifacts out
-mkdir -p ${ARTIFACT_DIR}/
-mv dist/jellyfin[-_]*.zip ${ARTIFACT_DIR}/
+rm -rf ${output_dir}
 
 if [[ ${IS_DOCKER} == YES ]]; then
     chown -Rc $(stat -c %u:%g ${ARTIFACT_DIR}) ${ARTIFACT_DIR}
 fi
-
-popd
