@@ -47,7 +47,7 @@ namespace Emby.Server.Implementations.Data
                 using var transaction = connection.BeginTransaction();
                 connection.Execute(string.Join(
                     ';',
-                    "create table if not exists UserDatas (key nvarchar not null, userId INT not null, rating float null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null, AudioStreamIndex INT, SubtitleStreamIndex INT)",
+                    "create table if not exists UserDatas (key nvarchar not null, userId INT not null, rating float null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null, AudioStreamIndex INT, SubtitleStreamIndex INT, excludedFromContinueWatching bit)",
                     "drop index if exists idx_userdata",
                     "drop index if exists idx_userdata1",
                     "drop index if exists idx_userdata2",
@@ -59,6 +59,10 @@ namespace Emby.Server.Implementations.Data
                     "create index if not exists UserDatasIndex2 on UserDatas (key, userId, played)",
                     "create index if not exists UserDatasIndex3 on UserDatas (key, userId, playbackPositionTicks)",
                     "create index if not exists UserDatasIndex4 on UserDatas (key, userId, isFavorite)"));
+
+                // Column added before release of 10.9.0 Ensure column gets added to table upon jellyfin update.
+                var existingColumnNamesUserDatas = GetColumnNames(connection, "UserDatas");
+                AddColumn(connection, "UserDatas", "excludedFromContinueWatching", "bit", existingColumnNamesUserDatas);
 
                 if (!userDataTableExists)
                 {
@@ -177,7 +181,7 @@ namespace Emby.Server.Implementations.Data
 
         private static void SaveUserData(SqliteConnection db, long internalUserId, string key, UserItemData userData)
         {
-            using (var statement = db.PrepareStatement("replace into UserDatas (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex, excludedFromContinueWatching) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex,@excludedFromContinueWatching)"))
+            using (var statement = db.PrepareStatement("replace into UserDatas (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex,excludedFromContinueWatching) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex,@IsExcludedFromContinueWatching)"))
             {
                 statement.TryBind("@userId", internalUserId);
                 statement.TryBind("@key", key);
@@ -223,7 +227,14 @@ namespace Emby.Server.Implementations.Data
                     statement.TryBindNull("@SubtitleStreamIndex");
                 }
 
-                statement.TryBind("@excludedFromContinueWatching", userData.IsExcludedFromContinueWatching);
+                if (userData.IsExcludedFromContinueWatching.HasValue)
+                {
+                    statement.TryBind("@IsExcludedFromContinueWatching", userData.IsExcludedFromContinueWatching.Value);
+                }
+                else
+                {
+                    statement.TryBindNull("@IsExcludedFromContinueWatching");
+                }
 
                 statement.ExecuteNonQuery();
             }
