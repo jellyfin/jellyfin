@@ -667,7 +667,7 @@ namespace Emby.Server.Implementations.Session
 
                 foreach (var session in inactiveSessions)
                 {
-                    _logger.LogDebug("Session {0} has been inactive for {1} minutes. Stopping it.", session.Id, _config.Configuration.InactiveSessionThreshold);
+                    _logger.LogDebug("Session {Session} has been inactive for {InactiveTime} minutes. Stopping it.", session.Id, _config.Configuration.InactiveSessionThreshold);
 
                     try
                     {
@@ -684,7 +684,7 @@ namespace Emby.Server.Implementations.Session
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogDebug(ex, "Error calling SendPlaystateCommand for stopping inactive session {0}.", session.Id);
+                        _logger.LogDebug(ex, "Error calling SendPlaystateCommand for stopping inactive session {Session}.", session.Id);
                     }
                 }
             }
