@@ -927,14 +927,11 @@ namespace Emby.Dlna.PlayTo
 
             var resElement = container.Element(UPnpNamespaces.Res);
 
-            if (resElement is not null)
-            {
-                var info = resElement.Attribute(UPnpNamespaces.ProtocolInfo);
+            var info = resElement?.Attribute(UPnpNamespaces.ProtocolInfo);
 
-                if (info is not null && !string.IsNullOrWhiteSpace(info.Value))
-                {
-                    return info.Value.Split(':');
-                }
+            if (info is not null && !string.IsNullOrWhiteSpace(info.Value))
+            {
+                return info.Value.Split(':');
             }
 
             return new string[4];

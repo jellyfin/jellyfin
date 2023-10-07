@@ -3540,10 +3540,7 @@ namespace Emby.Server.Implementations.Data
                         .Append(paramName)
                         .Append("))) OR ");
 
-                    if (statement is not null)
-                    {
-                        statement.TryBind(paramName, query.PersonIds[i]);
-                    }
+                    statement?.TryBind(paramName, query.PersonIds[i]);
                 }
 
                 clauseBuilder.Length -= Or.Length;

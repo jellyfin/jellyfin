@@ -527,10 +527,7 @@ namespace Rssdp.Infrastructure
         {
             var timer = _RebroadcastAliveNotificationsTimer;
             _RebroadcastAliveNotificationsTimer = null;
-            if (timer is not null)
-            {
-                timer.Dispose();
-            }
+            timer?.Dispose();
         }
 
         private TimeSpan GetMinimumNonZeroCacheLifetime()
@@ -564,10 +561,7 @@ namespace Rssdp.Infrastructure
 
         private void WriteTrace(string text)
         {
-            if (LogFunction is not null)
-            {
-                LogFunction(text);
-            }
+            LogFunction?.Invoke(text);
             // System.Diagnostics.Debug.WriteLine(text, "SSDP Publisher");
         }
 

@@ -512,22 +512,16 @@ namespace Rssdp.Infrastructure
             }
 
             var handlers = this.RequestReceived;
-            if (handlers is not null)
-            {
-                handlers(this, new RequestReceivedEventArgs(data, remoteEndPoint, receivedOnlocalIPAddress));
-            }
+            handlers?.Invoke(this, new RequestReceivedEventArgs(data, remoteEndPoint, receivedOnlocalIPAddress));
         }
 
         private void OnResponseReceived(HttpResponseMessage data, IPEndPoint endPoint, IPAddress localIPAddress)
         {
             var handlers = this.ResponseReceived;
-            if (handlers is not null)
+            handlers?.Invoke(this, new ResponseReceivedEventArgs(data, endPoint)
             {
-                handlers(this, new ResponseReceivedEventArgs(data, endPoint)
-                {
-                    LocalIPAddress = localIPAddress
-                });
-            }
+                LocalIPAddress = localIPAddress
+            });
         }
     }
 }
