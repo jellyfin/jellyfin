@@ -787,6 +787,8 @@ namespace Emby.Server.Implementations.Session
 
             if (changed)
             {
+                // If playback progress is changed then clear the continue watching exclusion flag so it will show up again.
+                data.IsExcludedFromContinueWatching = false;
                 _userDataManager.SaveUserData(user, item, data, UserDataSaveReason.PlaybackProgress, CancellationToken.None);
             }
         }
