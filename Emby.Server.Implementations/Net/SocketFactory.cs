@@ -83,7 +83,7 @@ namespace Emby.Server.Implementations.Net
             try
             {
                 var interfaceIndex = bindInterface.Index;
-                var interfaceIndexSwapped = (int)IPAddress.HostToNetworkOrder(interfaceIndex);
+                var interfaceIndexSwapped = IPAddress.HostToNetworkOrder(interfaceIndex);
 
                 socket.MulticastLoopback = false;
                 socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
