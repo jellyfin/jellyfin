@@ -4382,7 +4382,7 @@ namespace Emby.Server.Implementations.Data
 
                 foreach (var videoType in query.VideoTypes)
                 {
-                    videoTypes.Add("data like '%\"VideoType\":\"" + videoType.ToString() + "\"%'");
+                    videoTypes.Add("data like '%\"VideoType\":\"" + videoType + "\"%'");
                 }
 
                 whereClauses.Add("(" + string.Join(" OR ", videoTypes) + ")");

@@ -424,7 +424,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (request.MediaSource.AnalyzeDurationMs > 0)
             {
-                analyzeDuration = "-analyzeduration " + (request.MediaSource.AnalyzeDurationMs * 1000).ToString();
+                analyzeDuration = "-analyzeduration " + (request.MediaSource.AnalyzeDurationMs * 1000);
             }
             else if (!string.IsNullOrEmpty(ffmpegAnalyzeDuration))
             {
