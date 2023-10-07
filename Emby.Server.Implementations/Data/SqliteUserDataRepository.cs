@@ -48,7 +48,7 @@ namespace Emby.Server.Implementations.Data
                 using var transaction = connection.BeginTransaction();
                 connection.Execute(string.Join(
                     ';',
-                    "create table if not exists UserDatas (key nvarchar not null, userId INT not null, rating float null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null, AudioStreamIndex INT, SubtitleStreamIndex INT, excludedFromContinueWatching bit)",
+                    "create table if not exists UserDatas (key nvarchar not null, userId INT not null, rating float null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null, AudioStreamIndex INT, SubtitleStreamIndex INT, excludedFromContinueWatching bit, excludedFromNextUp bit)",
                     "drop index if exists idx_userdata",
                     "drop index if exists idx_userdata1",
                     "drop index if exists idx_userdata2",
@@ -64,6 +64,7 @@ namespace Emby.Server.Implementations.Data
                 // Column added before release of 10.9.0 Ensure column gets added to table upon jellyfin update.
                 var existingColumnNamesUserDatas = GetColumnNames(connection, "UserDatas");
                 AddColumn(connection, "UserDatas", "excludedFromContinueWatching", "bit", existingColumnNamesUserDatas);
+                AddColumn(connection, "UserDatas", "excludedFromNextUp", "bit", existingColumnNamesUserDatas);
 
                 if (!userDataTableExists)
                 {
@@ -182,7 +183,7 @@ namespace Emby.Server.Implementations.Data
 
         private static void SaveUserData(SqliteConnection db, long internalUserId, string key, UserItemData userData)
         {
-            using (var statement = db.PrepareStatement("replace into UserDatas (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex,excludedFromContinueWatching) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex,@IsExcludedFromContinueWatching)"))
+            using (var statement = db.PrepareStatement("replace into UserDatas (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex,excludedFromContinueWatching,excludedFromNextUp) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex,@IsExcludedFromContinueWatching,@IsExcludedFromNextUp)"))
             {
                 statement.TryBind("@userId", internalUserId);
                 statement.TryBind("@key", key);
@@ -237,6 +238,15 @@ namespace Emby.Server.Implementations.Data
                     statement.TryBindNull("@IsExcludedFromContinueWatching");
                 }
 
+                if (userData.IsExcludedFromNextUp.HasValue)
+                {
+                    statement.TryBind("@IsExcludedFromNextUp", userData.IsExcludedFromNextUp.Value);
+                }
+                else
+                {
+                    statement.TryBindNull("@IsExcludedFromNextUp");
+                }
+
                 statement.ExecuteNonQuery();
             }
         }
@@ -282,7 +292,7 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection())
             {
-                using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex,excludedFromContinueWatching from UserDatas where key =@Key and userId=@UserId"))
+                using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex,excludedFromContinueWatching,excludedFromNextUp from UserDatas where key =@Key and userId=@UserId"))
                 {
                     statement.TryBind("@UserId", userId);
                     statement.TryBind("@Key", key);
@@ -325,7 +335,7 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection())
             {
-                using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex,excludedFromContinueWatching from UserDatas where userId=@UserId"))
+                using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex,excludedFromContinueWatching,excludedFromNextUp from UserDatas where userId=@UserId"))
                 {
                     statement.TryBind("@UserId", userId);
 
@@ -379,6 +389,11 @@ namespace Emby.Server.Implementations.Data
             if (reader.TryGetBoolean(10, out var excludedFromContinueWatching))
             {
                 userData.IsExcludedFromContinueWatching = excludedFromContinueWatching;
+            }
+
+            if (reader.TryGetBoolean(11, out var excludedFromNextUp))
+            {
+                userData.IsExcludedFromNextUp = excludedFromNextUp;
             }
 
             return userData;

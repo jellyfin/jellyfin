@@ -3638,6 +3638,20 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
+            if (query.IsExcludedFromNextUp.HasValue)
+            {
+                if (query.IsExcludedFromNextUp.Value)
+                {
+                    whereClauses.Add("excludedFromNextUp=@IsExcludedFromNextUp");
+                    statement?.TryBind("@IsExcludedFromNextUp", query.IsExcludedFromNextUp.Value);
+                }
+                else
+                {
+                    whereClauses.Add("(excludedFromNextUp is null or excludedFromNextUp=@IsExcludedFromNextUp)");
+                    statement?.TryBind("@IsExcludedFromNextUp", query.IsExcludedFromNextUp.Value);
+                }
+            }
+
             if (query.IsLiked.HasValue)
             {
                 if (query.IsLiked.Value)

@@ -313,6 +313,78 @@ public class UserLibraryController : BaseJellyfinApiController
     }
 
     /// <summary>
+    /// Excludes an item from Next Up section.
+    /// </summary>
+    /// <param name="userId">User id.</param>
+    /// <param name="itemId">Item id.</param>
+    /// <response code="200">Item excluded from next up section.</response>
+    /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
+    [HttpPost("Users/{userId}/ExcludeNextUp/{itemId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<UserItemDataDto> ExcludeNextUpItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
+    {
+        var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        var item = itemId.Equals(default)
+            ? _libraryManager.GetUserRootFolder()
+            : _libraryManager.GetItemById(itemId);
+
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        if (item is not UserRootFolder
+            // Check the item is visible for the user
+            && !item.IsVisible(user))
+        {
+            return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
+        }
+
+        return ExcludeNextUp(user, item, true);
+    }
+
+    /// <summary>
+    /// Remove exclusion of an item from Next Up section.
+    /// </summary>
+    /// <param name="userId">User id.</param>
+    /// <param name="itemId">Item id.</param>
+    /// <response code="200">Item no longer excluded from next up.</response>
+    /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
+    [HttpDelete("Users/{userId}/ExcludeNextUp/{itemId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<UserItemDataDto> RemoveExcludeNextUpItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
+    {
+        var user = _userManager.GetUserById(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        var item = itemId.Equals(default)
+            ? _libraryManager.GetUserRootFolder()
+            : _libraryManager.GetItemById(itemId);
+
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        if (item is not UserRootFolder
+            // Check the item is visible for the user
+            && !item.IsVisible(user))
+        {
+            return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
+        }
+
+        return ExcludeNextUp(user, item, false);
+    }
+
+    /// <summary>
     /// Deletes a user's saved personal rating for an item.
     /// </summary>
     /// <param name="userId">User id.</param>
@@ -604,8 +676,27 @@ public class UserLibraryController : BaseJellyfinApiController
         // Get the user data for this item
         var data = _userDataRepository.GetUserData(user, item);
 
-        // Set favorite status
+        // Set exclusion status
         data.IsExcludedFromContinueWatching = isExcluded;
+
+        _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
+
+        return _userDataRepository.GetUserDataDto(item, user);
+    }
+
+    /// <summary>
+    /// Updates the exclusion state for an item from next up.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <param name="item">The item.</param>
+    /// <param name="isExcluded">if set to <c>true</c> [is excluded].</param>
+    private UserItemDataDto ExcludeNextUp(User user, BaseItem item, bool isExcluded)
+    {
+        // Get the user data for this item
+        var data = _userDataRepository.GetUserData(user, item);
+
+        // Set exclusion status
+        data.IsExcludedFromNextUp = isExcluded;
 
         _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
 

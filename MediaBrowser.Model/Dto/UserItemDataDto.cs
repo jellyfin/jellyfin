@@ -51,6 +51,12 @@ namespace MediaBrowser.Model.Dto
         public bool? IsExcludedFromContinueWatching { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether an item is excluded from next up section.
+        /// </summary>
+        /// <value><c>true</c> if this instance is excluded; otherwise, <c>false</c>.</value>
+        public bool? IsExcludedFromNextUp { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="UserItemDataDto" /> is likes.
         /// </summary>
         /// <value><c>null</c> if [likes] contains no value, <c>true</c> if [likes]; otherwise, <c>false</c>.</value>

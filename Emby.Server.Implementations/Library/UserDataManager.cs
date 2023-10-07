@@ -200,7 +200,8 @@ namespace Emby.Server.Implementations.Library
                 Played = data.Played,
                 LastPlayedDate = data.LastPlayedDate,
                 Key = data.Key,
-                IsExcludedFromContinueWatching = data.IsExcludedFromContinueWatching
+                IsExcludedFromContinueWatching = data.IsExcludedFromContinueWatching,
+                IsExcludedFromNextUp = data.IsExcludedFromNextUp
             };
         }
 

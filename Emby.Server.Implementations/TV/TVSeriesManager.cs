@@ -119,6 +119,7 @@ namespace Emby.Server.Implementations.TV
                         SeriesPresentationUniqueKey = presentationUniqueKey,
                         Limit = limit,
                         DtoOptions = new DtoOptions { Fields = new[] { ItemFields.SeriesPresentationUniqueKey }, EnableImages = false },
+                        IsExcludedFromNextUp = false,
                         GroupBySeriesPresentationUniqueKey = true
                     },
                     parentsFolders.ToList())
@@ -193,6 +194,7 @@ namespace Emby.Server.Implementations.TV
                 IsPlayed = true,
                 Limit = 1,
                 ParentIndexNumberNotEquals = 0,
+                IsExcludedFromNextUp = false,
                 DtoOptions = new DtoOptions
                 {
                     Fields = new[] { ItemFields.SortName },
@@ -219,6 +221,7 @@ namespace Emby.Server.Implementations.TV
                     IsPlayed = includePlayed,
                     IsVirtualItem = false,
                     ParentIndexNumberNotEquals = 0,
+                    IsExcludedFromNextUp = false,
                     DtoOptions = dtoOptions
                 };
 
@@ -242,6 +245,7 @@ namespace Emby.Server.Implementations.TV
                         IncludeItemTypes = new[] { BaseItemKind.Episode },
                         IsPlayed = includePlayed,
                         IsVirtualItem = false,
+                        IsExcludedFromNextUp = false,
                         DtoOptions = dtoOptions
                     })
                     .Cast<Episode>()
