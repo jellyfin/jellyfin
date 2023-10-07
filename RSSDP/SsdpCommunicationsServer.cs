@@ -423,7 +423,7 @@ namespace Rssdp.Infrastructure
             {
                 try
                 {
-                    var result = await socket.ReceiveMessageFromAsync(receiveBuffer, SocketFlags.None, new IPEndPoint(IPAddress.Any, 0), CancellationToken.None).ConfigureAwait(false);;
+                    var result = await socket.ReceiveMessageFromAsync(receiveBuffer, SocketFlags.None, new IPEndPoint(IPAddress.Any, 0), CancellationToken.None).ConfigureAwait(false);
 
                     if (result.ReceivedBytes > 0)
                     {
