@@ -1136,7 +1136,6 @@ namespace Emby.Dlna.PlayTo
             return new Device(deviceProperties, httpClientFactory, logger);
         }
 
-#nullable enable
         private static DeviceIcon CreateIcon(XElement element)
         {
             ArgumentNullException.ThrowIfNull(element);
