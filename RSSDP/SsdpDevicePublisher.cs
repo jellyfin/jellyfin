@@ -243,7 +243,7 @@ namespace Rssdp.Infrastructure
             }
 
             // Do not block synchronously as that may tie up a threadpool thread for several seconds.
-            Task.Delay(_Random.Next(16, (maxWaitInterval * 1000))).ContinueWith((parentTask) =>
+            Task.Delay(_Random.Next(16, (maxWaitInterval * 1000)), cancellationToken).ContinueWith((parentTask) =>
             {
                 // Copying devices to local array here to avoid threading issues/enumerator exceptions.
                 IEnumerable<SsdpDevice> devices = null;
@@ -281,7 +281,7 @@ namespace Rssdp.Infrastructure
                         }
                     }
                 }
-            });
+            }, cancellationToken);
         }
 
         private IEnumerable<SsdpDevice> GetAllDevicesAsFlatEnumerable()
