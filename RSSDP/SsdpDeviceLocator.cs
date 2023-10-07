@@ -447,10 +447,9 @@ namespace Rssdp.Infrastructure
         private string GetFirstHeaderStringValue(string headerName, HttpResponseMessage message)
         {
             string retVal = null;
-            IEnumerable<string> values;
             if (message.Headers.Contains(headerName))
             {
-                message.Headers.TryGetValues(headerName, out values);
+                message.Headers.TryGetValues(headerName, out var values);
                 if (values is not null)
                 {
                     retVal = values.FirstOrDefault();
@@ -463,10 +462,9 @@ namespace Rssdp.Infrastructure
         private string GetFirstHeaderStringValue(string headerName, HttpRequestMessage message)
         {
             string retVal = null;
-            IEnumerable<string> values;
             if (message.Headers.Contains(headerName))
             {
-                message.Headers.TryGetValues(headerName, out values);
+                message.Headers.TryGetValues(headerName, out var values);
                 if (values is not null)
                 {
                     retVal = values.FirstOrDefault();
@@ -479,10 +477,9 @@ namespace Rssdp.Infrastructure
         private Uri GetFirstHeaderUriValue(string headerName, HttpRequestMessage request)
         {
             string value = null;
-            IEnumerable<string> values;
             if (request.Headers.Contains(headerName))
             {
-                request.Headers.TryGetValues(headerName, out values);
+                request.Headers.TryGetValues(headerName, out var values);
                 if (values is not null)
                 {
                     value = values.FirstOrDefault();
@@ -496,10 +493,9 @@ namespace Rssdp.Infrastructure
         private Uri GetFirstHeaderUriValue(string headerName, HttpResponseMessage response)
         {
             string value = null;
-            IEnumerable<string> values;
             if (response.Headers.Contains(headerName))
             {
-                response.Headers.TryGetValues(headerName, out values);
+                response.Headers.TryGetValues(headerName, out var values);
                 if (values is not null)
                 {
                     value = values.FirstOrDefault();
