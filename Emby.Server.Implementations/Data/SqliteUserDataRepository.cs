@@ -346,15 +346,6 @@ namespace Emby.Server.Implementations.Data
         /// <returns>The user item data.</returns>
         private UserItemData ReadRow(SqliteDataReader reader)
         {
-            int columns = reader.FieldCount;
-            int i;
-            for (i = 0; i < columns; i++)
-            {
-                Console.Write(reader.GetName(i));
-                Console.Write('\t');
-                Console.WriteLine(reader.GetValue(i));
-            }
-
             var userData = new UserItemData();
 
             userData.Key = reader[0].ToString();
