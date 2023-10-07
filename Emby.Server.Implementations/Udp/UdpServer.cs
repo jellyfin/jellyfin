@@ -52,7 +52,10 @@ namespace Emby.Server.Implementations.Udp
 
             _endpoint = new IPEndPoint(bindAddress, port);
 
-            _udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            _udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp)
+            {
+                MulticastLoopback = false,
+            };
             _udpSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
         }
 
@@ -74,6 +77,7 @@ namespace Emby.Server.Implementations.Udp
 
             try
             {
+                _logger.LogDebug("Sending AutoDiscovery response");
                 await _udpSocket.SendToAsync(JsonSerializer.SerializeToUtf8Bytes(response), SocketFlags.None, endpoint, cancellationToken).ConfigureAwait(false);
             }
             catch (SocketException ex)
@@ -99,11 +103,12 @@ namespace Emby.Server.Implementations.Udp
             {
                 try
                 {
-                    var result = await _udpSocket.ReceiveFromAsync(_receiveBuffer, SocketFlags.None, _endpoint, cancellationToken).ConfigureAwait(false);
-                    var text = Encoding.UTF8.GetString(_receiveBuffer, 0, result.ReceivedBytes);
+                    var endpoint = (EndPoint)new IPEndPoint(0, 0);
+                    int bytesRead = _udpSocket.ReceiveFrom(_receiveBuffer, ref endpoint);
+                    var text = Encoding.UTF8.GetString(_receiveBuffer, 0, bytesRead);
                     if (text.Contains("who is JellyfinServer?", StringComparison.OrdinalIgnoreCase))
                     {
-                        await RespondToV2Message(result.RemoteEndPoint, cancellationToken).ConfigureAwait(false);
+                        await RespondToV2Message(endpoint, cancellationToken).ConfigureAwait(false);
                     }
                 }
                 catch (SocketException ex)
@@ -112,7 +117,7 @@ namespace Emby.Server.Implementations.Udp
                 }
                 catch (OperationCanceledException)
                 {
-                    // Don't throw
+                    _logger.LogDebug("Broadcast socket operation cancelled");
                 }
             }
         }
