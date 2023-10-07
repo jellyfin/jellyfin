@@ -126,8 +126,6 @@ namespace Emby.Server.Implementations.Udp
             }
 
             _udpSocket?.Dispose();
-
-            GC.SuppressFinalize(this);
         }
     }
 }
