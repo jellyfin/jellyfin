@@ -3,7 +3,6 @@ using System.Globalization;
 using System.IO;
 using Emby.Server.Implementations.Data;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Globalization;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
