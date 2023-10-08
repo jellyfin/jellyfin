@@ -1873,7 +1873,7 @@ namespace Emby.Server.Implementations.Session
                 _idleTimer = null;
             }
 
-            if(_inactiveTimer is not null)
+            if (_inactiveTimer is not null)
             {
                 await _inactiveTimer.DisposeAsync().ConfigureAwait(false);
                 _inactiveTimer = null;
