@@ -548,25 +548,25 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <returns>System.Nullable{VideoCodecs}.</returns>
         public string InferVideoCodec(string url)
         {
-            var ext = Path.GetExtension(url);
+            var ext = Path.GetExtension(url.AsSpan());
 
-            if (string.Equals(ext, ".asf", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".asf", StringComparison.OrdinalIgnoreCase))
             {
                 return "wmv";
             }
 
-            if (string.Equals(ext, ".webm", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".webm", StringComparison.OrdinalIgnoreCase))
             {
                 // TODO: this may not always mean VP8, as the codec ages
                 return "vp8";
             }
 
-            if (string.Equals(ext, ".ogg", StringComparison.OrdinalIgnoreCase) || string.Equals(ext, ".ogv", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".ogg", StringComparison.OrdinalIgnoreCase) || ext.Equals(".ogv", StringComparison.OrdinalIgnoreCase))
             {
                 return "theora";
             }
 
-            if (string.Equals(ext, ".m3u8", StringComparison.OrdinalIgnoreCase) || string.Equals(ext, ".ts", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".m3u8", StringComparison.OrdinalIgnoreCase) || ext.Equals(".ts", StringComparison.OrdinalIgnoreCase))
             {
                 return "h264";
             }
@@ -1080,10 +1080,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && state.SubtitleStream.IsExternal)
             {
                 var subtitlePath = state.SubtitleStream.Path;
-                var subtitleExtension = Path.GetExtension(subtitlePath);
+                var subtitleExtension = Path.GetExtension(subtitlePath.AsSpan());
 
-                if (string.Equals(subtitleExtension, ".sub", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(subtitleExtension, ".sup", StringComparison.OrdinalIgnoreCase))
+                if (subtitleExtension.Equals(".sub", StringComparison.OrdinalIgnoreCase)
+                    || subtitleExtension.Equals(".sup", StringComparison.OrdinalIgnoreCase))
                 {
                     var idxFile = Path.ChangeExtension(subtitlePath, ".idx");
                     if (File.Exists(idxFile))
@@ -6040,7 +6040,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var format = string.Empty;
             var keyFrame = string.Empty;
 
-            if (string.Equals(Path.GetExtension(outputPath), ".mp4", StringComparison.OrdinalIgnoreCase)
+            if (Path.GetExtension(outputPath.AsSpan()).Equals(".mp4", StringComparison.OrdinalIgnoreCase)
                 && state.BaseRequest.Context == EncodingContext.Streaming)
             {
                 // Comparison: https://github.com/jansmolders86/mediacenterjs/blob/master/lib/transcoding/desktop.js

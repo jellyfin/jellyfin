@@ -1162,7 +1162,7 @@ namespace Emby.Server.Implementations.Library
                 Name = Path.GetFileName(dir),
 
                 Locations = _fileSystem.GetFilePaths(dir, false)
-                .Where(i => string.Equals(ShortcutFileExtension, Path.GetExtension(i), StringComparison.OrdinalIgnoreCase))
+                .Where(i => Path.GetExtension(i.AsSpan()).Equals(ShortcutFileExtension, StringComparison.OrdinalIgnoreCase))
                     .Select(i =>
                     {
                         try
@@ -3135,7 +3135,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             var shortcut = _fileSystem.GetFilePaths(virtualFolderPath, true)
-                .Where(i => string.Equals(ShortcutFileExtension, Path.GetExtension(i), StringComparison.OrdinalIgnoreCase))
+                .Where(i => Path.GetExtension(i.AsSpan()).Equals(ShortcutFileExtension, StringComparison.OrdinalIgnoreCase))
                 .FirstOrDefault(f => _appHost.ExpandVirtualPath(_fileSystem.ResolveShortcut(f)).Equals(mediaPath, StringComparison.OrdinalIgnoreCase));
 
             if (!string.IsNullOrEmpty(shortcut))

@@ -538,7 +538,7 @@ public class TranscodingJobHelper : IDisposable
                 await _attachmentExtractor.ExtractAllAttachments(state.MediaPath, state.MediaSource, attachmentPath, cancellationTokenSource.Token).ConfigureAwait(false);
             }
 
-            if (state.SubtitleStream.IsExternal && string.Equals(Path.GetExtension(state.SubtitleStream.Path), ".mks", StringComparison.OrdinalIgnoreCase))
+            if (state.SubtitleStream.IsExternal && Path.GetExtension(state.SubtitleStream.Path.AsSpan()).Equals(".mks", StringComparison.OrdinalIgnoreCase))
             {
                 string subtitlePath = state.SubtitleStream.Path;
                 string subtitlePathArgument = string.Format(CultureInfo.InvariantCulture, "file:\"{0}\"", subtitlePath.Replace("\"", "\\\"", StringComparison.Ordinal));
