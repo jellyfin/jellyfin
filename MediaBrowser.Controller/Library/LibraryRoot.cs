@@ -62,6 +62,11 @@ namespace MediaBrowser.Controller.Library
 
         private void CreateRootFolder()
         {
+            if (RootFolder != null)
+            {
+                return;
+            }
+
             var rootFolderPath = _configurationManager.ApplicationPaths.RootFolderPath;
 
             Directory.CreateDirectory(rootFolderPath);
@@ -119,6 +124,11 @@ namespace MediaBrowser.Controller.Library
 
         private void CreateUserRootFolder()
         {
+            if (UserRootFolder != null)
+            {
+                return;
+            }
+
             var userRootPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
             _logger.LogDebug("Creating userRootPath at {Path}", userRootPath);
 
