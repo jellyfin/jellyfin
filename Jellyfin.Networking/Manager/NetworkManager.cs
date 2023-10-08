@@ -228,7 +228,7 @@ namespace Jellyfin.Networking.Manager
                 try
                 {
                     var nics = NetworkInterface.GetAllNetworkInterfaces()
-                        .Where(i => i.SupportsMulticast && i.OperationalStatus == OperationalStatus.Up);
+                        .Where(i => i.OperationalStatus == OperationalStatus.Up);
 
                     foreach (NetworkInterface adapter in nics)
                     {

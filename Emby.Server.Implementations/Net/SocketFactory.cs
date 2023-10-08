@@ -1,5 +1,7 @@
 using System;
+using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using MediaBrowser.Model.Net;
 
@@ -93,14 +95,19 @@ namespace Emby.Server.Implementations.Net
                 }
                 else
                 {
+                    // Check if Interface is Multicast capable before proceeding
                     var interfaceIndex = bindInterface.Index;
-                    var interfaceIndexSwapped = IPAddress.HostToNetworkOrder(interfaceIndex);
+                    var intferfaceProperties = NetworkInterface.GetAllNetworkInterfaces().Where(i => i.SupportsMulticast && i.GetIPProperties().GetIPv4Properties().Index == interfaceIndex).FirstOrDefault();
+                    if (intferfaceProperties is not null)
+                    {
+                        var interfaceIndexSwapped = IPAddress.HostToNetworkOrder(interfaceIndex);
 
-                    socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.PacketInformation, true);
-                    socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, multicastTimeToLive);
-                    socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastInterface, interfaceIndexSwapped);
-                    socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(multicastAddress, interfaceIndex));
-                    socket.Bind(new IPEndPoint(bindIPAddress, localPort));
+                        socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.PacketInformation, true);
+                        socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, multicastTimeToLive);
+                        socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastInterface, interfaceIndexSwapped);
+                        socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(multicastAddress, interfaceIndex));
+                        socket.Bind(new IPEndPoint(bindIPAddress, localPort));
+                    }
                 }
 
                 return socket;
