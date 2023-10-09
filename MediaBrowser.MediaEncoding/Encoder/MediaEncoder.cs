@@ -760,11 +760,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         timeoutMs = enableHdrExtraction ? DefaultHdrImageExtractionTimeout : DefaultSdrImageExtractionTimeout;
                     }
 
-                    ranToCompletion = await process.WaitForExitAsync(TimeSpan.FromMilliseconds(timeoutMs)).ConfigureAwait(false);
-
-                    if (!ranToCompletion)
+                    try
                     {
-                        StopProcess(processWrapper, 1000);
+                        await process.WaitForExitAsync(TimeSpan.FromMilliseconds(timeoutMs)).ConfigureAwait(false);
+                        ranToCompletion = true;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        process.Kill(true);
+                        ranToCompletion = false;
                     }
                 }
                 finally
@@ -999,7 +1003,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return true;
         }
 
-        private class ProcessWrapper : IDisposable
+        private sealed class ProcessWrapper : IDisposable
         {
             private readonly MediaEncoder _mediaEncoder;
 
@@ -1042,13 +1046,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     _mediaEncoder._runningProcesses.Remove(this);
                 }
 
-                try
-                {
-                    process.Dispose();
-                }
-                catch
-                {
-                }
+                process.Dispose();
             }
 
             public void Dispose()
