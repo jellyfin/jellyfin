@@ -45,6 +45,8 @@ public class DynamicHlsController : BaseJellyfinApiController
     private const string DefaultEventEncoderPreset = "superfast";
     private const TranscodingJobType TranscodingJobType = MediaBrowser.Controller.MediaEncoding.TranscodingJobType.Hls;
 
+    private readonly Version _minFFmpegFlacInMp4 = new Version(6, 0);
+
     private readonly ILibraryManager _libraryManager;
     private readonly IUserManager _userManager;
     private readonly IDlnaManager _dlnaManager;
@@ -1705,13 +1707,14 @@ public class DynamicHlsController : BaseJellyfinApiController
         var audioCodec = _encodingHelper.GetAudioEncoder(state);
         var bitStreamArgs = EncodingHelper.GetAudioBitStreamArguments(state, state.Request.SegmentContainer, state.MediaSource.Container);
 
-        // dts, flac, opus and truehd are experimental in mp4 muxer
+        // opus, dts, truehd and flac (in FFmpeg 5 and older) are experimental in mp4 muxer
         var strictArgs = string.Empty;
         var actualOutputAudioCodec = state.ActualOutputAudioCodec;
-        if (string.Equals(actualOutputAudioCodec, "flac", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(actualOutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase)
+        if (string.Equals(actualOutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase)
             || string.Equals(actualOutputAudioCodec, "dts", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(actualOutputAudioCodec, "truehd", StringComparison.OrdinalIgnoreCase))
+            || string.Equals(actualOutputAudioCodec, "truehd", StringComparison.OrdinalIgnoreCase)
+            || (string.Equals(actualOutputAudioCodec, "flac", StringComparison.OrdinalIgnoreCase)
+                && _mediaEncoder.EncoderVersion < _minFFmpegFlacInMp4))
         {
             strictArgs = " -strict -2";
         }
