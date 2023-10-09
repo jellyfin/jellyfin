@@ -740,7 +740,7 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public IReadOnlyList<IPData> GetAllBindInterfaces(bool individualInterfaces = false)
         {
-            if (_interfaces.Count > 0 && individualInterfaces)
+            if (_interfaces.Count > 0 || individualInterfaces)
             {
                 return _interfaces;
             }
