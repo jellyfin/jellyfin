@@ -48,7 +48,6 @@ namespace Rssdp.Infrastructure
         private int _MulticastTtl;
 
         private bool _IsShared;
-        private readonly bool _enableMultiSocketBinding;
 
         /// <summary>
         /// Raised when a HTTPU request message is received by a socket (unicast or multicast).
@@ -67,9 +66,8 @@ namespace Rssdp.Infrastructure
         public SsdpCommunicationsServer(
             ISocketFactory socketFactory,
             INetworkManager networkManager,
-            ILogger logger,
-            bool enableMultiSocketBinding)
-            : this(socketFactory, 0, SsdpConstants.SsdpDefaultMulticastTimeToLive, networkManager, logger, enableMultiSocketBinding)
+            ILogger logger)
+            : this(socketFactory, 0, SsdpConstants.SsdpDefaultMulticastTimeToLive, networkManager, logger)
         {
 
         }
@@ -84,8 +82,7 @@ namespace Rssdp.Infrastructure
             int localPort,
             int multicastTimeToLive,
             INetworkManager networkManager,
-            ILogger logger,
-            bool enableMultiSocketBinding)
+            ILogger logger)
         {
             if (socketFactory is null)
             {
@@ -109,7 +106,6 @@ namespace Rssdp.Infrastructure
             _MulticastTtl = multicastTimeToLive;
             _networkManager = networkManager;
             _logger = logger;
-            _enableMultiSocketBinding = enableMultiSocketBinding;
         }
 
         /// <summary>
@@ -356,34 +352,26 @@ namespace Rssdp.Infrastructure
         {
             var sockets = new List<Socket>();
             var multicastGroupAddress = IPAddress.Parse(SsdpConstants.MulticastLocalAdminAddress);
-            if (_enableMultiSocketBinding)
-            {
-                // IPv6 is currently unsupported
-                var validInterfaces = _networkManager.GetInternalBindAddresses()
-                    .Where(x => x.Address is not null)
-                    .Where(x => x.SupportsMulticast)
-                    .Where(x => x.AddressFamily == AddressFamily.InterNetwork)
-                    .DistinctBy(x => x.Index);
 
-                foreach (var intf in validInterfaces)
-                {
-                    try
-                    {
-                        var socket = _SocketFactory.CreateUdpMulticastSocket(multicastGroupAddress, intf, _MulticastTtl, SsdpConstants.MulticastPort);
-                        _ = ListenToSocketInternal(socket);
-                        sockets.Add(socket);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error in CreateMulticastSocketsAndListen. IP address: {0}", intf.Address);
-                    }
-                }
-            }
-            else
+            // IPv6 is currently unsupported
+            var validInterfaces = _networkManager.GetInternalBindAddresses()
+                .Where(x => x.Address is not null)
+                .Where(x => x.SupportsMulticast)
+                .Where(x => x.AddressFamily == AddressFamily.InterNetwork)
+                .DistinctBy(x => x.Index);
+
+            foreach (var intf in validInterfaces)
             {
-                var socket = _SocketFactory.CreateUdpMulticastSocket(multicastGroupAddress, new IPData(IPAddress.Any, null), _MulticastTtl, SsdpConstants.MulticastPort);
-                _ = ListenToSocketInternal(socket);
-                sockets.Add(socket);
+                try
+                {
+                    var socket = _SocketFactory.CreateUdpMulticastSocket(multicastGroupAddress, intf, _MulticastTtl, SsdpConstants.MulticastPort);
+                    _ = ListenToSocketInternal(socket);
+                    sockets.Add(socket);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error in CreateMulticastSocketsAndListen. IP address: {0}", intf.Address);
+                }
             }
 
             return sockets;
@@ -392,35 +380,32 @@ namespace Rssdp.Infrastructure
         private List<Socket> CreateSendSockets()
         {
             var sockets = new List<Socket>();
-            if (_enableMultiSocketBinding)
-            {
-                // IPv6 is currently unsupported
-                var validInterfaces = _networkManager.GetInternalBindAddresses()
-                    .Where(x => x.Address is not null)
-                    .Where(x => x.SupportsMulticast)
-                    .Where(x => x.AddressFamily == AddressFamily.InterNetwork);
 
-                foreach (var intf in validInterfaces)
+            // IPv6 is currently unsupported
+            var validInterfaces = _networkManager.GetInternalBindAddresses()
+                .Where(x => x.Address is not null)
+                .Where(x => x.SupportsMulticast)
+                .Where(x => x.AddressFamily == AddressFamily.InterNetwork);
+
+            if (OperatingSystem.IsMacOS())
+            {
+                // Manually remove loopback on macOS due to https://github.com/dotnet/runtime/issues/24340
+                validInterfaces = validInterfaces.Where(x => !x.Address.Equals(IPAddress.Loopback));
+            }
+
+            foreach (var intf in validInterfaces)
+            {
+                try
                 {
-                    try
-                    {
-                        var socket = _SocketFactory.CreateSsdpUdpSocket(intf, _LocalPort);
-                        _ = ListenToSocketInternal(socket);
-                        sockets.Add(socket);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error in CreateSsdpUdpSocket. IPAddress: {0}", intf.Address);
-                    }
+                    var socket = _SocketFactory.CreateSsdpUdpSocket(intf, _LocalPort);
+                    _ = ListenToSocketInternal(socket);
+                    sockets.Add(socket);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error in CreateSsdpUdpSocket. IPAddress: {0}", intf.Address);
                 }
             }
-            else
-            {
-                var socket = _SocketFactory.CreateSsdpUdpSocket(new IPData(IPAddress.Any, null), _LocalPort);
-                _ = ListenToSocketInternal(socket);
-                sockets.Add(socket);
-            }
-
 
             return sockets;
         }

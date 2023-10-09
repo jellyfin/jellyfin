@@ -100,7 +100,7 @@ namespace Emby.Server.Implementations.EntryPoints
                         _udpServers.Add(server);
                     }
                 }
-                else if (OperatingSystem.IsWindows())
+                else
                 {
                     // Add bind address specific broadcast listeners
                     // IPv6 is currently unsupported
@@ -114,12 +114,6 @@ namespace Emby.Server.Implementations.EntryPoints
                         server.Start(_cancellationTokenSource.Token);
                         _udpServers.Add(server);
                     }
-                }
-                else
-                {
-                    var server = new UdpServer(_logger, _appHost, _config, IPAddress.Any, PortNumber);
-                    server.Start(_cancellationTokenSource.Token);
-                    _udpServers.Add(server);
                 }
             }
             catch (SocketException ex)

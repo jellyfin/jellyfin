@@ -89,7 +89,7 @@ namespace Emby.Server.Implementations.Net
                 socket.MulticastLoopback = false;
                 socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
 
-                if (OperatingSystem.IsLinux())
+                if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
                 {
                     socket.Bind(new IPEndPoint(multicastAddress, localPort));
                 }
