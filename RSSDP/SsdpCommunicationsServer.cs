@@ -361,6 +361,7 @@ namespace Rssdp.Infrastructure
                 // IPv6 is currently unsupported
                 var validInterfaces = _networkManager.GetInternalBindAddresses()
                     .Where(x => x.Address is not null)
+                    .Where(x => x.SupportsMulticast)
                     .Where(x => x.AddressFamily == AddressFamily.InterNetwork)
                     .DistinctBy(x => x.Index);
 

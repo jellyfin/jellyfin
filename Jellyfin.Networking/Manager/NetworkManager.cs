@@ -251,7 +251,8 @@ namespace Jellyfin.Networking.Manager
                                     var interfaceObject = new IPData(info.Address, new IPNetwork(info.Address, info.PrefixLength), adapter.Name)
                                     {
                                         Index = ipProperties.GetIPv4Properties().Index,
-                                        Name = adapter.Name
+                                        Name = adapter.Name,
+                                        SupportsMulticast = adapter.SupportsMulticast
                                     };
 
                                     interfaces.Add(interfaceObject);
