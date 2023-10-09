@@ -176,7 +176,6 @@ namespace Jellyfin.Networking.Manager
             {
                 if (!_eventfire)
                 {
-                    _logger.LogDebug("Network Address Change Event.");
                     // As network events tend to fire one after the other only fire once every second.
                     _eventfire = true;
                     OnNetworkChange();
@@ -204,6 +203,7 @@ namespace Jellyfin.Networking.Manager
                     EnforceBindSettings(networkConfig);
                 }
 
+                PrintNetworkInformation(networkConfig);
                 NetworkChanged?.Invoke(this, EventArgs.Empty);
             }
             finally
@@ -348,10 +348,6 @@ namespace Jellyfin.Networking.Manager
                 _excludedSubnets = NetworkExtensions.TryParseToSubnets(subnets, out var excludedSubnets, true)
                     ? excludedSubnets
                     : new List<IPNetwork>();
-
-                _logger.LogInformation("Defined LAN addresses: {0}", _lanSubnets.Select(s => s.Prefix + "/" + s.PrefixLength));
-                _logger.LogInformation("Defined LAN exclusions: {0}", _excludedSubnets.Select(s => s.Prefix + "/" + s.PrefixLength));
-                _logger.LogInformation("Using LAN addresses: {0}", _lanSubnets.Where(s => !_excludedSubnets.Contains(s)).Select(s => s.Prefix + "/" + s.PrefixLength));
             }
         }
 
@@ -424,7 +420,7 @@ namespace Jellyfin.Networking.Manager
         /// <summary>
         /// Initializes the remote address values.
         /// </summary>
-        private void InitialiseRemote(NetworkConfiguration config)
+        private void InitializeRemote(NetworkConfiguration config)
         {
             lock (_initLock)
             {
@@ -598,7 +594,7 @@ namespace Jellyfin.Networking.Manager
             HappyEyeballs.HttpClientExtension.UseIPv6 = config.EnableIPv6;
 
             InitializeLan(config);
-            InitialiseRemote(config);
+            InitializeRemote(config);
 
             if (string.IsNullOrEmpty(MockNetworkSettings))
             {
@@ -636,6 +632,8 @@ namespace Jellyfin.Networking.Manager
 
             EnforceBindSettings(config);
             InitializeOverrides(config);
+
+            PrintNetworkInformation(config, false);
         }
 
         /// <summary>
@@ -1110,6 +1108,16 @@ namespace Jellyfin.Networking.Manager
             result = NetworkExtensions.FormatIPString(extResult[0].Address);
             _logger.LogDebug("{Source}: Using first external interface as bind address: {Result}", source, result);
             return true;
+        }
+
+        private void PrintNetworkInformation(NetworkConfiguration config, bool debug = true)
+        {
+            var logLevel = debug ? LogLevel.Debug : LogLevel.Information;
+            _logger.Log(logLevel, "Defined LAN addresses: {0}", _lanSubnets.Select(s => s.Prefix + "/" + s.PrefixLength));
+            _logger.Log(logLevel, "Defined LAN exclusions: {0}", _excludedSubnets.Select(s => s.Prefix + "/" + s.PrefixLength));
+            _logger.Log(logLevel, "Using LAN addresses: {0}", _lanSubnets.Where(s => !_excludedSubnets.Contains(s)).Select(s => s.Prefix + "/" + s.PrefixLength));
+            _logger.Log(logLevel, "Remote IP filter is {0}", config.IsRemoteIPFilterBlacklist ? "Blocklist" : "Allowlist");
+            _logger.Log(logLevel, "Filter list: {0}", _remoteAddressFilter.Select(s => s.Prefix + "/" + s.PrefixLength));
         }
     }
 }
