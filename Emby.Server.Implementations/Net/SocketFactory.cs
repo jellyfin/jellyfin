@@ -93,7 +93,7 @@ namespace Emby.Server.Implementations.Net
                 {
                     socket.Bind(new IPEndPoint(multicastAddress, localPort));
                 }
-                else if (bindInterface.SupportsMulticast)
+                else
                 {
                     // Only create socket if interface supports multicast
                     var interfaceIndex = bindInterface.Index;
