@@ -625,43 +625,37 @@ namespace Emby.Server.Implementations.Session
 
         private async void CheckForInactiveSteams(object state)
         {
-            var pausedSessions = Sessions.Where(i =>
+            var inactiveSessions = Sessions.Where(i =>
                     i.NowPlayingItem is not null
                     && i.PlayState.IsPaused
-                    && i.LastPausedDate is not null)
-                .ToList();
+                    && (DateTime.UtcNow - i.LastPausedDate).Value.TotalMinutes > _config.Configuration.InactiveSessionThreshold);
 
-            if (pausedSessions.Count > 0)
+            foreach (var session in inactiveSessions)
             {
-                var inactiveSessions = pausedSessions.Where(i => (DateTime.UtcNow - i.LastPausedDate).Value.TotalMinutes > _config.Configuration.InactiveSessionThreshold).ToList();
+                _logger.LogDebug("Session {Session} has been inactive for {InactiveTime} minutes. Stopping it.", session.Id, _config.Configuration.InactiveSessionThreshold);
 
-                foreach (var session in inactiveSessions)
+                try
                 {
-                    _logger.LogDebug("Session {Session} has been inactive for {InactiveTime} minutes. Stopping it.", session.Id, _config.Configuration.InactiveSessionThreshold);
-
-                    try
-                    {
-                        await SendPlaystateCommand(
-                            session.Id,
-                            session.Id,
-                            new PlaystateRequest()
-                            {
-                                Command = PlaystateCommand.Stop,
-                                ControllingUserId = session.UserId.ToString(),
-                                SeekPositionTicks = session.PlayState?.PositionTicks
-                            },
-                            CancellationToken.None).ConfigureAwait(true);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogDebug(ex, "Error calling SendPlaystateCommand for stopping inactive session {Session}.", session.Id);
-                    }
+                    await SendPlaystateCommand(
+                        session.Id,
+                        session.Id,
+                        new PlaystateRequest()
+                        {
+                            Command = PlaystateCommand.Stop,
+                            ControllingUserId = session.UserId.ToString(),
+                            SeekPositionTicks = session.PlayState?.PositionTicks
+                        },
+                        CancellationToken.None).ConfigureAwait(true);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogDebug(ex, "Error calling SendPlaystateCommand for stopping inactive session {Session}.", session.Id);
                 }
             }
 
-            var playingSessions = Sessions.Where(i => i.NowPlayingItem is not null)
-                .ToList();
-            if (playingSessions.Count == 0)
+            bool playingSessions = Sessions.Any(i => i.NowPlayingItem is not null);
+
+            if (!playingSessions)
             {
                 StopInactiveCheckTimer();
             }
