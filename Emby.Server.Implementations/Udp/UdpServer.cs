@@ -103,12 +103,12 @@ namespace Emby.Server.Implementations.Udp
             {
                 try
                 {
-                    var endpoint = (EndPoint)new IPEndPoint(0, 0);
-                    int bytesRead = _udpSocket.ReceiveFrom(_receiveBuffer, ref endpoint);
-                    var text = Encoding.UTF8.GetString(_receiveBuffer, 0, bytesRead);
+                    var endpoint = (EndPoint)new IPEndPoint(IPAddress.Any, 0);
+                    var result = await _udpSocket.ReceiveFromAsync(_receiveBuffer, endpoint, cancellationToken).ConfigureAwait(false);
+                    var text = Encoding.UTF8.GetString(_receiveBuffer, 0, result.ReceivedBytes);
                     if (text.Contains("who is JellyfinServer?", StringComparison.OrdinalIgnoreCase))
                     {
-                        await RespondToV2Message(endpoint, cancellationToken).ConfigureAwait(false);
+                        await RespondToV2Message(result.RemoteEndPoint, cancellationToken).ConfigureAwait(false);
                     }
                 }
                 catch (SocketException ex)
