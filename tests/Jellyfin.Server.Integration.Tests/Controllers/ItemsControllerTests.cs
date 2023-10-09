@@ -25,9 +25,9 @@ public sealed class ItemsControllerTests : IClassFixture<JellyfinApplicationFact
     public async Task GetItems_NoApiKeyOrUserId_Success()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-        var response = await client.GetAsync("Items").ConfigureAwait(false);
+        var response = await client.GetAsync("Items");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
@@ -37,9 +37,9 @@ public sealed class ItemsControllerTests : IClassFixture<JellyfinApplicationFact
     public async Task GetUserItems_NonExistentUserId_NotFound(string format)
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-        var response = await client.GetAsync(string.Format(CultureInfo.InvariantCulture, format, Guid.NewGuid())).ConfigureAwait(false);
+        var response = await client.GetAsync(string.Format(CultureInfo.InvariantCulture, format, Guid.NewGuid()));
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
@@ -50,15 +50,15 @@ public sealed class ItemsControllerTests : IClassFixture<JellyfinApplicationFact
     public async Task GetItems_UserId_Ok(string format)
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-        var userDto = await AuthHelper.GetUserDtoAsync(client).ConfigureAwait(false);
+        var userDto = await AuthHelper.GetUserDtoAsync(client);
 
-        var response = await client.GetAsync(string.Format(CultureInfo.InvariantCulture, format, userDto.Id)).ConfigureAwait(false);
+        var response = await client.GetAsync(string.Format(CultureInfo.InvariantCulture, format, userDto.Id));
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var items = await JsonSerializer.DeserializeAsync<QueryResult<BaseItemDto>>(
-                    await response.Content.ReadAsStreamAsync().ConfigureAwait(false),
-                    _jsonOptions).ConfigureAwait(false);
+                    await response.Content.ReadAsStreamAsync(),
+                    _jsonOptions);
         Assert.NotNull(items);
     }
 }

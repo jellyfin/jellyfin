@@ -78,6 +78,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             "She/Her/Hers",
             "5/8erl in Ehr'n",
             "Smith/Kotzen",
+            "We;Na",
         };
 
         /// <summary>

@@ -73,8 +73,7 @@ namespace Jellyfin.Server.Migrations.Routines
                 var queryResult = connection.Query("SELECT DISTINCT OfficialRating FROM TypedBaseItems");
                 foreach (var entry in queryResult)
                 {
-                    var ratingString = entry.GetString(0);
-                    if (string.IsNullOrEmpty(ratingString))
+                    if (!entry.TryGetString(0, out var ratingString) || string.IsNullOrEmpty(ratingString))
                     {
                         connection.Execute("UPDATE TypedBaseItems SET InheritedParentalRatingValue = NULL WHERE OfficialRating IS NULL OR OfficialRating='';");
                     }

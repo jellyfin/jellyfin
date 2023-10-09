@@ -1,3 +1,4 @@
+#!/bin/sh
 ### BEGIN INIT INFO
 # Provides:          Jellyfin Media Server
 # Required-Start:    $local_fs $network

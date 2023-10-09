@@ -10,8 +10,6 @@ namespace MediaBrowser.Model.IO
     /// </summary>
     public interface IFileSystem
     {
-        void AddShortcutHandler(IShortcutHandler handler);
-
         /// <summary>
         /// Determines whether the specified filename is shortcut.
         /// </summary>
@@ -115,13 +113,6 @@ namespace MediaBrowser.Model.IO
         /// <param name="path">The path.</param>
         /// <returns><c>true</c> if [contains sub path] [the specified parent path]; otherwise, <c>false</c>.</returns>
         bool ContainsSubPath(string parentPath, string path);
-
-        /// <summary>
-        /// Normalizes the path.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>System.String.</returns>
-        string NormalizePath(string path);
 
         /// <summary>
         /// Gets the file name without extension.

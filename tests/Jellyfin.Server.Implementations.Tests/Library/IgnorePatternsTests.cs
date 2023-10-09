@@ -31,6 +31,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         [InlineData("/media/music/Foo B.A.R./epic.flac", false)]
         [InlineData("/media/music/Foo B.A.R", false)]
         [InlineData("/media/music/Foo B.A.R.", false)]
+        [InlineData("/movies/.zfs/snapshot/AutoM-2023-09", true)]
         public void PathIgnored(string path, bool expected)
         {
             Assert.Equal(expected, IgnorePatterns.ShouldIgnore(path));

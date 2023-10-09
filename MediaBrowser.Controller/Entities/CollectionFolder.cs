@@ -3,6 +3,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -29,7 +30,7 @@ namespace MediaBrowser.Controller.Entities
     public class CollectionFolder : Folder, ICollectionFolder
     {
         private static readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
-        private static readonly Dictionary<string, LibraryOptions> _libraryOptions = new Dictionary<string, LibraryOptions>();
+        private static readonly ConcurrentDictionary<string, LibraryOptions> _libraryOptions = new ConcurrentDictionary<string, LibraryOptions>();
         private bool _requiresRefresh;
 
         /// <summary>
@@ -139,45 +140,26 @@ namespace MediaBrowser.Controller.Entities
         }
 
         public static LibraryOptions GetLibraryOptions(string path)
-        {
-            lock (_libraryOptions)
-            {
-                if (!_libraryOptions.TryGetValue(path, out var options))
-                {
-                    options = LoadLibraryOptions(path);
-                    _libraryOptions[path] = options;
-                }
-
-                return options;
-            }
-        }
+            => _libraryOptions.GetOrAdd(path, LoadLibraryOptions);
 
         public static void SaveLibraryOptions(string path, LibraryOptions options)
         {
-            lock (_libraryOptions)
+            _libraryOptions[path] = options;
+
+            var clone = JsonSerializer.Deserialize<LibraryOptions>(JsonSerializer.SerializeToUtf8Bytes(options, _jsonOptions), _jsonOptions);
+            foreach (var mediaPath in clone.PathInfos)
             {
-                _libraryOptions[path] = options;
-
-                var clone = JsonSerializer.Deserialize<LibraryOptions>(JsonSerializer.SerializeToUtf8Bytes(options, _jsonOptions), _jsonOptions);
-                foreach (var mediaPath in clone.PathInfos)
+                if (!string.IsNullOrEmpty(mediaPath.Path))
                 {
-                    if (!string.IsNullOrEmpty(mediaPath.Path))
-                    {
-                        mediaPath.Path = ApplicationHost.ReverseVirtualPath(mediaPath.Path);
-                    }
+                    mediaPath.Path = ApplicationHost.ReverseVirtualPath(mediaPath.Path);
                 }
-
-                XmlSerializer.SerializeToFile(clone, GetLibraryOptionsPath(path));
             }
+
+            XmlSerializer.SerializeToFile(clone, GetLibraryOptionsPath(path));
         }
 
         public static void OnCollectionFolderChange()
-        {
-            lock (_libraryOptions)
-            {
-                _libraryOptions.Clear();
-            }
-        }
+            => _libraryOptions.Clear();
 
         public override bool IsSaveLocalMetadataEnabled()
         {

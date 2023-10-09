@@ -26,7 +26,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         {
             var client = _factory.CreateClient();
 
-            var response = await client.GetAsync("web/ConfigurationPage?name=ThisPageDoesntExists").ConfigureAwait(false);
+            var response = await client.GetAsync("web/ConfigurationPage?name=ThisPageDoesntExists");
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
@@ -36,12 +36,12 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         {
             var client = _factory.CreateClient();
 
-            var response = await client.GetAsync("/web/ConfigurationPage?name=TestPlugin").ConfigureAwait(false);
+            var response = await client.GetAsync("/web/ConfigurationPage?name=TestPlugin");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(MediaTypeNames.Text.Html, response.Content.Headers.ContentType?.MediaType);
             StreamReader reader = new StreamReader(typeof(TestPlugin).Assembly.GetManifestResourceStream("Jellyfin.Server.Integration.Tests.TestPage.html")!);
-            Assert.Equal(await response.Content.ReadAsStringAsync().ConfigureAwait(false), await reader.ReadToEndAsync().ConfigureAwait(false));
+            Assert.Equal(await response.Content.ReadAsStringAsync(), await reader.ReadToEndAsync());
         }
 
         [Fact]
@@ -49,7 +49,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         {
             var client = _factory.CreateClient();
 
-            var response = await client.GetAsync("/web/ConfigurationPage?name=BrokenPage").ConfigureAwait(false);
+            var response = await client.GetAsync("/web/ConfigurationPage?name=BrokenPage");
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
@@ -58,9 +58,9 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         public async Task GetConfigurationPages_NoParams_AllConfigurationPages()
         {
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-            var response = await client.GetAsync("/web/ConfigurationPages").ConfigureAwait(false);
+            var response = await client.GetAsync("/web/ConfigurationPages");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -73,9 +73,9 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         public async Task GetConfigurationPages_True_MainMenuConfigurationPages()
         {
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-            var response = await client.GetAsync("/web/ConfigurationPages?enableInMainMenu=true").ConfigureAwait(false);
+            var response = await client.GetAsync("/web/ConfigurationPages?enableInMainMenu=true");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(MediaTypeNames.Application.Json, response.Content.Headers.ContentType?.MediaType);

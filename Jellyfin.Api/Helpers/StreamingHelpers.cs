@@ -191,6 +191,11 @@ public static class StreamingHelpers
             state.OutputAudioBitrate = encodingHelper.GetAudioBitrateParam(streamingRequest.AudioBitRate, streamingRequest.AudioCodec, state.AudioStream, state.OutputAudioChannels) ?? 0;
         }
 
+        if (outputAudioCodec.StartsWith("pcm_", StringComparison.Ordinal))
+        {
+            containerInternal = ".pcm";
+        }
+
         state.OutputAudioCodec = outputAudioCodec;
         state.OutputContainer = (containerInternal ?? string.Empty).TrimStart('.');
         state.OutputAudioChannels = encodingHelper.GetNumAudioChannelsParam(state, state.AudioStream, state.OutputAudioCodec);
@@ -243,7 +248,7 @@ public static class StreamingHelpers
             ? GetOutputFileExtension(state, mediaSource)
             : ("." + state.OutputContainer);
 
-        state.OutputFilePath = GetOutputFilePath(state, ext!, serverConfigurationManager, streamingRequest.DeviceId, streamingRequest.PlaySessionId);
+        state.OutputFilePath = GetOutputFilePath(state, ext, serverConfigurationManager, streamingRequest.DeviceId, streamingRequest.PlaySessionId);
 
         return state;
     }
@@ -418,11 +423,11 @@ public static class StreamingHelpers
     /// <returns>System.String.</returns>
     private static string? GetOutputFileExtension(StreamState state, MediaSourceInfo? mediaSource)
     {
-        var ext = Path.GetExtension(state.RequestedUrl);
+        var ext = Path.GetExtension(state.RequestedUrl.AsSpan());
 
-        if (!string.IsNullOrEmpty(ext))
+        if (ext.IsEmpty)
         {
-            return ext;
+            return null;
         }
 
         // Try to infer based on the desired video codec
@@ -504,7 +509,7 @@ public static class StreamingHelpers
     /// <param name="deviceId">The device id.</param>
     /// <param name="playSessionId">The play session id.</param>
     /// <returns>The complete file path, including the folder, for the transcoding file.</returns>
-    private static string GetOutputFilePath(StreamState state, string outputFileExtension, IServerConfigurationManager serverConfigurationManager, string? deviceId, string? playSessionId)
+    private static string GetOutputFilePath(StreamState state, string? outputFileExtension, IServerConfigurationManager serverConfigurationManager, string? deviceId, string? playSessionId)
     {
         var data = $"{state.MediaPath}-{state.UserAgent}-{deviceId!}-{playSessionId!}";
 
