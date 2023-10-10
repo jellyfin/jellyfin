@@ -48,6 +48,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly Version _minFFmpegHwaUnsafeOutput = new Version(6, 0);
         private readonly Version _minFFmpegOclCuTonemapMode = new Version(5, 1, 3);
         private readonly Version _minFFmpegSvtAv1Params = new Version(5, 1);
+        private readonly Version _minFFmpegVaapiH26xEncA53CcSei = new Version(6, 0);
 
         private static readonly string[] _videoProfilesH264 = new[]
         {
@@ -547,25 +548,25 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <returns>System.Nullable{VideoCodecs}.</returns>
         public string InferVideoCodec(string url)
         {
-            var ext = Path.GetExtension(url);
+            var ext = Path.GetExtension(url.AsSpan());
 
-            if (string.Equals(ext, ".asf", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".asf", StringComparison.OrdinalIgnoreCase))
             {
                 return "wmv";
             }
 
-            if (string.Equals(ext, ".webm", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".webm", StringComparison.OrdinalIgnoreCase))
             {
                 // TODO: this may not always mean VP8, as the codec ages
                 return "vp8";
             }
 
-            if (string.Equals(ext, ".ogg", StringComparison.OrdinalIgnoreCase) || string.Equals(ext, ".ogv", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".ogg", StringComparison.OrdinalIgnoreCase) || ext.Equals(".ogv", StringComparison.OrdinalIgnoreCase))
             {
                 return "theora";
             }
 
-            if (string.Equals(ext, ".m3u8", StringComparison.OrdinalIgnoreCase) || string.Equals(ext, ".ts", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".m3u8", StringComparison.OrdinalIgnoreCase) || ext.Equals(".ts", StringComparison.OrdinalIgnoreCase))
             {
                 return "h264";
             }
@@ -1079,10 +1080,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && state.SubtitleStream.IsExternal)
             {
                 var subtitlePath = state.SubtitleStream.Path;
-                var subtitleExtension = Path.GetExtension(subtitlePath);
+                var subtitleExtension = Path.GetExtension(subtitlePath.AsSpan());
 
-                if (string.Equals(subtitleExtension, ".sub", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(subtitleExtension, ".sup", StringComparison.OrdinalIgnoreCase))
+                if (subtitleExtension.Equals(".sub", StringComparison.OrdinalIgnoreCase)
+                    || subtitleExtension.Equals(".sup", StringComparison.OrdinalIgnoreCase))
                 {
                     var idxFile = Path.ChangeExtension(subtitlePath, ".idx");
                     if (File.Exists(idxFile))
@@ -2004,6 +2005,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && _mediaEncoder.EncoderVersion >= _minFFmpegSvtAv1Params)
             {
                 param += " -svtav1-params:0 rc=1:tune=0:film-grain=0:enable-overlays=1:enable-tf=0";
+            }
+
+            /* Access unit too large: 8192 < 20880 error */
+            if ((string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(videoEncoder, "hevc_vaapi", StringComparison.OrdinalIgnoreCase)) &&
+                 _mediaEncoder.EncoderVersion >= _minFFmpegVaapiH26xEncA53CcSei)
+            {
+                param += " -sei -a53_cc";
             }
 
             return param;
@@ -5681,7 +5690,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // Apply -analyzeduration as per the environment variable,
             // otherwise ffmpeg will break on certain files due to default value is 0.
-            // The default value of -probesize is more than enough, so leave it as is.
             var ffmpegAnalyzeDuration = _config.GetFFmpegAnalyzeDuration() ?? string.Empty;
 
             if (state.MediaSource.AnalyzeDurationMs > 0)
@@ -5699,6 +5707,14 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             inputModifier = inputModifier.Trim();
+
+            // Apply -probesize if configured
+            var ffmpegProbeSize = _config.GetFFmpegProbeSize();
+
+            if (!string.IsNullOrEmpty(ffmpegProbeSize))
+            {
+                inputModifier += $" -probesize {ffmpegProbeSize}";
+            }
 
             var userAgentParam = GetUserAgentParam(state);
 
@@ -6024,7 +6040,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var format = string.Empty;
             var keyFrame = string.Empty;
 
-            if (string.Equals(Path.GetExtension(outputPath), ".mp4", StringComparison.OrdinalIgnoreCase)
+            if (Path.GetExtension(outputPath.AsSpan()).Equals(".mp4", StringComparison.OrdinalIgnoreCase)
                 && state.BaseRequest.Context == EncodingContext.Streaming)
             {
                 // Comparison: https://github.com/jansmolders86/mediacenterjs/blob/master/lib/transcoding/desktop.js
@@ -6231,6 +6247,12 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (!string.IsNullOrEmpty(outputCodec))
             {
                 audioTranscodeParams.Add("-acodec " + GetAudioEncoder(state));
+            }
+
+            if (GetAudioEncoder(state).StartsWith("pcm_", StringComparison.Ordinal))
+            {
+                audioTranscodeParams.Add(string.Concat("-f ", GetAudioEncoder(state).AsSpan(4)));
+                audioTranscodeParams.Add("-ar " + state.BaseRequest.AudioBitRate);
             }
 
             if (!string.Equals(outputCodec, "opus", StringComparison.OrdinalIgnoreCase))

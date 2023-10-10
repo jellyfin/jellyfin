@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -405,9 +406,8 @@ public class SubtitleController : BaseJellyfinApiController
         [FromBody, Required] UploadSubtitleDto body)
     {
         var video = (Video)_libraryManager.GetItemById(itemId);
-        var data = Convert.FromBase64String(body.Data);
-        var memoryStream = new MemoryStream(data, 0, data.Length, false, true);
-        await using (memoryStream.ConfigureAwait(false))
+        var stream = new CryptoStream(Request.Body, new FromBase64Transform(), CryptoStreamMode.Read);
+        await using (stream.ConfigureAwait(false))
         {
             await _subtitleManager.UploadSubtitle(
                 video,
@@ -417,7 +417,7 @@ public class SubtitleController : BaseJellyfinApiController
                     Language = body.Language,
                     IsForced = body.IsForced,
                     IsHearingImpaired = body.IsHearingImpaired,
-                    Stream = memoryStream
+                    Stream = stream
                 }).ConfigureAwait(false);
             _providerManager.QueueRefresh(video.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
 

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
-using System.Threading;
 using Emby.Server.Implementations;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Helpers;
@@ -105,7 +104,7 @@ namespace Jellyfin.Server.Integration.Tests
             var appHost = (TestAppHost)testServer.Services.GetRequiredService<IApplicationHost>();
             appHost.ServiceProvider = testServer.Services;
             appHost.InitializeServices().GetAwaiter().GetResult();
-            appHost.RunStartupTasksAsync(CancellationToken.None).GetAwaiter().GetResult();
+            appHost.RunStartupTasksAsync().GetAwaiter().GetResult();
 
             return testServer;
         }

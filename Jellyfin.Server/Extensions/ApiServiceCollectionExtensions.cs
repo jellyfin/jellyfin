@@ -59,6 +59,7 @@ namespace Jellyfin.Server.Extensions
             serviceCollection.AddSingleton<IAuthorizationHandler, FirstTimeSetupHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, AnonymousLanAccessHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, SyncPlayAccessHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessOrRequiresElevationHandler>();
 
             return serviceCollection.AddAuthorizationCore(options =>
             {

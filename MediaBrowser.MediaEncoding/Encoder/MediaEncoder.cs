@@ -316,10 +316,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 var files = _fileSystem.GetFilePaths(path, recursive);
 
-                var excludeExtensions = new[] { ".c" };
-
-                return files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), filename, StringComparison.OrdinalIgnoreCase)
-                                                    && !excludeExtensions.Contains(Path.GetExtension(i) ?? string.Empty));
+                return files.FirstOrDefault(i => Path.GetFileNameWithoutExtension(i.AsSpan()).Equals(filename, StringComparison.OrdinalIgnoreCase)
+                                                    && !Path.GetExtension(i.AsSpan()).Equals(".c", StringComparison.OrdinalIgnoreCase));
             }
             catch (Exception)
             {
@@ -419,6 +417,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var extractChapters = request.MediaType == DlnaProfileType.Video && request.ExtractChapters;
             var analyzeDuration = string.Empty;
             var ffmpegAnalyzeDuration = _config.GetFFmpegAnalyzeDuration() ?? string.Empty;
+            var ffmpegProbeSize = _config.GetFFmpegProbeSize() ?? string.Empty;
+            var extraArgs = string.Empty;
 
             if (request.MediaSource.AnalyzeDurationMs > 0)
             {
@@ -429,12 +429,22 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 analyzeDuration = "-analyzeduration " + ffmpegAnalyzeDuration;
             }
 
+            if (!string.IsNullOrEmpty(analyzeDuration))
+            {
+                extraArgs = analyzeDuration;
+            }
+
+            if (!string.IsNullOrEmpty(ffmpegProbeSize))
+            {
+                extraArgs += " -probesize " + ffmpegProbeSize;
+            }
+
             return GetMediaInfoInternal(
                 GetInputArgument(request.MediaSource.Path, request.MediaSource),
                 request.MediaSource.Path,
                 request.MediaSource.Protocol,
                 extractChapters,
-                analyzeDuration,
+                extraArgs,
                 request.MediaType == DlnaProfileType.Audio,
                 request.MediaSource.VideoType,
                 cancellationToken);
@@ -640,15 +650,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             ArgumentException.ThrowIfNullOrEmpty(inputPath);
 
-            var outputExtension = targetFormat switch
-            {
-                ImageFormat.Bmp => ".bmp",
-                ImageFormat.Gif => ".gif",
-                ImageFormat.Jpg => ".jpg",
-                ImageFormat.Png => ".png",
-                ImageFormat.Webp => ".webp",
-                _ => ".jpg"
-            };
+            var outputExtension = targetFormat?.GetExtension() ?? ".jpg";
 
             var tempExtractPath = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid() + outputExtension);
             Directory.CreateDirectory(Path.GetDirectoryName(tempExtractPath));
@@ -750,11 +752,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         timeoutMs = enableHdrExtraction ? DefaultHdrImageExtractionTimeout : DefaultSdrImageExtractionTimeout;
                     }
 
-                    ranToCompletion = await process.WaitForExitAsync(TimeSpan.FromMilliseconds(timeoutMs)).ConfigureAwait(false);
-
-                    if (!ranToCompletion)
+                    try
                     {
-                        StopProcess(processWrapper, 1000);
+                        await process.WaitForExitAsync(TimeSpan.FromMilliseconds(timeoutMs)).ConfigureAwait(false);
+                        ranToCompletion = true;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        process.Kill(true);
+                        ranToCompletion = false;
                     }
                 }
                 finally
@@ -989,7 +995,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return true;
         }
 
-        private class ProcessWrapper : IDisposable
+        private sealed class ProcessWrapper : IDisposable
         {
             private readonly MediaEncoder _mediaEncoder;
 
@@ -1032,13 +1038,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     _mediaEncoder._runningProcesses.Remove(this);
                 }
 
-                try
-                {
-                    process.Dispose();
-                }
-                catch
-                {
-                }
+                process.Dispose();
             }
 
             public void Dispose()

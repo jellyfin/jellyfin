@@ -29,5 +29,8 @@
     "Forced": "Pressed",
     "External": "Outboard",
     "HeaderFavoriteEpisodes": "Treasured Tales",
-    "HeaderFavoriteShows": "Treasured Tales"
+    "HeaderFavoriteShows": "Treasured Tales",
+    "ChapterNameValue": "Piece {0}",
+    "HeaderFavoriteSongs": "Treasured Chimes",
+    "HeaderNextUp": "Incoming"
 }

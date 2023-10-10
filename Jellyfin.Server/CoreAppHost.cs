@@ -103,9 +103,6 @@ namespace Jellyfin.Server
         }
 
         /// <inheritdoc />
-        protected override void RestartInternal() => Program.Restart();
-
-        /// <inheritdoc />
         protected override IEnumerable<Assembly> GetAssembliesWithPartsInternal()
         {
             // Jellyfin.Server
@@ -114,8 +111,5 @@ namespace Jellyfin.Server
             // Jellyfin.Server.Implementations
             yield return typeof(JellyfinDbContext).Assembly;
         }
-
-        /// <inheritdoc />
-        protected override void ShutdownInternal() => Program.Shutdown();
     }
 }

@@ -12,7 +12,6 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna;
 using Emby.Dlna.Main;
@@ -112,7 +111,7 @@ namespace Emby.Server.Implementations
     /// <summary>
     /// Class CompositionRoot.
     /// </summary>
-    public abstract class ApplicationHost : IServerApplicationHost, IAsyncDisposable, IDisposable
+    public abstract class ApplicationHost : IServerApplicationHost, IDisposable
     {
         /// <summary>
         /// The disposable parts.
@@ -120,14 +119,12 @@ namespace Emby.Server.Implementations
         private readonly ConcurrentDictionary<IDisposable, byte> _disposableParts = new();
         private readonly DeviceId _deviceId;
 
-        private readonly IFileSystem _fileSystemManager;
         private readonly IConfiguration _startupConfig;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IStartupOptions _startupOptions;
         private readonly IPluginManager _pluginManager;
 
         private List<Type> _creatingInstances;
-        private ISessionManager _sessionManager;
 
         /// <summary>
         /// Gets or sets all concrete types.
@@ -135,7 +132,7 @@ namespace Emby.Server.Implementations
         /// <value>All concrete types.</value>
         private Type[] _allConcreteTypes;
 
-        private bool _disposed = false;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost"/> class.
@@ -154,10 +151,8 @@ namespace Emby.Server.Implementations
             LoggerFactory = loggerFactory;
             _startupOptions = options;
             _startupConfig = startupConfig;
-            _fileSystemManager = new ManagedFileSystem(LoggerFactory.CreateLogger<ManagedFileSystem>(), applicationPaths);
 
             Logger = LoggerFactory.CreateLogger<ApplicationHost>();
-            _fileSystemManager.AddShortcutHandler(new MbLinkShortcutHandler());
             _deviceId = new DeviceId(ApplicationPaths, LoggerFactory);
 
             ApplicationVersion = typeof(ApplicationHost).Assembly.GetName().Version;
@@ -165,13 +160,15 @@ namespace Emby.Server.Implementations
             ApplicationUserAgent = Name.Replace(' ', '-') + "/" + ApplicationVersionString;
 
             _xmlSerializer = new MyXmlSerializer();
-            ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer, _fileSystemManager);
+            ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer);
             _pluginManager = new PluginManager(
                 LoggerFactory.CreateLogger<PluginManager>(),
                 this,
                 ConfigurationManager.Configuration,
                 ApplicationPaths.PluginsPath,
                 ApplicationVersion);
+
+            _disposableParts.TryAdd((PluginManager)_pluginManager, byte.MinValue);
         }
 
         /// <summary>
@@ -186,23 +183,16 @@ namespace Emby.Server.Implementations
 
         public bool CoreStartupHasCompleted { get; private set; }
 
-        public virtual bool CanLaunchWebBrowser => Environment.UserInteractive
-            && !_startupOptions.IsService
-            && (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS());
-
         /// <summary>
         /// Gets the <see cref="INetworkManager"/> singleton instance.
         /// </summary>
         public INetworkManager NetManager { get; private set; }
 
-        /// <summary>
-        /// Gets a value indicating whether this instance has changes that require the entire application to restart.
-        /// </summary>
-        /// <value><c>true</c> if this instance has pending application restart; otherwise, <c>false</c>.</value>
+        /// <inheritdoc />
         public bool HasPendingRestart { get; private set; }
 
         /// <inheritdoc />
-        public bool IsShuttingDown { get; private set; }
+        public bool ShouldRestart { get; set; }
 
         /// <summary>
         /// Gets the logger.
@@ -406,11 +396,9 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Runs the startup tasks.
         /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns><see cref="Task" />.</returns>
-        public async Task RunStartupTasksAsync(CancellationToken cancellationToken)
+        public async Task RunStartupTasksAsync()
         {
-            cancellationToken.ThrowIfCancellationRequested();
             Logger.LogInformation("Running startup tasks");
 
             Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
@@ -424,8 +412,6 @@ namespace Emby.Server.Implementations
 
             var entryPoints = GetExports<IServerEntryPoint>();
 
-            cancellationToken.ThrowIfCancellationRequested();
-
             var stopWatch = new Stopwatch();
             stopWatch.Start();
 
@@ -434,8 +420,6 @@ namespace Emby.Server.Implementations
 
             Logger.LogInformation("Core startup complete");
             CoreStartupHasCompleted = true;
-
-            cancellationToken.ThrowIfCancellationRequested();
 
             stopWatch.Restart();
 
@@ -509,7 +493,11 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton(_pluginManager);
             serviceCollection.AddSingleton<IApplicationPaths>(ApplicationPaths);
 
-            serviceCollection.AddSingleton(_fileSystemManager);
+            serviceCollection.AddSingleton<IFileSystem, ManagedFileSystem>();
+            serviceCollection.AddSingleton<IShortcutHandler, MbLinkShortcutHandler>();
+
+            serviceCollection.AddScoped<ISystemManager, SystemManager>();
+
             serviceCollection.AddSingleton<TmdbClientManager>();
 
             serviceCollection.AddSingleton(NetManager);
@@ -633,8 +621,6 @@ namespace Emby.Server.Implementations
             var localizationManager = (LocalizationManager)Resolve<ILocalizationManager>();
             await localizationManager.LoadAll().ConfigureAwait(false);
 
-            _sessionManager = Resolve<ISessionManager>();
-
             SetStaticProperties();
 
             FindParts();
@@ -685,7 +671,7 @@ namespace Emby.Server.Implementations
             BaseItem.ProviderManager = Resolve<IProviderManager>();
             BaseItem.LocalizationManager = Resolve<ILocalizationManager>();
             BaseItem.ItemRepository = Resolve<IItemRepository>();
-            BaseItem.FileSystem = _fileSystemManager;
+            BaseItem.FileSystem = Resolve<IFileSystem>();
             BaseItem.UserDataManager = Resolve<IUserDataManager>();
             BaseItem.ChannelManager = Resolve<IChannelManager>();
             Video.LiveTvManager = Resolve<ILiveTvManager>();
@@ -856,38 +842,6 @@ namespace Emby.Server.Implementations
         }
 
         /// <summary>
-        /// Restarts this instance.
-        /// </summary>
-        public void Restart()
-        {
-            if (IsShuttingDown)
-            {
-                return;
-            }
-
-            IsShuttingDown = true;
-            _pluginManager.UnloadAssemblies();
-
-            Task.Run(async () =>
-            {
-                try
-                {
-                    await _sessionManager.SendServerRestartNotification(CancellationToken.None).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Error sending server restart notification");
-                }
-
-                Logger.LogInformation("Calling RestartInternal");
-
-                RestartInternal();
-            });
-        }
-
-        protected abstract void RestartInternal();
-
-        /// <summary>
         /// Gets the composable part assemblies.
         /// </summary>
         /// <returns>IEnumerable{Assembly}.</returns>
@@ -941,50 +895,6 @@ namespace Emby.Server.Implementations
         }
 
         protected abstract IEnumerable<Assembly> GetAssembliesWithPartsInternal();
-
-        /// <summary>
-        /// Gets the system status.
-        /// </summary>
-        /// <param name="request">Where this request originated.</param>
-        /// <returns>SystemInfo.</returns>
-        public SystemInfo GetSystemInfo(HttpRequest request)
-        {
-            return new SystemInfo
-            {
-                HasPendingRestart = HasPendingRestart,
-                IsShuttingDown = IsShuttingDown,
-                Version = ApplicationVersionString,
-                WebSocketPortNumber = HttpPort,
-                CompletedInstallations = Resolve<IInstallationManager>().CompletedInstallations.ToArray(),
-                Id = SystemId,
-                ProgramDataPath = ApplicationPaths.ProgramDataPath,
-                WebPath = ApplicationPaths.WebPath,
-                LogPath = ApplicationPaths.LogDirectoryPath,
-                ItemsByNamePath = ApplicationPaths.InternalMetadataPath,
-                InternalMetadataPath = ApplicationPaths.InternalMetadataPath,
-                CachePath = ApplicationPaths.CachePath,
-                CanLaunchWebBrowser = CanLaunchWebBrowser,
-                TranscodingTempPath = ConfigurationManager.GetTranscodePath(),
-                ServerName = FriendlyName,
-                LocalAddress = GetSmartApiUrl(request),
-                SupportsLibraryMonitor = true,
-                PackageName = _startupOptions.PackageName,
-                CastReceiverApplications = ConfigurationManager.Configuration.CastReceiverApplications
-            };
-        }
-
-        public PublicSystemInfo GetPublicSystemInfo(HttpRequest request)
-        {
-            return new PublicSystemInfo
-            {
-                Version = ApplicationVersionString,
-                ProductName = ApplicationProductName,
-                Id = SystemId,
-                ServerName = FriendlyName,
-                LocalAddress = GetSmartApiUrl(request),
-                StartupWizardCompleted = ConfigurationManager.CommonConfiguration.IsStartupWizardCompleted
-            };
-        }
 
         /// <inheritdoc/>
         public string GetSmartApiUrl(IPAddress remoteAddr)
@@ -1066,30 +976,6 @@ namespace Emby.Server.Implementations
             }.ToString().TrimEnd('/');
         }
 
-        /// <inheritdoc />
-        public async Task Shutdown()
-        {
-            if (IsShuttingDown)
-            {
-                return;
-            }
-
-            IsShuttingDown = true;
-
-            try
-            {
-                await _sessionManager.SendServerShutdownNotification(CancellationToken.None).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error sending server shutdown notification");
-            }
-
-            ShutdownInternal();
-        }
-
-        protected abstract void ShutdownInternal();
-
         public IEnumerable<Assembly> GetApiPluginAssemblies()
         {
             var assemblies = _allConcreteTypes
@@ -1152,53 +1038,6 @@ namespace Emby.Server.Implementations
             }
 
             _disposed = true;
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            await DisposeAsyncCore().ConfigureAwait(false);
-            Dispose(false);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Used to perform asynchronous cleanup of managed resources or for cascading calls to <see cref="DisposeAsync"/>.
-        /// </summary>
-        /// <returns>A ValueTask.</returns>
-        protected virtual async ValueTask DisposeAsyncCore()
-        {
-            var type = GetType();
-
-            Logger.LogInformation("Disposing {Type}", type.Name);
-
-            foreach (var (part, _) in _disposableParts)
-            {
-                var partType = part.GetType();
-                if (partType == type)
-                {
-                    continue;
-                }
-
-                Logger.LogInformation("Disposing {Type}", partType.Name);
-
-                try
-                {
-                    part.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Error disposing {Type}", partType.Name);
-                }
-            }
-
-            if (_sessionManager is not null)
-            {
-                // used for closing websockets
-                foreach (var session in _sessionManager.Sessions)
-                {
-                    await session.DisposeAsync().ConfigureAwait(false);
-                }
-            }
         }
     }
 }

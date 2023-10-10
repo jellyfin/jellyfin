@@ -45,6 +45,8 @@ public class DynamicHlsController : BaseJellyfinApiController
     private const string DefaultEventEncoderPreset = "superfast";
     private const TranscodingJobType TranscodingJobType = MediaBrowser.Controller.MediaEncoding.TranscodingJobType.Hls;
 
+    private readonly Version _minFFmpegFlacInMp4 = new Version(6, 0);
+
     private readonly ILibraryManager _libraryManager;
     private readonly IUserManager _userManager;
     private readonly IDlnaManager _dlnaManager;
@@ -1705,16 +1707,31 @@ public class DynamicHlsController : BaseJellyfinApiController
         var audioCodec = _encodingHelper.GetAudioEncoder(state);
         var bitStreamArgs = EncodingHelper.GetAudioBitStreamArguments(state, state.Request.SegmentContainer, state.MediaSource.Container);
 
+        // opus, dts, truehd and flac (in FFmpeg 5 and older) are experimental in mp4 muxer
+        var strictArgs = string.Empty;
+        var actualOutputAudioCodec = state.ActualOutputAudioCodec;
+        if (string.Equals(actualOutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(actualOutputAudioCodec, "dts", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(actualOutputAudioCodec, "truehd", StringComparison.OrdinalIgnoreCase)
+            || (string.Equals(actualOutputAudioCodec, "flac", StringComparison.OrdinalIgnoreCase)
+                && _mediaEncoder.EncoderVersion < _minFFmpegFlacInMp4))
+        {
+            strictArgs = " -strict -2";
+        }
+
         if (!state.IsOutputVideo)
         {
-            if (EncodingHelper.IsCopyCodec(audioCodec))
-            {
-                return "-acodec copy -strict -2" + bitStreamArgs;
-            }
-
             var audioTranscodeParams = string.Empty;
 
-            audioTranscodeParams += "-acodec " + audioCodec + bitStreamArgs;
+            // -vn to drop any video streams
+            audioTranscodeParams += "-vn";
+
+            if (EncodingHelper.IsCopyCodec(audioCodec))
+            {
+                return audioTranscodeParams + " -acodec copy" + bitStreamArgs + strictArgs;
+            }
+
+            audioTranscodeParams += " -acodec " + audioCodec + bitStreamArgs + strictArgs;
 
             var audioBitrate = state.OutputAudioBitrate;
             var audioChannels = state.OutputAudioChannels;
@@ -1742,19 +1759,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                 audioTranscodeParams += " -ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture);
             }
 
-            audioTranscodeParams += " -vn";
             return audioTranscodeParams;
-        }
-
-        // dts, flac, opus and truehd are experimental in mp4 muxer
-        var strictArgs = string.Empty;
-        var actualOutputAudioCodec = state.ActualOutputAudioCodec;
-        if (string.Equals(actualOutputAudioCodec, "flac", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(actualOutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(actualOutputAudioCodec, "dts", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(actualOutputAudioCodec, "truehd", StringComparison.OrdinalIgnoreCase))
-        {
-            strictArgs = " -strict -2";
         }
 
         if (EncodingHelper.IsCopyCodec(audioCodec))
@@ -2041,9 +2046,9 @@ public class DynamicHlsController : BaseJellyfinApiController
             return null;
         }
 
-        var playlistFilename = Path.GetFileNameWithoutExtension(playlist);
+        var playlistFilename = Path.GetFileNameWithoutExtension(playlist.AsSpan());
 
-        var indexString = Path.GetFileNameWithoutExtension(file.Name).Substring(playlistFilename.Length);
+        var indexString = Path.GetFileNameWithoutExtension(file.Name.AsSpan()).Slice(playlistFilename.Length);
 
         return int.Parse(indexString, NumberStyles.Integer, CultureInfo.InvariantCulture);
     }
