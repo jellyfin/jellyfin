@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Entities;
@@ -74,14 +73,6 @@ namespace MediaBrowser.Controller.Drawing
         /// Processes the image.
         /// </summary>
         /// <param name="options">The options.</param>
-        /// <param name="toStream">To stream.</param>
-        /// <returns>Task.</returns>
-        Task ProcessImage(ImageProcessingOptions options, Stream toStream);
-
-        /// <summary>
-        /// Processes the image.
-        /// </summary>
-        /// <param name="options">The options.</param>
         /// <returns>Task.</returns>
         Task<(string Path, string? MimeType, DateTime DateModified)> ProcessImage(ImageProcessingOptions options);
 
@@ -97,7 +88,5 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="options">The options.</param>
         /// <param name="libraryName">The library name to draw onto the collage.</param>
         void CreateImageCollage(ImageCollageOptions options, string? libraryName);
-
-        bool SupportsTransparency(string path);
     }
 }

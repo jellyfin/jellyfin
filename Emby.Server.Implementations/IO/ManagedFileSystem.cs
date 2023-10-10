@@ -103,15 +103,17 @@ namespace Emby.Server.Implementations.IO
                 return filePath;
             }
 
+            var filePathSpan = filePath.AsSpan();
+
             // relative path
             if (firstChar == '\\')
             {
-                filePath = filePath.Substring(1);
+                filePathSpan = filePathSpan.Slice(1);
             }
 
             try
             {
-                return Path.GetFullPath(Path.Combine(folderPath, filePath));
+                return Path.GetFullPath(Path.Join(folderPath, filePathSpan));
             }
             catch (ArgumentException)
             {

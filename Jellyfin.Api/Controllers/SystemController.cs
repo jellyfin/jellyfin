@@ -10,7 +10,6 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
@@ -26,32 +25,36 @@ namespace Jellyfin.Api.Controllers;
 /// </summary>
 public class SystemController : BaseJellyfinApiController
 {
+    private readonly ILogger<SystemController> _logger;
     private readonly IServerApplicationHost _appHost;
     private readonly IApplicationPaths _appPaths;
     private readonly IFileSystem _fileSystem;
-    private readonly INetworkManager _network;
-    private readonly ILogger<SystemController> _logger;
+    private readonly INetworkManager _networkManager;
+    private readonly ISystemManager _systemManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SystemController"/> class.
     /// </summary>
-    /// <param name="serverConfigurationManager">Instance of <see cref="IServerConfigurationManager"/> interface.</param>
+    /// <param name="logger">Instance of <see cref="ILogger{SystemController}"/> interface.</param>
+    /// <param name="appPaths">Instance of <see cref="IServerApplicationPaths"/> interface.</param>
     /// <param name="appHost">Instance of <see cref="IServerApplicationHost"/> interface.</param>
     /// <param name="fileSystem">Instance of <see cref="IFileSystem"/> interface.</param>
-    /// <param name="network">Instance of <see cref="INetworkManager"/> interface.</param>
-    /// <param name="logger">Instance of <see cref="ILogger{SystemController}"/> interface.</param>
+    /// <param name="networkManager">Instance of <see cref="INetworkManager"/> interface.</param>
+    /// <param name="systemManager">Instance of <see cref="ISystemManager"/> interface.</param>
     public SystemController(
-        IServerConfigurationManager serverConfigurationManager,
+        ILogger<SystemController> logger,
         IServerApplicationHost appHost,
+        IServerApplicationPaths appPaths,
         IFileSystem fileSystem,
-        INetworkManager network,
-        ILogger<SystemController> logger)
+        INetworkManager networkManager,
+        ISystemManager systemManager)
     {
-        _appPaths = serverConfigurationManager.ApplicationPaths;
-        _appHost = appHost;
-        _fileSystem = fileSystem;
-        _network = network;
         _logger = logger;
+        _appHost = appHost;
+        _appPaths = appPaths;
+        _fileSystem = fileSystem;
+        _networkManager = networkManager;
+        _systemManager = systemManager;
     }
 
     /// <summary>
@@ -65,9 +68,7 @@ public class SystemController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public ActionResult<SystemInfo> GetSystemInfo()
-    {
-        return _appHost.GetSystemInfo(Request);
-    }
+        => _systemManager.GetSystemInfo(Request);
 
     /// <summary>
     /// Gets public information about the server.
@@ -77,9 +78,7 @@ public class SystemController : BaseJellyfinApiController
     [HttpGet("Info/Public")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<PublicSystemInfo> GetPublicSystemInfo()
-    {
-        return _appHost.GetPublicSystemInfo(Request);
-    }
+        => _systemManager.GetPublicSystemInfo(Request);
 
     /// <summary>
     /// Pings the system.
@@ -90,9 +89,7 @@ public class SystemController : BaseJellyfinApiController
     [HttpPost("Ping", Name = "PostPingSystem")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<string> PingSystem()
-    {
-        return _appHost.Name;
-    }
+        => _appHost.Name;
 
     /// <summary>
     /// Restarts the application.
@@ -106,7 +103,7 @@ public class SystemController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public ActionResult RestartApplication()
     {
-        _appHost.Restart();
+        _systemManager.Restart();
         return NoContent();
     }
 
@@ -122,7 +119,7 @@ public class SystemController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public ActionResult ShutdownApplication()
     {
-        _appHost.Shutdown();
+        _systemManager.Shutdown();
         return NoContent();
     }
 
@@ -180,7 +177,7 @@ public class SystemController : BaseJellyfinApiController
         return new EndPointInfo
         {
             IsLocal = HttpContext.IsLocal(),
-            IsInNetwork = _network.IsInLocalNetwork(HttpContext.GetNormalizedRemoteIP())
+            IsInNetwork = _networkManager.IsInLocalNetwork(HttpContext.GetNormalizedRemoteIP())
         };
     }
 
@@ -218,7 +215,7 @@ public class SystemController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<IEnumerable<WakeOnLanInfo>> GetWakeOnLanInfo()
     {
-        var result = _network.GetMacAddresses()
+        var result = _networkManager.GetMacAddresses()
             .Select(i => new WakeOnLanInfo(i));
         return Ok(result);
     }

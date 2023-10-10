@@ -188,7 +188,7 @@ public class SkiaEncoder : IImageEncoder
             return path;
         }
 
-        var tempPath = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + Path.GetExtension(path));
+        var tempPath = Path.Combine(_appPaths.TempDirectory, string.Concat(Guid.NewGuid().ToString(), Path.GetExtension(path.AsSpan())));
         var directory = Path.GetDirectoryName(tempPath) ?? throw new ResourceNotFoundException($"Provided path ({tempPath}) is not valid.");
         Directory.CreateDirectory(directory);
         File.Copy(path, tempPath, true);
@@ -200,20 +200,10 @@ public class SkiaEncoder : IImageEncoder
     {
         if (!orientation.HasValue)
         {
-            return SKEncodedOrigin.TopLeft;
+            return SKEncodedOrigin.Default;
         }
 
-        return orientation.Value switch
-        {
-            ImageOrientation.TopRight => SKEncodedOrigin.TopRight,
-            ImageOrientation.RightTop => SKEncodedOrigin.RightTop,
-            ImageOrientation.RightBottom => SKEncodedOrigin.RightBottom,
-            ImageOrientation.LeftTop => SKEncodedOrigin.LeftTop,
-            ImageOrientation.LeftBottom => SKEncodedOrigin.LeftBottom,
-            ImageOrientation.BottomRight => SKEncodedOrigin.BottomRight,
-            ImageOrientation.BottomLeft => SKEncodedOrigin.BottomLeft,
-            _ => SKEncodedOrigin.TopLeft
-        };
+        return (SKEncodedOrigin)orientation.Value;
     }
 
     /// <summary>

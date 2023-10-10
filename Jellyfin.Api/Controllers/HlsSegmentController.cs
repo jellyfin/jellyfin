@@ -59,7 +59,7 @@ public class HlsSegmentController : BaseJellyfinApiController
     public ActionResult GetHlsAudioSegmentLegacy([FromRoute, Required] string itemId, [FromRoute, Required] string segmentId)
     {
         // TODO: Deprecate with new iOS app
-        var file = segmentId + Path.GetExtension(Request.Path);
+        var file = string.Concat(segmentId, Path.GetExtension(Request.Path.Value.AsSpan()));
         var transcodePath = _serverConfigurationManager.GetTranscodePath();
         file = Path.GetFullPath(Path.Combine(transcodePath, file));
         var fileDir = Path.GetDirectoryName(file);
@@ -85,11 +85,12 @@ public class HlsSegmentController : BaseJellyfinApiController
     [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "itemId", Justification = "Required for ServiceStack")]
     public ActionResult GetHlsPlaylistLegacy([FromRoute, Required] string itemId, [FromRoute, Required] string playlistId)
     {
-        var file = playlistId + Path.GetExtension(Request.Path);
+        var file = string.Concat(playlistId, Path.GetExtension(Request.Path.Value.AsSpan()));
         var transcodePath = _serverConfigurationManager.GetTranscodePath();
         file = Path.GetFullPath(Path.Combine(transcodePath, file));
         var fileDir = Path.GetDirectoryName(file);
-        if (string.IsNullOrEmpty(fileDir) || !fileDir.StartsWith(transcodePath, StringComparison.InvariantCulture) || Path.GetExtension(file) != ".m3u8")
+        if (string.IsNullOrEmpty(fileDir) || !fileDir.StartsWith(transcodePath, StringComparison.InvariantCulture)
+            || Path.GetExtension(file.AsSpan()).Equals(".m3u8", StringComparison.OrdinalIgnoreCase))
         {
             return BadRequest("Invalid segment.");
         }
@@ -138,7 +139,7 @@ public class HlsSegmentController : BaseJellyfinApiController
         [FromRoute, Required] string segmentId,
         [FromRoute, Required] string segmentContainer)
     {
-        var file = segmentId + Path.GetExtension(Request.Path);
+        var file = string.Concat(segmentId, Path.GetExtension(Request.Path.Value.AsSpan()));
         var transcodeFolderPath = _serverConfigurationManager.GetTranscodePath();
 
         file = Path.GetFullPath(Path.Combine(transcodeFolderPath, file));

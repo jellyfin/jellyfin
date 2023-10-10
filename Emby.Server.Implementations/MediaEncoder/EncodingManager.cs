@@ -222,7 +222,7 @@ namespace Emby.Server.Implementations.MediaEncoder
         {
             var deadImages = images
                 .Except(chapters.Select(i => i.ImagePath).Where(i => !string.IsNullOrEmpty(i)), StringComparer.OrdinalIgnoreCase)
-                .Where(i => BaseItem.SupportedImageExtensions.Contains(Path.GetExtension(i), StringComparison.OrdinalIgnoreCase))
+                .Where(i => BaseItem.SupportedImageExtensions.Contains(Path.GetExtension(i.AsSpan()), StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             foreach (var image in deadImages)
