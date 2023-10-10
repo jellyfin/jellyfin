@@ -340,7 +340,7 @@ namespace Rssdp.Infrastructure
             {
                 sockets = sockets.ToList();
 
-                var tasks = sockets.Where(s => (fromlocalIPAddress is null || fromlocalIPAddress.Equals(((IPEndPoint)s.LocalEndPoint).Address)))
+                var tasks = sockets.Where(s => fromlocalIPAddress is null || fromlocalIPAddress.Equals(((IPEndPoint)s.LocalEndPoint).Address))
                     .Select(s => SendFromSocket(s, messageData, destination, cancellationToken));
                 return Task.WhenAll(tasks);
             }
@@ -370,7 +370,7 @@ namespace Rssdp.Infrastructure
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error in CreateMulticastSocketsAndListen. IP address: {0}", intf.Address);
+                    _logger.LogError(ex, "Failed to create SSDP UDP multicast socket for {0} on interface {1} (index {2})", intf.Address, intf.Name, intf.Index);
                 }
             }
 
@@ -403,7 +403,7 @@ namespace Rssdp.Infrastructure
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error in CreateSsdpUdpSocket. IPAddress: {0}", intf.Address);
+                    _logger.LogError(ex, "Failed to create SSDP UDP sender socket for {0} on interface {1} (index {2})", intf.Address, intf.Name, intf.Index);
                 }
             }
 
