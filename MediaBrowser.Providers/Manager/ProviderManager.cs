@@ -943,6 +943,12 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public void QueueRefresh(Guid itemId, MetadataRefreshOptions options, RefreshPriority priority)
         {
+            ArgumentNullException.ThrowIfNull(itemId);
+            if (itemId.Equals(default))
+            {
+                throw new ArgumentException("Guid can't be empty", nameof(itemId));
+            }
+
             if (_disposed)
             {
                 return;
