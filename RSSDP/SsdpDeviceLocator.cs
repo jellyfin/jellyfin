@@ -17,7 +17,7 @@ namespace Rssdp.Infrastructure
         private ISsdpCommunicationsServer _CommunicationsServer;
 
         private Timer _BroadcastTimer;
-        private object _timerLock = new object();
+        private object _timerLock = new();
 
         private string _OSName;
 
@@ -221,12 +221,12 @@ namespace Rssdp.Infrastructure
         /// <seealso cref="DeviceAvailable"/>
         protected virtual void OnDeviceAvailable(DiscoveredSsdpDevice device, bool isNewDevice, IPAddress IPAddress)
         {
-            if (this.IsDisposed)
+            if (IsDisposed)
             {
                 return;
             }
 
-            var handlers = this.DeviceAvailable;
+            var handlers = DeviceAvailable;
             if (handlers is not null)
             {
                 handlers(this, new DeviceAvailableEventArgs(device, isNewDevice)
@@ -244,12 +244,12 @@ namespace Rssdp.Infrastructure
         /// <seealso cref="DeviceUnavailable"/>
         protected virtual void OnDeviceUnavailable(DiscoveredSsdpDevice device, bool expired)
         {
-            if (this.IsDisposed)
+            if (IsDisposed)
             {
                 return;
             }
 
-            var handlers = this.DeviceUnavailable;
+            var handlers = DeviceUnavailable;
             if (handlers is not null)
             {
                 handlers(this, new DeviceUnavailableEventArgs(device, expired));
@@ -291,8 +291,8 @@ namespace Rssdp.Infrastructure
                 _CommunicationsServer = null;
                 if (commsServer is not null)
                 {
-                    commsServer.ResponseReceived -= this.CommsServer_ResponseReceived;
-                    commsServer.RequestReceived -= this.CommsServer_RequestReceived;
+                    commsServer.ResponseReceived -= CommsServer_ResponseReceived;
+                    commsServer.RequestReceived -= CommsServer_RequestReceived;
                 }
             }
         }
@@ -341,7 +341,7 @@ namespace Rssdp.Infrastructure
 
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            values["HOST"] = "239.255.255.250:1900";
+            values["HOST"] = string.Format(CultureInfo.InvariantCulture, "{0}:{1}", SsdpConstants.MulticastLocalAdminAddress, SsdpConstants.MulticastPort);
             values["USER-AGENT"] = string.Format(CultureInfo.InvariantCulture, "{0}/{1} UPnP/1.0 RSSDP/{2}", _OSName, _OSVersion, SsdpConstants.ServerVersion);
             values["MAN"] = "\"ssdp:discover\"";
 
@@ -382,17 +382,17 @@ namespace Rssdp.Infrastructure
 
         private void ProcessNotificationMessage(HttpRequestMessage message, IPAddress IPAddress)
         {
-            if (String.Compare(message.Method.Method, "Notify", StringComparison.OrdinalIgnoreCase) != 0)
+            if (string.Compare(message.Method.Method, "Notify", StringComparison.OrdinalIgnoreCase) != 0)
             {
                 return;
             }
 
             var notificationType = GetFirstHeaderStringValue("NTS", message);
-            if (String.Compare(notificationType, SsdpConstants.SsdpKeepAliveNotification, StringComparison.OrdinalIgnoreCase) == 0)
+            if (string.Compare(notificationType, SsdpConstants.SsdpKeepAliveNotification, StringComparison.OrdinalIgnoreCase) == 0)
             {
                 ProcessAliveNotification(message, IPAddress);
             }
-            else if (String.Compare(notificationType, SsdpConstants.SsdpByeByeNotification, StringComparison.OrdinalIgnoreCase) == 0)
+            else if (string.Compare(notificationType, SsdpConstants.SsdpByeByeNotification, StringComparison.OrdinalIgnoreCase) == 0)
             {
                 ProcessByeByeNotification(message);
             }
@@ -420,7 +420,7 @@ namespace Rssdp.Infrastructure
         private void ProcessByeByeNotification(HttpRequestMessage message)
         {
             var notficationType = GetFirstHeaderStringValue("NT", message);
-            if (!String.IsNullOrEmpty(notficationType))
+            if (!string.IsNullOrEmpty(notficationType))
             {
                 var usn = GetFirstHeaderStringValue("USN", message);
 
@@ -447,10 +447,9 @@ namespace Rssdp.Infrastructure
         private string GetFirstHeaderStringValue(string headerName, HttpResponseMessage message)
         {
             string retVal = null;
-            IEnumerable<string> values;
             if (message.Headers.Contains(headerName))
             {
-                message.Headers.TryGetValues(headerName, out values);
+                message.Headers.TryGetValues(headerName, out var values);
                 if (values is not null)
                 {
                     retVal = values.FirstOrDefault();
@@ -463,10 +462,9 @@ namespace Rssdp.Infrastructure
         private string GetFirstHeaderStringValue(string headerName, HttpRequestMessage message)
         {
             string retVal = null;
-            IEnumerable<string> values;
             if (message.Headers.Contains(headerName))
             {
-                message.Headers.TryGetValues(headerName, out values);
+                message.Headers.TryGetValues(headerName, out var values);
                 if (values is not null)
                 {
                     retVal = values.FirstOrDefault();
@@ -479,10 +477,9 @@ namespace Rssdp.Infrastructure
         private Uri GetFirstHeaderUriValue(string headerName, HttpRequestMessage request)
         {
             string value = null;
-            IEnumerable<string> values;
             if (request.Headers.Contains(headerName))
             {
-                request.Headers.TryGetValues(headerName, out values);
+                request.Headers.TryGetValues(headerName, out var values);
                 if (values is not null)
                 {
                     value = values.FirstOrDefault();
@@ -496,10 +493,9 @@ namespace Rssdp.Infrastructure
         private Uri GetFirstHeaderUriValue(string headerName, HttpResponseMessage response)
         {
             string value = null;
-            IEnumerable<string> values;
             if (response.Headers.Contains(headerName))
             {
-                response.Headers.TryGetValues(headerName, out values);
+                response.Headers.TryGetValues(headerName, out var values);
                 if (values is not null)
                 {
                     value = values.FirstOrDefault();
@@ -529,7 +525,7 @@ namespace Rssdp.Infrastructure
 
                 foreach (var device in expiredDevices)
                 {
-                    if (this.IsDisposed)
+                    if (IsDisposed)
                     {
                         return;
                     }
@@ -543,7 +539,7 @@ namespace Rssdp.Infrastructure
             // problems.
             foreach (var expiredUsn in (from expiredDevice in expiredDevices select expiredDevice.Usn).Distinct())
             {
-                if (this.IsDisposed)
+                if (IsDisposed)
                 {
                     return;
                 }
@@ -560,7 +556,7 @@ namespace Rssdp.Infrastructure
                 existingDevices = FindExistingDeviceNotifications(_Devices, deviceUsn);
                 foreach (var existingDevice in existingDevices)
                 {
-                    if (this.IsDisposed)
+                    if (IsDisposed)
                     {
                         return true;
                     }
