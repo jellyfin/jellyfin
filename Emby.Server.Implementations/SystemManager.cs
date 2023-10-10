@@ -46,10 +46,6 @@ public class SystemManager : ISystemManager
         _installationManager = installationManager;
     }
 
-    private bool CanLaunchWebBrowser => Environment.UserInteractive
-        && !_startupOptions.IsService
-        && (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS());
-
     /// <inheritdoc />
     public SystemInfo GetSystemInfo(HttpRequest request)
     {
@@ -67,7 +63,6 @@ public class SystemManager : ISystemManager
             ItemsByNamePath = _applicationPaths.InternalMetadataPath,
             InternalMetadataPath = _applicationPaths.InternalMetadataPath,
             CachePath = _applicationPaths.CachePath,
-            CanLaunchWebBrowser = CanLaunchWebBrowser,
             TranscodingTempPath = _configurationManager.GetTranscodePath(),
             ServerName = _applicationHost.FriendlyName,
             LocalAddress = _applicationHost.GetSmartApiUrl(request),
