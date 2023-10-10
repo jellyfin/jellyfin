@@ -262,7 +262,8 @@ namespace Jellyfin.Networking.Manager
                                     var interfaceObject = new IPData(info.Address, new IPNetwork(info.Address, info.PrefixLength), adapter.Name)
                                     {
                                         Index = ipProperties.GetIPv6Properties().Index,
-                                        Name = adapter.Name
+                                        Name = adapter.Name,
+                                        SupportsMulticast = adapter.SupportsMulticast
                                     };
 
                                     interfaces.Add(interfaceObject);
@@ -372,12 +373,12 @@ namespace Jellyfin.Networking.Manager
                         .ToHashSet();
                     interfaces = interfaces.Where(x => bindAddresses.Contains(x.Address)).ToList();
 
-                    if (bindAddresses.Contains(IPAddress.Loopback) && !interfaces.Any(i => i.Address == IPAddress.Loopback))
+                    if (bindAddresses.Contains(IPAddress.Loopback) && !interfaces.Any(i => i.Address.Equals(IPAddress.Loopback)))
                     {
                         interfaces.Add(new IPData(IPAddress.Loopback, Network.IPv4RFC5735Loopback, "lo"));
                     }
 
-                    if (bindAddresses.Contains(IPAddress.IPv6Loopback) && !interfaces.Any(i => i.Address == IPAddress.IPv6Loopback))
+                    if (bindAddresses.Contains(IPAddress.IPv6Loopback) && !interfaces.Any(i => i.Address.Equals(IPAddress.IPv6Loopback)))
                     {
                         interfaces.Add(new IPData(IPAddress.IPv6Loopback, Network.IPv6RFC4291Loopback, "lo"));
                     }
