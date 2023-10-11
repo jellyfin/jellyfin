@@ -23,7 +23,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Net;
@@ -76,9 +75,7 @@ namespace Emby.Dlna.Main
             IDeviceDiscovery deviceDiscovery,
             IMediaEncoder mediaEncoder,
             ISocketFactory socketFactory,
-            INetworkManager networkManager,
-            IUserViewManager userViewManager,
-            ITVSeriesManager tvSeriesManager)
+            INetworkManager networkManager)
         {
             _config = config;
             _appHost = appHost;
@@ -96,21 +93,6 @@ namespace Emby.Dlna.Main
             _socketFactory = socketFactory;
             _networkManager = networkManager;
             _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
-
-            ContentDirectory = new ContentDirectory.ContentDirectoryService(
-                dlnaManager,
-                userDataManager,
-                imageProcessor,
-                libraryManager,
-                config,
-                userManager,
-                loggerFactory.CreateLogger<ContentDirectory.ContentDirectoryService>(),
-                httpClientFactory,
-                localizationManager,
-                mediaSourceManager,
-                userViewManager,
-                mediaEncoder,
-                tvSeriesManager);
 
             ConnectionManager = new ConnectionManager.ConnectionManagerService(
                 dlnaManager,
@@ -139,8 +121,6 @@ namespace Emby.Dlna.Main
         /// Gets a value indicating whether the dlna server is enabled.
         /// </summary>
         public static bool Enabled { get; private set; }
-
-        public IContentDirectory ContentDirectory { get; private set; }
 
         public IConnectionManager ConnectionManager { get; private set; }
 
@@ -453,7 +433,6 @@ namespace Emby.Dlna.Main
                 _communicationsServer = null;
             }
 
-            ContentDirectory = null;
             ConnectionManager = null;
             MediaReceiverRegistrar = null;
             Current = null;
