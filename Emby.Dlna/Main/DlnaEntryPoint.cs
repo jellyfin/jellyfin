@@ -188,19 +188,6 @@ namespace Emby.Dlna.Main
             }
         }
 
-        private void DisposeDeviceDiscovery()
-        {
-            try
-            {
-                _logger.LogInformation("Disposing DeviceDiscovery");
-                ((DeviceDiscovery)_deviceDiscovery).Dispose();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error stopping device discovery");
-            }
-        }
-
         public void StartDevicePublisher(Configuration.DlnaOptions options)
         {
             if (_publisher is not null)
@@ -399,7 +386,6 @@ namespace Emby.Dlna.Main
 
             DisposeDevicePublisher();
             DisposePlayToManager();
-            DisposeDeviceDiscovery();
 
             if (_communicationsServer is not null)
             {
