@@ -43,8 +43,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
             Assert.Equal(MediaTypeNames.Application.Json, getResponse.Content.Headers.ContentType?.MediaType);
 
-            using var responseStream = await getResponse.Content.ReadAsStreamAsync();
-            var newConfig = await JsonSerializer.DeserializeAsync<StartupConfigurationDto>(responseStream, _jsonOptions);
+            var newConfig = await getResponse.Content.ReadFromJsonAsync<StartupConfigurationDto>(_jsonOptions);
             Assert.Equal(config.UICulture, newConfig!.UICulture);
             Assert.Equal(config.MetadataCountryCode, newConfig.MetadataCountryCode);
             Assert.Equal(config.PreferredMetadataLanguage, newConfig.PreferredMetadataLanguage);
@@ -60,8 +59,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(MediaTypeNames.Application.Json, response.Content.Headers.ContentType?.MediaType);
 
-            using var contentStream = await response.Content.ReadAsStreamAsync();
-            var user = await JsonSerializer.DeserializeAsync<StartupUserDto>(contentStream, _jsonOptions);
+            var user = await response.Content.ReadFromJsonAsync<StartupUserDto>(_jsonOptions);
             Assert.NotNull(user);
             Assert.NotNull(user.Name);
             Assert.NotEmpty(user.Name);
@@ -87,8 +85,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
             Assert.Equal(MediaTypeNames.Application.Json, getResponse.Content.Headers.ContentType?.MediaType);
 
-            var contentStream = await getResponse.Content.ReadAsStreamAsync();
-            var newUser = await JsonSerializer.DeserializeAsync<StartupUserDto>(contentStream, _jsonOptions);
+            var newUser = await getResponse.Content.ReadFromJsonAsync<StartupUserDto>(_jsonOptions);
             Assert.NotNull(newUser);
             Assert.Equal(user.Name, newUser.Name);
             Assert.NotNull(newUser.Password);
