@@ -11,7 +11,10 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Net;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Rssdp.Infrastructure;
 
 namespace Emby.Dlna.Extensions;
 
@@ -54,5 +57,13 @@ public static class DlnaServiceCollectionExtensions
         services.AddSingleton<IContentDirectory, ContentDirectoryService>();
         services.AddSingleton<IConnectionManager, ConnectionManagerService>();
         services.AddSingleton<IMediaReceiverRegistrar, MediaReceiverRegistrarService>();
+
+        services.AddSingleton<ISsdpCommunicationsServer>(provider => new SsdpCommunicationsServer(
+            provider.GetRequiredService<ISocketFactory>(),
+            provider.GetRequiredService<INetworkManager>(),
+            provider.GetRequiredService<ILogger<SsdpCommunicationsServer>>())
+        {
+            IsShared = true
+        });
     }
 }

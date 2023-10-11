@@ -25,7 +25,6 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
 using Rssdp;
 using Rssdp.Infrastructure;
@@ -48,14 +47,13 @@ namespace Emby.Dlna.Main
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IDeviceDiscovery _deviceDiscovery;
-        private readonly ISocketFactory _socketFactory;
+        private readonly ISsdpCommunicationsServer _communicationsServer;
         private readonly INetworkManager _networkManager;
         private readonly object _syncLock = new();
         private readonly bool _disabled;
 
         private PlayToManager _manager;
         private SsdpDevicePublisher _publisher;
-        private ISsdpCommunicationsServer _communicationsServer;
 
         private bool _disposed;
 
@@ -74,7 +72,7 @@ namespace Emby.Dlna.Main
             IMediaSourceManager mediaSourceManager,
             IDeviceDiscovery deviceDiscovery,
             IMediaEncoder mediaEncoder,
-            ISocketFactory socketFactory,
+            ISsdpCommunicationsServer communicationsServer,
             INetworkManager networkManager)
         {
             _config = config;
@@ -90,7 +88,7 @@ namespace Emby.Dlna.Main
             _mediaSourceManager = mediaSourceManager;
             _deviceDiscovery = deviceDiscovery;
             _mediaEncoder = mediaEncoder;
-            _socketFactory = socketFactory;
+            _communicationsServer = communicationsServer;
             _networkManager = networkManager;
             _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
 
@@ -129,7 +127,7 @@ namespace Emby.Dlna.Main
         private void ReloadComponents()
         {
             var options = _config.GetDlnaConfiguration();
-            StartSsdpHandler();
+            StartDeviceDiscovery();
 
             if (options.EnableServer)
             {
@@ -150,37 +148,11 @@ namespace Emby.Dlna.Main
             }
         }
 
-        private void StartSsdpHandler()
+        private void StartDeviceDiscovery()
         {
             try
             {
-                if (_communicationsServer is null)
-                {
-                    _communicationsServer = new SsdpCommunicationsServer(
-                        _socketFactory,
-                        _networkManager,
-                        _logger)
-                    {
-                        IsShared = true
-                    };
-
-                    StartDeviceDiscovery(_communicationsServer);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error starting SSDP handlers");
-            }
-        }
-
-        private void StartDeviceDiscovery(ISsdpCommunicationsServer communicationsServer)
-        {
-            try
-            {
-                if (communicationsServer is not null)
-                {
-                    ((DeviceDiscovery)_deviceDiscovery).Start(communicationsServer);
-                }
+                ((DeviceDiscovery)_deviceDiscovery).Start(_communicationsServer);
             }
             catch (Exception ex)
             {
@@ -385,14 +357,6 @@ namespace Emby.Dlna.Main
 
             DisposeDevicePublisher();
             DisposePlayToManager();
-
-            if (_communicationsServer is not null)
-            {
-                _logger.LogInformation("Disposing SsdpCommunicationsServer");
-                _communicationsServer.Dispose();
-                _communicationsServer = null;
-            }
-
             _disposed = true;
         }
     }
