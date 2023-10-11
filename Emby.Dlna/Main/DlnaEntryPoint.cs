@@ -103,11 +103,6 @@ namespace Emby.Dlna.Main
             }
         }
 
-        /// <summary>
-        /// Gets a value indicating whether the dlna server is enabled.
-        /// </summary>
-        public static bool Enabled { get; private set; }
-
         public async Task RunAsync()
         {
             await ((DlnaManager)_dlnaManager).InitProfilesAsync().ConfigureAwait(false);
@@ -134,8 +129,6 @@ namespace Emby.Dlna.Main
         private void ReloadComponents()
         {
             var options = _config.GetDlnaConfiguration();
-            Enabled = options.EnableServer;
-
             StartSsdpHandler();
 
             if (options.EnableServer)
