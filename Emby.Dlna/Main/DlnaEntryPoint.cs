@@ -94,12 +94,6 @@ namespace Emby.Dlna.Main
             _networkManager = networkManager;
             _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
 
-            MediaReceiverRegistrar = new MediaReceiverRegistrar.MediaReceiverRegistrarService(
-                loggerFactory.CreateLogger<MediaReceiverRegistrar.MediaReceiverRegistrarService>(),
-                httpClientFactory,
-                config);
-            Current = this;
-
             var netConfig = config.GetConfiguration<NetworkConfiguration>(NetworkConfigurationStore.StoreKey);
             _disabled = appHost.ListenWithHttps && netConfig.RequireHttps;
 
@@ -109,14 +103,10 @@ namespace Emby.Dlna.Main
             }
         }
 
-        public static DlnaEntryPoint Current { get; private set; }
-
         /// <summary>
         /// Gets a value indicating whether the dlna server is enabled.
         /// </summary>
         public static bool Enabled { get; private set; }
-
-        public IMediaReceiverRegistrar MediaReceiverRegistrar { get; private set; }
 
         public async Task RunAsync()
         {
@@ -424,9 +414,6 @@ namespace Emby.Dlna.Main
                 _communicationsServer.Dispose();
                 _communicationsServer = null;
             }
-
-            MediaReceiverRegistrar = null;
-            Current = null;
 
             _disposed = true;
         }
