@@ -94,12 +94,6 @@ namespace Emby.Dlna.Main
             _networkManager = networkManager;
             _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
 
-            ConnectionManager = new ConnectionManager.ConnectionManagerService(
-                dlnaManager,
-                config,
-                loggerFactory.CreateLogger<ConnectionManager.ConnectionManagerService>(),
-                httpClientFactory);
-
             MediaReceiverRegistrar = new MediaReceiverRegistrar.MediaReceiverRegistrarService(
                 loggerFactory.CreateLogger<MediaReceiverRegistrar.MediaReceiverRegistrarService>(),
                 httpClientFactory,
@@ -121,8 +115,6 @@ namespace Emby.Dlna.Main
         /// Gets a value indicating whether the dlna server is enabled.
         /// </summary>
         public static bool Enabled { get; private set; }
-
-        public IConnectionManager ConnectionManager { get; private set; }
 
         public IMediaReceiverRegistrar MediaReceiverRegistrar { get; private set; }
 
@@ -433,7 +425,6 @@ namespace Emby.Dlna.Main
                 _communicationsServer = null;
             }
 
-            ConnectionManager = null;
             MediaReceiverRegistrar = null;
             Current = null;
 

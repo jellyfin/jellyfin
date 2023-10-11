@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using Emby.Dlna.ConnectionManager;
 using Emby.Dlna.ContentDirectory;
 using Emby.Dlna.Ssdp;
 using MediaBrowser.Common.Net;
@@ -50,5 +51,6 @@ public static class DlnaServiceCollectionExtensions
         services.AddSingleton<IDlnaManager, DlnaManager>();
         services.AddSingleton<IDeviceDiscovery, DeviceDiscovery>();
         services.AddSingleton<IContentDirectory, ContentDirectoryService>();
+        services.AddSingleton<IConnectionManager, ConnectionManagerService>();
     }
 }

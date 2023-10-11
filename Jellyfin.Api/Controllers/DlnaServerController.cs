@@ -34,11 +34,15 @@ public class DlnaServerController : BaseJellyfinApiController
     /// </summary>
     /// <param name="dlnaManager">Instance of the <see cref="IDlnaManager"/> interface.</param>
     /// <param name="contentDirectory">Instance of the <see cref="IContentDirectory"/> interface.</param>
-    public DlnaServerController(IDlnaManager dlnaManager, IContentDirectory contentDirectory)
+    /// <param name="connectionManager">Instance of the <see cref="IConnectionManager"/> interface.</param>
+    public DlnaServerController(
+        IDlnaManager dlnaManager,
+        IContentDirectory contentDirectory,
+        IConnectionManager connectionManager)
     {
         _dlnaManager = dlnaManager;
         _contentDirectory = contentDirectory;
-        _connectionManager = DlnaEntryPoint.Current.ConnectionManager;
+        _connectionManager = connectionManager;
         _mediaReceiverRegistrar = DlnaEntryPoint.Current.MediaReceiverRegistrar;
     }
 
