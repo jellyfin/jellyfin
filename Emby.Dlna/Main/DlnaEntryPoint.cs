@@ -50,7 +50,7 @@ namespace Emby.Dlna.Main
         private readonly IDeviceDiscovery _deviceDiscovery;
         private readonly ISocketFactory _socketFactory;
         private readonly INetworkManager _networkManager;
-        private readonly object _syncLock = new object();
+        private readonly object _syncLock = new();
         private readonly bool _disabled;
 
         private PlayToManager _manager;
@@ -260,7 +260,7 @@ namespace Emby.Dlna.Main
                     // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.
                 };
 
-                SetProperies(device, fullService);
+                SetProperties(device, fullService);
                 _publisher.AddDevice(device);
 
                 var embeddedDevices = new[]
@@ -281,13 +281,13 @@ namespace Emby.Dlna.Main
                         // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.
                     };
 
-                    SetProperies(embeddedDevice, subDevice);
+                    SetProperties(embeddedDevice, subDevice);
                     device.AddDevice(embeddedDevice);
                 }
             }
         }
 
-        private string CreateUuid(string text)
+        private static string CreateUuid(string text)
         {
             if (!Guid.TryParse(text, out var guid))
             {
@@ -297,15 +297,14 @@ namespace Emby.Dlna.Main
             return guid.ToString("D", CultureInfo.InvariantCulture);
         }
 
-        private void SetProperies(SsdpDevice device, string fullDeviceType)
+        private static void SetProperties(SsdpDevice device, string fullDeviceType)
         {
-            var service = fullDeviceType.Replace("urn:", string.Empty, StringComparison.OrdinalIgnoreCase).Replace(":1", string.Empty, StringComparison.OrdinalIgnoreCase);
+            var serviceParts = fullDeviceType
+                .Replace("urn:", string.Empty, StringComparison.OrdinalIgnoreCase)
+                .Replace(":1", string.Empty, StringComparison.OrdinalIgnoreCase)
+                .Split(':');
 
-            var serviceParts = service.Split(':');
-
-            var deviceTypeNamespace = serviceParts[0].Replace('.', '-');
-
-            device.DeviceTypeNamespace = deviceTypeNamespace;
+            device.DeviceTypeNamespace = serviceParts[0].Replace('.', '-');
             device.DeviceClass = serviceParts[1];
             device.DeviceType = serviceParts[2];
         }
