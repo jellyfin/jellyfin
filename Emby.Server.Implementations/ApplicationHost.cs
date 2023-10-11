@@ -13,9 +13,7 @@ using System.Net;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Emby.Dlna;
 using Emby.Dlna.Main;
-using Emby.Dlna.Ssdp;
 using Emby.Naming.Common;
 using Emby.Photos;
 using Emby.Server.Implementations.Channels;
@@ -58,7 +56,6 @@ using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.ClientEvent;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -82,7 +79,6 @@ using MediaBrowser.LocalMetadata.Savers;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.MediaEncoding.Subtitles;
 using MediaBrowser.Model.Cryptography;
-using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
@@ -563,8 +559,6 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<ISessionManager, SessionManager>();
 
-            serviceCollection.AddSingleton<IDlnaManager, DlnaManager>();
-
             serviceCollection.AddSingleton<ICollectionManager, CollectionManager>();
 
             serviceCollection.AddSingleton<IPlaylistManager, PlaylistManager>();
@@ -575,8 +569,6 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<ILiveTvManager, LiveTvManager>();
 
             serviceCollection.AddSingleton<IUserViewManager, UserViewManager>();
-
-            serviceCollection.AddSingleton<IDeviceDiscovery, DeviceDiscovery>();
 
             serviceCollection.AddSingleton<IChapterManager, ChapterManager>();
 
