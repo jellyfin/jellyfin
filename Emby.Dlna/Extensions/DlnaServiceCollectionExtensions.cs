@@ -27,7 +27,7 @@ public static class DlnaServiceCollectionExtensions
     /// Adds DLNA services to the provided <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-    /// <param name="applicationHost">the.</param>
+    /// <param name="applicationHost">The <see cref="IServerApplicationHost"/>.</param>
     public static void AddDlnaServices(
         this IServiceCollection services,
         IServerApplicationHost applicationHost)
