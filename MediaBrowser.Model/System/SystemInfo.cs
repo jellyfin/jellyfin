@@ -84,7 +84,8 @@ namespace MediaBrowser.Model.System
         [Obsolete("This is always true")]
         public bool CanSelfRestart { get; set; } = true;
 
-        public bool CanLaunchWebBrowser { get; set; }
+        [Obsolete("This is always false")]
+        public bool CanLaunchWebBrowser { get; set; } = false;
 
         /// <summary>
         /// Gets or sets the program data path.

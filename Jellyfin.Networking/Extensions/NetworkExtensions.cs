@@ -230,12 +230,12 @@ public static partial class NetworkExtensions
                 }
                 else if (address.AddressFamily == AddressFamily.InterNetwork)
                 {
-                    result = new IPNetwork(address, Network.MinimumIPv4PrefixSize);
+                    result = address.Equals(IPAddress.Any) ? Network.IPv4Any : new IPNetwork(address, Network.MinimumIPv4PrefixSize);
                     return true;
                 }
                 else if (address.AddressFamily == AddressFamily.InterNetworkV6)
                 {
-                    result = new IPNetwork(address, Network.MinimumIPv6PrefixSize);
+                    result = address.Equals(IPAddress.IPv6Any) ? Network.IPv6Any : new IPNetwork(address, Network.MinimumIPv6PrefixSize);
                     return true;
                 }
             }
@@ -283,12 +283,15 @@ public static partial class NetworkExtensions
 
         if (hosts.Count <= 2)
         {
+            var firstPart = hosts[0];
+
             // Is hostname or hostname:port
-            if (FqdnGeneratedRegex().IsMatch(hosts[0]))
+            if (FqdnGeneratedRegex().IsMatch(firstPart))
             {
                 try
                 {
-                    addresses = Dns.GetHostAddresses(hosts[0]);
+                    // .NET automatically filters only supported returned addresses based on OS support.
+                    addresses = Dns.GetHostAddresses(firstPart);
                     return true;
                 }
                 catch (SocketException)
@@ -298,7 +301,7 @@ public static partial class NetworkExtensions
             }
 
             // Is an IPv4 or IPv4:port
-            if (IPAddress.TryParse(hosts[0].AsSpan().LeftPart('/'), out var address))
+            if (IPAddress.TryParse(firstPart.AsSpan().LeftPart('/'), out var address))
             {
                 if (((address.AddressFamily == AddressFamily.InterNetwork) && (!isIPv4Enabled && isIPv6Enabled))
                     || ((address.AddressFamily == AddressFamily.InterNetworkV6) && (isIPv4Enabled && !isIPv6Enabled)))

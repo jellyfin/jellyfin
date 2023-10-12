@@ -504,8 +504,7 @@ namespace Emby.Server.Implementations.Updates
 
         private async Task PerformPackageInstallation(InstallationInfo package, PluginStatus status, CancellationToken cancellationToken)
         {
-            var extension = Path.GetExtension(package.SourceUrl);
-            if (!string.Equals(extension, ".zip", StringComparison.OrdinalIgnoreCase))
+            if (!Path.GetExtension(package.SourceUrl.AsSpan()).Equals(".zip", StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogError("Only zip packages are supported. {SourceUrl} is not a zip archive.", package.SourceUrl);
                 return;

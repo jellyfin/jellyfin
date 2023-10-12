@@ -200,13 +200,6 @@ public class DynamicHlsHelper
 
         if (state.VideoStream is not null && state.VideoRequest is not null)
         {
-            // Provide a workaround for the case issue between flac and fLaC.
-            var flacWaPlaylist = ApplyFlacCaseWorkaround(state, basicPlaylist.ToString());
-            if (!string.IsNullOrEmpty(flacWaPlaylist))
-            {
-                builder.Append(flacWaPlaylist);
-            }
-
             var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
 
             // Provide SDR HEVC entrance for backward compatibility.
@@ -236,14 +229,7 @@ public class DynamicHlsHelper
                     }
 
                     var sdrTotalBitrate = sdrOutputAudioBitrate + sdrOutputVideoBitrate;
-                    var sdrPlaylist = AppendPlaylist(builder, state, sdrVideoUrl, sdrTotalBitrate, subtitleGroup);
-
-                    // Provide a workaround for the case issue between flac and fLaC.
-                    flacWaPlaylist = ApplyFlacCaseWorkaround(state, sdrPlaylist.ToString());
-                    if (!string.IsNullOrEmpty(flacWaPlaylist))
-                    {
-                        builder.Append(flacWaPlaylist);
-                    }
+                    AppendPlaylist(builder, state, sdrVideoUrl, sdrTotalBitrate, subtitleGroup);
 
                     // Restore the video codec
                     state.OutputVideoCodec = "copy";
@@ -274,13 +260,6 @@ public class DynamicHlsHelper
                 state.VideoStream.Level = originalLevel;
                 var newPlaylist = ReplacePlaylistCodecsField(basicPlaylist, playlistCodecsField, newPlaylistCodecsField);
                 builder.Append(newPlaylist);
-
-                // Provide a workaround for the case issue between flac and fLaC.
-                flacWaPlaylist = ApplyFlacCaseWorkaround(state, newPlaylist);
-                if (!string.IsNullOrEmpty(flacWaPlaylist))
-                {
-                    builder.Append(flacWaPlaylist);
-                }
             }
         }
 
@@ -766,17 +745,5 @@ public class DynamicHlsHelper
             oldValue.ToString(),
             newValue.ToString(),
             StringComparison.Ordinal);
-    }
-
-    private string ApplyFlacCaseWorkaround(StreamState state, string srcPlaylist)
-    {
-        if (!string.Equals(state.ActualOutputAudioCodec, "flac", StringComparison.OrdinalIgnoreCase))
-        {
-            return string.Empty;
-        }
-
-        var newPlaylist = srcPlaylist.Replace(",flac\"", ",fLaC\"", StringComparison.Ordinal);
-
-        return newPlaylist.Contains(",fLaC\"", StringComparison.Ordinal) ? newPlaylist : string.Empty;
     }
 }

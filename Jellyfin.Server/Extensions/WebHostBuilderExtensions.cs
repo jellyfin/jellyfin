@@ -35,7 +35,7 @@ public static class WebHostBuilderExtensions
         return builder
             .UseKestrel((builderContext, options) =>
             {
-                var addresses = appHost.NetManager.GetAllBindInterfaces();
+                var addresses = appHost.NetManager.GetAllBindInterfaces(true);
 
                 bool flagged = false;
                 foreach (var netAdd in addresses)
