@@ -10,12 +10,6 @@ on:
 
 env:
   SDK_VERSION: "7.0.x"
-  TEST_ARGS: >
-    --configuration Release
-    --collect:"XPlat Code Coverage"
-    --settings tests/coverletArgs.runsettings
-    --verbosity minimal
-
 
 jobs:
   run-tests:
@@ -33,15 +27,11 @@ jobs:
 
       - name: Run DotNet CLI Tests
         run: >
-          find tests -type f -iname "*.csproj" -print0 | xargs -0 -I{} -t
-          dotnet test '{}' ${{ env.TEST_ARGS }}
-        if: matrix.os != 'windows-latest'
-
-      - name: Run DotNet CLI Tests
-        run: >
-          Get-ChildItem -Recurse -Filter *.csproj -Path tests |
-          ForEach-Object { dotnet test $_.FullName ${{ env.TEST_ARGS }} }
-        if: matrix.os == 'windows-latest'
+          dotnet test Jellyfin.sln
+          --configuration Release
+          --collect:"XPlat Code Coverage"
+          --settings tests/coverletArgs.runsettings
+          --verbosity minimal
 
       - name: Merge code coverage results
         uses: danielpalme/ReportGenerator-GitHub-Action@5
