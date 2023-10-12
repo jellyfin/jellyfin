@@ -26,7 +26,8 @@ NSSM_URL="http://files.evilt.win/nssm/${NSSM_VERSION}.zip"
 NSIS_VERSION="3.09"
 NSIS_URL="https://download.sourceforge.net/project/nsis/NSIS%203/${NSIS_VERSION}/nsis-${NSIS_VERSION}.zip"
 
-FFMPEG_URL="https://repo.jellyfin.org/releases/server/windows/ffmpeg/jellyfin-ffmpeg-portable_win64.zip";
+FFMPEG_VERSION="6.0-6"
+FFMPEG_URL="https://github.com/jellyfin/jellyfin-ffmpeg/releases/download/v${FFMPEG_VERSION}/jellyfin-ffmpeg_${FFMPEG_VERSION}-portable_win64.zip";
 
 # Move to source directory
 cd ${SOURCE_DIR}
