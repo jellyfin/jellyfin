@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -76,13 +77,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var model = await GetModelInfo(info, false, cancellationToken).ConfigureAwait(false);
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(model.LineupURL ?? model.BaseURL + "/lineup.json", HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var lineup = await JsonSerializer.DeserializeAsync<List<Channels>>(stream, _jsonOptions, cancellationToken)
-                .ConfigureAwait(false) ?? new List<Channels>();
-
+            var lineup = await response.Content.ReadFromJsonAsync<IEnumerable<Channels>>(_jsonOptions, cancellationToken).ConfigureAwait(false) ?? Enumerable.Empty<Channels>();
             if (info.ImportFavoritesOnly)
             {
-                lineup = lineup.Where(i => i.Favorite).ToList();
+                lineup = lineup.Where(i => i.Favorite);
             }
 
             return lineup.Where(i => !i.DRM).ToList();
@@ -129,9 +127,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     .GetAsync(GetApiUrl(info) + "/discover.json", HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                     .ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
-                await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                var discoverResponse = await JsonSerializer.DeserializeAsync<DiscoverResponse>(stream, _jsonOptions, cancellationToken)
-                    .ConfigureAwait(false);
+                var discoverResponse = await response.Content.ReadFromJsonAsync<DiscoverResponse>(_jsonOptions, cancellationToken).ConfigureAwait(false);
 
                 if (!string.IsNullOrEmpty(cacheKey))
                 {
@@ -175,34 +171,37 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                 .GetAsync(string.Format(CultureInfo.InvariantCulture, "{0}/tuners.html", GetApiUrl(info)), HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                 .ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            using var sr = new StreamReader(stream, System.Text.Encoding.UTF8);
             var tuners = new List<LiveTvTunerInfo>();
-            await foreach (var line in sr.ReadAllLinesAsync().ConfigureAwait(false))
+            var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using (stream.ConfigureAwait(false))
             {
-                string stripedLine = StripXML(line);
-                if (stripedLine.Contains("Channel", StringComparison.Ordinal))
+                using var sr = new StreamReader(stream, System.Text.Encoding.UTF8);
+                await foreach (var line in sr.ReadAllLinesAsync().ConfigureAwait(false))
                 {
-                    LiveTvTunerStatus status;
-                    var index = stripedLine.IndexOf("Channel", StringComparison.OrdinalIgnoreCase);
-                    var name = stripedLine.Substring(0, index - 1);
-                    var currentChannel = stripedLine.Substring(index + 7);
-                    if (string.Equals(currentChannel, "none", StringComparison.Ordinal))
+                    string stripedLine = StripXML(line);
+                    if (stripedLine.Contains("Channel", StringComparison.Ordinal))
                     {
-                        status = LiveTvTunerStatus.LiveTv;
-                    }
-                    else
-                    {
-                        status = LiveTvTunerStatus.Available;
-                    }
+                        LiveTvTunerStatus status;
+                        var index = stripedLine.IndexOf("Channel", StringComparison.OrdinalIgnoreCase);
+                        var name = stripedLine.Substring(0, index - 1);
+                        var currentChannel = stripedLine.Substring(index + 7);
+                        if (string.Equals(currentChannel, "none", StringComparison.Ordinal))
+                        {
+                            status = LiveTvTunerStatus.LiveTv;
+                        }
+                        else
+                        {
+                            status = LiveTvTunerStatus.Available;
+                        }
 
-                    tuners.Add(new LiveTvTunerInfo
-                    {
-                        Name = name,
-                        SourceType = string.IsNullOrWhiteSpace(model.ModelNumber) ? Name : model.ModelNumber,
-                        ProgramName = currentChannel,
-                        Status = status
-                    });
+                        tuners.Add(new LiveTvTunerInfo
+                        {
+                            Name = name,
+                            SourceType = string.IsNullOrWhiteSpace(model.ModelNumber) ? Name : model.ModelNumber,
+                            ProgramName = currentChannel,
+                            Status = status
+                        });
+                    }
                 }
             }
 

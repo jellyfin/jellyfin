@@ -43,8 +43,6 @@
     <TargetFramework>net7.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <!-- https://github.com/microsoft/ApplicationInsights-dotnet/issues/2047 -->
-    <NoWarn>AD0001</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
