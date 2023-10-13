@@ -371,8 +371,11 @@ namespace Emby.Server.Implementations.Channels
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-            await using FileStream createStream = File.Create(path);
-            await JsonSerializer.SerializeAsync(createStream, mediaSources, _jsonOptions).ConfigureAwait(false);
+            FileStream createStream = File.Create(path);
+            await using (createStream.ConfigureAwait(false))
+            {
+                await JsonSerializer.SerializeAsync(createStream, mediaSources, _jsonOptions).ConfigureAwait(false);
+            }
         }
 
         /// <inheritdoc />

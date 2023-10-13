@@ -520,18 +520,16 @@ namespace Emby.Server.Implementations.Updates
 
             // CA5351: Do Not Use Broken Cryptographic Algorithms
 #pragma warning disable CA5351
-            using var md5 = MD5.Create();
             cancellationToken.ThrowIfCancellationRequested();
 
-            var hash = await md5.ComputeHashAsync(stream, cancellationToken).ConfigureAwait(false);
-            var hashHex = Convert.ToHexString(hash);
-            if (!string.Equals(package.Checksum, hashHex, StringComparison.OrdinalIgnoreCase))
+            var hash = Convert.ToHexString(await MD5.HashDataAsync(stream, cancellationToken).ConfigureAwait(false));
+            if (!string.Equals(package.Checksum, hash, StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogError(
                     "The checksums didn't match while installing {Package}, expected: {Expected}, got: {Received}",
                     package.Name,
                     package.Checksum,
-                    hashHex);
+                    hash);
                 throw new InvalidDataException("The checksum of the received data doesn't match.");
             }
 
@@ -557,7 +555,7 @@ namespace Emby.Server.Implementations.Updates
             reader.ExtractToDirectory(targetDir, true);
 
             // Ensure we create one or populate existing ones with missing data.
-            await _pluginManager.PopulateManifest(package.PackageInfo, package.Version, targetDir, status);
+            await _pluginManager.PopulateManifest(package.PackageInfo, package.Version, targetDir, status).ConfigureAwait(false);
 
             _pluginManager.ImportPluginFrom(targetDir);
         }
