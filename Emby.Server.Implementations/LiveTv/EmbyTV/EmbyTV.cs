@@ -61,20 +61,21 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly ILibraryManager _libraryManager;
+        private readonly IVirtualFolderManager _virtualFolderManager;
         private readonly IProviderManager _providerManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IStreamHelper _streamHelper;
 
-        private readonly ConcurrentDictionary<string, ActiveRecordingInfo> _activeRecordings =
-            new ConcurrentDictionary<string, ActiveRecordingInfo>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, ActiveRecordingInfo> _activeRecordings
+            = new(StringComparer.OrdinalIgnoreCase);
 
-        private readonly ConcurrentDictionary<string, EpgChannelData> _epgChannels =
-            new ConcurrentDictionary<string, EpgChannelData>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, EpgChannelData> _epgChannels
+            = new(StringComparer.OrdinalIgnoreCase);
 
-        private readonly SemaphoreSlim _recordingDeleteSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _recordingDeleteSemaphore = new(1, 1);
 
-        private bool _disposed = false;
+        private bool _disposed;
 
         public EmbyTV(
             IServerApplicationHost appHost,
@@ -87,6 +88,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             IFileSystem fileSystem,
             ILibraryManager libraryManager,
             ILibraryMonitor libraryMonitor,
+            IVirtualFolderManager virtualFolderManager,
             IProviderManager providerManager,
             IMediaEncoder mediaEncoder)
         {
@@ -99,6 +101,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _fileSystem = fileSystem;
             _libraryManager = libraryManager;
             _libraryMonitor = libraryMonitor;
+            _virtualFolderManager = virtualFolderManager;
             _providerManager = providerManager;
             _mediaEncoder = mediaEncoder;
             _liveTvManager = (LiveTvManager)liveTvManager;
@@ -160,9 +163,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             try
             {
                 var recordingFolders = GetRecordingFolders().ToArray();
-                var virtualFolders = _libraryManager.GetVirtualFolders();
-
-                var allExistingPaths = virtualFolders.SelectMany(i => i.Locations).ToList();
+                var allExistingPaths = _virtualFolderManager.GetVirtualFolders().SelectMany(i => i.Locations).ToList();
 
                 var pathsAdded = new List<string>();
 
@@ -185,7 +186,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     };
                     try
                     {
-                        await _libraryManager.AddVirtualFolder(recordingFolder.Name, recordingFolder.CollectionType, libraryOptions, true).ConfigureAwait(false);
+                        await _virtualFolderManager.AddVirtualFolder(recordingFolder.Name, recordingFolder.CollectionType, libraryOptions, true).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -224,9 +225,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _logger.LogDebug("Removing path from library: {0}", path);
 
             var requiresRefresh = false;
-            var virtualFolders = _libraryManager.GetVirtualFolders();
 
-            foreach (var virtualFolder in virtualFolders)
+            foreach (var virtualFolder in _virtualFolderManager.GetVirtualFolders())
             {
                 if (!virtualFolder.Locations.Contains(path, StringComparison.OrdinalIgnoreCase))
                 {
@@ -238,7 +238,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     // remove entire virtual folder
                     try
                     {
-                        await _libraryManager.RemoveVirtualFolder(virtualFolder.Name, true).ConfigureAwait(false);
+                        await _virtualFolderManager.RemoveVirtualFolder(virtualFolder.Name, true).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -249,7 +249,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     try
                     {
-                        _libraryManager.RemoveMediaPath(virtualFolder.Name, path);
+                        _virtualFolderManager.RemoveMediaPath(virtualFolder.Name, path, false);
                         requiresRefresh = true;
                     }
                     catch (Exception ex)

@@ -12,7 +12,7 @@ public class MediaPathDto
     /// Gets or sets the name of the library.
     /// </summary>
     [Required]
-    public string? Name { get; set; }
+    public required string Name { get; set; }
 
     /// <summary>
     /// Gets or sets the path to add.

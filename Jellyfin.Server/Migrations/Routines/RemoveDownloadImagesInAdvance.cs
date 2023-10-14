@@ -12,11 +12,16 @@ namespace Jellyfin.Server.Migrations.Routines
     {
         private readonly ILogger<RemoveDownloadImagesInAdvance> _logger;
         private readonly ILibraryManager _libraryManager;
+        private readonly IVirtualFolderManager _virtualFolderManager;
 
-        public RemoveDownloadImagesInAdvance(ILogger<RemoveDownloadImagesInAdvance> logger, ILibraryManager libraryManager)
+        public RemoveDownloadImagesInAdvance(
+            ILogger<RemoveDownloadImagesInAdvance> logger,
+            ILibraryManager libraryManager,
+            IVirtualFolderManager virtualFolderManager)
         {
             _logger = logger;
             _libraryManager = libraryManager;
+            _virtualFolderManager = virtualFolderManager;
         }
 
         /// <inheritdoc/>
@@ -31,9 +36,8 @@ namespace Jellyfin.Server.Migrations.Routines
         /// <inheritdoc/>
         public void Perform()
         {
-            var virtualFolders = _libraryManager.GetVirtualFolders(false);
             _logger.LogInformation("Removing 'RemoveDownloadImagesInAdvance' settings in all the libraries");
-            foreach (var virtualFolder in virtualFolders)
+            foreach (var virtualFolder in _virtualFolderManager.GetVirtualFolders())
             {
                 // Some virtual folders don't have a proper item id.
                 if (!Guid.TryParse(virtualFolder.ItemId, out var folderId))

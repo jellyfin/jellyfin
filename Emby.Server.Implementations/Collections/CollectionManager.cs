@@ -31,6 +31,7 @@ namespace Emby.Server.Implementations.Collections
         private readonly IProviderManager _providerManager;
         private readonly ILocalizationManager _localizationManager;
         private readonly IApplicationPaths _appPaths;
+        private readonly IVirtualFolderManager _virtualFolderManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CollectionManager"/> class.
@@ -42,6 +43,7 @@ namespace Emby.Server.Implementations.Collections
         /// <param name="iLibraryMonitor">The library monitor.</param>
         /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="providerManager">The provider manager.</param>
+        /// <param name="virtualFolderManager">The library structure manager.</param>
         public CollectionManager(
             ILibraryManager libraryManager,
             IApplicationPaths appPaths,
@@ -49,13 +51,15 @@ namespace Emby.Server.Implementations.Collections
             IFileSystem fileSystem,
             ILibraryMonitor iLibraryMonitor,
             ILoggerFactory loggerFactory,
-            IProviderManager providerManager)
+            IProviderManager providerManager,
+            IVirtualFolderManager virtualFolderManager)
         {
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
             _iLibraryMonitor = iLibraryMonitor;
             _logger = loggerFactory.CreateLogger<CollectionManager>();
             _providerManager = providerManager;
+            _virtualFolderManager = virtualFolderManager;
             _localizationManager = localizationManager;
             _appPaths = appPaths;
         }
@@ -102,7 +106,7 @@ namespace Emby.Server.Implementations.Collections
 
             var name = _localizationManager.GetLocalizedString("Collections");
 
-            await _libraryManager.AddVirtualFolder(name, CollectionTypeOptions.BoxSets, libraryOptions, true).ConfigureAwait(false);
+            await _virtualFolderManager.AddVirtualFolder(name, CollectionTypeOptions.BoxSets, libraryOptions, true).ConfigureAwait(false);
 
             return FindFolders(path).First();
         }

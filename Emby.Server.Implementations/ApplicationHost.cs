@@ -532,6 +532,8 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<ILibraryManager, LibraryManager>();
             serviceCollection.AddSingleton<NamingOptions>();
 
+            serviceCollection.AddSingleton<IVirtualFolderManager, VirtualFolderManager>();
+
             serviceCollection.AddSingleton<IMusicManager, MusicManager>();
 
             serviceCollection.AddSingleton<ILibraryMonitor, LibraryMonitor>();

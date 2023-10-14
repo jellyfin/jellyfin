@@ -1,17 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LibraryStructureDto;
-using MediaBrowser.Common.Progress;
-using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
@@ -29,24 +24,18 @@ namespace Jellyfin.Api.Controllers;
 [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
 public class LibraryStructureController : BaseJellyfinApiController
 {
-    private readonly IServerApplicationPaths _appPaths;
     private readonly ILibraryManager _libraryManager;
-    private readonly ILibraryMonitor _libraryMonitor;
+    private readonly IVirtualFolderManager _virtualFolderManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LibraryStructureController"/> class.
     /// </summary>
-    /// <param name="serverConfigurationManager">Instance of <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="libraryManager">Instance of <see cref="ILibraryManager"/> interface.</param>
-    /// <param name="libraryMonitor">Instance of <see cref="ILibraryMonitor"/> interface.</param>
-    public LibraryStructureController(
-        IServerConfigurationManager serverConfigurationManager,
-        ILibraryManager libraryManager,
-        ILibraryMonitor libraryMonitor)
+    /// <param name="virtualFolderManager">Instance of <see cref="IVirtualFolderManager"/> interface.</param>
+    public LibraryStructureController(ILibraryManager libraryManager, IVirtualFolderManager virtualFolderManager)
     {
-        _appPaths = serverConfigurationManager.ApplicationPaths;
         _libraryManager = libraryManager;
-        _libraryMonitor = libraryMonitor;
+        _virtualFolderManager = virtualFolderManager;
     }
 
     /// <summary>
@@ -56,9 +45,9 @@ public class LibraryStructureController : BaseJellyfinApiController
     /// <returns>An <see cref="IEnumerable{VirtualFolderInfo}"/> with the virtual folders.</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<IEnumerable<VirtualFolderInfo>> GetVirtualFolders()
+    public IEnumerable<VirtualFolderInfo> GetVirtualFolders()
     {
-        return _libraryManager.GetVirtualFolders(true);
+        return _virtualFolderManager.GetVirtualFolders(true);
     }
 
     /// <summary>
@@ -74,7 +63,7 @@ public class LibraryStructureController : BaseJellyfinApiController
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> AddVirtualFolder(
-        [FromQuery] string? name,
+        [FromQuery] string name,
         [FromQuery] CollectionTypeOptions? collectionType,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] paths,
         [FromBody] AddVirtualFolderDto? libraryOptionsDto,
@@ -87,8 +76,7 @@ public class LibraryStructureController : BaseJellyfinApiController
             libraryOptions.PathInfos = paths.Select(i => new MediaPathInfo(i)).ToArray();
         }
 
-        await _libraryManager.AddVirtualFolder(name, collectionType, libraryOptions, refreshLibrary).ConfigureAwait(false);
-
+        await _virtualFolderManager.AddVirtualFolder(name, collectionType, libraryOptions, refreshLibrary).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -102,10 +90,10 @@ public class LibraryStructureController : BaseJellyfinApiController
     [HttpDelete]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> RemoveVirtualFolder(
-        [FromQuery] string? name,
+        [FromQuery] string name,
         [FromQuery] bool refreshLibrary = false)
     {
-        await _libraryManager.RemoveVirtualFolder(name, refreshLibrary).ConfigureAwait(false);
+        await _virtualFolderManager.RemoveVirtualFolder(name, refreshLibrary).ConfigureAwait(false);
         return NoContent();
     }
 
@@ -124,7 +112,7 @@ public class LibraryStructureController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public ActionResult RenameVirtualFolder(
+    public async Task<ActionResult> RenameVirtualFolder(
         [FromQuery] string? name,
         [FromQuery] string? newName,
         [FromQuery] bool refreshLibrary = false)
@@ -139,56 +127,17 @@ public class LibraryStructureController : BaseJellyfinApiController
             throw new ArgumentNullException(nameof(newName));
         }
 
-        var rootFolderPath = _appPaths.DefaultUserViewsPath;
-
-        var currentPath = Path.Combine(rootFolderPath, name);
-        var newPath = Path.Combine(rootFolderPath, newName);
-
-        if (!Directory.Exists(currentPath))
+        try
+        {
+            await _virtualFolderManager.RenameVirtualFolder(name, newName, refreshLibrary).ConfigureAwait(false);
+        }
+        catch (DirectoryNotFoundException)
         {
             return NotFound("The media collection does not exist.");
         }
-
-        if (!string.Equals(currentPath, newPath, StringComparison.OrdinalIgnoreCase) && Directory.Exists(newPath))
+        catch (InvalidOperationException)
         {
-            return Conflict($"The media library already exists at {newPath}.");
-        }
-
-        _libraryMonitor.Stop();
-
-        try
-        {
-            // Changing capitalization. Handle windows case insensitivity
-            if (string.Equals(currentPath, newPath, StringComparison.OrdinalIgnoreCase))
-            {
-                var tempPath = Path.Combine(
-                    rootFolderPath,
-                    Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture));
-                Directory.Move(currentPath, tempPath);
-                currentPath = tempPath;
-            }
-
-            Directory.Move(currentPath, newPath);
-        }
-        finally
-        {
-            CollectionFolder.OnCollectionFolderChange();
-
-            Task.Run(async () =>
-            {
-                // No need to start if scanning the library because it will handle it
-                if (refreshLibrary)
-                {
-                    await _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None).ConfigureAwait(false);
-                }
-                else
-                {
-                    // Need to add a delay here or directory watchers may still pick up the changes
-                    // Have to block here to allow exceptions to bubble
-                    await Task.Delay(1000).ConfigureAwait(false);
-                    _libraryMonitor.Start();
-                }
-            });
+            return Conflict("The media library already exists.");
         }
 
         return NoContent();
@@ -208,33 +157,9 @@ public class LibraryStructureController : BaseJellyfinApiController
         [FromBody, Required] MediaPathDto mediaPathDto,
         [FromQuery] bool refreshLibrary = false)
     {
-        _libraryMonitor.Stop();
+        var mediaPath = mediaPathDto.PathInfo ?? new MediaPathInfo(mediaPathDto.Path ?? throw new ArgumentException("PathInfo and Path can't both be null."));
 
-        try
-        {
-            var mediaPath = mediaPathDto.PathInfo ?? new MediaPathInfo(mediaPathDto.Path ?? throw new ArgumentException("PathInfo and Path can't both be null."));
-
-            _libraryManager.AddMediaPath(mediaPathDto.Name, mediaPath);
-        }
-        finally
-        {
-            Task.Run(async () =>
-            {
-                // No need to start if scanning the library because it will handle it
-                if (refreshLibrary)
-                {
-                    await _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None).ConfigureAwait(false);
-                }
-                else
-                {
-                    // Need to add a delay here or directory watchers may still pick up the changes
-                    // Have to block here to allow exceptions to bubble
-                    await Task.Delay(1000).ConfigureAwait(false);
-                    _libraryMonitor.Start();
-                }
-            });
-        }
-
+        _virtualFolderManager.AddMediaPath(mediaPathDto.Name, mediaPath, refreshLibrary);
         return NoContent();
     }
 
@@ -254,7 +179,7 @@ public class LibraryStructureController : BaseJellyfinApiController
             throw new ArgumentNullException(nameof(mediaPathRequestDto), "Name must not be null or empty");
         }
 
-        _libraryManager.UpdateMediaPath(mediaPathRequestDto.Name, mediaPathRequestDto.PathInfo);
+        _virtualFolderManager.UpdateMediaPath(mediaPathRequestDto.Name, mediaPathRequestDto.PathInfo);
         return NoContent();
     }
 
@@ -270,8 +195,8 @@ public class LibraryStructureController : BaseJellyfinApiController
     [HttpDelete("Paths")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public ActionResult RemoveMediaPath(
-        [FromQuery] string? name,
-        [FromQuery] string? path,
+        [FromQuery] string name,
+        [FromQuery] string path,
         [FromQuery] bool refreshLibrary = false)
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -279,31 +204,7 @@ public class LibraryStructureController : BaseJellyfinApiController
             throw new ArgumentNullException(nameof(name));
         }
 
-        _libraryMonitor.Stop();
-
-        try
-        {
-            _libraryManager.RemoveMediaPath(name, path);
-        }
-        finally
-        {
-            Task.Run(async () =>
-            {
-                // No need to start if scanning the library because it will handle it
-                if (refreshLibrary)
-                {
-                    await _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None).ConfigureAwait(false);
-                }
-                else
-                {
-                    // Need to add a delay here or directory watchers may still pick up the changes
-                    // Have to block here to allow exceptions to bubble
-                    await Task.Delay(1000).ConfigureAwait(false);
-                    _libraryMonitor.Start();
-                }
-            });
-        }
-
+        _virtualFolderManager.RemoveMediaPath(name, path, refreshLibrary);
         return NoContent();
     }
 
