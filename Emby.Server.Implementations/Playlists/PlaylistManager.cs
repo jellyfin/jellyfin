@@ -85,7 +85,7 @@ namespace Emby.Server.Implementations.Playlists
                         throw new ArgumentException("No item exists with the supplied Id");
                     }
 
-                    if (item.MediaType == MediaType.Unknown)
+                    if (item.MediaType != MediaType.Unknown)
                     {
                         options.MediaType = item.MediaType;
                     }
@@ -107,7 +107,7 @@ namespace Emby.Server.Implementations.Playlists
                         }
                     }
 
-                    if (options.MediaType is null || options.MediaType == MediaType.Unknown)
+                    if (options.MediaType is not null && options.MediaType != MediaType.Unknown)
                     {
                         break;
                     }
