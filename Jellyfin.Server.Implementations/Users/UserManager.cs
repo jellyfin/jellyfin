@@ -293,6 +293,7 @@ namespace Jellyfin.Server.Implementations.Users
         public UserDto GetUserDto(User user, string? remoteEndPoint = null)
         {
             var hasPassword = GetAuthenticationProvider(user).HasPassword(user);
+            var castReceiverApplications = _serverConfigurationManager.Configuration.CastReceiverApplications;
             return new UserDto
             {
                 Name = user.Username,
@@ -322,9 +323,9 @@ namespace Jellyfin.Server.Implementations.Users
                     MyMediaExcludes = user.GetPreferenceValues<Guid>(PreferenceKind.MyMediaExcludes),
                     LatestItemsExcludes = user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes),
                     CastReceiverId = string.IsNullOrEmpty(user.CastReceiverId)
-                        ? _serverConfigurationManager.Configuration.CastReceiverApplications.FirstOrDefault()?.Id
-                        : _serverConfigurationManager.Configuration.CastReceiverApplications.FirstOrDefault(c => string.Equals(c.Id, user.CastReceiverId, StringComparison.Ordinal))?.Id
-                          ?? _serverConfigurationManager.Configuration.CastReceiverApplications.FirstOrDefault()?.Id
+                        ? castReceiverApplications.FirstOrDefault()?.Id
+                        : castReceiverApplications.FirstOrDefault(c => string.Equals(c.Id, user.CastReceiverId, StringComparison.Ordinal))?.Id
+                          ?? castReceiverApplications.FirstOrDefault()?.Id
                 },
                 Policy = new UserPolicy
                 {
