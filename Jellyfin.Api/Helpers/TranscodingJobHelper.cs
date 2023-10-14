@@ -808,7 +808,7 @@ public class TranscodingJobHelper : IDisposable
                 .ConfigureAwait(false);
             var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
 
-            _encodingHelper.AttachMediaSourceInfo(state, encodingOptions, liveStreamResponse.MediaSource, state.RequestedUrl);
+            _encodingHelper.AttachMediaSourceInfo(state, encodingOptions, liveStreamResponse.MediaSource, state.Extension);
 
             if (state.VideoRequest is not null)
             {

@@ -311,6 +311,7 @@ public class VideosController : BaseJellyfinApiController
     /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
     /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
     /// <param name="streamOptions">Optional. The streaming options.</param>
+    /// <param name="ext">Optional. The stream's original extension.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("{itemId}/stream")]
@@ -368,7 +369,8 @@ public class VideosController : BaseJellyfinApiController
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
-        [FromQuery] Dictionary<string, string> streamOptions)
+        [FromQuery] Dictionary<string, string> streamOptions,
+        [FromQuery] string? ext)
     {
         var isHeadRequest = Request.Method == System.Net.WebRequestMethods.Http.Head;
         // CTS lifecycle is managed internally.
@@ -425,7 +427,8 @@ public class VideosController : BaseJellyfinApiController
             AudioStreamIndex = audioStreamIndex,
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Streaming,
-            StreamOptions = streamOptions
+            StreamOptions = streamOptions,
+            OriginalExtension = ext
         };
 
         var state = await StreamingHelpers.GetStreamingState(
@@ -564,6 +567,7 @@ public class VideosController : BaseJellyfinApiController
     /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
     /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
     /// <param name="streamOptions">Optional. The streaming options.</param>
+    /// <param name="ext">Optional. The stream's original extension.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
     [HttpGet("{itemId}/stream.{container}")]
@@ -621,7 +625,8 @@ public class VideosController : BaseJellyfinApiController
         [FromQuery] int? audioStreamIndex,
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
-        [FromQuery] Dictionary<string, string> streamOptions)
+        [FromQuery] Dictionary<string, string> streamOptions,
+        [FromQuery] string? ext)
     {
         return GetVideoStream(
             itemId,
@@ -674,6 +679,7 @@ public class VideosController : BaseJellyfinApiController
             audioStreamIndex,
             videoStreamIndex,
             context,
-            streamOptions);
+            streamOptions,
+            ext);
     }
 }

@@ -95,9 +95,9 @@ public static class StreamingHelpers
         var state = new StreamState(mediaSourceManager, transcodingJobType, transcodingJobHelper)
         {
             Request = streamingRequest,
-            RequestedUrl = url,
             UserAgent = httpRequest.Headers[HeaderNames.UserAgent],
-            EnableDlnaHeaders = enableDlnaHeaders
+            EnableDlnaHeaders = enableDlnaHeaders,
+            Extension = url
         };
 
         var userId = httpContext.User.GetUserId();
@@ -165,9 +165,9 @@ public static class StreamingHelpers
 
         var encodingOptions = serverConfigurationManager.GetEncodingOptions();
 
-        encodingHelper.AttachMediaSourceInfo(state, encodingOptions, mediaSource, url);
+        encodingHelper.AttachMediaSourceInfo(state, encodingOptions, mediaSource, state.Extension);
 
-        string? containerInternal = Path.GetExtension(state.RequestedUrl);
+        string? containerInternal = state.Extension;
 
         if (!string.IsNullOrEmpty(streamingRequest.Container))
         {
@@ -423,7 +423,7 @@ public static class StreamingHelpers
     /// <returns>System.String.</returns>
     private static string GetOutputFileExtension(StreamState state, MediaSourceInfo? mediaSource)
     {
-        var ext = Path.GetExtension(state.RequestedUrl);
+        var ext = Path.GetExtension(state.Extension);
         if (!string.IsNullOrEmpty(ext))
         {
             return ext;

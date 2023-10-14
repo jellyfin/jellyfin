@@ -544,12 +544,10 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Infers the video codec.
         /// </summary>
-        /// <param name="url">The URL.</param>
+         /// <param name="ext">The file extension.</param>
         /// <returns>System.Nullable{VideoCodecs}.</returns>
-        public string InferVideoCodec(string url)
+        public string InferVideoCodec(string ext)
         {
-            var ext = Path.GetExtension(url.AsSpan());
-
             if (ext.Equals(".asf", StringComparison.OrdinalIgnoreCase))
             {
                 return "wmv";
@@ -1182,20 +1180,17 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public static string GetAudioBitStreamArguments(EncodingJobInfo state, string segmentContainer, string mediaSourceContainer)
         {
-            var bitStreamArgs = string.Empty;
-            var segmentFormat = GetSegmentFileExtension(segmentContainer).TrimStart('.');
-
             // Apply aac_adtstoasc bitstream filter when media source is in mpegts.
-            if (string.Equals(segmentFormat, "mp4", StringComparison.OrdinalIgnoreCase)
+            if (string.Equals(segmentContainer, "mp4", StringComparison.OrdinalIgnoreCase)
                 && (string.Equals(mediaSourceContainer, "mpegts", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(mediaSourceContainer, "aac", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(mediaSourceContainer, "hls", StringComparison.OrdinalIgnoreCase)))
             {
-                bitStreamArgs = GetBitStreamArgs(state.AudioStream);
-                bitStreamArgs = string.IsNullOrEmpty(bitStreamArgs) ? string.Empty : " " + bitStreamArgs;
+                var bitStreamArgs = GetBitStreamArgs(state.AudioStream);
+                return string.IsNullOrEmpty(bitStreamArgs) ? string.Empty : " " + bitStreamArgs;
             }
 
-            return bitStreamArgs;
+            return string.Empty;
         }
 
         public static string GetSegmentFileExtension(string segmentContainer)
@@ -5812,7 +5807,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             EncodingJobInfo state,
             EncodingOptions encodingOptions,
             MediaSourceInfo mediaSource,
-            string requestedUrl)
+            string extension)
         {
             ArgumentNullException.ThrowIfNull(state);
 
@@ -5867,12 +5862,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (string.IsNullOrEmpty(videoRequest.VideoCodec))
                 {
-                    if (string.IsNullOrEmpty(requestedUrl))
-                    {
-                        requestedUrl = "test." + videoRequest.Container;
-                    }
-
-                    videoRequest.VideoCodec = InferVideoCodec(requestedUrl);
+                    videoRequest.VideoCodec = InferVideoCodec(extension);
                 }
 
                 state.VideoStream = GetMediaStream(mediaStreams, videoRequest.VideoStreamIndex, MediaStreamType.Video);

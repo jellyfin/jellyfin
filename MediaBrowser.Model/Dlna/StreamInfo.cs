@@ -619,10 +619,8 @@ namespace MediaBrowser.Model.Dlna
             return null;
         }
 
-        public string ToUrl(string baseUrl, string? accessToken)
+        public string ToUrl(string? baseUrl, string? accessToken)
         {
-            ArgumentException.ThrowIfNullOrEmpty(baseUrl);
-
             var list = new List<string>();
             foreach (NameValuePair pair in BuildParams(this, accessToken))
             {
@@ -660,13 +658,9 @@ namespace MediaBrowser.Model.Dlna
             return GetUrl(baseUrl, queryString);
         }
 
-        private string GetUrl(string baseUrl, string queryString)
+        private string GetUrl(string? baseUrl, string queryString)
         {
-            ArgumentException.ThrowIfNullOrEmpty(baseUrl);
-
-            string extension = string.IsNullOrEmpty(Container) ? string.Empty : "." + Container;
-
-            baseUrl = baseUrl.TrimEnd('/');
+            baseUrl = baseUrl?.TrimEnd('/') ?? string.Empty;
 
             if (MediaType == DlnaProfileType.Audio)
             {
@@ -675,7 +669,13 @@ namespace MediaBrowser.Model.Dlna
                     return string.Format(CultureInfo.InvariantCulture, "{0}/audio/{1}/master.m3u8?{2}", baseUrl, ItemId, queryString);
                 }
 
-                return string.Format(CultureInfo.InvariantCulture, "{0}/audio/{1}/stream{2}?{3}", baseUrl, ItemId, extension, queryString);
+                // Store the original container name, and fake response a .ts so media will show up.
+                if (!string.IsNullOrEmpty(Container))
+                {
+                    queryString += "&ext=." + Container;
+                }
+
+                return string.Format(CultureInfo.InvariantCulture, "{0}/audio/{1}/stream.ts?{2}", baseUrl, ItemId, queryString);
             }
 
             if (string.Equals(SubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
@@ -683,7 +683,13 @@ namespace MediaBrowser.Model.Dlna
                 return string.Format(CultureInfo.InvariantCulture, "{0}/videos/{1}/master.m3u8?{2}", baseUrl, ItemId, queryString);
             }
 
-            return string.Format(CultureInfo.InvariantCulture, "{0}/videos/{1}/stream{2}?{3}", baseUrl, ItemId, extension, queryString);
+            // Store the original container name, and fake response a .ts so media will show up.
+            if (!string.IsNullOrEmpty(Container))
+            {
+                queryString += "&ext=." + Container;
+            }
+
+            return string.Format(CultureInfo.InvariantCulture, "{0}/videos/{1}/stream.ts?{2}", baseUrl, ItemId, queryString);
         }
 
         private static IEnumerable<NameValuePair> BuildParams(StreamInfo item, string? accessToken)

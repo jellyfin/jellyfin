@@ -51,4 +51,9 @@ public class StreamingRequestDto : BaseEncodingJobOptions
     /// Gets or sets the actual segment length in ticks.
     /// </summary>
     public long ActualSegmentLengthTicks { get; set; }
+
+    /// <summary>
+    /// Gets or sets the original file extension.
+    /// </summary>
+    public string? OriginalExtension { get; set; }
 }
