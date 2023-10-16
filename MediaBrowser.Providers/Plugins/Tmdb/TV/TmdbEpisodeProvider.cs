@@ -104,47 +104,49 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 return metadataResult;
             }
 
-            var episodeResult = new TvEpisode();
-            if (!info.IndexNumberEnd.HasValue)
-            {
-                episodeResult = await _tmdbClientManager
-                    .GetEpisodeAsync(seriesTmdbId, seasonNumber.Value, episodeNumber.Value, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            else
+            TvEpisode? episodeResult = null;
+            if (info.IndexNumberEnd.HasValue)
             {
                 var startindex = episodeNumber;
                 var endindex = info.IndexNumberEnd;
-                List<TvEpisode> result = new List<TvEpisode>();
+                List<TvEpisode>? result = null;
                 for (int? episode = startindex; episode <= endindex; episode++)
                 {
                     var episodeInfo = await _tmdbClientManager.GetEpisodeAsync(seriesTmdbId, seasonNumber.Value, episode.Value, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken).ConfigureAwait(false);
                     if (episodeInfo is not null)
                     {
-                        result.Add(episodeInfo);
+                        (result ??= new List<TvEpisode>()).Add(episodeInfo);
                     }
                 }
 
-                if (result.Count > 0)
+                if (result is not null)
                 {
                     episodeResult = result[0];
+                    if (result.Count > 1)
+                    {
+                        var name = new StringBuilder(episodeResult.Name);
+                        var overview = new StringBuilder(episodeResult.Overview);
+
+                        for (int i = 1; i < result.Count; i++)
+                        {
+                            name.Append(" / ").Append(result[i].Name);
+                            overview.Append(" / ").Append(result[i].Overview);
+                        }
+
+                        episodeResult.Name = name.ToString();
+                        episodeResult.Overview = overview.ToString();
+                    }
                 }
                 else
                 {
                     return metadataResult;
                 }
-
-                var name = new StringBuilder(episodeResult.Name);
-                var overview = new StringBuilder(episodeResult.Overview);
-
-                for (int i = 1; i < result.Count; i++)
-                {
-                    name.Append(" / ").Append(result[i].Name);
-                    overview.Append(" / ").Append(result[i].Overview);
-                }
-
-                episodeResult.Name = name.ToString();
-                episodeResult.Overview = overview.ToString();
+            }
+            else
+            {
+                episodeResult = await _tmdbClientManager
+                    .GetEpisodeAsync(seriesTmdbId, seasonNumber.Value, episodeNumber.Value, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
+                    .ConfigureAwait(false);
             }
 
             if (episodeResult is null)
