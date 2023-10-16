@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Jellyfin.Server">
-      <HintPath>jellyfin.dll</HintPath>
+    <Reference Include="Jellyfin.Api">
+      <HintPath>Jellyfin.Api.dll</HintPath>
     </Reference>
   </ItemGroup>
 
