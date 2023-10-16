@@ -121,7 +121,18 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
                 if (result is not null)
                 {
-                    episodeResult = result[0];
+                    // Forces a deep copy of the first TvEpisode, so we don't modify the original because it's cached
+                    episodeResult = new TvEpisode()
+                    {
+                        Name = result[0].Name,
+                        Overview = result[0].Overview,
+                        AirDate = result[0].AirDate,
+                        VoteAverage = result[0].VoteAverage,
+                        ExternalIds = result[0].ExternalIds,
+                        Videos = result[0].Videos,
+                        Credits = result[0].Credits
+                    };
+
                     if (result.Count > 1)
                     {
                         var name = new StringBuilder(episodeResult.Name);
