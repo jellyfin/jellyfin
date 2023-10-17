@@ -177,7 +177,7 @@ namespace Jellyfin.Server.Implementations.Devices
                     .OrderByDescending(d => d.DateLastActivity)
                     .ThenBy(d => d.DeviceId)
                     .AsAsyncEnumerable();
-
+                IAsyncEnumerable<DeviceOptions> deviceOptions = dbContext.DeviceOptions.AsAsyncEnumerable();
                 if (supportsSync.HasValue)
                 {
                     sessions = sessions.Where(i => GetCapabilities(i.DeviceId).SupportsSync == supportsSync.Value);
@@ -195,6 +195,14 @@ namespace Jellyfin.Server.Implementations.Devices
                 }
 
                 var array = await sessions.Select(device => ToDeviceInfo(device)).ToArrayAsync().ConfigureAwait(false);
+                await foreach (var deviceOption in deviceOptions)
+                {
+                    var deviceInfo = array.FirstOrDefault(d => d.Id.Equals(deviceOption.DeviceId, StringComparison.OrdinalIgnoreCase));
+                    if (deviceInfo != null)
+                    {
+                        deviceInfo.CustomName = deviceOption.CustomName;
+                    }
+                }
 
                 return new QueryResult<DeviceInfo>(array);
             }
