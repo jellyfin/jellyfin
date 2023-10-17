@@ -110,21 +110,21 @@ namespace Jellyfin.Server.Implementations.Devices
         /// <inheritdoc />
         public async Task<DeviceInfo?> GetDevice(string id)
         {
-            Device? device;
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                device = await dbContext.Devices
+                var device = await dbContext.Devices
                     .Where(d => d.DeviceId == id)
                     .OrderByDescending(d => d.DateLastActivity)
                     .Include(d => d.User)
+                    .SelectMany(d => dbContext.DeviceOptions.Where(o => o.DeviceId == d.DeviceId).DefaultIfEmpty(), (d, o) => new { Device = d, Options = o })
                     .FirstOrDefaultAsync()
                     .ConfigureAwait(false);
+
+                var deviceInfo = device is null ? null : ToDeviceInfo(device.Device, device.Options);
+
+                return deviceInfo;
             }
-
-            var deviceInfo = device is null ? null : ToDeviceInfo(device);
-
-            return deviceInfo;
         }
 
         /// <inheritdoc />
@@ -172,15 +172,15 @@ namespace Jellyfin.Server.Implementations.Devices
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                IAsyncEnumerable<Device> sessions = dbContext.Devices
+                var sessions = dbContext.Devices
                     .Include(d => d.User)
                     .OrderByDescending(d => d.DateLastActivity)
                     .ThenBy(d => d.DeviceId)
+                    .SelectMany(d => dbContext.DeviceOptions.Where(o => o.DeviceId == d.DeviceId).DefaultIfEmpty(), (d, o) => new { Device = d, Options = o })
                     .AsAsyncEnumerable();
-                IAsyncEnumerable<DeviceOptions> deviceOptions = dbContext.DeviceOptions.AsAsyncEnumerable();
                 if (supportsSync.HasValue)
                 {
-                    sessions = sessions.Where(i => GetCapabilities(i.DeviceId).SupportsSync == supportsSync.Value);
+                    sessions = sessions.Where(i => GetCapabilities(i.Device.DeviceId).SupportsSync == supportsSync.Value);
                 }
 
                 if (userId.HasValue)
@@ -191,18 +191,10 @@ namespace Jellyfin.Server.Implementations.Devices
                         throw new ResourceNotFoundException();
                     }
 
-                    sessions = sessions.Where(i => CanAccessDevice(user, i.DeviceId));
+                    sessions = sessions.Where(i => CanAccessDevice(user, i.Device.DeviceId));
                 }
 
-                var array = await sessions.Select(device => ToDeviceInfo(device)).ToArrayAsync().ConfigureAwait(false);
-                await foreach (var deviceOption in deviceOptions)
-                {
-                    var deviceInfo = array.FirstOrDefault(d => d.Id.Equals(deviceOption.DeviceId, StringComparison.OrdinalIgnoreCase));
-                    if (deviceInfo != null)
-                    {
-                        deviceInfo.CustomName = deviceOption.CustomName;
-                    }
-                }
+                var array = await sessions.Select(device => ToDeviceInfo(device.Device, device.Options)).ToArrayAsync().ConfigureAwait(false);
 
                 return new QueryResult<DeviceInfo>(array);
             }
@@ -248,6 +240,24 @@ namespace Jellyfin.Server.Implementations.Devices
                 Name = authInfo.DeviceName,
                 DateLastActivity = authInfo.DateLastActivity,
                 IconUrl = caps.IconUrl
+            };
+        }
+
+        private DeviceInfo ToDeviceInfo(Device authInfo, DeviceOptions? options)
+        {
+            var caps = GetCapabilities(authInfo.DeviceId);
+
+            return new DeviceInfo
+            {
+                AppName = authInfo.AppName,
+                AppVersion = authInfo.AppVersion,
+                Id = authInfo.DeviceId,
+                LastUserId = authInfo.UserId,
+                LastUserName = authInfo.User.Username,
+                Name = authInfo.DeviceName,
+                DateLastActivity = authInfo.DateLastActivity,
+                IconUrl = caps.IconUrl,
+                CustomName = options?.CustomName,
             };
         }
     }
