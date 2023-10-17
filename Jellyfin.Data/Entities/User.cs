@@ -288,6 +288,12 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         public SyncPlayUserAccessType SyncPlayAccess { get; set; }
 
+        /// <summary>
+        /// Gets or sets the cast receiver id.
+        /// </summary>
+        [StringLength(32)]
+        public string? CastReceiverId { get; set; }
+
         /// <inheritdoc />
         [ConcurrencyCheck]
         public uint RowVersion { get; private set; }

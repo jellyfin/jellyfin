@@ -67,7 +67,8 @@ public class SystemManager : ISystemManager
             ServerName = _applicationHost.FriendlyName,
             LocalAddress = _applicationHost.GetSmartApiUrl(request),
             SupportsLibraryMonitor = true,
-            PackageName = _startupOptions.PackageName
+            PackageName = _startupOptions.PackageName,
+            CastReceiverApplications = _configurationManager.Configuration.CastReceiverApplications
         };
     }
 
