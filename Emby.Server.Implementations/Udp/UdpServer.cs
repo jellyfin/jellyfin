@@ -27,9 +27,9 @@ namespace Emby.Server.Implementations.Udp
 
         private readonly byte[] _receiveBuffer = new byte[8192];
 
-        private Socket _udpSocket;
-        private IPEndPoint _endpoint;
-        private bool _disposed = false;
+        private readonly Socket _udpSocket;
+        private readonly IPEndPoint _endpoint;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UdpServer" /> class.
@@ -130,9 +130,8 @@ namespace Emby.Server.Implementations.Udp
                 return;
             }
 
-            _udpSocket?.Dispose();
-
-            GC.SuppressFinalize(this);
+            _udpSocket.Dispose();
+            _disposed = true;
         }
     }
 }

@@ -227,13 +227,10 @@ namespace Rssdp.Infrastructure
             }
 
             var handlers = DeviceAvailable;
-            if (handlers is not null)
+            handlers?.Invoke(this, new DeviceAvailableEventArgs(device, isNewDevice)
             {
-                handlers(this, new DeviceAvailableEventArgs(device, isNewDevice)
-                {
-                    RemoteIPAddress = IPAddress
-                });
-            }
+                RemoteIPAddress = IPAddress
+            });
         }
 
         /// <summary>
@@ -250,10 +247,7 @@ namespace Rssdp.Infrastructure
             }
 
             var handlers = DeviceUnavailable;
-            if (handlers is not null)
-            {
-                handlers(this, new DeviceUnavailableEventArgs(device, expired));
-            }
+            handlers?.Invoke(this, new DeviceUnavailableEventArgs(device, expired));
         }
 
         /// <summary>

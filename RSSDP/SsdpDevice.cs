@@ -337,10 +337,7 @@ namespace Rssdp
         protected virtual void OnDeviceAdded(SsdpEmbeddedDevice device)
         {
             var handlers = this.DeviceAdded;
-            if (handlers != null)
-            {
-                handlers(this, new DeviceEventArgs(device));
-            }
+            handlers?.Invoke(this, new DeviceEventArgs(device));
         }
 
         /// <summary>
@@ -352,10 +349,7 @@ namespace Rssdp
         protected virtual void OnDeviceRemoved(SsdpEmbeddedDevice device)
         {
             var handlers = this.DeviceRemoved;
-            if (handlers != null)
-            {
-                handlers(this, new DeviceEventArgs(device));
-            }
+            handlers?.Invoke(this, new DeviceEventArgs(device));
         }
     }
 }

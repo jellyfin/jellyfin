@@ -20,11 +20,11 @@ public class ExternalPathParserTests
         var hindiCultureDto = new CultureDto("Hindi", "Hindi", "hi", new[] { "hin" });
 
         var localizationManager = new Mock<ILocalizationManager>(MockBehavior.Loose);
-        localizationManager.Setup(lm => lm.FindLanguageInfo(It.IsRegex(@"en.*", RegexOptions.IgnoreCase)))
+        localizationManager.Setup(lm => lm.FindLanguageInfo(It.IsRegex("en.*", RegexOptions.IgnoreCase)))
             .Returns(englishCultureDto);
-        localizationManager.Setup(lm => lm.FindLanguageInfo(It.IsRegex(@"fr.*", RegexOptions.IgnoreCase)))
+        localizationManager.Setup(lm => lm.FindLanguageInfo(It.IsRegex("fr.*", RegexOptions.IgnoreCase)))
             .Returns(frenchCultureDto);
-        localizationManager.Setup(lm => lm.FindLanguageInfo(It.IsRegex(@"hi.*", RegexOptions.IgnoreCase)))
+        localizationManager.Setup(lm => lm.FindLanguageInfo(It.IsRegex("hi.*", RegexOptions.IgnoreCase)))
             .Returns(hindiCultureDto);
 
         _audioPathParser = new ExternalPathParser(new NamingOptions(), localizationManager.Object, DlnaProfileType.Audio);

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
@@ -204,7 +203,7 @@ public static partial class NetworkExtensions
         {
             var ipBlock = splitString.Current;
             var address = IPAddress.None;
-            if (negated && ipBlock.StartsWith<char>("!") && IPAddress.TryParse(ipBlock[1..], out var tmpAddress))
+            if (negated && ipBlock.StartsWith("!") && IPAddress.TryParse(ipBlock[1..], out var tmpAddress))
             {
                 address = tmpAddress;
             }

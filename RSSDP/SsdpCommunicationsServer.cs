@@ -419,7 +419,7 @@ namespace Rssdp.Infrastructure
             {
                 try
                 {
-                    var result = await socket.ReceiveMessageFromAsync(receiveBuffer, new IPEndPoint(IPAddress.Any, _LocalPort), CancellationToken.None).ConfigureAwait(false);;
+                    var result = await socket.ReceiveMessageFromAsync(receiveBuffer, new IPEndPoint(IPAddress.Any, _LocalPort), CancellationToken.None).ConfigureAwait(false);
 
                     if (result.ReceivedBytes > 0)
                     {
@@ -508,22 +508,16 @@ namespace Rssdp.Infrastructure
             }
 
             var handlers = RequestReceived;
-            if (handlers is not null)
-            {
-                handlers(this, new RequestReceivedEventArgs(data, remoteEndPoint, receivedOnlocalIPAddress));
-            }
+            handlers?.Invoke(this, new RequestReceivedEventArgs(data, remoteEndPoint, receivedOnlocalIPAddress));
         }
 
         private void OnResponseReceived(HttpResponseMessage data, IPEndPoint endPoint, IPAddress localIPAddress)
         {
             var handlers = ResponseReceived;
-            if (handlers is not null)
+            handlers?.Invoke(this, new ResponseReceivedEventArgs(data, endPoint)
             {
-                handlers(this, new ResponseReceivedEventArgs(data, endPoint)
-                {
-                    LocalIPAddress = localIPAddress
-                });
-            }
+                LocalIPAddress = localIPAddress
+            });
         }
     }
 }
