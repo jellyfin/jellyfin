@@ -226,24 +226,7 @@ namespace Jellyfin.Server.Implementations.Devices
                    || !GetCapabilities(deviceId).SupportsPersistentIdentifier;
         }
 
-        private DeviceInfo ToDeviceInfo(Device authInfo)
-        {
-            var caps = GetCapabilities(authInfo.DeviceId);
-
-            return new DeviceInfo
-            {
-                AppName = authInfo.AppName,
-                AppVersion = authInfo.AppVersion,
-                Id = authInfo.DeviceId,
-                LastUserId = authInfo.UserId,
-                LastUserName = authInfo.User.Username,
-                Name = authInfo.DeviceName,
-                DateLastActivity = authInfo.DateLastActivity,
-                IconUrl = caps.IconUrl
-            };
-        }
-
-        private DeviceInfo ToDeviceInfo(Device authInfo, DeviceOptions? options)
+        private DeviceInfo ToDeviceInfo(Device authInfo, DeviceOptions? options = null)
         {
             var caps = GetCapabilities(authInfo.DeviceId);
 
