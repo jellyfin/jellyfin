@@ -5,11 +5,11 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Metadata;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
@@ -31,6 +31,7 @@ public sealed class VirtualFolderManager : IVirtualFolderManager
     private readonly IProviderManager _providerManager;
     private readonly ILibraryMonitor _libraryMonitor;
     private readonly ILibraryManager _libraryManager;
+    private readonly ILibraryRefreshManager _libraryRefreshManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VirtualFolderManager"/> class.
@@ -42,6 +43,7 @@ public sealed class VirtualFolderManager : IVirtualFolderManager
     /// <param name="providerManager">The <see cref="IProviderManager"/>.</param>
     /// <param name="libraryMonitor">The <see cref="ILibraryMonitor"/>.</param>
     /// <param name="libraryManager">The <see cref="ILibraryManager"/>.</param>
+    /// <param name="libraryRefreshManager">The <see cref="ILibraryRefreshManager"/>.</param>
     public VirtualFolderManager(
         ILogger<VirtualFolderManager> logger,
         IServerApplicationHost appHost,
@@ -49,7 +51,8 @@ public sealed class VirtualFolderManager : IVirtualFolderManager
         IFileSystem fileSystem,
         IProviderManager providerManager,
         ILibraryMonitor libraryMonitor,
-        ILibraryManager libraryManager)
+        ILibraryManager libraryManager,
+        ILibraryRefreshManager libraryRefreshManager)
     {
         _logger = logger;
         _appHost = appHost;
@@ -58,6 +61,7 @@ public sealed class VirtualFolderManager : IVirtualFolderManager
         _providerManager = providerManager;
         _libraryMonitor = libraryMonitor;
         _libraryManager = libraryManager;
+        _libraryRefreshManager = libraryRefreshManager;
     }
 
     /// <inheritdoc />
@@ -431,7 +435,7 @@ public sealed class VirtualFolderManager : IVirtualFolderManager
     {
         if (refreshLibrary)
         {
-            await _libraryManager.ValidateTopLibraryFolders(CancellationToken.None).ConfigureAwait(false);
+            await _libraryRefreshManager.ValidateTopLibraryFolders(CancellationToken.None).ConfigureAwait(false);
         }
 
         HandleMetadataRefresh(refreshLibrary);
@@ -441,7 +445,7 @@ public sealed class VirtualFolderManager : IVirtualFolderManager
     {
         if (refreshLibrary)
         {
-            await _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None).ConfigureAwait(false);
+            _libraryRefreshManager.StartScan();
         }
         else
         {

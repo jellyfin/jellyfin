@@ -50,8 +50,6 @@ namespace MediaBrowser.Controller.Library
         /// <value>The root folder.</value>
         AggregateFolder RootFolder { get; }
 
-        bool IsScanRunning { get; }
-
         /// <summary>
         /// Resolves the path.
         /// </summary>
@@ -142,14 +140,6 @@ namespace MediaBrowser.Controller.Library
         /// <returns>Task.</returns>
         Task ValidatePeopleAsync(IProgress<double> progress, CancellationToken cancellationToken);
 
-        /// <summary>
-        /// Reloads the root media folder.
-        /// </summary>
-        /// <param name="progress">The progress.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task ValidateMediaLibrary(IProgress<double> progress, CancellationToken cancellationToken);
-
         Task UpdateImagesAsync(BaseItem item, bool forceUpdate = false);
 
         /// <summary>
@@ -174,13 +164,11 @@ namespace MediaBrowser.Controller.Library
         /// <param name="resolvers">The resolvers.</param>
         /// <param name="introProviders">The intro providers.</param>
         /// <param name="itemComparers">The item comparers.</param>
-        /// <param name="postscanTasks">The postscan tasks.</param>
         void AddParts(
             IEnumerable<IResolverIgnoreRule> rules,
             IEnumerable<IItemResolver> resolvers,
             IEnumerable<IIntroProvider> introProviders,
-            IEnumerable<IBaseItemComparer> itemComparers,
-            IEnumerable<ILibraryPostScanTask> postscanTasks);
+            IEnumerable<IBaseItemComparer> itemComparers);
 
         /// <summary>
         /// Sorts the specified items.
@@ -557,15 +545,5 @@ namespace MediaBrowser.Controller.Library
         Task RunMetadataSavers(BaseItem item, ItemUpdateType updateReason);
 
         BaseItem GetParentItem(Guid? parentId, Guid? userId);
-
-        Task ValidateTopLibraryFolders(CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Queue a library scan.
-        /// </summary>
-        /// <remarks>
-        /// This exists so plugins can trigger a library scan.
-        /// </remarks>
-        void QueueLibraryScan();
     }
 }

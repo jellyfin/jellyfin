@@ -99,6 +99,11 @@ namespace Jellyfin.Server
                 serviceCollection.AddSingleton(typeof(ILyricParser), type);
             }
 
+            foreach (var type in GetExportTypes<ILibraryPostScanTask>())
+            {
+                serviceCollection.AddSingleton(typeof(ILibraryPostScanTask), type);
+            }
+
             base.RegisterServices(serviceCollection);
         }
 

@@ -28,6 +28,7 @@ using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Library;
 using Emby.Server.Implementations.LiveTv;
 using Emby.Server.Implementations.Localization;
+using Emby.Server.Implementations.Metadata;
 using Emby.Server.Implementations.Net;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.Plugins;
@@ -63,6 +64,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Metadata;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
@@ -526,13 +528,13 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<EncodingHelper>();
 
             // TODO: Refactor to eliminate the circular dependencies here so that Lazy<T> isn't required
-            serviceCollection.AddTransient(provider => new Lazy<ILibraryMonitor>(provider.GetRequiredService<ILibraryMonitor>));
             serviceCollection.AddTransient(provider => new Lazy<IProviderManager>(provider.GetRequiredService<IProviderManager>));
             serviceCollection.AddTransient(provider => new Lazy<IUserViewManager>(provider.GetRequiredService<IUserViewManager>));
             serviceCollection.AddSingleton<ILibraryManager, LibraryManager>();
             serviceCollection.AddSingleton<NamingOptions>();
 
             serviceCollection.AddSingleton<IVirtualFolderManager, VirtualFolderManager>();
+            serviceCollection.AddSingleton<ILibraryRefreshManager, LibraryRefreshManager>();
 
             serviceCollection.AddSingleton<IMusicManager, MusicManager>();
 
@@ -694,8 +696,7 @@ namespace Emby.Server.Implementations
                 GetExports<IResolverIgnoreRule>(),
                 GetExports<IItemResolver>(),
                 GetExports<IIntroProvider>(),
-                GetExports<IBaseItemComparer>(),
-                GetExports<ILibraryPostScanTask>());
+                GetExports<IBaseItemComparer>());
 
             Resolve<IProviderManager>().AddParts(
                 GetExports<IImageProvider>(),

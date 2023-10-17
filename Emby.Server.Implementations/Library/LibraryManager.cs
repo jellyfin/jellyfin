@@ -22,7 +22,6 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
@@ -66,7 +65,6 @@ namespace Emby.Server.Implementations.Library
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataRepository;
         private readonly IServerConfigurationManager _configurationManager;
-        private readonly Lazy<ILibraryMonitor> _libraryMonitorFactory;
         private readonly Lazy<IProviderManager> _providerManagerFactory;
         private readonly Lazy<IUserViewManager> _userviewManagerFactory;
         private readonly IServerApplicationHost _appHost;
@@ -102,7 +100,6 @@ namespace Emby.Server.Implementations.Library
         /// <param name="userManager">The user manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
-        /// <param name="libraryMonitorFactory">The library monitor.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="providerManagerFactory">The provider manager.</param>
         /// <param name="userviewManagerFactory">The userview manager.</param>
@@ -118,7 +115,6 @@ namespace Emby.Server.Implementations.Library
             IUserManager userManager,
             IServerConfigurationManager configurationManager,
             IUserDataManager userDataRepository,
-            Lazy<ILibraryMonitor> libraryMonitorFactory,
             IFileSystem fileSystem,
             Lazy<IProviderManager> providerManagerFactory,
             Lazy<IUserViewManager> userviewManagerFactory,
@@ -134,7 +130,6 @@ namespace Emby.Server.Implementations.Library
             _userManager = userManager;
             _configurationManager = configurationManager;
             _userDataRepository = userDataRepository;
-            _libraryMonitorFactory = libraryMonitorFactory;
             _fileSystem = fileSystem;
             _providerManagerFactory = providerManagerFactory;
             _userviewManagerFactory = userviewManagerFactory;
@@ -186,17 +181,9 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        private ILibraryMonitor LibraryMonitor => _libraryMonitorFactory.Value;
-
         private IProviderManager ProviderManager => _providerManagerFactory.Value;
 
         private IUserViewManager UserViewManager => _userviewManagerFactory.Value;
-
-        /// <summary>
-        /// Gets or sets the postscan tasks.
-        /// </summary>
-        /// <value>The postscan tasks.</value>
-        private ILibraryPostScanTask[] PostscanTasks { get; set; } = Array.Empty<ILibraryPostScanTask>();
 
         /// <summary>
         /// Gets or sets the intro providers.
@@ -224,8 +211,6 @@ namespace Emby.Server.Implementations.Library
         /// <value>The comparers.</value>
         private IBaseItemComparer[] Comparers { get; set; } = Array.Empty<IBaseItemComparer>();
 
-        public bool IsScanRunning { get; private set; }
-
         /// <summary>
         /// Adds the parts.
         /// </summary>
@@ -233,20 +218,17 @@ namespace Emby.Server.Implementations.Library
         /// <param name="resolvers">The resolvers.</param>
         /// <param name="introProviders">The intro providers.</param>
         /// <param name="itemComparers">The item comparers.</param>
-        /// <param name="postscanTasks">The post scan tasks.</param>
         public void AddParts(
             IEnumerable<IResolverIgnoreRule> rules,
             IEnumerable<IItemResolver> resolvers,
             IEnumerable<IIntroProvider> introProviders,
-            IEnumerable<IBaseItemComparer> itemComparers,
-            IEnumerable<ILibraryPostScanTask> postscanTasks)
+            IEnumerable<IBaseItemComparer> itemComparers)
         {
             EntityResolutionIgnoreRules = rules.ToArray();
             EntityResolvers = resolvers.OrderBy(i => i.Priority).ToArray();
             MultiItemResolvers = EntityResolvers.OfType<IMultiItemResolver>().ToArray();
             IntroProviders = introProviders.ToArray();
             Comparers = itemComparers.ToArray();
-            PostscanTasks = postscanTasks.ToArray();
         }
 
         /// <summary>
@@ -976,151 +958,6 @@ namespace Emby.Server.Implementations.Library
             Directory.CreateDirectory(_configurationManager.ApplicationPaths.PeoplePath);
 
             return new PeopleValidator(this, _logger, _fileSystem).ValidatePeople(cancellationToken, progress);
-        }
-
-        /// <summary>
-        /// Reloads the root media folder.
-        /// </summary>
-        /// <param name="progress">The progress.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public Task ValidateMediaLibrary(IProgress<double> progress, CancellationToken cancellationToken)
-        {
-            // Just run the scheduled task so that the user can see it
-            _taskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
-
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Validates the media library internal.
-        /// </summary>
-        /// <param name="progress">The progress.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public async Task ValidateMediaLibraryInternal(IProgress<double> progress, CancellationToken cancellationToken)
-        {
-            IsScanRunning = true;
-            LibraryMonitor.Stop();
-
-            try
-            {
-                await PerformLibraryValidation(progress, cancellationToken).ConfigureAwait(false);
-            }
-            finally
-            {
-                LibraryMonitor.Start();
-                IsScanRunning = false;
-            }
-        }
-
-        public async Task ValidateTopLibraryFolders(CancellationToken cancellationToken)
-        {
-            await RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
-
-            // Start by just validating the children of the root, but go no further
-            await RootFolder.ValidateChildren(
-                new SimpleProgress<double>(),
-                new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
-                recursive: false,
-                cancellationToken).ConfigureAwait(false);
-
-            await GetUserRootFolder().RefreshMetadata(cancellationToken).ConfigureAwait(false);
-
-            await GetUserRootFolder().ValidateChildren(
-                new SimpleProgress<double>(),
-                new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
-                recursive: false,
-                cancellationToken).ConfigureAwait(false);
-
-            // Quickly scan CollectionFolders for changes
-            foreach (var folder in GetUserRootFolder().Children.OfType<Folder>())
-            {
-                await folder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
-            }
-        }
-
-        private async Task PerformLibraryValidation(IProgress<double> progress, CancellationToken cancellationToken)
-        {
-            _logger.LogInformation("Validating media library");
-
-            await ValidateTopLibraryFolders(cancellationToken).ConfigureAwait(false);
-
-            var innerProgress = new ActionableProgress<double>();
-
-            innerProgress.RegisterAction(pct => progress.Report(pct * 0.96));
-
-            // Validate the entire media library
-            await RootFolder.ValidateChildren(innerProgress, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), recursive: true, cancellationToken).ConfigureAwait(false);
-
-            progress.Report(96);
-
-            innerProgress = new ActionableProgress<double>();
-
-            innerProgress.RegisterAction(pct => progress.Report(96 + (pct * .04)));
-
-            await RunPostScanTasks(innerProgress, cancellationToken).ConfigureAwait(false);
-
-            progress.Report(100);
-        }
-
-        /// <summary>
-        /// Runs the post scan tasks.
-        /// </summary>
-        /// <param name="progress">The progress.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        private async Task RunPostScanTasks(IProgress<double> progress, CancellationToken cancellationToken)
-        {
-            var tasks = PostscanTasks.ToList();
-
-            var numComplete = 0;
-            var numTasks = tasks.Count;
-
-            foreach (var task in tasks)
-            {
-                var innerProgress = new ActionableProgress<double>();
-
-                // Prevent access to modified closure
-                var currentNumComplete = numComplete;
-
-                innerProgress.RegisterAction(pct =>
-                {
-                    double innerPercent = pct;
-                    innerPercent /= 100;
-                    innerPercent += currentNumComplete;
-
-                    innerPercent /= numTasks;
-                    innerPercent *= 100;
-
-                    progress.Report(innerPercent);
-                });
-
-                _logger.LogDebug("Running post-scan task {0}", task.GetType().Name);
-
-                try
-                {
-                    await task.Run(innerProgress, cancellationToken).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException)
-                {
-                    _logger.LogInformation("Post-scan task cancelled: {0}", task.GetType().Name);
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error running post-scan task");
-                }
-
-                numComplete++;
-                double percent = numComplete;
-                percent /= numTasks;
-                progress.Report(percent * 100);
-            }
-
-            _itemRepository.UpdateInheritedValues();
-
-            progress.Report(100);
         }
 
         /// <summary>
@@ -2332,12 +2169,6 @@ namespace Emby.Server.Implementations.Library
             }
 
             return RootFolder;
-        }
-
-        /// <inheritdoc />
-        public void QueueLibraryScan()
-        {
-            _taskManager.QueueScheduledTask<RefreshMediaLibraryTask>();
         }
 
         /// <inheritdoc />

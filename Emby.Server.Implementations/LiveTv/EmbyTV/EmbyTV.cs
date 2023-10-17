@@ -20,7 +20,6 @@ using Jellyfin.Data.Events;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
@@ -29,6 +28,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Metadata;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
@@ -61,6 +61,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly ILibraryManager _libraryManager;
+        private readonly ILibraryRefreshManager _libraryRefreshManager;
         private readonly IVirtualFolderManager _virtualFolderManager;
         private readonly IProviderManager _providerManager;
         private readonly IMediaEncoder _mediaEncoder;
@@ -88,6 +89,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             IFileSystem fileSystem,
             ILibraryManager libraryManager,
             ILibraryMonitor libraryMonitor,
+            ILibraryRefreshManager libraryRefreshManager,
             IVirtualFolderManager virtualFolderManager,
             IProviderManager providerManager,
             IMediaEncoder mediaEncoder)
@@ -101,6 +103,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _fileSystem = fileSystem;
             _libraryManager = libraryManager;
             _libraryMonitor = libraryMonitor;
+            _libraryRefreshManager = libraryRefreshManager;
             _virtualFolderManager = virtualFolderManager;
             _providerManager = providerManager;
             _mediaEncoder = mediaEncoder;
@@ -261,7 +264,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (requiresRefresh)
             {
-                await _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None).ConfigureAwait(false);
+                _libraryRefreshManager.StartScan();
             }
         }
 

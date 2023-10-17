@@ -4,7 +4,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
@@ -16,7 +15,6 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -24,6 +22,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Metadata;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Configuration;
@@ -35,7 +34,6 @@ using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Controllers;
 
@@ -47,12 +45,12 @@ public class LibraryController : BaseJellyfinApiController
 {
     private readonly IProviderManager _providerManager;
     private readonly ILibraryManager _libraryManager;
+    private readonly ILibraryRefreshManager _libraryRefreshManager;
     private readonly IUserManager _userManager;
     private readonly IDtoService _dtoService;
     private readonly IActivityManager _activityManager;
     private readonly ILocalizationManager _localization;
     private readonly ILibraryMonitor _libraryMonitor;
-    private readonly ILogger<LibraryController> _logger;
     private readonly IServerConfigurationManager _serverConfigurationManager;
 
     /// <summary>
@@ -60,32 +58,32 @@ public class LibraryController : BaseJellyfinApiController
     /// </summary>
     /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+    /// <param name="libraryRefreshManager">Instance of the <see cref="ILibraryRefreshManager"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
     /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
     /// <param name="activityManager">Instance of the <see cref="IActivityManager"/> interface.</param>
     /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
     /// <param name="libraryMonitor">Instance of the <see cref="ILibraryMonitor"/> interface.</param>
-    /// <param name="logger">Instance of the <see cref="ILogger{LibraryController}"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
     public LibraryController(
         IProviderManager providerManager,
         ILibraryManager libraryManager,
+        ILibraryRefreshManager libraryRefreshManager,
         IUserManager userManager,
         IDtoService dtoService,
         IActivityManager activityManager,
         ILocalizationManager localization,
         ILibraryMonitor libraryMonitor,
-        ILogger<LibraryController> logger,
         IServerConfigurationManager serverConfigurationManager)
     {
         _providerManager = providerManager;
         _libraryManager = libraryManager;
+        _libraryRefreshManager = libraryRefreshManager;
         _userManager = userManager;
         _dtoService = dtoService;
         _activityManager = activityManager;
         _localization = localization;
         _libraryMonitor = libraryMonitor;
-        _logger = logger;
         _serverConfigurationManager = serverConfigurationManager;
     }
 
@@ -308,17 +306,9 @@ public class LibraryController : BaseJellyfinApiController
     [HttpPost("Library/Refresh")]
     [Authorize(Policy = Policies.RequiresElevation)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<ActionResult> RefreshLibrary()
+    public ActionResult RefreshLibrary()
     {
-        try
-        {
-            await _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error refreshing library");
-        }
-
+        _libraryRefreshManager.StartScan();
         return NoContent();
     }
 
