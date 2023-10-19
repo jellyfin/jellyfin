@@ -100,6 +100,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             { "truehd", 6 },
         };
 
+        private static readonly string _defaultMjpegEncoder = "mjpeg";
+        private static readonly Dictionary<string, string> _mjpegCodecMap = new(StringComparer.OrdinalIgnoreCase)
+        {
+            { "vaapi", _defaultMjpegEncoder + "_vaapi" },
+            { "qsv", _defaultMjpegEncoder + "_qsv" }
+        };
+
         public static readonly string[] LosslessAudioCodecs = new string[]
         {
             "alac",
@@ -165,6 +172,24 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             return defaultEncoder;
+        }
+
+        private string GetMjpegEncoder(EncodingJobInfo state, EncodingOptions encodingOptions)
+        {
+            if (state.VideoType == VideoType.VideoFile)
+            {
+                var hwType = encodingOptions.HardwareAccelerationType;
+
+                if (!string.IsNullOrEmpty(hwType)
+                    && encodingOptions.EnableHardwareEncoding
+                    && _mjpegCodecMap.TryGetValue(hwType, out var preferredEncoder)
+                    && _mediaEncoder.SupportsEncoder(preferredEncoder))
+                {
+                    return preferredEncoder;
+                }
+            }
+
+            return _defaultMjpegEncoder;
         }
 
         private bool IsVaapiSupported(EncodingJobInfo state)
@@ -298,6 +323,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (string.Equals(codec, "h264", StringComparison.OrdinalIgnoreCase))
                 {
                     return GetH264Encoder(state, encodingOptions);
+                }
+
+                if (string.Equals(codec, "mjpeg", StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetMjpegEncoder(state, encodingOptions);
                 }
 
                 if (string.Equals(codec, "vp8", StringComparison.OrdinalIgnoreCase)
@@ -1745,11 +1775,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // Values 0-3, 0 being highest quality but slower
                 var profileScore = 0;
 
-                string crf;
                 var qmin = "0";
                 var qmax = "50";
-
-                crf = "10";
+                var crf = "10";
 
                 if (isVc1)
                 {
@@ -2947,7 +2975,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 return string.Format(
                     CultureInfo.InvariantCulture,
-                    "scale=trunc(min(max(iw\\,ih*a)\\,min({0}\\,{1}*a))/{2})*{2}:trunc(min(max(iw/a\\,ih)\\,min({0}/a\\,{1}))/2)*2",
+                    @"scale=trunc(min(max(iw\,ih*a)\,min({0}\,{1}*a))/{2})*{2}:trunc(min(max(iw/a\,ih)\,min({0}/a\,{1}))/2)*2",
                     maxWidthParam,
                     maxHeightParam,
                     scaleVal);
@@ -2989,7 +3017,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 return string.Format(
                     CultureInfo.InvariantCulture,
-                    "scale=trunc(min(max(iw\\,ih*a)\\,{0})/{1})*{1}:trunc(ow/a/2)*2",
+                    @"scale=trunc(min(max(iw\,ih*a)\,{0})/{1})*{1}:trunc(ow/a/2)*2",
                     maxWidthParam,
                     scaleVal);
             }
@@ -3001,7 +3029,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 return string.Format(
                     CultureInfo.InvariantCulture,
-                    "scale=trunc(oh*a/{1})*{1}:min(max(iw/a\\,ih)\\,{0})",
+                    @"scale=trunc(oh*a/{1})*{1}:min(max(iw/a\,ih)\,{0})",
                     maxHeightParam,
                     scaleVal);
             }
@@ -3021,19 +3049,19 @@ namespace MediaBrowser.Controller.MediaEncoding
                 switch (threedFormat.Value)
                 {
                     case Video3DFormat.HalfSideBySide:
-                        filter = "crop=iw/2:ih:0:0,scale=(iw*2):ih,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1,scale={0}:trunc({0}/dar/2)*2";
+                        filter = @"crop=iw/2:ih:0:0,scale=(iw*2):ih,setdar=dar=a,crop=min(iw\,ih*dar):min(ih\,iw/dar):(iw-min(iw\,iw*sar))/2:(ih - min (ih\,ih/sar))/2,setsar=sar=1,scale={0}:trunc({0}/dar/2)*2";
                         // hsbs crop width in half,scale to correct size, set the display aspect,crop out any black bars we may have made the scale width to requestedWidth. Work out the correct height based on the display aspect it will maintain the aspect where -1 in this case (3d) may not.
                         break;
                     case Video3DFormat.FullSideBySide:
-                        filter = "crop=iw/2:ih:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1,scale={0}:trunc({0}/dar/2)*2";
+                        filter = @"crop=iw/2:ih:0:0,setdar=dar=a,crop=min(iw\,ih*dar):min(ih\,iw/dar):(iw-min(iw\,iw*sar))/2:(ih - min (ih\,ih/sar))/2,setsar=sar=1,scale={0}:trunc({0}/dar/2)*2";
                         // fsbs crop width in half,set the display aspect,crop out any black bars we may have made the scale width to requestedWidth.
                         break;
                     case Video3DFormat.HalfTopAndBottom:
-                        filter = "crop=iw:ih/2:0:0,scale=(iw*2):ih),setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1,scale={0}:trunc({0}/dar/2)*2";
+                        filter = @"crop=iw:ih/2:0:0,scale=(iw*2):ih),setdar=dar=a,crop=min(iw\,ih*dar):min(ih\,iw/dar):(iw-min(iw\,iw*sar))/2:(ih - min (ih\,ih/sar))/2,setsar=sar=1,scale={0}:trunc({0}/dar/2)*2";
                         // htab crop height in half,scale to correct size, set the display aspect,crop out any black bars we may have made the scale width to requestedWidth
                         break;
                     case Video3DFormat.FullTopAndBottom:
-                        filter = "crop=iw:ih/2:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1,scale={0}:trunc({0}/dar/2)*2";
+                        filter = @"crop=iw:ih/2:0:0,setdar=dar=a,crop=min(iw\,ih*dar):min(ih\,iw/dar):(iw-min(iw\,iw*sar))/2:(ih - min (ih\,ih/sar))/2,setsar=sar=1,scale={0}:trunc({0}/dar/2)*2";
                         // ftab crop height in half, set the display aspect,crop out any black bars we may have made the scale width to requestedWidth
                         break;
                     default:
@@ -4918,6 +4946,15 @@ namespace MediaBrowser.Controller.MediaEncoding
             mainFilters?.RemoveAll(filter => string.IsNullOrEmpty(filter));
             subFilters?.RemoveAll(filter => string.IsNullOrEmpty(filter));
             overlayFilters?.RemoveAll(filter => string.IsNullOrEmpty(filter));
+
+            var framerate = GetFramerateParam(state);
+            if (framerate.HasValue)
+            {
+                mainFilters.Insert(0, string.Format(
+                    CultureInfo.InvariantCulture,
+                    "fps={0}",
+                    framerate.Value));
+            }
 
             var mainStr = string.Empty;
             if (mainFilters?.Count > 0)

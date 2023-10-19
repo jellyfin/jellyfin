@@ -91,7 +91,7 @@ namespace Emby.Server.Implementations.IO
             }
 
             // unc path
-            if (filePath.StartsWith("\\\\", StringComparison.Ordinal))
+            if (filePath.StartsWith(@"\\", StringComparison.Ordinal))
             {
                 return filePath;
             }

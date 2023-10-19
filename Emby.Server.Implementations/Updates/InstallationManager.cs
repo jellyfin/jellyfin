@@ -520,10 +520,9 @@ namespace Emby.Server.Implementations.Updates
 
             // CA5351: Do Not Use Broken Cryptographic Algorithms
 #pragma warning disable CA5351
-            using var md5 = MD5.Create();
             cancellationToken.ThrowIfCancellationRequested();
 
-            var hash = Convert.ToHexString(md5.ComputeHash(stream));
+            var hash = Convert.ToHexString(await MD5.HashDataAsync(stream, cancellationToken).ConfigureAwait(false));
             if (!string.Equals(package.Checksum, hash, StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogError(
@@ -556,7 +555,7 @@ namespace Emby.Server.Implementations.Updates
             reader.ExtractToDirectory(targetDir, true);
 
             // Ensure we create one or populate existing ones with missing data.
-            await _pluginManager.PopulateManifest(package.PackageInfo, package.Version, targetDir, status);
+            await _pluginManager.PopulateManifest(package.PackageInfo, package.Version, targetDir, status).ConfigureAwait(false);
 
             _pluginManager.ImportPluginFrom(targetDir);
         }

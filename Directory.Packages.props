@@ -17,7 +17,7 @@
     <PackageVersion Include="Diacritics" Version="3.3.18" />
     <PackageVersion Include="DiscUtils.Udf" Version="0.16.13" />
     <PackageVersion Include="DotNet.Glob" Version="3.1.3" />
-    <PackageVersion Include="EFCoreSecondLevelCacheInterceptor" Version="3.9.2" />
+    <PackageVersion Include="EFCoreSecondLevelCacheInterceptor" Version="3.9.4" />
     <PackageVersion Include="FsCheck.Xunit" Version="2.16.6" />
     <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="7.3.0" />
     <PackageVersion Include="IDisposableAnalyzers" Version="4.0.7" />
@@ -86,8 +86,8 @@
     <PackageVersion Include="TMDbLib" Version="2.0.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.5.1" />
     <PackageVersion Include="Xunit.Priority" Version="1.1.6" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.1" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.3" />
     <PackageVersion Include="Xunit.SkippableFact" Version="1.4.13" />
-    <PackageVersion Include="xunit" Version="2.5.1" />
+    <PackageVersion Include="xunit" Version="2.5.3" />
   </ItemGroup>
 </Project>

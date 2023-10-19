@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Net;
+using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
@@ -56,9 +57,7 @@ public sealed class ItemsControllerTests : IClassFixture<JellyfinApplicationFact
 
         var response = await client.GetAsync(string.Format(CultureInfo.InvariantCulture, format, userDto.Id));
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var items = await JsonSerializer.DeserializeAsync<QueryResult<BaseItemDto>>(
-                    await response.Content.ReadAsStreamAsync(),
-                    _jsonOptions);
+        var items = await response.Content.ReadFromJsonAsync<QueryResult<BaseItemDto>>(_jsonOptions);
         Assert.NotNull(items);
     }
 }

@@ -20,7 +20,7 @@ public class MusicBrainzOtherArtistExternalId : IExternalId
     public ExternalIdMediaType? Type => ExternalIdMediaType.OtherArtist;
 
     /// <inheritdoc />
-    public string? UrlFormatString => Plugin.Instance!.Configuration.Server + "/artist/{0}";
+    public string UrlFormatString => Plugin.Instance!.Configuration.Server + "/artist/{0}";
 
     /// <inheritdoc />
     public bool Supports(IHasProviderIds item) => item is Audio or MusicAlbum;

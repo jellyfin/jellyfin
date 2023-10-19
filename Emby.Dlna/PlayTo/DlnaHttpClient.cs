@@ -55,41 +55,42 @@ namespace Emby.Dlna.PlayTo
             var client = _httpClientFactory.CreateClient(NamedClient.Dlna);
             using var response = await client.SendAsync(request, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            await using MemoryStream ms = new MemoryStream();
-            await response.Content.CopyToAsync(ms, cancellationToken).ConfigureAwait(false);
-            ms.Position = 0;
-            try
+            Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using (stream.ConfigureAwait(false))
             {
-                return await XDocument.LoadAsync(
-                    ms,
-                    LoadOptions.None,
-                    cancellationToken).ConfigureAwait(false);
-            }
-            catch (XmlException)
-            {
-                // try correcting the Xml response with common errors
-                ms.Position = 0;
-                using StreamReader sr = new StreamReader(ms);
-                var xmlString = await sr.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
-
-                // find and replace unescaped ampersands (&)
-                xmlString = EscapeAmpersandRegex().Replace(xmlString, "&amp;");
-
                 try
                 {
-                    // retry reading Xml
-                    using var xmlReader = new StringReader(xmlString);
                     return await XDocument.LoadAsync(
-                        xmlReader,
+                        stream,
                         LoadOptions.None,
                         cancellationToken).ConfigureAwait(false);
                 }
-                catch (XmlException ex)
+                catch (XmlException)
                 {
-                    _logger.LogError(ex, "Failed to parse response");
-                    _logger.LogDebug("Malformed response: {Content}\n", xmlString);
+                    // try correcting the Xml response with common errors
+                    stream.Position = 0;
+                    using StreamReader sr = new StreamReader(stream);
+                    var xmlString = await sr.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
 
-                    return null;
+                    // find and replace unescaped ampersands (&)
+                    xmlString = EscapeAmpersandRegex().Replace(xmlString, "&amp;");
+
+                    try
+                    {
+                        // retry reading Xml
+                        using var xmlReader = new StringReader(xmlString);
+                        return await XDocument.LoadAsync(
+                            xmlReader,
+                            LoadOptions.None,
+                            cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (XmlException ex)
+                    {
+                        _logger.LogError(ex, "Failed to parse response");
+                        _logger.LogDebug("Malformed response: {Content}\n", xmlString);
+
+                        return null;
+                    }
                 }
             }
         }

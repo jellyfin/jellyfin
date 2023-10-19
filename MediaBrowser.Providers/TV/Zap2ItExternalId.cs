@@ -19,7 +19,7 @@ namespace MediaBrowser.Providers.TV
         public ExternalIdMediaType? Type => null;
 
         /// <inheritdoc />
-        public string? UrlFormatString => "http://tvlistings.zap2it.com/overview.html?programSeriesId={0}";
+        public string UrlFormatString => "http://tvlistings.zap2it.com/overview.html?programSeriesId={0}";
 
         /// <inheritdoc />
         public bool Supports(IHasProviderIds item) => item is Series;

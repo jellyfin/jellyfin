@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
