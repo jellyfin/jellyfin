@@ -4,8 +4,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
@@ -136,6 +138,36 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="cancellationToken">CancellationToken to use for operation.</param>
         /// <returns>Location of video image.</returns>
         Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream imageStream, int? imageStreamIndex, ImageFormat? targetFormat, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Extracts the video images on interval.
+        /// </summary>
+        /// <param name="inputFile">Input file.</param>
+        /// <param name="container">Video container type.</param>
+        /// <param name="mediaSource">Media source information.</param>
+        /// <param name="imageStream">Media stream information.</param>
+        /// <param name="maxWidth">The maximum width.</param>
+        /// <param name="interval">The interval.</param>
+        /// <param name="allowHwAccel">Allow for hardware acceleration.</param>
+        /// <param name="threads">The input/output thread count for ffmpeg.</param>
+        /// <param name="qualityScale">The qscale value for ffmpeg.</param>
+        /// <param name="priority">The process priority for the ffmpeg process.</param>
+        /// <param name="encodingHelper">EncodingHelper instance.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Directory where images where extracted. A given image made before another will always be named with a lower number.</returns>
+        Task<string> ExtractVideoImagesOnIntervalAccelerated(
+            string inputFile,
+            string container,
+            MediaSourceInfo mediaSource,
+            MediaStream imageStream,
+            int maxWidth,
+            TimeSpan interval,
+            bool allowHwAccel,
+            int? threads,
+            int? qualityScale,
+            ProcessPriorityClass? priority,
+            EncodingHelper encodingHelper,
+            CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the media info.

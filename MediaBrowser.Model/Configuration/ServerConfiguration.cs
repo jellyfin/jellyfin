@@ -270,4 +270,10 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// Gets or sets the list of cast receiver applications.
     /// </summary>
     public CastReceiverApplication[] CastReceiverApplications { get; set; } = Array.Empty<CastReceiverApplication>();
+
+    /// <summary>
+    /// Gets or sets the trickplay options.
+    /// </summary>
+    /// <value>The trickplay options.</value>
+    public TrickplayOptions TrickplayOptions { get; set; } = new TrickplayOptions();
 }
