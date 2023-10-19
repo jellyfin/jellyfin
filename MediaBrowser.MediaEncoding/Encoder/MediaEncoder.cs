@@ -920,13 +920,21 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     bool isResponsive = true;
                     int lastCount = 0;
+                    var timeoutMs = _configurationManager.Configuration.ImageExtractionTimeoutMs;
+                    timeoutMs = timeoutMs <= 0 ? DefaultHdrImageExtractionTimeout : timeoutMs;
 
                     while (isResponsive)
                     {
-                        if (await process.WaitForExitAsync(TimeSpan.FromSeconds(30)).ConfigureAwait(false))
+                        try
                         {
+                            await process.WaitForExitAsync(TimeSpan.FromMilliseconds(timeoutMs)).ConfigureAwait(false);
+
                             ranToCompletion = true;
                             break;
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            // We don't actually expect the process to be finished in one timeout span, just that one image has been generated.
                         }
 
                         cancellationToken.ThrowIfCancellationRequested();
@@ -939,7 +947,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     if (!ranToCompletion)
                     {
-                        _logger.LogInformation("Killing ffmpeg extraction process due to inactivity.");
+                        _logger.LogInformation("Stopping trickplay extraction due to process inactivity.");
                         StopProcess(processWrapper, 1000);
                     }
                 }
