@@ -24,6 +24,7 @@
   <ItemGroup>
     <PackageReference Include="DiscUtils.Udf" />
     <PackageReference Include="Jellyfin.XmlTv" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
@@ -31,7 +32,6 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
     <PackageReference Include="Mono.Nat" />
     <PackageReference Include="prometheus-net.DotNetRuntime" />
-    <PackageReference Include="SQLitePCL.pretty.netstandard" />
     <PackageReference Include="DotNet.Glob" />
   </ItemGroup>
 
@@ -43,8 +43,6 @@
     <TargetFramework>net7.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <!-- https://github.com/microsoft/ApplicationInsights-dotnet/issues/2047 -->
-    <NoWarn>AD0001</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

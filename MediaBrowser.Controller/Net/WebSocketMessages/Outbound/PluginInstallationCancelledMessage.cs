@@ -7,7 +7,7 @@ namespace MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 /// <summary>
 /// Plugin installation cancelled message.
 /// </summary>
-public class PluginInstallationCancelledMessage : WebSocketMessage<InstallationInfo>, IOutboundWebSocketMessage
+public class PluginInstallationCancelledMessage : OutboundWebSocketMessage<InstallationInfo>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="PluginInstallationCancelledMessage"/> class.

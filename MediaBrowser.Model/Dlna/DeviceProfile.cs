@@ -314,7 +314,7 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="audioSampleRate">The audio sample rate.</param>
         /// <param name="audioBitDepth">The audio bit depth.</param>
         /// <returns>The <see cref="ResponseProfile"/>.</returns>
-        public ResponseProfile? GetAudioMediaProfile(string container, string? audioCodec, int? audioChannels, int? audioBitrate, int? audioSampleRate, int? audioBitDepth)
+        public ResponseProfile? GetAudioMediaProfile(string? container, string? audioCodec, int? audioChannels, int? audioBitrate, int? audioSampleRate, int? audioBitDepth)
         {
             foreach (var i in ResponseProfiles)
             {
@@ -438,14 +438,14 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="isAvc">True if Avc.</param>
         /// <returns>The <see cref="ResponseProfile"/>.</returns>
         public ResponseProfile? GetVideoMediaProfile(
-            string container,
+            string? container,
             string? audioCodec,
             string? videoCodec,
             int? width,
             int? height,
             int? bitDepth,
             int? videoBitrate,
-            string videoProfile,
+            string? videoProfile,
             VideoRangeType videoRangeType,
             double? videoLevel,
             float? videoFramerate,
@@ -456,7 +456,7 @@ namespace MediaBrowser.Model.Dlna
             int? refFrames,
             int? numVideoStreams,
             int? numAudioStreams,
-            string videoCodecTag,
+            string? videoCodecTag,
             bool? isAvc)
         {
             foreach (var i in ResponseProfiles)

@@ -126,8 +126,8 @@ public class SkiaEncoder : IImageEncoder
             var svg = new SKSvg();
             try
             {
-                svg.Load(path);
-                return new ImageDimensions(Convert.ToInt32(svg.Picture.CullRect.Width), Convert.ToInt32(svg.Picture.CullRect.Height));
+                using var picture = svg.Load(path);
+                return new ImageDimensions(Convert.ToInt32(picture.CullRect.Width), Convert.ToInt32(picture.CullRect.Height));
             }
             catch (FormatException skiaColorException)
             {
@@ -192,7 +192,7 @@ public class SkiaEncoder : IImageEncoder
             return path;
         }
 
-        var tempPath = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + Path.GetExtension(path));
+        var tempPath = Path.Combine(_appPaths.TempDirectory, string.Concat(Guid.NewGuid().ToString(), Path.GetExtension(path.AsSpan())));
         var directory = Path.GetDirectoryName(tempPath) ?? throw new ResourceNotFoundException($"Provided path ({tempPath}) is not valid.");
         Directory.CreateDirectory(directory);
         File.Copy(path, tempPath, true);
@@ -204,20 +204,10 @@ public class SkiaEncoder : IImageEncoder
     {
         if (!orientation.HasValue)
         {
-            return SKEncodedOrigin.TopLeft;
+            return SKEncodedOrigin.Default;
         }
 
-        return orientation.Value switch
-        {
-            ImageOrientation.TopRight => SKEncodedOrigin.TopRight,
-            ImageOrientation.RightTop => SKEncodedOrigin.RightTop,
-            ImageOrientation.RightBottom => SKEncodedOrigin.RightBottom,
-            ImageOrientation.LeftTop => SKEncodedOrigin.LeftTop,
-            ImageOrientation.LeftBottom => SKEncodedOrigin.LeftBottom,
-            ImageOrientation.BottomRight => SKEncodedOrigin.BottomRight,
-            ImageOrientation.BottomLeft => SKEncodedOrigin.BottomLeft,
-            _ => SKEncodedOrigin.TopLeft
-        };
+        return (SKEncodedOrigin)orientation.Value;
     }
 
     /// <summary>
@@ -436,7 +426,8 @@ public class SkiaEncoder : IImageEncoder
 
         // scale image (the FromImage creates a copy)
         var imageInfo = new SKImageInfo(width, height, bitmap.ColorType, bitmap.AlphaType, bitmap.ColorSpace);
-        using var resizedBitmap = SKBitmap.FromImage(ResizeImage(bitmap, imageInfo));
+        using var resizedImage = ResizeImage(bitmap, imageInfo);
+        using var resizedBitmap = SKBitmap.FromImage(resizedImage);
 
         // If all we're doing is resizing then we can stop now
         if (!hasBackgroundColor && !hasForegroundColor && blur == 0 && !hasIndicator)
@@ -493,10 +484,8 @@ public class SkiaEncoder : IImageEncoder
         Directory.CreateDirectory(directory);
         using (var outputStream = new SKFileWStream(outputPath))
         {
-            using (var pixmap = new SKPixmap(new SKImageInfo(width, height), saveBitmap.GetPixels()))
-            {
-                pixmap.Encode(outputStream, skiaOutputFormat, quality);
-            }
+            using var pixmap = new SKPixmap(new SKImageInfo(width, height), saveBitmap.GetPixels());
+            pixmap.Encode(outputStream, skiaOutputFormat, quality);
         }
 
         return outputPath;

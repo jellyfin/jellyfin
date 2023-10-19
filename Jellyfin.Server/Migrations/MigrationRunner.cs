@@ -22,7 +22,8 @@ namespace Jellyfin.Server.Migrations
         private static readonly Type[] _preStartupMigrationTypes =
         {
             typeof(PreStartupRoutines.CreateNetworkConfiguration),
-            typeof(PreStartupRoutines.MigrateMusicBrainzTimeout)
+            typeof(PreStartupRoutines.MigrateMusicBrainzTimeout),
+            typeof(PreStartupRoutines.MigrateNetworkConfiguration)
         };
 
         /// <summary>
@@ -41,7 +42,8 @@ namespace Jellyfin.Server.Migrations
             typeof(Routines.RemoveDownloadImagesInAdvance),
             typeof(Routines.MigrateAuthenticationDb),
             typeof(Routines.FixPlaylistOwner),
-            typeof(Routines.MigrateRatingLevels)
+            typeof(Routines.MigrateRatingLevels),
+            typeof(Routines.AddDefaultCastReceivers)
         };
 
         /// <summary>
@@ -92,7 +94,7 @@ namespace Jellyfin.Server.Migrations
 
         private static void HandleStartupWizardCondition(IEnumerable<IMigrationRoutine> migrations, MigrationOptions migrationOptions, bool isStartWizardCompleted, ILogger logger)
         {
-            if (isStartWizardCompleted || migrationOptions.Applied.Count != 0)
+            if (isStartWizardCompleted)
             {
                 return;
             }
@@ -105,6 +107,8 @@ namespace Jellyfin.Server.Migrations
 
         private static void PerformMigrations(IMigrationRoutine[] migrations, MigrationOptions migrationOptions, Action<MigrationOptions> saveConfiguration, ILogger logger)
         {
+            // save already applied migrations, and skip them thereafter
+            saveConfiguration(migrationOptions);
             var appliedMigrationIds = migrationOptions.Applied.Select(m => m.Id).ToHashSet();
 
             for (var i = 0; i < migrations.Length; i++)

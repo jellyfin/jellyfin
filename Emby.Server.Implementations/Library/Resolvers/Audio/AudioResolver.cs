@@ -94,9 +94,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
 
             if (AudioFileParser.IsAudioFile(args.Path, _namingOptions))
             {
-                var extension = Path.GetExtension(args.Path);
+                var extension = Path.GetExtension(args.Path.AsSpan());
 
-                if (string.Equals(extension, ".cue", StringComparison.OrdinalIgnoreCase))
+                if (extension.Equals(".cue", StringComparison.OrdinalIgnoreCase))
                 {
                     // if audio file exists of same name, return null
                     return null;
@@ -128,7 +128,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
 
                 if (item is not null)
                 {
-                    item.IsShortcut = string.Equals(extension, ".strm", StringComparison.OrdinalIgnoreCase);
+                    item.IsShortcut = extension.Equals(".strm", StringComparison.OrdinalIgnoreCase);
 
                     item.IsInMixedFolder = true;
                 }

@@ -12,7 +12,6 @@ using Jellyfin.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
@@ -720,7 +719,7 @@ namespace MediaBrowser.Providers.Manager
                             refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
                         }
 
-                        MergeData(localItem, temp, Array.Empty<MetadataField>(), !options.ReplaceAllMetadata, true);
+                        MergeData(localItem, temp, Array.Empty<MetadataField>(), options.ReplaceAllMetadata, true);
                         refreshResult.UpdateType |= ItemUpdateType.MetadataImport;
 
                         // Only one local provider allowed per item

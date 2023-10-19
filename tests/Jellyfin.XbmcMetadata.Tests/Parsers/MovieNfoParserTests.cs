@@ -60,7 +60,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             {
                 Exists = true,
                 FullName = OperatingSystem.IsWindows() ?
-                    "C:\\media\\movies\\Justice League (2017).jpg"
+                    @"C:\media\movies\Justice League (2017).jpg"
                     : "/media/movies/Justice League (2017).jpg"
             };
             directoryService.Setup(x => x.GetFile(_localImageFileMetadata.FullName))

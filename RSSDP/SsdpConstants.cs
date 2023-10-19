@@ -26,6 +26,8 @@ namespace Rssdp.Infrastructure
 
         internal const string SsdpDeviceDescriptionXmlNamespace = "urn:schemas-upnp-org:device-1-0";
 
+        internal const string ServerVersion = "1.0";
+
         /// <summary>
         /// Default buffer size for receiving SSDP broadcasts. Value is 8192 (bytes).
         /// </summary>

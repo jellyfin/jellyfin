@@ -217,7 +217,7 @@ namespace MediaBrowser.Controller.Library
         /// <returns><c>true</c> if [contains file system entry by name] [the specified name]; otherwise, <c>false</c>.</returns>
         public bool ContainsFileSystemEntryByName(string name)
         {
-            return GetFileSystemEntryByName(name) != null;
+            return GetFileSystemEntryByName(name) is not null;
         }
 
         public string GetCollectionType()

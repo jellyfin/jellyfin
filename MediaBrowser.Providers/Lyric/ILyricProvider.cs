@@ -1,9 +1,8 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Resolvers;
 
-namespace MediaBrowser.Controller.Lyrics;
+namespace MediaBrowser.Providers.Lyric;
 
 /// <summary>
 /// Interface ILyricsProvider.
@@ -22,15 +21,16 @@ public interface ILyricProvider
     ResolverPriority Priority { get; }
 
     /// <summary>
-    /// Gets the supported media types for this provider.
+    /// Checks if an item has lyrics available.
     /// </summary>
-    /// <value>The supported media types.</value>
-    IReadOnlyCollection<string> SupportedMediaTypes { get; }
+    /// <param name="item">The media item.</param>
+    /// <returns>Whether lyrics where found or not.</returns>
+    bool HasLyrics(BaseItem item);
 
     /// <summary>
     /// Gets the lyrics.
     /// </summary>
     /// <param name="item">The media item.</param>
     /// <returns>A task representing found lyrics.</returns>
-    Task<LyricResponse?> GetLyrics(BaseItem item);
+    Task<LyricFile?> GetLyrics(BaseItem item);
 }

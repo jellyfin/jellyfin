@@ -19,9 +19,9 @@ public class PlaystateControllerTests : IClassFixture<JellyfinApplicationFactory
     public async Task DeleteMarkUnplayedItem_NonExistentUserId_NotFound()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-        using var response = await client.DeleteAsync($"Users/{Guid.NewGuid()}/PlayedItems/{Guid.NewGuid()}").ConfigureAwait(false);
+        using var response = await client.DeleteAsync($"Users/{Guid.NewGuid()}/PlayedItems/{Guid.NewGuid()}");
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
@@ -29,9 +29,9 @@ public class PlaystateControllerTests : IClassFixture<JellyfinApplicationFactory
     public async Task PostMarkPlayedItem_NonExistentUserId_NotFound()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-        using var response = await client.PostAsync($"Users/{Guid.NewGuid()}/PlayedItems/{Guid.NewGuid()}", null).ConfigureAwait(false);
+        using var response = await client.PostAsync($"Users/{Guid.NewGuid()}/PlayedItems/{Guid.NewGuid()}", null);
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
@@ -39,11 +39,11 @@ public class PlaystateControllerTests : IClassFixture<JellyfinApplicationFactory
     public async Task DeleteMarkUnplayedItem_NonExistentItemId_NotFound()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-        var userDto = await AuthHelper.GetUserDtoAsync(client).ConfigureAwait(false);
+        var userDto = await AuthHelper.GetUserDtoAsync(client);
 
-        using var response = await client.DeleteAsync($"Users/{userDto.Id}/PlayedItems/{Guid.NewGuid()}").ConfigureAwait(false);
+        using var response = await client.DeleteAsync($"Users/{userDto.Id}/PlayedItems/{Guid.NewGuid()}");
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
@@ -51,11 +51,11 @@ public class PlaystateControllerTests : IClassFixture<JellyfinApplicationFactory
     public async Task PostMarkPlayedItem_NonExistentItemId_NotFound()
     {
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+        client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-        var userDto = await AuthHelper.GetUserDtoAsync(client).ConfigureAwait(false);
+        var userDto = await AuthHelper.GetUserDtoAsync(client);
 
-        using var response = await client.PostAsync($"Users/{userDto.Id}/PlayedItems/{Guid.NewGuid()}", null).ConfigureAwait(false);
+        using var response = await client.PostAsync($"Users/{userDto.Id}/PlayedItems/{Guid.NewGuid()}", null);
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 }

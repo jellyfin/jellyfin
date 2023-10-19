@@ -24,6 +24,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.Activity;
+using MediaBrowser.Providers.Lyric;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -96,11 +97,13 @@ namespace Jellyfin.Server
                 serviceCollection.AddSingleton(typeof(ILyricProvider), type);
             }
 
+            foreach (var type in GetExportTypes<ILyricParser>())
+            {
+                serviceCollection.AddSingleton(typeof(ILyricParser), type);
+            }
+
             base.RegisterServices(serviceCollection);
         }
-
-        /// <inheritdoc />
-        protected override void RestartInternal() => Program.Restart();
 
         /// <inheritdoc />
         protected override IEnumerable<Assembly> GetAssembliesWithPartsInternal()
@@ -111,8 +114,5 @@ namespace Jellyfin.Server
             // Jellyfin.Server.Implementations
             yield return typeof(JellyfinDbContext).Assembly;
         }
-
-        /// <inheritdoc />
-        protected override void ShutdownInternal() => Program.Shutdown();
     }
 }

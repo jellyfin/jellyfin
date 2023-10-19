@@ -6,7 +6,7 @@ namespace MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 /// <summary>
 /// Restart required.
 /// </summary>
-public class RestartRequiredMessage : WebSocketMessage, IOutboundWebSocketMessage
+public class RestartRequiredMessage : OutboundWebSocketMessage
 {
     /// <inheritdoc />
     [DefaultValue(SessionMessageType.RestartRequired)]

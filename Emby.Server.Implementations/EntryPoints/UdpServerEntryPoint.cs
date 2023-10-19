@@ -1,10 +1,15 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Udp;
 using Jellyfin.Networking.Configuration;
+using Jellyfin.Networking.Extensions;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
 using Microsoft.Extensions.Configuration;
@@ -13,7 +18,7 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.EntryPoints
 {
     /// <summary>
-    /// Class UdpServerEntryPoint.
+    /// Class responsible for registering all UDP broadcast endpoints and their handlers.
     /// </summary>
     public sealed class UdpServerEntryPoint : IServerEntryPoint
     {
@@ -29,13 +34,14 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly IServerApplicationHost _appHost;
         private readonly IConfiguration _config;
         private readonly IConfigurationManager _configurationManager;
+        private readonly INetworkManager _networkManager;
 
         /// <summary>
         /// The UDP server.
         /// </summary>
-        private UdpServer? _udpServer;
-        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-        private bool _disposed = false;
+        private readonly List<UdpServer> _udpServers;
+        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UdpServerEntryPoint" /> class.
@@ -44,16 +50,20 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <param name="appHost">Instance of the <see cref="IServerApplicationHost"/> interface.</param>
         /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
         /// <param name="configurationManager">Instance of the <see cref="IConfigurationManager"/> interface.</param>
+        /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
         public UdpServerEntryPoint(
             ILogger<UdpServerEntryPoint> logger,
             IServerApplicationHost appHost,
             IConfiguration configuration,
-            IConfigurationManager configurationManager)
+            IConfigurationManager configurationManager,
+            INetworkManager networkManager)
         {
             _logger = logger;
             _appHost = appHost;
             _config = configuration;
             _configurationManager = configurationManager;
+            _networkManager = networkManager;
+            _udpServers = new List<UdpServer>();
         }
 
         /// <inheritdoc />
@@ -68,8 +78,43 @@ namespace Emby.Server.Implementations.EntryPoints
 
             try
             {
-                _udpServer = new UdpServer(_logger, _appHost, _config, PortNumber);
-                _udpServer.Start(_cancellationTokenSource.Token);
+                // Linux needs to bind to the broadcast addresses to get broadcast traffic
+                // Windows receives broadcast fine when binding to just the interface, it is unable to bind to broadcast addresses
+                if (OperatingSystem.IsLinux())
+                {
+                    // Add global broadcast listener
+                    var server = new UdpServer(_logger, _appHost, _config, IPAddress.Broadcast, PortNumber);
+                    server.Start(_cancellationTokenSource.Token);
+                    _udpServers.Add(server);
+
+                    // Add bind address specific broadcast listeners
+                    // IPv6 is currently unsupported
+                    var validInterfaces = _networkManager.GetInternalBindAddresses().Where(i => i.AddressFamily == AddressFamily.InterNetwork);
+                    foreach (var intf in validInterfaces)
+                    {
+                        var broadcastAddress = NetworkExtensions.GetBroadcastAddress(intf.Subnet);
+                        _logger.LogDebug("Binding UDP server to {Address} on port {PortNumber}", broadcastAddress, PortNumber);
+
+                        server = new UdpServer(_logger, _appHost, _config, broadcastAddress, PortNumber);
+                        server.Start(_cancellationTokenSource.Token);
+                        _udpServers.Add(server);
+                    }
+                }
+                else
+                {
+                    // Add bind address specific broadcast listeners
+                    // IPv6 is currently unsupported
+                    var validInterfaces = _networkManager.GetInternalBindAddresses().Where(i => i.AddressFamily == AddressFamily.InterNetwork);
+                    foreach (var intf in validInterfaces)
+                    {
+                        var intfAddress = intf.Address;
+                        _logger.LogDebug("Binding UDP server to {Address} on port {PortNumber}", intfAddress, PortNumber);
+
+                        var server = new UdpServer(_logger, _appHost, _config, intfAddress, PortNumber);
+                        server.Start(_cancellationTokenSource.Token);
+                        _udpServers.Add(server);
+                    }
+                }
             }
             catch (SocketException ex)
             {
@@ -83,7 +128,7 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(this.GetType().Name);
+                throw new ObjectDisposedException(GetType().Name);
             }
         }
 
@@ -97,9 +142,12 @@ namespace Emby.Server.Implementations.EntryPoints
 
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource.Dispose();
-            _udpServer?.Dispose();
-            _udpServer = null;
+            foreach (var server in _udpServers)
+            {
+                server.Dispose();
+            }
 
+            _udpServers.Clear();
             _disposed = true;
         }
     }

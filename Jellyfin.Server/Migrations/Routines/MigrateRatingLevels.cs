@@ -1,13 +1,11 @@
 using System;
 using System.Globalization;
 using System.IO;
-
 using Emby.Server.Implementations.Data;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Globalization;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
-using SQLitePCL.pretty;
 
 namespace Jellyfin.Server.Migrations.Routines
 {
@@ -20,17 +18,14 @@ namespace Jellyfin.Server.Migrations.Routines
         private readonly ILogger<MigrateRatingLevels> _logger;
         private readonly IServerApplicationPaths _applicationPaths;
         private readonly ILocalizationManager _localizationManager;
-        private readonly IItemRepository _repository;
 
         public MigrateRatingLevels(
             IServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
-            ILocalizationManager localizationManager,
-            IItemRepository repository)
+            ILocalizationManager localizationManager)
         {
             _applicationPaths = applicationPaths;
             _localizationManager = localizationManager;
-            _repository = repository;
             _logger = loggerFactory.CreateLogger<MigrateRatingLevels>();
         }
 
@@ -70,16 +65,14 @@ namespace Jellyfin.Server.Migrations.Routines
 
             // Migrate parental rating strings to new levels
             _logger.LogInformation("Recalculating parental rating levels based on rating string.");
-            using (var connection = SQLite3.Open(
-                dbPath,
-                ConnectionFlags.ReadWrite,
-                null))
+            using var connection = new SqliteConnection($"Filename={dbPath}");
+            connection.Open();
+            using (var transaction = connection.BeginTransaction())
             {
                 var queryResult = connection.Query("SELECT DISTINCT OfficialRating FROM TypedBaseItems");
                 foreach (var entry in queryResult)
                 {
-                    var ratingString = entry[0].ToString();
-                    if (string.IsNullOrEmpty(ratingString))
+                    if (!entry.TryGetString(0, out var ratingString) || string.IsNullOrEmpty(ratingString))
                     {
                         connection.Execute("UPDATE TypedBaseItems SET InheritedParentalRatingValue = NULL WHERE OfficialRating IS NULL OR OfficialRating='';");
                     }
@@ -91,12 +84,14 @@ namespace Jellyfin.Server.Migrations.Routines
                             ratingValue = "NULL";
                         }
 
-                        var statement = connection.PrepareStatement("UPDATE TypedBaseItems SET InheritedParentalRatingValue = @Value WHERE OfficialRating = @Rating;");
+                        using var statement = connection.PrepareStatement("UPDATE TypedBaseItems SET InheritedParentalRatingValue = @Value WHERE OfficialRating = @Rating;");
                         statement.TryBind("@Value", ratingValue);
                         statement.TryBind("@Rating", ratingString);
-                        statement.ExecuteQuery();
+                        statement.ExecuteNonQuery();
                     }
                 }
+
+                transaction.Commit();
             }
         }
     }

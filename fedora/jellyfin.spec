@@ -14,6 +14,7 @@ License:        GPLv2
 URL:            https://jellyfin.org
 # Jellyfin Server tarball created by `make -f .copr/Makefile srpm`, real URL ends with `v%%{version}.tar.gz`
 Source0:        jellyfin-server-%{version}.tar.gz
+Source10:       jellyfin-selinux-launcher.sh
 Source11:       jellyfin.service
 Source12:       jellyfin.env
 Source13:       jellyfin.override.conf
@@ -73,7 +74,8 @@ dotnet publish --configuration Release --self-contained --runtime %{dotnet_runti
 # Jellyfin files
 %{__mkdir} -p %{buildroot}%{_libdir}/jellyfin %{buildroot}%{_bindir}
 %{__cp} -r Jellyfin.Server/bin/Release/net7.0/%{dotnet_runtime}/publish/* %{buildroot}%{_libdir}/jellyfin
-ln -srf %{_libdir}/jellyfin/jellyfin %{buildroot}%{_bindir}/jellyfin
+%{__install} -D %{SOURCE10} %{buildroot}%{_bindir}/jellyfin
+sed -i -e 's|/usr/lib64|%{_libdir}|g' %{buildroot}%{_bindir}/jellyfin
 
 # Jellyfin config
 %{__install} -D Jellyfin.Server/Resources/Configuration/logging.json %{buildroot}%{_sysconfdir}/jellyfin/logging.json
@@ -106,6 +108,7 @@ ln -srf %{_libdir}/jellyfin/jellyfin %{buildroot}%{_bindir}/jellyfin
 %attr(755,root,root) %{_libdir}/jellyfin/createdump
 %attr(755,root,root) %{_libdir}/jellyfin/jellyfin
 %{_libdir}/jellyfin/*
+%attr(755,root,root) %{_bindir}/jellyfin
 
 # Jellyfin config
 %config(noreplace) %attr(644,jellyfin,jellyfin) %{_sysconfdir}/jellyfin/logging.json

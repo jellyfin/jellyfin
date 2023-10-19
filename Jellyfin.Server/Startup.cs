@@ -1,10 +1,10 @@
 using System;
-using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
+using Emby.Dlna.Extensions;
 using Jellyfin.Api.Middleware;
 using Jellyfin.MediaEncoding.Hls.Extensions;
 using Jellyfin.Networking.Configuration;
@@ -27,7 +27,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-using Microsoft.VisualBasic;
 using Prometheus;
 
 namespace Jellyfin.Server
@@ -120,26 +119,11 @@ namespace Jellyfin.Server
                 })
                 .ConfigurePrimaryHttpMessageHandler(defaultHttpClientHandlerDelegate);
 
-            services.AddHttpClient(NamedClient.Dlna, c =>
-                {
-                    c.DefaultRequestHeaders.UserAgent.ParseAdd(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "{0}/{1} UPnP/1.0 {2}/{3}",
-                            Environment.OSVersion.Platform,
-                            Environment.OSVersion,
-                            _serverApplicationHost.Name,
-                            _serverApplicationHost.ApplicationVersionString));
-
-                    c.DefaultRequestHeaders.Add("CPFN.UPNP.ORG", _serverApplicationHost.FriendlyName); // Required for UPnP DeviceArchitecture v2.0
-                    c.DefaultRequestHeaders.Add("FriendlyName.DLNA.ORG", _serverApplicationHost.FriendlyName); // REVIEW: where does this come from?
-                })
-                .ConfigurePrimaryHttpMessageHandler(defaultHttpClientHandlerDelegate);
-
             services.AddHealthChecks()
                 .AddCheck<DbContextFactoryHealthCheck<JellyfinDbContext>>(nameof(JellyfinDbContext));
 
             services.AddHlsPlaylistGenerator();
+            services.AddDlnaServices(_serverApplicationHost);
         }
 
         /// <summary>
@@ -213,7 +197,7 @@ namespace Jellyfin.Server
                 mainApp.UseAuthorization();
 
                 mainApp.UseLanFiltering();
-                mainApp.UseIpBasedAccessValidation();
+                mainApp.UseIPBasedAccessValidation();
                 mainApp.UseWebSocketHandler();
                 mainApp.UseServerStartupMessage();
 

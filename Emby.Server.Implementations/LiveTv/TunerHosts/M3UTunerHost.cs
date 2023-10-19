@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -22,7 +21,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
@@ -54,9 +52,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             IHttpClientFactory httpClientFactory,
             IServerApplicationHost appHost,
             INetworkManager networkManager,
-            IStreamHelper streamHelper,
-            IMemoryCache memoryCache)
-            : base(config, logger, fileSystem, memoryCache)
+            IStreamHelper streamHelper)
+            : base(config, logger, fileSystem)
         {
             _httpClientFactory = httpClientFactory;
             _appHost = appHost;

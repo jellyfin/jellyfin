@@ -24,5 +24,13 @@
     "TaskDownloadMissingSubtitlesDescription": "Scours the seven seas o' the internet for subtitles that be missin' based on the captain's map o' metadata.",
     "HeaderAlbumArtists": "Buccaneers o' the musical arts",
     "HeaderFavoriteAlbums": "Beloved booty o' musical adventures",
-    "HeaderFavoriteArtists": "Treasured scallywags o' the creative seas"
+    "HeaderFavoriteArtists": "Treasured scallywags o' the creative seas",
+    "Channels": "Channels",
+    "Forced": "Pressed",
+    "External": "Outboard",
+    "HeaderFavoriteEpisodes": "Treasured Tales",
+    "HeaderFavoriteShows": "Treasured Tales",
+    "ChapterNameValue": "Piece {0}",
+    "HeaderFavoriteSongs": "Treasured Chimes",
+    "HeaderNextUp": "Incoming"
 }

@@ -3,6 +3,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -45,7 +46,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Tasks;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using EpisodeInfo = Emby.Naming.TV.EpisodeInfo;
@@ -63,7 +63,7 @@ namespace Emby.Server.Implementations.Library
         private const string ShortcutFileExtension = ".mblink";
 
         private readonly ILogger<LibraryManager> _logger;
-        private readonly IMemoryCache _memoryCache;
+        private readonly ConcurrentDictionary<Guid, BaseItem> _cache;
         private readonly ITaskManager _taskManager;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataRepository;
@@ -111,7 +111,6 @@ namespace Emby.Server.Implementations.Library
         /// <param name="mediaEncoder">The media encoder.</param>
         /// <param name="itemRepository">The item repository.</param>
         /// <param name="imageProcessor">The image processor.</param>
-        /// <param name="memoryCache">The memory cache.</param>
         /// <param name="namingOptions">The naming options.</param>
         /// <param name="directoryService">The directory service.</param>
         public LibraryManager(
@@ -128,7 +127,6 @@ namespace Emby.Server.Implementations.Library
             IMediaEncoder mediaEncoder,
             IItemRepository itemRepository,
             IImageProcessor imageProcessor,
-            IMemoryCache memoryCache,
             NamingOptions namingOptions,
             IDirectoryService directoryService)
         {
@@ -145,7 +143,7 @@ namespace Emby.Server.Implementations.Library
             _mediaEncoder = mediaEncoder;
             _itemRepository = itemRepository;
             _imageProcessor = imageProcessor;
-            _memoryCache = memoryCache;
+            _cache = new ConcurrentDictionary<Guid, BaseItem>();
             _namingOptions = namingOptions;
 
             _extraResolver = new ExtraResolver(loggerFactory.CreateLogger<ExtraResolver>(), namingOptions, directoryService);
@@ -300,7 +298,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            _memoryCache.Set(item.Id, item);
+            _cache[item.Id] = item;
         }
 
         public void DeleteItem(BaseItem item, DeleteOptions options)
@@ -359,7 +357,7 @@ namespace Emby.Server.Implementations.Library
 
             var children = item.IsFolder
                 ? ((Folder)item).GetRecursiveChildren(false)
-                : Enumerable.Empty<BaseItem>();
+                : Array.Empty<BaseItem>();
 
             foreach (var metadataPath in GetMetadataPaths(item, children))
             {
@@ -441,7 +439,7 @@ namespace Emby.Server.Implementations.Library
                 _itemRepository.DeleteItem(child.Id);
             }
 
-            _memoryCache.Remove(item.Id);
+            _cache.TryRemove(item.Id, out _);
 
             ReportItemRemoved(item, parent);
         }
@@ -609,7 +607,7 @@ namespace Emby.Server.Implementations.Library
             var originalList = paths.ToList();
 
             var list = originalList.Where(i => i.IsDirectory)
-                .Select(i => _fileSystem.NormalizePath(i.FullName))
+                .Select(i => Path.TrimEndingDirectorySeparator(i.FullName))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
@@ -840,19 +838,12 @@ namespace Emby.Server.Implementations.Library
         {
             var path = Person.GetPath(name);
             var id = GetItemByNameId<Person>(path);
-            if (GetItemById(id) is not Person item)
+            if (GetItemById(id) is Person item)
             {
-                item = new Person
-                {
-                    Name = name,
-                    Id = id,
-                    DateCreated = DateTime.UtcNow,
-                    DateModified = DateTime.UtcNow,
-                    Path = path
-                };
+                return item;
             }
 
-            return item;
+            return null;
         }
 
         /// <summary>
@@ -1163,7 +1154,7 @@ namespace Emby.Server.Implementations.Library
                 Name = Path.GetFileName(dir),
 
                 Locations = _fileSystem.GetFilePaths(dir, false)
-                .Where(i => string.Equals(ShortcutFileExtension, Path.GetExtension(i), StringComparison.OrdinalIgnoreCase))
+                .Where(i => Path.GetExtension(i.AsSpan()).Equals(ShortcutFileExtension, StringComparison.OrdinalIgnoreCase))
                     .Select(i =>
                     {
                         try
@@ -1233,7 +1224,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentException("Guid can't be empty", nameof(id));
             }
 
-            if (_memoryCache.TryGetValue(id, out BaseItem item))
+            if (_cache.TryGetValue(id, out BaseItem item))
             {
                 return item;
             }
@@ -2069,7 +2060,9 @@ namespace Emby.Server.Implementations.Library
                     .Find(folder => folder is CollectionFolder) as CollectionFolder;
             }
 
-            return collectionFolder is null ? new LibraryOptions() : collectionFolder.GetLibraryOptions();
+            return collectionFolder is null
+                ? new LibraryOptions()
+                : collectionFolder.GetLibraryOptions();
         }
 
         public string GetContentType(BaseItem item)
@@ -2857,7 +2850,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     var path = Path.Combine(virtualFolderPath, collectionType.ToString().ToLowerInvariant() + ".collection");
 
-                    File.WriteAllBytes(path, Array.Empty<byte>());
+                    await File.WriteAllBytesAsync(path, Array.Empty<byte>()).ConfigureAwait(false);
                 }
 
                 CollectionFolder.SaveLibraryOptions(virtualFolderPath, options);
@@ -2899,9 +2892,18 @@ namespace Emby.Server.Implementations.Library
                 var saveEntity = false;
                 var personEntity = GetPerson(person.Name);
 
-                // if PresentationUniqueKey is empty it's likely a new item.
-                if (string.IsNullOrEmpty(personEntity.PresentationUniqueKey))
+                if (personEntity is null)
                 {
+                    var path = Person.GetPath(person.Name);
+                    personEntity = new Person()
+                    {
+                        Name = person.Name,
+                        Id = GetItemByNameId<Person>(path),
+                        DateCreated = DateTime.UtcNow,
+                        DateModified = DateTime.UtcNow,
+                        Path = path
+                    };
+
                     personEntity.PresentationUniqueKey = personEntity.CreatePresentationUniqueKey();
                     saveEntity = true;
                 }
@@ -3134,7 +3136,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             var shortcut = _fileSystem.GetFilePaths(virtualFolderPath, true)
-                .Where(i => string.Equals(ShortcutFileExtension, Path.GetExtension(i), StringComparison.OrdinalIgnoreCase))
+                .Where(i => Path.GetExtension(i.AsSpan()).Equals(ShortcutFileExtension, StringComparison.OrdinalIgnoreCase))
                 .FirstOrDefault(f => _appHost.ExpandVirtualPath(_fileSystem.ResolveShortcut(f)).Equals(mediaPath, StringComparison.OrdinalIgnoreCase));
 
             if (!string.IsNullOrEmpty(shortcut))

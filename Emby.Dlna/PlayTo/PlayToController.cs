@@ -42,7 +42,7 @@ namespace Emby.Dlna.PlayTo
 
         private readonly IDeviceDiscovery _deviceDiscovery;
         private readonly string _serverAddress;
-        private readonly string _accessToken;
+        private readonly string? _accessToken;
 
         private readonly List<PlaylistItem> _playlist = new List<PlaylistItem>();
         private Device _device;
@@ -59,7 +59,7 @@ namespace Emby.Dlna.PlayTo
             IUserManager userManager,
             IImageProcessor imageProcessor,
             string serverAddress,
-            string accessToken,
+            string? accessToken,
             IDeviceDiscovery deviceDiscovery,
             IUserDataManager userDataManager,
             ILocalizationManager localization,

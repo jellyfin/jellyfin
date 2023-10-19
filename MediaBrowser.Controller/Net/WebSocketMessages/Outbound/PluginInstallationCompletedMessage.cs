@@ -7,7 +7,7 @@ namespace MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 /// <summary>
 /// Plugin installation completed message.
 /// </summary>
-public class PluginInstallationCompletedMessage : WebSocketMessage<InstallationInfo>, IOutboundWebSocketMessage
+public class PluginInstallationCompletedMessage : OutboundWebSocketMessage<InstallationInfo>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="PluginInstallationCompletedMessage"/> class.

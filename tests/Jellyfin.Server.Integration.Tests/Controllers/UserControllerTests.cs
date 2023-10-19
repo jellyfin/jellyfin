@@ -41,10 +41,9 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         {
             var client = _factory.CreateClient();
 
-            using var response = await client.GetAsync("Users/Public").ConfigureAwait(false);
+            using var response = await client.GetAsync("Users/Public");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var users = await JsonSerializer.DeserializeAsync<UserDto[]>(
-                await response.Content.ReadAsStreamAsync().ConfigureAwait(false), _jsonOpions).ConfigureAwait(false);
+            var users = await response.Content.ReadFromJsonAsync<UserDto[]>(_jsonOpions);
             // User are hidden by default
             Assert.NotNull(users);
             Assert.Empty(users);
@@ -55,12 +54,11 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         public async Task GetUsers_Valid_Success()
         {
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-            using var response = await client.GetAsync("Users").ConfigureAwait(false);
+            using var response = await client.GetAsync("Users");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var users = await JsonSerializer.DeserializeAsync<UserDto[]>(
-                await response.Content.ReadAsStreamAsync().ConfigureAwait(false), _jsonOpions).ConfigureAwait(false);
+            var users = await response.Content.ReadFromJsonAsync<UserDto[]>(_jsonOpions);
             Assert.NotNull(users);
             Assert.Single(users);
             Assert.False(users![0].HasConfiguredPassword);
@@ -71,9 +69,9 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         public async Task Me_Valid_Success()
         {
             var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
+            client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client));
 
-            _ = await AuthHelper.GetUserDtoAsync(client).ConfigureAwait(false);
+            _ = await AuthHelper.GetUserDtoAsync(client);
         }
 
         [Fact]
@@ -90,10 +88,9 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
                 Name = TestUsername
             };
 
-            using var response = await CreateUserByName(client, createRequest).ConfigureAwait(false);
+            using var response = await CreateUserByName(client, createRequest);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var user = await JsonSerializer.DeserializeAsync<UserDto>(
-                await response.Content.ReadAsStreamAsync().ConfigureAwait(false), _jsonOpions).ConfigureAwait(false);
+            var user = await response.Content.ReadFromJsonAsync<UserDto>(_jsonOpions);
             Assert.Equal(TestUsername, user!.Name);
             Assert.False(user.HasPassword);
             Assert.False(user.HasConfiguredPassword);
@@ -121,7 +118,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
                 Name = username!
             };
 
-            using var response = await CreateUserByName(client, createRequest).ConfigureAwait(false);
+            using var response = await CreateUserByName(client, createRequest);
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
 
@@ -134,7 +131,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             // access token can't be null here as the previous test populated it
             client.DefaultRequestHeaders.AddAuthHeader(_accessToken!);
 
-            using var response = await client.DeleteAsync($"User/{Guid.NewGuid()}").ConfigureAwait(false);
+            using var response = await client.DeleteAsync($"User/{Guid.NewGuid()}");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
@@ -150,11 +147,11 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
                 NewPw = "4randomPa$$word"
             };
 
-            using var response = await UpdateUserPassword(client, _testUserId, createRequest).ConfigureAwait(false);
+            using var response = await UpdateUserPassword(client, _testUserId, createRequest);
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
             var users = await JsonSerializer.DeserializeAsync<UserDto[]>(
-                await client.GetStreamAsync("Users").ConfigureAwait(false), _jsonOpions).ConfigureAwait(false);
+                await client.GetStreamAsync("Users"), _jsonOpions);
             var user = users!.First(x => x.Id.Equals(_testUserId));
             Assert.True(user.HasPassword);
             Assert.True(user.HasConfiguredPassword);
@@ -173,11 +170,11 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
                 CurrentPw = "4randomPa$$word",
             };
 
-            using var response = await UpdateUserPassword(client, _testUserId, createRequest).ConfigureAwait(false);
+            using var response = await UpdateUserPassword(client, _testUserId, createRequest);
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
             var users = await JsonSerializer.DeserializeAsync<UserDto[]>(
-                await client.GetStreamAsync("Users").ConfigureAwait(false), _jsonOpions).ConfigureAwait(false);
+                await client.GetStreamAsync("Users"), _jsonOpions);
             var user = users!.First(x => x.Id.Equals(_testUserId));
             Assert.False(user.HasPassword);
             Assert.False(user.HasConfiguredPassword);

@@ -11,8 +11,8 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
-using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Data
 {
@@ -44,48 +44,48 @@ namespace Emby.Server.Implementations.Data
                 var userDataTableExists = TableExists(connection, "userdata");
 
                 var users = userDatasTableExists ? null : _userManager.Users;
+                using var transaction = connection.BeginTransaction();
+                connection.Execute(string.Join(
+                    ';',
+                    "create table if not exists UserDatas (key nvarchar not null, userId INT not null, rating float null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null, AudioStreamIndex INT, SubtitleStreamIndex INT)",
+                    "drop index if exists idx_userdata",
+                    "drop index if exists idx_userdata1",
+                    "drop index if exists idx_userdata2",
+                    "drop index if exists userdataindex1",
+                    "drop index if exists userdataindex",
+                    "drop index if exists userdataindex3",
+                    "drop index if exists userdataindex4",
+                    "create unique index if not exists UserDatasIndex1 on UserDatas (key, userId)",
+                    "create index if not exists UserDatasIndex2 on UserDatas (key, userId, played)",
+                    "create index if not exists UserDatasIndex3 on UserDatas (key, userId, playbackPositionTicks)",
+                    "create index if not exists UserDatasIndex4 on UserDatas (key, userId, isFavorite)"));
 
-                connection.RunInTransaction(
-                    db =>
-                    {
-                        db.ExecuteAll(string.Join(';', new[]
-                        {
-                            "create table if not exists UserDatas (key nvarchar not null, userId INT not null, rating float null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null, AudioStreamIndex INT, SubtitleStreamIndex INT)",
+                if (!userDataTableExists)
+                {
+                    transaction.Commit();
+                    return;
+                }
 
-                            "drop index if exists idx_userdata",
-                            "drop index if exists idx_userdata1",
-                            "drop index if exists idx_userdata2",
-                            "drop index if exists userdataindex1",
-                            "drop index if exists userdataindex",
-                            "drop index if exists userdataindex3",
-                            "drop index if exists userdataindex4",
-                            "create unique index if not exists UserDatasIndex1 on UserDatas (key, userId)",
-                            "create index if not exists UserDatasIndex2 on UserDatas (key, userId, played)",
-                            "create index if not exists UserDatasIndex3 on UserDatas (key, userId, playbackPositionTicks)",
-                            "create index if not exists UserDatasIndex4 on UserDatas (key, userId, isFavorite)"
-                        }));
+                var existingColumnNames = GetColumnNames(connection, "userdata");
 
-                        if (userDataTableExists)
-                        {
-                            var existingColumnNames = GetColumnNames(db, "userdata");
+                AddColumn(connection, "userdata", "InternalUserId", "int", existingColumnNames);
+                AddColumn(connection, "userdata", "AudioStreamIndex", "int", existingColumnNames);
+                AddColumn(connection, "userdata", "SubtitleStreamIndex", "int", existingColumnNames);
 
-                            AddColumn(db, "userdata", "InternalUserId", "int", existingColumnNames);
-                            AddColumn(db, "userdata", "AudioStreamIndex", "int", existingColumnNames);
-                            AddColumn(db, "userdata", "SubtitleStreamIndex", "int", existingColumnNames);
+                if (userDatasTableExists)
+                {
+                    return;
+                }
 
-                            if (!userDatasTableExists)
-                            {
-                                ImportUserIds(db, users);
+                ImportUserIds(connection, users);
 
-                                db.ExecuteAll("INSERT INTO UserDatas (key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex) SELECT key, InternalUserId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex from userdata where InternalUserId not null");
-                            }
-                        }
-                    },
-                    TransactionMode);
+                connection.Execute("INSERT INTO UserDatas (key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex) SELECT key, InternalUserId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex from userdata where InternalUserId not null");
+
+                transaction.Commit();
             }
         }
 
-        private void ImportUserIds(IDatabaseConnection db, IEnumerable<User> users)
+        private void ImportUserIds(SqliteConnection db, IEnumerable<User> users)
         {
             var userIdsWithUserData = GetAllUserIdsWithUserData(db);
 
@@ -101,13 +101,12 @@ namespace Emby.Server.Implementations.Data
                     statement.TryBind("@UserId", user.Id);
                     statement.TryBind("@InternalUserId", user.InternalId);
 
-                    statement.MoveNext();
-                    statement.Reset();
+                    statement.ExecuteNonQuery();
                 }
             }
         }
 
-        private List<Guid> GetAllUserIdsWithUserData(IDatabaseConnection db)
+        private List<Guid> GetAllUserIdsWithUserData(SqliteConnection db)
         {
             var list = new List<Guid>();
 
@@ -117,7 +116,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     try
                     {
-                        list.Add(row[0].ReadGuidFromBlob());
+                        list.Add(row.GetGuid(0));
                     }
                     catch (Exception ex)
                     {
@@ -169,17 +168,14 @@ namespace Emby.Server.Implementations.Data
             cancellationToken.ThrowIfCancellationRequested();
 
             using (var connection = GetConnection())
+            using (var transaction = connection.BeginTransaction())
             {
-                connection.RunInTransaction(
-                    db =>
-                    {
-                        SaveUserData(db, internalUserId, key, userData);
-                    },
-                    TransactionMode);
+                SaveUserData(connection, internalUserId, key, userData);
+                transaction.Commit();
             }
         }
 
-        private static void SaveUserData(IDatabaseConnection db, long internalUserId, string key, UserItemData userData)
+        private static void SaveUserData(SqliteConnection db, long internalUserId, string key, UserItemData userData)
         {
             using (var statement = db.PrepareStatement("replace into UserDatas (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex)"))
             {
@@ -227,7 +223,7 @@ namespace Emby.Server.Implementations.Data
                     statement.TryBindNull("@SubtitleStreamIndex");
                 }
 
-                statement.MoveNext();
+                statement.ExecuteNonQuery();
             }
         }
 
@@ -239,16 +235,14 @@ namespace Emby.Server.Implementations.Data
             cancellationToken.ThrowIfCancellationRequested();
 
             using (var connection = GetConnection())
+            using (var transaction = connection.BeginTransaction())
             {
-                connection.RunInTransaction(
-                    db =>
-                    {
-                        foreach (var userItemData in userDataList)
-                        {
-                            SaveUserData(db, internalUserId, userItemData.Key, userItemData);
-                        }
-                    },
-                    TransactionMode);
+                foreach (var userItemData in userDataList)
+                {
+                    SaveUserData(connection, internalUserId, userItemData.Key, userItemData);
+                }
+
+                transaction.Commit();
             }
         }
 
@@ -272,7 +266,7 @@ namespace Emby.Server.Implementations.Data
 
             ArgumentException.ThrowIfNullOrEmpty(key);
 
-            using (var connection = GetConnection(true))
+            using (var connection = GetConnection())
             {
                 using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where key =@Key and userId=@UserId"))
                 {
@@ -336,7 +330,7 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="reader">The list of result set values.</param>
         /// <returns>The user item data.</returns>
-        private UserItemData ReadRow(IReadOnlyList<ResultSetValue> reader)
+        private UserItemData ReadRow(SqliteDataReader reader)
         {
             var userData = new UserItemData();
 
@@ -348,10 +342,10 @@ namespace Emby.Server.Implementations.Data
                 userData.Rating = rating;
             }
 
-            userData.Played = reader[3].ToBool();
-            userData.PlayCount = reader[4].ToInt();
-            userData.IsFavorite = reader[5].ToBool();
-            userData.PlaybackPositionTicks = reader[6].ToInt64();
+            userData.Played = reader.GetBoolean(3);
+            userData.PlayCount = reader.GetInt32(4);
+            userData.IsFavorite = reader.GetBoolean(5);
+            userData.PlaybackPositionTicks = reader.GetInt64(6);
 
             if (reader.TryReadDateTime(7, out var lastPlayedDate))
             {

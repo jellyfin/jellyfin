@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System;
@@ -41,9 +39,9 @@ namespace Emby.Dlna.PlayTo
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
 
+        private readonly SemaphoreSlim _sessionLock = new SemaphoreSlim(1, 1);
+        private readonly CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
         private bool _disposed;
-        private SemaphoreSlim _sessionLock = new SemaphoreSlim(1, 1);
-        private CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
 
         public PlayToManager(ILogger logger, ISessionManager sessionManager, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, IDeviceDiscovery deviceDiscovery, IHttpClientFactory httpClientFactory, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder)
         {
@@ -67,7 +65,7 @@ namespace Emby.Dlna.PlayTo
             _deviceDiscovery.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
         }
 
-        private async void OnDeviceDiscoveryDeviceDiscovered(object sender, GenericEventArgs<UpnpDeviceInfo> e)
+        private async void OnDeviceDiscoveryDeviceDiscovered(object? sender, GenericEventArgs<UpnpDeviceInfo> e)
         {
             if (_disposed)
             {
@@ -76,12 +74,12 @@ namespace Emby.Dlna.PlayTo
 
             var info = e.Argument;
 
-            if (!info.Headers.TryGetValue("USN", out string usn))
+            if (!info.Headers.TryGetValue("USN", out string? usn))
             {
                 usn = string.Empty;
             }
 
-            if (!info.Headers.TryGetValue("NT", out string nt))
+            if (!info.Headers.TryGetValue("NT", out string? nt))
             {
                 nt = string.Empty;
             }
@@ -161,7 +159,7 @@ namespace Emby.Dlna.PlayTo
             var uri = info.Location;
             _logger.LogDebug("Attempting to create PlayToController from location {0}", uri);
 
-            if (info.Headers.TryGetValue("USN", out string uuid))
+            if (info.Headers.TryGetValue("USN", out string? uuid))
             {
                 uuid = GetUuid(uuid);
             }
@@ -189,7 +187,7 @@ namespace Emby.Dlna.PlayTo
 
                 _sessionManager.UpdateDeviceName(sessionInfo.Id, deviceName);
 
-                string serverAddress = _appHost.GetSmartApiUrl(info.RemoteIpAddress);
+                string serverAddress = _appHost.GetSmartApiUrl(info.RemoteIPAddress);
 
                 controller = new PlayToController(
                     sessionInfo,

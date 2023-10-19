@@ -6,7 +6,7 @@ namespace MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 /// <summary>
 /// General command websocket message.
 /// </summary>
-public class GeneralCommandMessage : WebSocketMessage<GeneralCommand>, IOutboundWebSocketMessage
+public class GeneralCommandMessage : OutboundWebSocketMessage<GeneralCommand>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="GeneralCommandMessage"/> class.

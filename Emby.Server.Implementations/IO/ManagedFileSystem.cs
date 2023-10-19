@@ -15,29 +15,34 @@ namespace Emby.Server.Implementations.IO
     /// </summary>
     public class ManagedFileSystem : IFileSystem
     {
-        private readonly ILogger<ManagedFileSystem> _logger;
-
-        private readonly List<IShortcutHandler> _shortcutHandlers = new List<IShortcutHandler>();
-        private readonly string _tempPath;
         private static readonly bool _isEnvironmentCaseInsensitive = OperatingSystem.IsWindows();
+        private static readonly char[] _invalidPathCharacters =
+        {
+            '\"', '<', '>', '|', '\0',
+            (char)1, (char)2, (char)3, (char)4, (char)5, (char)6, (char)7, (char)8, (char)9, (char)10,
+            (char)11, (char)12, (char)13, (char)14, (char)15, (char)16, (char)17, (char)18, (char)19, (char)20,
+            (char)21, (char)22, (char)23, (char)24, (char)25, (char)26, (char)27, (char)28, (char)29, (char)30,
+            (char)31, ':', '*', '?', '\\', '/'
+        };
+
+        private readonly ILogger<ManagedFileSystem> _logger;
+        private readonly List<IShortcutHandler> _shortcutHandlers;
+        private readonly string _tempPath;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ManagedFileSystem"/> class.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> instance to use.</param>
         /// <param name="applicationPaths">The <see cref="IApplicationPaths"/> instance to use.</param>
+        /// <param name="shortcutHandlers">the <see cref="IShortcutHandler"/>'s to use.</param>
         public ManagedFileSystem(
             ILogger<ManagedFileSystem> logger,
-            IApplicationPaths applicationPaths)
+            IApplicationPaths applicationPaths,
+            IEnumerable<IShortcutHandler> shortcutHandlers)
         {
             _logger = logger;
             _tempPath = applicationPaths.TempDirectory;
-        }
-
-        /// <inheritdoc />
-        public virtual void AddShortcutHandler(IShortcutHandler handler)
-        {
-            _shortcutHandlers.Add(handler);
+            _shortcutHandlers = shortcutHandlers.ToList();
         }
 
         /// <summary>
@@ -86,7 +91,7 @@ namespace Emby.Server.Implementations.IO
             }
 
             // unc path
-            if (filePath.StartsWith("\\\\", StringComparison.Ordinal))
+            if (filePath.StartsWith(@"\\", StringComparison.Ordinal))
             {
                 return filePath;
             }
@@ -98,15 +103,17 @@ namespace Emby.Server.Implementations.IO
                 return filePath;
             }
 
+            var filePathSpan = filePath.AsSpan();
+
             // relative path
             if (firstChar == '\\')
             {
-                filePath = filePath.Substring(1);
+                filePathSpan = filePathSpan.Slice(1);
             }
 
             try
             {
-                return Path.GetFullPath(Path.Combine(folderPath, filePath));
+                return Path.GetFullPath(Path.Join(folderPath, filePathSpan));
             }
             catch (ArgumentException)
             {
@@ -275,8 +282,7 @@ namespace Emby.Server.Implementations.IO
         /// <exception cref="ArgumentNullException">The filename is null.</exception>
         public string GetValidFilename(string filename)
         {
-            var invalid = Path.GetInvalidFileNameChars();
-            var first = filename.IndexOfAny(invalid);
+            var first = filename.IndexOfAny(_invalidPathCharacters);
             if (first == -1)
             {
                 // Fast path for clean strings
@@ -285,7 +291,7 @@ namespace Emby.Server.Implementations.IO
 
             return string.Create(
                 filename.Length,
-                (filename, invalid, first),
+                (filename, _invalidPathCharacters, first),
                 (chars, state) =>
                 {
                     state.filename.AsSpan().CopyTo(chars);
@@ -293,7 +299,7 @@ namespace Emby.Server.Implementations.IO
                     chars[state.first++] = ' ';
 
                     var len = chars.Length;
-                    foreach (var c in state.invalid)
+                    foreach (var c in state._invalidPathCharacters)
                     {
                         for (int i = state.first; i < len; i++)
                         {
@@ -479,24 +485,10 @@ namespace Emby.Server.Implementations.IO
         }
 
         /// <inheritdoc />
-        public virtual string NormalizePath(string path)
-        {
-            ArgumentException.ThrowIfNullOrEmpty(path);
-
-            if (path.EndsWith(":\\", StringComparison.OrdinalIgnoreCase))
-            {
-                return path;
-            }
-
-            return Path.TrimEndingDirectorySeparator(path);
-        }
-
-        /// <inheritdoc />
         public virtual bool AreEqual(string path1, string path2)
         {
-            return string.Equals(
-                NormalizePath(path1),
-                NormalizePath(path2),
+            return Path.TrimEndingDirectorySeparator(path1).Equals(
+                Path.TrimEndingDirectorySeparator(path2),
                 _isEnvironmentCaseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
         }
 

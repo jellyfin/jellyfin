@@ -21,9 +21,10 @@ using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Networking.Configuration;
+using Jellyfin.Networking.Constants;
+using Jellyfin.Networking.Extensions;
 using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Authentication;
@@ -58,6 +59,7 @@ namespace Jellyfin.Server.Extensions
             serviceCollection.AddSingleton<IAuthorizationHandler, FirstTimeSetupHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, AnonymousLanAccessHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, SyncPlayAccessHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessOrRequiresElevationHandler>();
 
             return serviceCollection.AddAuthorizationCore(options =>
             {
@@ -99,7 +101,7 @@ namespace Jellyfin.Server.Extensions
         }
 
         /// <summary>
-        /// Extension method for adding the jellyfin API to the service collection.
+        /// Extension method for adding the Jellyfin API to the service collection.
         /// </summary>
         /// <param name="serviceCollection">The service collection.</param>
         /// <param name="pluginAssemblies">An IEnumerable containing all plugin assemblies with API controllers.</param>
@@ -260,7 +262,7 @@ namespace Jellyfin.Server.Extensions
         }
 
         /// <summary>
-        /// Sets up the proxy configuration based on the addresses in <paramref name="allowedProxies"/>.
+        /// Sets up the proxy configuration based on the addresses/subnets in <paramref name="allowedProxies"/>.
         /// </summary>
         /// <param name="config">The <see cref="NetworkConfiguration"/> containing the config settings.</param>
         /// <param name="allowedProxies">The string array to parse.</param>
@@ -269,36 +271,40 @@ namespace Jellyfin.Server.Extensions
         {
             for (var i = 0; i < allowedProxies.Length; i++)
             {
-                if (IPNetAddress.TryParse(allowedProxies[i], out var addr))
+                if (IPAddress.TryParse(allowedProxies[i], out var addr))
                 {
-                    AddIpAddress(config, options, addr.Address, addr.PrefixLength);
+                    AddIPAddress(config, options, addr, addr.AddressFamily == AddressFamily.InterNetwork ? Network.MinimumIPv4PrefixSize : Network.MinimumIPv6PrefixSize);
                 }
-                else if (IPHost.TryParse(allowedProxies[i], out var host))
+                else if (NetworkExtensions.TryParseToSubnet(allowedProxies[i], out var subnet))
                 {
-                    foreach (var address in host.GetAddresses())
+                    if (subnet is not null)
                     {
-                        AddIpAddress(config, options, address, address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);
+                        AddIPAddress(config, options, subnet.Prefix, subnet.PrefixLength);
+                    }
+                }
+                else if (NetworkExtensions.TryParseHost(allowedProxies[i], out var addresses, config.EnableIPv4, config.EnableIPv6))
+                {
+                    foreach (var address in addresses)
+                    {
+                        AddIPAddress(config, options, address, address.AddressFamily == AddressFamily.InterNetwork ? Network.MinimumIPv4PrefixSize : Network.MinimumIPv6PrefixSize);
                     }
                 }
             }
         }
 
-        private static void AddIpAddress(NetworkConfiguration config, ForwardedHeadersOptions options, IPAddress addr, int prefixLength)
+        private static void AddIPAddress(NetworkConfiguration config, ForwardedHeadersOptions options, IPAddress addr, int prefixLength)
         {
-            if ((!config.EnableIPV4 && addr.AddressFamily == AddressFamily.InterNetwork) || (!config.EnableIPV6 && addr.AddressFamily == AddressFamily.InterNetworkV6))
+            if (addr.IsIPv4MappedToIPv6)
+            {
+                addr = addr.MapToIPv4();
+            }
+
+            if ((!config.EnableIPv4 && addr.AddressFamily == AddressFamily.InterNetwork) || (!config.EnableIPv6 && addr.AddressFamily == AddressFamily.InterNetworkV6))
             {
                 return;
             }
 
-            // In order for dual-mode sockets to be used, IP6 has to be enabled in JF and an interface has to have an IP6 address.
-            if (addr.AddressFamily == AddressFamily.InterNetwork && config.EnableIPV6)
-            {
-                // If the server is using dual-mode sockets, IPv4 addresses are supplied in an IPv6 format.
-                // https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer?view=aspnetcore-5.0 .
-                addr = addr.MapToIPv6();
-            }
-
-            if (prefixLength == 32)
+            if (prefixLength == Network.MinimumIPv4PrefixSize)
             {
                 options.KnownProxies.Add(addr);
             }

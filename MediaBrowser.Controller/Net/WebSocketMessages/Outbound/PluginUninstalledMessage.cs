@@ -7,7 +7,7 @@ namespace MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 /// <summary>
 /// Plugin uninstalled message.
 /// </summary>
-public class PluginUninstalledMessage : WebSocketMessage<PluginInfo>, IOutboundWebSocketMessage
+public class PluginUninstalledMessage : OutboundWebSocketMessage<PluginInfo>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="PluginUninstalledMessage"/> class.

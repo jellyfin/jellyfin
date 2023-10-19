@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -11,7 +10,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Library;
-using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Extensions.Json.Converters;
 using MediaBrowser.Common;
@@ -30,7 +28,7 @@ namespace Emby.Server.Implementations.Plugins
     /// <summary>
     /// Defines the <see cref="PluginManager" />.
     /// </summary>
-    public class PluginManager : IPluginManager
+    public sealed class PluginManager : IPluginManager, IDisposable
     {
         private const string MetafileName = "meta.json";
 
@@ -188,15 +186,6 @@ namespace Emby.Server.Implementations.Plugins
                     _logger.LogInformation("Loaded assembly {Assembly} from {Path}", assembly.FullName, assembly.Location);
                     yield return assembly;
                 }
-            }
-        }
-
-        /// <inheritdoc />
-        public void UnloadAssemblies()
-        {
-            foreach (var assemblyLoadContext in _assemblyLoadContexts)
-            {
-                assemblyLoadContext.Unload();
             }
         }
 
@@ -397,11 +386,11 @@ namespace Emby.Server.Implementations.Plugins
                 var url = new Uri(packageInfo.ImageUrl);
                 imagePath = Path.Join(path, url.Segments[^1]);
 
-                await using var fileStream = AsyncFile.OpenWrite(imagePath);
-
+                var fileStream = AsyncFile.OpenWrite(imagePath);
+                Stream? downloadStream = null;
                 try
                 {
-                    await using var downloadStream = await HttpClientFactory
+                    downloadStream = await HttpClientFactory
                         .CreateClient(NamedClient.Default)
                         .GetStreamAsync(url)
                         .ConfigureAwait(false);
@@ -412,6 +401,14 @@ namespace Emby.Server.Implementations.Plugins
                 {
                     _logger.LogError(ex, "Failed to download image to path {Path} on disk.", imagePath);
                     imagePath = string.Empty;
+                }
+                finally
+                {
+                    await fileStream.DisposeAsync().ConfigureAwait(false);
+                    if (downloadStream is not null)
+                    {
+                        await downloadStream.DisposeAsync().ConfigureAwait(false);
+                    }
                 }
             }
 
@@ -432,13 +429,22 @@ namespace Emby.Server.Implementations.Plugins
                 ImagePath = imagePath
             };
 
-            if (!await ReconcileManifest(manifest, path))
+            if (!await ReconcileManifest(manifest, path).ConfigureAwait(false))
             {
                 // An error occurred during reconciliation and saving could be undesirable.
                 return false;
             }
 
             return SaveManifest(manifest, path);
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            foreach (var assemblyLoadContext in _assemblyLoadContexts)
+            {
+                assemblyLoadContext.Unload();
+            }
         }
 
         /// <summary>
@@ -460,7 +466,7 @@ namespace Emby.Server.Implementations.Plugins
                 }
 
                 using var metaStream = File.OpenRead(metafile);
-                var localManifest = await JsonSerializer.DeserializeAsync<PluginManifest>(metaStream, _jsonOptions);
+                var localManifest = await JsonSerializer.DeserializeAsync<PluginManifest>(metaStream, _jsonOptions).ConfigureAwait(false);
                 localManifest ??= new PluginManifest();
 
                 if (!Equals(localManifest.Id, manifest.Id))
@@ -677,7 +683,7 @@ namespace Emby.Server.Implementations.Plugins
                 }
                 catch (JsonException ex)
                 {
-                    _logger.LogError(ex, "Error deserializing {Json}.", Encoding.UTF8.GetString(data!));
+                    _logger.LogError(ex, "Error deserializing {Json}.", Encoding.UTF8.GetString(data));
                 }
 
                 if (manifest is not null)

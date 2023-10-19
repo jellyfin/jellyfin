@@ -52,6 +52,8 @@
     <Rule Id="SA1204" Action="None" />
     <!-- disable warning SA1309: Fields must not begin with an underscore -->
     <Rule Id="SA1309" Action="None" />
+    <!-- disable warning SA1311: Static readonly fields should begin with upper-case letter -->
+    <Rule Id="SA1311" Action="None" />
     <!-- disable warning SA1413: Use trailing comma in multi-line initializers -->
     <Rule Id="SA1413" Action="None" />
     <!-- disable warning SA1512: Single-line comments must not be followed by blank line -->
@@ -60,6 +62,8 @@
     <Rule Id="SA1515" Action="None" />
     <!-- disable warning SA1600: Elements should be documented -->
     <Rule Id="SA1600" Action="None" />
+    <!-- disable warning SA1601: Partial elements should be documented -->
+    <Rule Id="SA1601" Action="None" />
     <!-- disable warning SA1602: Enumeration items should be documented -->
     <Rule Id="SA1602" Action="None" />
     <!-- disable warning SA1633: The file header is missing or not located at the top of the file -->
@@ -87,6 +91,8 @@
     <Rule Id="CA1727" Action="Error" />
     <!-- error on CA1813: Avoid unsealed attributes -->
     <Rule Id="CA1813" Action="Error" />
+    <!-- error on CA1834: Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string -->
+    <Rule Id="CA1834" Action="Error" />
     <!-- error on CA1843: Do not use 'WaitAll' with a single task -->
     <Rule Id="CA1843" Action="Error" />
     <!-- error on CA1845: Use span-based 'string.Concat' -->
@@ -166,5 +172,19 @@
   <Rules AnalyzerId="Microsoft.CodeAnalysis.BannedApiAnalyzers" RuleNamespace="Microsoft.Design">
     <!-- error on RS0030: Do not used banned APIs -->
     <Rule Id="RS0030" Action="Error" />
+  </Rules>
+
+  <Rules AnalyzerId="IDisposableAnalyzers" RuleNamespace="IDisposableAnalyzers.Correctness">
+    <!-- disable warning IDISP001: Dispose created -->
+    <Rule Id="IDISP001" Action="Info" />
+    <!-- TODO: Enable when false positives are fixed -->
+    <!-- disable warning IDISP003: Dispose previous before re-assigning -->
+    <Rule Id="IDISP003" Action="Info" />
+    <!-- disable warning IDISP004: Don't ignore created IDisposable -->
+    <Rule Id="IDISP004" Action="Info" />
+    <!-- disable warning IDISP007: Don't dispose injected -->
+    <Rule Id="IDISP007" Action="Info" />
+    <!-- disable warning IDISP008: Don't assign member with injected and created disposables -->
+    <Rule Id="IDISP008" Action="Info" />
   </Rules>
 </RuleSet>

@@ -39,7 +39,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
     /// <summary>
     /// Class MediaEncoder.
     /// </summary>
-    public class MediaEncoder : IMediaEncoder, IDisposable
+    public partial class MediaEncoder : IMediaEncoder, IDisposable
     {
         /// <summary>
         /// The default SDR image extraction timeout in milliseconds.
@@ -79,12 +79,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private bool _isVaapiDeviceAmd = false;
         private bool _isVaapiDeviceInteliHD = false;
         private bool _isVaapiDeviceInteli965 = false;
-        private bool _isVaapiDeviceSupportVulkanFmtModifier = false;
+        private bool _isVaapiDeviceSupportVulkanDrmInterop = false;
 
-        private static string[] _vulkanFmtModifierExts =
+        private static string[] _vulkanExternalMemoryDmaBufExts =
         {
-            "VK_KHR_sampler_ycbcr_conversion",
-            "VK_EXT_image_drm_format_modifier",
             "VK_KHR_external_memory_fd",
             "VK_EXT_external_memory_dma_buf",
             "VK_KHR_external_semaphore_fd",
@@ -143,7 +141,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public bool IsVaapiDeviceInteli965 => _isVaapiDeviceInteli965;
 
         /// <inheritdoc />
-        public bool IsVaapiDeviceSupportVulkanFmtModifier => _isVaapiDeviceSupportVulkanFmtModifier;
+        public bool IsVaapiDeviceSupportVulkanDrmInterop => _isVaapiDeviceSupportVulkanDrmInterop;
+
+        [GeneratedRegex(@"[^\/\\]+?(\.[^\/\\\n.]+)?$")]
+        private static partial Regex FfprobePathRegex();
 
         /// <summary>
         /// Run at startup or if the user removes a Custom path from transcode page.
@@ -179,7 +180,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (_ffmpegPath is not null)
             {
                 // Determine a probe path from the mpeg path
-                _ffprobePath = Regex.Replace(_ffmpegPath, @"[^\/\\]+?(\.[^\/\\\n.]+)?$", @"ffprobe$1");
+                _ffprobePath = FfprobePathRegex().Replace(_ffmpegPath, "ffprobe$1");
 
                 // Interrogate to understand what coders are supported
                 var validator = new EncoderValidator(_logger, _ffmpegPath);
@@ -204,7 +205,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     _isVaapiDeviceAmd = validator.CheckVaapiDeviceByDriverName("Mesa Gallium driver", options.VaapiDevice);
                     _isVaapiDeviceInteliHD = validator.CheckVaapiDeviceByDriverName("Intel iHD driver", options.VaapiDevice);
                     _isVaapiDeviceInteli965 = validator.CheckVaapiDeviceByDriverName("Intel i965 driver", options.VaapiDevice);
-                    _isVaapiDeviceSupportVulkanFmtModifier = validator.CheckVulkanDrmDeviceByExtensionName(options.VaapiDevice, _vulkanFmtModifierExts);
+                    _isVaapiDeviceSupportVulkanDrmInterop = validator.CheckVulkanDrmDeviceByExtensionName(options.VaapiDevice, _vulkanExternalMemoryDmaBufExts);
 
                     if (_isVaapiDeviceAmd)
                     {
@@ -219,9 +220,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         _logger.LogInformation("VAAPI device {RenderNodePath} is Intel GPU (i965)", options.VaapiDevice);
                     }
 
-                    if (_isVaapiDeviceSupportVulkanFmtModifier)
+                    if (_isVaapiDeviceSupportVulkanDrmInterop)
                     {
-                        _logger.LogInformation("VAAPI device {RenderNodePath} supports Vulkan DRM format modifier", options.VaapiDevice);
+                        _logger.LogInformation("VAAPI device {RenderNodePath} supports Vulkan DRM interop", options.VaapiDevice);
                     }
                 }
             }
@@ -318,10 +319,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 var files = _fileSystem.GetFilePaths(path, recursive);
 
-                var excludeExtensions = new[] { ".c" };
-
-                return files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), filename, StringComparison.OrdinalIgnoreCase)
-                                                    && !excludeExtensions.Contains(Path.GetExtension(i) ?? string.Empty));
+                return files.FirstOrDefault(i => Path.GetFileNameWithoutExtension(i.AsSpan()).Equals(filename, StringComparison.OrdinalIgnoreCase)
+                                                    && !Path.GetExtension(i.AsSpan()).Equals(".c", StringComparison.OrdinalIgnoreCase));
             }
             catch (Exception)
             {
@@ -419,16 +418,28 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public Task<MediaInfo> GetMediaInfo(MediaInfoRequest request, CancellationToken cancellationToken)
         {
             var extractChapters = request.MediaType == DlnaProfileType.Video && request.ExtractChapters;
-            string analyzeDuration = string.Empty;
-            string ffmpegAnalyzeDuration = _config.GetFFmpegAnalyzeDuration() ?? string.Empty;
+            var analyzeDuration = string.Empty;
+            var ffmpegAnalyzeDuration = _config.GetFFmpegAnalyzeDuration() ?? string.Empty;
+            var ffmpegProbeSize = _config.GetFFmpegProbeSize() ?? string.Empty;
+            var extraArgs = string.Empty;
 
             if (request.MediaSource.AnalyzeDurationMs > 0)
             {
-                analyzeDuration = "-analyzeduration " + (request.MediaSource.AnalyzeDurationMs * 1000).ToString();
+                analyzeDuration = "-analyzeduration " + (request.MediaSource.AnalyzeDurationMs * 1000);
             }
             else if (!string.IsNullOrEmpty(ffmpegAnalyzeDuration))
             {
                 analyzeDuration = "-analyzeduration " + ffmpegAnalyzeDuration;
+            }
+
+            if (!string.IsNullOrEmpty(analyzeDuration))
+            {
+                extraArgs = analyzeDuration;
+            }
+
+            if (!string.IsNullOrEmpty(ffmpegProbeSize))
+            {
+                extraArgs += " -probesize " + ffmpegProbeSize;
             }
 
             return GetMediaInfoInternal(
@@ -436,7 +447,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 request.MediaSource.Path,
                 request.MediaSource.Protocol,
                 extractChapters,
-                analyzeDuration,
+                extraArgs,
                 request.MediaType == DlnaProfileType.Audio,
                 request.MediaSource.VideoType,
                 cancellationToken);
@@ -513,7 +524,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             using (var processWrapper = new ProcessWrapper(process, this))
             {
                 StartProcess(processWrapper);
-                await process.StandardOutput.BaseStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+                using var reader = process.StandardOutput;
+                await reader.BaseStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
                 memoryStream.Seek(0, SeekOrigin.Begin);
                 InternalMediaInfoResult result;
                 try
@@ -614,9 +626,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private string GetImageResolutionParameter()
         {
-            string imageResolutionParameter;
-
-            imageResolutionParameter = _serverConfig.Configuration.ChapterImageResolution switch
+            var imageResolutionParameter = _serverConfig.Configuration.ChapterImageResolution switch
             {
                 ImageResolution.P144 => "256x144",
                 ImageResolution.P240 => "426x240",
@@ -641,15 +651,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             ArgumentException.ThrowIfNullOrEmpty(inputPath);
 
-            var outputExtension = targetFormat switch
-            {
-                ImageFormat.Bmp => ".bmp",
-                ImageFormat.Gif => ".gif",
-                ImageFormat.Jpg => ".jpg",
-                ImageFormat.Png => ".png",
-                ImageFormat.Webp => ".webp",
-                _ => ".jpg"
-            };
+            var outputExtension = targetFormat?.GetExtension() ?? ".jpg";
 
             var tempExtractPath = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid() + outputExtension);
             Directory.CreateDirectory(Path.GetDirectoryName(tempExtractPath));
@@ -669,13 +671,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var scaler = threedFormat switch
             {
                 // hsbs crop width in half,scale to correct size, set the display aspect,crop out any black bars we may have made. Work out the correct height based on the display aspect it will maintain the aspect where -1 in this case (3d) may not.
-                Video3DFormat.HalfSideBySide => "crop=iw/2:ih:0:0,scale=(iw*2):ih,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1",
+                Video3DFormat.HalfSideBySide => @"crop=iw/2:ih:0:0,scale=(iw*2):ih,setdar=dar=a,crop=min(iw\,ih*dar):min(ih\,iw/dar):(iw-min(iw\,iw*sar))/2:(ih - min (ih\,ih/sar))/2,setsar=sar=1",
                 // fsbs crop width in half,set the display aspect,crop out any black bars we may have made
-                Video3DFormat.FullSideBySide => "crop=iw/2:ih:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1",
+                Video3DFormat.FullSideBySide => @"crop=iw/2:ih:0:0,setdar=dar=a,crop=min(iw\,ih*dar):min(ih\,iw/dar):(iw-min(iw\,iw*sar))/2:(ih - min (ih\,ih/sar))/2,setsar=sar=1",
                 // htab crop height in half,scale to correct size, set the display aspect,crop out any black bars we may have made
-                Video3DFormat.HalfTopAndBottom => "crop=iw:ih/2:0:0,scale=(iw*2):ih),setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1",
+                Video3DFormat.HalfTopAndBottom => @"crop=iw:ih/2:0:0,scale=(iw*2):ih),setdar=dar=a,crop=min(iw\,ih*dar):min(ih\,iw/dar):(iw-min(iw\,iw*sar))/2:(ih - min (ih\,ih/sar))/2,setsar=sar=1",
                 // ftab crop height in half, set the display aspect,crop out any black bars we may have made
-                Video3DFormat.FullTopAndBottom => "crop=iw:ih/2:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1",
+                Video3DFormat.FullTopAndBottom => @"crop=iw:ih/2:0:0,setdar=dar=a,crop=min(iw\,ih*dar):min(ih\,iw/dar):(iw-min(iw\,iw*sar))/2:(ih - min (ih\,ih/sar))/2,setsar=sar=1",
                 _ => "scale=trunc(iw*sar):ih"
             };
 
@@ -751,11 +753,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         timeoutMs = enableHdrExtraction ? DefaultHdrImageExtractionTimeout : DefaultSdrImageExtractionTimeout;
                     }
 
-                    ranToCompletion = await process.WaitForExitAsync(TimeSpan.FromMilliseconds(timeoutMs)).ConfigureAwait(false);
-
-                    if (!ranToCompletion)
+                    try
                     {
-                        StopProcess(processWrapper, 1000);
+                        await process.WaitForExitAsync(TimeSpan.FromMilliseconds(timeoutMs)).ConfigureAwait(false);
+                        ranToCompletion = true;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        process.Kill(true);
+                        ranToCompletion = false;
                     }
                 }
                 finally
@@ -1024,7 +1030,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // https://ffmpeg.org/ffmpeg-filters.html#Notes-on-filtergraph-escaping
             // We need to double escape
 
-            return path.Replace('\\', '/').Replace(":", "\\:", StringComparison.Ordinal).Replace("'", "'\\\\\\''", StringComparison.Ordinal);
+            return path.Replace('\\', '/').Replace(":", "\\:", StringComparison.Ordinal).Replace("'", @"'\\\''", StringComparison.Ordinal);
         }
 
         /// <inheritdoc />
@@ -1167,7 +1173,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return true;
         }
 
-        private class ProcessWrapper : IDisposable
+        private sealed class ProcessWrapper : IDisposable
         {
             private readonly MediaEncoder _mediaEncoder;
 
@@ -1210,13 +1216,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     _mediaEncoder._runningProcesses.Remove(this);
                 }
 
-                try
-                {
-                    process.Dispose();
-                }
-                catch
-                {
-                }
+                process.Dispose();
             }
 
             public void Dispose()

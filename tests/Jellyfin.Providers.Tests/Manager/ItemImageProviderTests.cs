@@ -25,9 +25,12 @@ using Xunit;
 
 namespace Jellyfin.Providers.Tests.Manager
 {
-    public class ItemImageProviderTests
+    public partial class ItemImageProviderTests
     {
         private const string TestDataImagePath = "Test Data/Images/blank{0}.jpg";
+
+        [GeneratedRegex("[0-9]+")]
+        private static partial Regex NumbersRegex();
 
         [Fact]
         public void ValidateImages_PhotoEmptyProviders_NoChange()
@@ -349,11 +352,11 @@ namespace Jellyfin.Providers.Tests.Manager
             {
                 if (forceRefresh)
                 {
-                    Assert.Matches(@"image url [0-9]", image.Path);
+                    Assert.Matches("image url [0-9]", image.Path);
                 }
                 else
                 {
-                    Assert.DoesNotMatch(@"image url [0-9]", image.Path);
+                    Assert.DoesNotMatch("image url [0-9]", image.Path);
                 }
             }
         }
@@ -463,7 +466,7 @@ namespace Jellyfin.Providers.Tests.Manager
             // images from the provider manager are sorted by preference (earlier images are higher priority) so we can verify that low url numbers are chosen
             foreach (var image in actualImages)
             {
-                var index = int.Parse(Regex.Match(image.Path, @"[0-9]+").Value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                var index = int.Parse(NumbersRegex().Match(image.Path).ValueSpan, NumberStyles.Integer, CultureInfo.InvariantCulture);
                 Assert.True(index < imageCount);
             }
         }

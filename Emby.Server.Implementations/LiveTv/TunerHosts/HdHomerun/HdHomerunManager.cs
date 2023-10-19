@@ -44,14 +44,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     StopStreaming(socket).GetAwaiter().GetResult();
                 }
             }
-
-            GC.SuppressFinalize(this);
         }
 
-        public async Task<bool> CheckTunerAvailability(IPAddress remoteIp, int tuner, CancellationToken cancellationToken)
+        public async Task<bool> CheckTunerAvailability(IPAddress remoteIP, int tuner, CancellationToken cancellationToken)
         {
             using var client = new TcpClient();
-            await client.ConnectAsync(remoteIp, HdHomeRunPort, cancellationToken).ConfigureAwait(false);
+            await client.ConnectAsync(remoteIP, HdHomeRunPort, cancellationToken).ConfigureAwait(false);
 
             using var stream = client.GetStream();
             return await CheckTunerAvailability(stream, tuner, cancellationToken).ConfigureAwait(false);
@@ -75,9 +73,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
         }
 
-        public async Task StartStreaming(IPAddress remoteIp, IPAddress localIp, int localPort, IHdHomerunChannelCommands commands, int numTuners, CancellationToken cancellationToken)
+        public async Task StartStreaming(IPAddress remoteIP, IPAddress localIP, int localPort, IHdHomerunChannelCommands commands, int numTuners, CancellationToken cancellationToken)
         {
-            _remoteEndPoint = new IPEndPoint(remoteIp, HdHomeRunPort);
+            _remoteEndPoint = new IPEndPoint(remoteIP, HdHomeRunPort);
 
             _tcpClient = new TcpClient();
             await _tcpClient.ConnectAsync(_remoteEndPoint, cancellationToken).ConfigureAwait(false);
@@ -125,7 +123,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         }
                     }
 
-                    var targetValue = string.Format(CultureInfo.InvariantCulture, "rtp://{0}:{1}", localIp, localPort);
+                    var targetValue = string.Format(CultureInfo.InvariantCulture, "rtp://{0}:{1}", localIP, localPort);
                     var targetMsgLen = WriteSetMessage(buffer, i, "target", targetValue, lockKeyValue);
 
                     await stream.WriteAsync(buffer.AsMemory(0, targetMsgLen), cancellationToken).ConfigureAwait(false);

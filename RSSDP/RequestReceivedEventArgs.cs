@@ -13,16 +13,16 @@ namespace Rssdp.Infrastructure
 
         private readonly IPEndPoint _ReceivedFrom;
 
-        public IPAddress LocalIpAddress { get; private set; }
+        public IPAddress LocalIPAddress { get; private set; }
 
         /// <summary>
         /// Full constructor.
         /// </summary>
-        public RequestReceivedEventArgs(HttpRequestMessage message, IPEndPoint receivedFrom, IPAddress localIpAddress)
+        public RequestReceivedEventArgs(HttpRequestMessage message, IPEndPoint receivedFrom, IPAddress localIPAddress)
         {
             _Message = message;
             _ReceivedFrom = receivedFrom;
-            LocalIpAddress = localIpAddress;
+            LocalIPAddress = localIPAddress;
         }
 
         /// <summary>
