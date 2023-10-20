@@ -1851,7 +1851,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 return;
             }
 
-            await using (var stream = new FileStream(nfoPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            var stream = new FileStream(nfoPath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+            await using (stream.ConfigureAwait(false))
             {
                 var settings = new XmlWriterSettings
                 {
@@ -1860,7 +1861,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     Async = true
                 };
 
-                await using (var writer = XmlWriter.Create(stream, settings))
+                var writer = XmlWriter.Create(stream, settings);
+                await using (writer.ConfigureAwait(false))
                 {
                     await writer.WriteStartDocumentAsync(true).ConfigureAwait(false);
                     await writer.WriteStartElementAsync(null, "tvshow", null).ConfigureAwait(false);
@@ -1914,7 +1916,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 return;
             }
 
-            await using (var stream = new FileStream(nfoPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            var stream = new FileStream(nfoPath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+            await using (stream.ConfigureAwait(false))
             {
                 var settings = new XmlWriterSettings
                 {
@@ -1927,7 +1930,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 var isSeriesEpisode = timer.IsProgramSeries;
 
-                await using (var writer = XmlWriter.Create(stream, settings))
+                var writer = XmlWriter.Create(stream, settings);
+                await using (writer.ConfigureAwait(false))
                 {
                     await writer.WriteStartDocumentAsync(true).ConfigureAwait(false);
 
@@ -1965,7 +1969,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     }
                     else
                     {
-                        await writer.WriteStartElementAsync(null, "movie", null);
+                        await writer.WriteStartElementAsync(null, "movie", null).ConfigureAwait(false);
 
                         if (!string.IsNullOrWhiteSpace(item.Name))
                         {

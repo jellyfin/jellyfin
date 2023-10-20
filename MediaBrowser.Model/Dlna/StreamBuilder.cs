@@ -1313,7 +1313,7 @@ namespace MediaBrowser.Model.Dlna
             var audioFailureConditions = GetProfileConditionsForVideoAudio(profile.CodecProfiles, container, audioStream.Codec, audioStream.Channels, audioStream.BitRate, audioStream.SampleRate, audioStream.BitDepth, audioStream.Profile, mediaSource.IsSecondaryAudio(audioStream));
 
             var audioStreamFailureReasons = AggregateFailureConditions(mediaSource, profile, "VideoAudioCodecProfile", audioFailureConditions);
-            if (audioStream?.IsExternal == true)
+            if (audioStream.IsExternal == true)
             {
                 audioStreamFailureReasons |= TranscodeReason.AudioIsExternal;
             }

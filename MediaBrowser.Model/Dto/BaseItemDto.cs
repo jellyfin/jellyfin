@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
@@ -567,6 +568,12 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The chapters.</value>
         public List<ChapterInfo> Chapters { get; set; }
+
+        /// <summary>
+        /// Gets or sets the trickplay manifest.
+        /// </summary>
+        /// <value>The trickplay manifest.</value>
+        public Dictionary<string, Dictionary<int, TrickplayInfo>> Trickplay { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the location.

@@ -1,12 +1,15 @@
-#pragma warning disable CS1591
-
 using System;
+using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using MediaBrowser.Model.Net;
 
 namespace Emby.Server.Implementations.Net
 {
+    /// <summary>
+    /// Factory class to create different kinds of sockets.
+    /// </summary>
     public class SocketFactory : ISocketFactory
     {
         /// <inheritdoc />
@@ -29,7 +32,7 @@ namespace Emby.Server.Implementations.Net
             }
             catch
             {
-                socket?.Dispose();
+                socket.Dispose();
 
                 throw;
             }
@@ -38,7 +41,8 @@ namespace Emby.Server.Implementations.Net
         /// <inheritdoc />
         public Socket CreateSsdpUdpSocket(IPData bindInterface, int localPort)
         {
-            ArgumentNullException.ThrowIfNull(bindInterface.Address);
+            var interfaceAddress = bindInterface.Address;
+            ArgumentNullException.ThrowIfNull(interfaceAddress);
 
             if (localPort < 0)
             {
@@ -49,13 +53,13 @@ namespace Emby.Server.Implementations.Net
             try
             {
                 socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                socket.Bind(new IPEndPoint(bindInterface.Address, localPort));
+                socket.Bind(new IPEndPoint(interfaceAddress, localPort));
 
                 return socket;
             }
             catch
             {
-                socket?.Dispose();
+                socket.Dispose();
 
                 throw;
             }
@@ -82,22 +86,31 @@ namespace Emby.Server.Implementations.Net
 
             try
             {
-                var interfaceIndex = bindInterface.Index;
-                var interfaceIndexSwapped = (int)IPAddress.HostToNetworkOrder(interfaceIndex);
-
                 socket.MulticastLoopback = false;
                 socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                 socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.PacketInformation, true);
                 socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, multicastTimeToLive);
-                socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastInterface, interfaceIndexSwapped);
-                socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(multicastAddress, interfaceIndex));
-                socket.Bind(new IPEndPoint(multicastAddress, localPort));
+
+                if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+                {
+                    socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(multicastAddress));
+                    socket.Bind(new IPEndPoint(multicastAddress, localPort));
+                }
+                else
+                {
+                    // Only create socket if interface supports multicast
+                    var interfaceIndex = bindInterface.Index;
+                    var interfaceIndexSwapped = IPAddress.HostToNetworkOrder(interfaceIndex);
+
+                    socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(multicastAddress, interfaceIndex));
+                    socket.Bind(new IPEndPoint(bindIPAddress, localPort));
+                }
 
                 return socket;
             }
             catch
             {
-                socket?.Dispose();
+                socket.Dispose();
 
                 throw;
             }

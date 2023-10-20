@@ -598,7 +598,7 @@ namespace MediaBrowser.Controller.Entities
 
             for (var i = 0; i < childrenCount; i++)
             {
-                await actionBlock.SendAsync(i).ConfigureAwait(false);
+                await actionBlock.SendAsync(i, cancellationToken).ConfigureAwait(false);
             }
 
             actionBlock.Complete();

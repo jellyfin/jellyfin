@@ -49,14 +49,13 @@ namespace Jellyfin.Server.Implementations.Security
         /// <summary>
         /// Gets the authorization.
         /// </summary>
-        /// <param name="httpReq">The HTTP req.</param>
+        /// <param name="httpContext">The HTTP context.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        private async Task<AuthorizationInfo> GetAuthorization(HttpContext httpReq)
+        private async Task<AuthorizationInfo> GetAuthorization(HttpContext httpContext)
         {
-            var auth = GetAuthorizationDictionary(httpReq);
-            var authInfo = await GetAuthorizationInfoFromDictionary(auth, httpReq.Request.Headers, httpReq.Request.Query).ConfigureAwait(false);
+            var authInfo = await GetAuthorizationInfo(httpContext.Request).ConfigureAwait(false);
 
-            httpReq.Request.HttpContext.Items["AuthorizationInfo"] = authInfo;
+            httpContext.Request.HttpContext.Items["AuthorizationInfo"] = authInfo;
             return authInfo;
         }
 
@@ -80,7 +79,6 @@ namespace Jellyfin.Server.Implementations.Security
                 auth.TryGetValue("Token", out token);
             }
 
-#pragma warning disable CA1508 // string.IsNullOrEmpty(token) is always false.
             if (string.IsNullOrEmpty(token))
             {
                 token = headers["X-Emby-Token"];
@@ -118,7 +116,6 @@ namespace Jellyfin.Server.Implementations.Security
                 // Request doesn't contain a token.
                 return authInfo;
             }
-#pragma warning restore CA1508
 
             authInfo.HasToken = true;
             var dbContext = await _jellyfinDbProvider.CreateDbContextAsync().ConfigureAwait(false);
@@ -219,24 +216,7 @@ namespace Jellyfin.Server.Implementations.Security
         /// <summary>
         /// Gets the auth.
         /// </summary>
-        /// <param name="httpReq">The HTTP req.</param>
-        /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        private static Dictionary<string, string>? GetAuthorizationDictionary(HttpContext httpReq)
-        {
-            var auth = httpReq.Request.Headers["X-Emby-Authorization"];
-
-            if (string.IsNullOrEmpty(auth))
-            {
-                auth = httpReq.Request.Headers[HeaderNames.Authorization];
-            }
-
-            return auth.Count > 0 ? GetAuthorization(auth[0]) : null;
-        }
-
-        /// <summary>
-        /// Gets the auth.
-        /// </summary>
-        /// <param name="httpReq">The HTTP req.</param>
+        /// <param name="httpReq">The HTTP request.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
         private static Dictionary<string, string>? GetAuthorizationDictionary(HttpRequest httpReq)
         {

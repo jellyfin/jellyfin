@@ -119,8 +119,8 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
         [InlineData("C:\\some.dll")] // Windows root path.
         [InlineData("test.txt")] // Not a DLL
         [InlineData(".././.././../some.dll")] // Traversal with current and parent
-        [InlineData("..\\.\\..\\.\\..\\some.dll")] // Windows traversal with current and parent
-        [InlineData("\\\\network\\resource.dll")] // UNC Path
+        [InlineData(@"..\.\..\.\..\some.dll")] // Windows traversal with current and parent
+        [InlineData(@"\\network\resource.dll")] // UNC Path
         [InlineData("https://jellyfin.org/some.dll")] // URL
         [InlineData("~/some.dll")] // Tilde poses a shell expansion risk, but is a valid path character.
         public void Constructor_DiscoversUnsafePluginAssembly_Status_Malfunctioned(string unsafePath)
@@ -191,13 +191,13 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
             };
 
             var metafilePath = Path.Combine(_pluginPath, "meta.json");
-            File.WriteAllText(metafilePath, JsonSerializer.Serialize(partial, _options));
+            await File.WriteAllTextAsync(metafilePath, JsonSerializer.Serialize(partial, _options));
 
             var pluginManager = new PluginManager(new NullLogger<PluginManager>(), null!, null!, _tempPath, new Version(1, 0));
 
             await pluginManager.PopulateManifest(packageInfo, new Version(1, 0), _pluginPath, PluginStatus.Active);
 
-            var resultBytes = File.ReadAllBytes(metafilePath);
+            var resultBytes = await File.ReadAllBytesAsync(metafilePath);
             var result = JsonSerializer.Deserialize<PluginManifest>(resultBytes, _options);
 
             Assert.NotNull(result);
@@ -231,7 +231,7 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
             await pluginManager.PopulateManifest(packageInfo, new Version(1, 0), _pluginPath, PluginStatus.Active);
 
             var metafilePath = Path.Combine(_pluginPath, "meta.json");
-            var resultBytes = File.ReadAllBytes(metafilePath);
+            var resultBytes = await File.ReadAllBytesAsync(metafilePath);
             var result = JsonSerializer.Deserialize<PluginManifest>(resultBytes, _options);
 
             Assert.NotNull(result);
@@ -251,13 +251,13 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
             };
 
             var metafilePath = Path.Combine(_pluginPath, "meta.json");
-            File.WriteAllText(metafilePath, JsonSerializer.Serialize(partial, _options));
+            await File.WriteAllTextAsync(metafilePath, JsonSerializer.Serialize(partial, _options));
 
             var pluginManager = new PluginManager(new NullLogger<PluginManager>(), null!, null!, _tempPath, new Version(1, 0));
 
             await pluginManager.PopulateManifest(packageInfo, new Version(1, 0), _pluginPath, PluginStatus.Active);
 
-            var resultBytes = File.ReadAllBytes(metafilePath);
+            var resultBytes = await File.ReadAllBytesAsync(metafilePath);
             var result = JsonSerializer.Deserialize<PluginManifest>(resultBytes, _options);
 
             Assert.NotNull(result);
@@ -277,13 +277,13 @@ namespace Jellyfin.Server.Implementations.Tests.Plugins
             };
 
             var metafilePath = Path.Combine(_pluginPath, "meta.json");
-            File.WriteAllText(metafilePath, JsonSerializer.Serialize(partial, _options));
+            await File.WriteAllTextAsync(metafilePath, JsonSerializer.Serialize(partial, _options));
 
             var pluginManager = new PluginManager(new NullLogger<PluginManager>(), null!, null!, _tempPath, new Version(1, 0));
 
             await pluginManager.PopulateManifest(packageInfo, new Version(1, 0), _pluginPath, PluginStatus.Active);
 
-            var resultBytes = File.ReadAllBytes(metafilePath);
+            var resultBytes = await File.ReadAllBytesAsync(metafilePath);
             var result = JsonSerializer.Deserialize<PluginManifest>(resultBytes, _options);
 
             Assert.NotNull(result);

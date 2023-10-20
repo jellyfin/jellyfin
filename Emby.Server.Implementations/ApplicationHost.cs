@@ -13,9 +13,7 @@ using System.Net;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Emby.Dlna;
 using Emby.Dlna.Main;
-using Emby.Dlna.Ssdp;
 using Emby.Naming.Common;
 using Emby.Photos;
 using Emby.Server.Implementations.Channels;
@@ -58,7 +56,6 @@ using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.ClientEvent;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -82,7 +79,6 @@ using MediaBrowser.LocalMetadata.Savers;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.MediaEncoding.Subtitles;
 using MediaBrowser.Model.Cryptography;
-using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
@@ -101,7 +97,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Prometheus.DotNetRuntime;
 using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
@@ -133,7 +128,7 @@ namespace Emby.Server.Implementations
         /// <value>All concrete types.</value>
         private Type[] _allConcreteTypes;
 
-        private bool _disposed = false;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost"/> class.
@@ -184,26 +179,16 @@ namespace Emby.Server.Implementations
 
         public bool CoreStartupHasCompleted { get; private set; }
 
-        public virtual bool CanLaunchWebBrowser => Environment.UserInteractive
-            && !_startupOptions.IsService
-            && (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS());
-
         /// <summary>
         /// Gets the <see cref="INetworkManager"/> singleton instance.
         /// </summary>
         public INetworkManager NetManager { get; private set; }
 
-        /// <summary>
-        /// Gets a value indicating whether this instance has changes that require the entire application to restart.
-        /// </summary>
-        /// <value><c>true</c> if this instance has pending application restart; otherwise, <c>false</c>.</value>
+        /// <inheritdoc />
         public bool HasPendingRestart { get; private set; }
 
         /// <inheritdoc />
-        public bool IsShuttingDown { get; private set; }
-
-        /// <inheritdoc />
-        public bool ShouldRestart { get; private set; }
+        public bool ShouldRestart { get; set; }
 
         /// <summary>
         /// Gets the logger.
@@ -461,7 +446,7 @@ namespace Emby.Server.Implementations
 
             ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
 
-            NetManager = new NetworkManager(ConfigurationManager, LoggerFactory.CreateLogger<NetworkManager>());
+            NetManager = new NetworkManager(ConfigurationManager, _startupConfig, LoggerFactory.CreateLogger<NetworkManager>());
 
             // Initialize runtime stat collection
             if (ConfigurationManager.Configuration.EnableMetrics)
@@ -506,6 +491,8 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IFileSystem, ManagedFileSystem>();
             serviceCollection.AddSingleton<IShortcutHandler, MbLinkShortcutHandler>();
+
+            serviceCollection.AddScoped<ISystemManager, SystemManager>();
 
             serviceCollection.AddSingleton<TmdbClientManager>();
 
@@ -572,8 +559,6 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<ISessionManager, SessionManager>();
 
-            serviceCollection.AddSingleton<IDlnaManager, DlnaManager>();
-
             serviceCollection.AddSingleton<ICollectionManager, CollectionManager>();
 
             serviceCollection.AddSingleton<IPlaylistManager, PlaylistManager>();
@@ -584,8 +569,6 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<ILiveTvManager, LiveTvManager>();
 
             serviceCollection.AddSingleton<IUserViewManager, UserViewManager>();
-
-            serviceCollection.AddSingleton<IDeviceDiscovery, DeviceDiscovery>();
 
             serviceCollection.AddSingleton<IChapterManager, ChapterManager>();
 
@@ -850,24 +833,6 @@ namespace Emby.Server.Implementations
             }
         }
 
-        /// <inheritdoc />
-        public void Restart()
-        {
-            ShouldRestart = true;
-            Shutdown();
-        }
-
-        /// <inheritdoc />
-        public void Shutdown()
-        {
-            Task.Run(async () =>
-            {
-                await Task.Delay(100).ConfigureAwait(false);
-                IsShuttingDown = true;
-                Resolve<IHostApplicationLifetime>().StopApplication();
-            });
-        }
-
         /// <summary>
         /// Gets the composable part assemblies.
         /// </summary>
@@ -923,49 +888,6 @@ namespace Emby.Server.Implementations
 
         protected abstract IEnumerable<Assembly> GetAssembliesWithPartsInternal();
 
-        /// <summary>
-        /// Gets the system status.
-        /// </summary>
-        /// <param name="request">Where this request originated.</param>
-        /// <returns>SystemInfo.</returns>
-        public SystemInfo GetSystemInfo(HttpRequest request)
-        {
-            return new SystemInfo
-            {
-                HasPendingRestart = HasPendingRestart,
-                IsShuttingDown = IsShuttingDown,
-                Version = ApplicationVersionString,
-                WebSocketPortNumber = HttpPort,
-                CompletedInstallations = Resolve<IInstallationManager>().CompletedInstallations.ToArray(),
-                Id = SystemId,
-                ProgramDataPath = ApplicationPaths.ProgramDataPath,
-                WebPath = ApplicationPaths.WebPath,
-                LogPath = ApplicationPaths.LogDirectoryPath,
-                ItemsByNamePath = ApplicationPaths.InternalMetadataPath,
-                InternalMetadataPath = ApplicationPaths.InternalMetadataPath,
-                CachePath = ApplicationPaths.CachePath,
-                CanLaunchWebBrowser = CanLaunchWebBrowser,
-                TranscodingTempPath = ConfigurationManager.GetTranscodePath(),
-                ServerName = FriendlyName,
-                LocalAddress = GetSmartApiUrl(request),
-                SupportsLibraryMonitor = true,
-                PackageName = _startupOptions.PackageName
-            };
-        }
-
-        public PublicSystemInfo GetPublicSystemInfo(HttpRequest request)
-        {
-            return new PublicSystemInfo
-            {
-                Version = ApplicationVersionString,
-                ProductName = ApplicationProductName,
-                Id = SystemId,
-                ServerName = FriendlyName,
-                LocalAddress = GetSmartApiUrl(request),
-                StartupWizardCompleted = ConfigurationManager.CommonConfiguration.IsStartupWizardCompleted
-            };
-        }
-
         /// <inheritdoc/>
         public string GetSmartApiUrl(IPAddress remoteAddr)
         {
@@ -983,7 +905,7 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetSmartApiUrl(HttpRequest request)
         {
-            // Return the host in the HTTP request as the API url
+            // Return the host in the HTTP request as the API URL if not configured otherwise
             if (ConfigurationManager.GetNetworkConfiguration().EnablePublishedServerUriByRequest)
             {
                 int? requestPort = request.Host.Port;
@@ -1018,7 +940,7 @@ namespace Emby.Server.Implementations
         public string GetApiUrlForLocalAccess(IPAddress ipAddress = null, bool allowHttps = true)
         {
             // With an empty source, the port will be null
-            var smart = NetManager.GetBindAddress(ipAddress, out _, true);
+            var smart = NetManager.GetBindAddress(ipAddress, out _, false);
             var scheme = !allowHttps ? Uri.UriSchemeHttp : null;
             int? port = !allowHttps ? HttpPort : null;
             return GetLocalApiUrl(smart, scheme, port);
