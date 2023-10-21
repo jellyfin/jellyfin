@@ -158,20 +158,20 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// <value>The remaining time in minutes.</value>
     public int MaxAudiobookResume { get; set; } = 5;
 
-        /// <summary>
-        /// Gets or sets the threshold in minutes after a inactive session gets closed automatically.
-        /// If set to 0 the check for inactive sessions gets disabled.
-        /// </summary>
-        /// <value>The close inactive session threshold in minutes. 0 to disable.</value>
-        public int InactiveSessionThreshold { get; set; } = 10;
+    /// <summary>
+    /// Gets or sets the threshold in minutes after a inactive session gets closed automatically.
+    /// If set to 0 the check for inactive sessions gets disabled.
+    /// </summary>
+    /// <value>The close inactive session threshold in minutes. 0 to disable.</value>
+    public int InactiveSessionThreshold { get; set; } = 10;
 
-        /// <summary>
-        /// Gets or sets the delay in seconds that we will wait after a file system change to try and discover what has been added/removed
-        /// Some delay is necessary with some items because their creation is not atomic.  It involves the creation of several
-        /// different directories and files.
-        /// </summary>
-        /// <value>The file watcher delay.</value>
-        public int LibraryMonitorDelay { get; set; } = 60;
+    /// <summary>
+    /// Gets or sets the delay in seconds that we will wait after a file system change to try and discover what has been added/removed
+    /// Some delay is necessary with some items because their creation is not atomic.  It involves the creation of several
+    /// different directories and files.
+    /// </summary>
+    /// <value>The file watcher delay.</value>
+    public int LibraryMonitorDelay { get; set; } = 60;
 
     /// <summary>
     /// Gets or sets the duration in seconds that we will wait after a library updated event before executing the library changed notification.
