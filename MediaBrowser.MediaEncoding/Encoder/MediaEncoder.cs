@@ -418,6 +418,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public Task<MediaInfo> GetMediaInfo(MediaInfoRequest request, CancellationToken cancellationToken)
         {
             var extractChapters = request.MediaType == DlnaProfileType.Video && request.ExtractChapters;
+            var requiredHeaders = request.MediaSource.RequiredHttpHeaders;
             var analyzeDuration = string.Empty;
             var ffmpegAnalyzeDuration = _config.GetFFmpegAnalyzeDuration() ?? string.Empty;
             var ffmpegProbeSize = _config.GetFFmpegProbeSize() ?? string.Empty;
@@ -440,6 +441,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (!string.IsNullOrEmpty(ffmpegProbeSize))
             {
                 extraArgs += " -probesize " + ffmpegProbeSize;
+            }
+
+            if (requiredHeaders.ContainsKey("user_agent"))
+            {
+                extraArgs += " -user_agent " + requiredHeaders["user_agent"];
             }
 
             return GetMediaInfoInternal(
