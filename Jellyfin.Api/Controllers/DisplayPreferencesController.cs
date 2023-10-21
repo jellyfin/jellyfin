@@ -126,6 +126,7 @@ public class DisplayPreferencesController : BaseJellyfinApiController
             HomeSectionType.LiveTv,
             HomeSectionType.NextUp,
             HomeSectionType.LatestMedia,
+            HomeSectionType.LatestRelease,
             HomeSectionType.None,
         };
 

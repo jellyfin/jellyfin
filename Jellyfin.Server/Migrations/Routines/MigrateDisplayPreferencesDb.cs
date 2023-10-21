@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -146,7 +146,7 @@ namespace Jellyfin.Server.Migrations.Routines
                     dto.CustomPrefs.Remove("dashboardtheme");
                     dto.CustomPrefs.Remove("tvhome");
 
-                    for (int i = 0; i < 7; i++)
+                    for (int i = 0; i < defaults.Length; i++)
                     {
                         var key = "homesection" + i;
                         dto.CustomPrefs.TryGetValue(key, out var homeSection);
