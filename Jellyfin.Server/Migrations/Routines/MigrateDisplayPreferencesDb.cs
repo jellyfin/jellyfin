@@ -68,9 +68,11 @@ namespace Jellyfin.Server.Migrations.Routines
                 HomeSectionType.SmallLibraryTiles,
                 HomeSectionType.Resume,
                 HomeSectionType.ResumeAudio,
+                HomeSectionType.ResumeBook,
                 HomeSectionType.LiveTv,
                 HomeSectionType.NextUp,
                 HomeSectionType.LatestMedia,
+                HomeSectionType.LatestRelease,
                 HomeSectionType.None,
             };
 
