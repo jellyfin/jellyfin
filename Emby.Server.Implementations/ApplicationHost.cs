@@ -99,6 +99,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prometheus.DotNetRuntime;
 using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
+using IConfigurationManager = MediaBrowser.Common.Configuration.IConfigurationManager;
 using WebSocketManager = Emby.Server.Implementations.HttpServer.WebSocketManager;
 
 namespace Emby.Server.Implementations

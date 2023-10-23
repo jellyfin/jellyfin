@@ -835,11 +835,6 @@ namespace MediaBrowser.Model.Dlna
                 playlistItem.SetOption(qualifier, "profile", videoStream.Profile.ToLowerInvariant());
             }
 
-            if (videoStream is not null && videoStream.Level != 0)
-            {
-                playlistItem.SetOption(qualifier, "level", videoStream.Level.ToString() ?? string.Empty);
-            }
-
             // Prefer matching audio codecs, could do better here
             var audioCodecs = ContainerProfile.SplitValue(audioCodec);
 
@@ -866,16 +861,16 @@ namespace MediaBrowser.Model.Dlna
 
                 // Copy matching audio codec options
                 playlistItem.AudioSampleRate = audioStream.SampleRate;
-                playlistItem.SetOption(qualifier, "audiochannels", audioStream.Channels.ToString() ?? string.Empty);
+                playlistItem.SetOption(qualifier, "audiochannels", audioStream.Channels?.ToString(CultureInfo.InvariantCulture) ?? string.Empty);
 
                 if (!string.IsNullOrEmpty(audioStream.Profile))
                 {
                     playlistItem.SetOption(audioStream.Codec, "profile", audioStream.Profile.ToLowerInvariant());
                 }
 
-                if (audioStream.Level != 0)
+                if (audioStream.Level.HasValue)
                 {
-                    playlistItem.SetOption(audioStream.Codec, "level", audioStream.Level.ToString() ?? string.Empty);
+                    playlistItem.SetOption(audioStream.Codec, "level", audioStream.Level.Value.ToString(CultureInfo.InvariantCulture));
                 }
             }
 

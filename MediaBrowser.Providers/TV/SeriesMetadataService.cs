@@ -121,7 +121,7 @@ namespace MediaBrowser.Providers.TV
                 var seasonNumber = virtualSeason.IndexNumber;
                 // If there's a physical season with the same number or no episodes in the season, delete it
                 if ((seasonNumber.HasValue && physicalSeasonNumbers.Contains(seasonNumber.Value))
-                    || !virtualSeason.GetEpisodes().Any())
+                    || virtualSeason.GetEpisodes().Count == 0)
                 {
                     Logger.LogInformation("Removing virtual season {SeasonNumber} in series {SeriesName}", virtualSeason.IndexNumber, series.Name);
 

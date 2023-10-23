@@ -516,7 +516,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private void ProcessPairs(string key, List<NameValuePair> pairs, MediaInfo info)
         {
-            IList<BaseItemPerson> peoples = new List<BaseItemPerson>();
+            List<BaseItemPerson> peoples = new List<BaseItemPerson>();
             if (string.Equals(key, "studio", StringComparison.OrdinalIgnoreCase))
             {
                 info.Studios = pairs.Select(p => p.Value)
@@ -1182,7 +1182,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             info.Size = string.IsNullOrEmpty(data.Format.Size) ? null : long.Parse(data.Format.Size, CultureInfo.InvariantCulture);
         }
 
-        private void SetAudioInfoFromTags(MediaInfo audio, IReadOnlyDictionary<string, string> tags)
+        private void SetAudioInfoFromTags(MediaInfo audio, Dictionary<string, string> tags)
         {
             var people = new List<BaseItemPerson>();
             if (tags.TryGetValue("composer", out var composer) && !string.IsNullOrWhiteSpace(composer))

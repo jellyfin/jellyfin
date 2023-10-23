@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
+using IConfigurationManager = MediaBrowser.Common.Configuration.IConfigurationManager;
 
 namespace Jellyfin.Networking.Manager
 {
@@ -422,7 +423,7 @@ namespace Jellyfin.Networking.Manager
             {
                 // Parse config values into filter collection
                 var remoteIPFilter = config.RemoteIPFilter;
-                if (remoteIPFilter.Any() && !string.IsNullOrWhiteSpace(remoteIPFilter.First()))
+                if (remoteIPFilter.Length != 0 && !string.IsNullOrWhiteSpace(remoteIPFilter[0]))
                 {
                     // Parse all IPs with netmask to a subnet
                     var remoteAddressFilter = new List<IPNetwork>();
@@ -540,7 +541,7 @@ namespace Jellyfin.Networking.Manager
                     }
                     else if (NetworkUtils.TryParseToSubnet(identifier, out var result) && result is not null)
                     {
-                        var data = new IPData(result.BaseAddress, result);
+                        var data = new IPData(result.Value.BaseAddress, result);
                         publishedServerUrls.Add(
                             new PublishedServerUriOverride(
                                 data,
@@ -606,11 +607,11 @@ namespace Jellyfin.Networking.Manager
                     var parts = details.Split(',');
                     if (NetworkUtils.TryParseToSubnet(parts[0], out var subnet))
                     {
-                        var address = subnet.BaseAddress;
+                        var address = subnet.Value.BaseAddress;
                         var index = int.Parse(parts[1], CultureInfo.InvariantCulture);
                         if (address.AddressFamily == AddressFamily.InterNetwork || address.AddressFamily == AddressFamily.InterNetworkV6)
                         {
-                            var data = new IPData(address, subnet, parts[2])
+                            var data = new IPData(address, subnet.Value, parts[2])
                             {
                                 Index = index
                             };
@@ -880,7 +881,7 @@ namespace Jellyfin.Networking.Manager
         {
             if (NetworkUtils.TryParseToSubnet(address, out var subnet))
             {
-                return IPAddress.IsLoopback(subnet.BaseAddress) || (_lanSubnets.Any(x => x.Contains(subnet.BaseAddress)) && !_excludedSubnets.Any(x => x.Contains(subnet.BaseAddress)));
+                return IPAddress.IsLoopback(subnet.Value.BaseAddress) || (_lanSubnets.Any(x => x.Contains(subnet.Value.BaseAddress)) && !_excludedSubnets.Any(x => x.Contains(subnet.Value.BaseAddress)));
             }
 
             if (NetworkUtils.TryParseHost(address, out var addresses, IsIPv4Enabled, IsIPv6Enabled))

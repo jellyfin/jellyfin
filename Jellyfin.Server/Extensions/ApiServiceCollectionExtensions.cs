@@ -30,12 +30,14 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using AuthenticationSchemes = Jellyfin.Api.Constants.AuthenticationSchemes;
+using IPNetwork = System.Net.IPNetwork;
 
 namespace Jellyfin.Server.Extensions
 {
@@ -277,9 +279,9 @@ namespace Jellyfin.Server.Extensions
                 }
                 else if (NetworkUtils.TryParseToSubnet(allowedProxies[i], out var subnet))
                 {
-                    if (subnet is not null)
+                    if (subnet.HasValue)
                     {
-                        AddIPAddress(config, options, subnet.BaseAddress, subnet.PrefixLength);
+                        AddIPAddress(config, options, subnet.Value.BaseAddress, subnet.Value.PrefixLength);
                     }
                 }
                 else if (NetworkUtils.TryParseHost(allowedProxies[i], out var addresses, config.EnableIPv4, config.EnableIPv6))
@@ -310,7 +312,7 @@ namespace Jellyfin.Server.Extensions
             }
             else
             {
-                options.KnownNetworks.Add(new IPNetwork(addr, prefixLength));
+                options.KnownNetworks.Add(new Microsoft.AspNetCore.HttpOverrides.IPNetwork(addr, prefixLength));
             }
         }
 

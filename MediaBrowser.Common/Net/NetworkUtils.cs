@@ -180,7 +180,7 @@ public static partial class NetworkUtils
         {
             if (TryParseToSubnet(values[a], out var innerResult, negated))
             {
-                tmpResult.Add(innerResult);
+                tmpResult.Add(innerResult.Value);
             }
         }
 

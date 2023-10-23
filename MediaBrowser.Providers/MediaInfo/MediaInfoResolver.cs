@@ -183,7 +183,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 files.AddRange(directoryService.GetFilePaths(internalMetadataPath, clearCache, true));
             }
 
-            if (!files.Any())
+            if (files.Count == 0)
             {
                 return Array.Empty<ExternalPathParserResult>();
             }

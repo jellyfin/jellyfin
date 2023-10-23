@@ -2080,30 +2080,30 @@ public class ImageController : BaseJellyfinApiController
 
         foreach (var (key, value) in headers)
         {
-            Response.Headers.Add(key, value);
+            Response.Headers.Append(key, value);
         }
 
         Response.ContentType = imageContentType ?? MediaTypeNames.Text.Plain;
-        Response.Headers.Add(HeaderNames.Age, Convert.ToInt64((DateTime.UtcNow - dateImageModified).TotalSeconds).ToString(CultureInfo.InvariantCulture));
-        Response.Headers.Add(HeaderNames.Vary, HeaderNames.Accept);
+        Response.Headers.Append(HeaderNames.Age, Convert.ToInt64((DateTime.UtcNow - dateImageModified).TotalSeconds).ToString(CultureInfo.InvariantCulture));
+        Response.Headers.Append(HeaderNames.Vary, HeaderNames.Accept);
 
         if (disableCaching)
         {
-            Response.Headers.Add(HeaderNames.CacheControl, "no-cache, no-store, must-revalidate");
-            Response.Headers.Add(HeaderNames.Pragma, "no-cache, no-store, must-revalidate");
+            Response.Headers.Append(HeaderNames.CacheControl, "no-cache, no-store, must-revalidate");
+            Response.Headers.Append(HeaderNames.Pragma, "no-cache, no-store, must-revalidate");
         }
         else
         {
             if (cacheDuration.HasValue)
             {
-                Response.Headers.Add(HeaderNames.CacheControl, "public, max-age=" + cacheDuration.Value.TotalSeconds);
+                Response.Headers.Append(HeaderNames.CacheControl, "public, max-age=" + cacheDuration.Value.TotalSeconds);
             }
             else
             {
-                Response.Headers.Add(HeaderNames.CacheControl, "public");
+                Response.Headers.Append(HeaderNames.CacheControl, "public");
             }
 
-            Response.Headers.Add(HeaderNames.LastModified, dateImageModified.ToUniversalTime().ToString("ddd, dd MMM yyyy HH:mm:ss \"GMT\"", CultureInfo.InvariantCulture));
+            Response.Headers.Append(HeaderNames.LastModified, dateImageModified.ToUniversalTime().ToString("ddd, dd MMM yyyy HH:mm:ss \"GMT\"", CultureInfo.InvariantCulture));
 
             // if the image was not modified since "ifModifiedSinceHeader"-header, return a HTTP status code 304 not modified
             if (!(dateImageModified > ifModifiedSinceHeader) && cacheDuration.HasValue)

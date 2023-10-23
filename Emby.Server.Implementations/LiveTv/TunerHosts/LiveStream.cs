@@ -84,15 +84,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             return Task.CompletedTask;
         }
 
-        public Task Close()
+        public async Task Close()
         {
             EnableStreamSharing = false;
 
             Logger.LogInformation("Closing {Type}", GetType().Name);
 
-            LiveStreamCancellationTokenSource.Cancel();
-
-            return Task.CompletedTask;
+            await LiveStreamCancellationTokenSource.CancelAsync().ConfigureAwait(false);
         }
 
         public Stream GetStream()

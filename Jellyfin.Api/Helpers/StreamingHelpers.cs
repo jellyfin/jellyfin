@@ -279,15 +279,15 @@ public static class StreamingHelpers
         var profile = state.DeviceProfile;
 
         StringValues transferMode = request.Headers["transferMode.dlna.org"];
-        responseHeaders.Add("transferMode.dlna.org", string.IsNullOrEmpty(transferMode) ? "Streaming" : transferMode.ToString());
-        responseHeaders.Add("realTimeInfo.dlna.org", "DLNA.ORG_TLAG=*");
+        responseHeaders.Append("transferMode.dlna.org", string.IsNullOrEmpty(transferMode) ? "Streaming" : transferMode.ToString());
+        responseHeaders.Append("realTimeInfo.dlna.org", "DLNA.ORG_TLAG=*");
 
         if (state.RunTimeTicks.HasValue)
         {
             if (string.Equals(request.Headers["getMediaInfo.sec"], "1", StringComparison.OrdinalIgnoreCase))
             {
                 var ms = TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalMilliseconds;
-                responseHeaders.Add("MediaInfo.sec", string.Format(
+                responseHeaders.Append("MediaInfo.sec", string.Format(
                     CultureInfo.InvariantCulture,
                     "SEC_Duration={0};",
                     Convert.ToInt32(ms)));
@@ -305,7 +305,7 @@ public static class StreamingHelpers
 
         if (!state.IsVideoRequest)
         {
-            responseHeaders.Add("contentFeatures.dlna.org", ContentFeatureBuilder.BuildAudioHeader(
+            responseHeaders.Append("contentFeatures.dlna.org", ContentFeatureBuilder.BuildAudioHeader(
                 profile,
                 state.OutputContainer,
                 audioCodec,
@@ -321,7 +321,7 @@ public static class StreamingHelpers
         {
             var videoCodec = state.ActualOutputVideoCodec;
 
-            responseHeaders.Add(
+            responseHeaders.Append(
                 "contentFeatures.dlna.org",
                 ContentFeatureBuilder.BuildVideoHeader(profile, state.OutputContainer, videoCodec, audioCodec, state.OutputWidth, state.OutputHeight, state.TargetVideoBitDepth, state.OutputVideoBitrate, state.TargetTimestamp, isStaticallyStreamed, state.RunTimeTicks, state.TargetVideoProfile, state.TargetVideoRangeType, state.TargetVideoLevel, state.TargetFramerate, state.TargetPacketLength, state.TranscodeSeekInfo, state.IsTargetAnamorphic, state.IsTargetInterlaced, state.TargetRefFrames, state.TargetVideoStreamCount, state.TargetAudioStreamCount, state.TargetVideoCodecTag, state.IsTargetAVC).FirstOrDefault() ?? string.Empty);
         }
@@ -404,12 +404,12 @@ public static class StreamingHelpers
         var runtimeSeconds = TimeSpan.FromTicks(state.RunTimeTicks!.Value).TotalSeconds.ToString(CultureInfo.InvariantCulture);
         var startSeconds = TimeSpan.FromTicks(startTimeTicks ?? 0).TotalSeconds.ToString(CultureInfo.InvariantCulture);
 
-        responseHeaders.Add("TimeSeekRange.dlna.org", string.Format(
+        responseHeaders.Append("TimeSeekRange.dlna.org", string.Format(
             CultureInfo.InvariantCulture,
             "npt={0}-{1}/{1}",
             startSeconds,
             runtimeSeconds));
-        responseHeaders.Add("X-AvailableSeekRange", string.Format(
+        responseHeaders.Append("X-AvailableSeekRange", string.Format(
             CultureInfo.InvariantCulture,
             "1 npt={0}-{1}",
             startSeconds,
