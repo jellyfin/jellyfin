@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using Jellyfin.Extensions;
+using Jellyfin.Networking.Constants;
 using Microsoft.AspNetCore.HttpOverrides;
 
 namespace MediaBrowser.Common.Net;
@@ -335,7 +336,7 @@ public static partial class NetworkUtils
     /// <returns>The broadcast address.</returns>
     public static IPAddress GetBroadcastAddress(IPNetwork network)
     {
-        var addressBytes = network.Prefix.GetAddressBytes();
+        var addressBytes = network.BaseAddress.GetAddressBytes();
         uint ipAddress = BitConverter.ToUInt32(addressBytes, 0);
         uint ipMaskV4 = BitConverter.ToUInt32(CidrToMask(network.PrefixLength, AddressFamily.InterNetwork).GetAddressBytes(), 0);
         uint broadCastIPAddress = ipAddress | ~ipMaskV4;

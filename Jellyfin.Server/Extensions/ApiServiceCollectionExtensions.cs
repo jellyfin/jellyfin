@@ -30,7 +30,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Interfaces;
@@ -280,7 +279,7 @@ namespace Jellyfin.Server.Extensions
                 {
                     if (subnet is not null)
                     {
-                        AddIPAddress(config, options, subnet.Prefix, subnet.PrefixLength);
+                        AddIPAddress(config, options, subnet.BaseAddress, subnet.PrefixLength);
                     }
                 }
                 else if (NetworkUtils.TryParseHost(allowedProxies[i], out var addresses, config.EnableIPv4, config.EnableIPv6))

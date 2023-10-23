@@ -6,7 +6,6 @@ using Jellyfin.Server.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -99,7 +98,7 @@ namespace Jellyfin.Server.Tests
             Assert.Equal(knownNetworks.Length, options.KnownNetworks.Count);
             foreach (var item in knownNetworks)
             {
-                Assert.NotNull(options.KnownNetworks.FirstOrDefault(x => x.Prefix.Equals(item.Prefix) && x.PrefixLength == item.PrefixLength));
+                Assert.NotNull(options.KnownNetworks.FirstOrDefault(x => x.BaseAddress.Equals(item.BaseAddress) && x.PrefixLength == item.PrefixLength));
             }
         }
 

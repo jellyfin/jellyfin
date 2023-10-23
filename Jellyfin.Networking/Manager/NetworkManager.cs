@@ -11,7 +11,6 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
@@ -530,7 +529,7 @@ namespace Jellyfin.Networking.Manager
                     {
                         foreach (var lan in _lanSubnets)
                         {
-                            var lanPrefix = lan.Prefix;
+                            var lanPrefix = lan.BaseAddress;
                             publishedServerUrls.Add(
                                 new PublishedServerUriOverride(
                                     new IPData(lanPrefix, new IPNetwork(lanPrefix, lan.PrefixLength)),
@@ -541,7 +540,7 @@ namespace Jellyfin.Networking.Manager
                     }
                     else if (NetworkUtils.TryParseToSubnet(identifier, out var result) && result is not null)
                     {
-                        var data = new IPData(result.Prefix, result);
+                        var data = new IPData(result.BaseAddress, result);
                         publishedServerUrls.Add(
                             new PublishedServerUriOverride(
                                 data,
@@ -607,7 +606,7 @@ namespace Jellyfin.Networking.Manager
                     var parts = details.Split(',');
                     if (NetworkUtils.TryParseToSubnet(parts[0], out var subnet))
                     {
-                        var address = subnet.Prefix;
+                        var address = subnet.BaseAddress;
                         var index = int.Parse(parts[1], CultureInfo.InvariantCulture);
                         if (address.AddressFamily == AddressFamily.InterNetwork || address.AddressFamily == AddressFamily.InterNetworkV6)
                         {
@@ -881,7 +880,7 @@ namespace Jellyfin.Networking.Manager
         {
             if (NetworkUtils.TryParseToSubnet(address, out var subnet))
             {
-                return IPAddress.IsLoopback(subnet.Prefix) || (_lanSubnets.Any(x => x.Contains(subnet.Prefix)) && !_excludedSubnets.Any(x => x.Contains(subnet.Prefix)));
+                return IPAddress.IsLoopback(subnet.BaseAddress) || (_lanSubnets.Any(x => x.Contains(subnet.BaseAddress)) && !_excludedSubnets.Any(x => x.Contains(subnet.BaseAddress)));
             }
 
             if (NetworkUtils.TryParseHost(address, out var addresses, IsIPv4Enabled, IsIPv6Enabled))
@@ -1112,12 +1111,12 @@ namespace Jellyfin.Networking.Manager
             var logLevel = debug ? LogLevel.Debug : LogLevel.Information;
             if (_logger.IsEnabled(logLevel))
             {
-                _logger.Log(logLevel, "Defined LAN addresses: {0}", _lanSubnets.Select(s => s.Prefix + "/" + s.PrefixLength));
-                _logger.Log(logLevel, "Defined LAN exclusions: {0}", _excludedSubnets.Select(s => s.Prefix + "/" + s.PrefixLength));
-                _logger.Log(logLevel, "Using LAN addresses: {0}", _lanSubnets.Where(s => !_excludedSubnets.Contains(s)).Select(s => s.Prefix + "/" + s.PrefixLength));
+                _logger.Log(logLevel, "Defined LAN addresses: {0}", _lanSubnets.Select(s => s.BaseAddress + "/" + s.PrefixLength));
+                _logger.Log(logLevel, "Defined LAN exclusions: {0}", _excludedSubnets.Select(s => s.BaseAddress + "/" + s.PrefixLength));
+                _logger.Log(logLevel, "Using LAN addresses: {0}", _lanSubnets.Where(s => !_excludedSubnets.Contains(s)).Select(s => s.BaseAddress + "/" + s.PrefixLength));
                 _logger.Log(logLevel, "Using bind addresses: {0}", _interfaces.OrderByDescending(x => x.AddressFamily == AddressFamily.InterNetwork).Select(x => x.Address));
                 _logger.Log(logLevel, "Remote IP filter is {0}", config.IsRemoteIPFilterBlacklist ? "Blocklist" : "Allowlist");
-                _logger.Log(logLevel, "Filter list: {0}", _remoteAddressFilter.Select(s => s.Prefix + "/" + s.PrefixLength));
+                _logger.Log(logLevel, "Filter list: {0}", _remoteAddressFilter.Select(s => s.BaseAddress + "/" + s.PrefixLength));
             }
         }
     }
