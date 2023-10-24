@@ -272,7 +272,9 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (string.Equals(state.VideoStream.Codec, "hevc", StringComparison.OrdinalIgnoreCase)
                 && state.VideoStream.VideoRange == VideoRange.HDR
-                && state.VideoStream.VideoRangeType == VideoRangeType.DOVI)
+                && (state.VideoStream.VideoRangeType == VideoRangeType.DOVI
+                    || state.VideoStream.VideoRangeType == VideoRangeType.DOVI_with_HDR10_Fallback
+                    || state.VideoStream.VideoRangeType == VideoRangeType.DOVI_with_HLG_Fallback))
             {
                 // Only native SW decoder and HW accelerator can parse dovi rpu.
                 var vidDecoder = GetHardwareVideoDecoder(state, options) ?? string.Empty;
@@ -286,9 +288,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             return state.VideoStream.VideoRange == VideoRange.HDR
                    && (state.VideoStream.VideoRangeType == VideoRangeType.HDR10
-                       || state.VideoStream.VideoRangeType == VideoRangeType.HLG
-                       || state.VideoStream.VideoRangeType == VideoRangeType.DOVI_with_HDR10_Fallback
-                       || state.VideoStream.VideoRangeType == VideoRangeType.DOVI_with_HLG_Fallback);
+                       || state.VideoStream.VideoRangeType == VideoRangeType.HLG);
         }
 
         private bool IsVulkanHwTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
@@ -316,8 +316,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Native VPP tonemapping may come to QSV in the future.
 
             return state.VideoStream.VideoRange == VideoRange.HDR
-                   && (state.VideoStream.VideoRangeType == VideoRangeType.HDR10
-                        || state.VideoStream.VideoRangeType == VideoRangeType.DOVI_with_HDR10_Fallback);
+                   && state.VideoStream.VideoRangeType == VideoRangeType.HDR10;
         }
 
         private bool IsVideoToolboxTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
