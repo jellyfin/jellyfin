@@ -31,6 +31,16 @@ public enum VideoRangeType
     DOVI,
 
     /// <summary>
+    /// Dolby Vision with HDR10 video range fallback (12bit or 10bit).
+    /// </summary>
+    DOVI_with_HDR10_Fallback,
+
+    /// <summary>
+    /// Dolby Vision with HLG video range fallback (12bit or 10bit).
+    /// </summary>
+    DOVI_with_HLG_Fallback,
+
+    /// <summary>
     /// HDR10+ video range type (10bit to 16bit).
     /// </summary>
     HDR10Plus

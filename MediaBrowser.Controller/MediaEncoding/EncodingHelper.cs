@@ -286,7 +286,9 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             return state.VideoStream.VideoRange == VideoRange.HDR
                    && (state.VideoStream.VideoRangeType == VideoRangeType.HDR10
-                       || state.VideoStream.VideoRangeType == VideoRangeType.HLG);
+                       || state.VideoStream.VideoRangeType == VideoRangeType.HLG
+                       || state.VideoStream.VideoRangeType == VideoRangeType.DOVI_with_HDR10_Fallback
+                       || state.VideoStream.VideoRangeType == VideoRangeType.DOVI_with_HLG_Fallback);
         }
 
         private bool IsVulkanHwTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
@@ -314,7 +316,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Native VPP tonemapping may come to QSV in the future.
 
             return state.VideoStream.VideoRange == VideoRange.HDR
-                   && state.VideoStream.VideoRangeType == VideoRangeType.HDR10;
+                   && (state.VideoStream.VideoRangeType == VideoRangeType.HDR10
+                        || state.VideoStream.VideoRangeType == VideoRangeType.DOVI_with_HDR10_Fallback);
         }
 
         private bool IsVideoToolboxTonemapAvailable(EncodingJobInfo state, EncodingOptions options)
