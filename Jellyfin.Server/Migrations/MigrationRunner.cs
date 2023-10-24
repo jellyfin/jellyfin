@@ -42,7 +42,8 @@ namespace Jellyfin.Server.Migrations
             typeof(Routines.RemoveDownloadImagesInAdvance),
             typeof(Routines.MigrateAuthenticationDb),
             typeof(Routines.FixPlaylistOwner),
-            typeof(Routines.MigrateRatingLevels)
+            typeof(Routines.MigrateRatingLevels),
+            typeof(Routines.AddDefaultCastReceivers)
         };
 
         /// <summary>

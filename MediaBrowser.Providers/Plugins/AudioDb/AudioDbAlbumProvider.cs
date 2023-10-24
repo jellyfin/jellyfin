@@ -176,17 +176,12 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
-            var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            await using (stream.ConfigureAwait(false))
+            var fileStreamOptions = AsyncFile.WriteOptions;
+            fileStreamOptions.Mode = FileMode.Create;
+            var fs = new FileStream(path, fileStreamOptions);
+            await using (fs.ConfigureAwait(false))
             {
-                var fileStreamOptions = AsyncFile.WriteOptions;
-                fileStreamOptions.Mode = FileMode.Create;
-                fileStreamOptions.PreallocationSize = stream.Length;
-                var xmlFileStream = new FileStream(path, fileStreamOptions);
-                await using (xmlFileStream.ConfigureAwait(false))
-                {
-                    await stream.CopyToAsync(xmlFileStream, cancellationToken).ConfigureAwait(false);
-                }
+                await response.Content.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
             }
         }
 

@@ -29,7 +29,7 @@ public class MediaInfoResolverTests
     public const string VideoDirectoryPath = "Test Data/Video";
     public const string VideoDirectoryRegex = @"Test Data[/\\]Video";
     public const string MetadataDirectoryPath = "library/00/00000000000000000000000000000000";
-    public const string MetadataDirectoryRegex = @"library.*";
+    public const string MetadataDirectoryRegex = "library.*";
 
     private readonly ILocalizationManager _localizationManager;
     private readonly MediaInfoResolver _subtitleResolver;
@@ -49,7 +49,7 @@ public class MediaInfoResolverTests
         var englishCultureDto = new CultureDto("English", "English", "en", new[] { "eng" });
 
         var localizationManager = new Mock<ILocalizationManager>(MockBehavior.Loose);
-        localizationManager.Setup(lm => lm.FindLanguageInfo(It.IsRegex(@"en.*", RegexOptions.IgnoreCase)))
+        localizationManager.Setup(lm => lm.FindLanguageInfo(It.IsRegex("en.*", RegexOptions.IgnoreCase)))
             .Returns(englishCultureDto);
         _localizationManager = localizationManager.Object;
 
@@ -79,7 +79,7 @@ public class MediaInfoResolverTests
     {
         // need a media source manager capable of returning something other than file protocol
         var mediaSourceManager = new Mock<IMediaSourceManager>();
-        mediaSourceManager.Setup(m => m.GetPathProtocol(It.IsRegex(@"http.*")))
+        mediaSourceManager.Setup(m => m.GetPathProtocol(It.IsRegex("http.*")))
             .Returns(MediaProtocol.Http);
         BaseItem.MediaSourceManager = mediaSourceManager.Object;
 
@@ -186,7 +186,7 @@ public class MediaInfoResolverTests
     {
         // need a media source manager capable of returning something other than file protocol
         var mediaSourceManager = new Mock<IMediaSourceManager>();
-        mediaSourceManager.Setup(m => m.GetPathProtocol(It.IsRegex(@"http.*")))
+        mediaSourceManager.Setup(m => m.GetPathProtocol(It.IsRegex("http.*")))
             .Returns(MediaProtocol.Http);
         BaseItem.MediaSourceManager = mediaSourceManager.Object;
 

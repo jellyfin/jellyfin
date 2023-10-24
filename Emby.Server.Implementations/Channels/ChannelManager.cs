@@ -371,8 +371,11 @@ namespace Emby.Server.Implementations.Channels
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-            await using FileStream createStream = File.Create(path);
-            await JsonSerializer.SerializeAsync(createStream, mediaSources, _jsonOptions).ConfigureAwait(false);
+            FileStream createStream = File.Create(path);
+            await using (createStream.ConfigureAwait(false))
+            {
+                await JsonSerializer.SerializeAsync(createStream, mediaSources, _jsonOptions).ConfigureAwait(false);
+            }
         }
 
         /// <inheritdoc />
@@ -1156,7 +1159,7 @@ namespace Emby.Server.Implementations.Channels
 
                 if (info.People is not null && info.People.Count > 0)
                 {
-                    _libraryManager.UpdatePeople(item, info.People);
+                    await _libraryManager.UpdatePeopleAsync(item, info.People, cancellationToken).ConfigureAwait(false);
                 }
             }
             else if (forceUpdate)
