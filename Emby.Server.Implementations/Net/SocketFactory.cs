@@ -32,7 +32,7 @@ namespace Emby.Server.Implementations.Net
             }
             catch
             {
-                socket?.Dispose();
+                socket.Dispose();
 
                 throw;
             }
@@ -59,7 +59,7 @@ namespace Emby.Server.Implementations.Net
             }
             catch
             {
-                socket?.Dispose();
+                socket.Dispose();
 
                 throw;
             }
@@ -110,7 +110,7 @@ namespace Emby.Server.Implementations.Net
             }
             catch
             {
-                socket?.Dispose();
+                socket.Dispose();
 
                 throw;
             }

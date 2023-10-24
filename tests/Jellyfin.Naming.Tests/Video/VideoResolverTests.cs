@@ -15,26 +15,26 @@ namespace Jellyfin.Naming.Tests.Video
             var data = new TheoryData<VideoFileInfo>();
             data.Add(
                 new VideoFileInfo(
-                    path: @"/server/Movies/7 Psychos.mkv/7 Psychos.mkv",
+                    path: "/server/Movies/7 Psychos.mkv/7 Psychos.mkv",
                     container: "mkv",
                     name: "7 Psychos"));
 
             data.Add(
                 new VideoFileInfo(
-                    path: @"/server/Movies/3 days to kill (2005)/3 days to kill (2005).mkv",
+                    path: "/server/Movies/3 days to kill (2005)/3 days to kill (2005).mkv",
                     container: "mkv",
                     name: "3 days to kill",
                     year: 2005));
 
             data.Add(
                 new VideoFileInfo(
-                    path: @"/server/Movies/American Psycho/American.Psycho.mkv",
+                    path: "/server/Movies/American Psycho/American.Psycho.mkv",
                     container: "mkv",
                     name: "American.Psycho"));
 
             data.Add(
                 new VideoFileInfo(
-                    path: @"/server/Movies/brave (2007)/brave (2006).3d.sbs.mkv",
+                    path: "/server/Movies/brave (2007)/brave (2006).3d.sbs.mkv",
                     container: "mkv",
                     name: "brave",
                     year: 2006,
@@ -43,14 +43,14 @@ namespace Jellyfin.Naming.Tests.Video
 
             data.Add(
                 new VideoFileInfo(
-                    path: @"/server/Movies/300 (2007)/300 (2006).3d1.sbas.mkv",
+                    path: "/server/Movies/300 (2007)/300 (2006).3d1.sbas.mkv",
                     container: "mkv",
                     name: "300",
                     year: 2006));
 
             data.Add(
                 new VideoFileInfo(
-                    path: @"/server/Movies/300 (2007)/300 (2006).3d.sbs.mkv",
+                    path: "/server/Movies/300 (2007)/300 (2006).3d.sbs.mkv",
                     container: "mkv",
                     name: "300",
                     year: 2006,
@@ -59,7 +59,7 @@ namespace Jellyfin.Naming.Tests.Video
 
             data.Add(
                 new VideoFileInfo(
-                    path: @"/server/Movies/brave (2007)/brave (2006)-trailer.bluray.disc",
+                    path: "/server/Movies/brave (2007)/brave (2006)-trailer.bluray.disc",
                     container: "disc",
                     name: "brave",
                     year: 2006,
@@ -68,7 +68,7 @@ namespace Jellyfin.Naming.Tests.Video
 
             data.Add(
                 new VideoFileInfo(
-                    path: @"/server/Movies/300 (2007)/300 (2006)-trailer.bluray.disc",
+                    path: "/server/Movies/300 (2007)/300 (2006)-trailer.bluray.disc",
                     container: "disc",
                     name: "300",
                     year: 2006,
@@ -77,7 +77,7 @@ namespace Jellyfin.Naming.Tests.Video
 
             data.Add(
                 new VideoFileInfo(
-                    path: @"/server/Movies/Brave (2007)/Brave (2006).bluray.disc",
+                    path: "/server/Movies/Brave (2007)/Brave (2006).bluray.disc",
                     container: "disc",
                     name: "Brave",
                     year: 2006,
@@ -86,7 +86,7 @@ namespace Jellyfin.Naming.Tests.Video
 
             data.Add(
                 new VideoFileInfo(
-                    path: @"/server/Movies/300 (2007)/300 (2006).bluray.disc",
+                    path: "/server/Movies/300 (2007)/300 (2006).bluray.disc",
                     container: "disc",
                     name: "300",
                     year: 2006,
@@ -95,7 +95,7 @@ namespace Jellyfin.Naming.Tests.Video
 
             data.Add(
                 new VideoFileInfo(
-                    path: @"/server/Movies/300 (2007)/300 (2006)-trailer.mkv",
+                    path: "/server/Movies/300 (2007)/300 (2006)-trailer.mkv",
                     container: "mkv",
                     name: "300",
                     year: 2006,
@@ -103,7 +103,7 @@ namespace Jellyfin.Naming.Tests.Video
 
             data.Add(
                 new VideoFileInfo(
-                    path: @"/server/Movies/Brave (2007)/Brave (2006)-trailer.mkv",
+                    path: "/server/Movies/Brave (2007)/Brave (2006)-trailer.mkv",
                     container: "mkv",
                     name: "Brave",
                     year: 2006,
@@ -111,28 +111,28 @@ namespace Jellyfin.Naming.Tests.Video
 
             data.Add(
                 new VideoFileInfo(
-                    path: @"/server/Movies/300 (2007)/300 (2006).mkv",
+                    path: "/server/Movies/300 (2007)/300 (2006).mkv",
                     container: "mkv",
                     name: "300",
                     year: 2006));
 
             data.Add(
                 new VideoFileInfo(
-                    path: @"/server/Movies/Bad Boys (1995)/Bad Boys (1995).mkv",
+                    path: "/server/Movies/Bad Boys (1995)/Bad Boys (1995).mkv",
                     container: "mkv",
                     name: "Bad Boys",
                     year: 1995));
 
             data.Add(
                 new VideoFileInfo(
-                    path: @"/server/Movies/Brave (2007)/Brave (2006).mkv",
+                    path: "/server/Movies/Brave (2007)/Brave (2006).mkv",
                     container: "mkv",
                     name: "Brave",
                     year: 2006));
 
             data.Add(
                 new VideoFileInfo(
-                    path: @"/server/Movies/Rain Man 1988 REMASTERED 1080p BluRay x264 AAC - JEFF/Rain Man 1988 REMASTERED 1080p BluRay x264 AAC - JEFF.mp4",
+                    path: "/server/Movies/Rain Man 1988 REMASTERED 1080p BluRay x264 AAC - JEFF/Rain Man 1988 REMASTERED 1080p BluRay x264 AAC - JEFF.mp4",
                     container: "mp4",
                     name: "Rain Man",
                     year: 1988));
@@ -174,8 +174,8 @@ namespace Jellyfin.Naming.Tests.Video
         {
             var paths = new[]
             {
-                @"/Server/Iron Man",
-                @"Batman",
+                "/Server/Iron Man",
+                "Batman",
                 string.Empty
             };
 

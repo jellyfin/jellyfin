@@ -352,11 +352,11 @@ namespace Jellyfin.Providers.Tests.Manager
             {
                 if (forceRefresh)
                 {
-                    Assert.Matches(@"image url [0-9]", image.Path);
+                    Assert.Matches("image url [0-9]", image.Path);
                 }
                 else
                 {
-                    Assert.DoesNotMatch(@"image url [0-9]", image.Path);
+                    Assert.DoesNotMatch("image url [0-9]", image.Path);
                 }
             }
         }

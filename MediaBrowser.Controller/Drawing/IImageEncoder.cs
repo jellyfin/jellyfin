@@ -81,5 +81,15 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="posters">The list of poster paths.</param>
         /// <param name="backdrops">The list of backdrop paths.</param>
         void CreateSplashscreen(IReadOnlyList<string> posters, IReadOnlyList<string> backdrops);
+
+        /// <summary>
+        /// Creates a new trickplay tile image.
+        /// </summary>
+        /// <param name="options">The options to use when creating the image. Width and Height are a quantity of thumbnails in this case, not pixels.</param>
+        /// <param name="quality">The image encode quality.</param>
+        /// <param name="imgWidth">The width of a single trickplay thumbnail.</param>
+        /// <param name="imgHeight">Optional height of a single trickplay thumbnail, if it is known.</param>
+        /// <returns>Height of single decoded trickplay thumbnail.</returns>
+        int CreateTrickplayTile(ImageCollageOptions options, int quality, int imgWidth, int? imgHeight);
     }
 }

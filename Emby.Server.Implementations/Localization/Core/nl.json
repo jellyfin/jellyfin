@@ -124,5 +124,7 @@
     "TaskKeyframeExtractorDescription": "Haalt keyframes uit videobestanden om preciezere HLS-afspeellijsten te maken. Deze taak kan lang duren.",
     "TaskKeyframeExtractor": "Keyframe-uitpakker",
     "External": "Extern",
-    "HearingImpaired": "Slechthorend"
+    "HearingImpaired": "Slechthorend",
+    "TaskRefreshTrickplayImages": "Trickplay-afbeeldingen genereren",
+    "TaskRefreshTrickplayImagesDescription": "Genereert trickplay-afbeeldingen voor video's in bibliotheken waarvoor dit is ingeschakeld."
 }

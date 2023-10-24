@@ -112,6 +112,8 @@
     "TaskCleanLogsDescription": "Deletes log files that are more than {0} days old.",
     "TaskRefreshPeople": "Refresh People",
     "TaskRefreshPeopleDescription": "Updates metadata for actors and directors in your media library.",
+    "TaskRefreshTrickplayImages": "Generate Trickplay Images",
+    "TaskRefreshTrickplayImagesDescription": "Creates trickplay previews for videos in enabled libraries.",
     "TaskUpdatePlugins": "Update Plugins",
     "TaskUpdatePluginsDescription": "Downloads and installs updates for plugins that are configured to update automatically.",
     "TaskCleanTranscode": "Clean Transcode Directory",

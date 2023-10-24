@@ -1159,7 +1159,7 @@ namespace Emby.Server.Implementations.Channels
 
                 if (info.People is not null && info.People.Count > 0)
                 {
-                    _libraryManager.UpdatePeople(item, info.People);
+                    await _libraryManager.UpdatePeopleAsync(item, info.People, cancellationToken).ConfigureAwait(false);
                 }
             }
             else if (forceUpdate)
