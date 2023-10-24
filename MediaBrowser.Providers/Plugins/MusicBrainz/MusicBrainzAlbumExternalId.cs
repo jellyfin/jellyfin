@@ -20,7 +20,7 @@ public class MusicBrainzAlbumExternalId : IExternalId
     public ExternalIdMediaType? Type => ExternalIdMediaType.Album;
 
     /// <inheritdoc />
-    public string? UrlFormatString => Plugin.Instance!.Configuration.Server + "/release/{0}";
+    public string UrlFormatString => Plugin.Instance!.Configuration.Server + "/release/{0}";
 
     /// <inheritdoc />
     public bool Supports(IHasProviderIds item) => item is Audio || item is MusicAlbum;

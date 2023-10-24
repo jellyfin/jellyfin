@@ -93,9 +93,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             Assert.Equal(MediaTypeNames.Application.Json, response.Content.Headers.ContentType?.MediaType);
             Assert.Equal(Encoding.UTF8.BodyName, response.Content.Headers.ContentType?.CharSet);
 
-            var profiles = await JsonSerializer.DeserializeAsync<DeviceProfileInfo[]>(
-                await response.Content.ReadAsStreamAsync(),
-                _jsonOptions);
+            var profiles = await response.Content.ReadFromJsonAsync<DeviceProfileInfo[]>(_jsonOptions);
 
             var newProfile = profiles?.FirstOrDefault(x => string.Equals(x.Name, "ThisProfileIsNew", StringComparison.Ordinal));
             Assert.NotNull(newProfile);
@@ -124,9 +122,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             Assert.Equal(MediaTypeNames.Application.Json, response.Content.Headers.ContentType?.MediaType);
             Assert.Equal(Encoding.UTF8.BodyName, response.Content.Headers.ContentType?.CharSet);
 
-            var profiles = await JsonSerializer.DeserializeAsync<DeviceProfileInfo[]>(
-                await response.Content.ReadAsStreamAsync(),
-                _jsonOptions);
+            var profiles = await response.Content.ReadFromJsonAsync<DeviceProfileInfo[]>(_jsonOptions);
 
             Assert.Null(profiles?.FirstOrDefault(x => string.Equals(x.Name, "ThisProfileIsNew", StringComparison.Ordinal)));
             var newProfile = profiles?.FirstOrDefault(x => string.Equals(x.Name, "ThisProfileIsUpdated", StringComparison.Ordinal));
@@ -150,9 +146,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             Assert.Equal(MediaTypeNames.Application.Json, response.Content.Headers.ContentType?.MediaType);
             Assert.Equal(Encoding.UTF8.BodyName, response.Content.Headers.ContentType?.CharSet);
 
-            var profiles = await JsonSerializer.DeserializeAsync<DeviceProfileInfo[]>(
-                await response.Content.ReadAsStreamAsync(),
-                _jsonOptions);
+            var profiles = await response.Content.ReadFromJsonAsync<DeviceProfileInfo[]>(_jsonOptions);
 
             Assert.Null(profiles?.FirstOrDefault(x => string.Equals(x.Name, "ThisProfileIsUpdated", StringComparison.Ordinal)));
         }

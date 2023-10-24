@@ -210,7 +210,6 @@ namespace Emby.Server.Implementations.IO
 
             DisposeTimer();
             _disposed = true;
-            GC.SuppressFinalize(this);
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Xml;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -113,31 +114,23 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 case "artist":
+                    var artist = reader.ReadNormalizedString();
+                    if (!string.IsNullOrEmpty(artist) && item is MusicVideo artistVideo)
                     {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val) && item is MusicVideo movie)
-                        {
-                            var list = movie.Artists.ToList();
-                            list.Add(val);
-                            movie.Artists = list.ToArray();
-                        }
-
-                        break;
+                        var list = artistVideo.Artists.ToList();
+                        list.Add(artist);
+                        artistVideo.Artists = list.ToArray();
                     }
 
+                    break;
                 case "album":
+                    var album = reader.ReadNormalizedString();
+                    if (!string.IsNullOrEmpty(album) && item is MusicVideo albumVideo)
                     {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val) && item is MusicVideo movie)
-                        {
-                            movie.Album = val;
-                        }
-
-                        break;
+                        albumVideo.Album = album;
                     }
 
+                    break;
                 default:
                     base.FetchDataFromXmlNode(reader, itemResult);
                     break;

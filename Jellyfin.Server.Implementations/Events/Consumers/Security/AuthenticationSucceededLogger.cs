@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
-using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Authentication;
 using MediaBrowser.Model.Activity;

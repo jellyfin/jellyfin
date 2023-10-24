@@ -45,6 +45,8 @@ public class DynamicHlsController : BaseJellyfinApiController
     private const string DefaultEventEncoderPreset = "superfast";
     private const TranscodingJobType TranscodingJobType = MediaBrowser.Controller.MediaEncoding.TranscodingJobType.Hls;
 
+    private readonly Version _minFFmpegFlacInMp4 = new Version(6, 0);
+
     private readonly ILibraryManager _libraryManager;
     private readonly IUserManager _userManager;
     private readonly IDlnaManager _dlnaManager;
@@ -408,6 +410,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
     /// <param name="streamOptions">Optional. The streaming options.</param>
     /// <param name="enableAdaptiveBitrateStreaming">Enable adaptive bitrate streaming.</param>
+    /// <param name="enableTrickplay">Enable trickplay image playlists being added to master playlist.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the playlist file.</returns>
     [HttpGet("Videos/{itemId}/master.m3u8")]
@@ -465,7 +468,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
-        [FromQuery] bool enableAdaptiveBitrateStreaming = true)
+        [FromQuery] bool enableAdaptiveBitrateStreaming = true,
+        [FromQuery] bool enableTrickplay = true)
     {
         var streamingRequest = new HlsVideoRequestDto
         {
@@ -519,7 +523,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
-            EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming
+            EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming,
+            EnableTrickplay = enableTrickplay
         };
 
         return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
@@ -1705,16 +1710,31 @@ public class DynamicHlsController : BaseJellyfinApiController
         var audioCodec = _encodingHelper.GetAudioEncoder(state);
         var bitStreamArgs = EncodingHelper.GetAudioBitStreamArguments(state, state.Request.SegmentContainer, state.MediaSource.Container);
 
+        // opus, dts, truehd and flac (in FFmpeg 5 and older) are experimental in mp4 muxer
+        var strictArgs = string.Empty;
+        var actualOutputAudioCodec = state.ActualOutputAudioCodec;
+        if (string.Equals(actualOutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(actualOutputAudioCodec, "dts", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(actualOutputAudioCodec, "truehd", StringComparison.OrdinalIgnoreCase)
+            || (string.Equals(actualOutputAudioCodec, "flac", StringComparison.OrdinalIgnoreCase)
+                && _mediaEncoder.EncoderVersion < _minFFmpegFlacInMp4))
+        {
+            strictArgs = " -strict -2";
+        }
+
         if (!state.IsOutputVideo)
         {
-            if (EncodingHelper.IsCopyCodec(audioCodec))
-            {
-                return "-acodec copy -strict -2" + bitStreamArgs;
-            }
-
             var audioTranscodeParams = string.Empty;
 
-            audioTranscodeParams += "-acodec " + audioCodec + bitStreamArgs;
+            // -vn to drop any video streams
+            audioTranscodeParams += "-vn";
+
+            if (EncodingHelper.IsCopyCodec(audioCodec))
+            {
+                return audioTranscodeParams + " -acodec copy" + bitStreamArgs + strictArgs;
+            }
+
+            audioTranscodeParams += " -acodec " + audioCodec + bitStreamArgs + strictArgs;
 
             var audioBitrate = state.OutputAudioBitrate;
             var audioChannels = state.OutputAudioChannels;
@@ -1742,19 +1762,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                 audioTranscodeParams += " -ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture);
             }
 
-            audioTranscodeParams += " -vn";
             return audioTranscodeParams;
-        }
-
-        // dts, flac, opus and truehd are experimental in mp4 muxer
-        var strictArgs = string.Empty;
-        var actualOutputAudioCodec = state.ActualOutputAudioCodec;
-        if (string.Equals(actualOutputAudioCodec, "flac", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(actualOutputAudioCodec, "opus", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(actualOutputAudioCodec, "dts", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(actualOutputAudioCodec, "truehd", StringComparison.OrdinalIgnoreCase))
-        {
-            strictArgs = " -strict -2";
         }
 
         if (EncodingHelper.IsCopyCodec(audioCodec))

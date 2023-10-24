@@ -51,8 +51,8 @@ namespace Jellyfin.Naming.Tests.TV
         [InlineData("Season 2009/Elementary - S2009E23-E24-E26 - The Woman.mp4", 2009)]
         [InlineData("Season 2009/S2009E23-E24-E26 - The Woman.mp4", 2009)]
         [InlineData("Series/1-12 - The Woman.mp4", 1)]
-        [InlineData(@"Running Man/Running Man S2017E368.mkv", 2017)]
-        [InlineData(@"Case Closed (1996-2007)/Case Closed - 317.mkv", 3)]
+        [InlineData("Running Man/Running Man S2017E368.mkv", 2017)]
+        [InlineData("Case Closed (1996-2007)/Case Closed - 317.mkv", 3)]
         // TODO: [InlineData(@"Seinfeld/Seinfeld 0807 The Checks.avi", 8)]
         public void GetSeasonNumberFromEpisodeFileTest(string path, int? expected)
         {
