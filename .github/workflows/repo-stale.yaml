@@ -28,7 +28,7 @@ jobs:
           exempt-issue-labels: regression,security,roadmap,future,feature,enhancement,confirmed
           stale-issue-label: stale
           stale-issue-message: |-
-            This issue has gone 120 days without an update and will be closed within 21 days if there is no new activity. To prevent this issue from being closed, please confirm the issue has not already been fixed by providing updated examples or logs.
+            This issue has gone 120 days without an update and will be closed within 21 days if there is no new activity. To prevent this issue from being closed, please confirm the issue has not already been fixed by providing updated examples or logs.  
 
             If you have any questions you can use one of several ways to [contact us](https://jellyfin.org/contact).
           close-issue-message: |-
