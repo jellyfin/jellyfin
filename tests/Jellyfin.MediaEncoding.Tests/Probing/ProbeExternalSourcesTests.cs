@@ -1,5 +1,5 @@
+using System;
 using System.Collections.Generic;
-using System.Threading;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.Model.Globalization;
@@ -15,7 +15,7 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
     public class ProbeExternalSourcesTests
     {
         [Fact]
-        public void GetMediaInfo_Uses_UserAgent()
+        public void GetExtraArguments_Forwards_UserAgent()
         {
             var encoder = new MediaEncoder(
                 Mock.Of<ILogger<MediaEncoder>>(),
@@ -26,6 +26,7 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
                 new ConfigurationBuilder().Build(),
                 Mock.Of<IServerConfigurationManager>());
 
+            var userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)";
             var req = new MediaBrowser.Controller.MediaEncoding.MediaInfoRequest()
             {
                 MediaSource = new MediaBrowser.Model.Dto.MediaSourceInfo
@@ -34,14 +35,16 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
                     Protocol = MediaProtocol.Http,
                     RequiredHttpHeaders = new Dictionary<string, string>()
                     {
-                        { "user_agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/530.35 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/530.35" },
+                        { "user_agent", userAgent },
                     }
                 },
                 ExtractChapters = false,
                 MediaType = MediaBrowser.Model.Dlna.DlnaProfileType.Video,
             };
 
-            encoder.GetMediaInfo(req, CancellationToken.None);
+            var extraArg = encoder.GetExtraArguments(req);
+
+            Assert.Contains(userAgent, extraArg, StringComparison.InvariantCulture);
         }
     }
 }
