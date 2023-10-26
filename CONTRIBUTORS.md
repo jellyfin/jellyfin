@@ -170,6 +170,7 @@
  - [TheTyrius](https://github.com/TheTyrius)
  - [tallbl0nde](https://github.com/tallbl0nde)
  - [sleepycatcoding](https://github.com/sleepycatcoding)
+ - [Chris-Codes-It] (https://github.com/Chris-Codes-It)
 
 # Emby Contributors
 
