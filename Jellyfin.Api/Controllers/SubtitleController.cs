@@ -115,7 +115,7 @@ public class SubtitleController : BaseJellyfinApiController
     /// <response code="200">Subtitles retrieved.</response>
     /// <returns>An array of <see cref="RemoteSubtitleInfo"/>.</returns>
     [HttpGet("Items/{itemId}/RemoteSearch/Subtitles/{language}")]
-    [Authorize]
+    [Authorize(Policy = Policies.SubtitleManagement)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<RemoteSubtitleInfo>>> SearchRemoteSubtitles(
         [FromRoute, Required] Guid itemId,
@@ -135,7 +135,7 @@ public class SubtitleController : BaseJellyfinApiController
     /// <response code="204">Subtitle downloaded.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Items/{itemId}/RemoteSearch/Subtitles/{subtitleId}")]
-    [Authorize]
+    [Authorize(Policy = Policies.SubtitleManagement)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> DownloadRemoteSubtitles(
         [FromRoute, Required] Guid itemId,
@@ -399,7 +399,7 @@ public class SubtitleController : BaseJellyfinApiController
     /// <response code="204">Subtitle uploaded.</response>
     /// <returns>A <see cref="NoContentResult"/>.</returns>
     [HttpPost("Videos/{itemId}/Subtitles")]
-    [Authorize(Policy = Policies.RequiresElevation)]
+    [Authorize(Policy = Policies.SubtitleManagement)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> UploadSubtitle(
         [FromRoute, Required] Guid itemId,
