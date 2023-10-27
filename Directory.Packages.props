@@ -2,9 +2,7 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
-
   <!-- Run "dotnet list package (dash,dash)outdated" to see the latest versions of each package.-->
-
   <ItemGroup Label="Package Dependencies">
     <PackageVersion Include="AutoFixture.AutoMoq" Version="4.18.0" />
     <PackageVersion Include="AutoFixture.Xunit2" Version="4.18.0" />
@@ -72,9 +70,9 @@
     <PackageVersion Include="SkiaSharp" Version="2.88.5" />
     <PackageVersion Include="SkiaSharp.HarfBuzz" Version="2.88.5" />
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="2.88.5" />
-    <PackageVersion Include="SkiaSharp.Svg" Version="1.60.0" />
     <PackageVersion Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.507" />
+    <PackageVersion Include="Svg.Skia" Version="1.0.0.2" />
     <PackageVersion Include="Swashbuckle.AspNetCore.ReDoc" Version="6.5.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.2.3" />
     <PackageVersion Include="System.Globalization" Version="4.3.0" />
