@@ -1263,6 +1263,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                             ItemId = channelItem.Id,
                             OpenToken = mediaStreamInfo.OpenToken
                         },
+                        false,
                         CancellationToken.None).ConfigureAwait(false);
 
                     mediaStreamInfo = liveStreamResponse.Item1.MediaSource;

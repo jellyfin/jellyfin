@@ -73,6 +73,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         public DateTime DateOpened { get; protected set; }
 
+        public bool AllowCleanup { get; set; }
+
         protected void SetTempFilePath(string extension)
         {
             TempFilePath = Path.Combine(_configurationManager.GetTranscodePath(), UniqueId + "." + extension);
