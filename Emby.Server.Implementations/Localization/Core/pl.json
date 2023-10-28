@@ -124,5 +124,7 @@
     "External": "Zewnętrzny",
     "TaskKeyframeExtractorDescription": "Wyodrębnia klatki kluczowe z plików wideo w celu utworzenia bardziej precyzyjnych list odtwarzania HLS. To zadanie może trwać przez długi czas.",
     "TaskKeyframeExtractor": "Ekstraktor klatek kluczowych",
-    "HearingImpaired": "Niedosłyszący"
+    "HearingImpaired": "Niedosłyszący",
+    "TaskRefreshTrickplayImages": "Generuj obrazy trickplay",
+    "TaskRefreshTrickplayImagesDescription": "Tworzy podglądy trickplay dla filmów we włączonych bibliotekach."
 }

@@ -2,19 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Security.Cryptography.Xml;
 using BlurHashSharp.SkiaSharp;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Drawing;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
-using static System.Net.Mime.MediaTypeNames;
-using SKSvg = SkiaSharp.Extended.Svg.SKSvg;
+using Svg.Skia;
 
 namespace Jellyfin.Drawing.Skia;
 
@@ -27,6 +23,30 @@ public class SkiaEncoder : IImageEncoder
 
     private readonly ILogger<SkiaEncoder> _logger;
     private readonly IApplicationPaths _appPaths;
+    private static readonly SKImageFilter _imageFilter;
+
+#pragma warning disable CA1810
+    static SkiaEncoder()
+#pragma warning restore CA1810
+    {
+        var kernel = new[]
+        {
+            0,    -.1f,    0,
+            -.1f, 1.4f, -.1f,
+            0,    -.1f,    0,
+        };
+
+        var kernelSize = new SKSizeI(3, 3);
+        var kernelOffset = new SKPointI(1, 1);
+        _imageFilter = SKImageFilter.CreateMatrixConvolution(
+            kernelSize,
+            kernel,
+            1f,
+            0f,
+            kernelOffset,
+            SKShaderTileMode.Clamp,
+            true);
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SkiaEncoder"/> class.
@@ -123,10 +143,16 @@ public class SkiaEncoder : IImageEncoder
         var extension = Path.GetExtension(path.AsSpan());
         if (extension.Equals(".svg", StringComparison.OrdinalIgnoreCase))
         {
-            var svg = new SKSvg();
+            using var svg = new SKSvg();
             try
             {
                 using var picture = svg.Load(path);
+                if (picture is null)
+                {
+                    _logger.LogError("Unable to determine image dimensions for {FilePath}", path);
+                    return default;
+                }
+
                 return new ImageDimensions(Convert.ToInt32(picture.CullRect.Width), Convert.ToInt32(picture.CullRect.Height));
             }
             catch (FormatException skiaColorException)
@@ -289,10 +315,7 @@ public class SkiaEncoder : IImageEncoder
 
     private SKBitmap OrientImage(SKBitmap bitmap, SKEncodedOrigin origin)
     {
-        var needsFlip = origin == SKEncodedOrigin.LeftBottom
-                        || origin == SKEncodedOrigin.LeftTop
-                        || origin == SKEncodedOrigin.RightBottom
-                        || origin == SKEncodedOrigin.RightTop;
+        var needsFlip = origin is SKEncodedOrigin.LeftBottom or SKEncodedOrigin.LeftTop or SKEncodedOrigin.RightBottom or SKEncodedOrigin.RightTop;
         var rotated = needsFlip
             ? new SKBitmap(bitmap.Height, bitmap.Width)
             : new SKBitmap(bitmap.Width, bitmap.Height);
@@ -357,25 +380,7 @@ public class SkiaEncoder : IImageEncoder
             IsDither = isDither
         };
 
-        var kernel = new float[9]
-        {
-            0,    -.1f,    0,
-            -.1f, 1.4f, -.1f,
-            0,    -.1f,    0,
-        };
-
-        var kernelSize = new SKSizeI(3, 3);
-        var kernelOffset = new SKPointI(1, 1);
-
-        paint.ImageFilter = SKImageFilter.CreateMatrixConvolution(
-            kernelSize,
-            kernel,
-            1f,
-            0f,
-            kernelOffset,
-            SKShaderTileMode.Clamp,
-            true);
-
+        paint.ImageFilter = _imageFilter;
         canvas.DrawBitmap(
             source,
             SKRect.Create(0, 0, source.Width, source.Height),

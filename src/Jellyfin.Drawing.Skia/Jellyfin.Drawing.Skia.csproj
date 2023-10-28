@@ -18,11 +18,11 @@
   <ItemGroup>
     <PackageReference Include="BlurHashSharp" />
     <PackageReference Include="BlurHashSharp.SkiaSharp" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" />
     <PackageReference Include="SkiaSharp" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" />
-    <PackageReference Include="SkiaSharp.Svg" />
     <PackageReference Include="SkiaSharp.HarfBuzz" />
-    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" />
+    <PackageReference Include="Svg.Skia" />
   </ItemGroup>
 
   <ItemGroup>
