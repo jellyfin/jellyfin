@@ -68,11 +68,9 @@ namespace Jellyfin.Server.Migrations.Routines
                 HomeSectionType.SmallLibraryTiles,
                 HomeSectionType.Resume,
                 HomeSectionType.ResumeAudio,
-                HomeSectionType.ResumeBook,
                 HomeSectionType.LiveTv,
                 HomeSectionType.NextUp,
                 HomeSectionType.LatestMedia,
-                HomeSectionType.LatestRelease,
                 HomeSectionType.None,
             };
 
@@ -148,7 +146,7 @@ namespace Jellyfin.Server.Migrations.Routines
                     dto.CustomPrefs.Remove("dashboardtheme");
                     dto.CustomPrefs.Remove("tvhome");
 
-                    for (int i = 0; i < defaults.Length; i++)
+                    for (int i = 0; i < 7; i++)
                     {
                         var key = "homesection" + i;
                         dto.CustomPrefs.TryGetValue(key, out var homeSection);
