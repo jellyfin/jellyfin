@@ -1453,9 +1453,14 @@ namespace Emby.Server.Implementations.Session
             return AuthenticateNewSessionInternal(request, false);
         }
 
-        private async Task<AuthenticationResult> AuthenticateNewSessionInternal(AuthenticationRequest request, bool enforcePassword)
+        internal async Task<AuthenticationResult> AuthenticateNewSessionInternal(AuthenticationRequest request, bool enforcePassword)
         {
             CheckDisposed();
+
+            ArgumentException.ThrowIfNullOrEmpty(request.App);
+            ArgumentException.ThrowIfNullOrEmpty(request.DeviceId);
+            ArgumentException.ThrowIfNullOrEmpty(request.DeviceName);
+            ArgumentException.ThrowIfNullOrEmpty(request.AppVersion);
 
             User user = null;
             if (!request.UserId.Equals(default))
@@ -1517,8 +1522,11 @@ namespace Emby.Server.Implementations.Session
             return returnResult;
         }
 
-        private async Task<string> GetAuthorizationToken(User user, string deviceId, string app, string appVersion, string deviceName)
+        internal async Task<string> GetAuthorizationToken(User user, string deviceId, string app, string appVersion, string deviceName)
         {
+            // This should be validated above, but if it isn't don't delete all tokens.
+            ArgumentException.ThrowIfNullOrEmpty(deviceId);
+
             var existing = (await _deviceManager.GetDevices(
                 new DeviceQuery
                 {
