@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -33,28 +35,32 @@ namespace MediaBrowser.Providers.Subtitles
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly ILocalizationManager _localization;
 
-        private readonly ISubtitleProvider[] _subtitleProviders;
+        private ISubtitleProvider[] _subtitleProviders;
 
         public SubtitleManager(
             ILogger<SubtitleManager> logger,
             IFileSystem fileSystem,
             ILibraryMonitor monitor,
             IMediaSourceManager mediaSourceManager,
-            ILocalizationManager localizationManager,
-            IEnumerable<ISubtitleProvider> subtitleProviders)
+            ILocalizationManager localizationManager)
         {
             _logger = logger;
             _fileSystem = fileSystem;
             _monitor = monitor;
             _mediaSourceManager = mediaSourceManager;
             _localization = localizationManager;
+        }
+
+        /// <inheritdoc />
+        public event EventHandler<SubtitleDownloadFailureEventArgs> SubtitleDownloadFailure;
+
+        /// <inheritdoc />
+        public void AddParts(IEnumerable<ISubtitleProvider> subtitleProviders)
+        {
             _subtitleProviders = subtitleProviders
                 .OrderBy(i => i is IHasOrder hasOrder ? hasOrder.Order : 0)
                 .ToArray();
         }
-
-        /// <inheritdoc />
-        public event EventHandler<SubtitleDownloadFailureEventArgs>? SubtitleDownloadFailure;
 
         /// <inheritdoc />
         public async Task<RemoteSubtitleInfo[]> SearchSubtitles(SubtitleSearchRequest request, CancellationToken cancellationToken)
@@ -238,7 +244,7 @@ namespace MediaBrowser.Providers.Subtitles
 
         private async Task TrySaveToFiles(Stream stream, List<string> savePaths)
         {
-            List<Exception>? exs = null;
+            List<Exception> exs = null;
 
             foreach (var savePath in savePaths)
             {
