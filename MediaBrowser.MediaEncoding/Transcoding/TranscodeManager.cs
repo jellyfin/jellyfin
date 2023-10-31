@@ -8,8 +8,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Api.Extensions;
-using Jellyfin.Api.Models.StreamingDtos;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
@@ -18,93 +16,77 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Api.Helpers;
+namespace MediaBrowser.MediaEncoding.Transcoding;
 
-/// <summary>
-/// Transcoding job helpers.
-/// </summary>
-public class TranscodingJobHelper : IDisposable
+/// <inheritdoc cref="ITranscodeManager"/>
+public sealed class TranscodeManager : ITranscodeManager, IDisposable
 {
-    /// <summary>
-    /// The active transcoding jobs.
-    /// </summary>
-    private static readonly List<TranscodingJob> _activeTranscodingJobs = new List<TranscodingJob>();
-
-    /// <summary>
-    /// The transcoding locks.
-    /// </summary>
-    private static readonly Dictionary<string, SemaphoreSlim> _transcodingLocks = new Dictionary<string, SemaphoreSlim>();
-
-    private readonly IAttachmentExtractor _attachmentExtractor;
-    private readonly IApplicationPaths _appPaths;
-    private readonly EncodingHelper _encodingHelper;
+    private readonly ILoggerFactory _loggerFactory;
+    private readonly ILogger<TranscodeManager> _logger;
     private readonly IFileSystem _fileSystem;
-    private readonly ILogger<TranscodingJobHelper> _logger;
+    private readonly IApplicationPaths _appPaths;
+    private readonly IServerConfigurationManager _serverConfigurationManager;
+    private readonly IUserManager _userManager;
+    private readonly ISessionManager _sessionManager;
+    private readonly EncodingHelper _encodingHelper;
     private readonly IMediaEncoder _mediaEncoder;
     private readonly IMediaSourceManager _mediaSourceManager;
-    private readonly IServerConfigurationManager _serverConfigurationManager;
-    private readonly ISessionManager _sessionManager;
-    private readonly ILoggerFactory _loggerFactory;
-    private readonly IUserManager _userManager;
+    private readonly IAttachmentExtractor _attachmentExtractor;
+
+    private readonly List<TranscodingJob> _activeTranscodingJobs = new();
+    private readonly Dictionary<string, SemaphoreSlim> _transcodingLocks = new();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="TranscodingJobHelper"/> class.
+    /// Initializes a new instance of the <see cref="TranscodeManager"/> class.
     /// </summary>
-    /// <param name="attachmentExtractor">Instance of the <see cref="IAttachmentExtractor"/> interface.</param>
-    /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
-    /// <param name="logger">Instance of the <see cref="ILogger{TranscodingJobHelpers}"/> interface.</param>
-    /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
-    /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-    /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-    /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-    /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
-    /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
-    /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
-    /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-    public TranscodingJobHelper(
-        IAttachmentExtractor attachmentExtractor,
-        IApplicationPaths appPaths,
-        ILogger<TranscodingJobHelper> logger,
-        IMediaSourceManager mediaSourceManager,
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+    /// <param name="fileSystem">The <see cref="IFileSystem"/>.</param>
+    /// <param name="appPaths">The <see cref="IApplicationPaths"/>.</param>
+    /// <param name="serverConfigurationManager">The <see cref="IServerConfigurationManager"/>.</param>
+    /// <param name="userManager">The <see cref="IUserManager"/>.</param>
+    /// <param name="sessionManager">The <see cref="ISessionManager"/>.</param>
+    /// <param name="encodingHelper">The <see cref="EncodingHelper"/>.</param>
+    /// <param name="mediaEncoder">The <see cref="IMediaEncoder"/>.</param>
+    /// <param name="mediaSourceManager">The <see cref="IMediaSourceManager"/>.</param>
+    /// <param name="attachmentExtractor">The <see cref="IAttachmentExtractor"/>.</param>
+    public TranscodeManager(
+        ILoggerFactory loggerFactory,
         IFileSystem fileSystem,
-        IMediaEncoder mediaEncoder,
+        IApplicationPaths appPaths,
         IServerConfigurationManager serverConfigurationManager,
+        IUserManager userManager,
         ISessionManager sessionManager,
         EncodingHelper encodingHelper,
-        ILoggerFactory loggerFactory,
-        IUserManager userManager)
+        IMediaEncoder mediaEncoder,
+        IMediaSourceManager mediaSourceManager,
+        IAttachmentExtractor attachmentExtractor)
     {
-        _attachmentExtractor = attachmentExtractor;
-        _appPaths = appPaths;
-        _logger = logger;
-        _mediaSourceManager = mediaSourceManager;
+        _loggerFactory = loggerFactory;
         _fileSystem = fileSystem;
-        _mediaEncoder = mediaEncoder;
+        _appPaths = appPaths;
         _serverConfigurationManager = serverConfigurationManager;
+        _userManager = userManager;
         _sessionManager = sessionManager;
         _encodingHelper = encodingHelper;
-        _loggerFactory = loggerFactory;
-        _userManager = userManager;
+        _mediaEncoder = mediaEncoder;
+        _mediaSourceManager = mediaSourceManager;
+        _attachmentExtractor = attachmentExtractor;
 
+        _logger = loggerFactory.CreateLogger<TranscodeManager>();
         DeleteEncodedMediaCache();
-
-        sessionManager.PlaybackProgress += OnPlaybackProgress;
-        sessionManager.PlaybackStart += OnPlaybackProgress;
+        _sessionManager.PlaybackProgress += OnPlaybackProgress;
+        _sessionManager.PlaybackStart += OnPlaybackProgress;
     }
 
-    /// <summary>
-    /// Get transcoding job.
-    /// </summary>
-    /// <param name="playSessionId">Playback session id.</param>
-    /// <returns>The transcoding job.</returns>
+    /// <inheritdoc />
     public TranscodingJob? GetTranscodingJob(string playSessionId)
     {
         lock (_activeTranscodingJobs)
@@ -113,12 +95,7 @@ public class TranscodingJobHelper : IDisposable
         }
     }
 
-    /// <summary>
-    /// Get transcoding job.
-    /// </summary>
-    /// <param name="path">Path to the transcoding file.</param>
-    /// <param name="type">The <see cref="TranscodingJobType"/>.</param>
-    /// <returns>The transcoding job.</returns>
+    /// <inheritdoc />
     public TranscodingJob? GetTranscodingJob(string path, TranscodingJobType type)
     {
         lock (_activeTranscodingJobs)
@@ -127,12 +104,7 @@ public class TranscodingJobHelper : IDisposable
         }
     }
 
-    /// <summary>
-    /// Ping transcoding job.
-    /// </summary>
-    /// <param name="playSessionId">Play session id.</param>
-    /// <param name="isUserPaused">Is user paused.</param>
-    /// <exception cref="ArgumentNullException">Play session id is null.</exception>
+    /// <inheritdoc />
     public void PingTranscodingJob(string playSessionId, bool? isUserPaused)
     {
         ArgumentException.ThrowIfNullOrEmpty(playSessionId);
@@ -189,10 +161,6 @@ public class TranscodingJobHelper : IDisposable
         }
     }
 
-    /// <summary>
-    /// Called when [transcode kill timer stopped].
-    /// </summary>
-    /// <param name="state">The state.</param>
     private async void OnTranscodeKillTimerStopped(object? state)
     {
         var job = state as TranscodingJob ?? throw new ArgumentException($"{nameof(state)} is not of type {nameof(TranscodingJob)}", nameof(state));
@@ -212,29 +180,8 @@ public class TranscodingJobHelper : IDisposable
         await KillTranscodingJob(job, true, path => true).ConfigureAwait(false);
     }
 
-    /// <summary>
-    /// Kills the single transcoding job.
-    /// </summary>
-    /// <param name="deviceId">The device id.</param>
-    /// <param name="playSessionId">The play session identifier.</param>
-    /// <param name="deleteFiles">The delete files.</param>
-    /// <returns>Task.</returns>
+    /// <inheritdoc />
     public Task KillTranscodingJobs(string deviceId, string? playSessionId, Func<string, bool> deleteFiles)
-    {
-        return KillTranscodingJobs(
-            j => string.IsNullOrWhiteSpace(playSessionId)
-                ? string.Equals(deviceId, j.DeviceId, StringComparison.OrdinalIgnoreCase)
-                : string.Equals(playSessionId, j.PlaySessionId, StringComparison.OrdinalIgnoreCase),
-            deleteFiles);
-    }
-
-    /// <summary>
-    /// Kills the transcoding jobs.
-    /// </summary>
-    /// <param name="killJob">The kill job.</param>
-    /// <param name="deleteFiles">The delete files.</param>
-    /// <returns>Task.</returns>
-    private Task KillTranscodingJobs(Func<TranscodingJob, bool> killJob, Func<string, bool> deleteFiles)
     {
         var jobs = new List<TranscodingJob>();
 
@@ -242,13 +189,12 @@ public class TranscodingJobHelper : IDisposable
         {
             // This is really only needed for HLS.
             // Progressive streams can stop on their own reliably.
-            jobs.AddRange(_activeTranscodingJobs.Where(killJob));
+            jobs.AddRange(_activeTranscodingJobs.Where(j => string.IsNullOrWhiteSpace(playSessionId)
+                ? string.Equals(deviceId, j.DeviceId, StringComparison.OrdinalIgnoreCase)
+                : string.Equals(playSessionId, j.PlaySessionId, StringComparison.OrdinalIgnoreCase)));
         }
 
-        if (jobs.Count == 0)
-        {
-            return Task.CompletedTask;
-        }
+        return Task.WhenAll(GetKillJobs());
 
         IEnumerable<Task> GetKillJobs()
         {
@@ -257,16 +203,8 @@ public class TranscodingJobHelper : IDisposable
                 yield return KillTranscodingJob(job, false, deleteFiles);
             }
         }
-
-        return Task.WhenAll(GetKillJobs());
     }
 
-    /// <summary>
-    /// Kills the transcoding job.
-    /// </summary>
-    /// <param name="job">The job.</param>
-    /// <param name="closeLiveStream">if set to <c>true</c> [close live stream].</param>
-    /// <param name="delete">The delete.</param>
     private async Task KillTranscodingJob(TranscodingJob job, bool closeLiveStream, Func<string, bool> delete)
     {
         job.DisposeKillTimer();
@@ -353,10 +291,6 @@ public class TranscodingJobHelper : IDisposable
         }
     }
 
-    /// <summary>
-    /// Deletes the progressive partial stream files.
-    /// </summary>
-    /// <param name="outputFilePath">The output file path.</param>
     private void DeleteProgressivePartialStreamFiles(string outputFilePath)
     {
         if (File.Exists(outputFilePath))
@@ -365,10 +299,6 @@ public class TranscodingJobHelper : IDisposable
         }
     }
 
-    /// <summary>
-    /// Deletes the HLS partial stream files.
-    /// </summary>
-    /// <param name="outputFilePath">The output file path.</param>
     private void DeleteHlsPartialStreamFiles(string outputFilePath)
     {
         var directory = Path.GetDirectoryName(outputFilePath)
@@ -400,16 +330,7 @@ public class TranscodingJobHelper : IDisposable
         }
     }
 
-    /// <summary>
-    /// Report the transcoding progress to the session manager.
-    /// </summary>
-    /// <param name="job">The <see cref="TranscodingJob"/> of which the progress will be reported.</param>
-    /// <param name="state">The <see cref="StreamState"/> of the current transcoding job.</param>
-    /// <param name="transcodingPosition">The current transcoding position.</param>
-    /// <param name="framerate">The framerate of the transcoding job.</param>
-    /// <param name="percentComplete">The completion percentage of the transcode.</param>
-    /// <param name="bytesTranscoded">The number of bytes transcoded.</param>
-    /// <param name="bitRate">The bitrate of the transcoding job.</param>
+    /// <inheritdoc />
     public void ReportTranscodingProgress(
         TranscodingJob job,
         StreamState state,
@@ -462,22 +383,12 @@ public class TranscodingJobHelper : IDisposable
         }
     }
 
-    /// <summary>
-    /// Starts FFmpeg.
-    /// </summary>
-    /// <param name="state">The state.</param>
-    /// <param name="outputPath">The output path.</param>
-    /// <param name="commandLineArguments">The command line arguments for FFmpeg.</param>
-    /// <param name="request">The <see cref="HttpRequest"/>.</param>
-    /// <param name="transcodingJobType">The <see cref="TranscodingJobType"/>.</param>
-    /// <param name="cancellationTokenSource">The cancellation token source.</param>
-    /// <param name="workingDirectory">The working directory.</param>
-    /// <returns>Task.</returns>
+    /// <inheritdoc />
     public async Task<TranscodingJob> StartFfMpeg(
         StreamState state,
         string outputPath,
         string commandLineArguments,
-        HttpRequest request,
+        Guid userId,
         TranscodingJobType transcodingJobType,
         CancellationTokenSource cancellationTokenSource,
         string? workingDirectory = null)
@@ -489,7 +400,6 @@ public class TranscodingJobHelper : IDisposable
 
         if (state.VideoRequest is not null && !EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
         {
-            var userId = request.HttpContext.User.GetUserId();
             var user = userId.Equals(default) ? null : _userManager.GetUserById(userId);
             if (user is not null && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding))
             {
@@ -567,13 +477,26 @@ public class TranscodingJobHelper : IDisposable
             $"{logFilePrefix}{DateTime.Now:yyyy-MM-dd_HH-mm-ss}_{state.Request.MediaSourceId}_{Guid.NewGuid().ToString()[..8]}.log");
 
         // FFmpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
-        Stream logStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+        Stream logStream = new FileStream(
+            logFilePath,
+            FileMode.Create,
+            FileAccess.Write,
+            FileShare.Read,
+            IODefaults.FileStreamBufferSize,
+            FileOptions.Asynchronous);
 
         var commandLineLogMessage = process.StartInfo.FileName + " " + process.StartInfo.Arguments;
-        var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(request.Path + Environment.NewLine + Environment.NewLine + JsonSerializer.Serialize(state.MediaSource) + Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine);
+        var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(
+            JsonSerializer.Serialize(state.MediaSource)
+            + Environment.NewLine
+            + Environment.NewLine
+            + commandLineLogMessage
+            + Environment.NewLine
+            + Environment.NewLine);
+
         await logStream.WriteAsync(commandLineLogMessageBytes, cancellationTokenSource.Token).ConfigureAwait(false);
 
-        process.Exited += (sender, args) => OnFfMpegProcessExited(process, transcodingJob, state);
+        process.Exited += (_, _) => OnFfMpegProcessExited(process, transcodingJob, state);
 
         try
         {
@@ -582,7 +505,6 @@ public class TranscodingJobHelper : IDisposable
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error starting FFmpeg");
-
             this.OnTranscodeFailedToStart(outputPath, transcodingJobType, state);
 
             throw;
@@ -637,31 +559,14 @@ public class TranscodingJobHelper : IDisposable
         }
     }
 
-    private bool EnableThrottling(StreamState state)
-    {
-        var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
+    private static bool EnableThrottling(StreamState state)
+        => state.InputProtocol == MediaProtocol.File
+           && state.RunTimeTicks.HasValue
+           && state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks
+           && state.IsInputVideo
+           && state.VideoType == VideoType.VideoFile;
 
-        return state.InputProtocol == MediaProtocol.File &&
-               state.RunTimeTicks.HasValue &&
-               state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks &&
-               state.IsInputVideo &&
-               state.VideoType == VideoType.VideoFile;
-    }
-
-    /// <summary>
-    /// Called when [transcode beginning].
-    /// </summary>
-    /// <param name="path">The path.</param>
-    /// <param name="playSessionId">The play session identifier.</param>
-    /// <param name="liveStreamId">The live stream identifier.</param>
-    /// <param name="transcodingJobId">The transcoding job identifier.</param>
-    /// <param name="type">The type.</param>
-    /// <param name="process">The process.</param>
-    /// <param name="deviceId">The device id.</param>
-    /// <param name="state">The state.</param>
-    /// <param name="cancellationTokenSource">The cancellation token source.</param>
-    /// <returns>TranscodingJob.</returns>
-    public TranscodingJob OnTranscodeBeginning(
+    private TranscodingJob OnTranscodeBeginning(
         string path,
         string? playSessionId,
         string? liveStreamId,
@@ -696,10 +601,7 @@ public class TranscodingJobHelper : IDisposable
         }
     }
 
-    /// <summary>
-    /// Called when [transcode end].
-    /// </summary>
-    /// <param name="job">The transcode job.</param>
+    /// <inheritdoc />
     public void OnTranscodeEndRequest(TranscodingJob job)
     {
         job.ActiveRequestCount--;
@@ -710,16 +612,7 @@ public class TranscodingJobHelper : IDisposable
         }
     }
 
-    /// <summary>
-    /// <summary>
-    /// The progressive
-    /// </summary>
-    /// Called when [transcode failed to start].
-    /// </summary>
-    /// <param name="path">The path.</param>
-    /// <param name="type">The type.</param>
-    /// <param name="state">The state.</param>
-    public void OnTranscodeFailedToStart(string path, TranscodingJobType type, StreamState state)
+    private void OnTranscodeFailedToStart(string path, TranscodingJobType type, StreamState state)
     {
         lock (_activeTranscodingJobs)
         {
@@ -742,12 +635,6 @@ public class TranscodingJobHelper : IDisposable
         }
     }
 
-    /// <summary>
-    /// Processes the exited.
-    /// </summary>
-    /// <param name="process">The process.</param>
-    /// <param name="job">The job.</param>
-    /// <param name="state">The state.</param>
     private void OnFfMpegProcessExited(Process process, TranscodingJob job, StreamState state)
     {
         job.HasExited = true;
@@ -794,44 +681,30 @@ public class TranscodingJobHelper : IDisposable
         }
     }
 
-    /// <summary>
-    /// Called when [transcode begin request].
-    /// </summary>
-    /// <param name="path">The path.</param>
-    /// <param name="type">The type.</param>
-    /// <returns>The <see cref="TranscodingJob"/>.</returns>
+    /// <inheritdoc />
     public TranscodingJob? OnTranscodeBeginRequest(string path, TranscodingJobType type)
     {
         lock (_activeTranscodingJobs)
         {
-            var job = _activeTranscodingJobs.FirstOrDefault(j => j.Type == type && string.Equals(j.Path, path, StringComparison.OrdinalIgnoreCase));
+            var job = _activeTranscodingJobs
+                .FirstOrDefault(j => j.Type == type && string.Equals(j.Path, path, StringComparison.OrdinalIgnoreCase));
 
             if (job is null)
             {
                 return null;
             }
 
-            OnTranscodeBeginRequest(job);
+            job.ActiveRequestCount++;
+            if (string.IsNullOrWhiteSpace(job.PlaySessionId) || job.Type == TranscodingJobType.Progressive)
+            {
+                job.StopKillTimer();
+            }
 
             return job;
         }
     }
 
-    private void OnTranscodeBeginRequest(TranscodingJob job)
-    {
-        job.ActiveRequestCount++;
-
-        if (string.IsNullOrWhiteSpace(job.PlaySessionId) || job.Type == TranscodingJobType.Progressive)
-        {
-            job.StopKillTimer();
-        }
-    }
-
-    /// <summary>
-    /// Gets the transcoding lock.
-    /// </summary>
-    /// <param name="outputPath">The output path of the transcoded file.</param>
-    /// <returns>A <see cref="SemaphoreSlim"/>.</returns>
+    /// <inheritdoc />
     public SemaphoreSlim GetTranscodingLock(string outputPath)
     {
         lock (_transcodingLocks)
@@ -854,9 +727,6 @@ public class TranscodingJobHelper : IDisposable
         }
     }
 
-    /// <summary>
-    /// Deletes the encoded media cache.
-    /// </summary>
     private void DeleteEncodedMediaCache()
     {
         var path = _serverConfigurationManager.GetTranscodePath();
@@ -871,26 +741,10 @@ public class TranscodingJobHelper : IDisposable
         }
     }
 
-    /// <summary>
-    /// Dispose transcoding job helper.
-    /// </summary>
+    /// <inheritdoc />
     public void Dispose()
     {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
-    /// Dispose throttler.
-    /// </summary>
-    /// <param name="disposing">Disposing.</param>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _loggerFactory.Dispose();
-            _sessionManager.PlaybackProgress -= OnPlaybackProgress;
-            _sessionManager.PlaybackStart -= OnPlaybackProgress;
-        }
+        _sessionManager.PlaybackProgress -= OnPlaybackProgress;
+        _sessionManager.PlaybackStart -= OnPlaybackProgress;
     }
 }

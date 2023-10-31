@@ -11,7 +11,6 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
-using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
@@ -20,6 +19,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -43,7 +43,7 @@ public class VideosController : BaseJellyfinApiController
     private readonly IMediaSourceManager _mediaSourceManager;
     private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly IMediaEncoder _mediaEncoder;
-    private readonly TranscodingJobHelper _transcodingJobHelper;
+    private readonly ITranscodeManager _transcodeManager;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly EncodingHelper _encodingHelper;
 
@@ -58,7 +58,7 @@ public class VideosController : BaseJellyfinApiController
     /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-    /// <param name="transcodingJobHelper">Instance of the <see cref="TranscodingJobHelper"/> class.</param>
+    /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
     /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
     /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
     public VideosController(
@@ -68,7 +68,7 @@ public class VideosController : BaseJellyfinApiController
         IMediaSourceManager mediaSourceManager,
         IServerConfigurationManager serverConfigurationManager,
         IMediaEncoder mediaEncoder,
-        TranscodingJobHelper transcodingJobHelper,
+        ITranscodeManager transcodeManager,
         IHttpClientFactory httpClientFactory,
         EncodingHelper encodingHelper)
     {
@@ -78,7 +78,7 @@ public class VideosController : BaseJellyfinApiController
         _mediaSourceManager = mediaSourceManager;
         _serverConfigurationManager = serverConfigurationManager;
         _mediaEncoder = mediaEncoder;
-        _transcodingJobHelper = transcodingJobHelper;
+        _transcodeManager = transcodeManager;
         _httpClientFactory = httpClientFactory;
         _encodingHelper = encodingHelper;
     }
@@ -427,7 +427,7 @@ public class VideosController : BaseJellyfinApiController
                 _serverConfigurationManager,
                 _mediaEncoder,
                 _encodingHelper,
-                _transcodingJobHelper,
+                _transcodeManager,
                 _transcodingJobType,
                 cancellationTokenSource.Token)
             .ConfigureAwait(false);
@@ -466,7 +466,7 @@ public class VideosController : BaseJellyfinApiController
 
             if (state.MediaSource.IsInfiniteStream)
             {
-                var liveStream = new ProgressiveFileStream(state.MediaPath, null, _transcodingJobHelper);
+                var liveStream = new ProgressiveFileStream(state.MediaPath, null, _transcodeManager);
                 return File(liveStream, contentType);
             }
 
@@ -482,7 +482,7 @@ public class VideosController : BaseJellyfinApiController
             state,
             isHeadRequest,
             HttpContext,
-            _transcodingJobHelper,
+            _transcodeManager,
             ffmpegCommandLineArguments,
             _transcodingJobType,
             cancellationTokenSource).ConfigureAwait(false);

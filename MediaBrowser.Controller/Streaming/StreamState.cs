@@ -1,10 +1,9 @@
 using System;
-using Jellyfin.Api.Helpers;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dlna;
 
-namespace Jellyfin.Api.Models.StreamingDtos;
+namespace MediaBrowser.Controller.Streaming;
 
 /// <summary>
 /// The stream state dto.
@@ -12,7 +11,7 @@ namespace Jellyfin.Api.Models.StreamingDtos;
 public class StreamState : EncodingJobInfo, IDisposable
 {
     private readonly IMediaSourceManager _mediaSourceManager;
-    private readonly TranscodingJobHelper _transcodingJobHelper;
+    private readonly ITranscodeManager _transcodeManager;
     private bool _disposed;
 
     /// <summary>
@@ -20,12 +19,12 @@ public class StreamState : EncodingJobInfo, IDisposable
     /// </summary>
     /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager" /> interface.</param>
     /// <param name="transcodingType">The <see cref="TranscodingJobType" />.</param>
-    /// <param name="transcodingJobHelper">The <see cref="TranscodingJobHelper" /> singleton.</param>
-    public StreamState(IMediaSourceManager mediaSourceManager, TranscodingJobType transcodingType, TranscodingJobHelper transcodingJobHelper)
+    /// <param name="transcodeManager">The <see cref="ITranscodeManager" /> singleton.</param>
+    public StreamState(IMediaSourceManager mediaSourceManager, TranscodingJobType transcodingType, ITranscodeManager transcodeManager)
         : base(transcodingType)
     {
         _mediaSourceManager = mediaSourceManager;
-        _transcodingJobHelper = transcodingJobHelper;
+        _transcodeManager = transcodeManager;
     }
 
     /// <summary>
@@ -152,7 +151,7 @@ public class StreamState : EncodingJobInfo, IDisposable
     /// <inheritdoc />
     public override void ReportTranscodingProgress(TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded, int? bitRate)
     {
-        _transcodingJobHelper.ReportTranscodingProgress(TranscodingJob!, this, transcodingPosition, framerate, percentComplete, bytesTranscoded, bitRate);
+        _transcodeManager.ReportTranscodingProgress(TranscodingJob!, this, transcodingPosition, framerate, percentComplete, bytesTranscoded, bitRate);
     }
 
     /// <summary>

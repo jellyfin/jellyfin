@@ -15,7 +15,7 @@ public class ProgressiveFileStream : Stream
 {
     private readonly Stream _stream;
     private readonly TranscodingJob? _job;
-    private readonly TranscodingJobHelper? _transcodingJobHelper;
+    private readonly ITranscodeManager? _transcodeManager;
     private readonly int _timeoutMs;
     private bool _disposed;
 
@@ -24,12 +24,12 @@ public class ProgressiveFileStream : Stream
     /// </summary>
     /// <param name="filePath">The path to the transcoded file.</param>
     /// <param name="job">The transcoding job information.</param>
-    /// <param name="transcodingJobHelper">The transcoding job helper.</param>
+    /// <param name="transcodeManager">The transcode manager.</param>
     /// <param name="timeoutMs">The timeout duration in milliseconds.</param>
-    public ProgressiveFileStream(string filePath, TranscodingJob? job, TranscodingJobHelper transcodingJobHelper, int timeoutMs = 30000)
+    public ProgressiveFileStream(string filePath, TranscodingJob? job, ITranscodeManager transcodeManager, int timeoutMs = 30000)
     {
         _job = job;
-        _transcodingJobHelper = transcodingJobHelper;
+        _transcodeManager = transcodeManager;
         _timeoutMs = timeoutMs;
 
         _stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan);
@@ -43,7 +43,7 @@ public class ProgressiveFileStream : Stream
     public ProgressiveFileStream(Stream stream, int timeoutMs = 30000)
     {
         _job = null;
-        _transcodingJobHelper = null;
+        _transcodeManager = null;
         _timeoutMs = timeoutMs;
         _stream = stream;
     }
@@ -153,7 +153,7 @@ public class ProgressiveFileStream : Stream
 
                 if (_job is not null)
                 {
-                    _transcodingJobHelper?.OnTranscodeEndRequest(_job);
+                    _transcodeManager?.OnTranscodeEndRequest(_job);
                 }
             }
         }

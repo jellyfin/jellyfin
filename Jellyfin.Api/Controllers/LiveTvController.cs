@@ -24,6 +24,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
@@ -47,7 +48,7 @@ public class LiveTvController : BaseJellyfinApiController
     private readonly IDtoService _dtoService;
     private readonly IMediaSourceManager _mediaSourceManager;
     private readonly IConfigurationManager _configurationManager;
-    private readonly TranscodingJobHelper _transcodingJobHelper;
+    private readonly ITranscodeManager _transcodeManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LiveTvController"/> class.
@@ -59,7 +60,7 @@ public class LiveTvController : BaseJellyfinApiController
     /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
     /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
     /// <param name="configurationManager">Instance of the <see cref="IConfigurationManager"/> interface.</param>
-    /// <param name="transcodingJobHelper">Instance of the <see cref="TranscodingJobHelper"/> class.</param>
+    /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
     public LiveTvController(
         ILiveTvManager liveTvManager,
         IUserManager userManager,
@@ -68,7 +69,7 @@ public class LiveTvController : BaseJellyfinApiController
         IDtoService dtoService,
         IMediaSourceManager mediaSourceManager,
         IConfigurationManager configurationManager,
-        TranscodingJobHelper transcodingJobHelper)
+        ITranscodeManager transcodeManager)
     {
         _liveTvManager = liveTvManager;
         _userManager = userManager;
@@ -77,7 +78,7 @@ public class LiveTvController : BaseJellyfinApiController
         _dtoService = dtoService;
         _mediaSourceManager = mediaSourceManager;
         _configurationManager = configurationManager;
-        _transcodingJobHelper = transcodingJobHelper;
+        _transcodeManager = transcodeManager;
     }
 
     /// <summary>
@@ -1171,7 +1172,7 @@ public class LiveTvController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var stream = new ProgressiveFileStream(path, null, _transcodingJobHelper);
+        var stream = new ProgressiveFileStream(path, null, _transcodeManager);
         return new FileStreamResult(stream, MimeTypes.GetMimeType(path));
     }
 

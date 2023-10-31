@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
-using Jellyfin.Api.Models.StreamingDtos;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
@@ -14,6 +13,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Streaming;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -38,7 +38,7 @@ public static class StreamingHelpers
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
     /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
-    /// <param name="transcodingJobHelper">Initialized <see cref="TranscodingJobHelper"/>.</param>
+    /// <param name="transcodeManager">Instance of the <see cref="ITranscodeManager"/> interface.</param>
     /// <param name="transcodingJobType">The <see cref="TranscodingJobType"/>.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
     /// <returns>A <see cref="Task"/> containing the current <see cref="StreamState"/>.</returns>
@@ -51,7 +51,7 @@ public static class StreamingHelpers
         IServerConfigurationManager serverConfigurationManager,
         IMediaEncoder mediaEncoder,
         EncodingHelper encodingHelper,
-        TranscodingJobHelper transcodingJobHelper,
+        ITranscodeManager transcodeManager,
         TranscodingJobType transcodingJobType,
         CancellationToken cancellationToken)
     {
@@ -74,7 +74,7 @@ public static class StreamingHelpers
             streamingRequest.AudioCodec = encodingHelper.InferAudioCodec(url);
         }
 
-        var state = new StreamState(mediaSourceManager, transcodingJobType, transcodingJobHelper)
+        var state = new StreamState(mediaSourceManager, transcodingJobType, transcodeManager)
         {
             Request = streamingRequest,
             RequestedUrl = url,
@@ -115,7 +115,7 @@ public static class StreamingHelpers
         if (string.IsNullOrWhiteSpace(streamingRequest.LiveStreamId))
         {
             var currentJob = !string.IsNullOrWhiteSpace(streamingRequest.PlaySessionId)
-                ? transcodingJobHelper.GetTranscodingJob(streamingRequest.PlaySessionId)
+                ? transcodeManager.GetTranscodingJob(streamingRequest.PlaySessionId)
                 : null;
 
             if (currentJob is not null)
