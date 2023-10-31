@@ -140,7 +140,7 @@ public class StreamState : EncodingJobInfo, IDisposable
     /// <summary>
     /// Gets or sets the transcoding job.
     /// </summary>
-    public TranscodingJobDto? TranscodingJob { get; set; }
+    public TranscodingJob? TranscodingJob { get; set; }
 
     /// <inheritdoc />
     public void Dispose()

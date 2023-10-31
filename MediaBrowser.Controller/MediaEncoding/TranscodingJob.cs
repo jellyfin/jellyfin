@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using MediaBrowser.Model.Dto;
 using Microsoft.Extensions.Logging;
@@ -10,39 +9,31 @@ namespace MediaBrowser.Controller.MediaEncoding;
 /// <summary>
 /// Class TranscodingJob.
 /// </summary>
-public class TranscodingJobDto : IDisposable
+public sealed class TranscodingJob : IDisposable
 {
-    /// <summary>
-    /// The process lock.
-    /// </summary>
-    [SuppressMessage("Microsoft.Performance", "CA1051:NoVisibleInstanceFields", MessageId = "ProcessLock", Justification = "Imported from ServiceStack")]
-    [SuppressMessage("Microsoft.Performance", "SA1401:PrivateField", MessageId = "ProcessLock", Justification = "Imported from ServiceStack")]
-    public readonly object ProcessLock = new object();
+    private readonly ILogger<TranscodingJob> _logger;
+    private readonly object _processLock = new();
+    private readonly object _timerLock = new();
+
+    private Timer? _killTimer;
 
     /// <summary>
-    /// Timer lock.
-    /// </summary>
-    private readonly object _timerLock = new object();
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="TranscodingJobDto"/> class.
+    /// Initializes a new instance of the <see cref="TranscodingJob"/> class.
     /// </summary>
     /// <param name="logger">Instance of the <see cref="ILogger{TranscodingJobDto}"/> interface.</param>
-    public TranscodingJobDto(ILogger<TranscodingJobDto> logger)
+    public TranscodingJob(ILogger<TranscodingJob> logger)
     {
-        Logger = logger;
+        _logger = logger;
     }
 
     /// <summary>
     /// Gets or sets the play session identifier.
     /// </summary>
-    /// <value>The play session identifier.</value>
     public string? PlaySessionId { get; set; }
 
     /// <summary>
     /// Gets or sets the live stream identifier.
     /// </summary>
-    /// <value>The live stream identifier.</value>
     public string? LiveStreamId { get; set; }
 
     /// <summary>
@@ -53,7 +44,6 @@ public class TranscodingJobDto : IDisposable
     /// <summary>
     /// Gets or sets the path.
     /// </summary>
-    /// <value>The path.</value>
     public MediaSourceInfo? MediaSource { get; set; }
 
     /// <summary>
@@ -64,31 +54,17 @@ public class TranscodingJobDto : IDisposable
     /// <summary>
     /// Gets or sets the type.
     /// </summary>
-    /// <value>The type.</value>
     public TranscodingJobType Type { get; set; }
 
     /// <summary>
     /// Gets or sets the process.
     /// </summary>
-    /// <value>The process.</value>
     public Process? Process { get; set; }
-
-    /// <summary>
-    /// Gets logger.
-    /// </summary>
-    public ILogger<TranscodingJobDto> Logger { get; private set; }
 
     /// <summary>
     /// Gets or sets the active request count.
     /// </summary>
-    /// <value>The active request count.</value>
     public int ActiveRequestCount { get; set; }
-
-    /// <summary>
-    /// Gets or sets the kill timer.
-    /// </summary>
-    /// <value>The kill timer.</value>
-    private Timer? KillTimer { get; set; }
 
     /// <summary>
     /// Gets or sets device id.
@@ -177,7 +153,7 @@ public class TranscodingJobDto : IDisposable
     {
         lock (_timerLock)
         {
-            KillTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+            _killTimer?.Change(Timeout.Infinite, Timeout.Infinite);
         }
     }
 
@@ -188,10 +164,10 @@ public class TranscodingJobDto : IDisposable
     {
         lock (_timerLock)
         {
-            if (KillTimer is not null)
+            if (_killTimer is not null)
             {
-                KillTimer.Dispose();
-                KillTimer = null;
+                _killTimer.Dispose();
+                _killTimer = null;
             }
         }
     }
@@ -219,15 +195,15 @@ public class TranscodingJobDto : IDisposable
 
         lock (_timerLock)
         {
-            if (KillTimer is null)
+            if (_killTimer is null)
             {
-                Logger.LogDebug("Starting kill timer at {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
-                KillTimer = new Timer(new TimerCallback(callback), this, intervalMs, Timeout.Infinite);
+                _logger.LogDebug("Starting kill timer at {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
+                _killTimer = new Timer(new TimerCallback(callback), this, intervalMs, Timeout.Infinite);
             }
             else
             {
-                Logger.LogDebug("Changing kill timer to {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
-                KillTimer.Change(intervalMs, Timeout.Infinite);
+                _logger.LogDebug("Changing kill timer to {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
+                _killTimer.Change(intervalMs, Timeout.Infinite);
             }
         }
     }
@@ -244,39 +220,61 @@ public class TranscodingJobDto : IDisposable
 
         lock (_timerLock)
         {
-            if (KillTimer is not null)
+            if (_killTimer is not null)
             {
                 var intervalMs = PingTimeout;
 
-                Logger.LogDebug("Changing kill timer to {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
-                KillTimer.Change(intervalMs, Timeout.Infinite);
+                _logger.LogDebug("Changing kill timer to {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
+                _killTimer.Change(intervalMs, Timeout.Infinite);
             }
+        }
+    }
+
+    /// <summary>
+    /// Stops the transcoding job.
+    /// </summary>
+    public void Stop()
+    {
+        lock (_processLock)
+        {
+#pragma warning disable CA1849 // Can't await in lock block
+            TranscodingThrottler?.Stop().GetAwaiter().GetResult();
+
+            var process = Process;
+
+            if (!HasExited)
+            {
+                try
+                {
+                    _logger.LogInformation("Stopping ffmpeg process with q command for {Path}", Path);
+
+                    process!.StandardInput.WriteLine("q");
+
+                    // Need to wait because killing is asynchronous.
+                    if (!process.WaitForExit(5000))
+                    {
+                        _logger.LogInformation("Killing FFmpeg process for {Path}", Path);
+                        process.Kill();
+                    }
+                }
+                catch (InvalidOperationException)
+                {
+                }
+            }
+#pragma warning restore CA1849
         }
     }
 
     /// <inheritdoc />
     public void Dispose()
     {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
-    /// Dispose all resources.
-    /// </summary>
-    /// <param name="disposing">Whether to dispose all resources.</param>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            Process?.Dispose();
-            Process = null;
-            KillTimer?.Dispose();
-            KillTimer = null;
-            CancellationTokenSource?.Dispose();
-            CancellationTokenSource = null;
-            TranscodingThrottler?.Dispose();
-            TranscodingThrottler = null;
-        }
+        Process?.Dispose();
+        Process = null;
+        _killTimer?.Dispose();
+        _killTimer = null;
+        CancellationTokenSource?.Dispose();
+        CancellationTokenSource = null;
+        TranscodingThrottler?.Dispose();
+        TranscodingThrottler = null;
     }
 }

@@ -14,7 +14,7 @@ namespace Jellyfin.Api.Helpers;
 public class ProgressiveFileStream : Stream
 {
     private readonly Stream _stream;
-    private readonly TranscodingJobDto? _job;
+    private readonly TranscodingJob? _job;
     private readonly TranscodingJobHelper? _transcodingJobHelper;
     private readonly int _timeoutMs;
     private bool _disposed;
@@ -26,7 +26,7 @@ public class ProgressiveFileStream : Stream
     /// <param name="job">The transcoding job information.</param>
     /// <param name="transcodingJobHelper">The transcoding job helper.</param>
     /// <param name="timeoutMs">The timeout duration in milliseconds.</param>
-    public ProgressiveFileStream(string filePath, TranscodingJobDto? job, TranscodingJobHelper transcodingJobHelper, int timeoutMs = 30000)
+    public ProgressiveFileStream(string filePath, TranscodingJob? job, TranscodingJobHelper transcodingJobHelper, int timeoutMs = 30000)
     {
         _job = job;
         _transcodingJobHelper = transcodingJobHelper;

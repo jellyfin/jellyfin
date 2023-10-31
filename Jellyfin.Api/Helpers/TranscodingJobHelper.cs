@@ -36,7 +36,7 @@ public class TranscodingJobHelper : IDisposable
     /// <summary>
     /// The active transcoding jobs.
     /// </summary>
-    private static readonly List<TranscodingJobDto> _activeTranscodingJobs = new List<TranscodingJobDto>();
+    private static readonly List<TranscodingJob> _activeTranscodingJobs = new List<TranscodingJob>();
 
     /// <summary>
     /// The transcoding locks.
@@ -105,7 +105,7 @@ public class TranscodingJobHelper : IDisposable
     /// </summary>
     /// <param name="playSessionId">Playback session id.</param>
     /// <returns>The transcoding job.</returns>
-    public TranscodingJobDto? GetTranscodingJob(string playSessionId)
+    public TranscodingJob? GetTranscodingJob(string playSessionId)
     {
         lock (_activeTranscodingJobs)
         {
@@ -119,7 +119,7 @@ public class TranscodingJobHelper : IDisposable
     /// <param name="path">Path to the transcoding file.</param>
     /// <param name="type">The <see cref="TranscodingJobType"/>.</param>
     /// <returns>The transcoding job.</returns>
-    public TranscodingJobDto? GetTranscodingJob(string path, TranscodingJobType type)
+    public TranscodingJob? GetTranscodingJob(string path, TranscodingJobType type)
     {
         lock (_activeTranscodingJobs)
         {
@@ -139,7 +139,7 @@ public class TranscodingJobHelper : IDisposable
 
         _logger.LogDebug("PingTranscodingJob PlaySessionId={0} isUsedPaused: {1}", playSessionId, isUserPaused);
 
-        List<TranscodingJobDto> jobs;
+        List<TranscodingJob> jobs;
 
         lock (_activeTranscodingJobs)
         {
@@ -160,7 +160,7 @@ public class TranscodingJobHelper : IDisposable
         }
     }
 
-    private void PingTimer(TranscodingJobDto job, bool isProgressCheckIn)
+    private void PingTimer(TranscodingJob job, bool isProgressCheckIn)
     {
         if (job.HasExited)
         {
@@ -195,7 +195,7 @@ public class TranscodingJobHelper : IDisposable
     /// <param name="state">The state.</param>
     private async void OnTranscodeKillTimerStopped(object? state)
     {
-        var job = state as TranscodingJobDto ?? throw new ArgumentException($"{nameof(state)} is not of type {nameof(TranscodingJobDto)}", nameof(state));
+        var job = state as TranscodingJob ?? throw new ArgumentException($"{nameof(state)} is not of type {nameof(TranscodingJob)}", nameof(state));
         if (!job.HasExited && job.Type != TranscodingJobType.Progressive)
         {
             var timeSinceLastPing = (DateTime.UtcNow - job.LastPingDate).TotalMilliseconds;
@@ -234,9 +234,9 @@ public class TranscodingJobHelper : IDisposable
     /// <param name="killJob">The kill job.</param>
     /// <param name="deleteFiles">The delete files.</param>
     /// <returns>Task.</returns>
-    private Task KillTranscodingJobs(Func<TranscodingJobDto, bool> killJob, Func<string, bool> deleteFiles)
+    private Task KillTranscodingJobs(Func<TranscodingJob, bool> killJob, Func<string, bool> deleteFiles)
     {
-        var jobs = new List<TranscodingJobDto>();
+        var jobs = new List<TranscodingJob>();
 
         lock (_activeTranscodingJobs)
         {
@@ -267,7 +267,7 @@ public class TranscodingJobHelper : IDisposable
     /// <param name="job">The job.</param>
     /// <param name="closeLiveStream">if set to <c>true</c> [close live stream].</param>
     /// <param name="delete">The delete.</param>
-    private async Task KillTranscodingJob(TranscodingJobDto job, bool closeLiveStream, Func<string, bool> delete)
+    private async Task KillTranscodingJob(TranscodingJob job, bool closeLiveStream, Func<string, bool> delete)
     {
         job.DisposeKillTimer();
 
@@ -281,6 +281,7 @@ public class TranscodingJobHelper : IDisposable
             {
 #pragma warning disable CA1849 // Can't await in lock block
                 job.CancellationTokenSource.Cancel();
+#pragma warning restore CA1849
             }
         }
 
@@ -289,35 +290,7 @@ public class TranscodingJobHelper : IDisposable
             _transcodingLocks.Remove(job.Path!);
         }
 
-        lock (job.ProcessLock!)
-        {
-            job.TranscodingThrottler?.Stop().GetAwaiter().GetResult();
-
-            var process = job.Process;
-
-            var hasExited = job.HasExited;
-
-            if (!hasExited)
-            {
-                try
-                {
-                    _logger.LogInformation("Stopping ffmpeg process with q command for {Path}", job.Path);
-
-                    process!.StandardInput.WriteLine("q");
-
-                    // Need to wait because killing is asynchronous.
-                    if (!process.WaitForExit(5000))
-                    {
-                        _logger.LogInformation("Killing FFmpeg process for {Path}", job.Path);
-                        process.Kill();
-                    }
-                }
-                catch (InvalidOperationException)
-                {
-                }
-            }
-#pragma warning restore CA1849
-        }
+        job.Stop();
 
         if (delete(job.Path!))
         {
@@ -430,7 +403,7 @@ public class TranscodingJobHelper : IDisposable
     /// <summary>
     /// Report the transcoding progress to the session manager.
     /// </summary>
-    /// <param name="job">The <see cref="TranscodingJobDto"/> of which the progress will be reported.</param>
+    /// <param name="job">The <see cref="TranscodingJob"/> of which the progress will be reported.</param>
     /// <param name="state">The <see cref="StreamState"/> of the current transcoding job.</param>
     /// <param name="transcodingPosition">The current transcoding position.</param>
     /// <param name="framerate">The framerate of the transcoding job.</param>
@@ -438,7 +411,7 @@ public class TranscodingJobHelper : IDisposable
     /// <param name="bytesTranscoded">The number of bytes transcoded.</param>
     /// <param name="bitRate">The bitrate of the transcoding job.</param>
     public void ReportTranscodingProgress(
-        TranscodingJobDto job,
+        TranscodingJob job,
         StreamState state,
         TimeSpan? transcodingPosition,
         float? framerate,
@@ -500,7 +473,7 @@ public class TranscodingJobHelper : IDisposable
     /// <param name="cancellationTokenSource">The cancellation token source.</param>
     /// <param name="workingDirectory">The working directory.</param>
     /// <returns>Task.</returns>
-    public async Task<TranscodingJobDto> StartFfMpeg(
+    public async Task<TranscodingJob> StartFfMpeg(
         StreamState state,
         string outputPath,
         string commandLineArguments,
@@ -655,7 +628,7 @@ public class TranscodingJobHelper : IDisposable
         return transcodingJob;
     }
 
-    private void StartThrottler(StreamState state, TranscodingJobDto transcodingJob)
+    private void StartThrottler(StreamState state, TranscodingJob transcodingJob)
     {
         if (EnableThrottling(state))
         {
@@ -688,7 +661,7 @@ public class TranscodingJobHelper : IDisposable
     /// <param name="state">The state.</param>
     /// <param name="cancellationTokenSource">The cancellation token source.</param>
     /// <returns>TranscodingJob.</returns>
-    public TranscodingJobDto OnTranscodeBeginning(
+    public TranscodingJob OnTranscodeBeginning(
         string path,
         string? playSessionId,
         string? liveStreamId,
@@ -701,7 +674,7 @@ public class TranscodingJobHelper : IDisposable
     {
         lock (_activeTranscodingJobs)
         {
-            var job = new TranscodingJobDto(_loggerFactory.CreateLogger<TranscodingJobDto>())
+            var job = new TranscodingJob(_loggerFactory.CreateLogger<TranscodingJob>())
             {
                 Type = type,
                 Path = path,
@@ -727,7 +700,7 @@ public class TranscodingJobHelper : IDisposable
     /// Called when [transcode end].
     /// </summary>
     /// <param name="job">The transcode job.</param>
-    public void OnTranscodeEndRequest(TranscodingJobDto job)
+    public void OnTranscodeEndRequest(TranscodingJob job)
     {
         job.ActiveRequestCount--;
         _logger.LogDebug("OnTranscodeEndRequest job.ActiveRequestCount={ActiveRequestCount}", job.ActiveRequestCount);
@@ -775,7 +748,7 @@ public class TranscodingJobHelper : IDisposable
     /// <param name="process">The process.</param>
     /// <param name="job">The job.</param>
     /// <param name="state">The state.</param>
-    private void OnFfMpegProcessExited(Process process, TranscodingJobDto job, StreamState state)
+    private void OnFfMpegProcessExited(Process process, TranscodingJob job, StreamState state)
     {
         job.HasExited = true;
         job.ExitCode = process.ExitCode;
@@ -826,8 +799,8 @@ public class TranscodingJobHelper : IDisposable
     /// </summary>
     /// <param name="path">The path.</param>
     /// <param name="type">The type.</param>
-    /// <returns>The <see cref="TranscodingJobDto"/>.</returns>
-    public TranscodingJobDto? OnTranscodeBeginRequest(string path, TranscodingJobType type)
+    /// <returns>The <see cref="TranscodingJob"/>.</returns>
+    public TranscodingJob? OnTranscodeBeginRequest(string path, TranscodingJobType type)
     {
         lock (_activeTranscodingJobs)
         {
@@ -844,7 +817,7 @@ public class TranscodingJobHelper : IDisposable
         }
     }
 
-    private void OnTranscodeBeginRequest(TranscodingJobDto job)
+    private void OnTranscodeBeginRequest(TranscodingJob job)
     {
         job.ActiveRequestCount++;
 

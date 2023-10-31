@@ -96,7 +96,7 @@ public static class FileStreamResponseHelpers
         await transcodingLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
         try
         {
-            TranscodingJobDto? job;
+            TranscodingJob? job;
             if (!File.Exists(outputPath))
             {
                 job = await transcodingJobHelper.StartFfMpeg(state, outputPath, ffmpegCommandLineArguments, httpContext.Request, transcodingJobType, cancellationTokenSource).ConfigureAwait(false);

@@ -287,7 +287,7 @@ public class DynamicHlsController : BaseJellyfinApiController
                 cancellationToken)
             .ConfigureAwait(false);
 
-        TranscodingJobDto? job = null;
+        TranscodingJob? job = null;
         var playlistPath = Path.ChangeExtension(state.OutputFilePath, ".m3u8");
 
         if (!System.IO.File.Exists(playlistPath))
@@ -1431,7 +1431,7 @@ public class DynamicHlsController : BaseJellyfinApiController
 
         var segmentExtension = EncodingHelper.GetSegmentFileExtension(state.Request.SegmentContainer);
 
-        TranscodingJobDto? job;
+        TranscodingJob? job;
 
         if (System.IO.File.Exists(segmentPath))
         {
@@ -1921,7 +1921,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         string segmentPath,
         string segmentExtension,
         int segmentIndex,
-        TranscodingJobDto? transcodingJob,
+        TranscodingJob? transcodingJob,
         CancellationToken cancellationToken)
     {
         var segmentExists = System.IO.File.Exists(segmentPath);
@@ -1990,7 +1990,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         return GetSegmentResult(state, segmentPath, transcodingJob);
     }
 
-    private ActionResult GetSegmentResult(StreamState state, string segmentPath, TranscodingJobDto? transcodingJob)
+    private ActionResult GetSegmentResult(StreamState state, string segmentPath, TranscodingJob? transcodingJob)
     {
         var segmentEndingPositionTicks = state.Request.CurrentRuntimeTicks + state.Request.ActualSegmentLengthTicks;
 

@@ -13,7 +13,7 @@ namespace MediaBrowser.Controller.MediaEncoding;
 /// </summary>
 public class TranscodingThrottler : IDisposable
 {
-    private readonly TranscodingJobDto _job;
+    private readonly TranscodingJob _job;
     private readonly ILogger<TranscodingThrottler> _logger;
     private readonly IConfigurationManager _config;
     private readonly IFileSystem _fileSystem;
@@ -29,7 +29,7 @@ public class TranscodingThrottler : IDisposable
     /// <param name="config">Instance of the <see cref="IConfigurationManager"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
     /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-    public TranscodingThrottler(TranscodingJobDto job, ILogger<TranscodingThrottler> logger, IConfigurationManager config, IFileSystem fileSystem, IMediaEncoder mediaEncoder)
+    public TranscodingThrottler(TranscodingJob job, ILogger<TranscodingThrottler> logger, IConfigurationManager config, IFileSystem fileSystem, IMediaEncoder mediaEncoder)
     {
         _job = job;
         _logger = logger;
@@ -145,7 +145,7 @@ public class TranscodingThrottler : IDisposable
         }
     }
 
-    private bool IsThrottleAllowed(TranscodingJobDto job, int thresholdSeconds)
+    private bool IsThrottleAllowed(TranscodingJob job, int thresholdSeconds)
     {
         var bytesDownloaded = job.BytesDownloaded;
         var transcodingPositionTicks = job.TranscodingPositionTicks ?? 0;
