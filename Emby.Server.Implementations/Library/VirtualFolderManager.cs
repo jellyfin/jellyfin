@@ -137,7 +137,7 @@ public sealed class VirtualFolderManager : IVirtualFolderManager
 
         if (!Directory.Exists(currentPath))
         {
-            throw new DirectoryNotFoundException();
+            throw new DirectoryNotFoundException($"{currentPath} does not exist");
         }
 
         if (!string.Equals(currentPath, newPath, StringComparison.OrdinalIgnoreCase) && Directory.Exists(newPath))
@@ -178,7 +178,7 @@ public sealed class VirtualFolderManager : IVirtualFolderManager
         var path = Path.Combine(rootFolderPath, name);
         if (!Directory.Exists(path))
         {
-            throw new FileNotFoundException("The media folder does not exist");
+            throw new DirectoryNotFoundException("The media folder does not exist");
         }
 
         try
@@ -234,7 +234,7 @@ public sealed class VirtualFolderManager : IVirtualFolderManager
         var virtualFolderPath = Path.Combine(rootFolderPath, virtualFolderName);
         if (!Directory.Exists(virtualFolderPath))
         {
-            throw new FileNotFoundException(
+            throw new DirectoryNotFoundException(
                 string.Format(CultureInfo.InvariantCulture, "The media collection {0} does not exist", virtualFolderName));
         }
 
@@ -341,7 +341,7 @@ public sealed class VirtualFolderManager : IVirtualFolderManager
 
         if (!Directory.Exists(path))
         {
-            throw new FileNotFoundException("The path does not exist.");
+            throw new DirectoryNotFoundException("The path does not exist.");
         }
 
         var rootFolderPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
