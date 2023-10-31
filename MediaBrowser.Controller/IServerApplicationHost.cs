@@ -39,6 +39,11 @@ namespace MediaBrowser.Controller
         string FriendlyName { get; }
 
         /// <summary>
+        /// Gets a value indicating whether if the server should enable the metrics endpoint.
+        /// </summary>
+        bool EnableMetrics { get; }
+
+        /// <summary>
         /// Gets a URL specific for the request.
         /// </summary>
         /// <param name="request">The <see cref="HttpRequest"/> instance.</param>

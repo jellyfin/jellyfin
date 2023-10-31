@@ -263,6 +263,8 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public bool ListenWithHttps => Certificate is not null && ConfigurationManager.GetNetworkConfiguration().EnableHttps;
 
+        public bool EnableMetrics => ConfigurationManager.Configuration.EnableMetrics || this._startupConfig.GetValue<bool>(EnableMetricsKey);
+
         public string FriendlyName =>
             string.IsNullOrEmpty(ConfigurationManager.Configuration.ServerName)
                 ? Environment.MachineName
@@ -449,7 +451,7 @@ namespace Emby.Server.Implementations
             NetManager = new NetworkManager(ConfigurationManager, _startupConfig, LoggerFactory.CreateLogger<NetworkManager>());
 
             // Initialize runtime stat collection
-            if (ConfigurationManager.Configuration.EnableMetrics)
+            if (this.EnableMetrics)
             {
                 DotNetRuntimeStatsBuilder.Default().StartCollecting();
             }
