@@ -2,12 +2,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Api.Models.PlaybackDtos;
+namespace MediaBrowser.Controller.MediaEncoding;
 
 /// <summary>
 /// Transcoding throttler.

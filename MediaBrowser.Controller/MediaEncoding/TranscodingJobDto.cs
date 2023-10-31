@@ -2,11 +2,10 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
-using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dto;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Api.Models.PlaybackDtos;
+namespace MediaBrowser.Controller.MediaEncoding;
 
 /// <summary>
 /// Class TranscodingJob.

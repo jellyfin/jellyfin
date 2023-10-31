@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Api.Models.PlaybackDtos;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.IO;
 
 namespace Jellyfin.Api.Helpers;

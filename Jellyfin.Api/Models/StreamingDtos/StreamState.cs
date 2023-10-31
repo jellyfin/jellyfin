@@ -1,6 +1,5 @@
 using System;
 using Jellyfin.Api.Helpers;
-using Jellyfin.Api.Models.PlaybackDtos;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dlna;
