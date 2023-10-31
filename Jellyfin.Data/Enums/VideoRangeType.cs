@@ -33,12 +33,12 @@ public enum VideoRangeType
     /// <summary>
     /// Dolby Vision with HDR10 video range fallback (12bit or 10bit).
     /// </summary>
-    DOVI_with_HDR10_Fallback,
+    DolbyVisionWithHDR10Fallback,
 
     /// <summary>
     /// Dolby Vision with HLG video range fallback (12bit or 10bit).
     /// </summary>
-    DOVI_with_HLG_Fallback,
+    DolbyVisionWithHLGFallback,
 
     /// <summary>
     /// HDR10+ video range type (10bit to 16bit).

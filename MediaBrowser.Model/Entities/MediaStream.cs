@@ -745,11 +745,11 @@ namespace MediaBrowser.Model.Entities
             {
                 if (isHDR10)
                 {
-                    return (VideoRange.HDR, VideoRangeType.DOVI_with_HDR10_Fallback);
+                    return (VideoRange.HDR, VideoRangeType.DolbyVisionWithHDR10Fallback);
                 }
                 else if (isHLG)
                 {
-                    return (VideoRange.HDR, VideoRangeType.DOVI_with_HLG_Fallback);
+                    return (VideoRange.HDR, VideoRangeType.DolbyVisionWithHLGFallback);
                 }
 
                 return (VideoRange.HDR, VideoRangeType.DOVI);
