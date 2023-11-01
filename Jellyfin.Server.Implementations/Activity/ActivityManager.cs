@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Data.Dtos;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events;
 using Jellyfin.Data.Queries;
@@ -30,16 +31,17 @@ namespace Jellyfin.Server.Implementations.Activity
         public event EventHandler<GenericEventArgs<ActivityLogEntry>>? EntryCreated;
 
         /// <inheritdoc/>
-        public async Task CreateAsync(ActivityLog entry)
+        public async Task CreateAsync(ActivityLogDto entry)
         {
+            var log = GetActivityLogEntity(entry);
             var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                dbContext.ActivityLogs.Add(entry);
+                dbContext.ActivityLogs.Add(log);
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
 
-            EntryCreated?.Invoke(this, new GenericEventArgs<ActivityLogEntry>(ConvertToOldModel(entry)));
+            EntryCreated?.Invoke(this, new GenericEventArgs<ActivityLogEntry>(ConvertToOldModel(log)));
         }
 
         /// <inheritdoc/>
@@ -98,6 +100,18 @@ namespace Jellyfin.Server.Implementations.Activity
                 ItemId = entry.ItemId,
                 Date = entry.DateCreated,
                 Severity = entry.LogSeverity
+            };
+        }
+
+        private ActivityLog GetActivityLogEntity(ActivityLogDto dto)
+        {
+            return new ActivityLog(dto.Name, dto.Type, dto.UserId)
+            {
+                Overview = dto.Overview,
+                ShortOverview = dto.ShortOverview,
+                ItemId = dto.ItemId,
+                DateCreated = dto.DateCreated,
+                LogSeverity = dto.LogSeverity
             };
         }
     }
