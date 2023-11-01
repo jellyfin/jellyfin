@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Threading.Tasks;
+using Jellyfin.Data.Dtos;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
@@ -57,7 +58,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
 
             var user = eventArgs.Users[0];
 
-            await _activityManager.CreateAsync(new ActivityLog(
+            await _activityManager.CreateAsync(new ActivityLogDto(
                 string.Format(
                     CultureInfo.InvariantCulture,
                     _localizationManager.GetLocalizedString("UserStartedPlayingItemWithValues"),

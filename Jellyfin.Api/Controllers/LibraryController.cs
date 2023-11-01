@@ -12,6 +12,7 @@ using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LibraryDtos;
+using Jellyfin.Data.Dtos;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
@@ -908,7 +909,7 @@ public class LibraryController : BaseJellyfinApiController
     {
         try
         {
-            await _activityManager.CreateAsync(new ActivityLog(
+            await _activityManager.CreateAsync(new ActivityLogDto(
                 string.Format(CultureInfo.InvariantCulture, _localization.GetLocalizedString("UserDownloadingItemWithValues"), user.Username, item.Name),
                 "UserDownloadingContent",
                 User.GetUserId())

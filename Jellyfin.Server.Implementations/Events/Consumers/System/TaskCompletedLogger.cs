@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
+using Jellyfin.Data.Dtos;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Model.Activity;
@@ -64,7 +65,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.System
                     vals.Add(eventArgs.Result.LongErrorMessage);
                 }
 
-                await _activityManager.CreateAsync(new ActivityLog(
+                await _activityManager.CreateAsync(new ActivityLogDto(
                     string.Format(CultureInfo.InvariantCulture, _localizationManager.GetLocalizedString("ScheduledTaskFailedWithName"), task.Name),
                     NotificationType.TaskFailed.ToString(),
                     Guid.Empty)

@@ -2,6 +2,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Jellyfin.Data.Dtos;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events;
 using Jellyfin.Data.Queries;
@@ -13,7 +14,7 @@ namespace MediaBrowser.Model.Activity
     {
         event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
 
-        Task CreateAsync(ActivityLog entry);
+        Task CreateAsync(ActivityLogDto entry);
 
         Task<QueryResult<ActivityLogEntry>> GetPagedResultAsync(ActivityLogQuery query);
 

@@ -1,5 +1,6 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Threading.Tasks;
+using Jellyfin.Data.Dtos;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events.Users;
 using MediaBrowser.Controller.Events;
@@ -30,7 +31,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Users
         /// <inheritdoc />
         public async Task OnEvent(UserCreatedEventArgs eventArgs)
         {
-            await _activityManager.CreateAsync(new ActivityLog(
+            await _activityManager.CreateAsync(new ActivityLogDto(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         _localizationManager.GetLocalizedString("UserCreatedWithName"),
