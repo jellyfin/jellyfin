@@ -135,7 +135,7 @@ public class TvShowsController : BaseJellyfinApiController
     /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
     /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
     /// <param name="enableUserData">Optional. Include user data.</param>
-    /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the next up episodes.</returns>
+    /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the upcoming episodes.</returns>
     [HttpGet("Upcoming")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetUpcomingEpisodes(
