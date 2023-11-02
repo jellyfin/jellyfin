@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using Jellyfin.Server.Middleware;
+using Jellyfin.Api.Middleware;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
 using SharpFuzz;
 
-namespace Emby.Server.Implementations.Fuzz
+namespace Jellyfin.Api.Fuzz
 {
     public static class Program
     {

@@ -38,7 +38,8 @@ namespace Jellyfin.Server.Migrations.Routines
         {
             var dataPath = _paths.DataPath;
             var dbPath = Path.Combine(dataPath, DbFilename);
-            using (var connection = new SqliteConnection($"Filename={dbPath}"))
+            using var connection = new SqliteConnection($"Filename={dbPath}");
+            connection.Open();
             using (var transaction = connection.BeginTransaction())
             {
                 // Query the database for the ids of duplicate extras

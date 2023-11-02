@@ -3,7 +3,6 @@ using System.Globalization;
 using System.IO;
 using Emby.Server.Implementations.Data;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Globalization;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
@@ -66,14 +65,14 @@ namespace Jellyfin.Server.Migrations.Routines
 
             // Migrate parental rating strings to new levels
             _logger.LogInformation("Recalculating parental rating levels based on rating string.");
-            using (var connection = new SqliteConnection($"Filename={dbPath}"))
+            using var connection = new SqliteConnection($"Filename={dbPath}");
+            connection.Open();
             using (var transaction = connection.BeginTransaction())
             {
                 var queryResult = connection.Query("SELECT DISTINCT OfficialRating FROM TypedBaseItems");
                 foreach (var entry in queryResult)
                 {
-                    var ratingString = entry.GetString(0);
-                    if (string.IsNullOrEmpty(ratingString))
+                    if (!entry.TryGetString(0, out var ratingString) || string.IsNullOrEmpty(ratingString))
                     {
                         connection.Execute("UPDATE TypedBaseItems SET InheritedParentalRatingValue = NULL WHERE OfficialRating IS NULL OR OfficialRating='';");
                     }

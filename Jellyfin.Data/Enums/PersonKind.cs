@@ -94,4 +94,40 @@ public enum PersonKind
     /// A person who was the illustrator.
     /// </summary>
     Illustrator,
+
+    /// <summary>
+    /// A person responsible for drawing the art.
+    /// </summary>
+    Penciller,
+
+    /// <summary>
+    /// A person responsible for inking the pencil art.
+    /// </summary>
+    Inker,
+
+    /// <summary>
+    /// A person responsible for applying color to drawings.
+    /// </summary>
+    Colorist,
+
+    /// <summary>
+    /// A person responsible for drawing text and speech bubbles.
+    /// </summary>
+    Letterer,
+
+    /// <summary>
+    /// A person responsible for drawing the cover art.
+    /// </summary>
+    CoverArtist,
+
+    /// <summary>
+    /// A person contributing to a resource by revising or elucidating the content, e.g., adding an introduction, notes, or other critical matter.
+    /// An editor may also prepare a resource for production, publication, or distribution.
+    /// </summary>
+    Editor,
+
+    /// <summary>
+    /// A person who renders a text from one language into another.
+    /// </summary>
+    Translator
 }

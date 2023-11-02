@@ -122,17 +122,17 @@ public class ExceptionMiddleware
 
     private static int GetStatusCode(Exception ex)
     {
-        switch (ex)
+        return ex switch
         {
-            case ArgumentException _: return StatusCodes.Status400BadRequest;
-            case AuthenticationException _: return StatusCodes.Status401Unauthorized;
-            case SecurityException _: return StatusCodes.Status403Forbidden;
-            case DirectoryNotFoundException _:
-            case FileNotFoundException _:
-            case ResourceNotFoundException _: return StatusCodes.Status404NotFound;
-            case MethodNotAllowedException _: return StatusCodes.Status405MethodNotAllowed;
-            default: return StatusCodes.Status500InternalServerError;
-        }
+            ArgumentException => StatusCodes.Status400BadRequest,
+            AuthenticationException => StatusCodes.Status401Unauthorized,
+            SecurityException => StatusCodes.Status403Forbidden,
+            DirectoryNotFoundException => StatusCodes.Status404NotFound,
+            FileNotFoundException => StatusCodes.Status404NotFound,
+            ResourceNotFoundException => StatusCodes.Status404NotFound,
+            MethodNotAllowedException => StatusCodes.Status405MethodNotAllowed,
+            _ => StatusCodes.Status500InternalServerError
+        };
     }
 
     private string NormalizeExceptionMessage(string msg)

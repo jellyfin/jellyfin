@@ -124,5 +124,7 @@
     "TaskKeyframeExtractorDescription": "Extrahuje kľúčové snímky z video súborov na vytvorenie presnejších HLS playlistov. Táto úloha môže trvať dlhšiu dobu.",
     "TaskKeyframeExtractor": "Extraktor kľúčových snímkov",
     "External": "Externé",
-    "HearingImpaired": "Sluchovo Postihnutý"
+    "HearingImpaired": "Sluchovo postihnutí",
+    "TaskRefreshTrickplayImages": "Generovanie obrázkov Trickplay",
+    "TaskRefreshTrickplayImagesDescription": "Vytvára trickplay náhľady pre videá v povolených knižniciach."
 }

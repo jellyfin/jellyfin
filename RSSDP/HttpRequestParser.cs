@@ -33,10 +33,7 @@ namespace Rssdp.Infrastructure
             }
             finally
             {
-                if (retVal != null)
-                {
-                    retVal.Dispose();
-                }
+                retVal?.Dispose();
             }
         }
 

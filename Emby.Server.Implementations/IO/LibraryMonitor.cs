@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System;
@@ -160,7 +158,7 @@ namespace Emby.Server.Implementations.IO
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
-        private void OnLibraryManagerItemRemoved(object sender, ItemChangeEventArgs e)
+        private void OnLibraryManagerItemRemoved(object? sender, ItemChangeEventArgs e)
         {
             if (e.Parent is AggregateFolder)
             {
@@ -173,7 +171,7 @@ namespace Emby.Server.Implementations.IO
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
-        private void OnLibraryManagerItemAdded(object sender, ItemChangeEventArgs e)
+        private void OnLibraryManagerItemAdded(object? sender, ItemChangeEventArgs e)
         {
             if (e.Parent is AggregateFolder)
             {
@@ -189,19 +187,28 @@ namespace Emby.Server.Implementations.IO
         /// <param name="path">The path.</param>
         /// <returns><c>true</c> if [contains parent folder] [the specified LST]; otherwise, <c>false</c>.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="path"/> is <c>null</c>.</exception>
-        private static bool ContainsParentFolder(IEnumerable<string> lst, string path)
+        private static bool ContainsParentFolder(IReadOnlyList<string> lst, ReadOnlySpan<char> path)
         {
-            ArgumentException.ThrowIfNullOrEmpty(path);
+            if (path.IsEmpty)
+            {
+                throw new ArgumentException("Path can't be empty", nameof(path));
+            }
 
             path = path.TrimEnd(Path.DirectorySeparatorChar);
 
-            return lst.Any(str =>
+            foreach (var str in lst)
             {
                 // this should be a little quicker than examining each actual parent folder...
-                var compare = str.TrimEnd(Path.DirectorySeparatorChar);
+                var compare = str.AsSpan().TrimEnd(Path.DirectorySeparatorChar);
 
-                return path.Equals(compare, StringComparison.OrdinalIgnoreCase) || (path.StartsWith(compare, StringComparison.OrdinalIgnoreCase) && path[compare.Length] == Path.DirectorySeparatorChar);
-            });
+                if (path.Equals(compare, StringComparison.OrdinalIgnoreCase)
+                    || (path.StartsWith(compare, StringComparison.OrdinalIgnoreCase) && path[compare.Length] == Path.DirectorySeparatorChar))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -349,21 +356,19 @@ namespace Emby.Server.Implementations.IO
         {
             ArgumentException.ThrowIfNullOrEmpty(path);
 
-            var monitorPath = !IgnorePatterns.ShouldIgnore(path);
+            if (IgnorePatterns.ShouldIgnore(path))
+            {
+                return;
+            }
 
             // Ignore certain files, If the parent of an ignored path has a change event, ignore that too
-            if (_tempIgnoredPaths.Keys.Any(i =>
+            foreach (var i in _tempIgnoredPaths.Keys)
             {
-                if (_fileSystem.AreEqual(i, path))
+                if (_fileSystem.AreEqual(i, path)
+                    || _fileSystem.ContainsSubPath(i, path))
                 {
                     _logger.LogDebug("Ignoring change to {Path}", path);
-                    return true;
-                }
-
-                if (_fileSystem.ContainsSubPath(i, path))
-                {
-                    _logger.LogDebug("Ignoring change to {Path}", path);
-                    return true;
+                    return;
                 }
 
                 // Go up a level
@@ -371,20 +376,11 @@ namespace Emby.Server.Implementations.IO
                 if (!string.IsNullOrEmpty(parent) && _fileSystem.AreEqual(parent, path))
                 {
                     _logger.LogDebug("Ignoring change to {Path}", path);
-                    return true;
+                    return;
                 }
-
-                return false;
-            }))
-            {
-                monitorPath = false;
             }
 
-            if (monitorPath)
-            {
-                // Avoid implicitly captured closure
-                CreateRefresher(path);
-            }
+            CreateRefresher(path);
         }
 
         private void CreateRefresher(string path)
@@ -417,7 +413,8 @@ namespace Emby.Server.Implementations.IO
                     }
 
                     // They are siblings. Rebase the refresher to the parent folder.
-                    if (string.Equals(parentPath, Path.GetDirectoryName(refresher.Path), StringComparison.Ordinal))
+                    if (parentPath is not null
+                        && Path.GetDirectoryName(refresher.Path.AsSpan()).Equals(parentPath, StringComparison.Ordinal))
                     {
                         refresher.ResetPath(parentPath, path);
                         return;
@@ -430,8 +427,13 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
-        private void OnNewRefresherCompleted(object sender, EventArgs e)
+        private void OnNewRefresherCompleted(object? sender, EventArgs e)
         {
+            if (sender is null)
+            {
+                return;
+            }
+
             var refresher = (FileRefresher)sender;
             DisposeRefresher(refresher);
         }

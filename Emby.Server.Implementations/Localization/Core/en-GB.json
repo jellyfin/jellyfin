@@ -125,5 +125,7 @@
     "TaskKeyframeExtractor": "Keyframe Extractor",
     "External": "External",
     "HearingImpaired": "Hearing Impaired",
-    "Offset": "Offset"
+    "Offset": "Offset",
+    "TaskRefreshTrickplayImages": "Generate Trickplay Images",
+    "TaskRefreshTrickplayImagesDescription": "Creates trickplay previews for videos in enabled libraries."
 }

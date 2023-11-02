@@ -15,6 +15,7 @@ namespace MediaBrowser.Model.Users
         {
             IsHidden = true;
             EnableCollectionManagement = false;
+            EnableSubtitleManagement = false;
 
             EnableContentDeletion = false;
             EnableContentDeletionFromFolders = Array.Empty<string>();
@@ -82,6 +83,13 @@ namespace MediaBrowser.Model.Users
         /// <value><c>true</c> if this instance is hidden; otherwise, <c>false</c>.</value>
         [DefaultValue(false)]
         public bool EnableCollectionManagement { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can manage subtitles.
+        /// </summary>
+        /// <value><c>true</c> if this instance is allowed; otherwise, <c>false</c>.</value>
+        [DefaultValue(false)]
+        public bool EnableSubtitleManagement { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is disabled.

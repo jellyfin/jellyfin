@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 using Emby.Server.Implementations;
@@ -42,7 +41,6 @@ namespace Jellyfin.Server
         public const string LoggingConfigFileSystem = "logging.json";
 
         private static readonly ILoggerFactory _loggerFactory = new SerilogLoggerFactory();
-        private static CancellationTokenSource _tokenSource = new();
         private static long _startTimestamp;
         private static ILogger _logger = NullLogger.Instance;
         private static bool _restartOnShutdown;
@@ -65,36 +63,9 @@ namespace Jellyfin.Server
                 .MapResult(StartApp, ErrorParsingArguments);
         }
 
-        /// <summary>
-        /// Shuts down the application.
-        /// </summary>
-        internal static void Shutdown()
-        {
-            if (!_tokenSource.IsCancellationRequested)
-            {
-                _tokenSource.Cancel();
-            }
-        }
-
-        /// <summary>
-        /// Restarts the application.
-        /// </summary>
-        internal static void Restart()
-        {
-            _restartOnShutdown = true;
-
-            Shutdown();
-        }
-
         private static async Task StartApp(StartupOptions options)
         {
             _startTimestamp = Stopwatch.GetTimestamp();
-
-            // Log all uncaught exceptions to std error
-            static void UnhandledExceptionToConsole(object sender, UnhandledExceptionEventArgs e) =>
-                Console.Error.WriteLine("Unhandled Exception\n" + e.ExceptionObject);
-            AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionToConsole;
-
             ServerApplicationPaths appPaths = StartupHelpers.CreateApplicationPaths(options);
 
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
@@ -112,37 +83,9 @@ namespace Jellyfin.Server
             StartupHelpers.InitializeLoggingFramework(startupConfig, appPaths);
             _logger = _loggerFactory.CreateLogger("Main");
 
-            // Log uncaught exceptions to the logging instead of std error
-            AppDomain.CurrentDomain.UnhandledException -= UnhandledExceptionToConsole;
+            // Use the logging framework for uncaught exceptions instead of std error
             AppDomain.CurrentDomain.UnhandledException += (_, e)
                 => _logger.LogCritical((Exception)e.ExceptionObject, "Unhandled Exception");
-
-            // Intercept Ctrl+C and Ctrl+Break
-            Console.CancelKeyPress += (_, e) =>
-            {
-                if (_tokenSource.IsCancellationRequested)
-                {
-                    return; // Already shutting down
-                }
-
-                e.Cancel = true;
-                _logger.LogInformation("Ctrl+C, shutting down");
-                Environment.ExitCode = 128 + 2;
-                Shutdown();
-            };
-
-            // Register a SIGTERM handler
-            AppDomain.CurrentDomain.ProcessExit += (_, _) =>
-            {
-                if (_tokenSource.IsCancellationRequested)
-                {
-                    return; // Already shutting down
-                }
-
-                _logger.LogInformation("Received a SIGTERM signal, shutting down");
-                Environment.ExitCode = 128 + 15;
-                Shutdown();
-            };
 
             _logger.LogInformation(
                 "Jellyfin version: {Version}",
@@ -173,12 +116,10 @@ namespace Jellyfin.Server
 
             do
             {
-                _restartOnShutdown = false;
                 await StartServer(appPaths, options, startupConfig).ConfigureAwait(false);
 
                 if (_restartOnShutdown)
                 {
-                    _tokenSource = new CancellationTokenSource();
                     _startTimestamp = Stopwatch.GetTimestamp();
                 }
             } while (_restartOnShutdown);
@@ -186,7 +127,7 @@ namespace Jellyfin.Server
 
         private static async Task StartServer(IServerApplicationPaths appPaths, StartupOptions options, IConfiguration startupConfig)
         {
-            var appHost = new CoreAppHost(
+            using var appHost = new CoreAppHost(
                 appPaths,
                 _loggerFactory,
                 options,
@@ -196,6 +137,7 @@ namespace Jellyfin.Server
             try
             {
                 host = Host.CreateDefaultBuilder()
+                    .UseConsoleLifetime()
                     .ConfigureServices(services => appHost.Init(services))
                     .ConfigureWebHostDefaults(webHostBuilder => webHostBuilder.ConfigureWebHostBuilder(appHost, startupConfig, appPaths, _logger))
                     .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(options, appPaths, startupConfig))
@@ -210,7 +152,7 @@ namespace Jellyfin.Server
 
                 try
                 {
-                    await host.StartAsync(_tokenSource.Token).ConfigureAwait(false);
+                    await host.StartAsync().ConfigureAwait(false);
 
                     if (!OperatingSystem.IsWindows() && startupConfig.UseUnixSocket())
                     {
@@ -219,22 +161,18 @@ namespace Jellyfin.Server
                         StartupHelpers.SetUnixSocketPermissions(startupConfig, socketPath, _logger);
                     }
                 }
-                catch (Exception ex) when (ex is not TaskCanceledException)
+                catch (Exception)
                 {
                     _logger.LogError("Kestrel failed to start! This is most likely due to an invalid address or port bind - correct your bind configuration in network.xml and try again");
                     throw;
                 }
 
-                await appHost.RunStartupTasksAsync(_tokenSource.Token).ConfigureAwait(false);
+                await appHost.RunStartupTasksAsync().ConfigureAwait(false);
 
                 _logger.LogInformation("Startup complete {Time:g}", Stopwatch.GetElapsedTime(_startTimestamp));
 
-                // Block main thread until shutdown
-                await Task.Delay(-1, _tokenSource.Token).ConfigureAwait(false);
-            }
-            catch (TaskCanceledException)
-            {
-                // Don't throw on cancellation
+                await host.WaitForShutdownAsync().ConfigureAwait(false);
+                _restartOnShutdown = appHost.ShouldRestart;
             }
             catch (Exception ex)
             {
@@ -257,7 +195,6 @@ namespace Jellyfin.Server
                     }
                 }
 
-                await appHost.DisposeAsync().ConfigureAwait(false);
                 host?.Dispose();
             }
         }

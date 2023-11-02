@@ -1,12 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
-using Jellyfin.Api.Middleware;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
-namespace Jellyfin.Server.Tests
+namespace Jellyfin.Api.Middleware.Tests
 {
     public static class UrlDecodeQueryFeatureTests
     {
@@ -22,7 +21,7 @@ namespace Jellyfin.Server.Tests
             Assert.Single(test.Query);
             var (k, v) = test.Query.First();
             Assert.Equal(key, k);
-            Assert.Empty(v);
+            Assert.True(StringValues.IsNullOrEmpty(v));
         }
     }
 }

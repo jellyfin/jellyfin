@@ -115,7 +115,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             {
                 try
                 {
-                    previouslyFailedImages = File.ReadAllText(failHistoryPath)
+                    previouslyFailedImages = (await File.ReadAllTextAsync(failHistoryPath, cancellationToken).ConfigureAwait(false))
                         .Split('|', StringSplitOptions.RemoveEmptyEntries)
                         .ToList();
                 }
@@ -156,7 +156,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
                         }
 
                         string text = string.Join('|', previouslyFailedImages);
-                        File.WriteAllText(failHistoryPath, text);
+                        await File.WriteAllTextAsync(failHistoryPath, text, cancellationToken).ConfigureAwait(false);
                     }
 
                     numComplete++;

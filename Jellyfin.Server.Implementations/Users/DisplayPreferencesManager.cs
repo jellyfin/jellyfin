@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +14,7 @@ namespace Jellyfin.Server.Implementations.Users
     /// <summary>
     /// Manages the storage and retrieval of display preferences through Entity Framework.
     /// </summary>
-    public class DisplayPreferencesManager : IDisplayPreferencesManager
+    public sealed class DisplayPreferencesManager : IDisplayPreferencesManager, IAsyncDisposable
     {
         private readonly JellyfinDbContext _dbContext;
 
@@ -96,6 +97,12 @@ namespace Jellyfin.Server.Implementations.Users
         public void SaveChanges()
         {
             _dbContext.SaveChanges();
+        }
+
+        /// <inheritdoc />
+        public async ValueTask DisposeAsync()
+        {
+            await _dbContext.DisposeAsync().ConfigureAwait(false);
         }
     }
 }

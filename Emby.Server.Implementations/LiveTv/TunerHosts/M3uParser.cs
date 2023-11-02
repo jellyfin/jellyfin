@@ -94,14 +94,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 else if (!string.IsNullOrWhiteSpace(extInf) && !trimmedLine.StartsWith('#'))
                 {
                     var channel = GetChannelnfo(extInf, tunerHostId, trimmedLine);
-                    if (string.IsNullOrWhiteSpace(channel.Id))
-                    {
-                        channel.Id = channelIdPrefix + trimmedLine.GetMD5().ToString("N", CultureInfo.InvariantCulture);
-                    }
-                    else
-                    {
-                        channel.Id = channelIdPrefix + channel.Id.GetMD5().ToString("N", CultureInfo.InvariantCulture);
-                    }
+                    channel.Id = channelIdPrefix + trimmedLine.GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
                     channel.Path = trimmedLine;
                     channels.Add(channel);

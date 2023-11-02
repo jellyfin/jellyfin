@@ -25,5 +25,14 @@
     "Channels": "Amashaneli",
     "Books": "Izincwadi",
     "Artists": "Abadlali",
-    "Albums": "Ama-albhamu"
+    "Albums": "Ama-albhamu",
+    "CameraImageUploadedFrom": "Kulandelayo lwesithonjana sekhamera selithunyelwe kusuka ku {0}",
+    "HeaderFavoriteArtists": "Abasethi Abathandekayo",
+    "HeaderFavoriteEpisodes": "Izilimi Ezithandekayo",
+    "HeaderFavoriteShows": "Izisho Ezithandekayo",
+    "External": "Kwezifungo",
+    "FailedLoginAttemptWithUserName": "Ukushayiswa kwesithombe sokungena okungekho {0}",
+    "HeaderContinueWatching": "Buyela Ukubona",
+    "HeaderFavoriteAlbums": "Izimpahla Ezithandwayo",
+    "HeaderAlbumArtists": "Abasethi wenkulumo"
 }

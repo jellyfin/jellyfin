@@ -3543,10 +3543,7 @@ namespace Emby.Server.Implementations.Data
                         .Append(paramName)
                         .Append("))) OR ");
 
-                    if (statement is not null)
-                    {
-                        statement.TryBind(paramName, query.PersonIds[i]);
-                    }
+                    statement?.TryBind(paramName, query.PersonIds[i]);
                 }
 
                 clauseBuilder.Length -= Or.Length;
@@ -4385,7 +4382,7 @@ namespace Emby.Server.Implementations.Data
 
                 foreach (var videoType in query.VideoTypes)
                 {
-                    videoTypes.Add("data like '%\"VideoType\":\"" + videoType.ToString() + "\"%'");
+                    videoTypes.Add("data like '%\"VideoType\":\"" + videoType + "\"%'");
                 }
 
                 whereClauses.Add("(" + string.Join(" OR ", videoTypes) + ")");
