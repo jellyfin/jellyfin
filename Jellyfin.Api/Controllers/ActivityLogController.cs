@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Data.Queries;
 using MediaBrowser.Model.Activity;
+using MediaBrowser.Model.Dtos;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -36,10 +37,10 @@ public class ActivityLogController : BaseJellyfinApiController
     /// <param name="minDate">Optional. The minimum date. Format = ISO.</param>
     /// <param name="hasUserId">Optional. Filter log entries if it has user id, or not.</param>
     /// <response code="200">Activity log returned.</response>
-    /// <returns>A <see cref="QueryResult{ActivityLogEntry}"/> containing the log entries.</returns>
+    /// <returns>A <see cref="QueryResult{ActivityLogDto}"/> containing the log entries.</returns>
     [HttpGet("Entries")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<QueryResult<ActivityLogEntry>>> GetLogEntries(
+    public async Task<ActionResult<QueryResult<ActivityLogDto>>> GetLogEntries(
         [FromQuery] int? startIndex,
         [FromQuery] int? limit,
         [FromQuery] DateTime? minDate,
