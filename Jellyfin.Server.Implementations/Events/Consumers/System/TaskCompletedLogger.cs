@@ -7,6 +7,7 @@ using Jellyfin.Data.Dtos;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Model.Activity;
+using MediaBrowser.Model.Dtos;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Tasks;

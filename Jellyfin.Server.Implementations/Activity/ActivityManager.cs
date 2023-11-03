@@ -6,6 +6,7 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events;
 using Jellyfin.Data.Queries;
 using MediaBrowser.Model.Activity;
+using MediaBrowser.Model.Dtos;
 using MediaBrowser.Model.Querying;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,19 +34,18 @@ namespace Jellyfin.Server.Implementations.Activity
         /// <inheritdoc/>
         public async Task CreateAsync(ActivityLogDto entry)
         {
-            var log = GetActivityLogEntity(entry);
             var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                dbContext.ActivityLogs.Add(log);
+                dbContext.ActivityLogs.Add(entry);
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
 
-            EntryCreated?.Invoke(this, new GenericEventArgs<ActivityLogEntry>(ConvertToOldModel(log)));
+            EntryCreated?.Invoke(this, new GenericEventArgs<ActivityLogEntry>(entry));
         }
 
         /// <inheritdoc/>
-        public async Task<QueryResult<ActivityLogEntry>> GetPagedResultAsync(ActivityLogQuery query)
+        public async Task<QueryResult<ActivityLogDto>> GetPagedResultAsync(ActivityLogQuery query)
         {
             var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
@@ -55,13 +55,13 @@ namespace Jellyfin.Server.Implementations.Activity
                     .Where(entry => query.MinDate == null || entry.DateCreated >= query.MinDate)
                     .Where(entry => !query.HasUserId.HasValue || entry.UserId.Equals(default) != query.HasUserId.Value);
 
-                return new QueryResult<ActivityLogEntry>(
+                return new QueryResult<ActivityLogDto>(
                     query.Skip,
                     await entries.CountAsync().ConfigureAwait(false),
                     await entries
                         .Skip(query.Skip ?? 0)
                         .Take(query.Limit ?? 100)
-                        .Select(entity => new ActivityLogEntry(entity.Name, entity.Type, entity.UserId)
+                        .Select(entity => (ActivityLogDto)new ActivityLogEntry(entity.Name, entity.Type, entity.UserId)
                         {
                             Id = entity.Id,
                             Overview = entity.Overview,
@@ -100,18 +100,6 @@ namespace Jellyfin.Server.Implementations.Activity
                 ItemId = entry.ItemId,
                 Date = entry.DateCreated,
                 Severity = entry.LogSeverity
-            };
-        }
-
-        private ActivityLog GetActivityLogEntity(ActivityLogDto dto)
-        {
-            return new ActivityLog(dto.Name, dto.Type, dto.UserId)
-            {
-                Overview = dto.Overview,
-                ShortOverview = dto.ShortOverview,
-                ItemId = dto.ItemId,
-                DateCreated = dto.DateCreated,
-                LogSeverity = dto.LogSeverity
             };
         }
     }

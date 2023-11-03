@@ -2,10 +2,9 @@
 
 using System;
 using System.Threading.Tasks;
-using Jellyfin.Data.Dtos;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events;
 using Jellyfin.Data.Queries;
+using MediaBrowser.Model.Dtos;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Model.Activity
@@ -16,7 +15,7 @@ namespace MediaBrowser.Model.Activity
 
         Task CreateAsync(ActivityLogDto entry);
 
-        Task<QueryResult<ActivityLogEntry>> GetPagedResultAsync(ActivityLogQuery query);
+        Task<QueryResult<ActivityLogDto>> GetPagedResultAsync(ActivityLogQuery query);
 
         /// <summary>
         /// Remove all activity logs before the specified date.

@@ -6,6 +6,7 @@ using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Authentication;
 using MediaBrowser.Model.Activity;
+using MediaBrowser.Model.Dtos;
 using MediaBrowser.Model.Globalization;
 using Microsoft.Extensions.Logging;
 

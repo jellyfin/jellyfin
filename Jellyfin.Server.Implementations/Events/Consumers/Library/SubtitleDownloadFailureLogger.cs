@@ -8,6 +8,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Activity;
+using MediaBrowser.Model.Dtos;
 using MediaBrowser.Model.Globalization;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 
