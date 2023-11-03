@@ -585,6 +585,12 @@ namespace MediaBrowser.Controller.Entities
         public string Overview { get; set; }
 
         /// <summary>
+        /// Gets or sets the group of the channel.
+        /// </summary>
+        /// <value>The group of the channel.</value>
+        public string ChannelGroup { get; set; }
+
+        /// <summary>
         /// Gets or sets the studios.
         /// </summary>
         /// <value>The studios.</value>

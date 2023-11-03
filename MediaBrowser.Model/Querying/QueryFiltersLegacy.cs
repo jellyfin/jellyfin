@@ -22,5 +22,7 @@ namespace MediaBrowser.Model.Querying
         public string[] OfficialRatings { get; set; }
 
         public int[] Years { get; set; }
+
+        public string[] ChannelGroups { get; set; }
     }
 }

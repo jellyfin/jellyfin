@@ -1,11 +1,13 @@
 using System;
 using System.Linq;
+using System.Threading;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
@@ -22,16 +24,19 @@ namespace Jellyfin.Api.Controllers;
 public class FilterController : BaseJellyfinApiController
 {
     private readonly ILibraryManager _libraryManager;
+    private readonly ILiveTvManager _liveTvManager;
     private readonly IUserManager _userManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FilterController"/> class.
     /// </summary>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+    /// <param name="liveTvManager">Instance of the <see cref="ILiveTvManager"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-    public FilterController(ILibraryManager libraryManager, IUserManager userManager)
+    public FilterController(ILibraryManager libraryManager, ILiveTvManager liveTvManager, IUserManager userManager)
     {
         _libraryManager = libraryManager;
+        _liveTvManager = liveTvManager;
         _userManager = userManager;
     }
 
@@ -65,6 +70,11 @@ public class FilterController : BaseJellyfinApiController
                  || includeItemTypes[0] == BaseItemKind.Program))
         {
             item = _libraryManager.GetParentItem(parentId, user?.Id);
+        }
+        else if (includeItemTypes.Length == 1
+            && includeItemTypes[0] == BaseItemKind.LiveTvChannel)
+        {
+            item = _liveTvManager.GetInternalLiveTvFolder(CancellationToken.None);
         }
 
         var query = new InternalItemsQuery
@@ -109,6 +119,13 @@ public class FilterController : BaseJellyfinApiController
 
             OfficialRatings = itemList
                 .Select(i => i.OfficialRating)
+                .Where(i => !string.IsNullOrWhiteSpace(i))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Order()
+                .ToArray(),
+
+            ChannelGroups = itemList
+                .Select(i => i.ChannelGroup)
                 .Where(i => !string.IsNullOrWhiteSpace(i))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Order()

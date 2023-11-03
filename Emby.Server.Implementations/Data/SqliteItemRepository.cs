@@ -3693,6 +3693,22 @@ namespace Emby.Server.Implementations.Data
                 clauseBuilder.Length = 0;
             }
 
+            if (query.ChannelGroups.Count > 0)
+            {
+                clauseBuilder.Append('(');
+                for (var i = 0; i < query.ChannelGroups.Count; i++)
+                {
+                    clauseBuilder.Append("(json_extract(data, '$.ChannelGroup')=@ChannelGroup")
+                        .Append(i)
+                        .Append(") OR ");
+                    statement?.TryBind("@ChannelGroup" + i, query.ChannelGroups[i]);
+                }
+
+                clauseBuilder.Length -= Or.Length;
+                whereClauses.Add(clauseBuilder.Append(')').ToString());
+                clauseBuilder.Length = 0;
+            }
+
             if (tags.Count > 0)
             {
                 clauseBuilder.Append('(');
