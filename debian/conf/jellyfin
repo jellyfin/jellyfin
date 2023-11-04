@@ -27,6 +27,9 @@ JELLYFIN_RESTART_OPT="--restartpath=/usr/lib/jellyfin/restart.sh"
 # ffmpeg binary paths, overriding the system values
 JELLYFIN_FFMPEG_OPT="--ffmpeg=/usr/lib/jellyfin-ffmpeg/ffmpeg"
 
+# Disable glibc dynamic heap adjustment
+MALLOC_TRIM_THRESHOLD_=131072
+
 # [OPTIONAL] run Jellyfin as a headless service
 #JELLYFIN_SERVICE_OPT="--service"
 
