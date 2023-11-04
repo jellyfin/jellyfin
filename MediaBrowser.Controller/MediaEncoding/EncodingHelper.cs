@@ -627,14 +627,20 @@ namespace MediaBrowser.Controller.MediaEncoding
         private string GetVaapiDeviceArgs(string renderNodePath, string driver, string kernelDriver, string alias)
         {
             alias ??= VaapiAlias;
-            renderNodePath = renderNodePath ?? "/dev/dri/renderD128";
-            var options = string.IsNullOrEmpty(driver)
-                ? renderNodePath
-                : ",driver=" + driver + (string.IsNullOrEmpty(kernelDriver) ? string.Empty : ",kernel_driver=" + kernelDriver);
+
+            // 'renderNodePath' has higher priority than 'kernelDriver'
+            var driverOpts = string.IsNullOrEmpty(renderNodePath)
+                ? (string.IsNullOrEmpty(kernelDriver) ? string.Empty : ",kernel_driver=" + kernelDriver)
+                : renderNodePath;
+
+            // 'driver' behaves similarly to env LIBVA_DRIVER_NAME
+            driverOpts += string.IsNullOrEmpty(driver) ? string.Empty : ",driver=" + driver;
+
+            var options = string.IsNullOrEmpty(driverOpts) ? string.Empty : ":" + driverOpts;
 
             return string.Format(
                 CultureInfo.InvariantCulture,
-                " -init_hw_device vaapi={0}:{1}",
+                " -init_hw_device vaapi={0}{1}",
                 alias,
                 options);
         }
@@ -739,14 +745,14 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (_mediaEncoder.IsVaapiDeviceInteliHD)
                 {
-                    args.Append(GetVaapiDeviceArgs(null, "iHD", null, VaapiAlias));
+                    args.Append(GetVaapiDeviceArgs(options.VaapiDevice, "iHD", null, VaapiAlias));
                 }
                 else if (_mediaEncoder.IsVaapiDeviceInteli965)
                 {
                     // Only override i965 since it has lower priority than iHD in libva lookup.
                     Environment.SetEnvironmentVariable("LIBVA_DRIVER_NAME", "i965");
                     Environment.SetEnvironmentVariable("LIBVA_DRIVER_NAME_JELLYFIN", "i965");
-                    args.Append(GetVaapiDeviceArgs(null, "i965", null, VaapiAlias));
+                    args.Append(GetVaapiDeviceArgs(options.VaapiDevice, "i965", null, VaapiAlias));
                 }
                 else
                 {
