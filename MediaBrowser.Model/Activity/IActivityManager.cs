@@ -11,7 +11,7 @@ namespace MediaBrowser.Model.Activity
 {
     public interface IActivityManager
     {
-        event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
+        event EventHandler<GenericEventArgs<ActivityLogDto>> EntryCreated;
 
         Task CreateAsync(ActivityLogDto entry);
 

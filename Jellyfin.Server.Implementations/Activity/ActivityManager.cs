@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Jellyfin.Data.Dtos;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events;
 using Jellyfin.Data.Queries;
@@ -29,7 +28,7 @@ namespace Jellyfin.Server.Implementations.Activity
         }
 
         /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<ActivityLogEntry>>? EntryCreated;
+        public event EventHandler<GenericEventArgs<ActivityLogDto>>? EntryCreated;
 
         /// <inheritdoc/>
         public async Task CreateAsync(ActivityLogDto entry)
@@ -41,7 +40,7 @@ namespace Jellyfin.Server.Implementations.Activity
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
 
-            EntryCreated?.Invoke(this, new GenericEventArgs<ActivityLogEntry>(entry));
+            EntryCreated?.Invoke(this, new GenericEventArgs<ActivityLogDto>(entry));
         }
 
         /// <inheritdoc/>

@@ -5,6 +5,7 @@ using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Activity;
+using MediaBrowser.Model.Dtos;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
@@ -13,7 +14,7 @@ namespace Jellyfin.Api.WebSocketListeners;
 /// <summary>
 /// Class ActivityLogWebSocketListener.
 /// </summary>
-public class ActivityLogWebSocketListener : BasePeriodicWebSocketListener<ActivityLogEntry[], WebSocketListenerState>
+public class ActivityLogWebSocketListener : BasePeriodicWebSocketListener<ActivityLogDto[], WebSocketListenerState>
 {
     /// <summary>
     /// The _kernel.
@@ -45,9 +46,9 @@ public class ActivityLogWebSocketListener : BasePeriodicWebSocketListener<Activi
     /// Gets the data to send.
     /// </summary>
     /// <returns>Task{SystemInfo}.</returns>
-    protected override Task<ActivityLogEntry[]> GetDataToSend()
+    protected override Task<ActivityLogDto[]> GetDataToSend()
     {
-        return Task.FromResult(Array.Empty<ActivityLogEntry>());
+        return Task.FromResult(Array.Empty<ActivityLogDto>());
     }
 
     /// <inheritdoc />
@@ -72,7 +73,7 @@ public class ActivityLogWebSocketListener : BasePeriodicWebSocketListener<Activi
         base.Start(message);
     }
 
-    private async void OnEntryCreated(object? sender, GenericEventArgs<ActivityLogEntry> e)
+    private async void OnEntryCreated(object? sender, GenericEventArgs<ActivityLogDto> e)
     {
         await SendData(true).ConfigureAwait(false);
     }
