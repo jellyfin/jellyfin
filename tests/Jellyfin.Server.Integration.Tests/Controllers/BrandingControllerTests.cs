@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Json;
 using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
@@ -30,8 +31,7 @@ namespace Jellyfin.Server.Integration.Tests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(MediaTypeNames.Application.Json, response.Content.Headers.ContentType?.MediaType);
             Assert.Equal(Encoding.UTF8.BodyName, response.Content.Headers.ContentType?.CharSet);
-            var responseBody = await response.Content.ReadAsStreamAsync();
-            _ = await JsonSerializer.DeserializeAsync<BrandingOptions>(responseBody);
+            await response.Content.ReadFromJsonAsync<BrandingOptions>();
         }
 
         [Theory]

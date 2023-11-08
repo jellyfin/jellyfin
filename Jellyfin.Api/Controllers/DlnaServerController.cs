@@ -5,7 +5,6 @@ using System.IO;
 using System.Net.Mime;
 using System.Threading.Tasks;
 using Emby.Dlna;
-using Emby.Dlna.Main;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Controller.Dlna;
@@ -33,12 +32,19 @@ public class DlnaServerController : BaseJellyfinApiController
     /// Initializes a new instance of the <see cref="DlnaServerController"/> class.
     /// </summary>
     /// <param name="dlnaManager">Instance of the <see cref="IDlnaManager"/> interface.</param>
-    public DlnaServerController(IDlnaManager dlnaManager)
+    /// <param name="contentDirectory">Instance of the <see cref="IContentDirectory"/> interface.</param>
+    /// <param name="connectionManager">Instance of the <see cref="IConnectionManager"/> interface.</param>
+    /// <param name="mediaReceiverRegistrar">Instance of the <see cref="IMediaReceiverRegistrar"/> interface.</param>
+    public DlnaServerController(
+        IDlnaManager dlnaManager,
+        IContentDirectory contentDirectory,
+        IConnectionManager connectionManager,
+        IMediaReceiverRegistrar mediaReceiverRegistrar)
     {
         _dlnaManager = dlnaManager;
-        _contentDirectory = DlnaEntryPoint.Current.ContentDirectory;
-        _connectionManager = DlnaEntryPoint.Current.ConnectionManager;
-        _mediaReceiverRegistrar = DlnaEntryPoint.Current.MediaReceiverRegistrar;
+        _contentDirectory = contentDirectory;
+        _connectionManager = connectionManager;
+        _mediaReceiverRegistrar = mediaReceiverRegistrar;
     }
 
     /// <summary>

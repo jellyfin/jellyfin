@@ -53,7 +53,10 @@ public class ActivityLogWebSocketListener : BasePeriodicWebSocketListener<Activi
     /// <inheritdoc />
     protected override void Dispose(bool dispose)
     {
-        _activityManager.EntryCreated -= OnEntryCreated;
+        if (dispose)
+        {
+            _activityManager.EntryCreated -= OnEntryCreated;
+        }
 
         base.Dispose(dispose);
     }

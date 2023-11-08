@@ -124,5 +124,7 @@
     "TaskKeyframeExtractorDescription": "Извлекаются ключевые кадры из видеофайлов для создания более точных списков плей-листов HLS. Эта задача может выполняться в течение длительного времени.",
     "TaskKeyframeExtractor": "Извлечение ключевых кадров",
     "External": "Внешние",
-    "HearingImpaired": "Для слабослышащих"
+    "HearingImpaired": "Для слабослышащих",
+    "TaskRefreshTrickplayImages": "Сгенерировать изображения для Trickplay",
+    "TaskRefreshTrickplayImagesDescription": "Создает предпросмотры для Trickplay для видео в библиотеках, где эта функция включена."
 }

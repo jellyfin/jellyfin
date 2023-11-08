@@ -135,19 +135,17 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var subtitleStream = mediaSource.MediaStreams
                .First(i => i.Type == MediaStreamType.Subtitle && i.Index == subtitleStreamIndex);
 
-            var subtitle = await GetSubtitleStream(mediaSource, subtitleStream, cancellationToken)
+            var (stream, inputFormat) = await GetSubtitleStream(mediaSource, subtitleStream, cancellationToken)
                         .ConfigureAwait(false);
-
-            var inputFormat = subtitle.Format;
 
             // Return the original if the same format is being requested
             // Character encoding was already handled in GetSubtitleStream
             if (string.Equals(inputFormat, outputFormat, StringComparison.OrdinalIgnoreCase))
             {
-                return subtitle.Stream;
+                return stream;
             }
 
-            using (var stream = subtitle.Stream)
+            using (stream)
             {
                 return ConvertSubtitles(stream, inputFormat, outputFormat, startTimeTicks, endTimeTicks, preserveOriginalTimestamps, cancellationToken);
             }
@@ -420,23 +418,16 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     throw;
                 }
 
-                var ranToCompletion = await process.WaitForExitAsync(TimeSpan.FromMinutes(30)).ConfigureAwait(false);
-
-                if (!ranToCompletion)
+                try
                 {
-                    try
-                    {
-                        _logger.LogInformation("Killing ffmpeg subtitle conversion process");
-
-                        process.Kill();
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error killing subtitle conversion process");
-                    }
+                    await process.WaitForExitAsync(TimeSpan.FromMinutes(30)).ConfigureAwait(false);
+                    exitCode = process.ExitCode;
                 }
-
-                exitCode = ranToCompletion ? process.ExitCode : -1;
+                catch (OperationCanceledException)
+                {
+                    process.Kill(true);
+                    exitCode = -1;
+                }
             }
 
             var failed = false;
@@ -574,23 +565,16 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     throw;
                 }
 
-                var ranToCompletion = await process.WaitForExitAsync(TimeSpan.FromMinutes(30)).ConfigureAwait(false);
-
-                if (!ranToCompletion)
+                try
                 {
-                    try
-                    {
-                        _logger.LogWarning("Killing ffmpeg subtitle extraction process");
-
-                        process.Kill();
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error killing subtitle extraction process");
-                    }
+                    await process.WaitForExitAsync(TimeSpan.FromMinutes(30)).ConfigureAwait(false);
+                    exitCode = process.ExitCode;
                 }
-
-                exitCode = ranToCompletion ? process.ExitCode : -1;
+                catch (OperationCanceledException)
+                {
+                    process.Kill(true);
+                    exitCode = -1;
+                }
             }
 
             var failed = false;

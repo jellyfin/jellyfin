@@ -327,9 +327,9 @@ namespace Emby.Server.Implementations.Playlists
             // this is probably best done as a metadata provider
             // saving a file over itself will require some work to prevent this from happening when not needed
             var playlistPath = item.Path;
-            var extension = Path.GetExtension(playlistPath);
+            var extension = Path.GetExtension(playlistPath.AsSpan());
 
-            if (string.Equals(".wpl", extension, StringComparison.OrdinalIgnoreCase))
+            if (extension.Equals(".wpl", StringComparison.OrdinalIgnoreCase))
             {
                 var playlist = new WplPlaylist();
                 foreach (var child in item.GetLinkedChildren())
@@ -362,8 +362,7 @@ namespace Emby.Server.Implementations.Playlists
                 string text = new WplContent().ToText(playlist);
                 File.WriteAllText(playlistPath, text);
             }
-
-            if (string.Equals(".zpl", extension, StringComparison.OrdinalIgnoreCase))
+            else if (extension.Equals(".zpl", StringComparison.OrdinalIgnoreCase))
             {
                 var playlist = new ZplPlaylist();
                 foreach (var child in item.GetLinkedChildren())
@@ -396,8 +395,7 @@ namespace Emby.Server.Implementations.Playlists
                 string text = new ZplContent().ToText(playlist);
                 File.WriteAllText(playlistPath, text);
             }
-
-            if (string.Equals(".m3u", extension, StringComparison.OrdinalIgnoreCase))
+            else if (extension.Equals(".m3u", StringComparison.OrdinalIgnoreCase))
             {
                 var playlist = new M3uPlaylist
                 {
@@ -428,8 +426,7 @@ namespace Emby.Server.Implementations.Playlists
                 string text = new M3uContent().ToText(playlist);
                 File.WriteAllText(playlistPath, text);
             }
-
-            if (string.Equals(".m3u8", extension, StringComparison.OrdinalIgnoreCase))
+            else if (extension.Equals(".m3u8", StringComparison.OrdinalIgnoreCase))
             {
                 var playlist = new M3uPlaylist();
                 playlist.IsExtended = true;
@@ -458,8 +455,7 @@ namespace Emby.Server.Implementations.Playlists
                 string text = new M3uContent().ToText(playlist);
                 File.WriteAllText(playlistPath, text);
             }
-
-            if (string.Equals(".pls", extension, StringComparison.OrdinalIgnoreCase))
+            else if (extension.Equals(".pls", StringComparison.OrdinalIgnoreCase))
             {
                 var playlist = new PlsPlaylist();
                 foreach (var child in item.GetLinkedChildren())

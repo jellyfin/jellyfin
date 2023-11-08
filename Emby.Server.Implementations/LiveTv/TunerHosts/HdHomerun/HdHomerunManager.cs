@@ -44,8 +44,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     StopStreaming(socket).GetAwaiter().GetResult();
                 }
             }
-
-            GC.SuppressFinalize(this);
         }
 
         public async Task<bool> CheckTunerAvailability(IPAddress remoteIP, int tuner, CancellationToken cancellationToken)

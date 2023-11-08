@@ -124,5 +124,7 @@
     "TaskKeyframeExtractorDescription": "Exporterar nyckelbildrutor från videofiler för att skapa mer exakta HLS-spellistor. Denna rutin kan ta lång tid.",
     "TaskKeyframeExtractor": "Extraktor för nyckelbildrutor",
     "External": "Extern",
-    "HearingImpaired": "Hörselskadad"
+    "HearingImpaired": "Hörselskadad",
+    "TaskRefreshTrickplayImages": "Generera Trickplay-bilder",
+    "TaskRefreshTrickplayImagesDescription": "Skapar trickplay-förhandsvisningar för videor i aktiverade bibliotek."
 }

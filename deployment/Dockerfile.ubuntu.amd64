@@ -17,7 +17,7 @@ RUN apt-get update -yqq \
     libfreetype6-dev libssl-dev libssl1.1 liblttng-ust0
 
 # Install dotnet repository
-RUN wget -q https://download.visualstudio.microsoft.com/download/pr/61f29db0-10a5-4816-8fd8-ca2f71beaea3/e15fb7288eb5bc0053b91ea7b0bfd580/dotnet-sdk-7.0.401-linux-x64.tar.gz -O dotnet-sdk.tar.gz \
+RUN wget -q https://download.visualstudio.microsoft.com/download/pr/ff8c660f-ffa9-4814-ac2d-4089e6ec4eb5/dc806d344844f1d58d8015d105e85c65/dotnet-sdk-7.0.403-linux-x64.tar.gz -O dotnet-sdk.tar.gz \
   && mkdir -p dotnet-sdk \
   && tar -xzf dotnet-sdk.tar.gz -C dotnet-sdk \
   && ln -s $( pwd )/dotnet-sdk/dotnet /usr/bin/dotnet

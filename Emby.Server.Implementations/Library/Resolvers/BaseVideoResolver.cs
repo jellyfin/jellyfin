@@ -263,7 +263,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                 return false;
             }
 
-            return directoryService.GetFilePaths(fullPath).Any(i => string.Equals(Path.GetExtension(i), ".vob", StringComparison.OrdinalIgnoreCase));
+            return directoryService.GetFilePaths(fullPath).Any(i => Path.GetExtension(i.AsSpan()).Equals(".vob", StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>

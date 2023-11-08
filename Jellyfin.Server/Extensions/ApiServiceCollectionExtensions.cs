@@ -82,6 +82,7 @@ namespace Jellyfin.Server.Extensions
                 options.AddPolicy(Policies.SyncPlayCreateGroup, new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.CreateGroup));
                 options.AddPolicy(Policies.SyncPlayJoinGroup, new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.JoinGroup));
                 options.AddPolicy(Policies.SyncPlayIsInGroup, new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.IsInGroup));
+                options.AddPolicy(Policies.SubtitleManagement, new UserPermissionRequirement(PermissionKind.EnableSubtitleManagement));
                 options.AddPolicy(
                     Policies.RequiresElevation,
                     policy => policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication)
@@ -282,7 +283,7 @@ namespace Jellyfin.Server.Extensions
                         AddIPAddress(config, options, subnet.Prefix, subnet.PrefixLength);
                     }
                 }
-                else if (NetworkExtensions.TryParseHost(allowedProxies[i], out var addresses))
+                else if (NetworkExtensions.TryParseHost(allowedProxies[i], out var addresses, config.EnableIPv4, config.EnableIPv6))
                 {
                     foreach (var address in addresses)
                     {

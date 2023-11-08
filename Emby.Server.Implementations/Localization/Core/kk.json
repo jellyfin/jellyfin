@@ -123,5 +123,8 @@
     "TaskOptimizeDatabase": "Derekqordy oñtailandyru",
     "TaskKeyframeExtractorDescription": "Naqtyraq HLS oynatu tızımderın jasau üşın beinefaildardan negızgı kadrlardy şyğarady. Būl tapsyrma ūzaq uaqytqa sozyluy mümkın.",
     "TaskKeyframeExtractor": "Negızgı kadrlardy şyğaru",
-    "External": "Syrtqy"
+    "External": "Syrtqy",
+    "TaskRefreshTrickplayImagesDescription": "Іске қосылған кітапханалардағы бейнелер үшін Trickplay алдын ала түрінде көрсетілімді жасайды.",
+    "TaskRefreshTrickplayImages": "Trickplay үшін суреттерді жасау",
+    "HearingImpaired": "Есту қабілеті нашарға"
 }

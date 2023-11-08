@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Net;
+using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
@@ -85,9 +86,7 @@ public sealed class UserLibraryControllerTests : IClassFixture<JellyfinApplicati
 
         var response = await client.GetAsync($"Users/{userDto.Id}/Items/{rootFolderDto.Id}");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var rootDto = await JsonSerializer.DeserializeAsync<BaseItemDto>(
-                    await response.Content.ReadAsStreamAsync(),
-                    _jsonOptions);
+        var rootDto = await response.Content.ReadFromJsonAsync<BaseItemDto>(_jsonOptions);
         Assert.NotNull(rootDto);
     }
 
@@ -102,9 +101,7 @@ public sealed class UserLibraryControllerTests : IClassFixture<JellyfinApplicati
 
         var response = await client.GetAsync($"Users/{userDto.Id}/Items/{rootFolderDto.Id}/Intros");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var rootDto = await JsonSerializer.DeserializeAsync<QueryResult<BaseItemDto>>(
-                    await response.Content.ReadAsStreamAsync(),
-                    _jsonOptions);
+        var rootDto = await response.Content.ReadFromJsonAsync<QueryResult<BaseItemDto>>(_jsonOptions);
         Assert.NotNull(rootDto);
     }
 
@@ -121,9 +118,7 @@ public sealed class UserLibraryControllerTests : IClassFixture<JellyfinApplicati
 
         var response = await client.GetAsync(string.Format(CultureInfo.InvariantCulture, format, userDto.Id, rootFolderDto.Id));
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var rootDto = await JsonSerializer.DeserializeAsync<BaseItemDto[]>(
-                    await response.Content.ReadAsStreamAsync(),
-                    _jsonOptions);
+        var rootDto = await response.Content.ReadFromJsonAsync<BaseItemDto[]>(_jsonOptions);
         Assert.NotNull(rootDto);
     }
 }

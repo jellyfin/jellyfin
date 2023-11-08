@@ -1,4 +1,3 @@
-#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -23,7 +22,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Attachments
 {
-    public class AttachmentExtractor : IAttachmentExtractor, IDisposable
+    public sealed class AttachmentExtractor : IAttachmentExtractor
     {
         private readonly ILogger<AttachmentExtractor> _logger;
         private readonly IApplicationPaths _appPaths;
@@ -33,8 +32,6 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks =
             new ConcurrentDictionary<string, SemaphoreSlim>();
-
-        private bool _disposed = false;
 
         public AttachmentExtractor(
             ILogger<AttachmentExtractor> logger,
@@ -177,22 +174,16 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
                 process.Start();
 
-                var ranToCompletion = await ProcessExtensions.WaitForExitAsync(process, cancellationToken).ConfigureAwait(false);
-
-                if (!ranToCompletion)
+                try
                 {
-                    try
-                    {
-                        _logger.LogWarning("Killing ffmpeg attachment extraction process");
-                        process.Kill();
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error killing attachment extraction process");
-                    }
+                    await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+                    exitCode = process.ExitCode;
                 }
-
-                exitCode = ranToCompletion ? process.ExitCode : -1;
+                catch (OperationCanceledException)
+                {
+                    process.Kill(true);
+                    exitCode = -1;
+                }
             }
 
             var failed = false;
@@ -296,7 +287,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
             ArgumentException.ThrowIfNullOrEmpty(outputPath);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? throw new ArgumentException("Path can't be a root directory.", nameof(outputPath)));
 
             var processArgs = string.Format(
                 CultureInfo.InvariantCulture,
@@ -325,22 +316,16 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
                 process.Start();
 
-                var ranToCompletion = await ProcessExtensions.WaitForExitAsync(process, cancellationToken).ConfigureAwait(false);
-
-                if (!ranToCompletion)
+                try
                 {
-                    try
-                    {
-                        _logger.LogWarning("Killing ffmpeg attachment extraction process");
-                        process.Kill();
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error killing attachment extraction process");
-                    }
+                    await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+                    exitCode = process.ExitCode;
                 }
-
-                exitCode = ranToCompletion ? process.ExitCode : -1;
+                catch (OperationCanceledException)
+                {
+                    process.Kill(true);
+                    exitCode = -1;
+                }
             }
 
             var failed = false;
@@ -391,33 +376,8 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 filename = (mediaPath + attachmentStreamIndex.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("D", CultureInfo.InvariantCulture);
             }
 
-            var prefix = filename.Substring(0, 1);
-            return Path.Combine(_appPaths.DataPath, "attachments", prefix, filename);
-        }
-
-        /// <inheritdoc />
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-            }
-
-            _disposed = true;
+            var prefix = filename.AsSpan(0, 1);
+            return Path.Join(_appPaths.DataPath, "attachments", prefix, filename);
         }
     }
 }

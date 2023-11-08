@@ -499,8 +499,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var required = codec == Codec.Encoder ? _requiredEncoders : _requiredDecoders;
 
-            var found = Regex
-                .Matches(output, @"^\s\S{6}\s(?<codec>[\w|-]+)\s+.+$", RegexOptions.Multiline)
+            var found = CodecRegex()
+                .Matches(output)
                 .Select(x => x.Groups["codec"].Value)
                 .Where(x => required.Contains(x));
 
@@ -527,8 +527,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return Enumerable.Empty<string>();
             }
 
-            var found = Regex
-                .Matches(output, @"^\s\S{3}\s(?<filter>[\w|-]+)\s+.+$", RegexOptions.Multiline)
+            var found = FilterRegex()
+                .Matches(output)
                 .Select(x => x.Groups["filter"].Value)
                 .Where(x => _requiredFilters.Contains(x));
 
@@ -582,5 +582,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return reader.ReadToEnd();
             }
         }
+
+        [GeneratedRegex("^\\s\\S{6}\\s(?<codec>[\\w|-]+)\\s+.+$", RegexOptions.Multiline)]
+        private static partial Regex CodecRegex();
+
+        [GeneratedRegex("^\\s\\S{3}\\s(?<filter>[\\w|-]+)\\s+.+$", RegexOptions.Multiline)]
+        private static partial Regex FilterRegex();
     }
 }

@@ -12,7 +12,6 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Net.WebSocketMessages;
 using MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 using MediaBrowser.Model.Session;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.HttpServer
