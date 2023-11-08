@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
@@ -13,6 +14,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using TMDbLib.Objects.TvShows;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 {
@@ -102,9 +104,61 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 return metadataResult;
             }
 
-            var episodeResult = await _tmdbClientManager
-                .GetEpisodeAsync(seriesTmdbId, seasonNumber.Value, episodeNumber.Value, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
-                .ConfigureAwait(false);
+            TvEpisode? episodeResult = null;
+            if (info.IndexNumberEnd.HasValue)
+            {
+                var startindex = episodeNumber;
+                var endindex = info.IndexNumberEnd;
+                List<TvEpisode>? result = null;
+                for (int? episode = startindex; episode <= endindex; episode++)
+                {
+                    var episodeInfo = await _tmdbClientManager.GetEpisodeAsync(seriesTmdbId, seasonNumber.Value, episode.Value, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken).ConfigureAwait(false);
+                    if (episodeInfo is not null)
+                    {
+                        (result ??= new List<TvEpisode>()).Add(episodeInfo);
+                    }
+                }
+
+                if (result is not null)
+                {
+                    // Forces a deep copy of the first TvEpisode, so we don't modify the original because it's cached
+                    episodeResult = new TvEpisode()
+                    {
+                        Name = result[0].Name,
+                        Overview = result[0].Overview,
+                        AirDate = result[0].AirDate,
+                        VoteAverage = result[0].VoteAverage,
+                        ExternalIds = result[0].ExternalIds,
+                        Videos = result[0].Videos,
+                        Credits = result[0].Credits
+                    };
+
+                    if (result.Count > 1)
+                    {
+                        var name = new StringBuilder(episodeResult.Name);
+                        var overview = new StringBuilder(episodeResult.Overview);
+
+                        for (int i = 1; i < result.Count; i++)
+                        {
+                            name.Append(" / ").Append(result[i].Name);
+                            overview.Append(" / ").Append(result[i].Overview);
+                        }
+
+                        episodeResult.Name = name.ToString();
+                        episodeResult.Overview = overview.ToString();
+                    }
+                }
+                else
+                {
+                    return metadataResult;
+                }
+            }
+            else
+            {
+                episodeResult = await _tmdbClientManager
+                    .GetEpisodeAsync(seriesTmdbId, seasonNumber.Value, episodeNumber.Value, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
+                    .ConfigureAwait(false);
+            }
 
             if (episodeResult is null)
             {
