@@ -6,7 +6,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
-  <!-- Code analysers-->
+  <!-- Code Analyzers -->
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
     <PackageReference Include="IDisposableAnalyzers">
       <PrivateAssets>all</PrivateAssets>

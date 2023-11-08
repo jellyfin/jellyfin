@@ -124,5 +124,7 @@
     "TaskKeyframeExtractorDescription": "Izvlačenje ključnih okvira iz videozapisa za stvaranje objektivnije HLS liste za reprodukciju. Pokretanje ovog zadatka može potrajati.",
     "TaskKeyframeExtractor": "Izvoditelj ključnog okvira",
     "TaskOptimizeDatabaseDescription": "Sažima bazu podataka i uklanja prazan prostor. Pokretanje ovog zadatka, može poboljšati performanse nakon provođenja indeksiranja biblioteke ili provođenja drugih promjena koje utječu na bazu podataka.",
-    "HearingImpaired": "Oštećen sluh"
+    "HearingImpaired": "Oštećen sluh",
+    "TaskRefreshTrickplayImages": "Generiraj Trickplay Slike",
+    "TaskRefreshTrickplayImagesDescription": "Kreira trickplay pretpreglede za videe u omogućenim knjižnicama."
 }

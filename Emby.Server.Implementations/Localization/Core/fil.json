@@ -123,5 +123,6 @@
     "HearingImpaired": "Bingi",
     "TaskKeyframeExtractor": "Tagabunot ng Keyframe",
     "TaskKeyframeExtractorDescription": "Nagbubunot ng keyframe mula sa mga bidyo upang makabuo ng mas tumpak na HLS playlist. Maaaring matagal ito gawin.",
-    "External": "External"
+    "External": "External",
+    "TaskRefreshTrickplayImages": "Gumawa ng Trickplay na Imahe"
 }
