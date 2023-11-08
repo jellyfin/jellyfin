@@ -683,15 +683,14 @@ namespace Emby.Dlna.PlayTo
 
             if (disposing)
             {
+                _device.PlaybackStart -= OnDevicePlaybackStart;
+                _device.PlaybackProgress -= OnDevicePlaybackProgress;
+                _device.PlaybackStopped -= OnDevicePlaybackStopped;
+                _device.MediaChanged -= OnDeviceMediaChanged;
+                _deviceDiscovery.DeviceLeft -= OnDeviceDiscoveryDeviceLeft;
+                _device.OnDeviceUnavailable = null;
                 _device.Dispose();
             }
-
-            _device.PlaybackStart -= OnDevicePlaybackStart;
-            _device.PlaybackProgress -= OnDevicePlaybackProgress;
-            _device.PlaybackStopped -= OnDevicePlaybackStopped;
-            _device.MediaChanged -= OnDeviceMediaChanged;
-            _deviceDiscovery.DeviceLeft -= OnDeviceDiscoveryDeviceLeft;
-            _device.OnDeviceUnavailable = null;
 
             _disposed = true;
         }
