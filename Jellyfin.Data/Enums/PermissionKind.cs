@@ -113,6 +113,11 @@ namespace Jellyfin.Data.Enums
         /// <summary>
         /// Whether the user can create, modify and delete collections.
         /// </summary>
-        EnableCollectionManagement = 21
+        EnableCollectionManagement = 21,
+
+        /// <summary>
+        /// Whether the user can edit subtitles.
+        /// </summary>
+        EnableSubtitleManagement = 22
     }
 }

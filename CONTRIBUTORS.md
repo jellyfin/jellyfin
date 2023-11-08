@@ -170,7 +170,8 @@
  - [TheTyrius](https://github.com/TheTyrius)
  - [tallbl0nde](https://github.com/tallbl0nde)
  - [sleepycatcoding](https://github.com/sleepycatcoding)
- - [Nate G](https://github.com/GGProGaming)
+ - [scampower3](https://github.com/scampower3)
+ - [Nate G](https://github.com/nathangur)
  - [BrennanWoodbury](https://github.com/BrennanWoodbury)
  - [westonhowe98](https://github.com/westonhowe98)
 

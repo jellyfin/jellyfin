@@ -123,5 +123,7 @@
     "TaskKeyframeExtractorDescription": "Витягує ключові кадри з відеофайлів для створення більш точних списків відтворення HLS. Це завдання може виконуватися протягом тривалого часу.",
     "TaskKeyframeExtractor": "Екстрактор ключових кадрів",
     "External": "Зовнішній",
-    "HearingImpaired": "З порушеннями слуху"
+    "HearingImpaired": "З порушеннями слуху",
+    "TaskRefreshTrickplayImagesDescription": "Створює trickplay-зображення для відео у ввімкнених медіатеках.",
+    "TaskRefreshTrickplayImages": "Створення Trickplay-зображень"
 }
