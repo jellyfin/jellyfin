@@ -423,6 +423,15 @@ namespace Emby.Dlna.PlayTo
                 case PlaystateCommand.Seek:
                     return Seek(command.SeekPositionTicks ?? 0);
 
+                case PlaystateCommand.Mute:
+                    return _device.Mute(cancellationToken);
+
+                case PlaystateCommand.Unmute:
+                    return _device.Unmute(cancellationToken);
+
+                case PlaystateCommand.ToggleMute:
+                    return _device.ToggleMute(cancellationToken);
+
                 case PlaystateCommand.NextTrack:
                     return SetPlaylistIndex(_currentPlaylistIndex + 1, cancellationToken);
 

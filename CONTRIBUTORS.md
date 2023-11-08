@@ -170,6 +170,7 @@
  - [TheTyrius](https://github.com/TheTyrius)
  - [tallbl0nde](https://github.com/tallbl0nde)
  - [sleepycatcoding](https://github.com/sleepycatcoding)
+ - [Jacob Willden](https://github.com/jacob-willden)
 
 # Emby Contributors
 
