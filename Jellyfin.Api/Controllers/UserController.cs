@@ -398,7 +398,7 @@ public class UserController : BaseJellyfinApiController
             return NotFound();
         }
 
-        if (newPolicy.PasswordResetProviderId == null)
+        if (string.IsNullOrWhiteSpace(newPolicy.PasswordResetProviderId))
         {
             return BadRequest();
         }

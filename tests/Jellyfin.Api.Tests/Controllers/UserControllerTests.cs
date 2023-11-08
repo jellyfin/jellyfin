@@ -70,6 +70,8 @@ public class UserControllerTests
 
     [Theory]
     [InlineAutoData(null)]
+    [InlineAutoData("")]
+    [InlineAutoData("   ")]
     public async Task UpdateUserPolicy_WhenPasswordResetProviderIdNotSupplied_ReturnsBadRequest(string? passwordResetProviderId, Guid userId, User user)
     {
         var userPolicy = new UserPolicy
