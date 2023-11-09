@@ -39,7 +39,7 @@ namespace MediaBrowser.Controller.Entities
             MediaTypes = Array.Empty<string>();
             MinSimilarityScore = 20;
             OfficialRatings = Array.Empty<string>();
-            OrderBy = Array.Empty<(string, SortOrder)>();
+            OrderBy = Array.Empty<(ItemSortBy, SortOrder)>();
             PersonIds = Array.Empty<Guid>();
             PersonTypes = Array.Empty<string>();
             PresetViews = Array.Empty<string>();
@@ -284,7 +284,7 @@ namespace MediaBrowser.Controller.Entities
 
         public bool? HasChapterImages { get; set; }
 
-        public IReadOnlyList<(string OrderBy, SortOrder SortOrder)> OrderBy { get; set; }
+        public IReadOnlyList<(ItemSortBy OrderBy, SortOrder SortOrder)> OrderBy { get; set; }
 
         public DateTime? MinDateCreated { get; set; }
 

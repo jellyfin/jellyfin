@@ -917,7 +917,7 @@ namespace Emby.Dlna.ContentDirectory
         private QueryResult<ServerItem> GetGenres(BaseItem parent, InternalItemsQuery query)
         {
             // Don't sort
-            query.OrderBy = Array.Empty<(string, SortOrder)>();
+            query.OrderBy = Array.Empty<(ItemSortBy, SortOrder)>();
             query.AncestorIds = new[] { parent.Id };
             var genresResult = _libraryManager.GetGenres(query);
 
@@ -933,7 +933,7 @@ namespace Emby.Dlna.ContentDirectory
         private QueryResult<ServerItem> GetMusicGenres(BaseItem parent, InternalItemsQuery query)
         {
             // Don't sort
-            query.OrderBy = Array.Empty<(string, SortOrder)>();
+            query.OrderBy = Array.Empty<(ItemSortBy, SortOrder)>();
             query.AncestorIds = new[] { parent.Id };
             var genresResult = _libraryManager.GetMusicGenres(query);
 
@@ -949,7 +949,7 @@ namespace Emby.Dlna.ContentDirectory
         private QueryResult<ServerItem> GetMusicAlbumArtists(BaseItem parent, InternalItemsQuery query)
         {
             // Don't sort
-            query.OrderBy = Array.Empty<(string, SortOrder)>();
+            query.OrderBy = Array.Empty<(ItemSortBy, SortOrder)>();
             query.AncestorIds = new[] { parent.Id };
             var artists = _libraryManager.GetAlbumArtists(query);
 
@@ -965,7 +965,7 @@ namespace Emby.Dlna.ContentDirectory
         private QueryResult<ServerItem> GetMusicArtists(BaseItem parent, InternalItemsQuery query)
         {
             // Don't sort
-            query.OrderBy = Array.Empty<(string, SortOrder)>();
+            query.OrderBy = Array.Empty<(ItemSortBy, SortOrder)>();
             query.AncestorIds = new[] { parent.Id };
             var artists = _libraryManager.GetArtists(query);
             return ToResult(query.StartIndex, artists);
@@ -980,7 +980,7 @@ namespace Emby.Dlna.ContentDirectory
         private QueryResult<ServerItem> GetFavoriteArtists(BaseItem parent, InternalItemsQuery query)
         {
             // Don't sort
-            query.OrderBy = Array.Empty<(string, SortOrder)>();
+            query.OrderBy = Array.Empty<(ItemSortBy, SortOrder)>();
             query.AncestorIds = new[] { parent.Id };
             query.IsFavorite = true;
             var artists = _libraryManager.GetArtists(query);
@@ -1011,7 +1011,7 @@ namespace Emby.Dlna.ContentDirectory
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetNextUp(BaseItem parent, InternalItemsQuery query)
         {
-            query.OrderBy = Array.Empty<(string, SortOrder)>();
+            query.OrderBy = Array.Empty<(ItemSortBy, SortOrder)>();
 
             var result = _tvSeriesManager.GetNextUp(
                 new NextUpQuery
@@ -1036,7 +1036,7 @@ namespace Emby.Dlna.ContentDirectory
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetLatest(BaseItem parent, InternalItemsQuery query, BaseItemKind itemType)
         {
-            query.OrderBy = Array.Empty<(string, SortOrder)>();
+            query.OrderBy = Array.Empty<(ItemSortBy, SortOrder)>();
 
             var items = _userViewManager.GetLatestItems(
                 new LatestItemsQuery
@@ -1203,9 +1203,9 @@ namespace Emby.Dlna.ContentDirectory
         /// </summary>
         /// <param name="sort">The <see cref="SortCriteria"/>.</param>
         /// <param name="isPreSorted">True if pre-sorted.</param>
-        private static (string SortName, SortOrder SortOrder)[] GetOrderBy(SortCriteria sort, bool isPreSorted)
+        private static (ItemSortBy SortName, SortOrder SortOrder)[] GetOrderBy(SortCriteria sort, bool isPreSorted)
         {
-            return isPreSorted ? Array.Empty<(string, SortOrder)>() : new[] { (ItemSortBy.SortName, sort.SortOrder) };
+            return isPreSorted ? Array.Empty<(ItemSortBy, SortOrder)>() : new[] { (ItemSortBy.SortName, sort.SortOrder) };
         }
 
         /// <summary>
