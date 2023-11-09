@@ -124,5 +124,7 @@
     "TaskKeyframeExtractorDescription": "חלץ תמונות מפתח מקבצי וידאו בכדי ליצור רשימות השמעה מדויקות יותר של HLS. משימה זו עלולה להימשך זמן רב.",
     "TaskKeyframeExtractor": "מחלץ תמונות מפתח",
     "External": "חיצוני",
-    "HearingImpaired": "לקוי שמיעה"
+    "HearingImpaired": "לקוי שמיעה",
+    "TaskRefreshTrickplayImages": "יצירת תמונות המחשה",
+    "TaskRefreshTrickplayImagesDescription": "יוצר תמונות המחשה לסרטונים שפעילים בספריות."
 }

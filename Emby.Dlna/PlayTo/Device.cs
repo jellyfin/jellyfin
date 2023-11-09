@@ -1248,10 +1248,9 @@ namespace Emby.Dlna.PlayTo
             if (disposing)
             {
                 _timer?.Dispose();
+                _timer = null;
+                Properties = null!;
             }
-
-            _timer = null;
-            Properties = null!;
 
             _disposed = true;
         }

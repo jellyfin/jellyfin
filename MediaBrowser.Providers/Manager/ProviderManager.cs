@@ -1096,13 +1096,13 @@ namespace MediaBrowser.Providers.Manager
                 return;
             }
 
-            if (!_disposeCancellationTokenSource.IsCancellationRequested)
-            {
-                _disposeCancellationTokenSource.Cancel();
-            }
-
             if (disposing)
             {
+                if (!_disposeCancellationTokenSource.IsCancellationRequested)
+                {
+                    _disposeCancellationTokenSource.Cancel();
+                }
+
                 _disposeCancellationTokenSource.Dispose();
             }
 

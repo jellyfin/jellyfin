@@ -418,9 +418,24 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public Task<MediaInfo> GetMediaInfo(MediaInfoRequest request, CancellationToken cancellationToken)
         {
             var extractChapters = request.MediaType == DlnaProfileType.Video && request.ExtractChapters;
-            var analyzeDuration = string.Empty;
+            var extraArgs = GetExtraArguments(request);
+
+            return GetMediaInfoInternal(
+                GetInputArgument(request.MediaSource.Path, request.MediaSource),
+                request.MediaSource.Path,
+                request.MediaSource.Protocol,
+                extractChapters,
+                extraArgs,
+                request.MediaType == DlnaProfileType.Audio,
+                request.MediaSource.VideoType,
+                cancellationToken);
+        }
+
+        internal string GetExtraArguments(MediaInfoRequest request)
+        {
             var ffmpegAnalyzeDuration = _config.GetFFmpegAnalyzeDuration() ?? string.Empty;
             var ffmpegProbeSize = _config.GetFFmpegProbeSize() ?? string.Empty;
+            var analyzeDuration = string.Empty;
             var extraArgs = string.Empty;
 
             if (request.MediaSource.AnalyzeDurationMs > 0)
@@ -442,15 +457,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 extraArgs += " -probesize " + ffmpegProbeSize;
             }
 
-            return GetMediaInfoInternal(
-                GetInputArgument(request.MediaSource.Path, request.MediaSource),
-                request.MediaSource.Path,
-                request.MediaSource.Protocol,
-                extractChapters,
-                extraArgs,
-                request.MediaType == DlnaProfileType.Audio,
-                request.MediaSource.VideoType,
-                cancellationToken);
+            if (request.MediaSource.RequiredHttpHeaders.TryGetValue("user_agent", out var userAgent))
+            {
+                extraArgs += " -user_agent " + userAgent;
+            }
+
+            return extraArgs;
         }
 
         /// <inheritdoc />

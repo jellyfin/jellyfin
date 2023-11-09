@@ -124,5 +124,7 @@
     "TaskKeyframeExtractor": "Kulcsképkockák kibontása",
     "TaskKeyframeExtractorDescription": "Kibontja a kulcsképkockákat a videófájlokból, hogy pontosabb HLS lejátszási listákat hozzon létre. Ez a feladat hosszú ideig tarthat.",
     "External": "Külső",
-    "HearingImpaired": "Hallássérült"
+    "HearingImpaired": "Hallássérült",
+    "TaskRefreshTrickplayImages": "Trickplay képek generálása",
+    "TaskRefreshTrickplayImagesDescription": "Trickplay előnézetet készít az engedélyezett könyvtárakban lévő videókhoz."
 }
