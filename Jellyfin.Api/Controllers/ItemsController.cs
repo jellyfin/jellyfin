@@ -269,13 +269,13 @@ public class ItemsController : BaseJellyfinApiController
             folder = _libraryManager.GetUserRootFolder();
         }
 
-        string? collectionType = null;
+        CollectionType? collectionType = null;
         if (folder is IHasCollectionType hasCollectionType)
         {
             collectionType = hasCollectionType.CollectionType;
         }
 
-        if (string.Equals(collectionType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
+        if (collectionType == CollectionType.Playlists)
         {
             recursive = true;
             includeItemTypes = new[] { BaseItemKind.Playlist };

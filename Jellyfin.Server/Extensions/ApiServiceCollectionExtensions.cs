@@ -246,6 +246,7 @@ namespace Jellyfin.Server.Extensions
                 // TODO - remove when all types are supported in System.Text.Json
                 c.AddSwaggerTypeMappings();
 
+                c.SchemaFilter<IgnoreEnumSchemaFilter>();
                 c.OperationFilter<SecurityRequirementsOperationFilter>();
                 c.OperationFilter<FileResponseFilter>();
                 c.OperationFilter<FileRequestFilter>();
