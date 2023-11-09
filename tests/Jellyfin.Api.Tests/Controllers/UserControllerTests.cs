@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading.Tasks;
 using AutoFixture.Xunit2;
 using Jellyfin.Api.Controllers;
@@ -15,6 +18,7 @@ using MediaBrowser.Model.Users;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Nikse.SubtitleEdit.Core.Common;
 using Xunit;
 
 namespace Jellyfin.Api.Tests.Controllers;
@@ -72,17 +76,45 @@ public class UserControllerTests
     [InlineAutoData(null)]
     [InlineAutoData("")]
     [InlineAutoData("   ")]
-    public async Task UpdateUserPolicy_WhenPasswordResetProviderIdNotSupplied_ReturnsBadRequest(string? passwordResetProviderId, Guid userId, User user)
+    public void UpdateUserPolicy_WhenPasswordResetProviderIdNotSupplied_ReturnsBadRequest(string? passwordResetProviderId)
     {
         var userPolicy = new UserPolicy
         {
-            PasswordResetProviderId = passwordResetProviderId
+            PasswordResetProviderId = passwordResetProviderId,
+            AuthenticationProviderId = "AuthenticationProviderId"
         };
 
-        _mockUserManager
-            .Setup(m => m.GetUserById(userId))
-            .Returns(user);
+        Assert.Contains(
+            Validate(userPolicy), v =>
+                v.MemberNames.Contains("PasswordResetProviderId") &&
+                v.ErrorMessage != null &&
+                v.ErrorMessage.Contains("required", StringComparison.CurrentCultureIgnoreCase));
+    }
 
-        Assert.IsType<BadRequestResult>(await _subject.UpdateUserPolicy(userId, userPolicy));
+    [Theory]
+    [InlineAutoData(null)]
+    [InlineAutoData("")]
+    [InlineAutoData("   ")]
+    public void UpdateUserPolicy_WhenAuthenticationProviderIdNotSupplied_ReturnsBadRequest(string? authenticationProviderId)
+    {
+        var userPolicy = new UserPolicy
+        {
+            AuthenticationProviderId = authenticationProviderId,
+            PasswordResetProviderId = "PasswordResetProviderId"
+        };
+
+        Assert.Contains(Validate(userPolicy), v =>
+            v.MemberNames.Contains("AuthenticationProviderId") &&
+            v.ErrorMessage != null &&
+            v.ErrorMessage.Contains("required", StringComparison.CurrentCultureIgnoreCase));
+    }
+
+    private IList<ValidationResult> Validate(object model)
+    {
+        var result = new List<ValidationResult>();
+        var context = new ValidationContext(model, null, null);
+        Validator.TryValidateObject(model, context, result, true);
+
+        return result;
     }
 }

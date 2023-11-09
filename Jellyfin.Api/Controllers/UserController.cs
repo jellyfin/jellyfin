@@ -398,11 +398,6 @@ public class UserController : BaseJellyfinApiController
             return NotFound();
         }
 
-        if (string.IsNullOrWhiteSpace(newPolicy.PasswordResetProviderId))
-        {
-            return BadRequest();
-        }
-
         // If removing admin access
         if (!newPolicy.IsAdministrator && user.HasPermission(PermissionKind.IsAdministrator))
         {
