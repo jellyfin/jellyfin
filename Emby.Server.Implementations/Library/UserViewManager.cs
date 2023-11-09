@@ -63,8 +63,8 @@ namespace Emby.Server.Implementations.Library
                 var collectionFolder = folder as ICollectionFolder;
                 var folderViewType = collectionFolder?.CollectionType;
 
-                // Playlist library requires special handling because the folder only refrences user playlists
-                if (string.Equals(folderViewType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
+                // Playlist library requires special handling because the folder only references user playlists
+                if (folderViewType == CollectionType.Playlists)
                 {
                     var items = folder.GetItemList(new InternalItemsQuery(user)
                     {
