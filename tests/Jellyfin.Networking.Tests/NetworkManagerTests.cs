@@ -1,6 +1,6 @@
 using System.Net;
-using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
+using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
