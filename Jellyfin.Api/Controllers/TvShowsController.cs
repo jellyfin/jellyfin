@@ -219,7 +219,7 @@ public class TvShowsController : BaseJellyfinApiController
         [FromQuery] int? imageTypeLimit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
         [FromQuery] bool? enableUserData,
-        [FromQuery] string? sortBy)
+        [FromQuery] ItemSortBy? sortBy)
     {
         userId = RequestHelpers.GetUserId(User, userId);
         var user = userId.Value.Equals(default)
@@ -289,7 +289,7 @@ public class TvShowsController : BaseJellyfinApiController
             episodes = UserViewBuilder.FilterForAdjacency(episodes, adjacentTo.Value).ToList();
         }
 
-        if (string.Equals(sortBy, ItemSortBy.Random, StringComparison.OrdinalIgnoreCase))
+        if (sortBy == ItemSortBy.Random)
         {
             episodes.Shuffle();
         }

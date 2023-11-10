@@ -124,5 +124,7 @@
     "TaskKeyframeExtractorDescription": "Extrait les images clés des fichiers vidéo pour créer des listes de lecture HLS plus précises. Cette tâche peut durer très longtemps.",
     "TaskKeyframeExtractor": "Extracteur d'image clé",
     "External": "Externe",
-    "HearingImpaired": "Malentendants"
+    "HearingImpaired": "Malentendants",
+    "TaskRefreshTrickplayImages": "Générer des images Trickplay",
+    "TaskRefreshTrickplayImagesDescription": "Crée des aperçus Trickplay pour les vidéos dans les médiathèques activées."
 }
