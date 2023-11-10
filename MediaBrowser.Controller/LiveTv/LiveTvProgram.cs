@@ -20,7 +20,7 @@ namespace MediaBrowser.Controller.LiveTv
 {
     public class LiveTvProgram : BaseItem, IHasLookupInfo<ItemLookupInfo>, IHasStartDate, IHasProgramAttributes
     {
-        private static string EmbyServiceName = "Emby";
+        private const string EmbyServiceName = "Emby";
 
         public LiveTvProgram()
         {

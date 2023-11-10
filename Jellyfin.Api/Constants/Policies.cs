@@ -84,4 +84,9 @@ public static class Policies
     /// Policy name for managing LiveTV.
     /// </summary>
     public const string LiveTvManagement = "LiveTvManagement";
+
+    /// <summary>
+    /// Policy name for accessing subtitles management.
+    /// </summary>
+    public const string SubtitleManagement = "SubtitleManagement";
 }

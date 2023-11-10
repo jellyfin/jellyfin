@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Querying;
@@ -13,7 +14,7 @@ namespace Emby.Server.Implementations.Sorting
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name => ItemSortBy.SeriesSortName;
+        public ItemSortBy Type => ItemSortBy.SeriesSortName;
 
         /// <summary>
         /// Compares the specified x.

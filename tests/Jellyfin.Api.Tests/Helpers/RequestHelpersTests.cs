@@ -14,7 +14,7 @@ namespace Jellyfin.Api.Tests.Helpers
     {
         [Theory]
         [MemberData(nameof(GetOrderBy_Success_TestData))]
-        public static void GetOrderBy_Success(IReadOnlyList<string> sortBy, IReadOnlyList<SortOrder> requestedSortOrder, (string, SortOrder)[] expected)
+        public static void GetOrderBy_Success(IReadOnlyList<ItemSortBy> sortBy, IReadOnlyList<SortOrder> requestedSortOrder, (ItemSortBy, SortOrder)[] expected)
         {
             Assert.Equal(expected, RequestHelpers.GetOrderBy(sortBy, requestedSortOrder));
         }
@@ -95,42 +95,42 @@ namespace Jellyfin.Api.Tests.Helpers
             Assert.Throws<SecurityException>(() => RequestHelpers.GetUserId(principal, requestUserId));
         }
 
-        public static TheoryData<IReadOnlyList<string>, IReadOnlyList<SortOrder>, (string, SortOrder)[]> GetOrderBy_Success_TestData()
+        public static TheoryData<IReadOnlyList<ItemSortBy>, IReadOnlyList<SortOrder>, (ItemSortBy, SortOrder)[]> GetOrderBy_Success_TestData()
         {
-            var data = new TheoryData<IReadOnlyList<string>, IReadOnlyList<SortOrder>, (string, SortOrder)[]>();
+            var data = new TheoryData<IReadOnlyList<ItemSortBy>, IReadOnlyList<SortOrder>, (ItemSortBy, SortOrder)[]>();
 
             data.Add(
-                Array.Empty<string>(),
+                Array.Empty<ItemSortBy>(),
                 Array.Empty<SortOrder>(),
-                Array.Empty<(string, SortOrder)>());
+                Array.Empty<(ItemSortBy, SortOrder)>());
 
             data.Add(
-                new string[]
+                new[]
                 {
-                    "IsFavoriteOrLiked",
-                    "Random"
+                    ItemSortBy.IsFavoriteOrLiked,
+                    ItemSortBy.Random
                 },
                 Array.Empty<SortOrder>(),
-                new (string, SortOrder)[]
+                new (ItemSortBy, SortOrder)[]
                 {
-                    ("IsFavoriteOrLiked", SortOrder.Ascending),
-                    ("Random", SortOrder.Ascending),
+                    (ItemSortBy.IsFavoriteOrLiked, SortOrder.Ascending),
+                    (ItemSortBy.Random, SortOrder.Ascending),
                 });
 
             data.Add(
-                new string[]
+                new[]
                 {
-                    "SortName",
-                    "ProductionYear"
+                    ItemSortBy.SortName,
+                    ItemSortBy.ProductionYear
                 },
-                new SortOrder[]
+                new[]
                 {
                     SortOrder.Descending
                 },
-                new (string, SortOrder)[]
+                new (ItemSortBy, SortOrder)[]
                 {
-                    ("SortName", SortOrder.Descending),
-                    ("ProductionYear", SortOrder.Descending),
+                    (ItemSortBy.SortName, SortOrder.Descending),
+                    (ItemSortBy.ProductionYear, SortOrder.Descending),
                 });
 
             return data;

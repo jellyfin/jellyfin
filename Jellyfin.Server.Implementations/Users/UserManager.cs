@@ -15,6 +15,7 @@ using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
@@ -43,6 +44,7 @@ namespace Jellyfin.Server.Implementations.Users
         private readonly InvalidAuthProvider _invalidAuthProvider;
         private readonly DefaultAuthenticationProvider _defaultAuthenticationProvider;
         private readonly DefaultPasswordResetProvider _defaultPasswordResetProvider;
+        private readonly IServerConfigurationManager _serverConfigurationManager;
 
         private readonly IDictionary<Guid, User> _users;
 
@@ -55,13 +57,15 @@ namespace Jellyfin.Server.Implementations.Users
         /// <param name="appHost">The application host.</param>
         /// <param name="imageProcessor">The image processor.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="serverConfigurationManager">The system config manager.</param>
         public UserManager(
             IDbContextFactory<JellyfinDbContext> dbProvider,
             IEventManager eventManager,
             INetworkManager networkManager,
             IApplicationHost appHost,
             IImageProcessor imageProcessor,
-            ILogger<UserManager> logger)
+            ILogger<UserManager> logger,
+            IServerConfigurationManager serverConfigurationManager)
         {
             _dbProvider = dbProvider;
             _eventManager = eventManager;
@@ -69,6 +73,7 @@ namespace Jellyfin.Server.Implementations.Users
             _appHost = appHost;
             _imageProcessor = imageProcessor;
             _logger = logger;
+            _serverConfigurationManager = serverConfigurationManager;
 
             _passwordResetProviders = appHost.GetExports<IPasswordResetProvider>();
             _authenticationProviders = appHost.GetExports<IAuthenticationProvider>();
@@ -103,7 +108,7 @@ namespace Jellyfin.Server.Implementations.Users
         // This is some regex that matches only on unicode "word" characters, as well as -, _ and @
         // In theory this will cut out most if not all 'control' characters which should help minimize any weirdness
         // Usernames can contain letters (a-z + whatever else unicode is cool with), numbers (0-9), at-signs (@), dashes (-), underscores (_), apostrophes ('), periods (.) and spaces ( )
-        [GeneratedRegex("^[\\w\\ \\-'._@]+$")]
+        [GeneratedRegex(@"^[\w\ \-'._@]+$")]
         private static partial Regex ValidUsernameRegex();
 
         /// <inheritdoc/>
@@ -288,6 +293,7 @@ namespace Jellyfin.Server.Implementations.Users
         public UserDto GetUserDto(User user, string? remoteEndPoint = null)
         {
             var hasPassword = GetAuthenticationProvider(user).HasPassword(user);
+            var castReceiverApplications = _serverConfigurationManager.Configuration.CastReceiverApplications;
             return new UserDto
             {
                 Name = user.Username,
@@ -315,7 +321,11 @@ namespace Jellyfin.Server.Implementations.Users
                     OrderedViews = user.GetPreferenceValues<Guid>(PreferenceKind.OrderedViews),
                     GroupedFolders = user.GetPreferenceValues<Guid>(PreferenceKind.GroupedFolders),
                     MyMediaExcludes = user.GetPreferenceValues<Guid>(PreferenceKind.MyMediaExcludes),
-                    LatestItemsExcludes = user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes)
+                    LatestItemsExcludes = user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes),
+                    CastReceiverId = string.IsNullOrEmpty(user.CastReceiverId)
+                        ? castReceiverApplications.FirstOrDefault()?.Id
+                        : castReceiverApplications.FirstOrDefault(c => string.Equals(c.Id, user.CastReceiverId, StringComparison.Ordinal))?.Id
+                          ?? castReceiverApplications.FirstOrDefault()?.Id
                 },
                 Policy = new UserPolicy
                 {
@@ -349,6 +359,7 @@ namespace Jellyfin.Server.Implementations.Users
                     ForceRemoteSourceTranscoding = user.HasPermission(PermissionKind.ForceRemoteSourceTranscoding),
                     EnablePublicSharing = user.HasPermission(PermissionKind.EnablePublicSharing),
                     EnableCollectionManagement = user.HasPermission(PermissionKind.EnableCollectionManagement),
+                    EnableSubtitleManagement = user.HasPermission(PermissionKind.EnableSubtitleManagement),
                     AccessSchedules = user.AccessSchedules.ToArray(),
                     BlockedTags = user.GetPreference(PreferenceKind.BlockedTags),
                     AllowedTags = user.GetPreference(PreferenceKind.AllowedTags),
@@ -604,6 +615,13 @@ namespace Jellyfin.Server.Implementations.Users
                 user.RememberSubtitleSelections = config.RememberSubtitleSelections;
                 user.SubtitleLanguagePreference = config.SubtitleLanguagePreference;
 
+                // Only set cast receiver id if it is passed in and it exists in the server config.
+                if (!string.IsNullOrEmpty(config.CastReceiverId)
+                    && _serverConfigurationManager.Configuration.CastReceiverApplications.Any(c => string.Equals(c.Id, config.CastReceiverId, StringComparison.Ordinal)))
+                {
+                    user.CastReceiverId = config.CastReceiverId;
+                }
+
                 user.SetPreference(PreferenceKind.OrderedViews, config.OrderedViews);
                 user.SetPreference(PreferenceKind.GroupedFolders, config.GroupedFolders);
                 user.SetPreference(PreferenceKind.MyMediaExcludes, config.MyMediaExcludes);
@@ -666,6 +684,7 @@ namespace Jellyfin.Server.Implementations.Users
                 user.SetPermission(PermissionKind.EnableRemoteControlOfOtherUsers, policy.EnableRemoteControlOfOtherUsers);
                 user.SetPermission(PermissionKind.EnablePlaybackRemuxing, policy.EnablePlaybackRemuxing);
                 user.SetPermission(PermissionKind.EnableCollectionManagement, policy.EnableCollectionManagement);
+                user.SetPermission(PermissionKind.EnableSubtitleManagement, policy.EnableSubtitleManagement);
                 user.SetPermission(PermissionKind.ForceRemoteSourceTranscoding, policy.ForceRemoteSourceTranscoding);
                 user.SetPermission(PermissionKind.EnablePublicSharing, policy.EnablePublicSharing);
 

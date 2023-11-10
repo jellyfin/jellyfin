@@ -14,7 +14,7 @@ namespace MediaBrowser.Model.LiveTv
         public LiveTvChannelQuery()
         {
             EnableUserData = true;
-            SortBy = Array.Empty<string>();
+            SortBy = Array.Empty<ItemSortBy>();
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace MediaBrowser.Model.LiveTv
 
         public bool? IsSeries { get; set; }
 
-        public string[] SortBy { get; set; }
+        public ItemSortBy[] SortBy { get; set; }
 
         /// <summary>
         /// Gets or sets the sort order to return results with.

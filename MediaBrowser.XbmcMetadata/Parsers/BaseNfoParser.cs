@@ -160,7 +160,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
             // Find last closing Tag
             // Need to do this in two steps to account for random > characters after the closing xml
-            var index = xml.LastIndexOf(@"</", StringComparison.Ordinal);
+            var index = xml.LastIndexOf("</", StringComparison.Ordinal);
 
             // If closing tag exists, move to end of Tag
             if (index != -1)
