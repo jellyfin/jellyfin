@@ -13,10 +13,10 @@ namespace Jellyfin.Server.Implementations.ModelConfiguration
         public void Configure(EntityTypeBuilder<MediaSegment> builder)
         {
             builder
-                .Property(s => s.Start)
+                .Property(s => s.StartTicks)
                 .IsRequired();
             builder
-                .Property(s => s.End)
+                .Property(s => s.EndTicks)
                 .IsRequired();
             builder
                 .Property(s => s.Type)

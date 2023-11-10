@@ -57,8 +57,8 @@ public class MediaSegmentController : BaseJellyfinApiController
     /// <summary>
     /// Create or update a media segment. You can update start/end/action.
     /// </summary>
-    /// <param name="start">Start position of segment in seconds.</param>
-    /// <param name="end">End position of segment in seconds.</param>
+    /// <param name="startTicks">Start position of segment in Ticks.</param>
+    /// <param name="endTicks">End position of segment in Ticks.</param>
     /// <param name="itemId">Segment is associated with MediaSourceId.</param>
     /// <param name="streamIndex">Segment is associated with MediaStreamIndex.</param>
     /// <param name="type">Segment type.</param>
@@ -71,8 +71,8 @@ public class MediaSegmentController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<QueryResult<MediaSegment>>> PostSegment(
-        [FromQuery, Required] double start,
-        [FromQuery, Required] double end,
+        [FromQuery, Required] long startTicks,
+        [FromQuery, Required] long endTicks,
         [FromQuery, Required] Guid itemId,
         [FromQuery, Required] int streamIndex,
         [FromQuery, Required] MediaSegmentType type,
@@ -81,8 +81,8 @@ public class MediaSegmentController : BaseJellyfinApiController
     {
         var newMediaSegment = new MediaSegment()
         {
-            Start = start,
-            End = end,
+            StartTicks = startTicks,
+            EndTicks = endTicks,
             ItemId = itemId,
             StreamIndex = streamIndex,
             Type = type,

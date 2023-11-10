@@ -134,8 +134,8 @@ namespace Jellyfin.Server.Implementations.MediaSegments
         {
             if (found != null)
             {
-                found.Start = segment.Start;
-                found.End = segment.End;
+                found.StartTicks = segment.StartTicks;
+                found.EndTicks = segment.EndTicks;
                 found.Action = segment.Action;
             }
             else
@@ -155,9 +155,9 @@ namespace Jellyfin.Server.Implementations.MediaSegments
                 throw new ArgumentException($"itemId is default: itemId={segment.ItemId} for segment with type '{segment.Type}.{segment.TypeIndex}'");
             }
 
-            if (segment.Start >= segment.End)
+            if (segment.StartTicks >= segment.EndTicks)
             {
-                throw new ArgumentException($"start >= end: {segment.Start}>={segment.End} for segment itemId '{segment.ItemId}' with type '{segment.Type}.{segment.TypeIndex}'");
+                throw new ArgumentException($"start >= end: {segment.StartTicks}>={segment.EndTicks} for segment itemId '{segment.ItemId}' with type '{segment.Type}.{segment.TypeIndex}'");
             }
         }
 

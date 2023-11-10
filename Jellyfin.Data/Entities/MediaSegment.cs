@@ -12,16 +12,16 @@ namespace Jellyfin.Data.Entities
     public class MediaSegment
     {
         /// <summary>
-        /// Gets or sets the start position in seconds.
+        /// Gets or sets the start position in Ticks.
         /// </summary>
         /// <value>The start position.</value>
-        public double Start { get; set; }
+        public long StartTicks { get; set; }
 
         /// <summary>
-        /// Gets or sets the end position in seconds.
+        /// Gets or sets the end position in Ticks.
         /// </summary>
         /// <value>The end position.</value>
-        public double End { get; set; }
+        public long EndTicks { get; set; }
 
         /// <summary>
         /// Gets or sets the Type.
