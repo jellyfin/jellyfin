@@ -8,7 +8,6 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading;
 using Jellyfin.Networking.Configuration;
-using Jellyfin.Networking.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Net;
@@ -318,7 +317,7 @@ namespace Jellyfin.Networking.Manager
                 var subnets = config.LocalNetworkSubnets;
 
                 // If no LAN addresses are specified, all private subnets and Loopback are deemed to be the LAN
-                if (!NetworkExtensions.TryParseToSubnets(subnets, out var lanSubnets, false) || lanSubnets.Count == 0)
+                if (!NetworkUtils.TryParseToSubnets(subnets, out var lanSubnets, false) || lanSubnets.Count == 0)
                 {
                     _logger.LogDebug("Using LAN interface addresses as user provided no LAN details.");
 
@@ -345,7 +344,7 @@ namespace Jellyfin.Networking.Manager
                     _lanSubnets = lanSubnets;
                 }
 
-                _excludedSubnets = NetworkExtensions.TryParseToSubnets(subnets, out var excludedSubnets, true)
+                _excludedSubnets = NetworkUtils.TryParseToSubnets(subnets, out var excludedSubnets, true)
                     ? excludedSubnets
                     : new List<IPNetwork>();
             }
@@ -363,7 +362,7 @@ namespace Jellyfin.Networking.Manager
                 var localNetworkAddresses = config.LocalNetworkAddresses;
                 if (localNetworkAddresses.Length > 0 && !string.IsNullOrWhiteSpace(localNetworkAddresses[0]))
                 {
-                    var bindAddresses = localNetworkAddresses.Select(p => NetworkExtensions.TryParseToSubnet(p, out var network)
+                    var bindAddresses = localNetworkAddresses.Select(p => NetworkUtils.TryParseToSubnet(p, out var network)
                         ? network.Prefix
                         : (interfaces.Where(x => x.Name.Equals(p, StringComparison.OrdinalIgnoreCase))
                             .Select(x => x.Address)
@@ -430,7 +429,7 @@ namespace Jellyfin.Networking.Manager
                     // Parse all IPs with netmask to a subnet
                     var remoteAddressFilter = new List<IPNetwork>();
                     var remoteFilteredSubnets = remoteIPFilter.Where(x => x.Contains('/', StringComparison.OrdinalIgnoreCase)).ToArray();
-                    if (NetworkExtensions.TryParseToSubnets(remoteFilteredSubnets, out var remoteAddressFilterResult, false))
+                    if (NetworkUtils.TryParseToSubnets(remoteFilteredSubnets, out var remoteAddressFilterResult, false))
                     {
                         remoteAddressFilter = remoteAddressFilterResult.ToList();
                     }
@@ -541,7 +540,7 @@ namespace Jellyfin.Networking.Manager
                                     false));
                         }
                     }
-                    else if (NetworkExtensions.TryParseToSubnet(identifier, out var result) && result is not null)
+                    else if (NetworkUtils.TryParseToSubnet(identifier, out var result) && result is not null)
                     {
                         var data = new IPData(result.Prefix, result);
                         publishedServerUrls.Add(
@@ -607,7 +606,7 @@ namespace Jellyfin.Networking.Manager
                 foreach (var details in interfaceList)
                 {
                     var parts = details.Split(',');
-                    if (NetworkExtensions.TryParseToSubnet(parts[0], out var subnet))
+                    if (NetworkUtils.TryParseToSubnet(parts[0], out var subnet))
                     {
                         var address = subnet.Prefix;
                         var index = int.Parse(parts[1], CultureInfo.InvariantCulture);
@@ -771,7 +770,7 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public string GetBindAddress(string source, out int? port)
         {
-            if (!NetworkExtensions.TryParseHost(source, out var addresses, IsIPv4Enabled, IsIPv6Enabled))
+            if (!NetworkUtils.TryParseHost(source, out var addresses, IsIPv4Enabled, IsIPv6Enabled))
             {
                 addresses = Array.Empty<IPAddress>();
             }
@@ -846,7 +845,7 @@ namespace Jellyfin.Networking.Manager
             // If no source address is given, use the preferred (first) interface
             if (source is null)
             {
-                result = NetworkExtensions.FormatIPString(availableInterfaces.First().Address);
+                result = NetworkUtils.FormatIPString(availableInterfaces.First().Address);
                 _logger.LogDebug("{Source}: Using first internal interface as bind address: {Result}", source, result);
                 return result;
             }
@@ -857,14 +856,14 @@ namespace Jellyfin.Networking.Manager
             {
                 if (intf.Subnet.Contains(source))
                 {
-                    result = NetworkExtensions.FormatIPString(intf.Address);
+                    result = NetworkUtils.FormatIPString(intf.Address);
                     _logger.LogDebug("{Source}: Found interface with matching subnet, using it as bind address: {Result}", source, result);
                     return result;
                 }
             }
 
             // Fallback to first available interface
-            result = NetworkExtensions.FormatIPString(availableInterfaces[0].Address);
+            result = NetworkUtils.FormatIPString(availableInterfaces[0].Address);
             _logger.LogDebug("{Source}: No matching interfaces found, using preferred interface as bind address: {Result}", source, result);
             return result;
         }
@@ -881,12 +880,12 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public bool IsInLocalNetwork(string address)
         {
-            if (NetworkExtensions.TryParseToSubnet(address, out var subnet))
+            if (NetworkUtils.TryParseToSubnet(address, out var subnet))
             {
                 return IPAddress.IsLoopback(subnet.Prefix) || (_lanSubnets.Any(x => x.Contains(subnet.Prefix)) && !_excludedSubnets.Any(x => x.Contains(subnet.Prefix)));
             }
 
-            if (NetworkExtensions.TryParseHost(address, out var addresses, IsIPv4Enabled, IsIPv6Enabled))
+            if (NetworkUtils.TryParseHost(address, out var addresses, IsIPv4Enabled, IsIPv6Enabled))
             {
                 foreach (var ept in addresses)
                 {
@@ -1044,7 +1043,7 @@ namespace Jellyfin.Networking.Manager
                         .Select(x => x.Address)
                         .First();
 
-                    result = NetworkExtensions.FormatIPString(bindAddress);
+                    result = NetworkUtils.FormatIPString(bindAddress);
                     _logger.LogDebug("{Source}: External request received, matching external bind address found: {Result}", source, result);
                     return true;
                 }
@@ -1063,7 +1062,7 @@ namespace Jellyfin.Networking.Manager
 
                 if (bindAddress is not null)
                 {
-                    result = NetworkExtensions.FormatIPString(bindAddress);
+                    result = NetworkUtils.FormatIPString(bindAddress);
                     _logger.LogDebug("{Source}: Internal request received, matching internal bind address found: {Result}", source, result);
                     return true;
                 }
@@ -1097,14 +1096,14 @@ namespace Jellyfin.Networking.Manager
             {
                 if (intf.Subnet.Contains(source))
                 {
-                    result = NetworkExtensions.FormatIPString(intf.Address);
+                    result = NetworkUtils.FormatIPString(intf.Address);
                     _logger.LogDebug("{Source}: Found external interface with matching subnet, using it as bind address: {Result}", source, result);
                     return true;
                 }
             }
 
             // Fallback to first external interface.
-            result = NetworkExtensions.FormatIPString(extResult[0].Address);
+            result = NetworkUtils.FormatIPString(extResult[0].Address);
             _logger.LogDebug("{Source}: Using first external interface as bind address: {Result}", source, result);
             return true;
         }

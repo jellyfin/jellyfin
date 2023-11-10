@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Emby.Dlna.PlayTo;
 using Emby.Dlna.Ssdp;
 using Jellyfin.Networking.Configuration;
-using Jellyfin.Networking.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -280,7 +279,7 @@ public sealed class DlnaHost : IHostedService, IDisposable
                 CacheLifetime = TimeSpan.FromSeconds(1800), // How long SSDP clients can cache this info.
                 Location = uri.Uri, // Must point to the URL that serves your devices UPnP description document.
                 Address = intf.Address,
-                PrefixLength = NetworkExtensions.MaskToCidr(intf.Subnet.Prefix),
+                PrefixLength = NetworkUtils.MaskToCidr(intf.Subnet.Prefix),
                 FriendlyName = "Jellyfin",
                 Manufacturer = "Jellyfin",
                 ModelName = "Jellyfin Server",

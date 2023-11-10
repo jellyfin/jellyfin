@@ -21,7 +21,6 @@ using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Networking.Configuration;
-using Jellyfin.Networking.Extensions;
 using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
 using MediaBrowser.Common.Net;
@@ -277,14 +276,14 @@ namespace Jellyfin.Server.Extensions
                 {
                     AddIPAddress(config, options, addr, addr.AddressFamily == AddressFamily.InterNetwork ? NetworkConstants.MinimumIPv4PrefixSize : NetworkConstants.MinimumIPv6PrefixSize);
                 }
-                else if (NetworkExtensions.TryParseToSubnet(allowedProxies[i], out var subnet))
+                else if (NetworkUtils.TryParseToSubnet(allowedProxies[i], out var subnet))
                 {
                     if (subnet is not null)
                     {
                         AddIPAddress(config, options, subnet.Prefix, subnet.PrefixLength);
                     }
                 }
-                else if (NetworkExtensions.TryParseHost(allowedProxies[i], out var addresses, config.EnableIPv4, config.EnableIPv6))
+                else if (NetworkUtils.TryParseHost(allowedProxies[i], out var addresses, config.EnableIPv4, config.EnableIPv6))
                 {
                     foreach (var address in addresses)
                     {

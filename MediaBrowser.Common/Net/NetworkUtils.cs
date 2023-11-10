@@ -5,15 +5,14 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using Jellyfin.Extensions;
-using MediaBrowser.Common.Net;
 using Microsoft.AspNetCore.HttpOverrides;
 
-namespace Jellyfin.Networking.Extensions;
+namespace MediaBrowser.Common.Net;
 
 /// <summary>
-/// Defines the <see cref="NetworkExtensions" />.
+/// Defines the <see cref="NetworkUtils" />.
 /// </summary>
-public static partial class NetworkExtensions
+public static partial class NetworkUtils
 {
     // Use regular expression as CheckHostName isn't RFC5892 compliant.
     // Modified from gSkinner's expression at https://stackoverflow.com/questions/11809631/fully-qualified-domain-name-validation
@@ -224,7 +223,7 @@ public static partial class NetworkExtensions
                     }
                     else if (IPAddress.TryParse(subnetBlock, out var netmaskAddress))
                     {
-                        result = new IPNetwork(address, NetworkExtensions.MaskToCidr(netmaskAddress));
+                        result = new IPNetwork(address, NetworkUtils.MaskToCidr(netmaskAddress));
                         return true;
                     }
                 }

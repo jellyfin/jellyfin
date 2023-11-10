@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Udp;
 using Jellyfin.Networking.Configuration;
-using Jellyfin.Networking.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -92,7 +91,7 @@ namespace Emby.Server.Implementations.EntryPoints
                     var validInterfaces = _networkManager.GetInternalBindAddresses().Where(i => i.AddressFamily == AddressFamily.InterNetwork);
                     foreach (var intf in validInterfaces)
                     {
-                        var broadcastAddress = NetworkExtensions.GetBroadcastAddress(intf.Subnet);
+                        var broadcastAddress = NetworkUtils.GetBroadcastAddress(intf.Subnet);
                         _logger.LogDebug("Binding UDP server to {Address} on port {PortNumber}", broadcastAddress, PortNumber);
 
                         server = new UdpServer(_logger, _appHost, _config, broadcastAddress, PortNumber);
