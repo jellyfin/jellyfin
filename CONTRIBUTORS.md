@@ -171,6 +171,7 @@
  - [tallbl0nde](https://github.com/tallbl0nde)
  - [sleepycatcoding](https://github.com/sleepycatcoding)
  - [scampower3](https://github.com/scampower3)
+ - [Chris-Codes-It] (https://github.com/Chris-Codes-It)
  - [Nate G](https://github.com/nathangur)
  - [BrennanWoodbury](https://github.com/BrennanWoodbury)
  - [westonhowe98](https://github.com/westonhowe98)

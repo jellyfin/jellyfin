@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Providers;
@@ -27,7 +28,7 @@ namespace MediaBrowser.Model.Dto
 
         public IReadOnlyList<ExternalIdInfo> ExternalIdInfos { get; set; }
 
-        public string? ContentType { get; set; }
+        public CollectionType? ContentType { get; set; }
 
         public IReadOnlyList<NameValuePair> ContentTypeOptions { get; set; }
     }

@@ -6,6 +6,7 @@ using System.Linq;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.UserViewDtos;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -63,7 +64,7 @@ public class UserViewsController : BaseJellyfinApiController
     public QueryResult<BaseItemDto> GetUserViews(
         [FromRoute, Required] Guid userId,
         [FromQuery] bool? includeExternalContent,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] presetViews,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] CollectionType?[] presetViews,
         [FromQuery] bool includeHidden = false)
     {
         var query = new UserViewQuery

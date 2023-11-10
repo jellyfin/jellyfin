@@ -79,7 +79,7 @@ namespace MediaBrowser.Controller.Library
             IDirectoryService directoryService,
             Folder parent,
             LibraryOptions libraryOptions,
-            string collectionType = null);
+            CollectionType? collectionType = null);
 
         /// <summary>
         /// Gets a Person.
@@ -199,9 +199,9 @@ namespace MediaBrowser.Controller.Library
         /// <param name="sortBy">The sort by.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<string> sortBy, SortOrder sortOrder);
+        IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<ItemSortBy> sortBy, SortOrder sortOrder);
 
-        IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<(string OrderBy, SortOrder SortOrder)> orderBy);
+        IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<(ItemSortBy OrderBy, SortOrder SortOrder)> orderBy);
 
         /// <summary>
         /// Gets the user root folder.
@@ -256,28 +256,28 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>System.String.</returns>
-        string GetContentType(BaseItem item);
+        CollectionType? GetContentType(BaseItem item);
 
         /// <summary>
         /// Gets the type of the inherited content.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>System.String.</returns>
-        string GetInheritedContentType(BaseItem item);
+        CollectionType? GetInheritedContentType(BaseItem item);
 
         /// <summary>
         /// Gets the type of the configured content.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>System.String.</returns>
-        string GetConfiguredContentType(BaseItem item);
+        CollectionType? GetConfiguredContentType(BaseItem item);
 
         /// <summary>
         /// Gets the type of the configured content.
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>System.String.</returns>
-        string GetConfiguredContentType(string path);
+        CollectionType? GetConfiguredContentType(string path);
 
         /// <summary>
         /// Normalizes the root path list.
@@ -329,7 +329,7 @@ namespace MediaBrowser.Controller.Library
             User user,
             string name,
             Guid parentId,
-            string viewType,
+            CollectionType? viewType,
             string sortName);
 
         /// <summary>
@@ -343,7 +343,7 @@ namespace MediaBrowser.Controller.Library
         UserView GetNamedView(
             User user,
             string name,
-            string viewType,
+            CollectionType? viewType,
             string sortName);
 
         /// <summary>
@@ -355,7 +355,7 @@ namespace MediaBrowser.Controller.Library
         /// <returns>The named view.</returns>
         UserView GetNamedView(
             string name,
-            string viewType,
+            CollectionType viewType,
             string sortName);
 
         /// <summary>
@@ -370,7 +370,7 @@ namespace MediaBrowser.Controller.Library
         UserView GetNamedView(
             string name,
             Guid parentId,
-            string viewType,
+            CollectionType? viewType,
             string sortName,
             string uniqueId);
 
@@ -383,7 +383,7 @@ namespace MediaBrowser.Controller.Library
         /// <returns>The shadow view.</returns>
         UserView GetShadowView(
             BaseItem parent,
-            string viewType,
+            CollectionType? viewType,
             string sortName);
 
         /// <summary>
