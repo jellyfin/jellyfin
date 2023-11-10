@@ -19,9 +19,9 @@ jobs:
 
     runs-on: "${{ matrix.os }}"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
-      - uses: actions/setup-dotnet@v3
+      - uses: actions/setup-dotnet@3447fd6a9f9e57506b15f895c5b76d3b197dc7c2 # v3
         with:
           dotnet-version: ${{ env.SDK_VERSION }}
 
@@ -34,7 +34,7 @@ jobs:
           --verbosity minimal
 
       - name: Merge code coverage results
-        uses: danielpalme/ReportGenerator-GitHub-Action@5
+        uses: danielpalme/ReportGenerator-GitHub-Action@873ee34c88a6234bdab7fd264d3666fd1ab417f7 # 5
         with:
           reports: "**/coverage.cobertura.xml"
           targetdir: "merged/"
@@ -44,7 +44,7 @@ jobs:
       # - name: Publish code coverage results
 
       - name: Publish OpenAPI Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3
         with:
           name: "OpenAPI Spec"
           path: "tests/Jellyfin.Server.Integration.Tests/bin/Release/net*/openapi.json"
