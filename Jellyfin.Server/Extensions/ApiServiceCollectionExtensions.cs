@@ -21,10 +21,10 @@ using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Networking.Configuration;
-using Jellyfin.Networking.Constants;
 using Jellyfin.Networking.Extensions;
 using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Authentication;
@@ -275,7 +275,7 @@ namespace Jellyfin.Server.Extensions
             {
                 if (IPAddress.TryParse(allowedProxies[i], out var addr))
                 {
-                    AddIPAddress(config, options, addr, addr.AddressFamily == AddressFamily.InterNetwork ? Network.MinimumIPv4PrefixSize : Network.MinimumIPv6PrefixSize);
+                    AddIPAddress(config, options, addr, addr.AddressFamily == AddressFamily.InterNetwork ? NetworkConstants.MinimumIPv4PrefixSize : NetworkConstants.MinimumIPv6PrefixSize);
                 }
                 else if (NetworkExtensions.TryParseToSubnet(allowedProxies[i], out var subnet))
                 {
@@ -288,7 +288,7 @@ namespace Jellyfin.Server.Extensions
                 {
                     foreach (var address in addresses)
                     {
-                        AddIPAddress(config, options, address, address.AddressFamily == AddressFamily.InterNetwork ? Network.MinimumIPv4PrefixSize : Network.MinimumIPv6PrefixSize);
+                        AddIPAddress(config, options, address, address.AddressFamily == AddressFamily.InterNetwork ? NetworkConstants.MinimumIPv4PrefixSize : NetworkConstants.MinimumIPv6PrefixSize);
                     }
                 }
             }
@@ -306,7 +306,7 @@ namespace Jellyfin.Server.Extensions
                 return;
             }
 
-            if (prefixLength == Network.MinimumIPv4PrefixSize)
+            if (prefixLength == NetworkConstants.MinimumIPv4PrefixSize)
             {
                 options.KnownProxies.Add(addr);
             }

@@ -8,7 +8,6 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading;
 using Jellyfin.Networking.Configuration;
-using Jellyfin.Networking.Constants;
 using Jellyfin.Networking.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
@@ -289,12 +288,12 @@ namespace Jellyfin.Networking.Manager
 
                     if (IsIPv4Enabled)
                     {
-                        interfaces.Add(new IPData(IPAddress.Loopback, Network.IPv4RFC5735Loopback, "lo"));
+                        interfaces.Add(new IPData(IPAddress.Loopback, NetworkConstants.IPv4RFC5735Loopback, "lo"));
                     }
 
                     if (IsIPv6Enabled)
                     {
-                        interfaces.Add(new IPData(IPAddress.IPv6Loopback, Network.IPv6RFC4291Loopback, "lo"));
+                        interfaces.Add(new IPData(IPAddress.IPv6Loopback, NetworkConstants.IPv6RFC4291Loopback, "lo"));
                     }
                 }
 
@@ -326,17 +325,17 @@ namespace Jellyfin.Networking.Manager
                     var fallbackLanSubnets = new List<IPNetwork>();
                     if (IsIPv6Enabled)
                     {
-                        fallbackLanSubnets.Add(Network.IPv6RFC4291Loopback); // RFC 4291 (Loopback)
-                        fallbackLanSubnets.Add(Network.IPv6RFC4291SiteLocal); // RFC 4291 (Site local)
-                        fallbackLanSubnets.Add(Network.IPv6RFC4193UniqueLocal); // RFC 4193 (Unique local)
+                        fallbackLanSubnets.Add(NetworkConstants.IPv6RFC4291Loopback); // RFC 4291 (Loopback)
+                        fallbackLanSubnets.Add(NetworkConstants.IPv6RFC4291SiteLocal); // RFC 4291 (Site local)
+                        fallbackLanSubnets.Add(NetworkConstants.IPv6RFC4193UniqueLocal); // RFC 4193 (Unique local)
                     }
 
                     if (IsIPv4Enabled)
                     {
-                        fallbackLanSubnets.Add(Network.IPv4RFC5735Loopback); // RFC 5735 (Loopback)
-                        fallbackLanSubnets.Add(Network.IPv4RFC1918PrivateClassA); // RFC 1918 (private Class A)
-                        fallbackLanSubnets.Add(Network.IPv4RFC1918PrivateClassB); // RFC 1918 (private Class B)
-                        fallbackLanSubnets.Add(Network.IPv4RFC1918PrivateClassC); // RFC 1918 (private Class C)
+                        fallbackLanSubnets.Add(NetworkConstants.IPv4RFC5735Loopback); // RFC 5735 (Loopback)
+                        fallbackLanSubnets.Add(NetworkConstants.IPv4RFC1918PrivateClassA); // RFC 1918 (private Class A)
+                        fallbackLanSubnets.Add(NetworkConstants.IPv4RFC1918PrivateClassB); // RFC 1918 (private Class B)
+                        fallbackLanSubnets.Add(NetworkConstants.IPv4RFC1918PrivateClassC); // RFC 1918 (private Class C)
                     }
 
                     _lanSubnets = fallbackLanSubnets;
@@ -375,12 +374,12 @@ namespace Jellyfin.Networking.Manager
 
                     if (bindAddresses.Contains(IPAddress.Loopback) && !interfaces.Any(i => i.Address.Equals(IPAddress.Loopback)))
                     {
-                        interfaces.Add(new IPData(IPAddress.Loopback, Network.IPv4RFC5735Loopback, "lo"));
+                        interfaces.Add(new IPData(IPAddress.Loopback, NetworkConstants.IPv4RFC5735Loopback, "lo"));
                     }
 
                     if (bindAddresses.Contains(IPAddress.IPv6Loopback) && !interfaces.Any(i => i.Address.Equals(IPAddress.IPv6Loopback)))
                     {
-                        interfaces.Add(new IPData(IPAddress.IPv6Loopback, Network.IPv6RFC4291Loopback, "lo"));
+                        interfaces.Add(new IPData(IPAddress.IPv6Loopback, NetworkConstants.IPv6RFC4291Loopback, "lo"));
                     }
                 }
 
@@ -442,7 +441,7 @@ namespace Jellyfin.Networking.Manager
                     {
                         if (IPAddress.TryParse(ip, out var ipp))
                         {
-                            remoteAddressFilter.Add(new IPNetwork(ipp, ipp.AddressFamily == AddressFamily.InterNetwork ? Network.MinimumIPv4PrefixSize : Network.MinimumIPv6PrefixSize));
+                            remoteAddressFilter.Add(new IPNetwork(ipp, ipp.AddressFamily == AddressFamily.InterNetwork ? NetworkConstants.MinimumIPv4PrefixSize : NetworkConstants.MinimumIPv6PrefixSize));
                         }
                     }
 
@@ -470,13 +469,13 @@ namespace Jellyfin.Networking.Manager
                 {
                     publishedServerUrls.Add(
                         new PublishedServerUriOverride(
-                            new IPData(IPAddress.Any, Network.IPv4Any),
+                            new IPData(IPAddress.Any, NetworkConstants.IPv4Any),
                             startupOverrideKey,
                             true,
                             true));
                     publishedServerUrls.Add(
                         new PublishedServerUriOverride(
-                            new IPData(IPAddress.IPv6Any, Network.IPv6Any),
+                            new IPData(IPAddress.IPv6Any, NetworkConstants.IPv6Any),
                             startupOverrideKey,
                             true,
                             true));
@@ -502,13 +501,13 @@ namespace Jellyfin.Networking.Manager
                         publishedServerUrls.Clear();
                         publishedServerUrls.Add(
                             new PublishedServerUriOverride(
-                                new IPData(IPAddress.Any, Network.IPv4Any),
+                                new IPData(IPAddress.Any, NetworkConstants.IPv4Any),
                                 replacement,
                                 true,
                                 true));
                         publishedServerUrls.Add(
                             new PublishedServerUriOverride(
-                                new IPData(IPAddress.IPv6Any, Network.IPv6Any),
+                                new IPData(IPAddress.IPv6Any, NetworkConstants.IPv6Any),
                                 replacement,
                                 true,
                                 true));
@@ -518,13 +517,13 @@ namespace Jellyfin.Networking.Manager
                     {
                         publishedServerUrls.Add(
                             new PublishedServerUriOverride(
-                                new IPData(IPAddress.Any, Network.IPv4Any),
+                                new IPData(IPAddress.Any, NetworkConstants.IPv4Any),
                                 replacement,
                                 false,
                                 true));
                         publishedServerUrls.Add(
                             new PublishedServerUriOverride(
-                                new IPData(IPAddress.IPv6Any, Network.IPv6Any),
+                                new IPData(IPAddress.IPv6Any, NetworkConstants.IPv6Any),
                                 replacement,
                                 false,
                                 true));
@@ -724,12 +723,12 @@ namespace Jellyfin.Networking.Manager
             var loopbackNetworks = new List<IPData>();
             if (IsIPv4Enabled)
             {
-                loopbackNetworks.Add(new IPData(IPAddress.Loopback, Network.IPv4RFC5735Loopback, "lo"));
+                loopbackNetworks.Add(new IPData(IPAddress.Loopback, NetworkConstants.IPv4RFC5735Loopback, "lo"));
             }
 
             if (IsIPv6Enabled)
             {
-                loopbackNetworks.Add(new IPData(IPAddress.IPv6Loopback, Network.IPv6RFC4291Loopback, "lo"));
+                loopbackNetworks.Add(new IPData(IPAddress.IPv6Loopback, NetworkConstants.IPv6RFC4291Loopback, "lo"));
             }
 
             return loopbackNetworks;
@@ -748,11 +747,11 @@ namespace Jellyfin.Networking.Manager
             if (IsIPv4Enabled && IsIPv6Enabled)
             {
                 // Kestrel source code shows it uses Sockets.DualMode - so this also covers IPAddress.Any by default
-                result.Add(new IPData(IPAddress.IPv6Any, Network.IPv6Any));
+                result.Add(new IPData(IPAddress.IPv6Any, NetworkConstants.IPv6Any));
             }
             else if (IsIPv4Enabled)
             {
-                result.Add(new IPData(IPAddress.Any, Network.IPv4Any));
+                result.Add(new IPData(IPAddress.Any, NetworkConstants.IPv4Any));
             }
             else if (IsIPv6Enabled)
             {
