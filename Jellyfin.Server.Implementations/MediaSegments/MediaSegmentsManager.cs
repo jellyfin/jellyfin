@@ -77,7 +77,7 @@ namespace Jellyfin.Server.Implementations.MediaSegments
                 {
                     ValidateSegment(segment);
 
-                    var found = foundSegments.Where(s => s.ItemId.Equals(segment.ItemId) && s.Type.Equals(segment.Type) && s.TypeIndex.Equals(segment.TypeIndex)).FirstOrDefault();
+                    var found = foundSegments.Where(s => s.ItemId.Equals(segment.ItemId) && s.StreamIndex.Equals(segment.StreamIndex) && s.Type.Equals(segment.Type) && s.TypeIndex.Equals(segment.TypeIndex)).FirstOrDefault();
 
                     AddOrUpdateSegment(dbContext, segment, found);
                 }
@@ -89,7 +89,7 @@ namespace Jellyfin.Server.Implementations.MediaSegments
         }
 
         /// <inheritdoc/>
-        public List<MediaSegment> GetAllMediaSegments(Guid itemId = default, int typeIndex = -1, MediaSegmentType? type = null)
+        public List<MediaSegment> GetAllMediaSegments(Guid itemId = default, int streamIndex = -1, int typeIndex = -1, MediaSegmentType? type = null)
         {
             var allSegments = new List<MediaSegment>();
 
@@ -101,6 +101,11 @@ namespace Jellyfin.Server.Implementations.MediaSegments
                 if (!itemId.Equals(default))
                 {
                     queryable = queryable.Where(s => s.ItemId.Equals(itemId));
+                }
+
+                if (!streamIndex.Equals(-1))
+                {
+                    queryable = queryable.Where(s => s.StreamIndex.Equals(streamIndex));
                 }
 
                 if (!type.Equals(null))
@@ -169,23 +174,23 @@ namespace Jellyfin.Server.Implementations.MediaSegments
         }
 
         /// <inheritdoc/>
-        public async Task<List<MediaSegment>> DeleteSegmentsAsync(Guid itemId = default, int typeIndex = -1, MediaSegmentType? type = null)
+        public async Task<List<MediaSegment>> DeleteSegmentsAsync(Guid itemId, int streamIndex = -1, int typeIndex = -1, MediaSegmentType? type = null)
         {
             var allSegments = new List<MediaSegment>();
 
             if (itemId.Equals(default))
             {
-                throw new ArgumentException($"itemId are not set. Please provide at least one.");
+                throw new ArgumentException($"itemId is not set. Please provide one.");
             }
 
             var dbContext = await _dbProvider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                IQueryable<MediaSegment> queryable = dbContext.Segments.Select(s => s);
+                IQueryable<MediaSegment> queryable = dbContext.Segments.Where(s => s.ItemId.Equals(itemId));
 
-                if (!itemId.Equals(default))
+                if (!streamIndex.Equals(-1))
                 {
-                    queryable = queryable.Where(s => s.ItemId.Equals(itemId));
+                    queryable = queryable.Where(s => s.StreamIndex.Equals(streamIndex));
                 }
 
                 if (!type.Equals(null))

@@ -28,10 +28,13 @@ namespace Jellyfin.Server.Implementations.ModelConfiguration
                 .Property(s => s.ItemId)
                 .IsRequired();
             builder
+                .Property(s => s.StreamIndex)
+                .IsRequired();
+            builder
                 .Property(s => s.Action)
                 .IsRequired();
             builder
-                .HasKey(s => new { s.ItemId, s.Type, s.TypeIndex });
+                .HasKey(s => new { s.ItemId, s.StreamIndex, s.Type, s.TypeIndex });
             builder
                 .HasIndex(s => s.ItemId);
         }

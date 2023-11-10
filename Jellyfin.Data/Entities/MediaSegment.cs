@@ -36,10 +36,16 @@ namespace Jellyfin.Data.Entities
         public int TypeIndex { get; set; }
 
         /// <summary>
-        /// Gets or sets the associated ItemId.
+        /// Gets or sets the associated MediaSourceId.
         /// </summary>
         /// <value>The id.</value>
         public Guid ItemId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the associated MediaStreamIndex.
+        /// </summary>
+        /// <value>The id.</value>
+        public int StreamIndex { get; set; }
 
         /// <summary>
         /// Gets or sets the creator recommended action. Can be overwritten with user defined action.
