@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Jellyfin.Api.Constants;
+using MediaBrowser.Common.Api;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Model.Dlna;
 using Microsoft.AspNetCore.Authorization;

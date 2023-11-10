@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.EnvironmentDtos;
+using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.IO;
 using Microsoft.AspNetCore.Authorization;

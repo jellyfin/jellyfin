@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Mime;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
+using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
