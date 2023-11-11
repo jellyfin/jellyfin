@@ -61,6 +61,9 @@ namespace MediaBrowser.Providers.MediaInfo
         [GeneratedRegex(@"I:\s+(.*?)\s+LUFS")]
         private static partial Regex LUFSRegex();
 
+        [GeneratedRegex(@"REPLAYGAIN_TRACK_GAIN:\s+(.*?)\s+dB")]
+        private static partial Regex ReplayGainTagRegex();
+
         /// <summary>
         /// Probes the specified item for metadata.
         /// </summary>
@@ -104,8 +107,50 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             var libraryOptions = _libraryManager.GetLibraryOptions(item);
+            bool foundLUFSValue = false;
 
-            if (libraryOptions.EnableLUFSScan)
+            if (libraryOptions.UseReplayGainTags)
+            {
+                    using (var process = new Process()
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = _mediaEncoder.EncoderPath,
+                        Arguments = $"-hide_banner -i \"{path}\" -f null -",
+                        RedirectStandardOutput = false,
+                        RedirectStandardError = true
+                    },
+                })
+                {
+                    try
+                    {
+                        process.Start();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error starting ffmpeg");
+
+                        throw;
+                    }
+
+                    using var reader = process.StandardError;
+                    var output = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    MatchCollection split = ReplayGainTagRegex().Matches(output);
+
+                    if (split.Count != 0)
+                    {
+                        item.LUFS = DefaultLUFSValue - float.Parse(split[0].Groups[1].ValueSpan, CultureInfo.InvariantCulture.NumberFormat);
+                        foundLUFSValue = true;
+                    }
+                    else
+                    {
+                        item.LUFS = DefaultLUFSValue;
+                    }
+                }
+            }
+
+            if (libraryOptions.EnableLUFSScan && !foundLUFSValue)
             {
                 using (var process = new Process()
                 {
@@ -144,7 +189,8 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
                 }
             }
-            else
+
+            if (!libraryOptions.EnableLUFSScan && !libraryOptions.UseReplayGainTags)
             {
                 item.LUFS = DefaultLUFSValue;
             }
