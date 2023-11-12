@@ -571,6 +571,12 @@ namespace MediaBrowser.Model.Dto
         public Dictionary<string, Dictionary<int, TrickplayInfo>> Trickplay { get; set; }
 
         /// <summary>
+        /// Gets or sets the media segments data.
+        /// </summary>
+        /// <value>The media segments.</value>
+        public List<MediaSegment> MediaSegments { get; set; }
+
+        /// <summary>
         /// Gets or sets the type of the location.
         /// </summary>
         /// <value>The type of the location.</value>

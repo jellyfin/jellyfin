@@ -24,6 +24,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.MediaSegments;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
 using Book = MediaBrowser.Controller.Entities.Book;
@@ -53,6 +54,7 @@ namespace Emby.Server.Implementations.Dto
         private readonly Lazy<ILiveTvManager> _livetvManagerFactory;
 
         private readonly ITrickplayManager _trickplayManager;
+        private readonly IMediaSegmentsManager _mediaSegmentsManager;
 
         public DtoService(
             ILogger<DtoService> logger,
@@ -65,7 +67,8 @@ namespace Emby.Server.Implementations.Dto
             IApplicationHost appHost,
             IMediaSourceManager mediaSourceManager,
             Lazy<ILiveTvManager> livetvManagerFactory,
-            ITrickplayManager trickplayManager)
+            ITrickplayManager trickplayManager,
+            IMediaSegmentsManager mediaSegmentsManager)
         {
             _logger = logger;
             _libraryManager = libraryManager;
@@ -78,6 +81,7 @@ namespace Emby.Server.Implementations.Dto
             _mediaSourceManager = mediaSourceManager;
             _livetvManagerFactory = livetvManagerFactory;
             _trickplayManager = trickplayManager;
+            _mediaSegmentsManager = mediaSegmentsManager;
         }
 
         private ILiveTvManager LivetvManager => _livetvManagerFactory.Value;
@@ -1062,6 +1066,19 @@ namespace Emby.Server.Implementations.Dto
                 {
                     dto.ExtraType = video.ExtraType.Value.ToString();
                 }
+            }
+
+            // Add MediaSegments for all media sources
+            if (dto.MediaSources is not null && options.ContainsField(ItemFields.MediaSegments))
+            {
+                var allSegments = new List<MediaSegment>();
+
+                foreach (var source in dto.MediaSources)
+                {
+                    allSegments.AddRange(_mediaSegmentsManager.GetAllMediaSegments(Guid.Parse(source.Id)));
+                }
+
+                dto.MediaSegments = allSegments;
             }
 
             if (options.ContainsField(ItemFields.MediaStreams))
