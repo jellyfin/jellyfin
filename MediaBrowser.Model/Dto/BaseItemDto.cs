@@ -591,7 +591,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the type of the media.
         /// </summary>
         /// <value>The type of the media.</value>
-        public string MediaType { get; set; }
+        public MediaType MediaType { get; set; }
 
         /// <summary>
         /// Gets or sets the end date.

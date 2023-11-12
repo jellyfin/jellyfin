@@ -44,7 +44,7 @@ namespace MediaBrowser.Controller.LiveTv
         public override LocationType LocationType => LocationType.Remote;
 
         [JsonIgnore]
-        public override string MediaType => ChannelType == ChannelType.Radio ? Model.Entities.MediaType.Audio : Model.Entities.MediaType.Video;
+        public override MediaType MediaType => ChannelType == ChannelType.Radio ? MediaType.Audio : MediaType.Video;
 
         [JsonIgnore]
         public bool IsMovie { get; set; }

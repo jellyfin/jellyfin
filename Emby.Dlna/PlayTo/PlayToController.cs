@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.Didl;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
@@ -577,7 +578,7 @@ namespace Emby.Dlna.PlayTo
 
         private PlaylistItem GetPlaylistItem(BaseItem item, MediaSourceInfo[] mediaSources, DeviceProfile profile, string deviceId, string? mediaSourceId, int? audioStreamIndex, int? subtitleStreamIndex)
         {
-            if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
+            if (item.MediaType == MediaType.Video)
             {
                 return new PlaylistItem
                 {
@@ -597,7 +598,7 @@ namespace Emby.Dlna.PlayTo
                 };
             }
 
-            if (string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
+            if (item.MediaType == MediaType.Audio)
             {
                 return new PlaylistItem
                 {
@@ -615,7 +616,7 @@ namespace Emby.Dlna.PlayTo
                 };
             }
 
-            if (string.Equals(item.MediaType, MediaType.Photo, StringComparison.OrdinalIgnoreCase))
+            if (item.MediaType == MediaType.Photo)
             {
                 return PlaylistItemFactory.Create((Photo)item, profile);
             }

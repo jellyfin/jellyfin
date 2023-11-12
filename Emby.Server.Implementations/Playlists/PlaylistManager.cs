@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -74,7 +75,7 @@ namespace Emby.Server.Implementations.Playlists
                 throw new ArgumentException(nameof(parentFolder));
             }
 
-            if (string.IsNullOrEmpty(options.MediaType))
+            if (options.MediaType is null || options.MediaType == MediaType.Unknown)
             {
                 foreach (var itemId in options.ItemIdList)
                 {
@@ -84,7 +85,7 @@ namespace Emby.Server.Implementations.Playlists
                         throw new ArgumentException("No item exists with the supplied Id");
                     }
 
-                    if (!string.IsNullOrEmpty(item.MediaType))
+                    if (item.MediaType != MediaType.Unknown)
                     {
                         options.MediaType = item.MediaType;
                     }
@@ -102,20 +103,20 @@ namespace Emby.Server.Implementations.Playlists
                         {
                             options.MediaType = folder.GetRecursiveChildren(i => !i.IsFolder && i.SupportsAddingToPlaylist)
                                 .Select(i => i.MediaType)
-                                .FirstOrDefault(i => !string.IsNullOrEmpty(i));
+                                .FirstOrDefault(i => i != MediaType.Unknown);
                         }
                     }
 
-                    if (!string.IsNullOrEmpty(options.MediaType))
+                    if (options.MediaType is not null && options.MediaType != MediaType.Unknown)
                     {
                         break;
                     }
                 }
             }
 
-            if (string.IsNullOrEmpty(options.MediaType))
+            if (options.MediaType is null || options.MediaType == MediaType.Unknown)
             {
-                options.MediaType = "Audio";
+                options.MediaType = MediaType.Audio;
             }
 
             var user = _userManager.GetUserById(options.UserId);
@@ -168,7 +169,7 @@ namespace Emby.Server.Implementations.Playlists
             return path;
         }
 
-        private List<BaseItem> GetPlaylistItems(IEnumerable<Guid> itemIds, string playlistMediaType, User user, DtoOptions options)
+        private List<BaseItem> GetPlaylistItems(IEnumerable<Guid> itemIds, MediaType playlistMediaType, User user, DtoOptions options)
         {
             var items = itemIds.Select(i => _libraryManager.GetItemById(i)).Where(i => i is not null);
 

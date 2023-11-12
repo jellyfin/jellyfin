@@ -36,7 +36,7 @@ namespace MediaBrowser.Controller.Entities
             ImageTypes = Array.Empty<ImageType>();
             IncludeItemTypes = Array.Empty<BaseItemKind>();
             ItemIds = Array.Empty<Guid>();
-            MediaTypes = Array.Empty<string>();
+            MediaTypes = Array.Empty<MediaType>();
             MinSimilarityScore = 20;
             OfficialRatings = Array.Empty<string>();
             OrderBy = Array.Empty<(ItemSortBy, SortOrder)>();
@@ -86,7 +86,7 @@ namespace MediaBrowser.Controller.Entities
 
         public bool? IncludeItemsByName { get; set; }
 
-        public string[] MediaTypes { get; set; }
+        public MediaType[] MediaTypes { get; set; }
 
         public BaseItemKind[] IncludeItemTypes { get; set; }
 

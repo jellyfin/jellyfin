@@ -50,7 +50,7 @@ public class FilterController : BaseJellyfinApiController
         [FromQuery] Guid? userId,
         [FromQuery] Guid? parentId,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes)
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] MediaType[] mediaTypes)
     {
         userId = RequestHelpers.GetUserId(User, userId);
         var user = userId.Value.Equals(default)

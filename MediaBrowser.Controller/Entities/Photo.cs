@@ -3,6 +3,7 @@
 #pragma warning disable CS1591
 
 using System.Text.Json.Serialization;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Drawing;
 
 namespace MediaBrowser.Controller.Entities
@@ -13,7 +14,7 @@ namespace MediaBrowser.Controller.Entities
         public override bool SupportsLocalMetadata => false;
 
         [JsonIgnore]
-        public override string MediaType => Model.Entities.MediaType.Photo;
+        public override MediaType MediaType => MediaType.Photo;
 
         [JsonIgnore]
         public override Folder LatestItemsIndexContainer => AlbumEntity;
