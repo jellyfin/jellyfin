@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Text;
 using Emby.Dlna.ConnectionManager;
 using Emby.Dlna.ContentDirectory;
+using Emby.Dlna.Main;
 using Emby.Dlna.MediaReceiverRegistrar;
 using Emby.Dlna.Ssdp;
 using MediaBrowser.Common.Net;
@@ -65,5 +66,7 @@ public static class DlnaServiceCollectionExtensions
         {
             IsShared = true
         });
+
+        services.AddHostedService<DlnaHost>();
     }
 }

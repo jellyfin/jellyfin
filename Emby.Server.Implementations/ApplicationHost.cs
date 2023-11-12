@@ -866,7 +866,7 @@ namespace Emby.Server.Implementations
             yield return typeof(MediaBrowser.MediaEncoding.Encoder.MediaEncoder).Assembly;
 
             // Dlna
-            yield return typeof(DlnaEntryPoint).Assembly;
+            yield return typeof(DlnaHost).Assembly;
 
             // Local metadata
             yield return typeof(BoxSetXmlSaver).Assembly;
