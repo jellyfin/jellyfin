@@ -892,9 +892,9 @@ public class ItemsController : BaseJellyfinApiController
     /// </summary>
     /// <param name="userId">The user id.</param>
     /// <param name="itemId">The item id.</param>
-    /// <response code="200">item user data returned.</response>
-    /// <response code="404">When item is not found.</response>
-    /// <returns>Return Item <see cref="UserItemDataDto"/>.</returns>
+    /// <response code="200">return item user data.</response>
+    /// <response code="404">Item is not found.</response>
+    /// <returns>Return <see cref="UserItemDataDto"/>.</returns>
     [HttpGet("Users/{userId}/Items/{itemId}/UserData")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -915,14 +915,14 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="itemId">The item id.</param>
     /// <param name="played">Optional. Whether to mark the item as played.</param>
     /// <param name="favorite">Optional. Whether to mark the item as favorite.</param>
-    /// <param name="likes">Optional. Whether mark the item as liked.</param>
+    /// <param name="likes">Optional. Whether to mark the item as liked.</param>
     /// <param name="rating">Optional. User item rating.</param>
-    /// <param name="playbackPositionTicks">Optional. User Item playback Position Ticks. 1 tick = 10000 ms.</param>
-    /// <param name="playCount">Item user data.</param>
+    /// <param name="playbackPositionTicks">Optional. Item playback position ticks. 1 tick = 10000 ms.</param>
+    /// <param name="playCount">Optional. How many times the user played the item.</param>
     /// <param name="lastPlayedDate">Optional. The date the item was played.</param>
-    /// <response code="200">update user data returned.</response>
-    /// <response code="404">When item is not found.</response>
-    /// <returns><see cref="UserItemDataDto"/>.</returns>
+    /// <response code="200">return updated user item data.</response>
+    /// <response code="404">Item is not found.</response>
+    /// <returns>Return <see cref="UserItemDataDto"/>.</returns>
     [HttpPost("Users/{userId}/Items/{itemId}/UserData")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
