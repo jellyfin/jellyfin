@@ -61,7 +61,7 @@ namespace MediaBrowser.Providers.MediaInfo
         [GeneratedRegex(@"I:\s+(.*?)\s+LUFS")]
         private static partial Regex LUFSRegex();
 
-        [GeneratedRegex(@"REPLAYGAIN_TRACK_GAIN:\s+(.*?)\s+dB")]
+        [GeneratedRegex(@"REPLAYGAIN_TRACK_GAIN:\s+-?([0-9.]+)\s+dB")]
         private static partial Regex ReplayGainTagRegex();
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (libraryOptions.UseReplayGainTags)
             {
-                    using (var process = new Process()
+                using (var process = new Process()
                 {
                     StartInfo = new ProcessStartInfo
                     {
