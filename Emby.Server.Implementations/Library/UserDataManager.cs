@@ -91,28 +91,39 @@ namespace Emby.Server.Implementations.Library
 
             var userData = GetUserData(user, item);
 
-            var parentProperties = userDataDto.GetType().GetProperties();
-            var childProperties = userData.GetType().GetProperties();
-
-            foreach (var parentProperty in parentProperties)
+            if (userDataDto.PlaybackPositionTicks.HasValue)
             {
-                foreach (var childProperty in childProperties)
-                {
-                    if (parentProperty.Name != childProperty.Name)
-                    {
-                        continue;
-                    }
+                userData.PlaybackPositionTicks = userDataDto.PlaybackPositionTicks.Value;
+            }
 
-                    var value = parentProperty.GetValue(userDataDto, null);
+            if (userDataDto.PlayCount.HasValue)
+            {
+                userData.PlayCount = userDataDto.PlayCount.Value;
+            }
 
-                    if (value is null)
-                    {
-                        continue;
-                    }
+            if (userDataDto.IsFavorite.HasValue)
+            {
+                userData.IsFavorite = userDataDto.IsFavorite.Value;
+            }
 
-                    childProperty.SetValue(userData, value, null);
-                    break;
-                }
+            if (userDataDto.Likes.HasValue)
+            {
+                userData.Likes = userDataDto.Likes.Value;
+            }
+
+            if (userDataDto.Played.HasValue)
+            {
+                userData.Played = userDataDto.Played.Value;
+            }
+
+            if (userDataDto.LastPlayedDate.HasValue)
+            {
+                userData.LastPlayedDate = userDataDto.LastPlayedDate.Value;
+            }
+
+            if (userDataDto.Rating.HasValue)
+            {
+                userData.Rating = userDataDto.Rating.Value;
             }
 
             SaveUserData(user, item, userData, reason, CancellationToken.None);

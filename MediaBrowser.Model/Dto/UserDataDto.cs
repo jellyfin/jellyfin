@@ -1,6 +1,3 @@
-#nullable disable
-using System;
-
 namespace MediaBrowser.Model.Dto
 {
     /// <summary>
