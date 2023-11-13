@@ -902,6 +902,11 @@ public class ItemsController : BaseJellyfinApiController
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] Guid itemId)
     {
+        if (!RequestHelpers.AssertCanUpdateUser(_userManager, User, userId, true))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to view this item user data.");
+        }
+
         var user = _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException();
         var item = _libraryManager.GetItemById(itemId);
 
