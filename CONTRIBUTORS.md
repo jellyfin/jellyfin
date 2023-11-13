@@ -58,6 +58,7 @@
  - [HelloWorld017](https://github.com/HelloWorld017)
  - [ikomhoog](https://github.com/ikomhoog)
  - [iwalton3](https://github.com/iwalton3)
+ - [Jack Urso](https://github.com/Jburso)
  - [jftuga](https://github.com/jftuga)
  - [jmshrv](https://github.com/jmshrv)
  - [joern-h](https://github.com/joern-h)

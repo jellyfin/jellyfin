@@ -189,7 +189,11 @@ namespace Jellyfin.Server
                     mainApp.UseRobotsRedirection();
                 }
 
-                mainApp.UseStaticFiles();
+                mainApp.UseStaticFiles(new StaticFileOptions()
+                {
+                    ServeUnknownFileTypes = true
+                });
+
                 mainApp.UseAuthentication();
                 mainApp.UseJellyfinApiSwagger(_serverConfigurationManager);
                 mainApp.UseQueryStringDecoding();
