@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Library;
@@ -28,7 +29,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="localizationKey">Localization key to use.</param>
         /// <param name="sortName">Sort to use.</param>
         /// <returns>User view.</returns>
-        UserView GetUserSubView(Guid parentId, string type, string localizationKey, string sortName);
+        UserView GetUserSubView(Guid parentId, CollectionType? type, string localizationKey, string sortName);
 
         /// <summary>
         /// Gets latest items.

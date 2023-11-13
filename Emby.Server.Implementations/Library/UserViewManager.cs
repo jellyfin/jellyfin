@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
-using Jellyfin.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
@@ -64,8 +63,8 @@ namespace Emby.Server.Implementations.Library
                 var collectionFolder = folder as ICollectionFolder;
                 var folderViewType = collectionFolder?.CollectionType;
 
-                // Playlist library requires special handling because the folder only refrences user playlists
-                if (string.Equals(folderViewType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
+                // Playlist library requires special handling because the folder only references user playlists
+                if (folderViewType == CollectionType.Playlists)
                 {
                     var items = folder.GetItemList(new InternalItemsQuery(user)
                     {
@@ -90,7 +89,7 @@ namespace Emby.Server.Implementations.Library
                     continue;
                 }
 
-                if (query.PresetViews.Contains(folderViewType ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+                if (query.PresetViews.Contains(folderViewType))
                 {
                     list.Add(GetUserView(folder, folderViewType, string.Empty));
                 }
@@ -102,14 +101,14 @@ namespace Emby.Server.Implementations.Library
 
             foreach (var viewType in new[] { CollectionType.Movies, CollectionType.TvShows })
             {
-                var parents = groupedFolders.Where(i => string.Equals(i.CollectionType, viewType, StringComparison.OrdinalIgnoreCase) || string.IsNullOrEmpty(i.CollectionType))
+                var parents = groupedFolders.Where(i => i.CollectionType == viewType || i.CollectionType is null)
                     .ToList();
 
                 if (parents.Count > 0)
                 {
-                    var localizationKey = string.Equals(viewType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase) ?
-                        "TvShows" :
-                        "Movies";
+                    var localizationKey = viewType == CollectionType.TvShows
+                        ? "TvShows"
+                        : "Movies";
 
                     list.Add(GetUserView(parents, viewType, localizationKey, string.Empty, user, query.PresetViews));
                 }
@@ -164,14 +163,14 @@ namespace Emby.Server.Implementations.Library
                 .ToArray();
         }
 
-        public UserView GetUserSubViewWithName(string name, Guid parentId, string type, string sortName)
+        public UserView GetUserSubViewWithName(string name, Guid parentId, CollectionType? type, string sortName)
         {
             var uniqueId = parentId + "subview" + type;
 
             return _libraryManager.GetNamedView(name, parentId, type, sortName, uniqueId);
         }
 
-        public UserView GetUserSubView(Guid parentId, string type, string localizationKey, string sortName)
+        public UserView GetUserSubView(Guid parentId, CollectionType? type, string localizationKey, string sortName)
         {
             var name = _localizationManager.GetLocalizedString(localizationKey);
 
@@ -180,15 +179,15 @@ namespace Emby.Server.Implementations.Library
 
         private Folder GetUserView(
             List<ICollectionFolder> parents,
-            string viewType,
+            CollectionType? viewType,
             string localizationKey,
             string sortName,
             User user,
-            string[] presetViews)
+            CollectionType?[] presetViews)
         {
-            if (parents.Count == 1 && parents.All(i => string.Equals(i.CollectionType, viewType, StringComparison.OrdinalIgnoreCase)))
+            if (parents.Count == 1 && parents.All(i => i.CollectionType == viewType))
             {
-                if (!presetViews.Contains(viewType, StringComparison.OrdinalIgnoreCase))
+                if (!presetViews.Contains(viewType))
                 {
                     return (Folder)parents[0];
                 }
@@ -200,7 +199,7 @@ namespace Emby.Server.Implementations.Library
             return _libraryManager.GetNamedView(user, name, viewType, sortName);
         }
 
-        public UserView GetUserView(Folder parent, string viewType, string sortName)
+        public UserView GetUserView(Folder parent, CollectionType? viewType, string sortName)
         {
             return _libraryManager.GetShadowView(parent, viewType, sortName);
         }
@@ -280,7 +279,7 @@ namespace Emby.Server.Implementations.Library
 
             var isPlayed = request.IsPlayed;
 
-            if (parents.OfType<ICollectionFolder>().Any(i => string.Equals(i.CollectionType, CollectionType.Music, StringComparison.OrdinalIgnoreCase)))
+            if (parents.OfType<ICollectionFolder>().Any(i => i.CollectionType == CollectionType.Music))
             {
                 isPlayed = null;
             }
@@ -306,18 +305,18 @@ namespace Emby.Server.Implementations.Library
                 var hasCollectionType = parents.OfType<UserView>().ToArray();
                 if (hasCollectionType.Length > 0)
                 {
-                    if (hasCollectionType.All(i => string.Equals(i.CollectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase)))
+                    if (hasCollectionType.All(i => i.CollectionType == CollectionType.Movies))
                     {
                         includeItemTypes = new[] { BaseItemKind.Movie };
                     }
-                    else if (hasCollectionType.All(i => string.Equals(i.CollectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase)))
+                    else if (hasCollectionType.All(i => i.CollectionType == CollectionType.TvShows))
                     {
                         includeItemTypes = new[] { BaseItemKind.Episode };
                     }
                 }
             }
 
-            var mediaTypes = new List<string>();
+            var mediaTypes = new List<MediaType>();
 
             if (includeItemTypes.Length == 0)
             {

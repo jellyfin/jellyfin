@@ -1,9 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Emby.Naming.Common;
 using Emby.Naming.Video;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
@@ -61,8 +61,8 @@ namespace Emby.Server.Implementations.Library.Resolvers
                 // Must be an image file within a photo collection
                 var collectionType = args.CollectionType;
 
-                if (string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase)
-                    || (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) && args.LibraryOptions.EnablePhotos))
+                if (collectionType == CollectionType.Photos
+                    || (collectionType == CollectionType.HomeVideos && args.LibraryOptions.EnablePhotos))
                 {
                     if (IsImageFile(args.Path, _imageProcessor))
                     {

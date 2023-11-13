@@ -8,6 +8,7 @@ using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.PlaylistDtos;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
@@ -75,7 +76,7 @@ public class PlaylistsController : BaseJellyfinApiController
         [FromQuery, ParameterObsolete] string? name,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder)), ParameterObsolete] IReadOnlyList<Guid> ids,
         [FromQuery, ParameterObsolete] Guid? userId,
-        [FromQuery, ParameterObsolete] string? mediaType,
+        [FromQuery, ParameterObsolete] MediaType? mediaType,
         [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] CreatePlaylistDto? createPlaylistRequest)
     {
         if (ids.Count == 0)

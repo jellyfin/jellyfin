@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
@@ -19,9 +20,9 @@ namespace Emby.Server.Implementations.Library.Resolvers
     /// </summary>
     public class PlaylistResolver : GenericFolderResolver<Playlist>
     {
-        private string[] _musicPlaylistCollectionTypes =
+        private CollectionType?[] _musicPlaylistCollectionTypes =
         {
-            string.Empty,
+            null,
             CollectionType.Music
         };
 
@@ -62,7 +63,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
 
             // Check if this is a music playlist file
             // It should have the correct collection type and a supported file extension
-            else if (_musicPlaylistCollectionTypes.Contains(args.CollectionType ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+            else if (_musicPlaylistCollectionTypes.Contains(args.CollectionType))
             {
                 var extension = Path.GetExtension(args.Path.AsSpan());
                 if (Playlist.SupportedExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))

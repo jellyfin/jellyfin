@@ -294,8 +294,8 @@ public class LibraryController : BaseJellyfinApiController
 
         return new AllThemeMediaResult
         {
-            ThemeSongsResult = themeSongs?.Value,
-            ThemeVideosResult = themeVideos?.Value,
+            ThemeSongsResult = themeSongs.Value,
+            ThemeVideosResult = themeVideos.Value,
             SoundtrackSongsResult = new ThemeMediaResult()
         };
     }
@@ -490,7 +490,7 @@ public class LibraryController : BaseJellyfinApiController
 
             baseItemDtos.Add(_dtoService.GetBaseItemDto(parent, dtoOptions, user));
 
-            parent = parent?.GetParent();
+            parent = parent.GetParent();
         }
 
         return baseItemDtos;
@@ -788,7 +788,7 @@ public class LibraryController : BaseJellyfinApiController
     [Authorize(Policy = Policies.FirstTimeSetupOrDefault)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<LibraryOptionsResultDto> GetLibraryOptionsInfo(
-        [FromQuery] string? libraryContentType,
+        [FromQuery] CollectionType? libraryContentType,
         [FromQuery] bool isNewLibrary = false)
     {
         var result = new LibraryOptionsResultDto();
@@ -922,7 +922,7 @@ public class LibraryController : BaseJellyfinApiController
         }
     }
 
-    private static string[] GetRepresentativeItemTypes(string? contentType)
+    private static string[] GetRepresentativeItemTypes(CollectionType? contentType)
     {
         return contentType switch
         {

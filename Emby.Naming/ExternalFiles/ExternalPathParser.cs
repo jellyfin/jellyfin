@@ -43,7 +43,7 @@ namespace Emby.Naming.ExternalFiles
                 return null;
             }
 
-            var extension = Path.GetExtension(path);
+            var extension = Path.GetExtension(path.AsSpan());
             if (!(_type == DlnaProfileType.Subtitle && _namingOptions.SubtitleFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
                 && !(_type == DlnaProfileType.Audio && _namingOptions.AudioFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase)))
             {

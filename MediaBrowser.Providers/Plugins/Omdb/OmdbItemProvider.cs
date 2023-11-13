@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -137,31 +138,27 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             var url = OmdbProvider.GetOmdbUrl(urlQuery.ToString());
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
-            var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            await using (stream.ConfigureAwait(false))
+            if (isSearch)
             {
-                if (isSearch)
+                var searchResultList = await response.Content.ReadFromJsonAsync<SearchResultList>(_jsonOptions, cancellationToken).ConfigureAwait(false);
+                if (searchResultList?.Search is not null)
                 {
-                    var searchResultList = await JsonSerializer.DeserializeAsync<SearchResultList>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-                    if (searchResultList?.Search is not null)
+                    var resultCount = searchResultList.Search.Count;
+                    var result = new RemoteSearchResult[resultCount];
+                    for (var i = 0; i < resultCount; i++)
                     {
-                        var resultCount = searchResultList.Search.Count;
-                        var result = new RemoteSearchResult[resultCount];
-                        for (var i = 0; i < resultCount; i++)
-                        {
-                            result[i] = ResultToMetadataResult(searchResultList.Search[i], searchInfo, indexNumberEnd);
-                        }
+                        result[i] = ResultToMetadataResult(searchResultList.Search[i], searchInfo, indexNumberEnd);
+                    }
 
-                        return result;
-                    }
+                    return result;
                 }
-                else
+            }
+            else
+            {
+                var result = await response.Content.ReadFromJsonAsync<SearchResult>(_jsonOptions, cancellationToken).ConfigureAwait(false);
+                if (string.Equals(result?.Response, "true", StringComparison.OrdinalIgnoreCase))
                 {
-                    var result = await JsonSerializer.DeserializeAsync<SearchResult>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-                    if (string.Equals(result?.Response, "true", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return new[] { ResultToMetadataResult(result, searchInfo, indexNumberEnd) };
-                    }
+                    return new[] { ResultToMetadataResult(result, searchInfo, indexNumberEnd) };
                 }
             }
 

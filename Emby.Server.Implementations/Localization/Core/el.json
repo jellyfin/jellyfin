@@ -124,5 +124,7 @@
     "TaskKeyframeExtractorDescription": "Εξάγει καρέ από αρχεία βίντεο για να δημιουργήσει πιο ακριβείς λίστες αναπαραγωγής HLS. Αυτή η διεργασία μπορεί να πάρει χρόνο.",
     "TaskKeyframeExtractor": "Εξαγωγέας βασικών καρέ βίντεο",
     "External": "Εξωτερικό",
-    "HearingImpaired": "Με προβλήματα ακοής"
+    "HearingImpaired": "Με προβλήματα ακοής",
+    "TaskRefreshTrickplayImages": "Δημιουργήστε εικόνες Trickplay",
+    "TaskRefreshTrickplayImagesDescription": "Δημιουργεί προεπισκοπήσεις trickplay για βίντεο σε ενεργοποιημένες βιβλιοθήκες."
 }

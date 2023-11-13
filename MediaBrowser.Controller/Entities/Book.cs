@@ -18,7 +18,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [JsonIgnore]
-        public override string MediaType => Model.Entities.MediaType.Book;
+        public override MediaType MediaType => MediaType.Book;
 
         public override bool SupportsPlayedStatus => true;
 

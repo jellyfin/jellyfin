@@ -24,6 +24,9 @@ JELLYFIN_WEB_OPT="--webdir=/usr/share/jellyfin/web"
 # ffmpeg binary paths, overriding the system values
 JELLYFIN_FFMPEG_OPT="--ffmpeg=/usr/lib/jellyfin-ffmpeg/ffmpeg"
 
+# Disable glibc dynamic heap adjustment
+MALLOC_TRIM_THRESHOLD_=131072
+
 # [OPTIONAL] run Jellyfin as a headless service
 #JELLYFIN_SERVICE_OPT="--service"
 

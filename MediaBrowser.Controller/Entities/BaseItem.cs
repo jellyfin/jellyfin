@@ -422,7 +422,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The type of the media.</value>
         [JsonIgnore]
-        public virtual string MediaType => null;
+        public virtual MediaType MediaType => MediaType.Unknown;
 
         [JsonIgnore]
         public virtual string[] PhysicalLocations
@@ -724,7 +724,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (this is IHasCollectionType view)
                 {
-                    if (string.Equals(view.CollectionType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
+                    if (view.CollectionType == CollectionType.LiveTv)
                     {
                         return true;
                     }

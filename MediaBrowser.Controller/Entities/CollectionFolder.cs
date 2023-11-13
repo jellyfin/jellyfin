@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -69,7 +70,7 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public override bool SupportsInheritedParentImages => false;
 
-        public string CollectionType { get; set; }
+        public CollectionType? CollectionType { get; set; }
 
         /// <summary>
         /// Gets the item's children.

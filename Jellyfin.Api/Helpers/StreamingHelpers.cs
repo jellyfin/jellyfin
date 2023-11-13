@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Models.StreamingDtos;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -128,7 +129,7 @@ public static class StreamingHelpers
 
         var item = libraryManager.GetItemById(streamingRequest.Id);
 
-        state.IsInputVideo = string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
+        state.IsInputVideo = item.MediaType == MediaType.Video;
 
         MediaSourceInfo? mediaSource = null;
         if (string.IsNullOrWhiteSpace(streamingRequest.LiveStreamId))
@@ -248,7 +249,7 @@ public static class StreamingHelpers
             ? GetOutputFileExtension(state, mediaSource)
             : ("." + state.OutputContainer);
 
-        state.OutputFilePath = GetOutputFilePath(state, ext!, serverConfigurationManager, streamingRequest.DeviceId, streamingRequest.PlaySessionId);
+        state.OutputFilePath = GetOutputFilePath(state, ext, serverConfigurationManager, streamingRequest.DeviceId, streamingRequest.PlaySessionId);
 
         return state;
     }
@@ -421,10 +422,9 @@ public static class StreamingHelpers
     /// <param name="state">The state.</param>
     /// <param name="mediaSource">The mediaSource.</param>
     /// <returns>System.String.</returns>
-    private static string? GetOutputFileExtension(StreamState state, MediaSourceInfo? mediaSource)
+    private static string GetOutputFileExtension(StreamState state, MediaSourceInfo? mediaSource)
     {
         var ext = Path.GetExtension(state.RequestedUrl);
-
         if (!string.IsNullOrEmpty(ext))
         {
             return ext;
@@ -463,10 +463,9 @@ public static class StreamingHelpers
                 return ".asf";
             }
         }
-
-        // Try to infer based on the desired audio codec
-        if (!state.IsVideoRequest)
+        else
         {
+            // Try to infer based on the desired audio codec
             var audioCodec = state.Request.AudioCodec;
 
             if (string.Equals("aac", audioCodec, StringComparison.OrdinalIgnoreCase))
@@ -497,7 +496,7 @@ public static class StreamingHelpers
             return '.' + (idx == -1 ? mediaSource.Container : mediaSource.Container[..idx]).Trim();
         }
 
-        return null;
+        throw new InvalidOperationException("Failed to find an appropriate file extension");
     }
 
     /// <summary>
@@ -514,7 +513,7 @@ public static class StreamingHelpers
         var data = $"{state.MediaPath}-{state.UserAgent}-{deviceId!}-{playSessionId!}";
 
         var filename = data.GetMD5().ToString("N", CultureInfo.InvariantCulture);
-        var ext = outputFileExtension?.ToLowerInvariant();
+        var ext = outputFileExtension.ToLowerInvariant();
         var folder = serverConfigurationManager.GetTranscodePath();
 
         return Path.Combine(folder, filename + ext);

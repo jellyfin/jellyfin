@@ -12,10 +12,11 @@ using System.Threading.Tasks;
 using Emby.Server.Implementations.Library;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Extensions.Json.Converters;
-using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Plugins;
@@ -37,7 +38,7 @@ namespace Emby.Server.Implementations.Plugins
         private readonly List<AssemblyLoadContext> _assemblyLoadContexts;
         private readonly JsonSerializerOptions _jsonOptions;
         private readonly ILogger<PluginManager> _logger;
-        private readonly IApplicationHost _appHost;
+        private readonly IServerApplicationHost _appHost;
         private readonly ServerConfiguration _config;
         private readonly List<LocalPlugin> _plugins;
         private readonly Version _minimumVersion;
@@ -48,13 +49,13 @@ namespace Emby.Server.Implementations.Plugins
         /// Initializes a new instance of the <see cref="PluginManager"/> class.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger{PluginManager}"/>.</param>
-        /// <param name="appHost">The <see cref="IApplicationHost"/>.</param>
+        /// <param name="appHost">The <see cref="IServerApplicationHost"/>.</param>
         /// <param name="config">The <see cref="ServerConfiguration"/>.</param>
         /// <param name="pluginsPath">The plugin path.</param>
         /// <param name="appVersion">The application version.</param>
         public PluginManager(
             ILogger<PluginManager> logger,
-            IApplicationHost appHost,
+            IServerApplicationHost appHost,
             ServerConfiguration config,
             string pluginsPath,
             Version appVersion)
@@ -222,7 +223,7 @@ namespace Emby.Server.Implementations.Plugins
                 try
                 {
                     var instance = (IPluginServiceRegistrator?)Activator.CreateInstance(pluginServiceRegistrator);
-                    instance?.RegisterServices(serviceCollection);
+                    instance?.RegisterServices(serviceCollection, _appHost);
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
@@ -386,11 +387,11 @@ namespace Emby.Server.Implementations.Plugins
                 var url = new Uri(packageInfo.ImageUrl);
                 imagePath = Path.Join(path, url.Segments[^1]);
 
-                await using var fileStream = AsyncFile.OpenWrite(imagePath);
-
+                var fileStream = AsyncFile.OpenWrite(imagePath);
+                Stream? downloadStream = null;
                 try
                 {
-                    await using var downloadStream = await HttpClientFactory
+                    downloadStream = await HttpClientFactory
                         .CreateClient(NamedClient.Default)
                         .GetStreamAsync(url)
                         .ConfigureAwait(false);
@@ -401,6 +402,14 @@ namespace Emby.Server.Implementations.Plugins
                 {
                     _logger.LogError(ex, "Failed to download image to path {Path} on disk.", imagePath);
                     imagePath = string.Empty;
+                }
+                finally
+                {
+                    await fileStream.DisposeAsync().ConfigureAwait(false);
+                    if (downloadStream is not null)
+                    {
+                        await downloadStream.DisposeAsync().ConfigureAwait(false);
+                    }
                 }
             }
 
@@ -421,7 +430,7 @@ namespace Emby.Server.Implementations.Plugins
                 ImagePath = imagePath
             };
 
-            if (!await ReconcileManifest(manifest, path))
+            if (!await ReconcileManifest(manifest, path).ConfigureAwait(false))
             {
                 // An error occurred during reconciliation and saving could be undesirable.
                 return false;
@@ -458,7 +467,7 @@ namespace Emby.Server.Implementations.Plugins
                 }
 
                 using var metaStream = File.OpenRead(metafile);
-                var localManifest = await JsonSerializer.DeserializeAsync<PluginManifest>(metaStream, _jsonOptions);
+                var localManifest = await JsonSerializer.DeserializeAsync<PluginManifest>(metaStream, _jsonOptions).ConfigureAwait(false);
                 localManifest ??= new PluginManifest();
 
                 if (!Equals(localManifest.Id, manifest.Id))

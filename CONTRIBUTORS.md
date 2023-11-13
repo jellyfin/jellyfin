@@ -57,6 +57,7 @@
  - [hawken93](https://github.com/hawken93)
  - [HelloWorld017](https://github.com/HelloWorld017)
  - [ikomhoog](https://github.com/ikomhoog)
+ - [iwalton3](https://github.com/iwalton3)
  - [jftuga](https://github.com/jftuga)
  - [jmshrv](https://github.com/jmshrv)
  - [joern-h](https://github.com/joern-h)
@@ -88,6 +89,7 @@
  - [neilsb](https://github.com/neilsb)
  - [nevado](https://github.com/nevado)
  - [Nickbert7](https://github.com/Nickbert7)
+ - [nicknsy](https://github.com/nicknsy)
  - [nvllsvm](https://github.com/nvllsvm)
  - [nyanmisaka](https://github.com/nyanmisaka)
  - [OancaAndrei](https://github.com/OancaAndrei)
@@ -168,6 +170,8 @@
  - [TheTyrius](https://github.com/TheTyrius)
  - [tallbl0nde](https://github.com/tallbl0nde)
  - [sleepycatcoding](https://github.com/sleepycatcoding)
+ - [scampower3](https://github.com/scampower3)
+ - [Chris-Codes-It] (https://github.com/Chris-Codes-It)
  - [Pithaya](https://github.com/Pithaya)
 
 # Emby Contributors

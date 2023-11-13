@@ -71,25 +71,28 @@ namespace Emby.Server.Implementations.Localization
                 string countryCode = resource.Substring(RatingsPath.Length, 2);
                 var dict = new Dictionary<string, ParentalRating>(StringComparer.OrdinalIgnoreCase);
 
-                await using var stream = _assembly.GetManifestResourceStream(resource);
-                using var reader = new StreamReader(stream!); // shouldn't be null here, we just got the resource path from Assembly.GetManifestResourceNames()
-                await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
+                var stream = _assembly.GetManifestResourceStream(resource);
+                await using (stream!.ConfigureAwait(false)) // shouldn't be null here, we just got the resource path from Assembly.GetManifestResourceNames()
                 {
-                    if (string.IsNullOrWhiteSpace(line))
+                    using var reader = new StreamReader(stream!);
+                    await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
                     {
-                        continue;
-                    }
+                        if (string.IsNullOrWhiteSpace(line))
+                        {
+                            continue;
+                        }
 
-                    string[] parts = line.Split(',');
-                    if (parts.Length == 2
-                        && int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
-                    {
-                        var name = parts[0];
-                        dict.Add(name, new ParentalRating(name, value));
-                    }
-                    else
-                    {
-                        _logger.LogWarning("Malformed line in ratings file for country {CountryCode}", countryCode);
+                        string[] parts = line.Split(',');
+                        if (parts.Length == 2
+                            && int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
+                        {
+                            var name = parts[0];
+                            dict.Add(name, new ParentalRating(name, value));
+                        }
+                        else
+                        {
+                            _logger.LogWarning("Malformed line in ratings file for country {CountryCode}", countryCode);
+                        }
                     }
                 }
 

@@ -57,13 +57,16 @@ public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnume
     /// <inheritdoc />
     protected override void Dispose(bool dispose)
     {
-        _sessionManager.SessionStarted -= OnSessionManagerSessionStarted;
-        _sessionManager.SessionEnded -= OnSessionManagerSessionEnded;
-        _sessionManager.PlaybackStart -= OnSessionManagerPlaybackStart;
-        _sessionManager.PlaybackStopped -= OnSessionManagerPlaybackStopped;
-        _sessionManager.PlaybackProgress -= OnSessionManagerPlaybackProgress;
-        _sessionManager.CapabilitiesChanged -= OnSessionManagerCapabilitiesChanged;
-        _sessionManager.SessionActivity -= OnSessionManagerSessionActivity;
+        if (dispose)
+        {
+            _sessionManager.SessionStarted -= OnSessionManagerSessionStarted;
+            _sessionManager.SessionEnded -= OnSessionManagerSessionEnded;
+            _sessionManager.PlaybackStart -= OnSessionManagerPlaybackStart;
+            _sessionManager.PlaybackStopped -= OnSessionManagerPlaybackStopped;
+            _sessionManager.PlaybackProgress -= OnSessionManagerPlaybackProgress;
+            _sessionManager.CapabilitiesChanged -= OnSessionManagerCapabilitiesChanged;
+            _sessionManager.SessionActivity -= OnSessionManagerSessionActivity;
+        }
 
         base.Dispose(dispose);
     }

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Session;
@@ -60,13 +61,13 @@ namespace MediaBrowser.Controller.Session
         /// Gets the playable media types.
         /// </summary>
         /// <value>The playable media types.</value>
-        public IReadOnlyList<string> PlayableMediaTypes
+        public IReadOnlyList<MediaType> PlayableMediaTypes
         {
             get
             {
                 if (Capabilities is null)
                 {
-                    return Array.Empty<string>();
+                    return Array.Empty<MediaType>();
                 }
 
                 return Capabilities.PlayableMediaTypes;
@@ -108,6 +109,12 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <value>The last playback check in.</value>
         public DateTime LastPlaybackCheckIn { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last paused date.
+        /// </summary>
+        /// <value>The last paused date.</value>
+        public DateTime? LastPausedDate { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the device.

@@ -29,7 +29,7 @@ namespace Jellyfin.Naming.Tests.Video
         [Fact]
         public void TestStubName()
         {
-            var result = VideoResolver.ResolveFile(@"C:/Users/media/Desktop/Video Test/Movies/Oblivion/Oblivion.dvd.disc", _namingOptions);
+            var result = VideoResolver.ResolveFile("C:/Users/media/Desktop/Video Test/Movies/Oblivion/Oblivion.dvd.disc", _namingOptions);
 
             Assert.Equal("Oblivion", result?.Name);
         }

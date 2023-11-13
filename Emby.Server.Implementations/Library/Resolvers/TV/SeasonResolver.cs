@@ -62,7 +62,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                     var resolver = new Naming.TV.EpisodeResolver(namingOptions);
 
                     var folderName = System.IO.Path.GetFileName(path);
-                    var testPath = "\\\\test\\" + folderName;
+                    var testPath = @"\\test\" + folderName;
 
                     var episodeInfo = resolver.Resolve(testPath, true);
 

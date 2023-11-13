@@ -943,6 +943,12 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public void QueueRefresh(Guid itemId, MetadataRefreshOptions options, RefreshPriority priority)
         {
+            ArgumentNullException.ThrowIfNull(itemId);
+            if (itemId.Equals(default))
+            {
+                throw new ArgumentException("Guid can't be empty", nameof(itemId));
+            }
+
             if (_disposed)
             {
                 return;
@@ -1090,13 +1096,13 @@ namespace MediaBrowser.Providers.Manager
                 return;
             }
 
-            if (!_disposeCancellationTokenSource.IsCancellationRequested)
-            {
-                _disposeCancellationTokenSource.Cancel();
-            }
-
             if (disposing)
             {
+                if (!_disposeCancellationTokenSource.IsCancellationRequested)
+                {
+                    _disposeCancellationTokenSource.Cancel();
+                }
+
                 _disposeCancellationTokenSource.Dispose();
             }
 

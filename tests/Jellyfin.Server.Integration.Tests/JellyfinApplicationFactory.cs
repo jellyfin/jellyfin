@@ -8,9 +8,9 @@ using Jellyfin.Server.Helpers;
 using MediaBrowser.Common;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
@@ -39,9 +39,9 @@ namespace Jellyfin.Server.Integration.Tests
         }
 
         /// <inheritdoc/>
-        protected override IWebHostBuilder CreateWebHostBuilder()
+        protected override IHostBuilder CreateHostBuilder()
         {
-            return new WebHostBuilder();
+            return new HostBuilder();
         }
 
         /// <inheritdoc/>
@@ -95,18 +95,17 @@ namespace Jellyfin.Server.Integration.Tests
         }
 
         /// <inheritdoc/>
-        protected override TestServer CreateServer(IWebHostBuilder builder)
+        protected override IHost CreateHost(IHostBuilder builder)
         {
-            // Create the test server using the base implementation
-            var testServer = base.CreateServer(builder);
-
-            // Finish initializing the app host
-            var appHost = (TestAppHost)testServer.Services.GetRequiredService<IApplicationHost>();
-            appHost.ServiceProvider = testServer.Services;
+            var host = builder.Build();
+            var appHost = (TestAppHost)host.Services.GetRequiredService<IApplicationHost>();
+            appHost.ServiceProvider = host.Services;
             appHost.InitializeServices().GetAwaiter().GetResult();
+            host.Start();
+
             appHost.RunStartupTasksAsync().GetAwaiter().GetResult();
 
-            return testServer;
+            return host;
         }
 
         /// <inheritdoc/>

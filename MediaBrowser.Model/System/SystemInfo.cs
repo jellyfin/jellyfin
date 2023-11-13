@@ -2,6 +2,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using MediaBrowser.Model.Updates;
 
@@ -84,7 +85,8 @@ namespace MediaBrowser.Model.System
         [Obsolete("This is always true")]
         public bool CanSelfRestart { get; set; } = true;
 
-        public bool CanLaunchWebBrowser { get; set; }
+        [Obsolete("This is always false")]
+        public bool CanLaunchWebBrowser { get; set; } = false;
 
         /// <summary>
         /// Gets or sets the program data path.
@@ -127,6 +129,11 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value>The transcode path.</value>
         public string TranscodingTempPath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of cast receiver applications.
+        /// </summary>
+        public IReadOnlyList<CastReceiverApplication> CastReceiverApplications { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has update available.
