@@ -115,8 +115,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     StartInfo = new ProcessStartInfo
                     {
-                        FileName = _mediaEncoder.EncoderPath,
-                        Arguments = $"-hide_banner -i \"{path}\" -f null -",
+                        FileName = _mediaEncoder.ProbePath,
+                        Arguments = $"-hide_banner -i \"{path}\"",
                         RedirectStandardOutput = false,
                         RedirectStandardError = true
                     },
