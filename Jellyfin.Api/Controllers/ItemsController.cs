@@ -913,13 +913,7 @@ public class ItemsController : BaseJellyfinApiController
     /// </summary>
     /// <param name="userId">The user id.</param>
     /// <param name="itemId">The item id.</param>
-    /// <param name="played">Optional. Whether to mark the item as played.</param>
-    /// <param name="favorite">Optional. Whether to mark the item as favorite.</param>
-    /// <param name="likes">Optional. Whether to mark the item as liked.</param>
-    /// <param name="rating">Optional. User item rating.</param>
-    /// <param name="playbackPositionTicks">Optional. Item playback position ticks. 1 tick = 10000 ms.</param>
-    /// <param name="playCount">Optional. How many times the user played the item.</param>
-    /// <param name="lastPlayedDate">Optional. The date the item was played.</param>
+    /// <param name="userDataDto">New user data object.</param>
     /// <response code="200">return updated user item data.</response>
     /// <response code="404">Item is not found.</response>
     /// <returns>Return <see cref="UserItemDataDto"/>.</returns>
@@ -929,14 +923,13 @@ public class ItemsController : BaseJellyfinApiController
     public ActionResult<UserItemDataDto> UpdateItemUserData(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] Guid itemId,
-        [FromQuery] bool? played,
-        [FromQuery] bool? favorite,
-        [FromQuery] bool? likes,
-        [FromQuery] double? rating,
-        [FromQuery] long? playbackPositionTicks,
-        [FromQuery] int? playCount,
-        [FromQuery, ModelBinder(typeof(LegacyDateTimeModelBinder))] DateTime? lastPlayedDate)
+        [FromBody, Required] UserDataDto userDataDto)
     {
+        if (!RequestHelpers.AssertCanUpdateUser(_userManager, User, userId, true))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update this item user data.");
+        }
+
         var user = _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException();
         var item = _libraryManager.GetItemById(itemId);
         if (item == null)
@@ -944,44 +937,7 @@ public class ItemsController : BaseJellyfinApiController
             return NotFound();
         }
 
-        var userData = _userDataRepository.GetUserData(user, item);
-
-        if (played.HasValue)
-        {
-            userData.Played = played.Value;
-        }
-
-        if (favorite.HasValue)
-        {
-            userData.IsFavorite = favorite.Value;
-        }
-
-        if (likes.HasValue)
-        {
-            userData.Likes = likes.Value;
-        }
-
-        if (rating.HasValue)
-        {
-            userData.Rating = rating.Value;
-        }
-
-        if (playbackPositionTicks.HasValue)
-        {
-            userData.PlaybackPositionTicks = playbackPositionTicks.Value;
-        }
-
-        if (playCount.HasValue)
-        {
-            userData.PlayCount = playCount.Value;
-        }
-
-        if (lastPlayedDate.HasValue)
-        {
-            userData.LastPlayedDate = lastPlayedDate.Value;
-        }
-
-        _userDataRepository.SaveUserData(user.Id, item, userData, UserDataSaveReason.UpdateUserData, CancellationToken.None);
+        _userDataRepository.SaveUserData(user, item, userDataDto, UserDataSaveReason.UpdateUserData);
 
         return _userDataRepository.GetUserDataDto(item, user);
     }

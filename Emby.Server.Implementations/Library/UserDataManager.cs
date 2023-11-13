@@ -6,6 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Reflection;
 using System.Threading;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Configuration;
@@ -79,6 +80,42 @@ namespace Emby.Server.Implementations.Library
                 UserId = user.Id,
                 Item = item
             });
+        }
+
+        public void SaveUserData(User user, BaseItem item, UserDataDto userDataDto, UserDataSaveReason reason)
+        {
+            ArgumentNullException.ThrowIfNull(user);
+            ArgumentNullException.ThrowIfNull(item);
+            ArgumentNullException.ThrowIfNull(reason);
+            ArgumentNullException.ThrowIfNull(userDataDto);
+
+            var userData = GetUserData(user, item);
+
+            var parentProperties = userDataDto.GetType().GetProperties();
+            var childProperties = userData.GetType().GetProperties();
+
+            foreach (var parentProperty in parentProperties)
+            {
+                foreach (var childProperty in childProperties)
+                {
+                    if (parentProperty.Name != childProperty.Name)
+                    {
+                        continue;
+                    }
+
+                    var value = parentProperty.GetValue(userDataDto, null);
+
+                    if (value is null)
+                    {
+                        continue;
+                    }
+
+                    childProperty.SetValue(userData, value, null);
+                    break;
+                }
+            }
+
+            SaveUserData(user, item, userData, reason, CancellationToken.None);
         }
 
         /// <summary>
