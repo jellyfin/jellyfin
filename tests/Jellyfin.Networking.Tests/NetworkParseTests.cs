@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using Jellyfin.Networking.Configuration;
-using Jellyfin.Networking.Extensions;
 using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -80,7 +79,7 @@ namespace Jellyfin.Networking.Tests
         [InlineData("[fe80::7add:12ff:febb:c67b%16]")]
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517/56")]
         public static void TryParseValidIPStringsTrue(string address)
-            => Assert.True(NetworkExtensions.TryParseToSubnet(address, out _));
+            => Assert.True(NetworkUtils.TryParseToSubnet(address, out _));
 
         /// <summary>
         /// Checks invalid IP address formats.
@@ -93,7 +92,7 @@ namespace Jellyfin.Networking.Tests
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517:1231")]
         [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517:1231]")]
         public static void TryParseInvalidIPStringsFalse(string address)
-            => Assert.False(NetworkExtensions.TryParseToSubnet(address, out _));
+            => Assert.False(NetworkUtils.TryParseToSubnet(address, out _));
 
         /// <summary>
         /// Checks if IPv4 address is within a defined subnet.
@@ -113,7 +112,7 @@ namespace Jellyfin.Networking.Tests
         public void IPv4SubnetMaskMatchesValidIPAddress(string netMask, string ipAddress)
         {
             var ipa = IPAddress.Parse(ipAddress);
-            Assert.True(NetworkExtensions.TryParseToSubnet(netMask, out var subnet) && subnet.Contains(IPAddress.Parse(ipAddress)));
+            Assert.True(NetworkUtils.TryParseToSubnet(netMask, out var subnet) && subnet.Contains(IPAddress.Parse(ipAddress)));
         }
 
         /// <summary>
@@ -133,7 +132,7 @@ namespace Jellyfin.Networking.Tests
         public void IPv4SubnetMaskDoesNotMatchInvalidIPAddress(string netMask, string ipAddress)
         {
             var ipa = IPAddress.Parse(ipAddress);
-            Assert.False(NetworkExtensions.TryParseToSubnet(netMask, out var subnet) && subnet.Contains(IPAddress.Parse(ipAddress)));
+            Assert.False(NetworkUtils.TryParseToSubnet(netMask, out var subnet) && subnet.Contains(IPAddress.Parse(ipAddress)));
         }
 
         /// <summary>
@@ -149,7 +148,7 @@ namespace Jellyfin.Networking.Tests
         [InlineData("2001:db8:abcd:0012::0/128", "2001:0DB8:ABCD:0012:0000:0000:0000:0000")]
         public void IPv6SubnetMaskMatchesValidIPAddress(string netMask, string ipAddress)
         {
-            Assert.True(NetworkExtensions.TryParseToSubnet(netMask, out var subnet) && subnet.Contains(IPAddress.Parse(ipAddress)));
+            Assert.True(NetworkUtils.TryParseToSubnet(netMask, out var subnet) && subnet.Contains(IPAddress.Parse(ipAddress)));
         }
 
         [Theory]
@@ -160,7 +159,7 @@ namespace Jellyfin.Networking.Tests
         [InlineData("2001:db8:abcd:0012::0/128", "2001:0DB8:ABCD:0012:0000:0000:0000:0001")]
         public void IPv6SubnetMaskDoesNotMatchInvalidIPAddress(string netMask, string ipAddress)
         {
-            Assert.False(NetworkExtensions.TryParseToSubnet(netMask, out var subnet) && subnet.Contains(IPAddress.Parse(ipAddress)));
+            Assert.False(NetworkUtils.TryParseToSubnet(netMask, out var subnet) && subnet.Contains(IPAddress.Parse(ipAddress)));
         }
 
         [Theory]
@@ -207,7 +206,7 @@ namespace Jellyfin.Networking.Tests
             NetworkManager.MockNetworkSettings = string.Empty;
 
             // Check to see if DNS resolution is working. If not, skip test.
-            if (!NetworkExtensions.TryParseHost(source, out var host))
+            if (!NetworkUtils.TryParseHost(source, out var host))
             {
                 return;
             }

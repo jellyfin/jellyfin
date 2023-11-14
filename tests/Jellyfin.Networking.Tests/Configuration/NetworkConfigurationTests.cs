@@ -1,4 +1,4 @@
-using Jellyfin.Networking.Configuration;
+using MediaBrowser.Common.Net;
 using Xunit;
 
 namespace Jellyfin.Networking.Tests.Configuration;

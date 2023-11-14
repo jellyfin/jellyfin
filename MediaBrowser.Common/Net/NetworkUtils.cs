@@ -5,15 +5,14 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using Jellyfin.Extensions;
-using Jellyfin.Networking.Constants;
 using Microsoft.AspNetCore.HttpOverrides;
 
-namespace Jellyfin.Networking.Extensions;
+namespace MediaBrowser.Common.Net;
 
 /// <summary>
-/// Defines the <see cref="NetworkExtensions" />.
+/// Defines the <see cref="NetworkUtils" />.
 /// </summary>
-public static partial class NetworkExtensions
+public static partial class NetworkUtils
 {
     // Use regular expression as CheckHostName isn't RFC5892 compliant.
     // Modified from gSkinner's expression at https://stackoverflow.com/questions/11809631/fully-qualified-domain-name-validation
@@ -59,7 +58,7 @@ public static partial class NetworkExtensions
     /// <returns>String value of the subnet mask in dotted decimal notation.</returns>
     public static IPAddress CidrToMask(byte cidr, AddressFamily family)
     {
-        uint addr = 0xFFFFFFFF << ((family == AddressFamily.InterNetwork ? Network.MinimumIPv4PrefixSize : Network.MinimumIPv6PrefixSize) - cidr);
+        uint addr = 0xFFFFFFFF << ((family == AddressFamily.InterNetwork ? NetworkConstants.MinimumIPv4PrefixSize : NetworkConstants.MinimumIPv6PrefixSize) - cidr);
         addr = ((addr & 0xff000000) >> 24)
                 | ((addr & 0x00ff0000) >> 8)
                 | ((addr & 0x0000ff00) << 8)
@@ -75,7 +74,7 @@ public static partial class NetworkExtensions
     /// <returns>String value of the subnet mask in dotted decimal notation.</returns>
     public static IPAddress CidrToMask(int cidr, AddressFamily family)
     {
-        uint addr = 0xFFFFFFFF << ((family == AddressFamily.InterNetwork ? Network.MinimumIPv4PrefixSize : Network.MinimumIPv6PrefixSize) - cidr);
+        uint addr = 0xFFFFFFFF << ((family == AddressFamily.InterNetwork ? NetworkConstants.MinimumIPv4PrefixSize : NetworkConstants.MinimumIPv6PrefixSize) - cidr);
         addr = ((addr & 0xff000000) >> 24)
                 | ((addr & 0x00ff0000) >> 8)
                 | ((addr & 0x0000ff00) << 8)
@@ -100,7 +99,7 @@ public static partial class NetworkExtensions
         }
 
         // GetAddressBytes
-        Span<byte> bytes = stackalloc byte[mask.AddressFamily == AddressFamily.InterNetwork ? Network.IPv4MaskBytes : Network.IPv6MaskBytes];
+        Span<byte> bytes = stackalloc byte[mask.AddressFamily == AddressFamily.InterNetwork ? NetworkConstants.IPv4MaskBytes : NetworkConstants.IPv6MaskBytes];
         if (!mask.TryWriteBytes(bytes, out var bytesWritten))
         {
             Console.WriteLine("Unable to write address bytes, only ${bytesWritten} bytes written.");
@@ -224,18 +223,18 @@ public static partial class NetworkExtensions
                     }
                     else if (IPAddress.TryParse(subnetBlock, out var netmaskAddress))
                     {
-                        result = new IPNetwork(address, NetworkExtensions.MaskToCidr(netmaskAddress));
+                        result = new IPNetwork(address, NetworkUtils.MaskToCidr(netmaskAddress));
                         return true;
                     }
                 }
                 else if (address.AddressFamily == AddressFamily.InterNetwork)
                 {
-                    result = address.Equals(IPAddress.Any) ? Network.IPv4Any : new IPNetwork(address, Network.MinimumIPv4PrefixSize);
+                    result = address.Equals(IPAddress.Any) ? NetworkConstants.IPv4Any : new IPNetwork(address, NetworkConstants.MinimumIPv4PrefixSize);
                     return true;
                 }
                 else if (address.AddressFamily == AddressFamily.InterNetworkV6)
                 {
-                    result = address.Equals(IPAddress.IPv6Any) ? Network.IPv6Any : new IPNetwork(address, Network.MinimumIPv6PrefixSize);
+                    result = address.Equals(IPAddress.IPv6Any) ? NetworkConstants.IPv6Any : new IPNetwork(address, NetworkConstants.MinimumIPv6PrefixSize);
                     return true;
                 }
             }

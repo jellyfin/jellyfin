@@ -1,4 +1,4 @@
-namespace Jellyfin.Api.Constants;
+namespace MediaBrowser.Common.Api;
 
 /// <summary>
 /// Policies for the API authorization.
