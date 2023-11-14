@@ -310,7 +310,9 @@ namespace Emby.Server.Implementations
             {
                 _creatingInstances.Add(type);
                 Logger.LogDebug("Creating instance of {Type}", type);
-                return ActivatorUtilities.CreateInstance(ServiceProvider, type);
+                return ServiceProvider is null
+                    ? Activator.CreateInstance(type)
+                    : ActivatorUtilities.CreateInstance(ServiceProvider, type);
             }
             catch (Exception ex)
             {
