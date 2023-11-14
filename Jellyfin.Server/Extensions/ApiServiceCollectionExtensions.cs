@@ -279,9 +279,9 @@ namespace Jellyfin.Server.Extensions
                 }
                 else if (NetworkUtils.TryParseToSubnet(allowedProxies[i], out var subnet))
                 {
-                    if (subnet.HasValue)
+                    if (subnet is not null)
                     {
-                        AddIPAddress(config, options, subnet.Value.BaseAddress, subnet.Value.PrefixLength);
+                        AddIPAddress(config, options, subnet.Prefix, subnet.PrefixLength);
                     }
                 }
                 else if (NetworkUtils.TryParseHost(allowedProxies[i], out var addresses, config.EnableIPv4, config.EnableIPv6))

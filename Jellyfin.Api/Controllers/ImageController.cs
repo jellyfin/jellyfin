@@ -80,7 +80,7 @@ public class ImageController : BaseJellyfinApiController
         _appPaths = appPaths;
     }
 
-    private static Stream GetFromBase64Stream(Stream inputStream)
+    private static CryptoStream GetFromBase64Stream(Stream inputStream)
         => new CryptoStream(inputStream, new FromBase64Transform(), CryptoStreamMode.Read);
 
     /// <summary>

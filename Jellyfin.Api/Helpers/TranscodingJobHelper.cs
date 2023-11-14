@@ -405,7 +405,7 @@ public class TranscodingJobHelper : IDisposable
         var name = Path.GetFileNameWithoutExtension(outputFilePath);
 
         var filesToDelete = _fileSystem.GetFilePaths(directory)
-            .Where(f => f.IndexOf(name, StringComparison.OrdinalIgnoreCase) != -1);
+            .Where(f => f.Contains(name, StringComparison.OrdinalIgnoreCase));
 
         List<Exception>? exs = null;
         foreach (var file in filesToDelete)

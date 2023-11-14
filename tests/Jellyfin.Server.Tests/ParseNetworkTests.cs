@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 using IConfigurationManager = MediaBrowser.Common.Configuration.IConfigurationManager;
+using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 
 namespace Jellyfin.Server.Tests
 {
@@ -99,7 +100,7 @@ namespace Jellyfin.Server.Tests
             Assert.Equal(knownNetworks.Length, options.KnownNetworks.Count);
             foreach (var item in knownNetworks)
             {
-                Assert.NotNull(options.KnownNetworks.FirstOrDefault(x => x.Prefix.Equals(item.BaseAddress) && x.PrefixLength == item.PrefixLength));
+                Assert.NotNull(options.KnownNetworks.FirstOrDefault(x => x.Prefix.Equals(item.Prefix) && x.PrefixLength == item.PrefixLength));
             }
         }
 

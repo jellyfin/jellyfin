@@ -59,7 +59,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <returns>System.String.</returns>
         private static string GetFileInputArgument(string path, string inputPrefix)
         {
-            if (path.IndexOf("://", StringComparison.Ordinal) != -1)
+            if (path.Contains("://", StringComparison.Ordinal))
             {
                 return string.Format(CultureInfo.InvariantCulture, "\"{0}\"", path);
             }

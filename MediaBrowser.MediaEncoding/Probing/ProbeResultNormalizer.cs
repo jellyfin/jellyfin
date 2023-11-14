@@ -612,11 +612,11 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 codec = "dvbsub";
             }
-            else if ((codec ?? string.Empty).IndexOf("PGS", StringComparison.OrdinalIgnoreCase) != -1)
+            else if ((codec ?? string.Empty).Contains("PGS", StringComparison.OrdinalIgnoreCase))
             {
                 codec = "PGSSUB";
             }
-            else if ((codec ?? string.Empty).IndexOf("DVD", StringComparison.OrdinalIgnoreCase) != -1)
+            else if ((codec ?? string.Empty).Contains("DVD", StringComparison.OrdinalIgnoreCase))
             {
                 codec = "DVDSUB";
             }
@@ -1339,7 +1339,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         {
             // Only use the comma as a delimiter if there are no slashes or pipes.
             // We want to be careful not to split names that have commas in them
-            var delimiter = !allowCommaDelimiter || _nameDelimiters.Any(i => val.IndexOf(i, StringComparison.Ordinal) != -1) ?
+            var delimiter = !allowCommaDelimiter || _nameDelimiters.Any(i => val.Contains(i, StringComparison.Ordinal)) ?
                 _nameDelimiters :
                 new[] { ',' };
 
