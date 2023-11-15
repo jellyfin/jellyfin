@@ -147,34 +147,8 @@ namespace Emby.Server.Implementations.EntryPoints
         }
 
         private static bool EnableRefreshMessage(BaseItem item)
-        {
-            if (item is not Folder folder)
-            {
-                return false;
-            }
-
-            if (folder.IsRoot)
-            {
-                return false;
-            }
-
-            if (folder is AggregateFolder || folder is UserRootFolder)
-            {
-                return false;
-            }
-
-            if (folder is UserView || folder is Channel)
-            {
-                return false;
-            }
-
-            if (!folder.IsTopParent)
-            {
-                return false;
-            }
-
-            return true;
-        }
+            => item is Folder { IsRoot: false, IsTopParent: true }
+                and not (AggregateFolder or UserRootFolder or UserView or Channel);
 
         /// <summary>
         /// Handles the ItemAdded event of the libraryManager control.
