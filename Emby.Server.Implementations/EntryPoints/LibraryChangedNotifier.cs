@@ -146,98 +146,41 @@ namespace Emby.Server.Implementations.EntryPoints
             => item is Folder { IsRoot: false, IsTopParent: true }
                 and not (AggregateFolder or UserRootFolder or UserView or Channel);
 
-        /// <summary>
-        /// Handles the ItemAdded event of the libraryManager control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
         private void OnLibraryItemAdded(object sender, ItemChangeEventArgs e)
-        {
-            if (!FilterItem(e.Item))
-            {
-                return;
-            }
+            => OnLibraryChange(e.Item, e.Parent, _itemsAdded, _foldersAddedTo);
 
-            lock (_libraryChangedSyncLock)
-            {
-                if (LibraryUpdateTimer is null)
-                {
-                    LibraryUpdateTimer = new Timer(
-                        LibraryUpdateTimerCallback,
-                        null,
-                        TimeSpan.FromSeconds(_configurationManager.Configuration.LibraryUpdateDuration),
-                        Timeout.InfiniteTimeSpan);
-                }
-                else
-                {
-                    LibraryUpdateTimer.Change(TimeSpan.FromSeconds(_configurationManager.Configuration.LibraryUpdateDuration), Timeout.InfiniteTimeSpan);
-                }
-
-                if (e.Item.GetParent() is Folder parent)
-                {
-                    _foldersAddedTo.Add(parent);
-                }
-
-                _itemsAdded.Add(e.Item);
-            }
-        }
-
-        /// <summary>
-        /// Handles the ItemUpdated event of the libraryManager control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
         private void OnLibraryItemUpdated(object sender, ItemChangeEventArgs e)
-        {
-            if (!FilterItem(e.Item))
-            {
-                return;
-            }
+            => OnLibraryChange(e.Item, e.Parent, _itemsUpdated, null);
 
-            lock (_libraryChangedSyncLock)
-            {
-                if (LibraryUpdateTimer is null)
-                {
-                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, TimeSpan.FromSeconds(_configurationManager.Configuration.LibraryUpdateDuration), Timeout.InfiniteTimeSpan);
-                }
-                else
-                {
-                    LibraryUpdateTimer.Change(TimeSpan.FromSeconds(_configurationManager.Configuration.LibraryUpdateDuration), Timeout.InfiniteTimeSpan);
-                }
-
-                _itemsUpdated.Add(e.Item);
-            }
-        }
-
-        /// <summary>
-        /// Handles the ItemRemoved event of the libraryManager control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
         private void OnLibraryItemRemoved(object sender, ItemChangeEventArgs e)
+            => OnLibraryChange(e.Item, e.Parent, _itemsRemoved, _foldersRemovedFrom);
+
+        private void OnLibraryChange(BaseItem item, BaseItem parent, List<BaseItem> itemsList, List<Folder> foldersList)
         {
-            if (!FilterItem(e.Item))
+            if (!FilterItem(item))
             {
                 return;
             }
 
             lock (_libraryChangedSyncLock)
             {
+                var updateDuration = TimeSpan.FromSeconds(_configurationManager.Configuration.LibraryUpdateDuration);
+
                 if (LibraryUpdateTimer is null)
                 {
-                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, TimeSpan.FromSeconds(_configurationManager.Configuration.LibraryUpdateDuration), Timeout.InfiniteTimeSpan);
+                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, updateDuration, Timeout.InfiniteTimeSpan);
                 }
                 else
                 {
-                    LibraryUpdateTimer.Change(TimeSpan.FromSeconds(_configurationManager.Configuration.LibraryUpdateDuration), Timeout.InfiniteTimeSpan);
+                    LibraryUpdateTimer.Change(updateDuration, Timeout.InfiniteTimeSpan);
                 }
 
-                if (e.Parent is Folder parent)
+                if (foldersList is not null && parent is Folder folder)
                 {
-                    _foldersRemovedFrom.Add(parent);
+                    foldersList.Add(folder);
                 }
 
-                _itemsRemoved.Add(e.Item);
+                itemsList.Add(item);
             }
         }
 
