@@ -175,7 +175,7 @@ namespace MediaBrowser.Providers.Manager
             IDynamicImageProvider provider,
             ImageRefreshOptions refreshOptions,
             TypeOptions savedOptions,
-            ICollection<ImageType> downloadedImages,
+            List<ImageType> downloadedImages,
             RefreshResult result,
             CancellationToken cancellationToken)
         {
@@ -263,7 +263,7 @@ namespace MediaBrowser.Providers.Manager
             ImageRefreshOptions refreshOptions,
             TypeOptions savedOptions,
             int backdropLimit,
-            ICollection<ImageType> downloadedImages,
+            List<ImageType> downloadedImages,
             RefreshResult result,
             CancellationToken cancellationToken)
         {

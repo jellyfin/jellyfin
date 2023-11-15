@@ -7,135 +7,128 @@ using Xunit;
 
 namespace Jellyfin.Extensions.Tests.Json.Converters
 {
-    public static class JsonCommaDelimitedArrayTests
+    public class JsonCommaDelimitedArrayTests
     {
-        [Fact]
-        public static void Deserialize_String_Null_Success()
+        private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions()
         {
-            var options = new JsonSerializerOptions();
-            var value = JsonSerializer.Deserialize<GenericBodyArrayModel<string>>(@"{ ""Value"": null }", options);
+            Converters =
+            {
+                new JsonStringEnumConverter()
+            }
+        };
+
+        [Fact]
+        public void Deserialize_String_Null_Success()
+        {
+            var value = JsonSerializer.Deserialize<GenericBodyArrayModel<string>>(@"{ ""Value"": null }", _jsonOptions);
             Assert.Null(value?.Value);
         }
 
         [Fact]
-        public static void Deserialize_Empty_Success()
+        public void Deserialize_Empty_Success()
         {
             var desiredValue = new GenericBodyArrayModel<string>
             {
                 Value = Array.Empty<string>()
             };
 
-            var options = new JsonSerializerOptions();
-            var value = JsonSerializer.Deserialize<GenericBodyArrayModel<string>>(@"{ ""Value"": """" }", options);
+            var value = JsonSerializer.Deserialize<GenericBodyArrayModel<string>>(@"{ ""Value"": """" }", _jsonOptions);
             Assert.Equal(desiredValue.Value, value?.Value);
         }
 
         [Fact]
-        public static void Deserialize_String_Valid_Success()
+        public void Deserialize_String_Valid_Success()
         {
             var desiredValue = new GenericBodyArrayModel<string>
             {
                 Value = new[] { "a", "b", "c" }
             };
 
-            var options = new JsonSerializerOptions();
-            var value = JsonSerializer.Deserialize<GenericBodyArrayModel<string>>(@"{ ""Value"": ""a,b,c"" }", options);
+            var value = JsonSerializer.Deserialize<GenericBodyArrayModel<string>>(@"{ ""Value"": ""a,b,c"" }", _jsonOptions);
             Assert.Equal(desiredValue.Value, value?.Value);
         }
 
         [Fact]
-        public static void Deserialize_String_Space_Valid_Success()
+        public void Deserialize_String_Space_Valid_Success()
         {
             var desiredValue = new GenericBodyArrayModel<string>
             {
                 Value = new[] { "a", "b", "c" }
             };
 
-            var options = new JsonSerializerOptions();
-            var value = JsonSerializer.Deserialize<GenericBodyArrayModel<string>>(@"{ ""Value"": ""a, b, c"" }", options);
+            var value = JsonSerializer.Deserialize<GenericBodyArrayModel<string>>(@"{ ""Value"": ""a, b, c"" }", _jsonOptions);
             Assert.Equal(desiredValue.Value, value?.Value);
         }
 
         [Fact]
-        public static void Deserialize_GenericCommandType_Valid_Success()
+        public void Deserialize_GenericCommandType_Valid_Success()
         {
             var desiredValue = new GenericBodyArrayModel<GeneralCommandType>
             {
                 Value = new[] { GeneralCommandType.MoveUp, GeneralCommandType.MoveDown }
             };
 
-            var options = new JsonSerializerOptions();
-            options.Converters.Add(new JsonStringEnumConverter());
-            var value = JsonSerializer.Deserialize<GenericBodyArrayModel<GeneralCommandType>>(@"{ ""Value"": ""MoveUp,MoveDown"" }", options);
+            var value = JsonSerializer.Deserialize<GenericBodyArrayModel<GeneralCommandType>>(@"{ ""Value"": ""MoveUp,MoveDown"" }", _jsonOptions);
             Assert.Equal(desiredValue.Value, value?.Value);
         }
 
         [Fact]
-        public static void Deserialize_GenericCommandType_EmptyEntry_Success()
+        public void Deserialize_GenericCommandType_EmptyEntry_Success()
         {
             var desiredValue = new GenericBodyArrayModel<GeneralCommandType>
             {
                 Value = new[] { GeneralCommandType.MoveUp, GeneralCommandType.MoveDown }
             };
 
-            var options = new JsonSerializerOptions();
-            options.Converters.Add(new JsonStringEnumConverter());
-            var value = JsonSerializer.Deserialize<GenericBodyArrayModel<GeneralCommandType>>(@"{ ""Value"": ""MoveUp,,MoveDown"" }", options);
+            var value = JsonSerializer.Deserialize<GenericBodyArrayModel<GeneralCommandType>>(@"{ ""Value"": ""MoveUp,,MoveDown"" }", _jsonOptions);
             Assert.Equal(desiredValue.Value, value?.Value);
         }
 
         [Fact]
-        public static void Deserialize_GenericCommandType_Invalid_Success()
+        public void Deserialize_GenericCommandType_Invalid_Success()
         {
             var desiredValue = new GenericBodyArrayModel<GeneralCommandType>
             {
                 Value = new[] { GeneralCommandType.MoveUp, GeneralCommandType.MoveDown }
             };
 
-            var options = new JsonSerializerOptions();
-            options.Converters.Add(new JsonStringEnumConverter());
-            var value = JsonSerializer.Deserialize<GenericBodyArrayModel<GeneralCommandType>>(@"{ ""Value"": ""MoveUp,TotallyNotAVallidCommand,MoveDown"" }", options);
+            var value = JsonSerializer.Deserialize<GenericBodyArrayModel<GeneralCommandType>>(@"{ ""Value"": ""MoveUp,TotallyNotAVallidCommand,MoveDown"" }", _jsonOptions);
             Assert.Equal(desiredValue.Value, value?.Value);
         }
 
         [Fact]
-        public static void Deserialize_GenericCommandType_Space_Valid_Success()
+        public void Deserialize_GenericCommandType_Space_Valid_Success()
         {
             var desiredValue = new GenericBodyArrayModel<GeneralCommandType>
             {
                 Value = new[] { GeneralCommandType.MoveUp, GeneralCommandType.MoveDown }
             };
 
-            var options = new JsonSerializerOptions();
-            options.Converters.Add(new JsonStringEnumConverter());
-            var value = JsonSerializer.Deserialize<GenericBodyArrayModel<GeneralCommandType>>(@"{ ""Value"": ""MoveUp, MoveDown"" }", options);
+            var value = JsonSerializer.Deserialize<GenericBodyArrayModel<GeneralCommandType>>(@"{ ""Value"": ""MoveUp, MoveDown"" }", _jsonOptions);
             Assert.Equal(desiredValue.Value, value?.Value);
         }
 
         [Fact]
-        public static void Deserialize_String_Array_Valid_Success()
+        public void Deserialize_String_Array_Valid_Success()
         {
             var desiredValue = new GenericBodyArrayModel<string>
             {
                 Value = new[] { "a", "b", "c" }
             };
 
-            var options = new JsonSerializerOptions();
-            var value = JsonSerializer.Deserialize<GenericBodyArrayModel<string>>(@"{ ""Value"": [""a"",""b"",""c""] }", options);
+            var value = JsonSerializer.Deserialize<GenericBodyArrayModel<string>>(@"{ ""Value"": [""a"",""b"",""c""] }", _jsonOptions);
             Assert.Equal(desiredValue.Value, value?.Value);
         }
 
         [Fact]
-        public static void Deserialize_GenericCommandType_Array_Valid_Success()
+        public void Deserialize_GenericCommandType_Array_Valid_Success()
         {
             var desiredValue = new GenericBodyArrayModel<GeneralCommandType>
             {
                 Value = new[] { GeneralCommandType.MoveUp, GeneralCommandType.MoveDown }
             };
 
-            var options = new JsonSerializerOptions();
-            options.Converters.Add(new JsonStringEnumConverter());
-            var value = JsonSerializer.Deserialize<GenericBodyArrayModel<GeneralCommandType>>(@"{ ""Value"": [""MoveUp"", ""MoveDown""] }", options);
+            var value = JsonSerializer.Deserialize<GenericBodyArrayModel<GeneralCommandType>>(@"{ ""Value"": [""MoveUp"", ""MoveDown""] }", _jsonOptions);
             Assert.Equal(desiredValue.Value, value?.Value);
         }
     }

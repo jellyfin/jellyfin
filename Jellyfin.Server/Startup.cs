@@ -35,7 +35,7 @@ namespace Jellyfin.Server
     /// </summary>
     public class Startup
     {
-        private readonly IServerApplicationHost _serverApplicationHost;
+        private readonly CoreAppHost _serverApplicationHost;
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>

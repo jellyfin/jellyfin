@@ -73,7 +73,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             return Enumerable.Empty<RemoteImageInfo>();
         }
 
-        private IEnumerable<RemoteImageInfo> GetImages(AudioDbAlbumProvider.Album item)
+        private List<RemoteImageInfo> GetImages(AudioDbAlbumProvider.Album item)
         {
             var list = new List<RemoteImageInfo>();
 

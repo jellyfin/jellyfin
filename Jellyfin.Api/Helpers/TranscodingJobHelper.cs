@@ -280,6 +280,7 @@ public class TranscodingJobHelper : IDisposable
 
             if (job.CancellationTokenSource?.IsCancellationRequested == false)
             {
+#pragma warning disable CA1849 // Can't await in lock block
                 job.CancellationTokenSource.Cancel();
             }
         }
@@ -291,7 +292,6 @@ public class TranscodingJobHelper : IDisposable
 
         lock (job.ProcessLock!)
         {
-#pragma warning disable CA1849 // Can't await in lock block
             job.TranscodingThrottler?.Stop().GetAwaiter().GetResult();
 
             var process = job.Process;
@@ -405,7 +405,7 @@ public class TranscodingJobHelper : IDisposable
         var name = Path.GetFileNameWithoutExtension(outputFilePath);
 
         var filesToDelete = _fileSystem.GetFilePaths(directory)
-            .Where(f => f.IndexOf(name, StringComparison.OrdinalIgnoreCase) != -1);
+            .Where(f => f.Contains(name, StringComparison.OrdinalIgnoreCase));
 
         List<Exception>? exs = null;
         foreach (var file in filesToDelete)

@@ -137,7 +137,7 @@ A second option is to build the project and then run the resulting executable fi
 
 ```bash
 dotnet build                       # Build the project
-cd Jellyfin.Server/bin/Debug/net7.0 # Change into the build output directory
+cd Jellyfin.Server/bin/Debug/net8.0 # Change into the build output directory
 ```
 
 2. Execute the build output. On Linux, Mac, etc. use `./jellyfin` and on Windows use `jellyfin.exe`.

@@ -109,7 +109,7 @@ public class UserControllerTests
             v.ErrorMessage.Contains("required", StringComparison.CurrentCultureIgnoreCase));
     }
 
-    private IList<ValidationResult> Validate(object model)
+    private List<ValidationResult> Validate(object model)
     {
         var result = new List<ValidationResult>();
         var context = new ValidationContext(model, null, null);

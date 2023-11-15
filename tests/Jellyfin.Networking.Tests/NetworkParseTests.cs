@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
+using IConfigurationManager = MediaBrowser.Common.Configuration.IConfigurationManager;
 
 namespace Jellyfin.Networking.Tests
 {

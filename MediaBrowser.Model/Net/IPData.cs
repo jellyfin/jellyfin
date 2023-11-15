@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Sockets;
-using Microsoft.AspNetCore.HttpOverrides;
+using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 
 namespace MediaBrowser.Model.Net;
 

@@ -73,7 +73,7 @@ dotnet publish --configuration Release --self-contained --runtime %{dotnet_runti
 %install
 # Jellyfin files
 %{__mkdir} -p %{buildroot}%{_libdir}/jellyfin %{buildroot}%{_bindir}
-%{__cp} -r Jellyfin.Server/bin/Release/net7.0/%{dotnet_runtime}/publish/* %{buildroot}%{_libdir}/jellyfin
+%{__cp} -r Jellyfin.Server/bin/Release/net8.0/%{dotnet_runtime}/publish/* %{buildroot}%{_libdir}/jellyfin
 %{__install} -D %{SOURCE10} %{buildroot}%{_bindir}/jellyfin
 sed -i -e 's|/usr/lib64|%{_libdir}|g' %{buildroot}%{_bindir}/jellyfin
 
