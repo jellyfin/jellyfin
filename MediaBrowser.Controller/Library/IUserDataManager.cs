@@ -42,7 +42,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <param name="userDataDto">The reason for updating the user data.</param>
         /// <param name="reason">The reason.</param>
-        void SaveUserData(User user, BaseItem item, UserDataDto userDataDto, UserDataSaveReason reason);
+        void SaveUserData(User user, BaseItem item, UpdateUserItemDataDto userDataDto, UserDataSaveReason reason);
 
         UserItemData GetUserData(User user, BaseItem item);
 

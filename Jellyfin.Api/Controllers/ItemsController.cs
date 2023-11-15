@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Threading;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
@@ -928,7 +927,7 @@ public class ItemsController : BaseJellyfinApiController
     public ActionResult<UserItemDataDto> UpdateItemUserData(
         [FromRoute, Required] Guid userId,
         [FromRoute, Required] Guid itemId,
-        [FromBody, Required] UserDataDto userDataDto)
+        [FromBody, Required] UpdateUserItemDataDto userDataDto)
     {
         if (!RequestHelpers.AssertCanUpdateUser(_userManager, User, userId, true))
         {

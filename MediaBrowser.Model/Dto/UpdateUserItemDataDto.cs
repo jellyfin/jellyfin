@@ -1,11 +1,9 @@
 namespace MediaBrowser.Model.Dto
 {
     /// <summary>
-    /// Class UserDataDto extends UserItemDataDto to allow nullable members.
-    /// This change allow us to implement the new /Users/{UserId}/Items/{ItemId}/UserData endpoint.
-    /// This object allows the requestor to update all or specific user data fields without altering the non-nullable members state.
+    /// This is used by the api to get information about a item user data.
     /// </summary>
-    public class UserDataDto : UserItemDataDto
+    public class UpdateUserItemDataDto : UserItemDataDto
     {
         /// <summary>
         /// Gets or sets the playback position ticks.

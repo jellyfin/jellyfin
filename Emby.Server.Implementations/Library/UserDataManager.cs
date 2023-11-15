@@ -6,7 +6,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Reflection;
 using System.Threading;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Configuration;
@@ -82,7 +81,7 @@ namespace Emby.Server.Implementations.Library
             });
         }
 
-        public void SaveUserData(User user, BaseItem item, UserDataDto userDataDto, UserDataSaveReason reason)
+        public void SaveUserData(User user, BaseItem item, UpdateUserItemDataDto userDataDto, UserDataSaveReason reason)
         {
             ArgumentNullException.ThrowIfNull(user);
             ArgumentNullException.ThrowIfNull(item);
