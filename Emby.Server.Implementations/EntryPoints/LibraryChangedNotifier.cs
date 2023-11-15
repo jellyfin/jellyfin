@@ -296,7 +296,13 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <param name="foldersAddedTo">The folders added to.</param>
         /// <param name="foldersRemovedFrom">The folders removed from.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        private async Task SendChangeNotifications(List<BaseItem> itemsAdded, List<BaseItem> itemsUpdated, List<BaseItem> itemsRemoved, List<Folder> foldersAddedTo, List<Folder> foldersRemovedFrom, CancellationToken cancellationToken)
+        private async Task SendChangeNotifications(
+            List<BaseItem> itemsAdded,
+            List<BaseItem> itemsUpdated,
+            List<BaseItem> itemsRemoved,
+            List<Folder> foldersAddedTo,
+            List<Folder> foldersRemovedFrom,
+            CancellationToken cancellationToken)
         {
             var userIds = _sessionManager.Sessions
                 .Select(i => i.UserId)
@@ -325,7 +331,12 @@ namespace Emby.Server.Implementations.EntryPoints
 
                 try
                 {
-                    await _sessionManager.SendMessageToUserSessions(new List<Guid> { userId }, SessionMessageType.LibraryChanged, info, cancellationToken).ConfigureAwait(false);
+                    await _sessionManager.SendMessageToUserSessions(
+                            new List<Guid> { userId },
+                            SessionMessageType.LibraryChanged,
+                            info,
+                            cancellationToken)
+                        .ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -344,7 +355,13 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <param name="foldersRemovedFrom">The folders removed from.</param>
         /// <param name="userId">The user id.</param>
         /// <returns>LibraryUpdateInfo.</returns>
-        private LibraryUpdateInfo GetLibraryUpdateInfo(List<BaseItem> itemsAdded, List<BaseItem> itemsUpdated, List<BaseItem> itemsRemoved, List<Folder> foldersAddedTo, List<Folder> foldersRemovedFrom, Guid userId)
+        private LibraryUpdateInfo GetLibraryUpdateInfo(
+            List<BaseItem> itemsAdded,
+            List<BaseItem> itemsUpdated,
+            List<BaseItem> itemsRemoved,
+            List<Folder> foldersAddedTo,
+            List<Folder> foldersRemovedFrom,
+            Guid userId)
         {
             var user = _userManager.GetUserById(userId);
 
@@ -352,20 +369,33 @@ namespace Emby.Server.Implementations.EntryPoints
             newAndRemoved.AddRange(foldersAddedTo);
             newAndRemoved.AddRange(foldersRemovedFrom);
 
-            var allUserRootChildren = _libraryManager.GetUserRootFolder().GetChildren(user, true).OfType<Folder>().ToList();
+            var allUserRootChildren = _libraryManager.GetUserRootFolder()
+                .GetChildren(user, true)
+                .OfType<Folder>()
+                .ToList();
 
             return new LibraryUpdateInfo
             {
-                ItemsAdded = itemsAdded.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user)).Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture)).Distinct().ToArray(),
-
-                ItemsUpdated = itemsUpdated.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user)).Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture)).Distinct().ToArray(),
-
-                ItemsRemoved = itemsRemoved.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, true)).Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture)).Distinct().ToArray(),
-
-                FoldersAddedTo = foldersAddedTo.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user)).Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture)).Distinct().ToArray(),
-
-                FoldersRemovedFrom = foldersRemovedFrom.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user)).Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture)).Distinct().ToArray(),
-
+                ItemsAdded = itemsAdded.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user))
+                    .Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture))
+                    .Distinct()
+                    .ToArray(),
+                ItemsUpdated = itemsUpdated.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user))
+                    .Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture))
+                    .Distinct()
+                    .ToArray(),
+                ItemsRemoved = itemsRemoved.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, true))
+                    .Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture))
+                    .Distinct()
+                    .ToArray(),
+                FoldersAddedTo = foldersAddedTo.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user))
+                    .Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture))
+                    .Distinct()
+                    .ToArray(),
+                FoldersRemovedFrom = foldersRemovedFrom.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user))
+                    .Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture))
+                    .Distinct()
+                    .ToArray(),
                 CollectionFolders = GetTopParentIds(newAndRemoved, allUserRootChildren).ToArray()
             };
         }
