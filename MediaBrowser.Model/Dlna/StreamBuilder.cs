@@ -868,7 +868,7 @@ namespace MediaBrowser.Model.Dlna
                     playlistItem.SetOption(audioStream.Codec, "profile", audioStream.Profile.ToLowerInvariant());
                 }
 
-                if (audioStream.Level.HasValue)
+                if (audioStream.Level.HasValue && audioStream.Level.Value != 0)
                 {
                     playlistItem.SetOption(audioStream.Codec, "level", audioStream.Level.Value.ToString(CultureInfo.InvariantCulture));
                 }
