@@ -49,6 +49,7 @@ public class ImageController : BaseJellyfinApiController
     private readonly ILogger<ImageController> _logger;
     private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly IApplicationPaths _appPaths;
+    private readonly UploadHelper _uploadHelper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageController"/> class.
@@ -69,7 +70,8 @@ public class ImageController : BaseJellyfinApiController
         IFileSystem fileSystem,
         ILogger<ImageController> logger,
         IServerConfigurationManager serverConfigurationManager,
-        IApplicationPaths appPaths)
+        IApplicationPaths appPaths,
+        UploadHelper uploadHelper)
     {
         _userManager = userManager;
         _libraryManager = libraryManager;
@@ -79,6 +81,7 @@ public class ImageController : BaseJellyfinApiController
         _logger = logger;
         _serverConfigurationManager = serverConfigurationManager;
         _appPaths = appPaths;
+        _uploadHelper = uploadHelper;
     }
 
     private static CryptoStream GetFromBase64Stream(Stream inputStream)
@@ -1794,26 +1797,22 @@ public class ImageController : BaseJellyfinApiController
     [AcceptsImageFile]
     public async Task<ActionResult> UploadCustomSplashscreen()
     {
-        if (!TryGetImageExtensionFromContentType(Request.ContentType, out var extension))
-        {
-            return BadRequest("Incorrect ContentType.");
-        }
-
         var stream = GetFromBase64Stream(Request.Body);
         await using (stream.ConfigureAwait(false))
         {
-            var filePath = Path.Combine(_appPaths.DataPath, "splashscreen-upload" + extension);
-            var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
-            brandingOptions.SplashscreenLocation = filePath;
-            _serverConfigurationManager.SaveConfiguration("branding", brandingOptions);
-
-            var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
-            await using (fs.ConfigureAwait(false))
+            var mimeInfo = _uploadHelper.GetMimeInfo(stream, Request.ContentType);
+            if (mimeInfo is not null)
             {
-                await stream.CopyToAsync(fs, CancellationToken.None).ConfigureAwait(false);
+                var filePathWithExtension = Path.Combine(_appPaths.DataPath, "splashscreen-upload" + mimeInfo.Definition.File.Extensions.First());
+                await UploadHelper.WriteStreamToFile(stream, filePathWithExtension, CancellationToken.None);
+                var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
+                brandingOptions.SplashscreenLocation = filePathWithExtension;
+                _serverConfigurationManager.SaveConfiguration("branding", brandingOptions);
+
+                return NoContent();
             }
 
-            return NoContent();
+            return BadRequest("Incorrect ContentType.");
         }
     }
 
