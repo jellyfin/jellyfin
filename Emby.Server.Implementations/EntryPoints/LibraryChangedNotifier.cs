@@ -1,7 +1,5 @@
 #nullable disable
 
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -25,6 +23,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints;
 
+/// <summary>
+/// A <see cref="IServerEntryPoint"/> that notifies users when libraries are updated.
+/// </summary>
 public sealed class LibraryChangedNotifier : IServerEntryPoint
 {
     private readonly ILibraryManager _libraryManager;
@@ -42,6 +43,15 @@ public sealed class LibraryChangedNotifier : IServerEntryPoint
     private readonly List<BaseItem> _itemsUpdated = new();
     private readonly ConcurrentDictionary<Guid, DateTime> _lastProgressMessageTimes = new();
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="LibraryChangedNotifier"/> class.
+    /// </summary>
+    /// <param name="libraryManager">The <see cref="ILibraryManager"/>.</param>
+    /// <param name="configurationManager">The <see cref="IServerConfigurationManager"/>.</param>
+    /// <param name="sessionManager">The <see cref="ISessionManager"/>.</param>
+    /// <param name="userManager">The <see cref="IUserManager"/>.</param>
+    /// <param name="logger">The <see cref="ILogger"/>.</param>
+    /// <param name="providerManager">The <see cref="IProviderManager"/>.</param>
     public LibraryChangedNotifier(
         ILibraryManager libraryManager,
         IServerConfigurationManager configurationManager,
@@ -58,12 +68,9 @@ public sealed class LibraryChangedNotifier : IServerEntryPoint
         _providerManager = providerManager;
     }
 
-    /// <summary>
-    /// Gets or sets the library update timer.
-    /// </summary>
-    /// <value>The library update timer.</value>
     private Timer LibraryUpdateTimer { get; set; }
 
+    /// <inheritdoc />
     public Task RunAsync()
     {
         _libraryManager.ItemAdded += OnLibraryItemAdded;
@@ -184,10 +191,6 @@ public sealed class LibraryChangedNotifier : IServerEntryPoint
         }
     }
 
-    /// <summary>
-    /// Libraries the update timer callback.
-    /// </summary>
-    /// <param name="state">The state.</param>
     private async void LibraryUpdateTimerCallback(object state)
     {
         List<Folder> foldersAddedTo;
@@ -230,15 +233,6 @@ public sealed class LibraryChangedNotifier : IServerEntryPoint
         await SendChangeNotifications(itemsAdded, itemsUpdated, itemsRemoved, foldersAddedTo, foldersRemovedFrom, CancellationToken.None).ConfigureAwait(false);
     }
 
-    /// <summary>
-    /// Sends the change notifications.
-    /// </summary>
-    /// <param name="itemsAdded">The items added.</param>
-    /// <param name="itemsUpdated">The items updated.</param>
-    /// <param name="itemsRemoved">The items removed.</param>
-    /// <param name="foldersAddedTo">The folders added to.</param>
-    /// <param name="foldersRemovedFrom">The folders removed from.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
     private async Task SendChangeNotifications(
         List<BaseItem> itemsAdded,
         List<BaseItem> itemsUpdated,
@@ -288,16 +282,6 @@ public sealed class LibraryChangedNotifier : IServerEntryPoint
         }
     }
 
-    /// <summary>
-    /// Gets the library update info.
-    /// </summary>
-    /// <param name="itemsAdded">The items added.</param>
-    /// <param name="itemsUpdated">The items updated.</param>
-    /// <param name="itemsRemoved">The items removed.</param>
-    /// <param name="foldersAddedTo">The folders added to.</param>
-    /// <param name="foldersRemovedFrom">The folders removed from.</param>
-    /// <param name="userId">The user id.</param>
-    /// <returns>LibraryUpdateInfo.</returns>
     private LibraryUpdateInfo GetLibraryUpdateInfo(
         List<BaseItem> itemsAdded,
         List<BaseItem> itemsUpdated,
@@ -379,14 +363,6 @@ public sealed class LibraryChangedNotifier : IServerEntryPoint
         return list.Distinct(StringComparer.Ordinal);
     }
 
-    /// <summary>
-    /// Translates the physical item to user library.
-    /// </summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="item">The item.</param>
-    /// <param name="user">The user.</param>
-    /// <param name="includeIfNotFound">if set to <c>true</c> [include if not found].</param>
-    /// <returns>IEnumerable{``0}.</returns>
     private IEnumerable<T> TranslatePhysicalItemToUserLibrary<T>(T item, User user, bool includeIfNotFound = false)
         where T : BaseItem
     {
