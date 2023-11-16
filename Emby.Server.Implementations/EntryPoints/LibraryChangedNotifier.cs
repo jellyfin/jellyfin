@@ -25,7 +25,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
-    public class LibraryChangedNotifier : IServerEntryPoint
+    public sealed class LibraryChangedNotifier : IServerEntryPoint
     {
         private readonly ILibraryManager _libraryManager;
         private readonly IServerConfigurationManager _configurationManager;
@@ -405,36 +405,21 @@ namespace Emby.Server.Implementations.EntryPoints
             return Array.Empty<T>();
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
+        /// <inheritdoc />
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+            _libraryManager.ItemAdded -= OnLibraryItemAdded;
+            _libraryManager.ItemUpdated -= OnLibraryItemUpdated;
+            _libraryManager.ItemRemoved -= OnLibraryItemRemoved;
 
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
-        {
-            if (dispose)
+            _providerManager.RefreshCompleted -= OnProviderRefreshCompleted;
+            _providerManager.RefreshStarted -= OnProviderRefreshStarted;
+            _providerManager.RefreshProgress -= OnProviderRefreshProgress;
+
+            if (LibraryUpdateTimer is not null)
             {
-                if (LibraryUpdateTimer is not null)
-                {
-                    LibraryUpdateTimer.Dispose();
-                    LibraryUpdateTimer = null;
-                }
-
-                _libraryManager.ItemAdded -= OnLibraryItemAdded;
-                _libraryManager.ItemUpdated -= OnLibraryItemUpdated;
-                _libraryManager.ItemRemoved -= OnLibraryItemRemoved;
-
-                _providerManager.RefreshCompleted -= OnProviderRefreshCompleted;
-                _providerManager.RefreshStarted -= OnProviderRefreshStarted;
-                _providerManager.RefreshProgress -= OnProviderRefreshProgress;
+                LibraryUpdateTimer.Dispose();
+                LibraryUpdateTimer = null;
             }
         }
     }
