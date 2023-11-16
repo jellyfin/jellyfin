@@ -1,5 +1,3 @@
-#nullable disable
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -43,6 +41,8 @@ public sealed class LibraryChangedNotifier : IServerEntryPoint
     private readonly List<BaseItem> _itemsUpdated = new();
     private readonly ConcurrentDictionary<Guid, DateTime> _lastProgressMessageTimes = new();
 
+    private Timer? _libraryUpdateTimer;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="LibraryChangedNotifier"/> class.
     /// </summary>
@@ -68,8 +68,6 @@ public sealed class LibraryChangedNotifier : IServerEntryPoint
         _providerManager = providerManager;
     }
 
-    private Timer LibraryUpdateTimer { get; set; }
-
     /// <inheritdoc />
     public Task RunAsync()
     {
@@ -84,7 +82,7 @@ public sealed class LibraryChangedNotifier : IServerEntryPoint
         return Task.CompletedTask;
     }
 
-    private void OnProviderRefreshProgress(object sender, GenericEventArgs<Tuple<BaseItem, double>> e)
+    private void OnProviderRefreshProgress(object? sender, GenericEventArgs<Tuple<BaseItem, double>> e)
     {
         var item = e.Argument.Item1;
 
@@ -137,12 +135,12 @@ public sealed class LibraryChangedNotifier : IServerEntryPoint
         }
     }
 
-    private void OnProviderRefreshStarted(object sender, GenericEventArgs<BaseItem> e)
+    private void OnProviderRefreshStarted(object? sender, GenericEventArgs<BaseItem> e)
     {
         OnProviderRefreshProgress(sender, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(e.Argument, 0)));
     }
 
-    private void OnProviderRefreshCompleted(object sender, GenericEventArgs<BaseItem> e)
+    private void OnProviderRefreshCompleted(object? sender, GenericEventArgs<BaseItem> e)
     {
         OnProviderRefreshProgress(sender, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(e.Argument, 100)));
 
@@ -153,16 +151,16 @@ public sealed class LibraryChangedNotifier : IServerEntryPoint
         => item is Folder { IsRoot: false, IsTopParent: true }
             and not (AggregateFolder or UserRootFolder or UserView or Channel);
 
-    private void OnLibraryItemAdded(object sender, ItemChangeEventArgs e)
+    private void OnLibraryItemAdded(object? sender, ItemChangeEventArgs e)
         => OnLibraryChange(e.Item, e.Parent, _itemsAdded, _foldersAddedTo);
 
-    private void OnLibraryItemUpdated(object sender, ItemChangeEventArgs e)
+    private void OnLibraryItemUpdated(object? sender, ItemChangeEventArgs e)
         => OnLibraryChange(e.Item, e.Parent, _itemsUpdated, null);
 
-    private void OnLibraryItemRemoved(object sender, ItemChangeEventArgs e)
+    private void OnLibraryItemRemoved(object? sender, ItemChangeEventArgs e)
         => OnLibraryChange(e.Item, e.Parent, _itemsRemoved, _foldersRemovedFrom);
 
-    private void OnLibraryChange(BaseItem item, BaseItem parent, List<BaseItem> itemsList, List<Folder> foldersList)
+    private void OnLibraryChange(BaseItem item, BaseItem parent, List<BaseItem> itemsList, List<Folder>? foldersList)
     {
         if (!FilterItem(item))
         {
@@ -173,13 +171,13 @@ public sealed class LibraryChangedNotifier : IServerEntryPoint
         {
             var updateDuration = TimeSpan.FromSeconds(_configurationManager.Configuration.LibraryUpdateDuration);
 
-            if (LibraryUpdateTimer is null)
+            if (_libraryUpdateTimer is null)
             {
-                LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, updateDuration, Timeout.InfiniteTimeSpan);
+                _libraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, updateDuration, Timeout.InfiniteTimeSpan);
             }
             else
             {
-                LibraryUpdateTimer.Change(updateDuration, Timeout.InfiniteTimeSpan);
+                _libraryUpdateTimer.Change(updateDuration, Timeout.InfiniteTimeSpan);
             }
 
             if (foldersList is not null && parent is Folder folder)
@@ -191,7 +189,7 @@ public sealed class LibraryChangedNotifier : IServerEntryPoint
         }
     }
 
-    private async void LibraryUpdateTimerCallback(object state)
+    private async void LibraryUpdateTimerCallback(object? state)
     {
         List<Folder> foldersAddedTo;
         List<Folder> foldersRemovedFrom;
@@ -217,10 +215,10 @@ public sealed class LibraryChangedNotifier : IServerEntryPoint
             itemsAdded = _itemsAdded.ToList();
             itemsRemoved = _itemsRemoved.ToList();
 
-            if (LibraryUpdateTimer is not null)
+            if (_libraryUpdateTimer is not null)
             {
-                LibraryUpdateTimer.Dispose();
-                LibraryUpdateTimer = null;
+                _libraryUpdateTimer.Dispose();
+                _libraryUpdateTimer = null;
             }
 
             _itemsAdded.Clear();
@@ -291,6 +289,7 @@ public sealed class LibraryChangedNotifier : IServerEntryPoint
         Guid userId)
     {
         var user = _userManager.GetUserById(userId);
+        ArgumentNullException.ThrowIfNull(user);
 
         var newAndRemoved = new List<BaseItem>();
         newAndRemoved.AddRange(foldersAddedTo);
@@ -369,7 +368,7 @@ public sealed class LibraryChangedNotifier : IServerEntryPoint
         // If the physical root changed, return the user root
         if (item is AggregateFolder)
         {
-            return new[] { _libraryManager.GetUserRootFolder() as T };
+            return _libraryManager.GetUserRootFolder() is T t ? new[] { t } : Array.Empty<T>();
         }
 
         // Return it only if it's in the user's library
@@ -392,10 +391,10 @@ public sealed class LibraryChangedNotifier : IServerEntryPoint
         _providerManager.RefreshStarted -= OnProviderRefreshStarted;
         _providerManager.RefreshProgress -= OnProviderRefreshProgress;
 
-        if (LibraryUpdateTimer is not null)
+        if (_libraryUpdateTimer is not null)
         {
-            LibraryUpdateTimer.Dispose();
-            LibraryUpdateTimer = null;
+            _libraryUpdateTimer.Dispose();
+            _libraryUpdateTimer = null;
         }
     }
 }
