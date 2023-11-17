@@ -40,7 +40,7 @@ namespace Jellyfin.Server
         /// </summary>
         public const string LoggingConfigFileSystem = "logging.json";
 
-        private static readonly ILoggerFactory _loggerFactory = new SerilogLoggerFactory();
+        private static readonly SerilogLoggerFactory _loggerFactory = new SerilogLoggerFactory();
         private static long _startTimestamp;
         private static ILogger _logger = NullLogger.Instance;
         private static bool _restartOnShutdown;

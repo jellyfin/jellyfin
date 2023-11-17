@@ -208,10 +208,10 @@ jobs:
 
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET 7.0 sdk'
+    displayName: 'Use .NET 8.0 sdk'
     inputs:
       packageType: 'sdk'
-      version: '7.0.x'
+      version: '8.0.x'
 
   - task: DotNetCoreCLI@2
     displayName: 'Build Stable Nuget packages'

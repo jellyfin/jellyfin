@@ -15,6 +15,8 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
+using IConfigurationManager = MediaBrowser.Common.Configuration.IConfigurationManager;
+using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 
 namespace Jellyfin.Networking.Manager
 {
@@ -428,7 +430,7 @@ namespace Jellyfin.Networking.Manager
             {
                 // Parse config values into filter collection
                 var remoteIPFilter = config.RemoteIPFilter;
-                if (remoteIPFilter.Any() && !string.IsNullOrWhiteSpace(remoteIPFilter.First()))
+                if (remoteIPFilter.Length != 0 && !string.IsNullOrWhiteSpace(remoteIPFilter[0]))
                 {
                     // Parse all IPs with netmask to a subnet
                     var remoteAddressFilter = new List<IPNetwork>();

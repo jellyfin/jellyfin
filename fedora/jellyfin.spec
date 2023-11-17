@@ -26,7 +26,7 @@ BuildRequires:  systemd
 BuildRequires:  libcurl-devel, fontconfig-devel, freetype-devel, openssl-devel, glibc-devel, libicu-devel
 # Requirements not packaged in RHEL 7 main repos, added via Makefile
 # https://packages.microsoft.com/rhel/7/prod/
-BuildRequires:  dotnet-runtime-7.0, dotnet-sdk-7.0
+BuildRequires:  dotnet-runtime-8.0, dotnet-sdk-8.0
 Requires: %{name}-server = %{version}-%{release}, %{name}-web = %{version}-%{release}
 
 # Temporary (hopefully?) fix for https://github.com/jellyfin/jellyfin/issues/7471
@@ -73,7 +73,7 @@ dotnet publish --configuration Release --self-contained --runtime %{dotnet_runti
 %install
 # Jellyfin files
 %{__mkdir} -p %{buildroot}%{_libdir}/jellyfin %{buildroot}%{_bindir}
-%{__cp} -r Jellyfin.Server/bin/Release/net7.0/%{dotnet_runtime}/publish/* %{buildroot}%{_libdir}/jellyfin
+%{__cp} -r Jellyfin.Server/bin/Release/net8.0/%{dotnet_runtime}/publish/* %{buildroot}%{_libdir}/jellyfin
 %{__install} -D %{SOURCE10} %{buildroot}%{_bindir}/jellyfin
 sed -i -e 's|/usr/lib64|%{_libdir}|g' %{buildroot}%{_bindir}/jellyfin
 

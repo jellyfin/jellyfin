@@ -21,7 +21,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@3447fd6a9f9e57506b15f895c5b76d3b197dc7c2 # v3.2.0
         with:
-          dotnet-version: '7.0.x'
+          dotnet-version: '8.0.x'
       - name: Generate openapi.json
         run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
       - name: Upload openapi.json
@@ -30,7 +30,7 @@ jobs:
           name: openapi-head
           retention-days: 14
           if-no-files-found: error
-          path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net7.0/openapi.json
+          path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net8.0/openapi.json
 
   openapi-base:
     name: OpenAPI - BASE
@@ -55,7 +55,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@3447fd6a9f9e57506b15f895c5b76d3b197dc7c2 # v3.2.0
         with:
-          dotnet-version: '7.0.x'
+          dotnet-version: '8.0.x'
       - name: Generate openapi.json
         run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
       - name: Upload openapi.json
@@ -64,7 +64,7 @@ jobs:
           name: openapi-base
           retention-days: 14
           if-no-files-found: error
-          path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net7.0/openapi.json
+          path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net8.0/openapi.json
 
   openapi-diff:
     permissions:

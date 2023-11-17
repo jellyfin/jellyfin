@@ -160,7 +160,7 @@ public class HlsSegmentController : BaseJellyfinApiController
             var pathExtension = Path.GetExtension(path);
             if ((string.Equals(pathExtension, segmentContainer, StringComparison.OrdinalIgnoreCase)
                  || string.Equals(pathExtension, ".m3u8", StringComparison.OrdinalIgnoreCase))
-                && path.IndexOf(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase) != -1)
+                && path.Contains(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase))
             {
                 playlistPath = path;
                 break;

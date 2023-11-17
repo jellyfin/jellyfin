@@ -60,7 +60,7 @@ namespace Jellyfin.Server.Implementations.Security
         }
 
         private async Task<AuthorizationInfo> GetAuthorizationInfoFromDictionary(
-            IReadOnlyDictionary<string, string>? auth,
+            Dictionary<string, string>? auth,
             IHeaderDictionary headers,
             IQueryCollection queryString)
         {

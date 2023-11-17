@@ -12,6 +12,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using IConfigurationManager = MediaBrowser.Common.Configuration.IConfigurationManager;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
