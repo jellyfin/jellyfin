@@ -1,8 +1,4 @@
 %global         debug_package %{nil}
-# Set the dotnet runtime
-%if 0%{?fedora}
-%else
-%endif
 
 Name:           jellyfin
 Version:        10.9.0
