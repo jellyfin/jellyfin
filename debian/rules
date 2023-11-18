@@ -7,27 +7,27 @@ HOST_ARCH := $(shell arch)
 BUILD_ARCH := ${DEB_HOST_MULTIARCH}
 ifeq ($(HOST_ARCH),x86_64)
     # Building AMD64
-    DOTNETRUNTIME := debian-x64
+    DOTNETRUNTIME := linux-x64
     ifeq ($(BUILD_ARCH),arm-linux-gnueabihf)
         # Cross-building ARM on AMD64
-        DOTNETRUNTIME := debian-arm
+        DOTNETRUNTIME := linux-arm
     endif
     ifeq ($(BUILD_ARCH),aarch64-linux-gnu)
         # Cross-building ARM on AMD64
-        DOTNETRUNTIME := debian-arm64
+        DOTNETRUNTIME := linux-arm64
     endif
 endif
 ifeq ($(HOST_ARCH),armv7l)
     # Building ARM
-    DOTNETRUNTIME := debian-arm
+    DOTNETRUNTIME := linux-arm
 endif
 ifeq ($(HOST_ARCH),arm64)
     # Building ARM
-    DOTNETRUNTIME := debian-arm64
+    DOTNETRUNTIME := linux-arm64
 endif
 ifeq ($(HOST_ARCH),aarch64)
     # Building ARM
-    DOTNETRUNTIME := debian-arm64
+    DOTNETRUNTIME := linux-arm64
 endif
 
 export DH_VERBOSE=1
