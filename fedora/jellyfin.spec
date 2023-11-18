@@ -1,7 +1,6 @@
 %global         debug_package %{nil}
 # Set the dotnet runtime
 %if 0%{?fedora}
-%global         dotnet_runtime  fedora.%{fedora}-x64
 %else
 %global         dotnet_runtime  centos-x64
 %endif
@@ -66,7 +65,7 @@ the Jellyfin server to bind to ports 80 and/or 443 for example.
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export PATH=$PATH:/usr/local/bin
 # cannot use --output due to https://github.com/dotnet/sdk/issues/22220
-dotnet publish --configuration Release --self-contained --runtime %{dotnet_runtime} \
+dotnet publish --configuration Release --self-contained --runtime linux-x64 \
     -p:DebugSymbols=false -p:DebugType=none Jellyfin.Server
 
 
