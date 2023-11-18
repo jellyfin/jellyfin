@@ -551,8 +551,7 @@ namespace Emby.Server.Implementations.Updates
             }
 
             stream.Position = 0;
-            using var reader = new ZipArchive(stream);
-            reader.ExtractToDirectory(targetDir, true);
+            ZipFile.ExtractToDirectory(stream, targetDir, true);
 
             // Ensure we create one or populate existing ones with missing data.
             await _pluginManager.PopulateManifest(package.PackageInfo, package.Version, targetDir, status).ConfigureAwait(false);
