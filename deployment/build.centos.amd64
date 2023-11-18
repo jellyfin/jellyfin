@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#= CentOS/RHEL 7+ amd64 .rpm
+#= CentOS/RHEL 8+ amd64 .rpm
 
 set -o errexit
 set -o xtrace
