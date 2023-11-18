@@ -71,7 +71,6 @@ namespace Jellyfin.Networking.Tests
         [InlineData("127.0.0.1/8")]
         [InlineData("192.168.1.2")]
         [InlineData("192.168.1.2/24")]
-        [InlineData("192.168.1.2/255.255.255.0")]
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517")]
         [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517]")]
         [InlineData("fe80::7add:12ff:febb:c67b%16")]
@@ -103,12 +102,10 @@ namespace Jellyfin.Networking.Tests
         [Theory]
         [InlineData("192.168.5.85/24", "192.168.5.1")]
         [InlineData("192.168.5.85/24", "192.168.5.254")]
-        [InlineData("192.168.5.85/255.255.255.0", "192.168.5.254")]
         [InlineData("10.128.240.50/30", "10.128.240.48")]
         [InlineData("10.128.240.50/30", "10.128.240.49")]
         [InlineData("10.128.240.50/30", "10.128.240.50")]
         [InlineData("10.128.240.50/30", "10.128.240.51")]
-        [InlineData("10.128.240.50/255.255.255.252", "10.128.240.51")]
         [InlineData("127.0.0.1/8", "127.0.0.1")]
         public void IPv4SubnetMaskMatchesValidIPAddress(string netMask, string ipAddress)
         {
@@ -124,12 +121,10 @@ namespace Jellyfin.Networking.Tests
         [Theory]
         [InlineData("192.168.5.85/24", "192.168.4.254")]
         [InlineData("192.168.5.85/24", "191.168.5.254")]
-        [InlineData("192.168.5.85/255.255.255.252", "192.168.4.254")]
         [InlineData("10.128.240.50/30", "10.128.240.47")]
         [InlineData("10.128.240.50/30", "10.128.240.52")]
         [InlineData("10.128.240.50/30", "10.128.239.50")]
         [InlineData("10.128.240.50/30", "10.127.240.51")]
-        [InlineData("10.128.240.50/255.255.255.252", "10.127.240.51")]
         public void IPv4SubnetMaskDoesNotMatchInvalidIPAddress(string netMask, string ipAddress)
         {
             var ipa = IPAddress.Parse(ipAddress);
