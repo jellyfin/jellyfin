@@ -28,12 +28,6 @@ BuildRequires:  libcurl-devel, fontconfig-devel, freetype-devel, openssl-devel, 
 BuildRequires:  dotnet-runtime-8.0, dotnet-sdk-8.0
 Requires: %{name}-server = %{version}-%{release}, %{name}-web = %{version}-%{release}
 
-# Temporary (hopefully?) fix for https://github.com/jellyfin/jellyfin/issues/7471
-%if 0%{?fedora} >= 36
-%global __requires_exclude ^liblttng-ust\\.so\\.0.*$
-%endif
-
-
 %description
 Jellyfin is a free software media system that puts you in control of managing and streaming your media.
 
