@@ -391,6 +391,11 @@ namespace MediaBrowser.Controller.Session
                     _logger.LogDebug("Disposing session controller synchronously {TypeName}", disposable.GetType().Name);
                     disposable.Dispose();
                 }
+                else if (controller is IAsyncDisposable disposableAsync)
+                {
+                    _logger.LogDebug("Disposing session controller asynchronously {TypeName}", disposableAsync.GetType().Name);
+                    disposableAsync.DisposeAsync().GetAwaiter().GetResult();
+                }
             }
         }
 
@@ -401,6 +406,7 @@ namespace MediaBrowser.Controller.Session
             StopAutomaticProgress();
 
             var controllers = SessionControllers.ToList();
+            SessionControllers = Array.Empty<ISessionController>();
 
             foreach (var controller in controllers)
             {
@@ -408,6 +414,11 @@ namespace MediaBrowser.Controller.Session
                 {
                     _logger.LogDebug("Disposing session controller asynchronously {TypeName}", disposableAsync.GetType().Name);
                     await disposableAsync.DisposeAsync().ConfigureAwait(false);
+                }
+                else if (controller is IDisposable disposable)
+                {
+                    _logger.LogDebug("Disposing session controller synchronously {TypeName}", disposable.GetType().Name);
+                    disposable.Dispose();
                 }
             }
         }
