@@ -189,7 +189,7 @@ namespace Emby.Server.Implementations.Session
                 _logger);
         }
 
-        private void OnSessionEnded(SessionInfo info)
+        private async ValueTask OnSessionEnded(SessionInfo info)
         {
             EventHelper.QueueEventIfNotNull(
                 SessionEnded,
@@ -202,7 +202,7 @@ namespace Emby.Server.Implementations.Session
 
             _eventManager.Publish(new SessionEndedEventArgs(info));
 
-            info.Dispose();
+            await info.DisposeAsync();
         }
 
         /// <inheritdoc />
@@ -301,12 +301,12 @@ namespace Emby.Server.Implementations.Session
                     await _mediaSourceManager.CloseLiveStream(session.PlayState.LiveStreamId).ConfigureAwait(false);
                 }
 
-                OnSessionEnded(session);
+                await OnSessionEnded(session);
             }
         }
 
         /// <inheritdoc />
-        public void ReportSessionEnded(string sessionId)
+        public async ValueTask ReportSessionEnded(string sessionId)
         {
             CheckDisposed();
             var session = GetSession(sessionId, false);
@@ -317,7 +317,7 @@ namespace Emby.Server.Implementations.Session
 
                 _activeConnections.TryRemove(key, out _);
 
-                OnSessionEnded(session);
+                await OnSessionEnded(session);
             }
         }
 
@@ -1590,7 +1590,7 @@ namespace Emby.Server.Implementations.Session
             {
                 try
                 {
-                    ReportSessionEnded(session.Id);
+                    await ReportSessionEnded(session.Id);
                 }
                 catch (Exception ex)
                 {

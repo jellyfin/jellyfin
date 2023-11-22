@@ -73,7 +73,7 @@ namespace Emby.Dlna.PlayTo
 
         public bool IsStopped => TransportState == TransportState.STOPPED;
 
-        public Action? OnDeviceUnavailable { get; set; }
+        public Func<ValueTask>? OnDeviceUnavailable { get; set; }
 
         private TransportCommands? AvCommands { get; set; }
 
@@ -552,11 +552,11 @@ namespace Emby.Dlna.PlayTo
 
                 if (_connectFailureCount >= 3)
                 {
-                    var action = OnDeviceUnavailable;
-                    if (action is not null)
+                    var function = OnDeviceUnavailable;
+                    if (function is not null)
                     {
                         _logger.LogDebug("Disposing device due to loss of connection");
-                        action();
+                        await function();
                         return;
                     }
                 }

@@ -115,11 +115,11 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private void OnDeviceUnavailable()
+        private async ValueTask OnDeviceUnavailable()
         {
             try
             {
-                _sessionManager.ReportSessionEnded(_session.Id);
+                await _sessionManager.ReportSessionEnded(_session.Id);
             }
             catch (Exception ex)
             {
@@ -128,7 +128,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private void OnDeviceDiscoveryDeviceLeft(object? sender, GenericEventArgs<UpnpDeviceInfo> e)
+        private async void OnDeviceDiscoveryDeviceLeft(object? sender, GenericEventArgs<UpnpDeviceInfo> e)
         {
             var info = e.Argument;
 
@@ -139,7 +139,7 @@ namespace Emby.Dlna.PlayTo
                     || (info.Headers.TryGetValue("NT", out string? nt)
                         && nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) != -1)))
             {
-                OnDeviceUnavailable();
+                await OnDeviceUnavailable();
             }
         }
 
