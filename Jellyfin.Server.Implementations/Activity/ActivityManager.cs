@@ -68,7 +68,6 @@ namespace Jellyfin.Server.Implementations.Activity
                             Date = entity.DateCreated,
                             Severity = entity.LogSeverity
                         })
-                        .AsQueryable()
                         .ToListAsync()
                         .ConfigureAwait(false));
             }
