@@ -10,7 +10,7 @@ parameters:
   default: "tests/**/*Tests.csproj"
 - name: DotNetSdkVersion
   type: string
-  default: 7.0.x
+  default: 8.0.x
 
 jobs:
   - job: Test
@@ -94,5 +94,5 @@ jobs:
         displayName: 'Publish OpenAPI Artifact'
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
         inputs:
-          targetPath: "tests/Jellyfin.Server.Integration.Tests/bin/Release/net7.0/openapi.json"
+          targetPath: "tests/Jellyfin.Server.Integration.Tests/bin/Release/net8.0/openapi.json"
           artifactName: 'OpenAPI Spec'

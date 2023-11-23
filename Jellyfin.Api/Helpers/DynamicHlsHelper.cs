@@ -147,7 +147,7 @@ public class DynamicHlsHelper
                 cancellationTokenSource.Token)
             .ConfigureAwait(false);
 
-        _httpContextAccessor.HttpContext.Response.Headers.Add(HeaderNames.Expires, "0");
+        _httpContextAccessor.HttpContext.Response.Headers.Append(HeaderNames.Expires, "0");
         if (isHeadRequest)
         {
             return new FileContentResult(Array.Empty<byte>(), MimeTypes.GetMimeType("playlist.m3u8"));
@@ -568,7 +568,7 @@ public class DynamicHlsHelper
             && state.VideoStream is not null
             && state.VideoStream.Level.HasValue)
         {
-            levelString = state.VideoStream.Level.ToString() ?? string.Empty;
+            levelString = state.VideoStream.Level.Value.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
         }
         else
         {

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Jellyfin.Extensions.Json.Converters;
 
 namespace Jellyfin.Extensions.Json
@@ -41,7 +42,8 @@ namespace Jellyfin.Extensions.Json
                 new JsonNullableStructConverterFactory(),
                 new JsonDateTimeConverter(),
                 new JsonStringConverter()
-            }
+            },
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver()
         };
 
         private static readonly JsonSerializerOptions _pascalCaseJsonSerializerOptions = new(_jsonSerializerOptions)

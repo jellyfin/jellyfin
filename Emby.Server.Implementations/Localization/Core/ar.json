@@ -124,5 +124,6 @@
     "TaskKeyframeExtractorDescription": "يستخرج الإطارات الرئيسية من ملفات الفيديو لكي ينشئ قوائم تشغيل بث HTTP المباشر. قد تستمر هذه العملية لوقت طويل.",
     "TaskKeyframeExtractor": "مستخرج الإطار الرئيسي",
     "External": "خارجي",
-    "HearingImpaired": "ضعاف السمع"
+    "HearingImpaired": "ضعاف السمع",
+    "TaskRefreshTrickplayImages": "توليد صور Trickplay"
 }

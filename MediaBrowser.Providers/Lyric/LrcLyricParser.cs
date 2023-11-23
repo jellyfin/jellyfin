@@ -125,7 +125,7 @@ public class LrcLyricParser : ILyricParser
     /// </summary>
     /// <param name="metaData">The metadata from the LRC file.</param>
     /// <returns>A lyricMetadata object with mapped property data.</returns>
-    private static LyricMetadata MapMetadataValues(IDictionary<string, string> metaData)
+    private static LyricMetadata MapMetadataValues(Dictionary<string, string> metaData)
     {
         LyricMetadata lyricMetadata = new();
 

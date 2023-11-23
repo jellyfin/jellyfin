@@ -9,7 +9,7 @@ namespace Jellyfin.Server.Implementations.Tests.Sorting;
 
 public class ParentIndexNumberComparerTests
 {
-    private readonly IBaseItemComparer _cmp = new ParentIndexNumberComparer();
+    private readonly ParentIndexNumberComparer _cmp = new ParentIndexNumberComparer();
 
     public static TheoryData<BaseItem?, BaseItem?> Compare_GivenNull_ThrowsArgumentNullException_TestData()
         => new()

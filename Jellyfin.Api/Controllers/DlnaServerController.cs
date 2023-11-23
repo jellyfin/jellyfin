@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Emby.Dlna;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
+using MediaBrowser.Common.Api;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Authorization;

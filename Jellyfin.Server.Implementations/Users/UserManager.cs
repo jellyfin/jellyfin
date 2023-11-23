@@ -748,7 +748,7 @@ namespace Jellyfin.Server.Implementations.Users
             return GetPasswordResetProviders(user)[0];
         }
 
-        private IList<IAuthenticationProvider> GetAuthenticationProviders(User? user)
+        private List<IAuthenticationProvider> GetAuthenticationProviders(User? user)
         {
             var authenticationProviderId = user?.AuthenticationProviderId;
 
@@ -775,7 +775,7 @@ namespace Jellyfin.Server.Implementations.Users
             return providers;
         }
 
-        private IList<IPasswordResetProvider> GetPasswordResetProviders(User user)
+        private IPasswordResetProvider[] GetPasswordResetProviders(User user)
         {
             var passwordResetProviderId = user.PasswordResetProviderId;
             var providers = _passwordResetProviders.Where(i => i.IsEnabled).ToArray();

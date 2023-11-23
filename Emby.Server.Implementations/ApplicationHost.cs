@@ -41,7 +41,6 @@ using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Drawing;
 using Jellyfin.MediaEncoding.Hls.Playlist;
-using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Common;
@@ -100,6 +99,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prometheus.DotNetRuntime;
 using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
+using IConfigurationManager = MediaBrowser.Common.Configuration.IConfigurationManager;
 using WebSocketManager = Emby.Server.Implementations.HttpServer.WebSocketManager;
 
 namespace Emby.Server.Implementations
@@ -310,7 +310,9 @@ namespace Emby.Server.Implementations
             {
                 _creatingInstances.Add(type);
                 Logger.LogDebug("Creating instance of {Type}", type);
-                return ActivatorUtilities.CreateInstance(ServiceProvider, type);
+                return ServiceProvider is null
+                    ? Activator.CreateInstance(type)
+                    : ActivatorUtilities.CreateInstance(ServiceProvider, type);
             }
             catch (Exception ex)
             {
@@ -866,7 +868,7 @@ namespace Emby.Server.Implementations
             yield return typeof(MediaBrowser.MediaEncoding.Encoder.MediaEncoder).Assembly;
 
             // Dlna
-            yield return typeof(DlnaEntryPoint).Assembly;
+            yield return typeof(DlnaHost).Assembly;
 
             // Local metadata
             yield return typeof(BoxSetXmlSaver).Assembly;

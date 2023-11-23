@@ -516,7 +516,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private void ProcessPairs(string key, List<NameValuePair> pairs, MediaInfo info)
         {
-            IList<BaseItemPerson> peoples = new List<BaseItemPerson>();
+            List<BaseItemPerson> peoples = new List<BaseItemPerson>();
             if (string.Equals(key, "studio", StringComparison.OrdinalIgnoreCase))
             {
                 info.Studios = pairs.Select(p => p.Value)
@@ -612,11 +612,11 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 codec = "dvbsub";
             }
-            else if ((codec ?? string.Empty).IndexOf("PGS", StringComparison.OrdinalIgnoreCase) != -1)
+            else if ((codec ?? string.Empty).Contains("PGS", StringComparison.OrdinalIgnoreCase))
             {
                 codec = "PGSSUB";
             }
-            else if ((codec ?? string.Empty).IndexOf("DVD", StringComparison.OrdinalIgnoreCase) != -1)
+            else if ((codec ?? string.Empty).Contains("DVD", StringComparison.OrdinalIgnoreCase))
             {
                 codec = "DVDSUB";
             }
@@ -1182,7 +1182,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             info.Size = string.IsNullOrEmpty(data.Format.Size) ? null : long.Parse(data.Format.Size, CultureInfo.InvariantCulture);
         }
 
-        private void SetAudioInfoFromTags(MediaInfo audio, IReadOnlyDictionary<string, string> tags)
+        private void SetAudioInfoFromTags(MediaInfo audio, Dictionary<string, string> tags)
         {
             var people = new List<BaseItemPerson>();
             if (tags.TryGetValue("composer", out var composer) && !string.IsNullOrWhiteSpace(composer))
@@ -1339,7 +1339,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         {
             // Only use the comma as a delimiter if there are no slashes or pipes.
             // We want to be careful not to split names that have commas in them
-            var delimiter = !allowCommaDelimiter || _nameDelimiters.Any(i => val.IndexOf(i, StringComparison.Ordinal) != -1) ?
+            var delimiter = !allowCommaDelimiter || _nameDelimiters.Any(i => val.Contains(i, StringComparison.Ordinal)) ?
                 _nameDelimiters :
                 new[] { ',' };
 

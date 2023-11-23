@@ -150,7 +150,7 @@ public class MusicGenresController : BaseJellyfinApiController
 
         MusicGenre? item;
 
-        if (genreName.IndexOf(BaseItem.SlugChar, StringComparison.OrdinalIgnoreCase) != -1)
+        if (genreName.Contains(BaseItem.SlugChar, StringComparison.OrdinalIgnoreCase))
         {
             item = GetItemFromSlugName<MusicGenre>(_libraryManager, genreName, dtoOptions, BaseItemKind.MusicGenre);
         }

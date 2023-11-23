@@ -7,7 +7,6 @@ using System.Text;
 using Emby.Dlna.Extensions;
 using Jellyfin.Api.Middleware;
 using Jellyfin.MediaEncoding.Hls.Extensions;
-using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.HappyEyeballs;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.HealthChecks;
@@ -36,7 +35,7 @@ namespace Jellyfin.Server
     /// </summary>
     public class Startup
     {
-        private readonly IServerApplicationHost _serverApplicationHost;
+        private readonly CoreAppHost _serverApplicationHost;
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>

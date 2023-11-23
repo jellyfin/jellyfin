@@ -148,7 +148,7 @@ namespace MediaBrowser.Providers.Music
                 .ToArray();
 
             var id = item.GetProviderId(provider);
-            if (ids.Any())
+            if (ids.Length != 0)
             {
                 var firstId = ids[0];
                 if (!string.IsNullOrEmpty(firstId)

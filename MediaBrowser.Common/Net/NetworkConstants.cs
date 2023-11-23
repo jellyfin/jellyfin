@@ -1,12 +1,12 @@
 using System.Net;
-using Microsoft.AspNetCore.HttpOverrides;
+using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 
-namespace Jellyfin.Networking.Constants;
+namespace MediaBrowser.Common.Net;
 
 /// <summary>
 /// Networking constants.
 /// </summary>
-public static class Network
+public static class NetworkConstants
 {
     /// <summary>
     /// IPv4 mask bytes.
