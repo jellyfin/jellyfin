@@ -25,6 +25,9 @@ namespace MediaBrowser.Controller.Entities
         public override bool SupportsPositionTicksResume => true;
 
         [JsonIgnore]
+        public override bool SupportsPeople => true;
+
+        [JsonIgnore]
         public string SeriesPresentationUniqueKey { get; set; }
 
         [JsonIgnore]
