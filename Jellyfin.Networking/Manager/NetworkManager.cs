@@ -1203,7 +1203,7 @@ namespace Jellyfin.Networking.Manager
                 }
             }
 
-            _logger.LogInformation("ServerLanAddress: {0} ", ServerLanAddress);
+            _logger.LogInformation("ServerLanAddress: {ServerLanAddress} ", ServerLanAddress);
         }
     }
 }
