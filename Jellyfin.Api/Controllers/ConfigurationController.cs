@@ -130,8 +130,10 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult UpdateMediaEncoderPath([FromBody, Required] MediaEncoderPathDto mediaEncoderPath)
         {
-            _mediaEncoder.UpdateEncoderPath(mediaEncoderPath.Path, mediaEncoderPath.PathType);
+            // API ENDPOINT DISABLED (NOOP) FOR SECURITY PURPOSES
             return NoContent();
+            //_mediaEncoder.UpdateEncoderPath(mediaEncoderPath.Path, mediaEncoderPath.PathType);
+            //return NoContent();
         }
     }
 }
