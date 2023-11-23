@@ -131,9 +131,8 @@ namespace Jellyfin.Api.Controllers
         public ActionResult UpdateMediaEncoderPath([FromBody, Required] MediaEncoderPathDto mediaEncoderPath)
         {
             // API ENDPOINT DISABLED (NOOP) FOR SECURITY PURPOSES
-            return NoContent();
             //_mediaEncoder.UpdateEncoderPath(mediaEncoderPath.Path, mediaEncoderPath.PathType);
-            //return NoContent();
+            return NoContent();
         }
     }
 }
