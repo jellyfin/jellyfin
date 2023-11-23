@@ -172,6 +172,7 @@
  - [sleepycatcoding](https://github.com/sleepycatcoding)
  - [scampower3](https://github.com/scampower3)
  - [Chris-Codes-It] (https://github.com/Chris-Codes-It)
+ - [Pithaya](https://github.com/Pithaya)
 
 # Emby Contributors
 
