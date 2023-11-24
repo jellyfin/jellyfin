@@ -456,7 +456,7 @@ namespace Emby.Server.Implementations
             }
             else
             {
-              NetManager = new NetworkManager(ConfigurationManager, _startupConfig, LoggerFactory.CreateLogger<NetworkManager>());
+                NetManager = new NetworkManager(ConfigurationManager, LoggerFactory.CreateLogger<NetworkManager>());
             }
 
             // Initialize runtime stat collection
