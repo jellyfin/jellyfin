@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Activity;
@@ -97,14 +98,14 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
             return name;
         }
 
-        private static string? GetPlaybackStoppedNotificationType(string mediaType)
+        private static string? GetPlaybackStoppedNotificationType(MediaType mediaType)
         {
-            if (string.Equals(mediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
+            if (mediaType == MediaType.Audio)
             {
                 return NotificationType.AudioPlaybackStopped.ToString();
             }
 
-            if (string.Equals(mediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
+            if (mediaType == MediaType.Video)
             {
                 return NotificationType.VideoPlaybackStopped.ToString();
             }

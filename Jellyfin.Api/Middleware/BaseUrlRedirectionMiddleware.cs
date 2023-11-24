@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using Jellyfin.Networking.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;

@@ -34,6 +34,11 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         Chapters,
 
+        /// <summary>
+        /// The trickplay manifest.
+        /// </summary>
+        Trickplay,
+
         ChildCount,
 
         /// <summary>

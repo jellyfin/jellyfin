@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Models.StreamingDtos;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -128,7 +129,7 @@ public static class StreamingHelpers
 
         var item = libraryManager.GetItemById(streamingRequest.Id);
 
-        state.IsInputVideo = string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
+        state.IsInputVideo = item.MediaType == MediaType.Video;
 
         MediaSourceInfo? mediaSource = null;
         if (string.IsNullOrWhiteSpace(streamingRequest.LiveStreamId))
@@ -191,6 +192,11 @@ public static class StreamingHelpers
             state.OutputAudioBitrate = encodingHelper.GetAudioBitrateParam(streamingRequest.AudioBitRate, streamingRequest.AudioCodec, state.AudioStream, state.OutputAudioChannels) ?? 0;
         }
 
+        if (outputAudioCodec.StartsWith("pcm_", StringComparison.Ordinal))
+        {
+            containerInternal = ".pcm";
+        }
+
         state.OutputAudioCodec = outputAudioCodec;
         state.OutputContainer = (containerInternal ?? string.Empty).TrimStart('.');
         state.OutputAudioChannels = encodingHelper.GetNumAudioChannelsParam(state, state.AudioStream, state.OutputAudioCodec);
@@ -243,7 +249,7 @@ public static class StreamingHelpers
             ? GetOutputFileExtension(state, mediaSource)
             : ("." + state.OutputContainer);
 
-        state.OutputFilePath = GetOutputFilePath(state, ext!, serverConfigurationManager, streamingRequest.DeviceId, streamingRequest.PlaySessionId);
+        state.OutputFilePath = GetOutputFilePath(state, ext, serverConfigurationManager, streamingRequest.DeviceId, streamingRequest.PlaySessionId);
 
         return state;
     }
@@ -273,15 +279,15 @@ public static class StreamingHelpers
         var profile = state.DeviceProfile;
 
         StringValues transferMode = request.Headers["transferMode.dlna.org"];
-        responseHeaders.Add("transferMode.dlna.org", string.IsNullOrEmpty(transferMode) ? "Streaming" : transferMode.ToString());
-        responseHeaders.Add("realTimeInfo.dlna.org", "DLNA.ORG_TLAG=*");
+        responseHeaders.Append("transferMode.dlna.org", string.IsNullOrEmpty(transferMode) ? "Streaming" : transferMode.ToString());
+        responseHeaders.Append("realTimeInfo.dlna.org", "DLNA.ORG_TLAG=*");
 
         if (state.RunTimeTicks.HasValue)
         {
             if (string.Equals(request.Headers["getMediaInfo.sec"], "1", StringComparison.OrdinalIgnoreCase))
             {
                 var ms = TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalMilliseconds;
-                responseHeaders.Add("MediaInfo.sec", string.Format(
+                responseHeaders.Append("MediaInfo.sec", string.Format(
                     CultureInfo.InvariantCulture,
                     "SEC_Duration={0};",
                     Convert.ToInt32(ms)));
@@ -299,7 +305,7 @@ public static class StreamingHelpers
 
         if (!state.IsVideoRequest)
         {
-            responseHeaders.Add("contentFeatures.dlna.org", ContentFeatureBuilder.BuildAudioHeader(
+            responseHeaders.Append("contentFeatures.dlna.org", ContentFeatureBuilder.BuildAudioHeader(
                 profile,
                 state.OutputContainer,
                 audioCodec,
@@ -315,7 +321,7 @@ public static class StreamingHelpers
         {
             var videoCodec = state.ActualOutputVideoCodec;
 
-            responseHeaders.Add(
+            responseHeaders.Append(
                 "contentFeatures.dlna.org",
                 ContentFeatureBuilder.BuildVideoHeader(profile, state.OutputContainer, videoCodec, audioCodec, state.OutputWidth, state.OutputHeight, state.TargetVideoBitDepth, state.OutputVideoBitrate, state.TargetTimestamp, isStaticallyStreamed, state.RunTimeTicks, state.TargetVideoProfile, state.TargetVideoRangeType, state.TargetVideoLevel, state.TargetFramerate, state.TargetPacketLength, state.TranscodeSeekInfo, state.IsTargetAnamorphic, state.IsTargetInterlaced, state.TargetRefFrames, state.TargetVideoStreamCount, state.TargetAudioStreamCount, state.TargetVideoCodecTag, state.IsTargetAVC).FirstOrDefault() ?? string.Empty);
         }
@@ -398,12 +404,12 @@ public static class StreamingHelpers
         var runtimeSeconds = TimeSpan.FromTicks(state.RunTimeTicks!.Value).TotalSeconds.ToString(CultureInfo.InvariantCulture);
         var startSeconds = TimeSpan.FromTicks(startTimeTicks ?? 0).TotalSeconds.ToString(CultureInfo.InvariantCulture);
 
-        responseHeaders.Add("TimeSeekRange.dlna.org", string.Format(
+        responseHeaders.Append("TimeSeekRange.dlna.org", string.Format(
             CultureInfo.InvariantCulture,
             "npt={0}-{1}/{1}",
             startSeconds,
             runtimeSeconds));
-        responseHeaders.Add("X-AvailableSeekRange", string.Format(
+        responseHeaders.Append("X-AvailableSeekRange", string.Format(
             CultureInfo.InvariantCulture,
             "1 npt={0}-{1}",
             startSeconds,
@@ -416,10 +422,9 @@ public static class StreamingHelpers
     /// <param name="state">The state.</param>
     /// <param name="mediaSource">The mediaSource.</param>
     /// <returns>System.String.</returns>
-    private static string? GetOutputFileExtension(StreamState state, MediaSourceInfo? mediaSource)
+    private static string GetOutputFileExtension(StreamState state, MediaSourceInfo? mediaSource)
     {
         var ext = Path.GetExtension(state.RequestedUrl);
-
         if (!string.IsNullOrEmpty(ext))
         {
             return ext;
@@ -458,10 +463,9 @@ public static class StreamingHelpers
                 return ".asf";
             }
         }
-
-        // Try to infer based on the desired audio codec
-        if (!state.IsVideoRequest)
+        else
         {
+            // Try to infer based on the desired audio codec
             var audioCodec = state.Request.AudioCodec;
 
             if (string.Equals("aac", audioCodec, StringComparison.OrdinalIgnoreCase))
@@ -492,7 +496,7 @@ public static class StreamingHelpers
             return '.' + (idx == -1 ? mediaSource.Container : mediaSource.Container[..idx]).Trim();
         }
 
-        return null;
+        throw new InvalidOperationException("Failed to find an appropriate file extension");
     }
 
     /// <summary>
@@ -509,7 +513,7 @@ public static class StreamingHelpers
         var data = $"{state.MediaPath}-{state.UserAgent}-{deviceId!}-{playSessionId!}";
 
         var filename = data.GetMD5().ToString("N", CultureInfo.InvariantCulture);
-        var ext = outputFileExtension?.ToLowerInvariant();
+        var ext = outputFileExtension.ToLowerInvariant();
         var folder = serverConfigurationManager.GetTranscodePath();
 
         return Path.Combine(folder, filename + ext);

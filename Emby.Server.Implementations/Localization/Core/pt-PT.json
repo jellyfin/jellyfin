@@ -104,8 +104,8 @@
     "TaskRefreshPeople": "Atualizar Pessoas",
     "TaskCleanLogsDescription": "Apagar ficheiros de log que têm mais de {0} dias.",
     "TaskCleanLogs": "Limpar a Diretoria de Logs",
-    "TaskRefreshLibraryDescription": "Scannear a biblioteca de música para novos ficheiros e atualizar os metadados.",
-    "TaskRefreshLibrary": "Scannear Biblioteca de Música",
+    "TaskRefreshLibraryDescription": "Analisar a biblioteca de música para novos ficheiros e atualizar os metadados.",
+    "TaskRefreshLibrary": "Analisar Biblioteca de Música",
     "TaskRefreshChapterImagesDescription": "Criar thumbnails para os vídeos que têm capítulos.",
     "TaskRefreshChapterImages": "Extrair Imagens dos Capítulos",
     "TaskCleanCacheDescription": "Apagar ficheiros em cache que já não são necessários.",
@@ -124,5 +124,7 @@
     "TaskKeyframeExtractorDescription": "Extrai quadros-chave de ficheiros de video para criar listas de reprodução HLS mais precisas. Esta tarefa pode demorar algum tempo.",
     "TaskKeyframeExtractor": "Extrator de Quadros-chave",
     "External": "Externo",
-    "HearingImpaired": "Surdo"
+    "HearingImpaired": "Surdo",
+    "TaskRefreshTrickplayImages": "Gerar imagens de truques",
+    "TaskRefreshTrickplayImagesDescription": "Cria vizualizações de truques para videos nas librarias ativas."
 }

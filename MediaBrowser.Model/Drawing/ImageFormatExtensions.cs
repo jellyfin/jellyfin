@@ -24,4 +24,21 @@ public static class ImageFormatExtensions
             ImageFormat.Webp => "image/webp",
             _ => throw new InvalidEnumArgumentException(nameof(format), (int)format, typeof(ImageFormat))
         };
+
+    /// <summary>
+    /// Returns the correct extension for this <see cref="ImageFormat" />.
+    /// </summary>
+    /// <param name="format">This <see cref="ImageFormat" />.</param>
+    /// <exception cref="InvalidEnumArgumentException">The <paramref name="format"/> is an invalid enumeration value.</exception>
+    /// <returns>The correct extension for this <see cref="ImageFormat" />.</returns>
+    public static string GetExtension(this ImageFormat format)
+        => format switch
+        {
+            ImageFormat.Bmp => ".bmp",
+            ImageFormat.Gif => ".gif",
+            ImageFormat.Jpg => ".jpg",
+            ImageFormat.Png => ".png",
+            ImageFormat.Webp => ".webp",
+            _ => throw new InvalidEnumArgumentException(nameof(format), (int)format, typeof(ImageFormat))
+        };
 }

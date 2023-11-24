@@ -123,5 +123,7 @@
     "TaskCleanTranscodeDescription": "Выдаляе перакадзіраваныя файлы, старэйшыя за адзін дзень.",
     "TaskRefreshChannels": "Абнавіць каналы",
     "TaskDownloadMissingSubtitles": "Спампаваць адсутныя субтытры",
-    "TaskKeyframeExtractorDescription": "Выдае ключавыя кадры з відэафайлаў для стварэння больш дакладных спісаў прайгравання HLS. Гэта задача можа працаваць у працягу доўгага часу."
+    "TaskKeyframeExtractorDescription": "Выдае ключавыя кадры з відэафайлаў для стварэння больш дакладных спісаў прайгравання HLS. Гэта задача можа працаваць у працягу доўгага часу.",
+    "TaskRefreshTrickplayImages": "Стварыце выявы Trickplay",
+    "TaskRefreshTrickplayImagesDescription": "Стварае прагляд відэаролікаў для Trickplay у падключаных бібліятэках."
 }

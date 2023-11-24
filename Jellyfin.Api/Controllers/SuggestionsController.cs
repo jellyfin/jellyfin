@@ -56,7 +56,7 @@ public class SuggestionsController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<QueryResult<BaseItemDto>> GetSuggestions(
         [FromRoute, Required] Guid userId,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaType,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] MediaType[] mediaType,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] type,
         [FromQuery] int? startIndex,
         [FromQuery] int? limit,

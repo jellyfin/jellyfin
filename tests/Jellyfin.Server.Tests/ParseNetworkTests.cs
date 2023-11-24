@@ -1,15 +1,17 @@
 using System;
 using System.Linq;
 using System.Net;
-using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
 using Jellyfin.Server.Extensions;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
+using IConfigurationManager = MediaBrowser.Common.Configuration.IConfigurationManager;
+using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 
 namespace Jellyfin.Server.Tests
 {
@@ -119,8 +121,8 @@ namespace Jellyfin.Server.Tests
                 EnableIPv6 = true,
                 EnableIPv4 = true,
             };
-
-            return new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
+            var startupConf = new Mock<IConfiguration>();
+            return new NetworkManager(GetMockConfig(conf), startupConf.Object, new NullLogger<NetworkManager>());
         }
     }
 }

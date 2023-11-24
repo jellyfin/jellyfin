@@ -3,7 +3,7 @@ Section: misc
 Priority: optional
 Maintainer: Jellyfin Team <team@jellyfin.org>
 Build-Depends:  debhelper (>= 9),
-                dotnet-sdk-7.0,
+                dotnet-sdk-8.0,
                 libc6-dev,
                 libcurl4-openssl-dev,
                 libfontconfig1-dev,

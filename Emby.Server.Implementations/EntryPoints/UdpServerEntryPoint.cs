@@ -6,19 +6,18 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Udp;
-using Jellyfin.Networking.Configuration;
-using Jellyfin.Networking.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using IConfigurationManager = MediaBrowser.Common.Configuration.IConfigurationManager;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
     /// <summary>
-    /// Class UdpServerEntryPoint.
+    /// Class responsible for registering all UDP broadcast endpoints and their handlers.
     /// </summary>
     public sealed class UdpServerEntryPoint : IServerEntryPoint
     {
@@ -35,14 +34,13 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly IConfiguration _config;
         private readonly IConfigurationManager _configurationManager;
         private readonly INetworkManager _networkManager;
-        private readonly bool _enableMultiSocketBinding;
 
         /// <summary>
         /// The UDP server.
         /// </summary>
-        private List<UdpServer> _udpServers;
-        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-        private bool _disposed = false;
+        private readonly List<UdpServer> _udpServers;
+        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UdpServerEntryPoint" /> class.
@@ -65,7 +63,6 @@ namespace Emby.Server.Implementations.EntryPoints
             _configurationManager = configurationManager;
             _networkManager = networkManager;
             _udpServers = new List<UdpServer>();
-            _enableMultiSocketBinding = OperatingSystem.IsWindows() || OperatingSystem.IsLinux();
         }
 
         /// <inheritdoc />
@@ -80,19 +77,21 @@ namespace Emby.Server.Implementations.EntryPoints
 
             try
             {
-                if (_enableMultiSocketBinding)
+                // Linux needs to bind to the broadcast addresses to get broadcast traffic
+                // Windows receives broadcast fine when binding to just the interface, it is unable to bind to broadcast addresses
+                if (OperatingSystem.IsLinux())
                 {
-                    // Add global broadcast socket
+                    // Add global broadcast listener
                     var server = new UdpServer(_logger, _appHost, _config, IPAddress.Broadcast, PortNumber);
                     server.Start(_cancellationTokenSource.Token);
                     _udpServers.Add(server);
 
-                    // Add bind address specific broadcast sockets
+                    // Add bind address specific broadcast listeners
                     // IPv6 is currently unsupported
                     var validInterfaces = _networkManager.GetInternalBindAddresses().Where(i => i.AddressFamily == AddressFamily.InterNetwork);
                     foreach (var intf in validInterfaces)
                     {
-                        var broadcastAddress = NetworkExtensions.GetBroadcastAddress(intf.Subnet);
+                        var broadcastAddress = NetworkUtils.GetBroadcastAddress(intf.Subnet);
                         _logger.LogDebug("Binding UDP server to {Address} on port {PortNumber}", broadcastAddress, PortNumber);
 
                         server = new UdpServer(_logger, _appHost, _config, broadcastAddress, PortNumber);
@@ -102,9 +101,18 @@ namespace Emby.Server.Implementations.EntryPoints
                 }
                 else
                 {
-                    var server = new UdpServer(_logger, _appHost, _config, IPAddress.Any, PortNumber);
-                    server.Start(_cancellationTokenSource.Token);
-                    _udpServers.Add(server);
+                    // Add bind address specific broadcast listeners
+                    // IPv6 is currently unsupported
+                    var validInterfaces = _networkManager.GetInternalBindAddresses().Where(i => i.AddressFamily == AddressFamily.InterNetwork);
+                    foreach (var intf in validInterfaces)
+                    {
+                        var intfAddress = intf.Address;
+                        _logger.LogDebug("Binding UDP server to {Address} on port {PortNumber}", intfAddress, PortNumber);
+
+                        var server = new UdpServer(_logger, _appHost, _config, intfAddress, PortNumber);
+                        server.Start(_cancellationTokenSource.Token);
+                        _udpServers.Add(server);
+                    }
                 }
             }
             catch (SocketException ex)
@@ -119,7 +127,7 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(this.GetType().Name);
+                throw new ObjectDisposedException(GetType().Name);
             }
         }
 

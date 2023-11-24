@@ -6,6 +6,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Dtos;
 using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Queries;
+using MediaBrowser.Common.Api;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Devices;

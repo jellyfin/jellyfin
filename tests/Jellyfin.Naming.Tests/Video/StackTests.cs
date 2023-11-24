@@ -384,8 +384,8 @@ namespace Jellyfin.Naming.Tests.Video
             // No stacking here because there is no part/disc/etc
             var files = new[]
             {
-                @"M:/Movies (DVD)/Movies (Musical)/The Sound of Music/The Sound of Music (1965) (Disc 01)",
-                @"M:/Movies (DVD)/Movies (Musical)/The Sound of Music/The Sound of Music (1965) (Disc 02)"
+                "M:/Movies (DVD)/Movies (Musical)/The Sound of Music/The Sound of Music (1965) (Disc 01)",
+                "M:/Movies (DVD)/Movies (Musical)/The Sound of Music/The Sound of Music (1965) (Disc 02)"
             };
 
             var result = StackResolver.ResolveDirectories(files, _namingOptions).ToList();

@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using Jellyfin.Data.Enums;
+using MediaBrowser.Common.Api;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -164,18 +166,16 @@ public class ItemUpdateController : BaseJellyfinApiController
             var inheritedContentType = _libraryManager.GetInheritedContentType(item);
             var configuredContentType = _libraryManager.GetConfiguredContentType(item);
 
-            if (string.IsNullOrWhiteSpace(inheritedContentType) ||
-                !string.IsNullOrWhiteSpace(configuredContentType))
+            if (inheritedContentType is null || configuredContentType is not null)
             {
                 info.ContentTypeOptions = GetContentTypeOptions(true).ToArray();
                 info.ContentType = configuredContentType;
 
-                if (string.IsNullOrWhiteSpace(inheritedContentType)
-                    || string.Equals(inheritedContentType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
+                if (inheritedContentType is null || inheritedContentType == CollectionType.TvShows)
                 {
                     info.ContentTypeOptions = info.ContentTypeOptions
                         .Where(i => string.IsNullOrWhiteSpace(i.Value)
-                                    || string.Equals(i.Value, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
+                                    || string.Equals(i.Value, "TvShows", StringComparison.OrdinalIgnoreCase))
                         .ToArray();
                 }
             }

@@ -65,7 +65,7 @@ namespace Jellyfin.Networking.HappyEyeballs
             // See https://github.com/dotnet/corefx/pull/29792/files#r189415885 for more details.
             if (await Task.WhenAny(tryConnectAsyncIPv6, Task.Delay(200, cancelIPv6.Token)).ConfigureAwait(false) == tryConnectAsyncIPv6 && tryConnectAsyncIPv6.IsCompletedSuccessfully)
             {
-                cancelIPv6.Cancel();
+                await cancelIPv6.CancelAsync().ConfigureAwait(false);
                 return tryConnectAsyncIPv6.GetAwaiter().GetResult();
             }
 
@@ -76,7 +76,7 @@ namespace Jellyfin.Networking.HappyEyeballs
             {
                 if (tryConnectAsyncIPv6.IsCompletedSuccessfully)
                 {
-                    cancelIPv4.Cancel();
+                    await cancelIPv4.CancelAsync().ConfigureAwait(false);
                     return tryConnectAsyncIPv6.GetAwaiter().GetResult();
                 }
 
@@ -86,7 +86,7 @@ namespace Jellyfin.Networking.HappyEyeballs
             {
                 if (tryConnectAsyncIPv4.IsCompletedSuccessfully)
                 {
-                    cancelIPv6.Cancel();
+                    await cancelIPv6.CancelAsync().ConfigureAwait(false);
                     return tryConnectAsyncIPv4.GetAwaiter().GetResult();
                 }
 

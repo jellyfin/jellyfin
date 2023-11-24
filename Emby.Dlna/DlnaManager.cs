@@ -228,7 +228,7 @@ namespace Emby.Dlna
             try
             {
                 return _fileSystem.GetFilePaths(path)
-                    .Where(i => string.Equals(Path.GetExtension(i), ".xml", StringComparison.OrdinalIgnoreCase))
+                    .Where(i => Path.GetExtension(i.AsSpan()).Equals(".xml", StringComparison.OrdinalIgnoreCase))
                     .Select(i => ParseProfileFile(i, type))
                     .Where(i => i is not null)
                     .ToList()!; // We just filtered out all the nulls

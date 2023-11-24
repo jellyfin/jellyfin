@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Sockets;
-using Microsoft.AspNetCore.HttpOverrides;
+using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 
 namespace MediaBrowser.Model.Net;
 
@@ -46,6 +46,11 @@ public class IPData
     /// Gets or sets the interface index.
     /// </summary>
     public int Index { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the network supports multicast.
+    /// </summary>
+    public bool SupportsMulticast { get; set; } = false;
 
     /// <summary>
     /// Gets or sets the interface name.

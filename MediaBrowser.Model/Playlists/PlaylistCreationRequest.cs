@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Playlists;
@@ -22,7 +23,7 @@ public class PlaylistCreationRequest
     /// <summary>
     /// Gets or sets the media type.
     /// </summary>
-    public string? MediaType { get; set; }
+    public MediaType? MediaType { get; set; }
 
     /// <summary>
     /// Gets or sets the user id.

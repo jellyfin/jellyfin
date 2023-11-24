@@ -280,6 +280,7 @@ public class TranscodingJobHelper : IDisposable
 
             if (job.CancellationTokenSource?.IsCancellationRequested == false)
             {
+#pragma warning disable CA1849 // Can't await in lock block
                 job.CancellationTokenSource.Cancel();
             }
         }
@@ -291,7 +292,6 @@ public class TranscodingJobHelper : IDisposable
 
         lock (job.ProcessLock!)
         {
-#pragma warning disable CA1849 // Can't await in lock block
             job.TranscodingThrottler?.Stop().GetAwaiter().GetResult();
 
             var process = job.Process;
@@ -405,7 +405,7 @@ public class TranscodingJobHelper : IDisposable
         var name = Path.GetFileNameWithoutExtension(outputFilePath);
 
         var filesToDelete = _fileSystem.GetFilePaths(directory)
-            .Where(f => f.IndexOf(name, StringComparison.OrdinalIgnoreCase) != -1);
+            .Where(f => f.Contains(name, StringComparison.OrdinalIgnoreCase));
 
         List<Exception>? exs = null;
         foreach (var file in filesToDelete)
@@ -538,7 +538,7 @@ public class TranscodingJobHelper : IDisposable
                 await _attachmentExtractor.ExtractAllAttachments(state.MediaPath, state.MediaSource, attachmentPath, cancellationTokenSource.Token).ConfigureAwait(false);
             }
 
-            if (state.SubtitleStream.IsExternal && string.Equals(Path.GetExtension(state.SubtitleStream.Path), ".mks", StringComparison.OrdinalIgnoreCase))
+            if (state.SubtitleStream.IsExternal && Path.GetExtension(state.SubtitleStream.Path.AsSpan()).Equals(".mks", StringComparison.OrdinalIgnoreCase))
             {
                 string subtitlePath = state.SubtitleStream.Path;
                 string subtitlePathArgument = string.Format(CultureInfo.InvariantCulture, "file:\"{0}\"", subtitlePath.Replace("\"", "\\\"", StringComparison.Ordinal));

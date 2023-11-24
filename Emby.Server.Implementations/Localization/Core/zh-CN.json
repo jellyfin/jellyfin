@@ -121,8 +121,10 @@
     "Default": "默认",
     "TaskOptimizeDatabaseDescription": "压缩数据库并优化可用空间，在扫描库或执行其他数据库修改后运行此任务可能会提高性能。",
     "TaskOptimizeDatabase": "优化数据库",
-    "TaskKeyframeExtractorDescription": "从视频文件中提取关键帧以创建更准确的HLS播放列表。这项任务可能需要很长时间。",
+    "TaskKeyframeExtractorDescription": "从视频文件中提取关键帧以创建更准确的 HLS 播放列表。这项任务可能需要很长时间。",
     "TaskKeyframeExtractor": "关键帧提取器",
     "External": "外部",
-    "HearingImpaired": "听力障碍"
+    "HearingImpaired": "听力障碍",
+    "TaskRefreshTrickplayImages": "生成时间轴缩略图",
+    "TaskRefreshTrickplayImagesDescription": "为启用的媒体库中的视频生成时间轴缩略图。"
 }

@@ -27,7 +27,7 @@ namespace Jellyfin.Providers.Tests.Manager
 {
     public partial class ItemImageProviderTests
     {
-        private const string TestDataImagePath = "Test Data/Images/blank{0}.jpg";
+        private static readonly CompositeFormat _testDataImagePath = CompositeFormat.Parse("Test Data/Images/blank{0}.jpg");
 
         [GeneratedRegex("[0-9]+")]
         private static partial Regex NumbersRegex();
@@ -275,7 +275,7 @@ namespace Jellyfin.Providers.Tests.Manager
             {
                 HasImage = true,
                 Format = ImageFormat.Jpg,
-                Path = responseHasPath ? string.Format(CultureInfo.InvariantCulture, TestDataImagePath, 0) : null,
+                Path = responseHasPath ? string.Format(CultureInfo.InvariantCulture, _testDataImagePath, 0) : null,
                 Protocol = protocol
             };
 
@@ -352,11 +352,11 @@ namespace Jellyfin.Providers.Tests.Manager
             {
                 if (forceRefresh)
                 {
-                    Assert.Matches(@"image url [0-9]", image.Path);
+                    Assert.Matches("image url [0-9]", image.Path);
                 }
                 else
                 {
-                    Assert.DoesNotMatch(@"image url [0-9]", image.Path);
+                    Assert.DoesNotMatch("image url [0-9]", image.Path);
                 }
             }
         }
@@ -563,21 +563,21 @@ namespace Jellyfin.Providers.Tests.Manager
             mockFileSystem.Setup(fs => fs.GetFilePaths(It.IsAny<string>(), It.IsAny<bool>()))
                 .Returns(new[]
                 {
-                    string.Format(CultureInfo.InvariantCulture, TestDataImagePath, 0),
-                    string.Format(CultureInfo.InvariantCulture, TestDataImagePath, 1)
+                    string.Format(CultureInfo.InvariantCulture, _testDataImagePath, 0),
+                    string.Format(CultureInfo.InvariantCulture, _testDataImagePath, 1)
                 });
 
             return new ItemImageProvider(new NullLogger<ItemImageProvider>(), providerManager, mockFileSystem.Object);
         }
 
-        private static BaseItem GetItemWithImages(ImageType type, int count, bool validPaths)
+        private static Video GetItemWithImages(ImageType type, int count, bool validPaths)
         {
             // Has to exist for querying DateModified time on file, results stored but not checked so not populating
             BaseItem.FileSystem ??= Mock.Of<IFileSystem>();
 
             var item = new Video();
 
-            var path = validPaths ? TestDataImagePath : "invalid path {0}";
+            var path = validPaths ? _testDataImagePath.Format : "invalid path {0}";
             for (int i = 0; i < count; i++)
             {
                 item.SetImagePath(type, i, new FileSystemMetadata
@@ -604,7 +604,7 @@ namespace Jellyfin.Providers.Tests.Manager
         /// </summary>
         private static LocalImageInfo[] GetImages(ImageType type, int count, bool validPaths)
         {
-            var path = validPaths ? TestDataImagePath : "invalid path {0}";
+            var path = validPaths ? _testDataImagePath.Format : "invalid path {0}";
             var images = new LocalImageInfo[count];
             for (int i = 0; i < count; i++)
             {
