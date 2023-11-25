@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Jellyfin.Data.Entities
 {
     /// <summary>
-    /// An entity representing a user.
+    /// An entity representing the data for a user and a BaseItem.
     /// </summary>
     [PrimaryKey(nameof(UserId), nameof(Key))]
     public class UserItemData : ILegacyEmbyModel
