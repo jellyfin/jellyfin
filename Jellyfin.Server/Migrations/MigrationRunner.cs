@@ -36,7 +36,11 @@ namespace Jellyfin.Server.Migrations
         public static void Run(CoreAppHost host, ILoggerFactory loggerFactory)
         {
             var logger = loggerFactory.CreateLogger<MigrationRunner>();
-            var migrations = GetMigrationTypes(false).Select(m => ActivatorUtilities.CreateInstance(host.ServiceProvider, m)).OfType<IMigrationRoutine>().ToArray();
+            var migrations = GetMigrationTypes(false)
+                .Select(m => ActivatorUtilities.CreateInstance(host.ServiceProvider, m))
+                .OfType<IMigrationRoutine>()
+                .OrderBy(m => m.Timestamp)
+                .ToArray();
             var migrationOptions = host.ConfigurationManager.GetConfiguration<MigrationOptions>(MigrationsListStore.StoreKey);
             HandleStartupWizardCondition(migrations, migrationOptions, host.ConfigurationManager.Configuration.IsStartupWizardCompleted, logger);
             PerformMigrations(migrations, migrationOptions, options => host.ConfigurationManager.SaveConfiguration(MigrationsListStore.StoreKey, options), logger);
@@ -53,6 +57,7 @@ namespace Jellyfin.Server.Migrations
             var migrations = GetMigrationTypes(true)
                 .Select(m => Activator.CreateInstance(m, appPaths, loggerFactory))
                 .OfType<IMigrationRoutine>()
+                .OrderBy(m => m.Timestamp)
                 .ToArray();
 
             var xmlSerializer = new MyXmlSerializer();
