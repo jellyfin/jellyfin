@@ -104,9 +104,9 @@ public class UserDataManager : IUserDataManager
     {
         ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(item);
-        var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
+        var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(true);
         UserItemData? userItemData;
-        await using (dbContext.ConfigureAwait(false))
+        await using (dbContext.ConfigureAwait(true))
         {
             userItemData = await dbContext.UserDatas.FindAsync(new object[] { user.Id, item.Id.ToString() }).ConfigureAwait(true) ?? await CreateUserDataInternalAsync(user, item, dbContext).ConfigureAwait(true);
         }
@@ -123,7 +123,7 @@ public class UserDataManager : IUserDataManager
         };
 
         await dbContext.AddAsync(newUserData).ConfigureAwait(true);
-        await dbContext.SaveChangesAsync().ConfigureAwait(false);
+        await dbContext.SaveChangesAsync().ConfigureAwait(true);
 
         return newUserData;
     }
