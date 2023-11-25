@@ -20,7 +20,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// The migration routine for migrating the display preferences database to EF Core.
     /// </summary>
-    public class MigrateDisplayPreferencesDb : IMigrationRoutine
+    public class MigrateDisplayPreferencesDb : IPostStartupMigrationRoutine
     {
         private const string DbFilename = "displaypreferences.db";
 
@@ -56,6 +56,9 @@ namespace Jellyfin.Server.Migrations.Routines
 
         /// <inheritdoc />
         public string Name => "MigrateDisplayPreferencesDatabase";
+
+        /// <inheritdoc />
+        public string Timestamp => "1100000000";
 
         /// <inheritdoc />
         public bool PerformOnNewInstall => false;

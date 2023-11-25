@@ -7,7 +7,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// Migration to initialize system configuration with the default plugin repository.
     /// </summary>
-    public class ReaddDefaultPluginRepository : IMigrationRoutine
+    public class ReaddDefaultPluginRepository : IPostStartupMigrationRoutine
     {
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
@@ -31,6 +31,9 @@ namespace Jellyfin.Server.Migrations.Routines
 
         /// <inheritdoc/>
         public string Name => "ReaddDefaultPluginRepository";
+
+        /// <inheritdoc />
+        public string Timestamp => "1000000000";
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => true;

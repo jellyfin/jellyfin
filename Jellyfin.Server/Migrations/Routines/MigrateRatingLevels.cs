@@ -12,7 +12,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// Migrate rating levels to new rating level system.
     /// </summary>
-    internal class MigrateRatingLevels : IMigrationRoutine
+    internal class MigrateRatingLevels : IPostStartupMigrationRoutine
     {
         private const string DbFilename = "library.db";
         private readonly ILogger<MigrateRatingLevels> _logger;
@@ -34,6 +34,9 @@ namespace Jellyfin.Server.Migrations.Routines
 
         /// <inheritdoc/>
         public string Name => "MigrateRatingLevels";
+
+        /// <inheritdoc />
+        public string Timestamp => "1500000000";
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => false;

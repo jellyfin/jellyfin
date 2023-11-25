@@ -1,14 +1,16 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 using Emby.Server.Implementations;
 using Microsoft.Extensions.Logging;
+using TagLib.Id3v2;
 
 namespace Jellyfin.Server.Migrations.PreStartupRoutines;
 
 /// <inheritdoc />
-public class CreateNetworkConfiguration : IMigrationRoutine
+public class CreateNetworkConfiguration : IPreStartupMigrationRoutine
 {
     private readonly ServerApplicationPaths _applicationPaths;
     private readonly ILogger<CreateNetworkConfiguration> _logger;
@@ -29,6 +31,9 @@ public class CreateNetworkConfiguration : IMigrationRoutine
 
     /// <inheritdoc />
     public string Name => nameof(CreateNetworkConfiguration);
+
+    /// <inheritdoc />
+    public string Timestamp => "0100000000";
 
     /// <inheritdoc />
     public bool PerformOnNewInstall => false;

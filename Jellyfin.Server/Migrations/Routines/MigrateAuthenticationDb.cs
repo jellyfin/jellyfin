@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// A migration that moves data from the authentication database into the new schema.
     /// </summary>
-    public class MigrateAuthenticationDb : IMigrationRoutine
+    public class MigrateAuthenticationDb : IPostStartupMigrationRoutine
     {
         private const string DbFilename = "authentication.db";
 
@@ -48,6 +48,9 @@ namespace Jellyfin.Server.Migrations.Routines
 
         /// <inheritdoc />
         public string Name => "MigrateAuthenticationDatabase";
+
+        /// <inheritdoc />
+        public string Timestamp => "1300000000";
 
         /// <inheritdoc />
         public bool PerformOnNewInstall => false;

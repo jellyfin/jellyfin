@@ -12,7 +12,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// If the deprecated logging.json file exists and has a custom config, it will be used as logging.user.json,
     /// otherwise a blank file will be created.
     /// </summary>
-    internal class CreateUserLoggingConfigFile : IMigrationRoutine
+    internal class CreateUserLoggingConfigFile : IPostStartupMigrationRoutine
     {
         /// <summary>
         /// File history for logging.json as existed during this migration creation. The contents for each has been minified.
@@ -47,6 +47,9 @@ namespace Jellyfin.Server.Migrations.Routines
 
         /// <inheritdoc/>
         public string Name => "CreateLoggingConfigHeirarchy";
+
+        /// <inheritdoc />
+        public string Timestamp => "0500000000";
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => false;

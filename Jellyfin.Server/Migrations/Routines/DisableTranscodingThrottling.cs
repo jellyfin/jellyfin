@@ -7,7 +7,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// Disable transcode throttling for all installations since it is currently broken for certain video formats.
     /// </summary>
-    internal class DisableTranscodingThrottling : IMigrationRoutine
+    internal class DisableTranscodingThrottling : IPostStartupMigrationRoutine
     {
         private readonly ILogger<DisableTranscodingThrottling> _logger;
         private readonly IConfigurationManager _configManager;
@@ -23,6 +23,9 @@ namespace Jellyfin.Server.Migrations.Routines
 
         /// <inheritdoc/>
         public string Name => "DisableTranscodingThrottling";
+
+        /// <inheritdoc />
+        public string Timestamp => "0400000000";
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => false;
