@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using Emby.Server.Implementations;
@@ -84,7 +85,9 @@ namespace Jellyfin.Server.Migrations
 
             // If startup wizard is not finished, this is a fresh install.
             var onlyOldInstalls = migrations.Where(m => !m.PerformOnNewInstall).ToArray();
-            logger.LogInformation("Marking following migrations as applied because this is a fresh install: {@OnlyOldInstalls}", onlyOldInstalls.Select(m => m.Name));
+            logger.LogInformation(
+                "Marking following migrations as applied because this is a fresh install: {OnlyOldInstalls}",
+                onlyOldInstalls.Select(m => string.Format(CultureInfo.InvariantCulture, "{0} from {1}", m.Name, m.GetType().Namespace)));
             migrationOptions.Applied.AddRange(onlyOldInstalls.Select(m => (m.Id, m.Name)));
         }
 
@@ -99,11 +102,11 @@ namespace Jellyfin.Server.Migrations
                 var migrationRoutine = migrations[i];
                 if (appliedMigrationIds.Contains(migrationRoutine.Id))
                 {
-                    logger.LogDebug("Skipping migration '{Name}' since it is already applied", migrationRoutine.Name);
+                    logger.LogDebug("Skipping migration '{Name}' from '{Namespace}' since it is already applied", migrationRoutine.Name, migrationRoutine.GetType().Namespace);
                     continue;
                 }
 
-                logger.LogInformation("Applying migration '{Name}'", migrationRoutine.Name);
+                logger.LogInformation("Applying migration '{Name}' from '{Namespace}'", migrationRoutine.Name, migrationRoutine.GetType().Namespace);
 
                 try
                 {
@@ -111,15 +114,15 @@ namespace Jellyfin.Server.Migrations
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "Could not apply migration '{Name}'", migrationRoutine.Name);
+                    logger.LogError(ex, "Could not apply migration '{Name}' from '{Namespace}'", migrationRoutine.Name, migrationRoutine.GetType().Namespace);
                     throw;
                 }
 
                 // Mark the migration as completed
-                logger.LogInformation("Migration '{Name}' applied successfully", migrationRoutine.Name);
+                logger.LogInformation("Migration '{Name}' from '{Namespace}' applied successfully", migrationRoutine.Name, migrationRoutine.GetType().Namespace);
                 migrationOptions.Applied.Add((migrationRoutine.Id, migrationRoutine.Name));
                 saveConfiguration(migrationOptions);
-                logger.LogDebug("Migration '{Name}' marked as applied in configuration.", migrationRoutine.Name);
+                logger.LogDebug("Migration '{Name}' from '{Namespace}' marked as applied in configuration.", migrationRoutine.Name, migrationRoutine.GetType().Namespace);
             }
         }
     }
