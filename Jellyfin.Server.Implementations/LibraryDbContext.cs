@@ -9,13 +9,13 @@ using Microsoft.EntityFrameworkCore;
 namespace Jellyfin.Server.Implementations;
 
 /// <inheritdoc/>
-public class LegacyEmbyDbContext : DbContext
+public class LibraryDbContext : DbContext
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="LegacyEmbyDbContext"/> class.
+    /// Initializes a new instance of the <see cref="LibraryDbContext"/> class.
     /// </summary>
     /// <param name="options">The database context options.</param>
-    public LegacyEmbyDbContext(DbContextOptions<LegacyEmbyDbContext> options) : base(options)
+    public LibraryDbContext(DbContextOptions<LibraryDbContext> options) : base(options)
     {
     }
 
@@ -51,7 +51,7 @@ public class LegacyEmbyDbContext : DbContext
             t => t.GetInterfaces().Any(i =>
                 i.IsGenericType &&
                 i.GetGenericTypeDefinition() == typeof(IEntityTypeConfiguration<>) &&
-                typeof(ILegacyEmbyModel).IsAssignableFrom(i.GenericTypeArguments[0])));
-        // modelBuilder.ApplyConfigurationsFromAssembly(typeof(LegacyEmbyDbContext).Assembly);
+                typeof(ILibraryModel).IsAssignableFrom(i.GenericTypeArguments[0])));
+        // modelBuilder.ApplyConfigurationsFromAssembly(typeof(LibraryDbContext).Assembly);
     }
 }

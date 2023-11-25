@@ -22,7 +22,7 @@ namespace Jellyfin.Server.Implementations.UserData;
 public class UserDataManager : IUserDataManager
 {
     private readonly IServerConfigurationManager _config;
-    private readonly IDbContextFactory<LegacyEmbyDbContext> _provider;
+    private readonly IDbContextFactory<LibraryDbContext> _provider;
     private readonly IUserManager _userManager;
 
     /// <summary>
@@ -33,7 +33,7 @@ public class UserDataManager : IUserDataManager
     /// <param name="userManager">The Jellyfin user manager.</param>
     public UserDataManager(
         IServerConfigurationManager config,
-        IDbContextFactory<LegacyEmbyDbContext> provider,
+        IDbContextFactory<LibraryDbContext> provider,
         IUserManager userManager)
     {
         _config = config;

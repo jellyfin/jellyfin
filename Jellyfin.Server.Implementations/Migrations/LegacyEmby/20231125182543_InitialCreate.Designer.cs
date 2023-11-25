@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Jellyfin.Server.Implementations.Migrations.LegacyEmby
 {
-    [DbContext(typeof(LegacyEmbyDbContext))]
+    [DbContext(typeof(LibraryDbContext))]
     [Migration("20231125182543_InitialCreate")]
     partial class InitialCreate
     {

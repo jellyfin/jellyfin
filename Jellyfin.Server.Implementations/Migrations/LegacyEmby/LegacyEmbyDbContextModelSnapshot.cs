@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Jellyfin.Server.Implementations.Migrations.LegacyEmby
 {
-    [DbContext(typeof(LegacyEmbyDbContext))]
+    [DbContext(typeof(LibraryDbContext))]
     partial class LegacyEmbyDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

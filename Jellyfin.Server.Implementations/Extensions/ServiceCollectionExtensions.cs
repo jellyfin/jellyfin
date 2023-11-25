@@ -54,7 +54,7 @@ public static class ServiceCollectionExtensions
                 .SkipCachingResults(result =>
                     result.Value is null || (result.Value is EFTableRows rows && rows.RowsCount == 0)));
 
-        serviceCollection.AddPooledDbContextFactory<LegacyEmbyDbContext>((serviceProvider, opt) =>
+        serviceCollection.AddPooledDbContextFactory<LibraryDbContext>((serviceProvider, opt) =>
         {
             var applicationPaths = serviceProvider.GetRequiredService<IApplicationPaths>();
             opt.UseSqlite($"Filename={Path.Combine(applicationPaths.DataPath, "library.db")}")

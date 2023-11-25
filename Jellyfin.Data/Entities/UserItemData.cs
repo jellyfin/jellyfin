@@ -12,7 +12,7 @@ namespace Jellyfin.Data.Entities
     /// An entity representing the data for a user and a BaseItem.
     /// </summary>
     [PrimaryKey(nameof(UserId), nameof(Key))]
-    public class UserItemData : ILegacyEmbyModel
+    public class UserItemData : ILibraryModel
     {
         public const double MinLikeValue = 6.5;
 

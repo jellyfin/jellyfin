@@ -606,7 +606,7 @@ namespace Emby.Server.Implementations
                 }
             }
 
-            var legacyEmbyDb = await Resolve<IDbContextFactory<LegacyEmbyDbContext>>().CreateDbContextAsync().ConfigureAwait(false);
+            var legacyEmbyDb = await Resolve<IDbContextFactory<LibraryDbContext>>().CreateDbContextAsync().ConfigureAwait(false);
             await using (legacyEmbyDb.ConfigureAwait(false))
             {
                 if ((await legacyEmbyDb.Database.GetPendingMigrationsAsync().ConfigureAwait(false)).Any())

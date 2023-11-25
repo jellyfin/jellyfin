@@ -3,6 +3,6 @@ namespace Jellyfin.Server.Implementations;
 /// <summary>
 /// Used only for migrations.
 /// </summary>
-public interface ILegacyEmbyModel
+public interface ILibraryModel
 {
 }
