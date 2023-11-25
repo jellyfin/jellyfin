@@ -13,7 +13,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Properly set playlist owner.
 /// </summary>
-public class FixPlaylistOwner : IPostStartupMigrationRoutine
+public partial class FixPlaylistOwner : IPostStartupMigrationRoutine
 {
     private readonly ILogger<RemoveDuplicateExtras> _logger;
     private readonly ILibraryManager _libraryManager;
@@ -42,7 +42,7 @@ public class FixPlaylistOwner : IPostStartupMigrationRoutine
     public string Name => "FixPlaylistOwner";
 
     /// <inheritdoc />
-    public string Timestamp => "1400000000";
+    public string Timestamp => "20231125220013";
 
     /// <inheritdoc/>
     public bool PerformOnNewInstall => false;

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Updates;
 
@@ -7,7 +7,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// Migration to initialize system configuration with the default plugin repository.
     /// </summary>
-    public class ReaddDefaultPluginRepository : IPostStartupMigrationRoutine
+    public partial class AddDefaultPluginRepository : IPostStartupMigrationRoutine
     {
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
@@ -18,22 +18,22 @@ namespace Jellyfin.Server.Migrations.Routines
         };
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ReaddDefaultPluginRepository"/> class.
+        /// Initializes a new instance of the <see cref="AddDefaultPluginRepository"/> class.
         /// </summary>
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-        public ReaddDefaultPluginRepository(IServerConfigurationManager serverConfigurationManager)
+        public AddDefaultPluginRepository(IServerConfigurationManager serverConfigurationManager)
         {
             _serverConfigurationManager = serverConfigurationManager;
         }
 
         /// <inheritdoc/>
-        public Guid Id => Guid.Parse("5F86E7F6-D966-4C77-849D-7A7B40B68C4E");
+        public Guid Id => Guid.Parse("EB58EBEE-9514-4B9B-8225-12E1A40020DF");
 
         /// <inheritdoc/>
-        public string Name => "ReaddDefaultPluginRepository";
+        public string Name => "AddDefaultPluginRepository";
 
         /// <inheritdoc />
-        public string Timestamp => "1000000000";
+        public string Timestamp => "20231125220007";
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => true;
@@ -41,12 +41,8 @@ namespace Jellyfin.Server.Migrations.Routines
         /// <inheritdoc/>
         public void Perform()
         {
-            // Only add if repository list is empty
-            if (_serverConfigurationManager.Configuration.PluginRepositories.Length == 0)
-            {
-                _serverConfigurationManager.Configuration.PluginRepositories = new[] { _defaultRepositoryInfo };
-                _serverConfigurationManager.SaveConfiguration();
-            }
+            _serverConfigurationManager.Configuration.PluginRepositories = new[] { _defaultRepositoryInfo };
+            _serverConfigurationManager.SaveConfiguration();
         }
     }
 }

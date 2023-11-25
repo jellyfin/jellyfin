@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Server.Migrations.PreStartupRoutines;
 
 /// <inheritdoc />
-public class MigrateNetworkConfiguration : IPreStartupMigrationRoutine
+public partial class MigrateNetworkConfiguration : IPreStartupMigrationRoutine
 {
     private readonly ServerApplicationPaths _applicationPaths;
     private readonly ILogger<MigrateNetworkConfiguration> _logger;
@@ -32,7 +32,7 @@ public class MigrateNetworkConfiguration : IPreStartupMigrationRoutine
     public string Name => nameof(MigrateNetworkConfiguration);
 
     /// <inheritdoc />
-    public string Timestamp => "0300000000";
+    public string Timestamp => "20231125220002";
 
     /// <inheritdoc />
     public bool PerformOnNewInstall => false;

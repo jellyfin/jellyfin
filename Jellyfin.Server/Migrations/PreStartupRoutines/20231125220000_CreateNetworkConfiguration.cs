@@ -10,7 +10,7 @@ using TagLib.Id3v2;
 namespace Jellyfin.Server.Migrations.PreStartupRoutines;
 
 /// <inheritdoc />
-public class CreateNetworkConfiguration : IPreStartupMigrationRoutine
+public partial class CreateNetworkConfiguration : IPreStartupMigrationRoutine
 {
     private readonly ServerApplicationPaths _applicationPaths;
     private readonly ILogger<CreateNetworkConfiguration> _logger;
@@ -33,7 +33,7 @@ public class CreateNetworkConfiguration : IPreStartupMigrationRoutine
     public string Name => nameof(CreateNetworkConfiguration);
 
     /// <inheritdoc />
-    public string Timestamp => "0100000000";
+    public string Timestamp => "20231125220000";
 
     /// <inheritdoc />
     public bool PerformOnNewInstall => false;

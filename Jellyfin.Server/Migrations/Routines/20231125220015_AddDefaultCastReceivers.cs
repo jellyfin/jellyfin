@@ -7,7 +7,7 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Migration to add the default cast receivers to the system config.
 /// </summary>
-public class AddDefaultCastReceivers : IPostStartupMigrationRoutine
+public partial class AddDefaultCastReceivers : IPostStartupMigrationRoutine
 {
     private readonly IServerConfigurationManager _serverConfigurationManager;
 
@@ -27,7 +27,7 @@ public class AddDefaultCastReceivers : IPostStartupMigrationRoutine
     public string Name => "AddDefaultCastReceivers";
 
     /// <inheritdoc />
-    public string Timestamp => "1600000000";
+    public string Timestamp => "20231125220015";
 
     /// <inheritdoc />
     public bool PerformOnNewInstall => true;

@@ -8,7 +8,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// Removes the old 'RemoveDownloadImagesInAdvance' from library options.
     /// </summary>
-    public class RemoveDownloadImagesInAdvance : IPostStartupMigrationRoutine
+    public partial class RemoveDownloadImagesInAdvance : IPostStartupMigrationRoutine
     {
         private readonly ILogger<RemoveDownloadImagesInAdvance> _logger;
         private readonly ILibraryManager _libraryManager;
@@ -31,7 +31,7 @@ namespace Jellyfin.Server.Migrations.Routines
         public string Name => "RemoveDownloadImagesInAdvance";
 
         /// <inheritdoc />
-        public string Timestamp => "1200000000";
+        public string Timestamp => "20231125220011";
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => false;

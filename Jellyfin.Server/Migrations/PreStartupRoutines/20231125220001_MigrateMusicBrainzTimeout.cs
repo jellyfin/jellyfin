@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Server.Migrations.PreStartupRoutines;
 
 /// <inheritdoc />
-public class MigrateMusicBrainzTimeout : IPreStartupMigrationRoutine
+public partial class MigrateMusicBrainzTimeout : IPreStartupMigrationRoutine
 {
     private readonly ServerApplicationPaths _applicationPaths;
     private readonly ILogger<MigrateMusicBrainzTimeout> _logger;
@@ -32,7 +32,7 @@ public class MigrateMusicBrainzTimeout : IPreStartupMigrationRoutine
     public string Name => nameof(MigrateMusicBrainzTimeout);
 
     /// <inheritdoc />
-    public string Timestamp => "0200000000";
+    public string Timestamp => "20231125220001";
 
     /// <inheritdoc />
     public bool PerformOnNewInstall => false;

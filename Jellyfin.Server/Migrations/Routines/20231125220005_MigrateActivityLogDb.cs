@@ -14,7 +14,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// The migration routine for migrating the activity log database to EF Core.
     /// </summary>
-    public class MigrateActivityLogDb : IPostStartupMigrationRoutine
+    public partial class MigrateActivityLogDb : IPostStartupMigrationRoutine
     {
         private const string DbFilename = "activitylog.db";
 
@@ -42,7 +42,7 @@ namespace Jellyfin.Server.Migrations.Routines
         public string Name => "MigrateActivityLogDatabase";
 
         /// <inheritdoc />
-        public string Timestamp => "0600000000";
+        public string Timestamp => "20231125220005";
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => false;

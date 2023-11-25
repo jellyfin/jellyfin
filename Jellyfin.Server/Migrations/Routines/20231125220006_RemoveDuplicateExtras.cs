@@ -12,7 +12,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// Remove duplicate entries which were caused by a bug where a file was considered to be an "Extra" to itself.
     /// </summary>
-    public class RemoveDuplicateExtras : IPostStartupMigrationRoutine
+    public partial class RemoveDuplicateExtras : IPostStartupMigrationRoutine
     {
         private const string DbFilename = "library.db";
         private readonly ILogger<RemoveDuplicateExtras> _logger;
@@ -36,7 +36,7 @@ namespace Jellyfin.Server.Migrations.Routines
         public string Name => "RemoveDuplicateExtras";
 
         /// <inheritdoc />
-        public string Timestamp => "0700000000";
+        public string Timestamp => "20231125220006";
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => false;

@@ -21,7 +21,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// The migration routine for migrating the user database to EF Core.
     /// </summary>
-    public class MigrateUserDb : IPostStartupMigrationRoutine
+    public partial class MigrateUserDb : IPostStartupMigrationRoutine
     {
         private const string DbFilename = "users.db";
 
@@ -56,7 +56,7 @@ namespace Jellyfin.Server.Migrations.Routines
         public string Name => "MigrateUserDatabase";
 
         /// <inheritdoc />
-        public string Timestamp => "0900000000";
+        public string Timestamp => "20231125220008";
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => false;
