@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 

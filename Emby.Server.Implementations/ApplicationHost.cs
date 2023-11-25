@@ -519,9 +519,6 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IBlurayExaminer, BdInfoExaminer>();
 
-            serviceCollection.AddSingleton<IUserDataRepository, SqliteUserDataRepository>();
-            serviceCollection.AddSingleton<IUserDataManager, UserDataManager>();
-
             serviceCollection.AddSingleton<IItemRepository, SqliteItemRepository>();
 
             serviceCollection.AddSingleton<IMediaEncoder, MediaBrowser.MediaEncoding.Encoder.MediaEncoder>();
@@ -609,8 +606,18 @@ namespace Emby.Server.Implementations
                 }
             }
 
+            var legacyEmbyDb = await Resolve<IDbContextFactory<LegacyEmbyDbContext>>().CreateDbContextAsync().ConfigureAwait(false);
+            await using (legacyEmbyDb.ConfigureAwait(false))
+            {
+                if ((await legacyEmbyDb.Database.GetPendingMigrationsAsync().ConfigureAwait(false)).Any())
+                {
+                    Logger.LogInformation("There are pending EFCore migrations in the database. Applying... (This may take a while, do not stop Jellyfin)");
+                    await legacyEmbyDb.Database.MigrateAsync().ConfigureAwait(false);
+                    Logger.LogInformation("EFCore migrations applied successfully");
+                }
+            }
+
             ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize();
-            ((SqliteUserDataRepository)Resolve<IUserDataRepository>()).Initialize();
 
             var localizationManager = (LocalizationManager)Resolve<ILocalizationManager>();
             await localizationManager.LoadAll().ConfigureAwait(false);

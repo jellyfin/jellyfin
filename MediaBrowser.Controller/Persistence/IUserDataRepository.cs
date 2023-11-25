@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Controller.Persistence

@@ -57,14 +57,6 @@ namespace MediaBrowser.Controller.Library
         List<UserItemData> GetAllUserData(Guid userId);
 
         /// <summary>
-        /// Save the all provided user data for the given user.
-        /// </summary>
-        /// <param name="userId">The user id.</param>
-        /// <param name="userData">The array of user data.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        void SaveAllUserData(Guid userId, UserItemData[] userData, CancellationToken cancellationToken);
-
-        /// <summary>
         /// Updates playstate for an item and returns true or false indicating if it was played to completion.
         /// </summary>
         /// <param name="item">Item to update.</param>
