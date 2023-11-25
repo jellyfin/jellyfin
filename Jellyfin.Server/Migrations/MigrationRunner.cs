@@ -17,34 +17,16 @@ namespace Jellyfin.Server.Migrations
     public sealed class MigrationRunner
     {
         /// <summary>
-        /// The list of known pre-startup migrations, in order of applicability.
+        /// Gets types implementing migration routine interface.
         /// </summary>
-        private static readonly Type[] _preStartupMigrationTypes =
+        /// <param name="preStartupRoutines">Boolean, true when getting routines to be performed before server start.</param>
+        /// <returns>Enumerable of types.</returns>
+        public static IEnumerable<Type> GetMigrationTypes(bool preStartupRoutines)
         {
-            typeof(PreStartupRoutines.CreateNetworkConfiguration),
-            typeof(PreStartupRoutines.MigrateMusicBrainzTimeout),
-            typeof(PreStartupRoutines.MigrateNetworkConfiguration)
-        };
-
-        /// <summary>
-        /// The list of known migrations, in order of applicability.
-        /// </summary>
-        private static readonly Type[] _migrationTypes =
-        {
-            typeof(Routines.DisableTranscodingThrottling),
-            typeof(Routines.CreateUserLoggingConfigFile),
-            typeof(Routines.MigrateActivityLogDb),
-            typeof(Routines.RemoveDuplicateExtras),
-            typeof(Routines.AddDefaultPluginRepository),
-            typeof(Routines.MigrateUserDb),
-            typeof(Routines.ReaddDefaultPluginRepository),
-            typeof(Routines.MigrateDisplayPreferencesDb),
-            typeof(Routines.RemoveDownloadImagesInAdvance),
-            typeof(Routines.MigrateAuthenticationDb),
-            typeof(Routines.FixPlaylistOwner),
-            typeof(Routines.MigrateRatingLevels),
-            typeof(Routines.AddDefaultCastReceivers)
-        };
+            return AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(s => s.GetExportedTypes())
+                .Where(p => p.IsClass && !p.IsAbstract && p.IsAssignableTo(preStartupRoutines ? typeof(IPreStartupMigrationRoutine) : typeof(IPostStartupMigrationRoutine)));
+        }
 
         /// <summary>
         /// Run all needed migrations.
@@ -54,11 +36,7 @@ namespace Jellyfin.Server.Migrations
         public static void Run(CoreAppHost host, ILoggerFactory loggerFactory)
         {
             var logger = loggerFactory.CreateLogger<MigrationRunner>();
-            var migrations = _migrationTypes
-                .Select(m => ActivatorUtilities.CreateInstance(host.ServiceProvider, m))
-                .OfType<IMigrationRoutine>()
-                .ToArray();
-
+            var migrations = GetMigrationTypes(false).Select(m => ActivatorUtilities.CreateInstance(host.ServiceProvider, m)).OfType<IMigrationRoutine>().ToArray();
             var migrationOptions = host.ConfigurationManager.GetConfiguration<MigrationOptions>(MigrationsListStore.StoreKey);
             HandleStartupWizardCondition(migrations, migrationOptions, host.ConfigurationManager.Configuration.IsStartupWizardCompleted, logger);
             PerformMigrations(migrations, migrationOptions, options => host.ConfigurationManager.SaveConfiguration(MigrationsListStore.StoreKey, options), logger);
@@ -72,7 +50,7 @@ namespace Jellyfin.Server.Migrations
         public static void RunPreStartup(ServerApplicationPaths appPaths, ILoggerFactory loggerFactory)
         {
             var logger = loggerFactory.CreateLogger<MigrationRunner>();
-            var migrations = _preStartupMigrationTypes
+            var migrations = GetMigrationTypes(true)
                 .Select(m => Activator.CreateInstance(m, appPaths, loggerFactory))
                 .OfType<IMigrationRoutine>()
                 .ToArray();
