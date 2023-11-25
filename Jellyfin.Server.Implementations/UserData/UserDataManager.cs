@@ -135,10 +135,9 @@ public class UserDataManager : IUserDataManager
         return GetUserData(user, item);
     }
 
-    [SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Will move everything to async in the future. For now I want ti change less stuff.")]
     public UserItemData GetUserData(User? user, BaseItem item)
     {
-        return GetUserDataAsync(user, item).Result;
+        return GetUserDataAsync(user, item).GetAwaiter().GetResult();
     }
 
     public UserItemDataDto GetUserDataDto(BaseItem item, User user)
@@ -176,12 +175,11 @@ public class UserDataManager : IUserDataManager
          };
      }
 
-    [SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Pending")]
     public List<Data.Entities.UserItemData> GetAllUserData(Guid userId)
     {
         var user = _userManager.GetUserById(userId);
 
-        return GetAllUserDataAsync(user).Result;
+        return GetAllUserDataAsync(user).GetAwaiter().GetResult();
     }
 
     private async Task<List<UserItemData>> GetAllUserDataAsync(User? user)
