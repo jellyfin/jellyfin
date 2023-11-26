@@ -8,19 +8,16 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Controller.Chapters;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Chapters
 {
     public class ChapterManager : IChapterManager
     {
         private readonly IDbContextFactory<LibraryDbContext> _provider;
-        private readonly ILogger<ChapterManager> _logger;
 
-        public ChapterManager(IDbContextFactory<LibraryDbContext> provider, ILogger<ChapterManager> logger)
+        public ChapterManager(IDbContextFactory<LibraryDbContext> provider)
         {
             _provider = provider;
-            this._logger = logger;
         }
 
         /// <inheritdoc />
