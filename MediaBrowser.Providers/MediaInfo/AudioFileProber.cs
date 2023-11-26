@@ -136,11 +136,11 @@ namespace MediaBrowser.Providers.MediaInfo
                     using var reader = process.StandardError;
                     var output = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
                     cancellationToken.ThrowIfCancellationRequested();
-                    MatchCollection split = ReplayGainTagRegex().Matches(output);
+                    Match split = ReplayGainTagRegex().Match(output);
 
-                    if (split.Count != 0)
+                    if (split.Success)
                     {
-                        item.LUFS = DefaultLUFSValue - float.Parse(split[0].Groups[1].ValueSpan, CultureInfo.InvariantCulture.NumberFormat);
+                        item.LUFS = DefaultLUFSValue - float.Parse(split.Groups[1].ValueSpan, CultureInfo.InvariantCulture.NumberFormat);
                         foundLUFSValue = true;
                     }
                     else
