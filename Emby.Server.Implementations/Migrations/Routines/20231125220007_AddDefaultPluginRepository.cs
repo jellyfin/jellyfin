@@ -2,7 +2,7 @@
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Updates;
 
-namespace Jellyfin.Server.Migrations.Routines
+namespace Emby.Server.Implementations.Migrations.Routines
 {
     /// <summary>
     /// Migration to initialize system configuration with the default plugin repository.

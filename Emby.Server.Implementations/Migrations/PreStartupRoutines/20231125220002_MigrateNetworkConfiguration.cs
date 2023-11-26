@@ -2,11 +2,10 @@ using System;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
-using Emby.Server.Implementations;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Server.Migrations.PreStartupRoutines;
+namespace Emby.Server.Implementations.Migrations.PreStartupRoutines;
 
 /// <inheritdoc />
 public partial class MigrateNetworkConfiguration : IPreStartupMigrationRoutine

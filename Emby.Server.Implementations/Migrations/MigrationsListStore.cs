@@ -1,6 +1,6 @@
 using MediaBrowser.Common.Configuration;
 
-namespace Jellyfin.Server.Migrations
+namespace Emby.Server.Implementations.Migrations
 {
     /// <summary>
     /// A configuration that lists all the migration routines that were applied.

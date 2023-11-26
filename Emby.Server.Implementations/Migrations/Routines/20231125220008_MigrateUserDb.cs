@@ -16,7 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
-namespace Jellyfin.Server.Migrations.Routines
+namespace Emby.Server.Implementations.Migrations.Routines
 {
     /// <summary>
     /// The migration routine for migrating the user database to EF Core.

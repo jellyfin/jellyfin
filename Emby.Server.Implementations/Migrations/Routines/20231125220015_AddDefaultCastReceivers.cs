@@ -2,7 +2,7 @@
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.System;
 
-namespace Jellyfin.Server.Migrations.Routines;
+namespace Emby.Server.Implementations.Migrations.Routines;
 
 /// <summary>
 /// Migration to add the default cast receivers to the system config.

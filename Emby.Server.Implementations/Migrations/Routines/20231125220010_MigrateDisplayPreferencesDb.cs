@@ -15,7 +15,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Server.Migrations.Routines
+namespace Emby.Server.Implementations.Migrations.Routines
 {
     /// <summary>
     /// The migration routine for migrating the display preferences database to EF Core.

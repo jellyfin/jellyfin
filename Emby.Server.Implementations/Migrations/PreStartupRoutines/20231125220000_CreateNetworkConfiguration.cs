@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Globalization;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
-using Emby.Server.Implementations;
 using Microsoft.Extensions.Logging;
-using TagLib.Id3v2;
 
-namespace Jellyfin.Server.Migrations.PreStartupRoutines;
+namespace Emby.Server.Implementations.Migrations.PreStartupRoutines;
 
 /// <inheritdoc />
 public partial class CreateNetworkConfiguration : IPreStartupMigrationRoutine

@@ -1,6 +1,6 @@
 using System;
 
-namespace Jellyfin.Server.Migrations
+namespace Emby.Server.Implementations.Migrations
 {
     /// <summary>
     /// Interface that describes a migration routine.

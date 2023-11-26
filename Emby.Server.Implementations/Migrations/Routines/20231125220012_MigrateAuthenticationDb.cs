@@ -10,7 +10,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Server.Migrations.Routines
+namespace Emby.Server.Implementations.Migrations.Routines
 {
     /// <summary>
     /// A migration that moves data from the authentication database into the new schema.

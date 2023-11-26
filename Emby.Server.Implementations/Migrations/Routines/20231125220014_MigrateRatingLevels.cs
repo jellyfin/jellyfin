@@ -7,7 +7,7 @@ using MediaBrowser.Model.Globalization;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Server.Migrations.Routines
+namespace Emby.Server.Implementations.Migrations.Routines
 {
     /// <summary>
     /// Migrate rating levels to new rating level system.

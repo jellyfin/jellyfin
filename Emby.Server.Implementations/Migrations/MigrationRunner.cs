@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using Emby.Server.Implementations;
+using Emby.Server.Implementations.Configuration;
 using Emby.Server.Implementations.Serialization;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Server.Migrations
+namespace Emby.Server.Implementations.Migrations
 {
     /// <summary>
     /// The class that knows which migrations to apply and how to apply them.
@@ -32,19 +32,20 @@ namespace Jellyfin.Server.Migrations
         /// <summary>
         /// Run all needed migrations.
         /// </summary>
-        /// <param name="host">CoreAppHost that hosts current version.</param>
+        /// <param name="serviceProvider">ServiceProvider for dependency injection.</param>
+        /// <param name="configurationManager">ServerConfigurationManager for updating configuration.</param>
         /// <param name="loggerFactory">Factory for making the logger.</param>
-        public static void Run(CoreAppHost host, ILoggerFactory loggerFactory)
+        public static void Run(IServiceProvider serviceProvider, ServerConfigurationManager configurationManager, ILoggerFactory loggerFactory)
         {
             var logger = loggerFactory.CreateLogger<MigrationRunner>();
             var migrations = GetMigrationTypes(false)
-                .Select(m => ActivatorUtilities.CreateInstance(host.ServiceProvider, m))
+                .Select(m => ActivatorUtilities.CreateInstance(serviceProvider, m))
                 .OfType<IMigrationRoutine>()
                 .OrderBy(m => m.Timestamp)
                 .ToArray();
-            var migrationOptions = host.ConfigurationManager.GetConfiguration<MigrationOptions>(MigrationsListStore.StoreKey);
-            HandleStartupWizardCondition(migrations, migrationOptions, host.ConfigurationManager.Configuration.IsStartupWizardCompleted, logger);
-            PerformMigrations(migrations, migrationOptions, options => host.ConfigurationManager.SaveConfiguration(MigrationsListStore.StoreKey, options), logger);
+            var migrationOptions = configurationManager.GetConfiguration<MigrationOptions>(MigrationsListStore.StoreKey);
+            HandleStartupWizardCondition(migrations, migrationOptions, configurationManager.Configuration.IsStartupWizardCompleted, logger);
+            PerformMigrations(migrations, migrationOptions, options => configurationManager.SaveConfiguration(MigrationsListStore.StoreKey, options), logger);
         }
 
         /// <summary>

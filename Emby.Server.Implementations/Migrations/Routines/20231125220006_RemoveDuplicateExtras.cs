@@ -7,7 +7,7 @@ using MediaBrowser.Controller;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Server.Migrations.Routines
+namespace Emby.Server.Implementations.Migrations.Routines
 {
     /// <summary>
     /// Remove duplicate entries which were caused by a bug where a file was considered to be an "Extra" to itself.
