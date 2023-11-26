@@ -12,12 +12,17 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// Remove duplicate entries which were caused by a bug where a file was considered to be an "Extra" to itself.
     /// </summary>
-    internal class RemoveDuplicateExtras : IPostStartupMigrationRoutine
+    public class RemoveDuplicateExtras : IPostStartupMigrationRoutine
     {
         private const string DbFilename = "library.db";
         private readonly ILogger<RemoveDuplicateExtras> _logger;
         private readonly IServerApplicationPaths _paths;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RemoveDuplicateExtras"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="paths">The application paths.</param>
         public RemoveDuplicateExtras(ILogger<RemoveDuplicateExtras> logger, IServerApplicationPaths paths)
         {
             _logger = logger;

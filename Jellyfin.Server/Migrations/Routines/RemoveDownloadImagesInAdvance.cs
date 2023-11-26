@@ -8,11 +8,16 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// Removes the old 'RemoveDownloadImagesInAdvance' from library options.
     /// </summary>
-    internal class RemoveDownloadImagesInAdvance : IPostStartupMigrationRoutine
+    public class RemoveDownloadImagesInAdvance : IPostStartupMigrationRoutine
     {
         private readonly ILogger<RemoveDownloadImagesInAdvance> _logger;
         private readonly ILibraryManager _libraryManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RemoveDownloadImagesInAdvance"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="libraryManager">The library manager.</param>
         public RemoveDownloadImagesInAdvance(ILogger<RemoveDownloadImagesInAdvance> logger, ILibraryManager libraryManager)
         {
             _logger = logger;

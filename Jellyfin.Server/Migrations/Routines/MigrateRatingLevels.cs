@@ -12,13 +12,19 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// Migrate rating levels to new rating level system.
     /// </summary>
-    internal class MigrateRatingLevels : IPostStartupMigrationRoutine
+    public class MigrateRatingLevels : IPostStartupMigrationRoutine
     {
         private const string DbFilename = "library.db";
         private readonly ILogger<MigrateRatingLevels> _logger;
         private readonly IServerApplicationPaths _applicationPaths;
         private readonly ILocalizationManager _localizationManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MigrateRatingLevels"/> class.
+        /// </summary>
+        /// <param name="applicationPaths">The application paths.</param>
+        /// <param name="loggerFactory">The logger factory.</param>
+        /// <param name="localizationManager">The localization manager.</param>
         public MigrateRatingLevels(
             IServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,

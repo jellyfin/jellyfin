@@ -12,7 +12,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// If the deprecated logging.json file exists and has a custom config, it will be used as logging.user.json,
     /// otherwise a blank file will be created.
     /// </summary>
-    internal class CreateUserLoggingConfigFile : IPostStartupMigrationRoutine
+    public class CreateUserLoggingConfigFile : IPostStartupMigrationRoutine
     {
         /// <summary>
         /// File history for logging.json as existed during this migration creation. The contents for each has been minified.
@@ -37,6 +37,10 @@ namespace Jellyfin.Server.Migrations.Routines
 
         private readonly IApplicationPaths _appPaths;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CreateUserLoggingConfigFile"/> class.
+        /// </summary>
+        /// <param name="appPaths">The application paths.</param>
         public CreateUserLoggingConfigFile(IApplicationPaths appPaths)
         {
             _appPaths = appPaths;

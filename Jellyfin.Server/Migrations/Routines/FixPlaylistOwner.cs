@@ -13,12 +13,18 @@ namespace Jellyfin.Server.Migrations.Routines;
 /// <summary>
 /// Properly set playlist owner.
 /// </summary>
-internal class FixPlaylistOwner : IPostStartupMigrationRoutine
+public class FixPlaylistOwner : IPostStartupMigrationRoutine
 {
     private readonly ILogger<RemoveDuplicateExtras> _logger;
     private readonly ILibraryManager _libraryManager;
     private readonly IPlaylistManager _playlistManager;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FixPlaylistOwner"/> class.
+    /// </summary>
+    /// <param name="logger">The logger.</param>
+    /// <param name="libraryManager">The library manager.</param>
+    /// <param name="playlistManager">The playlist manager.</param>
     public FixPlaylistOwner(
         ILogger<RemoveDuplicateExtras> logger,
         ILibraryManager libraryManager,
