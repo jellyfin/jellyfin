@@ -2,8 +2,6 @@ using System;
 using System.Linq;
 using System.Reflection;
 using Jellyfin.Data.Entities;
-using Jellyfin.Data.Entities.Libraries;
-using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
