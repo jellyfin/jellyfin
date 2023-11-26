@@ -452,11 +452,11 @@ namespace Emby.Server.Implementations
 
             if (Environment.GetEnvironmentVariable("JELLYFIN_NETWORKMANAGER_BINDALL") == "true")
             {
-                NetManager = new BindAllNetworkManager(ConfigurationManager, LoggerFactory.CreateLogger<NetworkManager>());
+                NetManager = new BindAllNetworkManager(ConfigurationManager, _startupConfig, LoggerFactory.CreateLogger<NetworkManager>());
             }
             else
             {
-                NetManager = new NetworkManager(ConfigurationManager, LoggerFactory.CreateLogger<NetworkManager>());
+                NetManager = new NetworkManager(ConfigurationManager, _startupConfig, LoggerFactory.CreateLogger<NetworkManager>());
             }
 
             // Initialize runtime stat collection
