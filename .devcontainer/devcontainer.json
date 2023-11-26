@@ -1,5 +1,6 @@
 {
-    "image":"mcr.microsoft.com/devcontainers/universal:2",
+    "image":"mcr.microsoft.com/devcontainers/dotnet",
+	"postCreateCommand": "dotnet restore; dotnet dev-certs https --trust",
     "containerEnv": {
         "JELLYFIN_NETWORKMANAGER_BINDALL": "true"
     }
