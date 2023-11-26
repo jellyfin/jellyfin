@@ -2,25 +2,52 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
+using Jellyfin.Server.Implementations;
 using MediaBrowser.Controller.Chapters;
-using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Model.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Chapters
 {
     public class ChapterManager : IChapterManager
     {
-        private readonly IItemRepository _itemRepo;
+        private readonly IDbContextFactory<LibraryDbContext> _provider;
+        private readonly ILogger<ChapterManager> _logger;
 
-        public ChapterManager(IItemRepository itemRepo)
+        public ChapterManager(IDbContextFactory<LibraryDbContext> provider, ILogger<ChapterManager> logger)
         {
-            _itemRepo = itemRepo;
+            _provider = provider;
+            this._logger = logger;
         }
 
         /// <inheritdoc />
-        public void SaveChapters(Guid itemId, IReadOnlyList<ChapterInfo> chapters)
+        public async void SaveChapters(Guid itemId, IReadOnlyList<ChapterInfo> chapters)
         {
-            _itemRepo.SaveChapters(itemId, chapters);
+            if (itemId.Equals(default))
+            {
+                throw new ArgumentNullException(nameof(itemId));
+            }
+
+            ArgumentNullException.ThrowIfNull(chapters);
+
+            var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
+            await using (dbContext.ConfigureAwait(false))
+            {
+                await dbContext.ChapterInfos.Where(e => e.ItemId.Equals(itemId)).ExecuteDeleteAsync().ConfigureAwait(false);
+                int index = 0;
+                foreach (var chapterInfo in chapters)
+                {
+                    chapterInfo.ItemId = itemId;
+                    chapterInfo.ChapterIndex = index;
+                    dbContext.ChapterInfos.Add(chapterInfo);
+                    index++;
+                }
+
+                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+            }
         }
     }
 }

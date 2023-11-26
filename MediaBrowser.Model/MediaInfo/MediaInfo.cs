@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 

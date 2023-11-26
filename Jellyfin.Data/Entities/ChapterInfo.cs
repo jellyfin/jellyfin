@@ -1,14 +1,27 @@
 #pragma warning disable CS1591
 
 using System;
+using Jellyfin.Server.Implementations;
+using Microsoft.EntityFrameworkCore;
 
-namespace MediaBrowser.Model.Entities
+namespace Jellyfin.Data.Entities
 {
     /// <summary>
     /// Class ChapterInfo.
     /// </summary>
-    public class ChapterInfo
+    [PrimaryKey(nameof(ItemId), nameof(ChapterIndex))]
+    public class ChapterInfo : ILibraryModel
     {
+        /// <summary>
+        /// Gets or sets the BaseItem Id.
+        /// </summary>
+        public Guid ItemId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Chapter Index.
+        /// </summary>
+        public int ChapterIndex { get; set; }
+
         /// <summary>
         /// Gets or sets the start position ticks.
         /// </summary>
@@ -28,7 +41,5 @@ namespace MediaBrowser.Model.Entities
         public string? ImagePath { get; set; }
 
         public DateTime ImageDateModified { get; set; }
-
-        public string? ImageTag { get; set; }
     }
 }

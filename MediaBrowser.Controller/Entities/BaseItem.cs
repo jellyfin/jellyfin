@@ -2017,7 +2017,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (imageType == ImageType.Chapter)
             {
-                var chapter = ItemRepository.GetChapter(this, imageIndex);
+                var chapter = LibraryManager.GetChapter(this, imageIndex, CancellationToken.None).GetAwaiter().GetResult();
 
                 if (chapter is null)
                 {
@@ -2067,7 +2067,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (image.Type == ImageType.Chapter)
             {
-                var chapters = ItemRepository.GetChapters(this);
+                var chapters = LibraryManager.GetChapters(this, CancellationToken.None).GetAwaiter().GetResult();
                 for (var i = 0; i < chapters.Count; i++)
                 {
                     if (chapters[i].ImagePath == image.Path)

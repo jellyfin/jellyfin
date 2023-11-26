@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Entities.Libraries;
 using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -20,9 +21,14 @@ public class LibraryDbContext : DbContext
     }
 
     /// <summary>
-    /// Gets the <see cref="DbSet{TEntity}"/> containing the access schedules.
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the user and BaseItem Pivot Table.
     /// </summary>
     public DbSet<UserItemData> UserDatas => Set<UserItemData>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the Chapters info.
+    /// </summary>
+    public DbSet<ChapterInfo> ChapterInfos => Set<ChapterInfo>();
 
     /// <inheritdoc/>
     public override int SaveChanges()

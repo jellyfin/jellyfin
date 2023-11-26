@@ -584,5 +584,9 @@ namespace MediaBrowser.Controller.Library
         /// This exists so plugins can trigger a library scan.
         /// </remarks>
         void QueueLibraryScan();
+
+        public Task<List<ChapterInfo>> GetChapters(BaseItem item, CancellationToken cancellationToken);
+
+        public Task<ChapterInfo> GetChapter(BaseItem item, int chapterIndex, CancellationToken cancellationToken);
     }
 }
