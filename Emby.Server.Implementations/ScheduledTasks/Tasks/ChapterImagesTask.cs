@@ -28,7 +28,6 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
     {
         private readonly ILogger<ChapterImagesTask> _logger;
         private readonly ILibraryManager _libraryManager;
-        private readonly IItemRepository _itemRepo;
         private readonly IApplicationPaths _appPaths;
         private readonly IEncodingManager _encodingManager;
         private readonly IFileSystem _fileSystem;
@@ -39,7 +38,6 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// </summary>
         /// <param name="logger">The logger.</param>.
         /// <param name="libraryManager">The library manager.</param>.
-        /// <param name="itemRepo">The item repository.</param>
         /// <param name="appPaths">The application paths.</param>
         /// <param name="encodingManager">The encoding manager.</param>
         /// <param name="fileSystem">The filesystem.</param>
@@ -47,7 +45,6 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         public ChapterImagesTask(
             ILogger<ChapterImagesTask> logger,
             ILibraryManager libraryManager,
-            IItemRepository itemRepo,
             IApplicationPaths appPaths,
             IEncodingManager encodingManager,
             IFileSystem fileSystem,
@@ -55,7 +52,6 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         {
             _logger = logger;
             _libraryManager = libraryManager;
-            _itemRepo = itemRepo;
             _appPaths = appPaths;
             _encodingManager = encodingManager;
             _fileSystem = fileSystem;
