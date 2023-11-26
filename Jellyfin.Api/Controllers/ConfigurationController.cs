@@ -125,6 +125,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="mediaEncoderPath">Media encoder path form body.</param>
         /// <response code="204">Media encoder path updated.</response>
         /// <returns>Status.</returns>
+        [Obsolete("This endpoint is obsolete.")]
         [HttpPost("MediaEncoder/Path")]
         [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
