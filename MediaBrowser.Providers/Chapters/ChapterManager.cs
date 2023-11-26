@@ -3,10 +3,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Controller.Chapters;
+using MediaBrowser.Controller.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace MediaBrowser.Providers.Chapters
@@ -18,6 +20,32 @@ namespace MediaBrowser.Providers.Chapters
         public ChapterManager(IDbContextFactory<LibraryDbContext> provider)
         {
             _provider = provider;
+        }
+
+        /// <inheritdoc />
+        public async Task<List<ChapterInfo>> GetChapters(BaseItem item, CancellationToken cancellationToken)
+        {
+            List<ChapterInfo> chapters;
+            var dbContext = await _provider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+            await using (dbContext.ConfigureAwait(false))
+            {
+                chapters = dbContext.ChapterInfos.Where(p => p.ItemId.Equals(item.Id)).ToList();
+            }
+
+            return chapters;
+        }
+
+        /// <inheritdoc />
+        public async Task<ChapterInfo?> GetChapter(BaseItem item, int chapterIndex, CancellationToken cancellationToken)
+        {
+            ChapterInfo? chapter;
+            var dbContext = await _provider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+            await using (dbContext.ConfigureAwait(false))
+            {
+                chapter = await dbContext.ChapterInfos.FirstOrDefaultAsync(p => p.ItemId.Equals(item.Id) && p.ChapterIndex == chapterIndex, cancellationToken: cancellationToken).ConfigureAwait(false);
+            }
+
+            return chapter;
         }
 
         /// <inheritdoc />

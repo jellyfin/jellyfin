@@ -25,6 +25,7 @@ using Jellyfin.Server.Implementations;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
@@ -47,6 +48,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Tasks;
+using MediaBrowser.Providers.Chapters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
@@ -81,6 +83,7 @@ namespace Emby.Server.Implementations.Library
         private readonly NamingOptions _namingOptions;
         private readonly ExtraResolver _extraResolver;
         private readonly IDbContextFactory<LibraryDbContext> _provider;
+        private readonly IChapterManager _chapterManager;
 
         /// <summary>
         /// The _root folder sync lock.
@@ -117,6 +120,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="namingOptions">The naming options.</param>
         /// <param name="directoryService">The directory service.</param>
         /// <param name="provider">The LibraryDB Provider.</param>
+        /// <param name="chapterManager">The ChapterManager.</param>
         public LibraryManager(
             IServerApplicationHost appHost,
             ILoggerFactory loggerFactory,
@@ -133,7 +137,8 @@ namespace Emby.Server.Implementations.Library
             IImageProcessor imageProcessor,
             NamingOptions namingOptions,
             IDirectoryService directoryService,
-            IDbContextFactory<LibraryDbContext> provider)
+            IDbContextFactory<LibraryDbContext> provider,
+            IChapterManager chapterManager)
         {
             _appHost = appHost;
             _logger = loggerFactory.CreateLogger<LibraryManager>();
@@ -155,6 +160,7 @@ namespace Emby.Server.Implementations.Library
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
             _provider = provider;
+            _chapterManager = chapterManager;
 
             RecordConfigurationValues(configurationManager.Configuration);
         }
@@ -1489,28 +1495,16 @@ namespace Emby.Server.Implementations.Library
             query.Parent = null;
         }
 
+        [Obsolete("LibraryManager.GetChapters is deprecated, please use ChapterManager.GetChapters instead.")]
         public async Task<List<ChapterInfo>> GetChapters(BaseItem item, CancellationToken cancellationToken)
         {
-            List<ChapterInfo> chapters;
-            var dbContext = await _provider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
-            {
-                chapters = dbContext.ChapterInfos.Where(p => p.ItemId.Equals(item.Id)).ToList();
-            }
-
-            return chapters;
+            return await _chapterManager.GetChapters(item, cancellationToken).ConfigureAwait(false);
         }
 
+        [Obsolete("LibraryManager.GetChapter is deprecated, please use ChapterManager.GetChapter instead.")]
         public async Task<ChapterInfo> GetChapter(BaseItem item, int chapterIndex, CancellationToken cancellationToken)
         {
-            ChapterInfo chapter;
-            var dbContext = await _provider.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-            await using (dbContext.ConfigureAwait(false))
-            {
-                chapter = await dbContext.ChapterInfos.FirstOrDefaultAsync(p => p.ItemId.Equals(item.Id) && p.ChapterIndex == chapterIndex, cancellationToken: cancellationToken).ConfigureAwait(false);
-            }
-
-            return chapter;
+            return await _chapterManager.GetChapter(item, chapterIndex, cancellationToken).ConfigureAwait(false);
         }
 
         private void AddUserToQuery(InternalItemsQuery query, User user, bool allowExternalContent = true)
