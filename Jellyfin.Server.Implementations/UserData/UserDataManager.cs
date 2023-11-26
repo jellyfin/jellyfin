@@ -56,7 +56,7 @@ public class UserDataManager : IUserDataManager
     /// <paramref name="user"/> or <paramref name="item"/> or <paramref name="userData"/> or <paramref name="cancellationToken"/> is <c>null</c>.
     /// </exception>
     /// <returns>A <see cref="Task"/> to save the userdata against an item.</returns>
-    public async Task SaveUserDataAsync(User? user, BaseItem item, Data.Entities.UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
+    public async Task SaveUserDataAsync(User? user, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(userData);
 
@@ -89,24 +89,24 @@ public class UserDataManager : IUserDataManager
         });
     }
 
-    public void SaveUserData(Guid userId, BaseItem item, Data.Entities.UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
+    public void SaveUserData(Guid userId, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
     {
         var user = _userManager.GetUserById(userId);
         SaveUserData(user, item, userData, reason, cancellationToken);
     }
 
-    public void SaveUserData(User? user, BaseItem item, Data.Entities.UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
+    public void SaveUserData(User? user, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
     {
-        SaveUserDataAsync(user, item, userData, reason, cancellationToken).ConfigureAwait(true);
+        SaveUserDataAsync(user, item, userData, reason, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<UserItemData> GetUserDataAsync(User? user, BaseItem item)
     {
         ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(item);
-        var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(true);
+        var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
         UserItemData? userItemData;
-        await using (dbContext.ConfigureAwait(true))
+        await using (dbContext.ConfigureAwait(false))
         {
             userItemData = await dbContext.UserDatas.FindAsync(new object[] { user.Id, item.Id.ToString() }).ConfigureAwait(true) ?? await CreateUserDataInternalAsync(user, item, dbContext).ConfigureAwait(true);
         }
@@ -175,7 +175,7 @@ public class UserDataManager : IUserDataManager
          };
      }
 
-    public List<Data.Entities.UserItemData> GetAllUserData(Guid userId)
+    public List<UserItemData> GetAllUserData(Guid userId)
     {
         var user = _userManager.GetUserById(userId);
 
@@ -195,7 +195,7 @@ public class UserDataManager : IUserDataManager
         return userItemDatas.ToList();
     }
 
-    public bool UpdatePlayState(BaseItem item, Data.Entities.UserItemData data, long? reportedPositionTicks)
+    public bool UpdatePlayState(BaseItem item, UserItemData data, long? reportedPositionTicks)
     {
             var playedToCompletion = false;
 
