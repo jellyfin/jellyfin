@@ -3,6 +3,7 @@ using System;
 using Jellyfin.Server.Implementations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jellyfin.Server.Implementations.Migrations.LegacyEmby
 {
     [DbContext(typeof(LibraryDbContext))]
-    partial class LegacyEmbyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231126145903_RemoveChapterInfoImageTag")]
+    partial class RemoveChapterInfoImageTag
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
