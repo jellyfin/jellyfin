@@ -4378,16 +4378,28 @@ namespace Emby.Server.Implementations.Data
 
             if (query.AudioLanguage.Length > 0)
             {
-                var languages = string.Join(",", query.AudioLanguage.Select(lang => "'" + lang + "'"));
+                var languages = string.Join(", ", query.AudioLanguage.Select((lang, index) => $"@AudioLanguage_{index}"));
                 var undefinedLanguage = query.AudioLanguage.Contains("und") ? "or ms.Language is null" : string.Empty; // language with null value is handled as unddefined
                 mediaStreamsFilters.Add("SELECT CASE WHEN EXISTS (SELECT 1 FROM items JOIN MediaStreams ms ON ms.ItemId = items.ItemId AND ms.StreamType = 'Audio' AND (ms.Language in (" + languages + ") " + undefinedLanguage + ") limit 1) THEN TRUE ELSE FALSE END AS StreamFilterMatches");
+
+                var i = 0;
+                foreach (var lang in query.AudioLanguage)
+                {
+                    statement?.TryBind($"@AudioLanguage_{i++}", lang);
+                }
             }
 
             if (query.SubtitleLanguage.Length > 0)
             {
-                var languages = string.Join(",", query.SubtitleLanguage.Select(lang => "'" + lang + "'"));
+                var languages = string.Join(", ", query.SubtitleLanguage.Select((lang, index) => $"@SubtitleLanguage_{index}"));
                 var undefinedLanguage = query.SubtitleLanguage.Contains("und") ? "or ms.Language is null" : string.Empty; // language with null value is handled as unddefined
                 mediaStreamsFilters.Add("SELECT CASE WHEN EXISTS (SELECT 1 FROM items JOIN MediaStreams ms ON ms.ItemId = items.ItemId AND ms.StreamType = 'Subtitle' AND (ms.Language in (" + languages + ") " + undefinedLanguage + ") limit 1) THEN TRUE ELSE FALSE END AS StreamFilterMatches");
+
+                var i = 0;
+                foreach (var lang in query.SubtitleLanguage)
+                {
+                    statement?.TryBind($"@SubtitleLanguage_{i++}", lang);
+                }
             }
 
             if (mediaStreamsFilters.Count > 0)
