@@ -161,6 +161,7 @@
  - [MinecraftPlaye](https://github.com/MinecraftPlaye)
  - [RealGreenDragon](https://github.com/RealGreenDragon)
  - [TheTyrius](https://github.com/TheTyrius)
+ - [Çağrı Sakaoğlu](https://github.com/ilovepilav)
 
 # Emby Contributors
 
@@ -229,3 +230,6 @@
  - [gnuyent](https://github.com/gnuyent)
  - [Matthew Jones](https://github.com/matthew-jones-uk)
  - [Jakob Kukla](https://github.com/jakobkukla)
+ - [Utku Özdemir](https://github.com/utkuozdemir)
+ - [JPUC1143](https://github.com/Jpuc1143/)
+ - [0x25CBFC4F](https://github.com/0x25CBFC4F)
