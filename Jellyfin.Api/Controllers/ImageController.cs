@@ -7,11 +7,13 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
+using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
@@ -78,6 +80,9 @@ public class ImageController : BaseJellyfinApiController
         _appPaths = appPaths;
     }
 
+    private static CryptoStream GetFromBase64Stream(Stream inputStream)
+        => new CryptoStream(inputStream, new FromBase64Transform(), CryptoStreamMode.Read);
+
     /// <summary>
     /// Sets the user image.
     /// </summary>
@@ -116,8 +121,8 @@ public class ImageController : BaseJellyfinApiController
             return BadRequest("Incorrect ContentType.");
         }
 
-        var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
-        await using (memoryStream.ConfigureAwait(false))
+        var stream = GetFromBase64Stream(Request.Body);
+        await using (stream.ConfigureAwait(false))
         {
             // Handle image/png; charset=utf-8
             var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
@@ -130,7 +135,7 @@ public class ImageController : BaseJellyfinApiController
             user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + extension));
 
             await _providerManager
-                .SaveImage(memoryStream, mimeType, user.ProfileImage.Path)
+                .SaveImage(stream, mimeType, user.ProfileImage.Path)
                 .ConfigureAwait(false);
             await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
 
@@ -176,8 +181,8 @@ public class ImageController : BaseJellyfinApiController
             return BadRequest("Incorrect ContentType.");
         }
 
-        var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
-        await using (memoryStream.ConfigureAwait(false))
+        var stream = GetFromBase64Stream(Request.Body);
+        await using (stream.ConfigureAwait(false))
         {
             // Handle image/png; charset=utf-8
             var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
@@ -190,7 +195,7 @@ public class ImageController : BaseJellyfinApiController
             user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + extension));
 
             await _providerManager
-                .SaveImage(memoryStream, mimeType, user.ProfileImage.Path)
+                .SaveImage(stream, mimeType, user.ProfileImage.Path)
                 .ConfigureAwait(false);
             await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
 
@@ -372,12 +377,12 @@ public class ImageController : BaseJellyfinApiController
             return BadRequest("Incorrect ContentType.");
         }
 
-        var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
-        await using (memoryStream.ConfigureAwait(false))
+        var stream = GetFromBase64Stream(Request.Body);
+        await using (stream.ConfigureAwait(false))
         {
             // Handle image/png; charset=utf-8
             var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
-            await _providerManager.SaveImage(item, memoryStream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
+            await _providerManager.SaveImage(item, stream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
             await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
 
             return NoContent();
@@ -416,12 +421,12 @@ public class ImageController : BaseJellyfinApiController
             return BadRequest("Incorrect ContentType.");
         }
 
-        var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
-        await using (memoryStream.ConfigureAwait(false))
+        var stream = GetFromBase64Stream(Request.Body);
+        await using (stream.ConfigureAwait(false))
         {
             // Handle image/png; charset=utf-8
             var mimeType = Request.ContentType?.Split(';').FirstOrDefault();
-            await _providerManager.SaveImage(item, memoryStream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
+            await _providerManager.SaveImage(item, stream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
             await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
 
             return NoContent();
@@ -1792,8 +1797,8 @@ public class ImageController : BaseJellyfinApiController
             return BadRequest("Incorrect ContentType.");
         }
 
-        var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
-        await using (memoryStream.ConfigureAwait(false))
+        var stream = GetFromBase64Stream(Request.Body);
+        await using (stream.ConfigureAwait(false))
         {
             var filePath = Path.Combine(_appPaths.DataPath, "splashscreen-upload" + extension);
             var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
@@ -1803,7 +1808,7 @@ public class ImageController : BaseJellyfinApiController
             var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
             await using (fs.ConfigureAwait(false))
             {
-                await memoryStream.CopyToAsync(fs, CancellationToken.None).ConfigureAwait(false);
+                await stream.CopyToAsync(fs, CancellationToken.None).ConfigureAwait(false);
             }
 
             return NoContent();
@@ -1831,15 +1836,6 @@ public class ImageController : BaseJellyfinApiController
         }
 
         return NoContent();
-    }
-
-    private static async Task<MemoryStream> GetMemoryStream(Stream inputStream)
-    {
-        using var reader = new StreamReader(inputStream);
-        var text = await reader.ReadToEndAsync().ConfigureAwait(false);
-
-        var bytes = Convert.FromBase64String(text);
-        return new MemoryStream(bytes, 0, bytes.Length, false, true);
     }
 
     private ImageInfo? GetImageInfo(BaseItem item, ItemImageInfo info, int? imageIndex)
@@ -2084,30 +2080,30 @@ public class ImageController : BaseJellyfinApiController
 
         foreach (var (key, value) in headers)
         {
-            Response.Headers.Add(key, value);
+            Response.Headers.Append(key, value);
         }
 
         Response.ContentType = imageContentType ?? MediaTypeNames.Text.Plain;
-        Response.Headers.Add(HeaderNames.Age, Convert.ToInt64((DateTime.UtcNow - dateImageModified).TotalSeconds).ToString(CultureInfo.InvariantCulture));
-        Response.Headers.Add(HeaderNames.Vary, HeaderNames.Accept);
+        Response.Headers.Append(HeaderNames.Age, Convert.ToInt64((DateTime.UtcNow - dateImageModified).TotalSeconds).ToString(CultureInfo.InvariantCulture));
+        Response.Headers.Append(HeaderNames.Vary, HeaderNames.Accept);
 
         if (disableCaching)
         {
-            Response.Headers.Add(HeaderNames.CacheControl, "no-cache, no-store, must-revalidate");
-            Response.Headers.Add(HeaderNames.Pragma, "no-cache, no-store, must-revalidate");
+            Response.Headers.Append(HeaderNames.CacheControl, "no-cache, no-store, must-revalidate");
+            Response.Headers.Append(HeaderNames.Pragma, "no-cache, no-store, must-revalidate");
         }
         else
         {
             if (cacheDuration.HasValue)
             {
-                Response.Headers.Add(HeaderNames.CacheControl, "public, max-age=" + cacheDuration.Value.TotalSeconds);
+                Response.Headers.Append(HeaderNames.CacheControl, "public, max-age=" + cacheDuration.Value.TotalSeconds);
             }
             else
             {
-                Response.Headers.Add(HeaderNames.CacheControl, "public");
+                Response.Headers.Append(HeaderNames.CacheControl, "public");
             }
 
-            Response.Headers.Add(HeaderNames.LastModified, dateImageModified.ToUniversalTime().ToString("ddd, dd MMM yyyy HH:mm:ss \"GMT\"", CultureInfo.InvariantCulture));
+            Response.Headers.Append(HeaderNames.LastModified, dateImageModified.ToUniversalTime().ToString("ddd, dd MMM yyyy HH:mm:ss \"GMT\"", CultureInfo.InvariantCulture));
 
             // if the image was not modified since "ifModifiedSinceHeader"-header, return a HTTP status code 304 not modified
             if (!(dateImageModified > ifModifiedSinceHeader) && cacheDuration.HasValue)

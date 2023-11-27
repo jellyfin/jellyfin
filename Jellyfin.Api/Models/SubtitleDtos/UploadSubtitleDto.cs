@@ -26,6 +26,12 @@ public class UploadSubtitleDto
     public bool IsForced { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether the subtitle is for hearing impaired.
+    /// </summary>
+    [Required]
+    public bool IsHearingImpaired { get; set; }
+
+    /// <summary>
     /// Gets or sets the subtitle data.
     /// </summary>
     [Required]

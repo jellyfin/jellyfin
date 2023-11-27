@@ -73,27 +73,5 @@ namespace MediaBrowser.Model.Dlna
 
             return null;
         }
-
-        private static double GetVideoBitrateScaleFactor(string codec)
-        {
-            if (string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(codec, "vp9", StringComparison.OrdinalIgnoreCase))
-            {
-                return .6;
-            }
-
-            return 1;
-        }
-
-        public static int ScaleBitrate(int bitrate, string inputVideoCodec, string outputVideoCodec)
-        {
-            var inputScaleFactor = GetVideoBitrateScaleFactor(inputVideoCodec);
-            var outputScaleFactor = GetVideoBitrateScaleFactor(outputVideoCodec);
-            var scaleFactor = outputScaleFactor / inputScaleFactor;
-            var newBitrate = scaleFactor * bitrate;
-
-            return Convert.ToInt32(newBitrate);
-        }
     }
 }

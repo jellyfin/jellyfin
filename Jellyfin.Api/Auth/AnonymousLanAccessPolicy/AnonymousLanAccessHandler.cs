@@ -30,7 +30,7 @@ namespace Jellyfin.Api.Auth.AnonymousLanAccessPolicy
         /// <inheritdoc />
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, AnonymousLanAccessRequirement requirement)
         {
-            var ip = _httpContextAccessor.HttpContext?.GetNormalizedRemoteIp();
+            var ip = _httpContextAccessor.HttpContext?.GetNormalizedRemoteIP();
 
             // Loopback will be on LAN, so we can accept null.
             if (ip is null || _networkManager.IsInLocalNetwork(ip))

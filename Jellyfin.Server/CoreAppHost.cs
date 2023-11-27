@@ -11,6 +11,7 @@ using Jellyfin.Server.Implementations.Activity;
 using Jellyfin.Server.Implementations.Devices;
 using Jellyfin.Server.Implementations.Events;
 using Jellyfin.Server.Implementations.Security;
+using Jellyfin.Server.Implementations.Trickplay;
 using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.BaseItemManager;
@@ -21,8 +22,9 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
+using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.Activity;
-using Microsoft.EntityFrameworkCore;
+using MediaBrowser.Providers.Lyric;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -78,6 +80,7 @@ namespace Jellyfin.Server
             serviceCollection.AddSingleton<IUserManager, UserManager>();
             serviceCollection.AddScoped<IDisplayPreferencesManager, DisplayPreferencesManager>();
             serviceCollection.AddSingleton<IDeviceManager, DeviceManager>();
+            serviceCollection.AddSingleton<ITrickplayManager, TrickplayManager>();
 
             // TODO search the assemblies instead of adding them manually?
             serviceCollection.AddSingleton<IWebSocketListener, SessionWebSocketListener>();
@@ -94,11 +97,13 @@ namespace Jellyfin.Server
                 serviceCollection.AddSingleton(typeof(ILyricProvider), type);
             }
 
+            foreach (var type in GetExportTypes<ILyricParser>())
+            {
+                serviceCollection.AddSingleton(typeof(ILyricParser), type);
+            }
+
             base.RegisterServices(serviceCollection);
         }
-
-        /// <inheritdoc />
-        protected override void RestartInternal() => Program.Restart();
 
         /// <inheritdoc />
         protected override IEnumerable<Assembly> GetAssembliesWithPartsInternal()
@@ -109,8 +114,5 @@ namespace Jellyfin.Server
             // Jellyfin.Server.Implementations
             yield return typeof(JellyfinDbContext).Assembly;
         }
-
-        /// <inheritdoc />
-        protected override void ShutdownInternal() => Program.Shutdown();
     }
 }

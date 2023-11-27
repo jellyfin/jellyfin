@@ -195,9 +195,9 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
         [FromQuery] bool? isFavorite,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] MediaType[] mediaTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] imageTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] sortBy,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemSortBy[] sortBy,
         [FromQuery] bool? isPlayed,
         [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] genres,
         [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] officialRatings,
@@ -256,8 +256,7 @@ public class ItemsController : BaseJellyfinApiController
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
         if (includeItemTypes.Length == 1
-            && (includeItemTypes[0] == BaseItemKind.Playlist
-                || includeItemTypes[0] == BaseItemKind.BoxSet))
+            && includeItemTypes[0] == BaseItemKind.BoxSet)
         {
             parentId = null;
         }
@@ -270,13 +269,13 @@ public class ItemsController : BaseJellyfinApiController
             folder = _libraryManager.GetUserRootFolder();
         }
 
-        string? collectionType = null;
+        CollectionType? collectionType = null;
         if (folder is IHasCollectionType hasCollectionType)
         {
             collectionType = hasCollectionType.CollectionType;
         }
 
-        if (string.Equals(collectionType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
+        if (collectionType == CollectionType.Playlists)
         {
             recursive = true;
             includeItemTypes = new[] { BaseItemKind.Playlist };
@@ -411,6 +410,13 @@ public class ItemsController : BaseJellyfinApiController
                 query.SeriesStatuses = seriesStatus;
             }
 
+            // Exclude Blocked Unrated Items
+            var blockedUnratedItems = user?.GetPreferenceValues<UnratedItem>(PreferenceKind.BlockUnratedItems);
+            if (blockedUnratedItems is not null)
+            {
+                query.BlockUnratedItems = blockedUnratedItems;
+            }
+
             // ExcludeLocationTypes
             if (excludeLocationTypes.Any(t => t == LocationType.Virtual))
             {
@@ -496,6 +502,7 @@ public class ItemsController : BaseJellyfinApiController
                 }
             }
 
+            query.Parent = null;
             result = folder.GetItems(query);
         }
         else
@@ -645,9 +652,9 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
         [FromQuery] bool? isFavorite,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] MediaType[] mediaTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] imageTypes,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] sortBy,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemSortBy[] sortBy,
         [FromQuery] bool? isPlayed,
         [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] genres,
         [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] officialRatings,
@@ -805,7 +812,7 @@ public class ItemsController : BaseJellyfinApiController
         [FromQuery] string? searchTerm,
         [FromQuery] Guid? parentId,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] MediaType[] mediaTypes,
         [FromQuery] bool? enableUserData,
         [FromQuery] int? imageTypeLimit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,

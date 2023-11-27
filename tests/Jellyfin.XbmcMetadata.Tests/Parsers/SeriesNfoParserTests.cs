@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -67,7 +68,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
 
             Assert.Equal(6, result.People.Count);
 
-            Assert.True(result.People.All(x => x.Type == PersonType.Actor));
+            Assert.True(result.People.All(x => x.Type == PersonKind.Actor));
 
             // Only test one actor
             var sweeney = result.People.FirstOrDefault(x => x.Role.Equals("Mad Sweeney", StringComparison.Ordinal));
@@ -89,7 +90,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             };
 
             _parser.Fetch(result, path, CancellationToken.None);
-            var item = (Series)result.Item;
+            var item = result.Item;
 
             Assert.Equal(id, item.ProviderIds[provider]);
         }

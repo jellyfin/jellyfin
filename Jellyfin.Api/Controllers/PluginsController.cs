@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Extensions.Json;
+using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Model.Net;
@@ -146,7 +147,7 @@ public class PluginsController : BaseJellyfinApiController
         var plugins = _pluginManager.Plugins.Where(p => p.Id.Equals(pluginId)).ToList();
 
         // Select the un-instanced one first.
-        var plugin = plugins.FirstOrDefault(p => p.Instance is null) ?? plugins.OrderBy(p => p.Manifest.Status).FirstOrDefault();
+        var plugin = plugins.FirstOrDefault(p => p.Instance is null) ?? plugins.MinBy(p => p.Manifest.Status);
 
         if (plugin is not null)
         {

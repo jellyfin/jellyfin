@@ -494,7 +494,7 @@ namespace Emby.Dlna.ContentDirectory
         {
             var folder = (Folder)item;
 
-            string[] mediaTypes = Array.Empty<string>();
+            MediaType[] mediaTypes = Array.Empty<MediaType>();
             bool? isFolder = null;
 
             switch (search.SearchType)
@@ -565,30 +565,18 @@ namespace Emby.Dlna.ContentDirectory
 
             if (stubType != StubType.Folder && item is IHasCollectionType collectionFolder)
             {
-                var collectionType = collectionFolder.CollectionType;
-                if (string.Equals(CollectionType.Music, collectionType, StringComparison.OrdinalIgnoreCase))
+                switch (collectionFolder.CollectionType)
                 {
-                    return GetMusicFolders(item, user, stubType, sort, startIndex, limit);
-                }
-
-                if (string.Equals(CollectionType.Movies, collectionType, StringComparison.OrdinalIgnoreCase))
-                {
-                    return GetMovieFolders(item, user, stubType, sort, startIndex, limit);
-                }
-
-                if (string.Equals(CollectionType.TvShows, collectionType, StringComparison.OrdinalIgnoreCase))
-                {
-                    return GetTvFolders(item, user, stubType, sort, startIndex, limit);
-                }
-
-                if (string.Equals(CollectionType.Folders, collectionType, StringComparison.OrdinalIgnoreCase))
-                {
-                    return GetFolders(user, startIndex, limit);
-                }
-
-                if (string.Equals(CollectionType.LiveTv, collectionType, StringComparison.OrdinalIgnoreCase))
-                {
-                    return GetLiveTvChannels(user, sort, startIndex, limit);
+                    case CollectionType.Music:
+                        return GetMusicFolders(item, user, stubType, sort, startIndex, limit);
+                    case CollectionType.Movies:
+                        return GetMovieFolders(item, user, stubType, sort, startIndex, limit);
+                    case CollectionType.TvShows:
+                        return GetTvFolders(item, user, stubType, sort, startIndex, limit);
+                    case CollectionType.Folders:
+                        return GetFolders(user, startIndex, limit);
+                    case CollectionType.LiveTv:
+                        return GetLiveTvChannels(user, sort, startIndex, limit);
                 }
             }
 
@@ -917,7 +905,7 @@ namespace Emby.Dlna.ContentDirectory
         private QueryResult<ServerItem> GetGenres(BaseItem parent, InternalItemsQuery query)
         {
             // Don't sort
-            query.OrderBy = Array.Empty<(string, SortOrder)>();
+            query.OrderBy = Array.Empty<(ItemSortBy, SortOrder)>();
             query.AncestorIds = new[] { parent.Id };
             var genresResult = _libraryManager.GetGenres(query);
 
@@ -933,7 +921,7 @@ namespace Emby.Dlna.ContentDirectory
         private QueryResult<ServerItem> GetMusicGenres(BaseItem parent, InternalItemsQuery query)
         {
             // Don't sort
-            query.OrderBy = Array.Empty<(string, SortOrder)>();
+            query.OrderBy = Array.Empty<(ItemSortBy, SortOrder)>();
             query.AncestorIds = new[] { parent.Id };
             var genresResult = _libraryManager.GetMusicGenres(query);
 
@@ -949,7 +937,7 @@ namespace Emby.Dlna.ContentDirectory
         private QueryResult<ServerItem> GetMusicAlbumArtists(BaseItem parent, InternalItemsQuery query)
         {
             // Don't sort
-            query.OrderBy = Array.Empty<(string, SortOrder)>();
+            query.OrderBy = Array.Empty<(ItemSortBy, SortOrder)>();
             query.AncestorIds = new[] { parent.Id };
             var artists = _libraryManager.GetAlbumArtists(query);
 
@@ -965,7 +953,7 @@ namespace Emby.Dlna.ContentDirectory
         private QueryResult<ServerItem> GetMusicArtists(BaseItem parent, InternalItemsQuery query)
         {
             // Don't sort
-            query.OrderBy = Array.Empty<(string, SortOrder)>();
+            query.OrderBy = Array.Empty<(ItemSortBy, SortOrder)>();
             query.AncestorIds = new[] { parent.Id };
             var artists = _libraryManager.GetArtists(query);
             return ToResult(query.StartIndex, artists);
@@ -980,7 +968,7 @@ namespace Emby.Dlna.ContentDirectory
         private QueryResult<ServerItem> GetFavoriteArtists(BaseItem parent, InternalItemsQuery query)
         {
             // Don't sort
-            query.OrderBy = Array.Empty<(string, SortOrder)>();
+            query.OrderBy = Array.Empty<(ItemSortBy, SortOrder)>();
             query.AncestorIds = new[] { parent.Id };
             query.IsFavorite = true;
             var artists = _libraryManager.GetArtists(query);
@@ -1011,7 +999,7 @@ namespace Emby.Dlna.ContentDirectory
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetNextUp(BaseItem parent, InternalItemsQuery query)
         {
-            query.OrderBy = Array.Empty<(string, SortOrder)>();
+            query.OrderBy = Array.Empty<(ItemSortBy, SortOrder)>();
 
             var result = _tvSeriesManager.GetNextUp(
                 new NextUpQuery
@@ -1036,7 +1024,7 @@ namespace Emby.Dlna.ContentDirectory
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetLatest(BaseItem parent, InternalItemsQuery query, BaseItemKind itemType)
         {
-            query.OrderBy = Array.Empty<(string, SortOrder)>();
+            query.OrderBy = Array.Empty<(ItemSortBy, SortOrder)>();
 
             var items = _userViewManager.GetLatestItems(
                 new LatestItemsQuery
@@ -1203,9 +1191,9 @@ namespace Emby.Dlna.ContentDirectory
         /// </summary>
         /// <param name="sort">The <see cref="SortCriteria"/>.</param>
         /// <param name="isPreSorted">True if pre-sorted.</param>
-        private static (string SortName, SortOrder SortOrder)[] GetOrderBy(SortCriteria sort, bool isPreSorted)
+        private static (ItemSortBy SortName, SortOrder SortOrder)[] GetOrderBy(SortCriteria sort, bool isPreSorted)
         {
-            return isPreSorted ? Array.Empty<(string, SortOrder)>() : new[] { (ItemSortBy.SortName, sort.SortOrder) };
+            return isPreSorted ? Array.Empty<(ItemSortBy, SortOrder)>() : new[] { (ItemSortBy.SortName, sort.SortOrder) };
         }
 
         /// <summary>

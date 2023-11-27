@@ -301,14 +301,6 @@ namespace MediaBrowser.Controller.Entities
             return dictionary;
         }
 
-        protected override void TriggerOnRefreshStart()
-        {
-        }
-
-        protected override void TriggerOnRefreshComplete()
-        {
-        }
-
         /// <summary>
         /// Validates the children internal.
         /// </summary>
@@ -510,26 +502,17 @@ namespace MediaBrowser.Controller.Entities
 
         private async Task RefreshAllMetadataForContainer(IMetadataContainer container, MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            // limit the amount of concurrent metadata refreshes
-            await ProviderManager.RunMetadataRefresh(
-                async () =>
-                {
-                    var series = container as Series;
-                    if (series is not null)
-                    {
-                        await series.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
-                    }
+            if (container is Series series)
+            {
+                await series.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+            }
 
-                    await container.RefreshAllMetadata(refreshOptions, progress, cancellationToken).ConfigureAwait(false);
-                },
-                cancellationToken).ConfigureAwait(false);
+            await container.RefreshAllMetadata(refreshOptions, progress, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task RefreshChildMetadata(BaseItem child, MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var container = child as IMetadataContainer;
-
-            if (container is not null)
+            if (child is IMetadataContainer container)
             {
                 await RefreshAllMetadataForContainer(container, refreshOptions, progress, cancellationToken).ConfigureAwait(false);
             }
@@ -537,10 +520,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (refreshOptions.RefreshItem(child))
                 {
-                    // limit the amount of concurrent metadata refreshes
-                    await ProviderManager.RunMetadataRefresh(
-                        async () => await child.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false),
-                        cancellationToken).ConfigureAwait(false);
+                    await child.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
                 }
 
                 if (recursive && child is Folder folder)
@@ -586,7 +566,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             var fanoutConcurrency = ConfigurationManager.Configuration.LibraryScanFanoutConcurrency;
-            var parallelism = fanoutConcurrency == 0 ? Environment.ProcessorCount : fanoutConcurrency;
+            var parallelism = fanoutConcurrency > 0 ? fanoutConcurrency : 2 * Environment.ProcessorCount;
 
             var actionBlock = new ActionBlock<int>(
                 async i =>
@@ -618,7 +598,7 @@ namespace MediaBrowser.Controller.Entities
 
             for (var i = 0; i < childrenCount; i++)
             {
-                actionBlock.Post(i);
+                await actionBlock.SendAsync(i, cancellationToken).ConfigureAwait(false);
             }
 
             actionBlock.Complete();
@@ -730,7 +710,7 @@ namespace MediaBrowser.Controller.Entities
             return LibraryManager.GetItemsResult(query);
         }
 
-        private QueryResult<BaseItem> QueryWithPostFiltering2(InternalItemsQuery query)
+        protected QueryResult<BaseItem> QueryWithPostFiltering2(InternalItemsQuery query)
         {
             var startIndex = query.StartIndex;
             var limit = query.Limit;
@@ -1272,7 +1252,7 @@ namespace MediaBrowser.Controller.Entities
         {
             ArgumentNullException.ThrowIfNull(user);
 
-            return GetChildren(user, includeLinkedChildren, null);
+            return GetChildren(user, includeLinkedChildren, new InternalItemsQuery(user));
         }
 
         public virtual List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)

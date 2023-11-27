@@ -53,7 +53,7 @@ public static class HlsHelpers
                             break;
                         }
 
-                        if (line.IndexOf("#EXTINF:", StringComparison.OrdinalIgnoreCase) != -1)
+                        if (line.Contains("#EXTINF:", StringComparison.OrdinalIgnoreCase))
                         {
                             count++;
                             if (count >= segmentCount)

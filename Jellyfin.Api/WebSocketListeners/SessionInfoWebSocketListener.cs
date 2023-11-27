@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
@@ -55,15 +57,32 @@ public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnume
     /// <inheritdoc />
     protected override void Dispose(bool dispose)
     {
-        _sessionManager.SessionStarted -= OnSessionManagerSessionStarted;
-        _sessionManager.SessionEnded -= OnSessionManagerSessionEnded;
-        _sessionManager.PlaybackStart -= OnSessionManagerPlaybackStart;
-        _sessionManager.PlaybackStopped -= OnSessionManagerPlaybackStopped;
-        _sessionManager.PlaybackProgress -= OnSessionManagerPlaybackProgress;
-        _sessionManager.CapabilitiesChanged -= OnSessionManagerCapabilitiesChanged;
-        _sessionManager.SessionActivity -= OnSessionManagerSessionActivity;
+        if (dispose)
+        {
+            _sessionManager.SessionStarted -= OnSessionManagerSessionStarted;
+            _sessionManager.SessionEnded -= OnSessionManagerSessionEnded;
+            _sessionManager.PlaybackStart -= OnSessionManagerPlaybackStart;
+            _sessionManager.PlaybackStopped -= OnSessionManagerPlaybackStopped;
+            _sessionManager.PlaybackProgress -= OnSessionManagerPlaybackProgress;
+            _sessionManager.CapabilitiesChanged -= OnSessionManagerCapabilitiesChanged;
+            _sessionManager.SessionActivity -= OnSessionManagerSessionActivity;
+        }
 
         base.Dispose(dispose);
+    }
+
+    /// <summary>
+    /// Starts sending messages over a session info web socket.
+    /// </summary>
+    /// <param name="message">The message.</param>
+    protected override void Start(WebSocketMessageInfo message)
+    {
+        if (!message.Connection.AuthorizationInfo.User.HasPermission(PermissionKind.IsAdministrator))
+        {
+            throw new AuthenticationException("Only admin users can subscribe to session information.");
+        }
+
+        base.Start(message);
     }
 
     private async void OnSessionManagerSessionActivity(object? sender, SessionEventArgs e)

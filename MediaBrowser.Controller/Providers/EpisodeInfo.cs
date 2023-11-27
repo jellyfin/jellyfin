@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using Jellyfin.Data.Enums;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -12,9 +13,12 @@ namespace MediaBrowser.Controller.Providers
         public EpisodeInfo()
         {
             SeriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            SeasonProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
         public Dictionary<string, string> SeriesProviderIds { get; set; }
+
+        public Dictionary<string, string> SeasonProviderIds { get; set; }
 
         public int? IndexNumberEnd { get; set; }
 

@@ -30,11 +30,6 @@ namespace MediaBrowser.Common.Plugins
         IEnumerable<Assembly> LoadAssemblies();
 
         /// <summary>
-        /// Unloads all of the assemblies.
-        /// </summary>
-        void UnloadAssemblies();
-
-        /// <summary>
         /// Registers the plugin's services with the DI.
         /// Note: DI is not yet instantiated yet.
         /// </summary>
@@ -57,7 +52,7 @@ namespace MediaBrowser.Common.Plugins
         /// <param name="path">The path where to save the manifest.</param>
         /// <param name="status">Initial status of the plugin.</param>
         /// <returns>True if successful.</returns>
-        Task<bool> GenerateManifest(PackageInfo packageInfo, Version version, string path, PluginStatus status);
+        Task<bool> PopulateManifest(PackageInfo packageInfo, Version version, string path, PluginStatus status);
 
         /// <summary>
         /// Imports plugin details from a folder.

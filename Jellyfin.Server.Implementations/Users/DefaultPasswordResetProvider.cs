@@ -114,8 +114,6 @@ namespace Jellyfin.Server.Implementations.Users
                 await JsonSerializer.SerializeAsync(fileStream, spr).ConfigureAwait(false);
             }
 
-            user.EasyPassword = pin;
-
             return new ForgotPasswordResult
             {
                 Action = ForgotPasswordAction.PinCode,

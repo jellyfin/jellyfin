@@ -221,10 +221,8 @@ namespace Rssdp.Infrastructure
             {
                 return trimmedSegment.Substring(1, trimmedSegment.Length - 2);
             }
-            else
-            {
-                return trimmedSegment;
-            }
+
+            return trimmedSegment;
         }
     }
 }

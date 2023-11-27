@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using EasyCaching.Core.Configurations;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json;
@@ -154,8 +155,8 @@ namespace Emby.Server.Implementations.Library
             // If file is strm or main media stream is missing, force a metadata refresh with remote probing
             if (allowMediaProbe && mediaSources[0].Type != MediaSourceType.Placeholder
                 && (item.Path.EndsWith(".strm", StringComparison.OrdinalIgnoreCase)
-                    || (item.MediaType == MediaType.Video && !mediaSources[0].MediaStreams.Any(i => i.Type == MediaStreamType.Video))
-                    || (item.MediaType == MediaType.Audio && !mediaSources[0].MediaStreams.Any(i => i.Type == MediaStreamType.Audio))))
+                    || (item.MediaType == MediaType.Video && mediaSources[0].MediaStreams.All(i => i.Type != MediaStreamType.Video))
+                    || (item.MediaType == MediaType.Audio && mediaSources[0].MediaStreams.All(i => i.Type != MediaStreamType.Audio))))
             {
                 await item.RefreshMetadata(
                     new MetadataRefreshOptions(_directoryService)
@@ -186,11 +187,11 @@ namespace Emby.Server.Implementations.Library
                 {
                     SetDefaultAudioAndSubtitleStreamIndexes(item, source, user);
 
-                    if (string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
+                    if (item.MediaType == MediaType.Audio)
                     {
                         source.SupportsTranscoding = user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding);
                     }
-                    else if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
+                    else if (item.MediaType == MediaType.Video)
                     {
                         source.SupportsTranscoding = user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding);
                         source.SupportsDirectStream = user.HasPermission(PermissionKind.EnablePlaybackRemuxing);
@@ -334,11 +335,11 @@ namespace Emby.Server.Implementations.Library
                 {
                     SetDefaultAudioAndSubtitleStreamIndexes(item, source, user);
 
-                    if (string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
+                    if (item.MediaType == MediaType.Audio)
                     {
                         source.SupportsTranscoding = user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding);
                     }
-                    else if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
+                    else if (item.MediaType == MediaType.Video)
                     {
                         source.SupportsTranscoding = user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding);
                         source.SupportsDirectStream = user.HasPermission(PermissionKind.EnablePlaybackRemuxing);
@@ -417,9 +418,9 @@ namespace Emby.Server.Implementations.Library
         public void SetDefaultAudioAndSubtitleStreamIndexes(BaseItem item, MediaSourceInfo source, User user)
         {
             // Item would only be null if the app didn't supply ItemId as part of the live stream open request
-            var mediaType = item is null ? MediaType.Video : item.MediaType;
+            var mediaType = item?.MediaType ?? MediaType.Video;
 
-            if (string.Equals(mediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
+            if (mediaType == MediaType.Video)
             {
                 var userData = item is null ? new UserItemData() : _userDataManager.GetUserData(user, item);
 
@@ -428,7 +429,7 @@ namespace Emby.Server.Implementations.Library
                 SetDefaultAudioStreamIndex(source, userData, user, allowRememberingSelection);
                 SetDefaultSubtitleStreamIndex(source, userData, user, allowRememberingSelection);
             }
-            else if (string.Equals(mediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
+            else if (mediaType == MediaType.Audio)
             {
                 var audio = source.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
 
@@ -625,16 +626,18 @@ namespace Emby.Server.Implementations.Library
 
             if (!string.IsNullOrEmpty(cacheKey))
             {
+                FileStream jsonStream = AsyncFile.OpenRead(cacheFilePath);
                 try
                 {
-                    await using FileStream jsonStream = AsyncFile.OpenRead(cacheFilePath);
                     mediaInfo = await JsonSerializer.DeserializeAsync<MediaInfo>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-
-                    // _logger.LogDebug("Found cached media info");
                 }
                 catch (Exception ex)
                 {
                     _logger.LogDebug(ex, "_jsonSerializer.DeserializeFromFile threw an exception.");
+                }
+                finally
+                {
+                    await jsonStream.DisposeAsync().ConfigureAwait(false);
                 }
             }
 
@@ -664,8 +667,11 @@ namespace Emby.Server.Implementations.Library
                 if (cacheFilePath is not null)
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
-                    await using FileStream createStream = File.Create(cacheFilePath);
-                    await JsonSerializer.SerializeAsync(createStream, mediaInfo, _jsonOptions, cancellationToken).ConfigureAwait(false);
+                    FileStream createStream = File.Create(cacheFilePath);
+                    await using (createStream.ConfigureAwait(false))
+                    {
+                        await JsonSerializer.SerializeAsync(createStream, mediaInfo, _jsonOptions, cancellationToken).ConfigureAwait(false);
+                    }
 
                     // _logger.LogDebug("Saved media info to {0}", cacheFilePath);
                 }

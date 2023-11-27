@@ -89,6 +89,10 @@ namespace Emby.Server.Implementations.Library
             // bts sync files
             "**/*.bts",
             "**/*.sync",
+
+            // zfs
+            "**/.zfs/**",
+            "**/.zfs"
         };
 
         private static readonly GlobOptions _globOptions = new GlobOptions

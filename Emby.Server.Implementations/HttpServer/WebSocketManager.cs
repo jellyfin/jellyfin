@@ -51,7 +51,8 @@ namespace Emby.Server.Implementations.HttpServer
                 using var connection = new WebSocketConnection(
                     _loggerFactory.CreateLogger<WebSocketConnection>(),
                     webSocket,
-                    context.GetNormalizedRemoteIp())
+                    authorizationInfo,
+                    context.GetNormalizedRemoteIP())
                 {
                     OnReceive = ProcessWebSocketMessageReceived
                 };
@@ -64,7 +65,7 @@ namespace Emby.Server.Implementations.HttpServer
 
                 await Task.WhenAll(tasks).ConfigureAwait(false);
 
-                await connection.ProcessAsync().ConfigureAwait(false);
+                await connection.ReceiveAsync().ConfigureAwait(false);
                 _logger.LogInformation("WS {IP} closed", context.Connection.RemoteIpAddress);
             }
             catch (Exception ex) // Otherwise ASP.Net will ignore the exception

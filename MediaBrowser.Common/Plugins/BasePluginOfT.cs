@@ -50,7 +50,7 @@ namespace MediaBrowser.Common.Plugins
             if (Version is not null && !Directory.Exists(dataFolderPath))
             {
                 // Try again with the version number appended to the folder name.
-                dataFolderPath += "_" + Version.ToString();
+                dataFolderPath += "_" + Version;
             }
 
             SetAttributes(assemblyFilePath, dataFolderPath, assemblyName.Version);

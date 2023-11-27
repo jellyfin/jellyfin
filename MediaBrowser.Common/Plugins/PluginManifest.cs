@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using MediaBrowser.Model.Plugins;
 
@@ -23,6 +24,7 @@ namespace MediaBrowser.Common.Plugins
             Overview = string.Empty;
             TargetAbi = string.Empty;
             Version = string.Empty;
+            Assemblies = Array.Empty<string>();
         }
 
         /// <summary>
@@ -104,5 +106,12 @@ namespace MediaBrowser.Common.Plugins
         /// </summary>
         [JsonPropertyName("imagePath")]
         public string? ImagePath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the collection of assemblies that should be loaded.
+        /// Paths are considered relative to the plugin folder.
+        /// </summary>
+        [JsonPropertyName("assemblies")]
+        public IReadOnlyList<string> Assemblies { get; set; }
     }
 }

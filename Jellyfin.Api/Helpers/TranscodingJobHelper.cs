@@ -280,6 +280,7 @@ public class TranscodingJobHelper : IDisposable
 
             if (job.CancellationTokenSource?.IsCancellationRequested == false)
             {
+#pragma warning disable CA1849 // Can't await in lock block
                 job.CancellationTokenSource.Cancel();
             }
         }
@@ -291,7 +292,6 @@ public class TranscodingJobHelper : IDisposable
 
         lock (job.ProcessLock!)
         {
-#pragma warning disable CA1849 // Can't await in lock block
             job.TranscodingThrottler?.Stop().GetAwaiter().GetResult();
 
             var process = job.Process;
@@ -323,6 +323,15 @@ public class TranscodingJobHelper : IDisposable
         if (delete(job.Path!))
         {
             await DeletePartialStreamFiles(job.Path!, job.Type, 0, 1500).ConfigureAwait(false);
+            if (job.MediaSource?.VideoType == VideoType.Dvd || job.MediaSource?.VideoType == VideoType.BluRay)
+            {
+                var concatFilePath = Path.Join(_serverConfigurationManager.GetTranscodePath(), job.MediaSource.Id + ".concat");
+                if (File.Exists(concatFilePath))
+                {
+                    _logger.LogInformation("Deleting ffmpeg concat configuration at {Path}", concatFilePath);
+                    File.Delete(concatFilePath);
+                }
+            }
         }
 
         if (closeLiveStream && !string.IsNullOrWhiteSpace(job.LiveStreamId))
@@ -396,7 +405,7 @@ public class TranscodingJobHelper : IDisposable
         var name = Path.GetFileNameWithoutExtension(outputFilePath);
 
         var filesToDelete = _fileSystem.GetFilePaths(directory)
-            .Where(f => f.IndexOf(name, StringComparison.OrdinalIgnoreCase) != -1);
+            .Where(f => f.Contains(name, StringComparison.OrdinalIgnoreCase));
 
         List<Exception>? exs = null;
         foreach (var file in filesToDelete)
@@ -524,9 +533,12 @@ public class TranscodingJobHelper : IDisposable
         if (state.SubtitleStream is not null && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode)
         {
             var attachmentPath = Path.Combine(_appPaths.CachePath, "attachments", state.MediaSource.Id);
-            await _attachmentExtractor.ExtractAllAttachments(state.MediaPath, state.MediaSource, attachmentPath, cancellationTokenSource.Token).ConfigureAwait(false);
+            if (state.VideoType != VideoType.Dvd)
+            {
+                await _attachmentExtractor.ExtractAllAttachments(state.MediaPath, state.MediaSource, attachmentPath, cancellationTokenSource.Token).ConfigureAwait(false);
+            }
 
-            if (state.SubtitleStream.IsExternal && string.Equals(Path.GetExtension(state.SubtitleStream.Path), ".mks", StringComparison.OrdinalIgnoreCase))
+            if (state.SubtitleStream.IsExternal && Path.GetExtension(state.SubtitleStream.Path.AsSpan()).Equals(".mks", StringComparison.OrdinalIgnoreCase))
             {
                 string subtitlePath = state.SubtitleStream.Path;
                 string subtitlePathArgument = string.Format(CultureInfo.InvariantCulture, "file:\"{0}\"", subtitlePath.Replace("\"", "\\\"", StringComparison.Ordinal));
@@ -608,7 +620,7 @@ public class TranscodingJobHelper : IDisposable
         state.TranscodingJob = transcodingJob;
 
         // Important - don't await the log task or we won't be able to kill FFmpeg when the user stops playback
-        _ = new JobLogger(_logger).StartStreamingLog(state, process.StandardError.BaseStream, logStream);
+        _ = new JobLogger(_logger).StartStreamingLog(state, process.StandardError, logStream);
 
         // Wait for the file to exist before proceeding
         var ffmpegTargetFile = state.WaitForPath ?? outputPath;
@@ -648,7 +660,7 @@ public class TranscodingJobHelper : IDisposable
     {
         if (EnableThrottling(state))
         {
-            transcodingJob.TranscodingThrottler = new TranscodingThrottler(transcodingJob, new Logger<TranscodingThrottler>(new LoggerFactory()), _serverConfigurationManager, _fileSystem, _mediaEncoder);
+            transcodingJob.TranscodingThrottler = new TranscodingThrottler(transcodingJob, _loggerFactory.CreateLogger<TranscodingThrottler>(), _serverConfigurationManager, _fileSystem, _mediaEncoder);
             transcodingJob.TranscodingThrottler.Start();
         }
     }

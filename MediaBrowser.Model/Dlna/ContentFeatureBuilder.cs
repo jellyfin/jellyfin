@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Model.Dlna
@@ -128,7 +129,7 @@ namespace MediaBrowser.Model.Dlna
             bool isDirectStream,
             long? runtimeTicks,
             string videoProfile,
-            string videoRangeType,
+            VideoRangeType videoRangeType,
             double? videoLevel,
             float? videoFramerate,
             int? packetLength,

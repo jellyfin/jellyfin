@@ -22,7 +22,7 @@
     "HeaderFavoriteEpisodes": "Oblíbené epizody",
     "HeaderFavoriteShows": "Oblíbené seriály",
     "HeaderFavoriteSongs": "Oblíbená hudba",
-    "HeaderLiveTV": "Televize",
+    "HeaderLiveTV": "Živý přenos",
     "HeaderNextUp": "Další díly",
     "HeaderRecordingGroups": "Skupiny nahrávek",
     "HomeVideos": "Domácí videa",
@@ -124,5 +124,7 @@
     "TaskKeyframeExtractorDescription": "Vytahuje klíčové snímky ze souborů videa za účelem vytváření přesnějších seznamů přehrávání HLS. Tento úkol může trvat velmi dlouho.",
     "TaskKeyframeExtractor": "Vytahovač klíčových snímků",
     "External": "Externí",
-    "HearingImpaired": "Sluchově postižení"
+    "HearingImpaired": "Sluchově postižení",
+    "TaskRefreshTrickplayImages": "Generovat obrázky pro Trickplay",
+    "TaskRefreshTrickplayImagesDescription": "Obrázky Trickplay se používají k zobrazení náhledů u videí v knihovnách, kde je to povoleno."
 }

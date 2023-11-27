@@ -30,14 +30,14 @@ public static class RequestHelpers
     /// <param name="sortBy">Sort By. Comma delimited string.</param>
     /// <param name="requestedSortOrder">Sort Order. Comma delimited string.</param>
     /// <returns>Order By.</returns>
-    public static (string, SortOrder)[] GetOrderBy(IReadOnlyList<string> sortBy, IReadOnlyList<SortOrder> requestedSortOrder)
+    public static (ItemSortBy, SortOrder)[] GetOrderBy(IReadOnlyList<ItemSortBy> sortBy, IReadOnlyList<SortOrder> requestedSortOrder)
     {
         if (sortBy.Count == 0)
         {
-            return Array.Empty<(string, SortOrder)>();
+            return Array.Empty<(ItemSortBy, SortOrder)>();
         }
 
-        var result = new (string, SortOrder)[sortBy.Count];
+        var result = new (ItemSortBy, SortOrder)[sortBy.Count];
         var i = 0;
         // Add elements which have a SortOrder specified
         for (; i < requestedSortOrder.Count; i++)
@@ -125,7 +125,7 @@ public static class RequestHelpers
             httpContext.User.GetVersion(),
             httpContext.User.GetDeviceId(),
             httpContext.User.GetDevice(),
-            httpContext.GetNormalizedRemoteIp().ToString(),
+            httpContext.GetNormalizedRemoteIP().ToString(),
             user).ConfigureAwait(false);
 
         if (session is null)

@@ -1,7 +1,9 @@
 using System;
+using System.Globalization;
 using System.Xml;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -74,23 +76,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 case "airs_dayofweek":
-                    {
-                        item.AirDays = TVUtils.GetAirDays(reader.ReadElementContentAsString());
-                        break;
-                    }
-
+                    item.AirDays = TVUtils.GetAirDays(reader.ReadElementContentAsString());
+                    break;
                 case "airs_time":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.AirTime = val;
-                        }
-
-                        break;
-                    }
-
+                    item.AirTime = reader.ReadNormalizedString();
+                    break;
                 case "status":
                     {
                         var status = reader.ReadElementContentAsString();
@@ -105,6 +95,19 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             {
                                 Logger.LogInformation("Unrecognized series status: {Status}", status);
                             }
+                        }
+
+                        break;
+                    }
+
+                case "namedseason":
+                    {
+                        var parsed = int.TryParse(reader.GetAttribute("number"), NumberStyles.Integer, CultureInfo.InvariantCulture, out var seasonNumber);
+                        var name = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(name) && parsed)
+                        {
+                            item.SeasonNames[seasonNumber] = name;
                         }
 
                         break;

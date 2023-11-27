@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using Jellyfin.Data.Enums;
+using MediaBrowser.Common.Api;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -98,7 +100,7 @@ public class ItemUpdateController : BaseJellyfinApiController
                 }).ToList());
         }
 
-        UpdateItem(request, item);
+        await UpdateItem(request, item).ConfigureAwait(false);
 
         item.OnMetadataChanged();
 
@@ -147,7 +149,7 @@ public class ItemUpdateController : BaseJellyfinApiController
 
         var info = new MetadataEditorInfo
         {
-            ParentalRatingOptions = _localizationManager.GetParentalRatings().ToArray(),
+            ParentalRatingOptions = _localizationManager.GetParentalRatings().ToList(),
             ExternalIdInfos = _providerManager.GetExternalIdInfos(item).ToArray(),
             Countries = _localizationManager.GetCountries().ToArray(),
             Cultures = _localizationManager.GetCultures().ToArray()
@@ -164,18 +166,16 @@ public class ItemUpdateController : BaseJellyfinApiController
             var inheritedContentType = _libraryManager.GetInheritedContentType(item);
             var configuredContentType = _libraryManager.GetConfiguredContentType(item);
 
-            if (string.IsNullOrWhiteSpace(inheritedContentType) ||
-                !string.IsNullOrWhiteSpace(configuredContentType))
+            if (inheritedContentType is null || configuredContentType is not null)
             {
                 info.ContentTypeOptions = GetContentTypeOptions(true).ToArray();
                 info.ContentType = configuredContentType;
 
-                if (string.IsNullOrWhiteSpace(inheritedContentType)
-                    || string.Equals(inheritedContentType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
+                if (inheritedContentType is null || inheritedContentType == CollectionType.TvShows)
                 {
                     info.ContentTypeOptions = info.ContentTypeOptions
                         .Where(i => string.IsNullOrWhiteSpace(i.Value)
-                                    || string.Equals(i.Value, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
+                                    || string.Equals(i.Value, "TvShows", StringComparison.OrdinalIgnoreCase))
                         .ToArray();
                 }
             }
@@ -224,7 +224,7 @@ public class ItemUpdateController : BaseJellyfinApiController
         return NoContent();
     }
 
-    private void UpdateItem(BaseItemDto request, BaseItem item)
+    private async Task UpdateItem(BaseItemDto request, BaseItem item)
     {
         item.Name = request.Name;
         item.ForcedSortName = request.ForcedSortName;
@@ -246,7 +246,10 @@ public class ItemUpdateController : BaseJellyfinApiController
             episode.AirsBeforeSeasonNumber = request.AirsBeforeSeasonNumber;
         }
 
-        item.Tags = request.Tags;
+        if (request.Height is not null && item is LiveTvChannel channel)
+        {
+            channel.Height = request.Height.Value;
+        }
 
         if (request.Taglines is not null)
         {
@@ -266,8 +269,59 @@ public class ItemUpdateController : BaseJellyfinApiController
         item.EndDate = request.EndDate.HasValue ? NormalizeDateTime(request.EndDate.Value) : null;
         item.PremiereDate = request.PremiereDate.HasValue ? NormalizeDateTime(request.PremiereDate.Value) : null;
         item.ProductionYear = request.ProductionYear;
-        item.OfficialRating = string.IsNullOrWhiteSpace(request.OfficialRating) ? null : request.OfficialRating;
+
+        request.OfficialRating = string.IsNullOrWhiteSpace(request.OfficialRating) ? null : request.OfficialRating;
+        item.OfficialRating = request.OfficialRating;
         item.CustomRating = request.CustomRating;
+
+        var currentTags = item.Tags;
+        var newTags = request.Tags;
+        var removedTags = currentTags.Except(newTags).ToList();
+        var addedTags = newTags.Except(currentTags).ToList();
+        item.Tags = newTags;
+
+        if (item is Series rseries)
+        {
+            foreach (Season season in rseries.Children)
+            {
+                season.OfficialRating = request.OfficialRating;
+                season.CustomRating = request.CustomRating;
+                season.Tags = season.Tags.Concat(addedTags).Except(removedTags).Distinct().ToArray();
+                season.OnMetadataChanged();
+                await season.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+
+                foreach (Episode ep in season.Children)
+                {
+                    ep.OfficialRating = request.OfficialRating;
+                    ep.CustomRating = request.CustomRating;
+                    ep.Tags = ep.Tags.Concat(addedTags).Except(removedTags).Distinct().ToArray();
+                    ep.OnMetadataChanged();
+                    await ep.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+                }
+            }
+        }
+        else if (item is Season season)
+        {
+            foreach (Episode ep in season.Children)
+            {
+                ep.OfficialRating = request.OfficialRating;
+                ep.CustomRating = request.CustomRating;
+                ep.Tags = ep.Tags.Concat(addedTags).Except(removedTags).Distinct().ToArray();
+                ep.OnMetadataChanged();
+                await ep.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            }
+        }
+        else if (item is MusicAlbum album)
+        {
+            foreach (BaseItem track in album.Children)
+            {
+                track.OfficialRating = request.OfficialRating;
+                track.CustomRating = request.CustomRating;
+                track.Tags = track.Tags.Concat(addedTags).Except(removedTags).Distinct().ToArray();
+                track.OnMetadataChanged();
+                await track.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            }
+        }
 
         if (request.ProductionLocations is not null)
         {

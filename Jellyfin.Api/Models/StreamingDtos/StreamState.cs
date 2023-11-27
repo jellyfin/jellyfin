@@ -86,11 +86,11 @@ public class StreamState : EncodingJobInfo, IDisposable
             {
                 var userAgent = UserAgent ?? string.Empty;
 
-                if (userAgent.IndexOf("AppleTV", StringComparison.OrdinalIgnoreCase) != -1
-                    || userAgent.IndexOf("cfnetwork", StringComparison.OrdinalIgnoreCase) != -1
-                    || userAgent.IndexOf("ipad", StringComparison.OrdinalIgnoreCase) != -1
-                    || userAgent.IndexOf("iphone", StringComparison.OrdinalIgnoreCase) != -1
-                    || userAgent.IndexOf("ipod", StringComparison.OrdinalIgnoreCase) != -1)
+                if (userAgent.Contains("AppleTV", StringComparison.OrdinalIgnoreCase)
+                    || userAgent.Contains("cfnetwork", StringComparison.OrdinalIgnoreCase)
+                    || userAgent.Contains("ipad", StringComparison.OrdinalIgnoreCase)
+                    || userAgent.Contains("iphone", StringComparison.OrdinalIgnoreCase)
+                    || userAgent.Contains("ipod", StringComparison.OrdinalIgnoreCase))
                 {
                     return 6;
                 }

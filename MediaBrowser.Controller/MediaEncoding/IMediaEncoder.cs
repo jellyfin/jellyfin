@@ -4,8 +4,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
@@ -64,8 +66,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Gets a value indicating whether the configured Vaapi device supports vulkan drm format modifier.
         /// </summary>
-        /// <value><c>true</c> if the Vaapi device supports vulkan drm format modifier, <c>false</c> otherwise.</value>
-        bool IsVaapiDeviceSupportVulkanFmtModifier { get; }
+        /// <value><c>true</c> if the Vaapi device supports vulkan drm interop, <c>false</c> otherwise.</value>
+        bool IsVaapiDeviceSupportVulkanDrmInterop { get; }
 
         /// <summary>
         /// Whether given encoder codec is supported.
@@ -138,6 +140,36 @@ namespace MediaBrowser.Controller.MediaEncoding
         Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream imageStream, int? imageStreamIndex, ImageFormat? targetFormat, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Extracts the video images on interval.
+        /// </summary>
+        /// <param name="inputFile">Input file.</param>
+        /// <param name="container">Video container type.</param>
+        /// <param name="mediaSource">Media source information.</param>
+        /// <param name="imageStream">Media stream information.</param>
+        /// <param name="maxWidth">The maximum width.</param>
+        /// <param name="interval">The interval.</param>
+        /// <param name="allowHwAccel">Allow for hardware acceleration.</param>
+        /// <param name="threads">The input/output thread count for ffmpeg.</param>
+        /// <param name="qualityScale">The qscale value for ffmpeg.</param>
+        /// <param name="priority">The process priority for the ffmpeg process.</param>
+        /// <param name="encodingHelper">EncodingHelper instance.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Directory where images where extracted. A given image made before another will always be named with a lower number.</returns>
+        Task<string> ExtractVideoImagesOnIntervalAccelerated(
+            string inputFile,
+            string container,
+            MediaSourceInfo mediaSource,
+            MediaStream imageStream,
+            int maxWidth,
+            TimeSpan interval,
+            bool allowHwAccel,
+            int? threads,
+            int? qualityScale,
+            ProcessPriorityClass? priority,
+            EncodingHelper encodingHelper,
+            CancellationToken cancellationToken);
+
+        /// <summary>
         /// Gets the media info.
         /// </summary>
         /// <param name="request">The request.</param>
@@ -152,6 +184,14 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="mediaSource">The mediaSource.</param>
         /// <returns>System.String.</returns>
         string GetInputArgument(string inputFile, MediaSourceInfo mediaSource);
+
+        /// <summary>
+        /// Gets the input argument.
+        /// </summary>
+        /// <param name="inputFiles">The input files.</param>
+        /// <param name="mediaSource">The mediaSource.</param>
+        /// <returns>System.String.</returns>
+        string GetInputArgument(IReadOnlyList<string> inputFiles, MediaSourceInfo mediaSource);
 
         /// <summary>
         /// Gets the input argument for an external subtitle file.
@@ -187,5 +227,27 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="path">The path.</param>
         /// <param name="pathType">The type of path.</param>
         void UpdateEncoderPath(string path, string pathType);
+
+        /// <summary>
+        /// Gets the primary playlist of .vob files.
+        /// </summary>
+        /// <param name="path">The to the .vob files.</param>
+        /// <param name="titleNumber">The title number to start with.</param>
+        /// <returns>A playlist.</returns>
+        IReadOnlyList<string> GetPrimaryPlaylistVobFiles(string path, uint? titleNumber);
+
+        /// <summary>
+        /// Gets the primary playlist of .m2ts files.
+        /// </summary>
+        /// <param name="path">The to the .m2ts files.</param>
+        /// <returns>A playlist.</returns>
+        IReadOnlyList<string> GetPrimaryPlaylistM2tsFiles(string path);
+
+        /// <summary>
+        /// Generates a FFmpeg concat config for the source.
+        /// </summary>
+        /// <param name="source">The <see cref="MediaSourceInfo"/>.</param>
+        /// <param name="concatFilePath">The path the config should be written to.</param>
+        void GenerateConcatConfig(MediaSourceInfo source, string concatFilePath);
     }
 }

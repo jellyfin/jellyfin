@@ -1,14 +1,15 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Net;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Net;
+using MediaBrowser.Controller.Net.WebSocketMessages;
 
 namespace MediaBrowser.Controller.Net
 {
+    /// <summary>
+    /// Interface for WebSocket connections.
+    /// </summary>
     public interface IWebSocketConnection : IAsyncDisposable, IDisposable
     {
         /// <summary>
@@ -41,10 +42,24 @@ namespace MediaBrowser.Controller.Net
         WebSocketState State { get; }
 
         /// <summary>
+        /// Gets the authorization information.
+        /// </summary>
+        public AuthorizationInfo AuthorizationInfo { get; }
+
+        /// <summary>
         /// Gets the remote end point.
         /// </summary>
         /// <value>The remote end point.</value>
         IPAddress? RemoteEndPoint { get; }
+
+        /// <summary>
+        /// Sends a message asynchronously.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        /// <exception cref="ArgumentNullException">The message is null.</exception>
+        Task SendAsync(OutboundWebSocketMessage message, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends a message asynchronously.
@@ -54,8 +69,13 @@ namespace MediaBrowser.Controller.Net
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException">The message is null.</exception>
-        Task SendAsync<T>(WebSocketMessage<T> message, CancellationToken cancellationToken);
+        Task SendAsync<T>(OutboundWebSocketMessage<T> message, CancellationToken cancellationToken);
 
-        Task ProcessAsync(CancellationToken cancellationToken = default);
+        /// <summary>
+        /// Receives a message asynchronously.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task ReceiveAsync(CancellationToken cancellationToken = default);
     }
 }

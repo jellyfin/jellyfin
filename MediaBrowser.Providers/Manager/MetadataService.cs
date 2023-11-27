@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -108,7 +109,7 @@ namespace MediaBrowser.Providers.Manager
             try
             {
                 // Always validate images and check for new locally stored ones.
-                if (ImageProvider.ValidateImages(item, allImageProviders.OfType<ILocalImageProvider>(), refreshOptions.DirectoryService))
+                if (ImageProvider.ValidateImages(item, allImageProviders.OfType<ILocalImageProvider>(), refreshOptions))
                 {
                     updateType |= ItemUpdateType.ImageUpdate;
                 }
@@ -672,6 +673,7 @@ namespace MediaBrowser.Providers.Manager
             }
 
             var hasLocalMetadata = false;
+            var foundImageTypes = new List<ImageType>();
 
             foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>())
             {
@@ -698,6 +700,9 @@ namespace MediaBrowser.Providers.Manager
 
                                 await ProviderManager.SaveImage(item, remoteImage.Url, remoteImage.Type, null, cancellationToken).ConfigureAwait(false);
                                 refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
+
+                                // remember imagetype that has just been downloaded
+                                foundImageTypes.Add(remoteImage.Type);
                             }
                             catch (HttpRequestException ex)
                             {
@@ -705,12 +710,17 @@ namespace MediaBrowser.Providers.Manager
                             }
                         }
 
-                        if (imageService.MergeImages(item, localItem.Images))
+                        if (foundImageTypes.Count > 0)
+                        {
+                            imageService.UpdateReplaceImages(options, foundImageTypes);
+                        }
+
+                        if (imageService.MergeImages(item, localItem.Images, options))
                         {
                             refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
                         }
 
-                        MergeData(localItem, temp, Array.Empty<MetadataField>(), !options.ReplaceAllMetadata, true);
+                        MergeData(localItem, temp, Array.Empty<MetadataField>(), options.ReplaceAllMetadata, true);
                         refreshResult.UpdateType |= ItemUpdateType.MetadataImport;
 
                         // Only one local provider allowed per item
@@ -868,10 +878,7 @@ namespace MediaBrowser.Providers.Manager
                 var key = providerId.Key;
 
                 // Don't replace existing Id's.
-                if (!lookupInfo.ProviderIds.ContainsKey(key))
-                {
-                    lookupInfo.ProviderIds[key] = providerId.Value;
-                }
+                lookupInfo.ProviderIds.TryAdd(key, providerId.Value);
             }
         }
 

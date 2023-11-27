@@ -3,9 +3,9 @@
     "AppDeviceValues": "Aplicación: {0}, Dispositivo: {1}",
     "Application": "Aplicación",
     "Artists": "Artistas",
-    "AuthenticationSucceededWithUserName": "{0} identificado correctamente",
+    "AuthenticationSucceededWithUserName": "{0} autenticado correctamente",
     "Books": "Libros",
-    "CameraImageUploadedFrom": "Se ha subido una nueva imagen de cámara desde {0}",
+    "CameraImageUploadedFrom": "Se ha subido una nueva imagen por cámara desde {0}",
     "Channels": "Canales",
     "ChapterNameValue": "Capítulo {0}",
     "Collections": "Colecciones",
@@ -31,7 +31,7 @@
     "ItemRemovedWithName": "{0} ha sido eliminado de la biblioteca",
     "LabelIpAddressValue": "Dirección IP: {0}",
     "LabelRunningTimeValue": "Tiempo de funcionamiento: {0}",
-    "Latest": "Último contenido en",
+    "Latest": "Últimas",
     "MessageApplicationUpdated": "Se ha actualizado el servidor Jellyfin",
     "MessageApplicationUpdatedTo": "Se ha actualizado el servidor Jellyfin a la versión {0}",
     "MessageNamedServerConfigurationUpdatedWithValue": "La sección {0} de configuración del servidor ha sido actualizada",
@@ -124,5 +124,7 @@
     "TaskKeyframeExtractorDescription": "Extrae los fotogramas clave de los archivos de vídeo para crear listas HLS más precisas. Esta tarea puede tardar mucho tiempo.",
     "TaskKeyframeExtractor": "Extractor de Fotogramas Clave",
     "External": "Externo",
-    "HearingImpaired": "Discapacidad Auditiva"
+    "HearingImpaired": "Discapacidad Auditiva",
+    "TaskRefreshTrickplayImages": "Generar miniaturas de línea de tiempo",
+    "TaskRefreshTrickplayImagesDescription": "Crear miniaturas de tiempo para videos en las librerías habilitadas."
 }

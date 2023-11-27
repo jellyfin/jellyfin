@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -22,7 +21,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
@@ -30,12 +28,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {
     public class M3UTunerHost : BaseTunerHost, ITunerHost, IConfigurableTunerHost
     {
-        private static readonly string[] _disallowedSharedStreamExtensions =
+        private static readonly string[] _disallowedMimeTypes =
         {
-            ".mkv",
-            ".mp4",
-            ".m3u8",
-            ".mpd"
+            "video/x-matroska",
+            "video/mp4",
+            "application/vnd.apple.mpegurl",
+            "application/mpegurl",
+            "application/x-mpegurl",
+            "video/vnd.mpeg.dash.mpd"
         };
 
         private readonly IHttpClientFactory _httpClientFactory;
@@ -52,9 +52,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             IHttpClientFactory httpClientFactory,
             IServerApplicationHost appHost,
             INetworkManager networkManager,
-            IStreamHelper streamHelper,
-            IMemoryCache memoryCache)
-            : base(config, logger, fileSystem, memoryCache)
+            IStreamHelper streamHelper)
+            : base(config, logger, fileSystem)
         {
             _httpClientFactory = httpClientFactory;
             _appHost = appHost;
@@ -118,9 +117,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             if (mediaSource.Protocol == MediaProtocol.Http && !mediaSource.RequiresLooping)
             {
-                var extension = Path.GetExtension(mediaSource.Path) ?? string.Empty;
+                using var message = new HttpRequestMessage(HttpMethod.Head, mediaSource.Path);
+                using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                    .SendAsync(message, cancellationToken)
+                    .ConfigureAwait(false);
 
-                if (!_disallowedSharedStreamExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
+                response.EnsureSuccessStatusCode();
+
+                if (!_disallowedMimeTypes.Contains(response.Content.Headers.ContentType?.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
                     return new SharedHttpStream(mediaSource, tunerHost, streamId, FileSystem, _httpClientFactory, Logger, Config, _appHost, _streamHelper);
                 }

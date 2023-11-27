@@ -31,10 +31,10 @@ namespace Jellyfin.Server.Integration.Tests
             Assert.Equal("application/json; charset=utf-8", response.Content.Headers.ContentType?.ToString());
 
             // Write out for publishing
-            var responseBody = await response.Content.ReadAsStringAsync();
             string outputPath = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? ".", "openapi.json"));
             _outputHelper.WriteLine("Writing OpenAPI Spec JSON to '{0}'.", outputPath);
-            File.WriteAllText(outputPath, responseBody);
+            await using var fs = File.Create(outputPath);
+            await response.Content.CopyToAsync(fs);
         }
     }
 }

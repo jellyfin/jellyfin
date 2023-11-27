@@ -3,7 +3,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.StartupDtos;
-using Jellyfin.Networking.Configuration;
+using MediaBrowser.Common.Api;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Authorization;
@@ -131,6 +132,10 @@ public class StartupController : BaseJellyfinApiController
     public async Task<ActionResult> UpdateStartupUser([FromBody] StartupUserDto startupUserDto)
     {
         var user = _userManager.Users.First();
+        if (string.IsNullOrWhiteSpace(startupUserDto.Password))
+        {
+            return BadRequest("Password must not be empty");
+        }
 
         if (startupUserDto.Name is not null)
         {

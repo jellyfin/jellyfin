@@ -25,13 +25,16 @@ namespace Emby.Server.Implementations.Library.Resolvers
     {
         private readonly ILogger _logger;
 
-        protected BaseVideoResolver(ILogger logger, NamingOptions namingOptions)
+        protected BaseVideoResolver(ILogger logger, NamingOptions namingOptions, IDirectoryService directoryService)
         {
             _logger = logger;
             NamingOptions = namingOptions;
+            DirectoryService = directoryService;
         }
 
         protected NamingOptions NamingOptions { get; }
+
+        protected IDirectoryService DirectoryService { get; }
 
         /// <summary>
         /// Resolves the specified args.
@@ -65,13 +68,26 @@ namespace Emby.Server.Implementations.Library.Resolvers
                     var filename = child.Name;
                     if (child.IsDirectory)
                     {
-                        if (IsDvdDirectory(child.FullName, filename, args.DirectoryService))
+                        if (IsDvdDirectory(child.FullName, filename, DirectoryService))
                         {
-                            videoType = VideoType.Dvd;
+                            var videoTmp = new TVideoType
+                            {
+                                Path = args.Path,
+                                VideoType = VideoType.Dvd
+                            };
+                            Set3DFormat(videoTmp);
+                            return videoTmp;
                         }
-                        else if (IsBluRayDirectory(filename))
+
+                        if (IsBluRayDirectory(filename))
                         {
-                            videoType = VideoType.BluRay;
+                            var videoTmp = new TVideoType
+                            {
+                                Path = args.Path,
+                                VideoType = VideoType.BluRay
+                            };
+                            Set3DFormat(videoTmp);
+                            return videoTmp;
                         }
                     }
                     else if (IsDvdFile(filename))
@@ -247,7 +263,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                 return false;
             }
 
-            return directoryService.GetFilePaths(fullPath).Any(i => string.Equals(Path.GetExtension(i), ".vob", StringComparison.OrdinalIgnoreCase));
+            return directoryService.GetFilePaths(fullPath).Any(i => Path.GetExtension(i.AsSpan()).Equals(".vob", StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>

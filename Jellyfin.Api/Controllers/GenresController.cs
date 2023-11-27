@@ -85,7 +85,7 @@ public class GenresController : BaseJellyfinApiController
         [FromQuery] string? nameStartsWithOrGreater,
         [FromQuery] string? nameStartsWith,
         [FromQuery] string? nameLessThan,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] sortBy,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemSortBy[] sortBy,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] SortOrder[] sortOrder,
         [FromQuery] bool? enableImages = true,
         [FromQuery] bool enableTotalRecordCount = true)
@@ -131,8 +131,8 @@ public class GenresController : BaseJellyfinApiController
 
         QueryResult<(BaseItem, ItemCounts)> result;
         if (parentItem is ICollectionFolder parentCollectionFolder
-            && (string.Equals(parentCollectionFolder.CollectionType, CollectionType.Music, StringComparison.Ordinal)
-                || string.Equals(parentCollectionFolder.CollectionType, CollectionType.MusicVideos, StringComparison.Ordinal)))
+            && (parentCollectionFolder.CollectionType == CollectionType.Music
+                || parentCollectionFolder.CollectionType == CollectionType.MusicVideos))
         {
             result = _libraryManager.GetMusicGenres(query);
         }
@@ -172,12 +172,9 @@ public class GenresController : BaseJellyfinApiController
 
         item ??= new Genre();
 
-        if (userId.Value.Equals(default))
-        {
-            return _dtoService.GetBaseItemDto(item, dtoOptions);
-        }
-
-        var user = _userManager.GetUserById(userId.Value);
+        var user = userId.Value.Equals(default)
+            ? null
+            : _userManager.GetUserById(userId.Value);
 
         return _dtoService.GetBaseItemDto(item, dtoOptions, user);
     }

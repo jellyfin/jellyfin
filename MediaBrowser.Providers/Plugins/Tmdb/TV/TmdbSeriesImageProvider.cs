@@ -48,7 +48,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         /// <inheritdoc />
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
-            return new List<ImageType>
+            return new ImageType[]
             {
                 ImageType.Primary,
                 ImageType.Backdrop,

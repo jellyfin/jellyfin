@@ -8,6 +8,7 @@ using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.PlaylistDtos;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
@@ -64,6 +65,7 @@ public class PlaylistsController : BaseJellyfinApiController
     /// <param name="userId">The user id.</param>
     /// <param name="mediaType">The media type.</param>
     /// <param name="createPlaylistRequest">The create playlist payload.</param>
+    /// <response code="200">Playlist created.</response>
     /// <returns>
     /// A <see cref="Task" /> that represents the asynchronous operation to create a playlist.
     /// The task result contains an <see cref="OkResult"/> indicating success.
@@ -74,7 +76,7 @@ public class PlaylistsController : BaseJellyfinApiController
         [FromQuery, ParameterObsolete] string? name,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder)), ParameterObsolete] IReadOnlyList<Guid> ids,
         [FromQuery, ParameterObsolete] Guid? userId,
-        [FromQuery, ParameterObsolete] string? mediaType,
+        [FromQuery, ParameterObsolete] MediaType? mediaType,
         [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] CreatePlaylistDto? createPlaylistRequest)
     {
         if (ids.Count == 0)
@@ -167,6 +169,8 @@ public class PlaylistsController : BaseJellyfinApiController
     /// <response code="404">Playlist not found.</response>
     /// <returns>The original playlist items.</returns>
     [HttpGet("{playlistId}/Items")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<QueryResult<BaseItemDto>> GetPlaylistItems(
         [FromRoute, Required] Guid playlistId,
         [FromQuery, Required] Guid userId,
@@ -189,9 +193,7 @@ public class PlaylistsController : BaseJellyfinApiController
             : _userManager.GetUserById(userId);
 
         var items = playlist.GetManageableItems().ToArray();
-
         var count = items.Length;
-
         if (startIndex.HasValue)
         {
             items = items.Skip(startIndex.Value).ToArray();
@@ -207,7 +209,6 @@ public class PlaylistsController : BaseJellyfinApiController
             .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
         var dtos = _dtoService.GetBaseItemDtos(items.Select(i => i.Item2).ToList(), dtoOptions, user);
-
         for (int index = 0; index < dtos.Count; index++)
         {
             dtos[index].PlaylistItemId = items[index].Item1.Id;

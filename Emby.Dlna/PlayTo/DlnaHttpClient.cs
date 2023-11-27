@@ -2,9 +2,11 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -15,7 +17,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.PlayTo
 {
-    public class DlnaHttpClient
+    /// <summary>
+    /// Http client for Dlna PlayTo function.
+    /// </summary>
+    public partial class DlnaHttpClient
     {
         private readonly ILogger _logger;
         private readonly IHttpClientFactory _httpClientFactory;
@@ -25,6 +30,9 @@ namespace Emby.Dlna.PlayTo
             _logger = logger;
             _httpClientFactory = httpClientFactory;
         }
+
+        [GeneratedRegex("(&(?![a-z]*;))")]
+        private static partial Regex EscapeAmpersandRegex();
 
         private static string NormalizeServiceUrl(string baseUrl, string serviceUrl)
         {
@@ -44,25 +52,46 @@ namespace Emby.Dlna.PlayTo
 
         private async Task<XDocument?> SendRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            using var response = await _httpClientFactory.CreateClient(NamedClient.Dlna).SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+            var client = _httpClientFactory.CreateClient(NamedClient.Dlna);
+            using var response = await client.SendAsync(request, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            try
+            Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using (stream.ConfigureAwait(false))
             {
-                return await XDocument.LoadAsync(
-                    stream,
-                    LoadOptions.None,
-                    cancellationToken).ConfigureAwait(false);
-            }
-            catch (XmlException ex)
-            {
-                _logger.LogError(ex, "Failed to parse response");
-                if (_logger.IsEnabled(LogLevel.Debug))
+                try
                 {
-                    _logger.LogDebug("Malformed response: {Content}\n", await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
+                    return await XDocument.LoadAsync(
+                        stream,
+                        LoadOptions.None,
+                        cancellationToken).ConfigureAwait(false);
                 }
+                catch (XmlException)
+                {
+                    // try correcting the Xml response with common errors
+                    stream.Position = 0;
+                    using StreamReader sr = new StreamReader(stream);
+                    var xmlString = await sr.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
 
-                return null;
+                    // find and replace unescaped ampersands (&)
+                    xmlString = EscapeAmpersandRegex().Replace(xmlString, "&amp;");
+
+                    try
+                    {
+                        // retry reading Xml
+                        using var xmlReader = new StringReader(xmlString);
+                        return await XDocument.LoadAsync(
+                            xmlReader,
+                            LoadOptions.None,
+                            cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (XmlException ex)
+                    {
+                        _logger.LogError(ex, "Failed to parse response");
+                        _logger.LogDebug("Malformed response: {Content}\n", xmlString);
+
+                        return null;
+                    }
+                }
             }
         }
 

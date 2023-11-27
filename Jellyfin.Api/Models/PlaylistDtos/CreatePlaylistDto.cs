@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json.Converters;
 
 namespace Jellyfin.Api.Models.PlaylistDtos;
@@ -29,5 +30,5 @@ public class CreatePlaylistDto
     /// <summary>
     /// Gets or sets the media type.
     /// </summary>
-    public string? MediaType { get; set; }
+    public MediaType? MediaType { get; set; }
 }

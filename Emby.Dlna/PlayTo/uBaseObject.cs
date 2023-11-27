@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using Jellyfin.Data.Enums;
 
 namespace Emby.Dlna.PlayTo
 {
@@ -33,19 +34,19 @@ namespace Emby.Dlna.PlayTo
             {
                 var classType = UpnpClass ?? string.Empty;
 
-                if (classType.IndexOf(MediaBrowser.Model.Entities.MediaType.Audio, StringComparison.Ordinal) != -1)
+                if (classType.Contains("Audio", StringComparison.Ordinal))
                 {
-                    return MediaBrowser.Model.Entities.MediaType.Audio;
+                    return "Audio";
                 }
 
-                if (classType.IndexOf(MediaBrowser.Model.Entities.MediaType.Video, StringComparison.Ordinal) != -1)
+                if (classType.Contains("Video", StringComparison.Ordinal))
                 {
-                    return MediaBrowser.Model.Entities.MediaType.Video;
+                    return "Video";
                 }
 
-                if (classType.IndexOf("image", StringComparison.Ordinal) != -1)
+                if (classType.Contains("image", StringComparison.Ordinal))
                 {
-                    return MediaBrowser.Model.Entities.MediaType.Photo;
+                    return "Photo";
                 }
 
                 return null;

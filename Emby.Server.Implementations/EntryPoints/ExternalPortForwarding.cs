@@ -9,7 +9,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Networking.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Plugins;
@@ -57,7 +57,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
             return new StringBuilder(32)
                 .Append(config.EnableUPnP).Append(Separator)
-                .Append(config.PublicPort).Append(Separator)
+                .Append(config.PublicHttpPort).Append(Separator)
                 .Append(config.PublicHttpsPort).Append(Separator)
                 .Append(_appHost.HttpPort).Append(Separator)
                 .Append(_appHost.HttpsPort).Append(Separator)
@@ -146,7 +146,7 @@ namespace Emby.Server.Implementations.EntryPoints
         private IEnumerable<Task> CreatePortMaps(INatDevice device)
         {
             var config = _config.GetNetworkConfiguration();
-            yield return CreatePortMap(device, _appHost.HttpPort, config.PublicPort);
+            yield return CreatePortMap(device, _appHost.HttpPort, config.PublicHttpPort);
 
             if (_appHost.ListenWithHttps)
             {

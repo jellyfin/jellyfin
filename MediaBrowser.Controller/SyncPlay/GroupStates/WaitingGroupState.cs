@@ -533,11 +533,9 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
                     _logger.LogWarning("Session {SessionId} is seeking to wrong position, correcting.", session.Id);
                     return;
                 }
-                else
-                {
-                    // Session is ready.
-                    context.SetBuffering(session, false);
-                }
+
+                // Session is ready.
+                context.SetBuffering(session, false);
 
                 if (!context.IsBuffering())
                 {

@@ -116,7 +116,7 @@ namespace Emby.Dlna.PlayTo
             return string.Format(CultureInfo.InvariantCulture, CommandBase, action.Name, xmlNamespace, stateString);
         }
 
-        public string BuildPost(ServiceAction action, string xmlNamesapce, object value, string commandParameter = "")
+        public string BuildPost(ServiceAction action, string xmlNamespace, object value, string commandParameter = "")
         {
             var stateString = string.Empty;
 
@@ -137,10 +137,10 @@ namespace Emby.Dlna.PlayTo
                 }
             }
 
-            return string.Format(CultureInfo.InvariantCulture, CommandBase, action.Name, xmlNamesapce, stateString);
+            return string.Format(CultureInfo.InvariantCulture, CommandBase, action.Name, xmlNamespace, stateString);
         }
 
-        public string BuildPost(ServiceAction action, string xmlNamesapce, object value, Dictionary<string, string> dictionary)
+        public string BuildPost(ServiceAction action, string xmlNamespace, object value, Dictionary<string, string> dictionary)
         {
             var stateString = string.Empty;
 
@@ -150,9 +150,9 @@ namespace Emby.Dlna.PlayTo
                 {
                     stateString += BuildArgumentXml(arg, "0");
                 }
-                else if (dictionary.ContainsKey(arg.Name))
+                else if (dictionary.TryGetValue(arg.Name, out var argValue))
                 {
-                    stateString += BuildArgumentXml(arg, dictionary[arg.Name]);
+                    stateString += BuildArgumentXml(arg, argValue);
                 }
                 else
                 {
@@ -160,7 +160,7 @@ namespace Emby.Dlna.PlayTo
                 }
             }
 
-            return string.Format(CultureInfo.InvariantCulture, CommandBase, action.Name, xmlNamesapce, stateString);
+            return string.Format(CultureInfo.InvariantCulture, CommandBase, action.Name, xmlNamespace, stateString);
         }
 
         private string BuildArgumentXml(Argument argument, string? value, string commandParameter = "")

@@ -183,7 +183,7 @@ namespace Emby.Server.Implementations.Updates
                             var plugin = _pluginManager.GetPlugin(package.Id, version.VersionNumber);
                             if (plugin is not null)
                             {
-                                await _pluginManager.GenerateManifest(package, version.VersionNumber, plugin.Path, plugin.Manifest.Status).ConfigureAwait(false);
+                                await _pluginManager.PopulateManifest(package, version.VersionNumber, plugin.Path, plugin.Manifest.Status).ConfigureAwait(false);
                             }
 
                             // Remove versions with a target ABI greater then the current application version.
@@ -321,9 +321,15 @@ namespace Emby.Server.Implementations.Updates
                 }
 
                 _completedInstallationsInternal.Add(package);
-                await _eventManager.PublishAsync(isUpdate
-                    ? (GenericEventArgs<InstallationInfo>)new PluginUpdatedEventArgs(package)
-                    : new PluginInstalledEventArgs(package)).ConfigureAwait(false);
+
+                if (isUpdate)
+                {
+                    await _eventManager.PublishAsync(new PluginUpdatedEventArgs(package)).ConfigureAwait(false);
+                }
+                else
+                {
+                    await _eventManager.PublishAsync(new PluginInstalledEventArgs(package)).ConfigureAwait(false);
+                }
 
                 _applicationHost.NotifyPendingRestart();
             }
@@ -504,8 +510,7 @@ namespace Emby.Server.Implementations.Updates
 
         private async Task PerformPackageInstallation(InstallationInfo package, PluginStatus status, CancellationToken cancellationToken)
         {
-            var extension = Path.GetExtension(package.SourceUrl);
-            if (!string.Equals(extension, ".zip", StringComparison.OrdinalIgnoreCase))
+            if (!Path.GetExtension(package.SourceUrl.AsSpan()).Equals(".zip", StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogError("Only zip packages are supported. {SourceUrl} is not a zip archive.", package.SourceUrl);
                 return;
@@ -521,10 +526,9 @@ namespace Emby.Server.Implementations.Updates
 
             // CA5351: Do Not Use Broken Cryptographic Algorithms
 #pragma warning disable CA5351
-            using var md5 = MD5.Create();
             cancellationToken.ThrowIfCancellationRequested();
 
-            var hash = Convert.ToHexString(md5.ComputeHash(stream));
+            var hash = Convert.ToHexString(await MD5.HashDataAsync(stream, cancellationToken).ConfigureAwait(false));
             if (!string.Equals(package.Checksum, hash, StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogError(
@@ -553,9 +557,11 @@ namespace Emby.Server.Implementations.Updates
             }
 
             stream.Position = 0;
-            using var reader = new ZipArchive(stream);
-            reader.ExtractToDirectory(targetDir, true);
-            await _pluginManager.GenerateManifest(package.PackageInfo, package.Version, targetDir, status).ConfigureAwait(false);
+            ZipFile.ExtractToDirectory(stream, targetDir, true);
+
+            // Ensure we create one or populate existing ones with missing data.
+            await _pluginManager.PopulateManifest(package.PackageInfo, package.Version, targetDir, status).ConfigureAwait(false);
+
             _pluginManager.ImportPluginFrom(targetDir);
         }
 

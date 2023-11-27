@@ -1,4 +1,3 @@
-using System.Threading;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Configuration;
 
@@ -9,11 +8,6 @@ namespace MediaBrowser.Controller.BaseItemManager
     /// </summary>
     public interface IBaseItemManager
     {
-        /// <summary>
-        /// Gets the semaphore used to limit the amount of concurrent metadata refreshes.
-        /// </summary>
-        SemaphoreSlim MetadataRefreshThrottler { get; }
-
         /// <summary>
         /// Is metadata fetcher enabled.
         /// </summary>

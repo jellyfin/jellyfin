@@ -10,7 +10,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Drawing;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
-using SKSvg = SkiaSharp.Extended.Svg.SKSvg;
+using Svg.Skia;
 
 namespace Jellyfin.Drawing.Skia;
 
@@ -23,6 +23,30 @@ public class SkiaEncoder : IImageEncoder
 
     private readonly ILogger<SkiaEncoder> _logger;
     private readonly IApplicationPaths _appPaths;
+    private static readonly SKImageFilter _imageFilter;
+
+#pragma warning disable CA1810
+    static SkiaEncoder()
+#pragma warning restore CA1810
+    {
+        var kernel = new[]
+        {
+            0,    -.1f,    0,
+            -.1f, 1.4f, -.1f,
+            0,    -.1f,    0,
+        };
+
+        var kernelSize = new SKSizeI(3, 3);
+        var kernelOffset = new SKPointI(1, 1);
+        _imageFilter = SKImageFilter.CreateMatrixConvolution(
+            kernelSize,
+            kernel,
+            1f,
+            0f,
+            kernelOffset,
+            SKShaderTileMode.Clamp,
+            true);
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SkiaEncoder"/> class.
@@ -119,9 +143,25 @@ public class SkiaEncoder : IImageEncoder
         var extension = Path.GetExtension(path.AsSpan());
         if (extension.Equals(".svg", StringComparison.OrdinalIgnoreCase))
         {
-            var svg = new SKSvg();
-            svg.Load(path);
-            return new ImageDimensions(Convert.ToInt32(svg.Picture.CullRect.Width), Convert.ToInt32(svg.Picture.CullRect.Height));
+            using var svg = new SKSvg();
+            try
+            {
+                using var picture = svg.Load(path);
+                if (picture is null)
+                {
+                    _logger.LogError("Unable to determine image dimensions for {FilePath}", path);
+                    return default;
+                }
+
+                return new ImageDimensions(Convert.ToInt32(picture.CullRect.Width), Convert.ToInt32(picture.CullRect.Height));
+            }
+            catch (FormatException skiaColorException)
+            {
+                // This exception is known to be thrown on vector images that define custom styles
+                // Skia SVG is not able to handle that and as the repository is quite stale and has not received updates we just catch them
+                _logger.LogDebug(skiaColorException, "There was a issue loading the requested svg file");
+                return default;
+            }
         }
 
         using var codec = SKCodec.Create(path, out SKCodecResult result);
@@ -132,10 +172,10 @@ public class SkiaEncoder : IImageEncoder
                 return new ImageDimensions(info.Width, info.Height);
             case SKCodecResult.Unimplemented:
                 _logger.LogDebug("Image format not supported: {FilePath}", path);
-                return new ImageDimensions(0, 0);
+                return default;
             default:
                 _logger.LogError("Unable to determine image dimensions for {FilePath}: {SkCodecResult}", path, result);
-                return new ImageDimensions(0, 0);
+                return default;
         }
     }
 
@@ -178,7 +218,7 @@ public class SkiaEncoder : IImageEncoder
             return path;
         }
 
-        var tempPath = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + Path.GetExtension(path));
+        var tempPath = Path.Combine(_appPaths.TempDirectory, string.Concat(Guid.NewGuid().ToString(), Path.GetExtension(path.AsSpan())));
         var directory = Path.GetDirectoryName(tempPath) ?? throw new ResourceNotFoundException($"Provided path ({tempPath}) is not valid.");
         Directory.CreateDirectory(directory);
         File.Copy(path, tempPath, true);
@@ -190,20 +230,10 @@ public class SkiaEncoder : IImageEncoder
     {
         if (!orientation.HasValue)
         {
-            return SKEncodedOrigin.TopLeft;
+            return SKEncodedOrigin.Default;
         }
 
-        return orientation.Value switch
-        {
-            ImageOrientation.TopRight => SKEncodedOrigin.TopRight,
-            ImageOrientation.RightTop => SKEncodedOrigin.RightTop,
-            ImageOrientation.RightBottom => SKEncodedOrigin.RightBottom,
-            ImageOrientation.LeftTop => SKEncodedOrigin.LeftTop,
-            ImageOrientation.LeftBottom => SKEncodedOrigin.LeftBottom,
-            ImageOrientation.BottomRight => SKEncodedOrigin.BottomRight,
-            ImageOrientation.BottomLeft => SKEncodedOrigin.BottomLeft,
-            _ => SKEncodedOrigin.TopLeft
-        };
+        return (SKEncodedOrigin)orientation.Value;
     }
 
     /// <summary>
@@ -285,10 +315,7 @@ public class SkiaEncoder : IImageEncoder
 
     private SKBitmap OrientImage(SKBitmap bitmap, SKEncodedOrigin origin)
     {
-        var needsFlip = origin == SKEncodedOrigin.LeftBottom
-                        || origin == SKEncodedOrigin.LeftTop
-                        || origin == SKEncodedOrigin.RightBottom
-                        || origin == SKEncodedOrigin.RightTop;
+        var needsFlip = origin is SKEncodedOrigin.LeftBottom or SKEncodedOrigin.LeftTop or SKEncodedOrigin.RightBottom or SKEncodedOrigin.RightTop;
         var rotated = needsFlip
             ? new SKBitmap(bitmap.Height, bitmap.Width)
             : new SKBitmap(bitmap.Width, bitmap.Height);
@@ -353,25 +380,7 @@ public class SkiaEncoder : IImageEncoder
             IsDither = isDither
         };
 
-        var kernel = new float[9]
-        {
-            0,    -.1f,    0,
-            -.1f, 1.4f, -.1f,
-            0,    -.1f,    0,
-        };
-
-        var kernelSize = new SKSizeI(3, 3);
-        var kernelOffset = new SKPointI(1, 1);
-
-        paint.ImageFilter = SKImageFilter.CreateMatrixConvolution(
-            kernelSize,
-            kernel,
-            1f,
-            0f,
-            kernelOffset,
-            SKShaderTileMode.Clamp,
-            true);
-
+        paint.ImageFilter = _imageFilter;
         canvas.DrawBitmap(
             source,
             SKRect.Create(0, 0, source.Width, source.Height),
@@ -422,7 +431,8 @@ public class SkiaEncoder : IImageEncoder
 
         // scale image (the FromImage creates a copy)
         var imageInfo = new SKImageInfo(width, height, bitmap.ColorType, bitmap.AlphaType, bitmap.ColorSpace);
-        using var resizedBitmap = SKBitmap.FromImage(ResizeImage(bitmap, imageInfo));
+        using var resizedImage = ResizeImage(bitmap, imageInfo);
+        using var resizedBitmap = SKBitmap.FromImage(resizedImage);
 
         // If all we're doing is resizing then we can stop now
         if (!hasBackgroundColor && !hasForegroundColor && blur == 0 && !hasIndicator)
@@ -479,10 +489,8 @@ public class SkiaEncoder : IImageEncoder
         Directory.CreateDirectory(directory);
         using (var outputStream = new SKFileWStream(outputPath))
         {
-            using (var pixmap = new SKPixmap(new SKImageInfo(width, height), saveBitmap.GetPixels()))
-            {
-                pixmap.Encode(outputStream, skiaOutputFormat, quality);
-            }
+            using var pixmap = new SKPixmap(new SKImageInfo(width, height), saveBitmap.GetPixels());
+            pixmap.Encode(outputStream, skiaOutputFormat, quality);
         }
 
         return outputPath;
@@ -514,6 +522,81 @@ public class SkiaEncoder : IImageEncoder
         var splashBuilder = new SplashscreenBuilder(this);
         var outputPath = Path.Combine(_appPaths.DataPath, "splashscreen.png");
         splashBuilder.GenerateSplash(posters, backdrops, outputPath);
+    }
+
+    /// <inheritdoc />
+    public int CreateTrickplayTile(ImageCollageOptions options, int quality, int imgWidth, int? imgHeight)
+    {
+        var paths = options.InputPaths;
+        var tileWidth = options.Width;
+        var tileHeight = options.Height;
+
+        if (paths.Count < 1)
+        {
+            throw new ArgumentException("InputPaths cannot be empty.");
+        }
+        else if (paths.Count > tileWidth * tileHeight)
+        {
+            throw new ArgumentException($"InputPaths contains more images than would fit on {tileWidth}x{tileHeight} grid.");
+        }
+
+        // If no height provided, use height of first image.
+        if (!imgHeight.HasValue)
+        {
+            using var firstImg = Decode(paths[0], false, null, out _);
+
+            if (firstImg is null)
+            {
+                throw new InvalidDataException("Could not decode image data.");
+            }
+
+            if (firstImg.Width != imgWidth)
+            {
+                throw new InvalidOperationException("Image width does not match provided width.");
+            }
+
+            imgHeight = firstImg.Height;
+        }
+
+        // Make horizontal strips using every provided image.
+        using var tileGrid = new SKBitmap(imgWidth * tileWidth, imgHeight.Value * tileHeight);
+        using var canvas = new SKCanvas(tileGrid);
+
+        var imgIndex = 0;
+        for (var y = 0; y < tileHeight; y++)
+        {
+            for (var x = 0; x < tileWidth; x++)
+            {
+                if (imgIndex >= paths.Count)
+                {
+                    break;
+                }
+
+                using var img = Decode(paths[imgIndex++], false, null, out _);
+
+                if (img is null)
+                {
+                    throw new InvalidDataException("Could not decode image data.");
+                }
+
+                if (img.Width != imgWidth)
+                {
+                    throw new InvalidOperationException("Image width does not match provided width.");
+                }
+
+                if (img.Height != imgHeight)
+                {
+                    throw new InvalidOperationException("Image height does not match first image height.");
+                }
+
+                canvas.DrawBitmap(img, x * imgWidth, y * imgHeight.Value);
+            }
+        }
+
+        using var outputStream = new SKFileWStream(options.OutputPath);
+        tileGrid.Encode(outputStream, SKEncodedImageFormat.Jpeg, quality);
+
+        return imgHeight.Value;
     }
 
     private void DrawIndicator(SKCanvas canvas, int imageWidth, int imageHeight, ImageProcessingOptions options)

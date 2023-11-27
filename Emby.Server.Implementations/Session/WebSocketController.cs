@@ -7,8 +7,8 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Net.WebSocketMessages;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
@@ -69,9 +69,7 @@ namespace Emby.Server.Implementations.Session
             T data,
             CancellationToken cancellationToken)
         {
-            var socket = GetActiveSockets()
-                .OrderByDescending(i => i.LastActivityDate)
-                .FirstOrDefault();
+            var socket = GetActiveSockets().MaxBy(i => i.LastActivityDate);
 
             if (socket is null)
             {
@@ -79,7 +77,7 @@ namespace Emby.Server.Implementations.Session
             }
 
             return socket.SendAsync(
-                new WebSocketMessage<T>
+                new OutboundWebSocketMessage<T>
                 {
                     Data = data,
                     MessageType = name,

@@ -14,6 +14,8 @@ namespace MediaBrowser.Controller.Subtitles
 
         public bool IsForced { get; set; }
 
+        public bool IsHearingImpaired { get; set; }
+
         public Stream Stream { get; set; }
     }
 }

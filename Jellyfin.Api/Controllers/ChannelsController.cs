@@ -52,7 +52,7 @@ public class ChannelsController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the channels.</returns>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<QueryResult<BaseItemDto>> GetChannels(
+    public async Task<ActionResult<QueryResult<BaseItemDto>>> GetChannels(
         [FromQuery] Guid? userId,
         [FromQuery] int? startIndex,
         [FromQuery] int? limit,
@@ -61,7 +61,7 @@ public class ChannelsController : BaseJellyfinApiController
         [FromQuery] bool? isFavorite)
     {
         userId = RequestHelpers.GetUserId(User, userId);
-        return _channelManager.GetChannels(new ChannelQuery
+        return await _channelManager.GetChannelsAsync(new ChannelQuery
         {
             Limit = limit,
             StartIndex = startIndex,
@@ -69,7 +69,7 @@ public class ChannelsController : BaseJellyfinApiController
             SupportsLatestItems = supportsLatestItems,
             SupportsMediaDeletion = supportsMediaDeletion,
             IsFavorite = isFavorite
-        });
+        }).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -122,7 +122,7 @@ public class ChannelsController : BaseJellyfinApiController
         [FromQuery] int? limit,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] SortOrder[] sortOrder,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] sortBy,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemSortBy[] sortBy,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields)
     {
         userId = RequestHelpers.GetUserId(User, userId);

@@ -4,10 +4,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using Jellyfin.Extensions;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
-using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Data
 {
@@ -27,32 +26,24 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Gets or sets the path to the DB file.
         /// </summary>
-        /// <value>Path to the DB file.</value>
         protected string DbFilePath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of write connections to create.
+        /// </summary>
+        /// <value>Path to the DB file.</value>
+        protected int WriteConnectionsCount { get; set; } = 1;
+
+        /// <summary>
+        /// Gets or sets the number of read connections to create.
+        /// </summary>
+        protected int ReadConnectionsCount { get; set; } = 1;
 
         /// <summary>
         /// Gets the logger.
         /// </summary>
         /// <value>The logger.</value>
         protected ILogger<BaseSqliteRepository> Logger { get; }
-
-        /// <summary>
-        /// Gets the default connection flags.
-        /// </summary>
-        /// <value>The default connection flags.</value>
-        protected virtual ConnectionFlags DefaultConnectionFlags => ConnectionFlags.NoMutex;
-
-        /// <summary>
-        /// Gets the transaction mode.
-        /// </summary>
-        /// <value>The transaction mode.</value>>
-        protected TransactionMode TransactionMode => TransactionMode.Deferred;
-
-        /// <summary>
-        /// Gets the transaction mode for read-only operations.
-        /// </summary>
-        /// <value>The transaction mode.</value>
-        protected TransactionMode ReadTransactionMode => TransactionMode.Deferred;
 
         /// <summary>
         /// Gets the cache size.
@@ -63,7 +54,7 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Gets the locking mode. <see href="https://www.sqlite.org/pragma.html#pragma_locking_mode" />.
         /// </summary>
-        protected virtual string LockingMode => "EXCLUSIVE";
+        protected virtual string LockingMode => "NORMAL";
 
         /// <summary>
         /// Gets the journal mode. <see href="https://www.sqlite.org/pragma.html#pragma_journal_mode" />.
@@ -73,9 +64,10 @@ namespace Emby.Server.Implementations.Data
 
         /// <summary>
         /// Gets the journal size limit. <see href="https://www.sqlite.org/pragma.html#pragma_journal_size_limit" />.
+        /// The default (-1) is overriden to prevent unconstrained WAL size, as reported by users.
         /// </summary>
         /// <value>The journal size limit.</value>
-        protected virtual int? JournalSizeLimit => 0;
+        protected virtual int? JournalSizeLimit => 134_217_728; // 128MiB
 
         /// <summary>
         /// Gets the page size.
@@ -88,7 +80,7 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <value>The temp store mode.</value>
         /// <see cref="TempStoreMode"/>
-        protected virtual TempStoreMode TempStore => TempStoreMode.Default;
+        protected virtual TempStoreMode TempStore => TempStoreMode.Memory;
 
         /// <summary>
         /// Gets the synchronous mode.
@@ -97,109 +89,77 @@ namespace Emby.Server.Implementations.Data
         /// <see cref="SynchronousMode"/>
         protected virtual SynchronousMode? Synchronous => SynchronousMode.Normal;
 
-        /// <summary>
-        /// Gets or sets the write lock.
-        /// </summary>
-        /// <value>The write lock.</value>
-        protected SemaphoreSlim WriteLock { get; set; } = new SemaphoreSlim(1, 1);
-
-        /// <summary>
-        /// Gets or sets the write connection.
-        /// </summary>
-        /// <value>The write connection.</value>
-        protected SQLiteDatabaseConnection WriteConnection { get; set; }
-
-        protected ManagedConnection GetConnection(bool readOnly = false)
+        public virtual void Initialize()
         {
-            WriteLock.Wait();
-            if (WriteConnection is not null)
+            // Configuration and pragmas can affect VACUUM so it needs to be last.
+            using (var connection = GetConnection())
             {
-                return new ManagedConnection(WriteConnection, WriteLock);
+                connection.Execute("VACUUM");
             }
+        }
 
-            WriteConnection = SQLite3.Open(
-                DbFilePath,
-                DefaultConnectionFlags | ConnectionFlags.Create | ConnectionFlags.ReadWrite,
-                null);
+        protected SqliteConnection GetConnection()
+        {
+            var connection = new SqliteConnection($"Filename={DbFilePath}");
+            connection.Open();
 
             if (CacheSize.HasValue)
             {
-                WriteConnection.Execute("PRAGMA cache_size=" + CacheSize.Value);
+                connection.Execute("PRAGMA cache_size=" + CacheSize.Value);
             }
 
             if (!string.IsNullOrWhiteSpace(LockingMode))
             {
-                WriteConnection.Execute("PRAGMA locking_mode=" + LockingMode);
+                connection.Execute("PRAGMA locking_mode=" + LockingMode);
             }
 
             if (!string.IsNullOrWhiteSpace(JournalMode))
             {
-                WriteConnection.Execute("PRAGMA journal_mode=" + JournalMode);
+                connection.Execute("PRAGMA journal_mode=" + JournalMode);
             }
 
             if (JournalSizeLimit.HasValue)
             {
-                WriteConnection.Execute("PRAGMA journal_size_limit=" + (int)JournalSizeLimit.Value);
+                connection.Execute("PRAGMA journal_size_limit=" + JournalSizeLimit.Value);
             }
 
             if (Synchronous.HasValue)
             {
-                WriteConnection.Execute("PRAGMA synchronous=" + (int)Synchronous.Value);
+                connection.Execute("PRAGMA synchronous=" + (int)Synchronous.Value);
             }
 
             if (PageSize.HasValue)
             {
-                WriteConnection.Execute("PRAGMA page_size=" + PageSize.Value);
+                connection.Execute("PRAGMA page_size=" + PageSize.Value);
             }
 
-            WriteConnection.Execute("PRAGMA temp_store=" + (int)TempStore);
+            connection.Execute("PRAGMA temp_store=" + (int)TempStore);
 
-            // Configuration and pragmas can affect VACUUM so it needs to be last.
-            WriteConnection.Execute("VACUUM");
-
-            return new ManagedConnection(WriteConnection, WriteLock);
+            return connection;
         }
 
-        public IStatement PrepareStatement(ManagedConnection connection, string sql)
-            => connection.PrepareStatement(sql);
-
-        public IStatement PrepareStatement(IDatabaseConnection connection, string sql)
-            => connection.PrepareStatement(sql);
-
-        public IStatement[] PrepareAll(IDatabaseConnection connection, IReadOnlyList<string> sql)
+        public SqliteCommand PrepareStatement(SqliteConnection connection, string sql)
         {
-            int len = sql.Count;
-            IStatement[] statements = new IStatement[len];
-            for (int i = 0; i < len; i++)
+            var command = connection.CreateCommand();
+            command.CommandText = sql;
+            return command;
+        }
+
+        protected bool TableExists(SqliteConnection connection, string name)
+        {
+            using var statement = PrepareStatement(connection, "select DISTINCT tbl_name from sqlite_master");
+            foreach (var row in statement.ExecuteQuery())
             {
-                statements[i] = connection.PrepareStatement(sql[i]);
+                if (string.Equals(name, row.GetString(0), StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
             }
 
-            return statements;
+            return false;
         }
 
-        protected bool TableExists(ManagedConnection connection, string name)
-        {
-            return connection.RunInTransaction(
-                db =>
-                {
-                    using (var statement = PrepareStatement(db, "select DISTINCT tbl_name from sqlite_master"))
-                    {
-                        foreach (var row in statement.ExecuteQuery())
-                        {
-                            if (string.Equals(name, row.GetString(0), StringComparison.OrdinalIgnoreCase))
-                            {
-                                return true;
-                            }
-                        }
-                    }
-
-                    return false;
-                },
-                ReadTransactionMode);
-        }
-
-        protected List<string> GetColumnNames(IDatabaseConnection connection, string table)
+        protected List<string> GetColumnNames(SqliteConnection connection, string table)
         {
             var columnNames = new List<string>();
 
@@ -214,7 +174,7 @@ namespace Emby.Server.Implementations.Data
             return columnNames;
         }
 
-        protected void AddColumn(IDatabaseConnection connection, string table, string columnName, string type, List<string> existingColumnNames)
+        protected void AddColumn(SqliteConnection connection, string table, string columnName, string type, List<string> existingColumnNames)
         {
             if (existingColumnNames.Contains(columnName, StringComparison.OrdinalIgnoreCase))
             {
@@ -249,24 +209,6 @@ namespace Emby.Server.Implementations.Data
             {
                 return;
             }
-
-            if (dispose)
-            {
-                WriteLock.Wait();
-                try
-                {
-                    WriteConnection?.Dispose();
-                }
-                finally
-                {
-                    WriteLock.Release();
-                }
-
-                WriteLock.Dispose();
-            }
-
-            WriteConnection = null;
-            WriteLock = null;
 
             _disposed = true;
         }

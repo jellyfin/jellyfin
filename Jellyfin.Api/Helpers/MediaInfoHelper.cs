@@ -243,7 +243,7 @@ public class MediaInfoHelper
         }
 
         // Beginning of Playback Determination
-        var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase)
+        var streamInfo = item.MediaType == MediaType.Audio
             ? streamBuilder.GetOptimalAudioStream(options)
             : streamBuilder.GetOptimalVideoStream(options);
 
@@ -421,7 +421,7 @@ public class MediaInfoHelper
                 true,
                 true,
                 true,
-                httpContext.GetNormalizedRemoteIp());
+                httpContext.GetNormalizedRemoteIP());
         }
         else
         {
@@ -487,7 +487,7 @@ public class MediaInfoHelper
         {
             var isInLocalNetwork = _networkManager.IsInLocalNetwork(ipAddress);
 
-            _logger.LogInformation("RemoteClientBitrateLimit: {0}, RemoteIp: {1}, IsInLocalNetwork: {2}", remoteClientMaxBitrate, ipAddress, isInLocalNetwork);
+            _logger.LogInformation("RemoteClientBitrateLimit: {0}, RemoteIP: {1}, IsInLocalNetwork: {2}", remoteClientMaxBitrate, ipAddress, isInLocalNetwork);
             if (!isInLocalNetwork)
             {
                 maxBitrate = Math.Min(maxBitrate ?? remoteClientMaxBitrate, remoteClientMaxBitrate);

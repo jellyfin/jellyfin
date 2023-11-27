@@ -1,4 +1,3 @@
-using System;
 using Jellyfin.Api.Controllers;
 using Xunit;
 

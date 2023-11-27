@@ -97,7 +97,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="query">The query.</param>
         /// <param name="options">The options.</param>
         /// <returns>A recording.</returns>
-        QueryResult<BaseItemDto> GetRecordings(RecordingQuery query, DtoOptions options);
+        Task<QueryResult<BaseItemDto>> GetRecordingsAsync(RecordingQuery query, DtoOptions options);
 
         /// <summary>
         /// Gets the timers.
@@ -308,6 +308,6 @@ namespace MediaBrowser.Controller.LiveTv
 
         void AddInfoToRecordingDto(BaseItem item, BaseItemDto dto, ActiveRecordingInfo activeRecordingInfo, User user = null);
 
-        List<BaseItem> GetRecordingFolders(User user);
+        Task<BaseItem[]> GetRecordingFoldersAsync(User user);
     }
 }

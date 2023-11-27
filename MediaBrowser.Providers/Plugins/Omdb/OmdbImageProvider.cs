@@ -38,10 +38,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
-            return new List<ImageType>
-            {
-                ImageType.Primary
-            };
+            yield return ImageType.Primary;
         }
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)

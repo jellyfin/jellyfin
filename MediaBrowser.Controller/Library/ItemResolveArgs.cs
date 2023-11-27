@@ -1,12 +1,12 @@
 #nullable disable
 
-#pragma warning disable CA1721, CA1819, CS1591
+#pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 
@@ -23,21 +23,19 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         private readonly IServerApplicationPaths _appPaths;
 
+        private readonly ILibraryManager _libraryManager;
         private LibraryOptions _libraryOptions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemResolveArgs" /> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
-        /// <param name="directoryService">The directory service.</param>
-        public ItemResolveArgs(IServerApplicationPaths appPaths, IDirectoryService directoryService)
+        /// <param name="libraryManager">The library manager.</param>
+        public ItemResolveArgs(IServerApplicationPaths appPaths, ILibraryManager libraryManager)
         {
             _appPaths = appPaths;
-            DirectoryService = directoryService;
+            _libraryManager = libraryManager;
         }
-
-        // TODO remove dependencies as properties, they should be injected where it makes sense
-        public IDirectoryService DirectoryService { get; }
 
         /// <summary>
         /// Gets or sets the file system children.
@@ -47,7 +45,7 @@ namespace MediaBrowser.Controller.Library
 
         public LibraryOptions LibraryOptions
         {
-            get => _libraryOptions ??= Parent is null ? new LibraryOptions() : BaseItem.LibraryManager.GetLibraryOptions(Parent);
+            get => _libraryOptions ??= Parent is null ? new LibraryOptions() : _libraryManager.GetLibraryOptions(Parent);
             set => _libraryOptions = value;
         }
 
@@ -123,7 +121,7 @@ namespace MediaBrowser.Controller.Library
             }
         }
 
-        public string CollectionType { get; set; }
+        public CollectionType? CollectionType { get; set; }
 
         public bool HasParent<T>()
             where T : Folder
@@ -220,10 +218,10 @@ namespace MediaBrowser.Controller.Library
         /// <returns><c>true</c> if [contains file system entry by name] [the specified name]; otherwise, <c>false</c>.</returns>
         public bool ContainsFileSystemEntryByName(string name)
         {
-            return GetFileSystemEntryByName(name) != null;
+            return GetFileSystemEntryByName(name) is not null;
         }
 
-        public string GetCollectionType()
+        public CollectionType? GetCollectionType()
         {
             return CollectionType;
         }
@@ -231,21 +229,15 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the configured content type for the path.
         /// </summary>
-        /// <remarks>
-        /// This is subject to future refactoring as it relies on a static property in BaseItem.
-        /// </remarks>
         /// <returns>The configured content type.</returns>
-        public string GetConfiguredContentType()
+        public CollectionType? GetConfiguredContentType()
         {
-            return BaseItem.LibraryManager.GetConfiguredContentType(Path);
+            return _libraryManager.GetConfiguredContentType(Path);
         }
 
         /// <summary>
         /// Gets the file system children that do not hit the ignore file check.
         /// </summary>
-        /// <remarks>
-        /// This is subject to future refactoring as it relies on a static property in BaseItem.
-        /// </remarks>
         /// <returns>The file system children that are not ignored.</returns>
         public IEnumerable<FileSystemMetadata> GetActualFileSystemChildren()
         {
@@ -253,7 +245,7 @@ namespace MediaBrowser.Controller.Library
             for (var i = 0; i < numberOfChildren; i++)
             {
                 var child = FileSystemChildren[i];
-                if (BaseItem.LibraryManager.IgnoreFile(child, Parent))
+                if (_libraryManager.IgnoreFile(child, Parent))
                 {
                     continue;
                 }

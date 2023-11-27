@@ -13,6 +13,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -424,7 +425,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 var person = new PersonInfo
                 {
                     Name = result.Director,
-                    Type = PersonType.Director
+                    Type = PersonKind.Director
                 };
 
                 itemResult.AddPerson(person);
@@ -435,7 +436,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 var person = new PersonInfo
                 {
                     Name = result.Writer,
-                    Type = PersonType.Writer
+                    Type = PersonKind.Writer
                 };
 
                 itemResult.AddPerson(person);
@@ -454,7 +455,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     var person = new PersonInfo
                     {
                         Name = actor,
-                        Type = PersonType.Actor
+                        Type = PersonKind.Actor
                     };
 
                     itemResult.AddPerson(person);

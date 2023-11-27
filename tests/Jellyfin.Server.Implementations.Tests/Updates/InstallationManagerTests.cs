@@ -90,7 +90,7 @@ namespace Jellyfin.Server.Implementations.Tests.Updates
                 Checksum = "InvalidChecksum"
             };
 
-            await Assert.ThrowsAsync<InvalidDataException>(() => _installationManager.InstallPackage(packageInfo, CancellationToken.None)).ConfigureAwait(false);
+            await Assert.ThrowsAsync<InvalidDataException>(() => _installationManager.InstallPackage(packageInfo, CancellationToken.None));
         }
 
         [Fact]
@@ -103,7 +103,7 @@ namespace Jellyfin.Server.Implementations.Tests.Updates
                 Checksum = "11b5b2f1a9ebc4f66d6ef19018543361"
             };
 
-            var ex = await Record.ExceptionAsync(() => _installationManager.InstallPackage(packageInfo, CancellationToken.None)).ConfigureAwait(false);
+            var ex = await Record.ExceptionAsync(() => _installationManager.InstallPackage(packageInfo, CancellationToken.None));
             Assert.Null(ex);
         }
     }
