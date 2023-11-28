@@ -431,14 +431,7 @@ namespace Emby.Server.Implementations.Dto
 
         private static int GetChildCount(Folder folder, User user)
         {
-            // Right now this is too slow to calculate for top level folders on a per-user basis
-            // Just return something so that apps that are expecting a value won't think the folders are empty
-            if (folder is ICollectionFolder || folder is UserView)
-            {
-                return Random.Shared.Next(1, 10);
-            }
-
-            return folder.GetChildCount(user);
+            return folder.Children.Count();
         }
 
         private static void SetBookProperties(BaseItemDto dto, Book item)
