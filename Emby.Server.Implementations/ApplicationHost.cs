@@ -450,7 +450,7 @@ namespace Emby.Server.Implementations
 
             // this is needed as Github Codespaces will not be able to find the process if we bind on interfaces directly.
 
-            if (Environment.GetEnvironmentVariable("JELLYFIN_NETWORKMANAGER_BINDALL") == "true")
+            if (bool.TryParse(Environment.GetEnvironmentVariable("JELLYFIN_NETWORKMANAGER_BINDALL"), out var bindAll) && bindAll)
             {
                 NetManager = new BindAllNetworkManager(ConfigurationManager, _startupConfig, LoggerFactory.CreateLogger<NetworkManager>());
             }
