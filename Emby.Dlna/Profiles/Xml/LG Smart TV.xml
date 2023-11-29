@@ -35,8 +35,8 @@
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
   <XmlRootAttributes />
   <DirectPlayProfiles>
-    <DirectPlayProfile container="ts,mpegts,avi,mkv,m2ts" audioCodec="aac,ac3,eac3,mp3,dca,dts" videoCodec="h264" type="Video" />
-    <DirectPlayProfile container="mp4,m4v" audioCodec="aac,ac3,eac3,mp3,dca,dts" videoCodec="h264,mpeg4" type="Video" />
+    <DirectPlayProfile container="ts,mpegts,avi,mkv,m2ts" audioCodec="aac,ac3,eac3,mp3,dca,dts" videoCodec="h264,hevc" type="Video" />
+    <DirectPlayProfile container="mp4,m4v" audioCodec="aac,ac3,eac3,mp3,dca,dts" videoCodec="h264,mpeg4,hevc" type="Video" />
     <DirectPlayProfile container="mp3" type="Audio" />
     <DirectPlayProfile container="jpeg" type="Photo" />
   </DirectPlayProfiles>
