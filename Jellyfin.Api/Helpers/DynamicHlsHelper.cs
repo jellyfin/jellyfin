@@ -99,11 +99,13 @@ namespace Jellyfin.Api.Helpers
         /// <param name="transcodingJobType">Transcoding job type.</param>
         /// <param name="streamingRequest">Streaming request dto.</param>
         /// <param name="enableAdaptiveBitrateStreaming">Enable adaptive bitrate streaming.</param>
+        /// <param name="enableMultipleCodecStreaming">Enable multiple codec streaming.</param>
         /// <returns>A <see cref="Task"/> containing the resulting <see cref="ActionResult"/>.</returns>
         public async Task<ActionResult> GetMasterHlsPlaylist(
             TranscodingJobType transcodingJobType,
             StreamingRequestDto streamingRequest,
-            bool enableAdaptiveBitrateStreaming)
+            bool enableAdaptiveBitrateStreaming,
+            bool enableMultipleCodecStreaming)
         {
             var isHeadRequest = _httpContextAccessor.HttpContext?.Request.Method == WebRequestMethods.Http.Head;
             // CTS lifecycle is managed internally.
@@ -112,6 +114,7 @@ namespace Jellyfin.Api.Helpers
                 streamingRequest,
                 isHeadRequest,
                 enableAdaptiveBitrateStreaming,
+                enableMultipleCodecStreaming,
                 transcodingJobType,
                 cancellationTokenSource).ConfigureAwait(false);
         }
@@ -120,6 +123,7 @@ namespace Jellyfin.Api.Helpers
             StreamingRequestDto streamingRequest,
             bool isHeadRequest,
             bool enableAdaptiveBitrateStreaming,
+            bool enableMultipleCodecStreaming,
             TranscodingJobType transcodingJobType,
             CancellationTokenSource cancellationTokenSource)
         {
@@ -202,7 +206,7 @@ namespace Jellyfin.Api.Helpers
 
             var basicPlaylist = AppendPlaylist(builder, state, playlistUrl, totalBitrate, subtitleGroup);
 
-            if (state.VideoStream != null && state.VideoRequest != null)
+            if (enableMultipleCodecStreaming && state.VideoStream != null && state.VideoRequest != null)
             {
                 // Provide a workaround for the case issue between flac and fLaC.
                 var flacWaPlaylist = ApplyFlacCaseWorkaround(state, basicPlaylist.ToString());

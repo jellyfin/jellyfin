@@ -233,10 +233,11 @@ namespace Jellyfin.Api.Controllers
                     TranscodeReasons = mediaSource.TranscodeReasons == 0 ? null : mediaSource.TranscodeReasons.ToString(),
                     Context = EncodingContext.Static,
                     StreamOptions = new Dictionary<string, string>(),
-                    EnableAdaptiveBitrateStreaming = true
+                    EnableAdaptiveBitrateStreaming = true,
+                    EnableMultipleCodecStreaming = true
                 };
 
-                return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType.Hls, dynamicHlsRequestDto, true)
+                return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType.Hls, dynamicHlsRequestDto, true, true)
                     .ConfigureAwait(false);
             }
 

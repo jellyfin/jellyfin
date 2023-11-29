@@ -413,6 +413,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
         /// <param name="streamOptions">Optional. The streaming options.</param>
         /// <param name="enableAdaptiveBitrateStreaming">Enable adaptive bitrate streaming.</param>
+        /// <param name="enableMultipleCodecStreaming">Enable multiple codec streaming.</param>
         /// <response code="200">Video stream returned.</response>
         /// <returns>A <see cref="FileResult"/> containing the playlist file.</returns>
         [HttpGet("Videos/{itemId}/master.m3u8")]
@@ -470,7 +471,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? videoStreamIndex,
             [FromQuery] EncodingContext? context,
             [FromQuery] Dictionary<string, string> streamOptions,
-            [FromQuery] bool enableAdaptiveBitrateStreaming = true)
+            [FromQuery] bool enableAdaptiveBitrateStreaming = true,
+            [FromQuery] bool enableMultipleCodecStreaming = true)
         {
             var streamingRequest = new HlsVideoRequestDto
             {
@@ -524,10 +526,11 @@ namespace Jellyfin.Api.Controllers
                 VideoStreamIndex = videoStreamIndex,
                 Context = context ?? EncodingContext.Streaming,
                 StreamOptions = streamOptions,
-                EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming
+                EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming,
+                EnableMultipleCodecStreaming = enableMultipleCodecStreaming
             };
 
-            return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
+            return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming, enableMultipleCodecStreaming).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -583,6 +586,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
         /// <param name="streamOptions">Optional. The streaming options.</param>
         /// <param name="enableAdaptiveBitrateStreaming">Enable adaptive bitrate streaming.</param>
+        /// <param name="enableMultipleCodecStreaming">Enable multiple codec streaming.</param>
         /// <response code="200">Audio stream returned.</response>
         /// <returns>A <see cref="FileResult"/> containing the playlist file.</returns>
         [HttpGet("Audio/{itemId}/master.m3u8")]
@@ -639,7 +643,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? videoStreamIndex,
             [FromQuery] EncodingContext? context,
             [FromQuery] Dictionary<string, string> streamOptions,
-            [FromQuery] bool enableAdaptiveBitrateStreaming = true)
+            [FromQuery] bool enableAdaptiveBitrateStreaming = true,
+            [FromQuery] bool enableMultipleCodecStreaming = true)
         {
             var streamingRequest = new HlsAudioRequestDto
             {
@@ -691,10 +696,11 @@ namespace Jellyfin.Api.Controllers
                 VideoStreamIndex = videoStreamIndex,
                 Context = context ?? EncodingContext.Streaming,
                 StreamOptions = streamOptions,
-                EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming
+                EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming,
+                EnableMultipleCodecStreaming = enableMultipleCodecStreaming
             };
 
-            return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
+            return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming, enableMultipleCodecStreaming).ConfigureAwait(false);
         }
 
         /// <summary>

@@ -81,6 +81,11 @@ namespace MediaBrowser.Model.Dlna
         public bool EnableAlbumArtInDidl { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether enable multiple codec streaming.
+        /// </summary>
+        public bool? EnableMultipleCodecStreaming { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether EnableSingleAlbumArtLimit.
         /// </summary>
         [DefaultValue(false)]

@@ -580,6 +580,11 @@ namespace MediaBrowser.Model.Dlna
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether enable multiple codec streaming.
+        /// </summary>
+        public bool? EnableMultipleCodecStreaming { get; set; }
+
         public void SetOption(string qualifier, string name, string value)
         {
             if (string.IsNullOrEmpty(qualifier))
@@ -740,6 +745,8 @@ namespace MediaBrowser.Model.Dlna
             list.Add(new NameValuePair("LiveStreamId", liveStreamId ?? string.Empty));
 
             list.Add(new NameValuePair("SubtitleMethod", item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod != SubtitleDeliveryMethod.External ? item.SubtitleDeliveryMethod.ToString() : string.Empty));
+
+            list.Add(new NameValuePair("EnableMultipleCodecStreaming", item.EnableMultipleCodecStreaming.HasValue ? item.EnableMultipleCodecStreaming.Value.ToString(CultureInfo.InvariantCulture).ToLowerInvariant() : string.Empty));
 
             if (!item.IsDirectStream)
             {
