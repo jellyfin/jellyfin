@@ -25,6 +25,11 @@ namespace MediaBrowser.Controller.MediaEncoding
 {
     public class EncodingHelper
     {
+        /// <summary>
+        /// The codec validation regex.
+        /// </summary>
+        public const string ValidationRegex = @"^[a-zA-Z0-9\-\._,|]{0,40}$";
+
         private const string QsvAlias = "qs";
         private const string VaapiAlias = "va";
         private const string D3d11vaAlias = "dx11";
@@ -35,6 +40,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ISubtitleEncoder _subtitleEncoder;
         private readonly IConfiguration _config;
+
+        private static readonly Regex _validationRegex = new(ValidationRegex, RegexOptions.Compiled);
 
         // i915 hang was fixed by linux 6.2 (3f882f2)
         private readonly Version _minKerneli915Hang = new Version(5, 18);
@@ -253,7 +260,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return "libtheora";
                 }
 
-                return codec.ToLowerInvariant();
+                if (_validationRegex.IsMatch(codec))
+                {
+                    return codec.ToLowerInvariant();
+                }
             }
 
             return "copy";
@@ -276,7 +286,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public static string GetInputFormat(string container)
         {
-            if (string.IsNullOrEmpty(container))
+            if (string.IsNullOrEmpty(container) || !_validationRegex.IsMatch(container))
             {
                 return null;
             }
@@ -522,6 +532,11 @@ namespace MediaBrowser.Controller.MediaEncoding
         public string GetAudioEncoder(EncodingJobInfo state)
         {
             var codec = state.OutputAudioCodec;
+
+            if (!_validationRegex.IsMatch(codec))
+            {
+                codec = "aac";
+            }
 
             if (string.Equals(codec, "aac", StringComparison.OrdinalIgnoreCase))
             {
