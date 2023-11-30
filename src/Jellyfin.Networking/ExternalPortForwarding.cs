@@ -16,7 +16,7 @@ using MediaBrowser.Controller.Plugins;
 using Microsoft.Extensions.Logging;
 using Mono.Nat;
 
-namespace Emby.Server.Implementations.EntryPoints
+namespace Jellyfin.Networking
 {
     /// <summary>
     /// Server entrypoint handling external port forwarding.
