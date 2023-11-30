@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using MediaBrowser.Model.Net;
 
-namespace Emby.Server.Implementations.Net
+namespace Jellyfin.Networking.Udp
 {
     /// <summary>
     /// Factory class to create different kinds of sockets.
