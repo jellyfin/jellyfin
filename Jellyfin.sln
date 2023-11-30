@@ -59,7 +59,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Data", "Jellyfin.D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Server.Implementations", "Jellyfin.Server.Implementations\Jellyfin.Server.Implementations.csproj", "{DAE48069-6D86-4BA6-B148-D1D49B6DDA52}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Networking", "Jellyfin.Networking\Jellyfin.Networking.csproj", "{0A3FCC4D-C714-4072-B90F-E374A15F9FF9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Networking", "src\Jellyfin.Networking\Jellyfin.Networking.csproj", "{0A3FCC4D-C714-4072-B90F-E374A15F9FF9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.XbmcMetadata.Tests", "tests\Jellyfin.XbmcMetadata.Tests\Jellyfin.XbmcMetadata.Tests.csproj", "{30922383-D513-4F4D-B890-A940B57FA353}"
 EndProject
@@ -258,6 +258,7 @@ Global
 		{24960660-DE6C-47BF-AEEF-CEE8F19FE6C2} = {FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}
 		{08FFF49B-F175-4807-A2B5-73B0EBD9F716} = {C9F0AB5D-F4D7-40C8-A353-3305C86D6D4C}
 		{154872D9-6C12-4007-96E3-8F70A58386CE} = {C9F0AB5D-F4D7-40C8-A353-3305C86D6D4C}
+		{0A3FCC4D-C714-4072-B90F-E374A15F9FF9} = {C9F0AB5D-F4D7-40C8-A353-3305C86D6D4C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3448830C-EBDC-426C-85CD-7BBB9651A7FE}
