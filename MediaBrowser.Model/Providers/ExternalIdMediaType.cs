@@ -66,6 +66,11 @@ namespace MediaBrowser.Model.Providers
         /// <summary>
         /// A music track.
         /// </summary>
-        Track = 12
+        Track = 12,
+
+        /// <summary>
+        /// A book.
+        /// </summary>
+        Book = 13
     }
 }
