@@ -13,7 +13,6 @@ using System.Net;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Emby.Dlna.Main;
 using Emby.Naming.Common;
 using Emby.Photos;
 using Emby.Server.Implementations.Channels;
@@ -866,9 +865,6 @@ namespace Emby.Server.Implementations
 
             // MediaEncoding
             yield return typeof(MediaBrowser.MediaEncoding.Encoder.MediaEncoder).Assembly;
-
-            // Dlna
-            yield return typeof(DlnaHost).Assembly;
 
             // Local metadata
             yield return typeof(BoxSetXmlSaver).Assembly;

@@ -16,8 +16,6 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Trickplay;
@@ -38,11 +36,9 @@ public class DynamicHlsHelper
 {
     private readonly ILibraryManager _libraryManager;
     private readonly IUserManager _userManager;
-    private readonly IDlnaManager _dlnaManager;
     private readonly IMediaSourceManager _mediaSourceManager;
     private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly IMediaEncoder _mediaEncoder;
-    private readonly IDeviceManager _deviceManager;
     private readonly TranscodingJobHelper _transcodingJobHelper;
     private readonly INetworkManager _networkManager;
     private readonly ILogger<DynamicHlsHelper> _logger;
@@ -55,11 +51,9 @@ public class DynamicHlsHelper
     /// </summary>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-    /// <param name="dlnaManager">Instance of the <see cref="IDlnaManager"/> interface.</param>
     /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-    /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
     /// <param name="transcodingJobHelper">Instance of <see cref="TranscodingJobHelper"/>.</param>
     /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{DynamicHlsHelper}"/> interface.</param>
@@ -69,11 +63,9 @@ public class DynamicHlsHelper
     public DynamicHlsHelper(
         ILibraryManager libraryManager,
         IUserManager userManager,
-        IDlnaManager dlnaManager,
         IMediaSourceManager mediaSourceManager,
         IServerConfigurationManager serverConfigurationManager,
         IMediaEncoder mediaEncoder,
-        IDeviceManager deviceManager,
         TranscodingJobHelper transcodingJobHelper,
         INetworkManager networkManager,
         ILogger<DynamicHlsHelper> logger,
@@ -83,11 +75,9 @@ public class DynamicHlsHelper
     {
         _libraryManager = libraryManager;
         _userManager = userManager;
-        _dlnaManager = dlnaManager;
         _mediaSourceManager = mediaSourceManager;
         _serverConfigurationManager = serverConfigurationManager;
         _mediaEncoder = mediaEncoder;
-        _deviceManager = deviceManager;
         _transcodingJobHelper = transcodingJobHelper;
         _networkManager = networkManager;
         _logger = logger;
@@ -140,8 +130,6 @@ public class DynamicHlsHelper
                 _serverConfigurationManager,
                 _mediaEncoder,
                 _encodingHelper,
-                _dlnaManager,
-                _deviceManager,
                 _transcodingJobHelper,
                 transcodingJobType,
                 cancellationTokenSource.Token)

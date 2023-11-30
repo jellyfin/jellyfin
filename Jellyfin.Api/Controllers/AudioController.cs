@@ -15,7 +15,6 @@ namespace Jellyfin.Api.Controllers;
 /// <summary>
 /// The audio controller.
 /// </summary>
-// TODO: In order to authenticate this in the future, Dlna playback will require updating
 public class AudioController : BaseJellyfinApiController
 {
     private readonly AudioHelper _audioHelper;
@@ -95,7 +94,7 @@ public class AudioController : BaseJellyfinApiController
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
-        [FromQuery] string? deviceProfileId,
+        [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
         [FromQuery] string? segmentContainer,
         [FromQuery] int? segmentLength,
@@ -147,7 +146,6 @@ public class AudioController : BaseJellyfinApiController
             Static = @static ?? false,
             Params = @params,
             Tag = tag,
-            DeviceProfileId = deviceProfileId,
             PlaySessionId = playSessionId,
             SegmentContainer = segmentContainer,
             SegmentLength = segmentLength,
@@ -260,7 +258,7 @@ public class AudioController : BaseJellyfinApiController
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
-        [FromQuery] string? deviceProfileId,
+        [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
         [FromQuery] string? segmentContainer,
         [FromQuery] int? segmentLength,
@@ -312,7 +310,6 @@ public class AudioController : BaseJellyfinApiController
             Static = @static ?? false,
             Params = @params,
             Tag = tag,
-            DeviceProfileId = deviceProfileId,
             PlaySessionId = playSessionId,
             SegmentContainer = segmentContainer,
             SegmentLength = segmentLength,
