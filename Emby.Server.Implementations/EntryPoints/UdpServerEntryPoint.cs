@@ -68,7 +68,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <inheritdoc />
         public Task RunAsync()
         {
-            CheckDisposed();
+            ObjectDisposedException.ThrowIf(_disposed, this);
 
             if (!_configurationManager.GetNetworkConfiguration().AutoDiscovery)
             {
@@ -121,14 +121,6 @@ namespace Emby.Server.Implementations.EntryPoints
             }
 
             return Task.CompletedTask;
-        }
-
-        private void CheckDisposed()
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().Name);
-            }
         }
 
         /// <inheritdoc />
