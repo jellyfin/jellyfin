@@ -128,10 +128,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private Task CreateRules(INatDevice device)
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().Name);
-            }
+            ObjectDisposedException.ThrowIf(_disposed, this);
 
             // On some systems the device discovered event seems to fire repeatedly
             // This check will help ensure we're not trying to port map the same device over and over
