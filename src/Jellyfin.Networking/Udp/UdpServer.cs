@@ -11,7 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 
-namespace Emby.Server.Implementations.Udp
+namespace Jellyfin.Networking.Udp
 {
     /// <summary>
     /// Provides a Udp Server.

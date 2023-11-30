@@ -5,8 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Emby.Server.Implementations.Udp;
-using MediaBrowser.Common.Configuration;
+using Jellyfin.Networking.Udp;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
@@ -14,7 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using IConfigurationManager = MediaBrowser.Common.Configuration.IConfigurationManager;
 
-namespace Emby.Server.Implementations.EntryPoints
+namespace Jellyfin.Networking
 {
     /// <summary>
     /// Class responsible for registering all UDP broadcast endpoints and their handlers.
