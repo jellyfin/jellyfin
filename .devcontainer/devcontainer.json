@@ -1,7 +1,31 @@
 {
-    "image":"mcr.microsoft.com/devcontainers/dotnet",
-	"postCreateCommand": "dotnet restore; dotnet dev-certs https --trust",
+    "name": "Plain JF Dotnet 8",
+    "image":"mcr.microsoft.com/devcontainers/dotnet:8.0-jammy",
+        //required to get skia to run
+	"postCreateCommand": "sudo apt-get update && sudo apt-get install -y libfontconfig1",
+    "postStartCommand": "dotnet restore; dotnet workload update; dotnet dev-certs https --trust",
     "containerEnv": {
         "JELLYFIN_NETWORKMANAGER_BINDALL": "true"
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/dotnet:2": {
+            "version": "none",
+            "dotnetRuntimeVersions": "8.0",
+            "aspNetCoreRuntimeVersions": "8.0"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "GitHub.vscode-github-actions",
+                "ms-dotnettools.vscode-dotnet-runtime",
+                "ms-dotnettools.csdevkit",
+                "ms-dotnetools.csharp"
+            ]
+        }
+    },
+    "hostRequirements": {
+        "memory": "8gb",
+        "cpus": 4
     }
 }
