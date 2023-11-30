@@ -16,181 +16,180 @@ using MediaBrowser.Controller.Plugins;
 using Microsoft.Extensions.Logging;
 using Mono.Nat;
 
-namespace Jellyfin.Networking
+namespace Jellyfin.Networking;
+
+/// <summary>
+/// Server entrypoint handling external port forwarding.
+/// </summary>
+public sealed class ExternalPortForwarding : IServerEntryPoint
 {
+    private readonly IServerApplicationHost _appHost;
+    private readonly ILogger<ExternalPortForwarding> _logger;
+    private readonly IServerConfigurationManager _config;
+
+    private readonly ConcurrentDictionary<IPEndPoint, byte> _createdRules = new ConcurrentDictionary<IPEndPoint, byte>();
+
+    private Timer _timer;
+    private string _configIdentifier;
+
+    private bool _disposed;
+
     /// <summary>
-    /// Server entrypoint handling external port forwarding.
+    /// Initializes a new instance of the <see cref="ExternalPortForwarding"/> class.
     /// </summary>
-    public sealed class ExternalPortForwarding : IServerEntryPoint
+    /// <param name="logger">The logger.</param>
+    /// <param name="appHost">The application host.</param>
+    /// <param name="config">The configuration manager.</param>
+    public ExternalPortForwarding(
+        ILogger<ExternalPortForwarding> logger,
+        IServerApplicationHost appHost,
+        IServerConfigurationManager config)
     {
-        private readonly IServerApplicationHost _appHost;
-        private readonly ILogger<ExternalPortForwarding> _logger;
-        private readonly IServerConfigurationManager _config;
+        _logger = logger;
+        _appHost = appHost;
+        _config = config;
+    }
 
-        private readonly ConcurrentDictionary<IPEndPoint, byte> _createdRules = new ConcurrentDictionary<IPEndPoint, byte>();
+    private string GetConfigIdentifier()
+    {
+        const char Separator = '|';
+        var config = _config.GetNetworkConfiguration();
 
-        private Timer _timer;
-        private string _configIdentifier;
+        return new StringBuilder(32)
+            .Append(config.EnableUPnP).Append(Separator)
+            .Append(config.PublicHttpPort).Append(Separator)
+            .Append(config.PublicHttpsPort).Append(Separator)
+            .Append(_appHost.HttpPort).Append(Separator)
+            .Append(_appHost.HttpsPort).Append(Separator)
+            .Append(_appHost.ListenWithHttps).Append(Separator)
+            .Append(config.EnableRemoteAccess).Append(Separator)
+            .ToString();
+    }
 
-        private bool _disposed;
+    private void OnConfigurationUpdated(object sender, EventArgs e)
+    {
+        var oldConfigIdentifier = _configIdentifier;
+        _configIdentifier = GetConfigIdentifier();
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ExternalPortForwarding"/> class.
-        /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="appHost">The application host.</param>
-        /// <param name="config">The configuration manager.</param>
-        public ExternalPortForwarding(
-            ILogger<ExternalPortForwarding> logger,
-            IServerApplicationHost appHost,
-            IServerConfigurationManager config)
+        if (!string.Equals(_configIdentifier, oldConfigIdentifier, StringComparison.OrdinalIgnoreCase))
         {
-            _logger = logger;
-            _appHost = appHost;
-            _config = config;
-        }
-
-        private string GetConfigIdentifier()
-        {
-            const char Separator = '|';
-            var config = _config.GetNetworkConfiguration();
-
-            return new StringBuilder(32)
-                .Append(config.EnableUPnP).Append(Separator)
-                .Append(config.PublicHttpPort).Append(Separator)
-                .Append(config.PublicHttpsPort).Append(Separator)
-                .Append(_appHost.HttpPort).Append(Separator)
-                .Append(_appHost.HttpsPort).Append(Separator)
-                .Append(_appHost.ListenWithHttps).Append(Separator)
-                .Append(config.EnableRemoteAccess).Append(Separator)
-                .ToString();
-        }
-
-        private void OnConfigurationUpdated(object sender, EventArgs e)
-        {
-            var oldConfigIdentifier = _configIdentifier;
-            _configIdentifier = GetConfigIdentifier();
-
-            if (!string.Equals(_configIdentifier, oldConfigIdentifier, StringComparison.OrdinalIgnoreCase))
-            {
-                Stop();
-                Start();
-            }
-        }
-
-        /// <inheritdoc />
-        public Task RunAsync()
-        {
+            Stop();
             Start();
+        }
+    }
 
-            _config.ConfigurationUpdated += OnConfigurationUpdated;
+    /// <inheritdoc />
+    public Task RunAsync()
+    {
+        Start();
 
+        _config.ConfigurationUpdated += OnConfigurationUpdated;
+
+        return Task.CompletedTask;
+    }
+
+    private void Start()
+    {
+        var config = _config.GetNetworkConfiguration();
+        if (!config.EnableUPnP || !config.EnableRemoteAccess)
+        {
+            return;
+        }
+
+        _logger.LogInformation("Starting NAT discovery");
+
+        NatUtility.DeviceFound += OnNatUtilityDeviceFound;
+        NatUtility.StartDiscovery();
+
+        _timer = new Timer((_) => _createdRules.Clear(), null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
+    }
+
+    private void Stop()
+    {
+        _logger.LogInformation("Stopping NAT discovery");
+
+        NatUtility.StopDiscovery();
+        NatUtility.DeviceFound -= OnNatUtilityDeviceFound;
+
+        _timer?.Dispose();
+    }
+
+    private async void OnNatUtilityDeviceFound(object sender, DeviceEventArgs e)
+    {
+        try
+        {
+            await CreateRules(e.Device).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating port forwarding rules");
+        }
+    }
+
+    private Task CreateRules(INatDevice device)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        // On some systems the device discovered event seems to fire repeatedly
+        // This check will help ensure we're not trying to port map the same device over and over
+        if (!_createdRules.TryAdd(device.DeviceEndpoint, 0))
+        {
             return Task.CompletedTask;
         }
 
-        private void Start()
+        return Task.WhenAll(CreatePortMaps(device));
+    }
+
+    private IEnumerable<Task> CreatePortMaps(INatDevice device)
+    {
+        var config = _config.GetNetworkConfiguration();
+        yield return CreatePortMap(device, _appHost.HttpPort, config.PublicHttpPort);
+
+        if (_appHost.ListenWithHttps)
         {
-            var config = _config.GetNetworkConfiguration();
-            if (!config.EnableUPnP || !config.EnableRemoteAccess)
-            {
-                return;
-            }
-
-            _logger.LogInformation("Starting NAT discovery");
-
-            NatUtility.DeviceFound += OnNatUtilityDeviceFound;
-            NatUtility.StartDiscovery();
-
-            _timer = new Timer((_) => _createdRules.Clear(), null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
+            yield return CreatePortMap(device, _appHost.HttpsPort, config.PublicHttpsPort);
         }
+    }
 
-        private void Stop()
+    private async Task CreatePortMap(INatDevice device, int privatePort, int publicPort)
+    {
+        _logger.LogDebug(
+            "Creating port map on local port {LocalPort} to public port {PublicPort} with device {DeviceEndpoint}",
+            privatePort,
+            publicPort,
+            device.DeviceEndpoint);
+
+        try
         {
-            _logger.LogInformation("Stopping NAT discovery");
-
-            NatUtility.StopDiscovery();
-            NatUtility.DeviceFound -= OnNatUtilityDeviceFound;
-
-            _timer?.Dispose();
+            var mapping = new Mapping(Protocol.Tcp, privatePort, publicPort, 0, _appHost.Name);
+            await device.CreatePortMapAsync(mapping).ConfigureAwait(false);
         }
-
-        private async void OnNatUtilityDeviceFound(object sender, DeviceEventArgs e)
+        catch (Exception ex)
         {
-            try
-            {
-                await CreateRules(e.Device).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating port forwarding rules");
-            }
-        }
-
-        private Task CreateRules(INatDevice device)
-        {
-            ObjectDisposedException.ThrowIf(_disposed, this);
-
-            // On some systems the device discovered event seems to fire repeatedly
-            // This check will help ensure we're not trying to port map the same device over and over
-            if (!_createdRules.TryAdd(device.DeviceEndpoint, 0))
-            {
-                return Task.CompletedTask;
-            }
-
-            return Task.WhenAll(CreatePortMaps(device));
-        }
-
-        private IEnumerable<Task> CreatePortMaps(INatDevice device)
-        {
-            var config = _config.GetNetworkConfiguration();
-            yield return CreatePortMap(device, _appHost.HttpPort, config.PublicHttpPort);
-
-            if (_appHost.ListenWithHttps)
-            {
-                yield return CreatePortMap(device, _appHost.HttpsPort, config.PublicHttpsPort);
-            }
-        }
-
-        private async Task CreatePortMap(INatDevice device, int privatePort, int publicPort)
-        {
-            _logger.LogDebug(
-                "Creating port map on local port {LocalPort} to public port {PublicPort} with device {DeviceEndpoint}",
+            _logger.LogError(
+                ex,
+                "Error creating port map on local port {LocalPort} to public port {PublicPort} with device {DeviceEndpoint}.",
                 privatePort,
                 publicPort,
                 device.DeviceEndpoint);
-
-            try
-            {
-                var mapping = new Mapping(Protocol.Tcp, privatePort, publicPort, 0, _appHost.Name);
-                await device.CreatePortMapAsync(mapping).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(
-                    ex,
-                    "Error creating port map on local port {LocalPort} to public port {PublicPort} with device {DeviceEndpoint}.",
-                    privatePort,
-                    publicPort,
-                    device.DeviceEndpoint);
-            }
         }
+    }
 
-        /// <inheritdoc />
-        public void Dispose()
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        if (_disposed)
         {
-            if (_disposed)
-            {
-                return;
-            }
-
-            _config.ConfigurationUpdated -= OnConfigurationUpdated;
-
-            Stop();
-
-            _timer?.Dispose();
-            _timer = null;
-
-            _disposed = true;
+            return;
         }
+
+        _config.ConfigurationUpdated -= OnConfigurationUpdated;
+
+        Stop();
+
+        _timer?.Dispose();
+        _timer = null;
+
+        _disposed = true;
     }
 }
