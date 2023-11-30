@@ -21,7 +21,7 @@ namespace Emby.Server.Implementations.EntryPoints
     /// <summary>
     /// Server entrypoint handling external port forwarding.
     /// </summary>
-    public class ExternalPortForwarding : IServerEntryPoint
+    public sealed class ExternalPortForwarding : IServerEntryPoint
     {
         private readonly IServerApplicationHost _appHost;
         private readonly ILogger<ExternalPortForwarding> _logger;
@@ -32,7 +32,7 @@ namespace Emby.Server.Implementations.EntryPoints
         private Timer _timer;
         private string _configIdentifier;
 
-        private bool _disposed = false;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExternalPortForwarding"/> class.
@@ -178,16 +178,6 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <inheritdoc />
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
-        {
             if (_disposed)
             {
                 return;
@@ -197,6 +187,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
             Stop();
 
+            _timer?.Dispose();
             _timer = null;
 
             _disposed = true;
