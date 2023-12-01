@@ -13,6 +13,7 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common;
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -44,7 +45,7 @@ namespace Emby.Server.Implementations.Dto
         private readonly ILogger<DtoService> _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserDataManager _userDataRepository;
-        private readonly IItemRepository _itemRepo;
+        private readonly IChapterManager _chapterManager;
 
         private readonly IImageProcessor _imageProcessor;
         private readonly IProviderManager _providerManager;
@@ -60,7 +61,7 @@ namespace Emby.Server.Implementations.Dto
             ILogger<DtoService> logger,
             ILibraryManager libraryManager,
             IUserDataManager userDataRepository,
-            IItemRepository itemRepo,
+            IChapterManager chapterManager,
             IImageProcessor imageProcessor,
             IProviderManager providerManager,
             IApplicationHost appHost,
@@ -72,7 +73,7 @@ namespace Emby.Server.Implementations.Dto
             _logger = logger;
             _libraryManager = libraryManager;
             _userDataRepository = userDataRepository;
-            _itemRepo = itemRepo;
+            _chapterManager = chapterManager;
             _imageProcessor = imageProcessor;
             _providerManager = providerManager;
             _appHost = appHost;
@@ -1061,7 +1062,7 @@ namespace Emby.Server.Implementations.Dto
 
                 if (options.ContainsField(ItemFields.Chapters))
                 {
-                    dto.Chapters = _libraryManager.GetChapters(item, CancellationToken.None).GetAwaiter().GetResult();
+                    dto.Chapters = _chapterManager.GetChapters(item, CancellationToken.None).GetAwaiter().GetResult();
                 }
 
                 if (options.ContainsField(ItemFields.Trickplay))

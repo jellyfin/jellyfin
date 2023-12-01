@@ -1495,16 +1495,6 @@ namespace Emby.Server.Implementations.Library
             query.Parent = null;
         }
 
-        public async Task<List<ChapterInfo>> GetChapters(BaseItem item, CancellationToken cancellationToken)
-        {
-            return await _chapterManager.GetChapters(item, cancellationToken).ConfigureAwait(false);
-        }
-
-        public async Task<ChapterInfo> GetChapter(BaseItem item, int chapterIndex, CancellationToken cancellationToken)
-        {
-            return await _chapterManager.GetChapter(item, chapterIndex, cancellationToken).ConfigureAwait(false);
-        }
-
         private void AddUserToQuery(InternalItemsQuery query, User user, bool allowExternalContent = true)
         {
             if (query.AncestorIds.Length == 0 &&
