@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,7 +11,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using Microsoft.EntityFrameworkCore;
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
 namespace Jellyfin.Server.Implementations.UserData;
 
@@ -99,17 +97,20 @@ public class UserDataManager : IUserDataManager
         });
     }
 
+    /// <inheritdoc />
     public void SaveUserData(Guid userId, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
     {
         var user = _userManager.GetUserById(userId);
         SaveUserData(user, item, userData, reason, cancellationToken);
     }
 
+    /// <inheritdoc />
     public void SaveUserData(User? user, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
     {
         SaveUserDataAsync(user, item, userData, reason, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async Task<UserItemData?> GetUserDataAsync(User? user, BaseItem item)
     {
         ArgumentNullException.ThrowIfNull(user);
@@ -124,11 +125,13 @@ public class UserDataManager : IUserDataManager
         return userItemData;
     }
 
+    /// <inheritdoc />
     public UserItemData? GetUserData(User? user, BaseItem item)
     {
         return GetUserDataAsync(user, item).GetAwaiter().GetResult();
     }
 
+    /// <inheritdoc />
     public UserItemDataDto GetUserDataDto(BaseItem item, User user)
     {
              var userData = GetUserDataAsync(user, item).GetAwaiter().GetResult();
@@ -138,6 +141,7 @@ public class UserDataManager : IUserDataManager
              return dto;
     }
 
+    /// <inheritdoc />
     public UserItemDataDto GetUserDataDto(BaseItem item, BaseItemDto itemDto, User user, DtoOptions options)
     {
              var userData = GetUserDataAsync(user, item).GetAwaiter().GetResult();
@@ -164,6 +168,7 @@ public class UserDataManager : IUserDataManager
          };
      }
 
+    /// <inheritdoc />
     public async Task<List<UserItemData>> GetAllUserData(User user)
     {
         var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
@@ -176,6 +181,7 @@ public class UserDataManager : IUserDataManager
         return userItemDatas.ToList();
     }
 
+    /// <inheritdoc />
     public bool UpdatePlayState(BaseItem item, UserItemData data, long? reportedPositionTicks)
     {
             var playedToCompletion = false;
