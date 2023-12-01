@@ -47,8 +47,4 @@
     <Compile Include="..\SharedVersion.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageVersion Update="Microsoft.EntityFrameworkCore.Abstractions" Version="8.0.0" />
-  </ItemGroup>
-
 </Project>
