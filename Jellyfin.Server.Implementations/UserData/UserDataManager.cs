@@ -109,24 +109,18 @@ public class UserDataManager : IUserDataManager
         UserItemData? userItemData;
         await using (dbContext.ConfigureAwait(false))
         {
-            userItemData = await dbContext.UserDatas.FindAsync(new object[] { user.Id, item.Id.ToString() }).ConfigureAwait(true) ?? await CreateUserDataInternalAsync(user, item, dbContext).ConfigureAwait(true);
+            userItemData = await dbContext.UserDatas.FindAsync(new object[] { user.Id, item.Id.ToString() }).ConfigureAwait(true);
+            if (userItemData == null)
+            {
+                userItemData = new UserItemData
+                {
+                    Key = item.Id.ToString(),
+                    UserId = user.Id
+                };
+            }
         }
 
         return userItemData;
-    }
-
-    internal async Task<UserItemData> CreateUserDataInternalAsync(User user, BaseItem item, DbContext dbContext)
-    {
-        UserItemData newUserData = new UserItemData
-        {
-            UserId = user.Id,
-            Key = item.Id.ToString()
-        };
-
-        await dbContext.AddAsync(newUserData).ConfigureAwait(true);
-        await dbContext.SaveChangesAsync().ConfigureAwait(true);
-
-        return newUserData;
     }
 
     [Obsolete("Use GetUserDataAsync instead.")]
