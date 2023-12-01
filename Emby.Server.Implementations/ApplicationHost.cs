@@ -606,13 +606,13 @@ namespace Emby.Server.Implementations
                 }
             }
 
-            var legacyEmbyDb = await Resolve<IDbContextFactory<LibraryDbContext>>().CreateDbContextAsync().ConfigureAwait(false);
-            await using (legacyEmbyDb.ConfigureAwait(false))
+            var libraryDb = await Resolve<IDbContextFactory<LibraryDbContext>>().CreateDbContextAsync().ConfigureAwait(false);
+            await using (libraryDb.ConfigureAwait(false))
             {
-                if ((await legacyEmbyDb.Database.GetPendingMigrationsAsync().ConfigureAwait(false)).Any())
+                if ((await libraryDb.Database.GetPendingMigrationsAsync().ConfigureAwait(false)).Any())
                 {
                     Logger.LogInformation("There are pending EFCore migrations in the database. Applying... (This may take a while, do not stop Jellyfin)");
-                    await legacyEmbyDb.Database.MigrateAsync().ConfigureAwait(false);
+                    await libraryDb.Database.MigrateAsync().ConfigureAwait(false);
                     Logger.LogInformation("EFCore migrations applied successfully");
                 }
             }

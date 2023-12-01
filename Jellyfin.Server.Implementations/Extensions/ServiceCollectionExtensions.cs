@@ -43,7 +43,7 @@ public static class ServiceCollectionExtensions
     /// </summary>
     /// <param name="serviceCollection">An instance of the <see cref="IServiceCollection"/> interface.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddLegacyEmbyDbContext(this IServiceCollection serviceCollection)
+    public static IServiceCollection AddLibraryDbContext(this IServiceCollection serviceCollection)
     {
         serviceCollection.AddEFSecondLevelCache(options =>
             options.UseMemoryCacheProvider()
