@@ -129,13 +129,7 @@ public class UserDataManager : IUserDataManager
         return newUserData;
     }
 
-    public UserItemData GetUserData(Guid userId, BaseItem item)
-    {
-        var user = _userManager.GetUserById(userId);
-
-        return GetUserData(user, item);
-    }
-
+    [Obsolete("Use GetUserDataAsync instead.")]
     public UserItemData GetUserData(User? user, BaseItem item)
     {
         return GetUserDataAsync(user, item).GetAwaiter().GetResult();
@@ -143,7 +137,7 @@ public class UserDataManager : IUserDataManager
 
     public UserItemDataDto GetUserDataDto(BaseItem item, User user)
     {
-             var userData = GetUserData(user, item);
+             var userData = GetUserDataAsync(user, item).GetAwaiter().GetResult();
              var dto = GetUserItemDataDto(userData);
 
              item.FillUserDataDtoValues(dto, userData, null, user, new DtoOptions());
@@ -152,7 +146,7 @@ public class UserDataManager : IUserDataManager
 
     public UserItemDataDto GetUserDataDto(BaseItem item, BaseItemDto itemDto, User user, DtoOptions options)
     {
-             var userData = GetUserData(user, item);
+             var userData = GetUserDataAsync(user, item).GetAwaiter().GetResult();
              var dto = GetUserItemDataDto(userData);
 
              item.FillUserDataDtoValues(dto, userData, null, user, new DtoOptions());

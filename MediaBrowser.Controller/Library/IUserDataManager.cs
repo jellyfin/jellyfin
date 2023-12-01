@@ -37,8 +37,6 @@ namespace MediaBrowser.Controller.Library
 
         UserItemData GetUserData(User user, BaseItem item);
 
-        UserItemData GetUserData(Guid userId, BaseItem item);
-
         /// <summary>
         /// Gets the user data dto.
         /// </summary>
