@@ -164,16 +164,8 @@ public class UserDataManager : IUserDataManager
          };
      }
 
-    public List<UserItemData> GetAllUserData(Guid userId)
+    public async Task<List<UserItemData>> GetAllUserData(User user)
     {
-        var user = _userManager.GetUserById(userId);
-
-        return GetAllUserDataAsync(user).GetAwaiter().GetResult();
-    }
-
-    private async Task<List<UserItemData>> GetAllUserDataAsync(User? user)
-    {
-        ArgumentNullException.ThrowIfNull(user);
         var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
         IQueryable<UserItemData> userItemDatas;
         await using (dbContext.ConfigureAwait(false))

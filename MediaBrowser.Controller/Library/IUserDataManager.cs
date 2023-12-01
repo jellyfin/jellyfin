@@ -54,9 +54,9 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Get all user data for the given user.
         /// </summary>
-        /// <param name="userId">The user id.</param>
+        /// <param name="user">The user.</param>
         /// <returns>The user item data.</returns>
-        List<UserItemData> GetAllUserData(Guid userId);
+        Task<List<UserItemData>> GetAllUserData(User user);
 
         /// <summary>
         /// Updates playstate for an item and returns true or false indicating if it was played to completion.
