@@ -599,7 +599,7 @@ namespace Emby.Server.Implementations
             {
                 if ((await jellyfinDb.Database.GetPendingMigrationsAsync().ConfigureAwait(false)).Any())
                 {
-                    Logger.LogInformation("There are pending EFCore migrations in the database. Applying... (This may take a while, do not stop Jellyfin)");
+                    Logger.LogInformation("There are pending EFCore migrations in the jellyfin database. Applying... (This may take a while, do not stop Jellyfin)");
                     await jellyfinDb.Database.MigrateAsync().ConfigureAwait(false);
                     Logger.LogInformation("EFCore migrations applied successfully");
                 }
@@ -610,7 +610,7 @@ namespace Emby.Server.Implementations
             {
                 if ((await libraryDb.Database.GetPendingMigrationsAsync().ConfigureAwait(false)).Any())
                 {
-                    Logger.LogInformation("There are pending EFCore migrations in the database. Applying... (This may take a while, do not stop Jellyfin)");
+                    Logger.LogInformation("There are pending EFCore migrations in the library database. Applying... (This may take a while, do not stop Jellyfin)");
                     await libraryDb.Database.MigrateAsync().ConfigureAwait(false);
                     Logger.LogInformation("EFCore migrations applied successfully");
                 }
