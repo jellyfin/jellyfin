@@ -110,7 +110,7 @@ public class UserDataManager : IUserDataManager
         SaveUserDataAsync(user, item, userData, reason, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<UserItemData?> GetUserDataAsync(User? user, BaseItem item)
+    public async Task<UserItemData?> GetUserDataAsync(User? user, BaseItem item)
     {
         ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(item);
@@ -124,7 +124,6 @@ public class UserDataManager : IUserDataManager
         return userItemData;
     }
 
-    [Obsolete("Use GetUserDataAsync instead.")]
     public UserItemData? GetUserData(User? user, BaseItem item)
     {
         return GetUserDataAsync(user, item).GetAwaiter().GetResult();

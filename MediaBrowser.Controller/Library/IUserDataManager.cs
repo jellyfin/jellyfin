@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -35,7 +36,10 @@ namespace MediaBrowser.Controller.Library
 
         void SaveUserData(User user, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken);
 
+        [Obsolete("Use GetUserDataAsync instead.")]
         UserItemData GetUserData(User user, BaseItem item);
+
+        Task<UserItemData> GetUserDataAsync(User user, BaseItem item);
 
         /// <summary>
         /// Gets the user data dto.
