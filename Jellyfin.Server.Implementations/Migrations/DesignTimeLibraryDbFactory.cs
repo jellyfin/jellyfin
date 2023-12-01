@@ -7,7 +7,7 @@ namespace Jellyfin.Server.Implementations.Migrations
     /// The design time factory for <see cref="LibraryDbContext"/>.
     /// This is only used for the creation of migrations and not during runtime.
     /// </summary>
-    internal class DesignTimeLegacyEmbyDbFactory : IDesignTimeDbContextFactory<LibraryDbContext>
+    internal class DesignTimeLibraryDbFactory : IDesignTimeDbContextFactory<LibraryDbContext>
     {
         public LibraryDbContext CreateDbContext(string[] args)
         {
