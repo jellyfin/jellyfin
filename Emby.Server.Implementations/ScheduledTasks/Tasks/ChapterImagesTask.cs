@@ -138,7 +138,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 
                 try
                 {
-                    var chapters = _libraryManager.GetChapters(video, CancellationToken.None).GetAwaiter().GetResult();
+                    var chapters = await _libraryManager.GetChapters(video, CancellationToken.None).ConfigureAwait(false);
 
                     var success = await _encodingManager.RefreshChapterImages(video, directoryService, chapters, extract, true, cancellationToken).ConfigureAwait(false);
 
