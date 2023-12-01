@@ -296,7 +296,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 await _encodingManager.RefreshChapterImages(video, options.DirectoryService, chapters, extractDuringScan, false, cancellationToken).ConfigureAwait(false);
 
-                _chapterManager.SaveChapters(video.Id, chapters);
+                await _chapterManager.SaveChapters(video.Id, chapters).ConfigureAwait(false);
             }
         }
 
