@@ -1495,13 +1495,11 @@ namespace Emby.Server.Implementations.Library
             query.Parent = null;
         }
 
-        [Obsolete("LibraryManager.GetChapters is deprecated, please use ChapterManager.GetChapters instead.")]
         public async Task<List<ChapterInfo>> GetChapters(BaseItem item, CancellationToken cancellationToken)
         {
             return await _chapterManager.GetChapters(item, cancellationToken).ConfigureAwait(false);
         }
 
-        [Obsolete("LibraryManager.GetChapter is deprecated, please use ChapterManager.GetChapter instead.")]
         public async Task<ChapterInfo> GetChapter(BaseItem item, int chapterIndex, CancellationToken cancellationToken)
         {
             return await _chapterManager.GetChapter(item, chapterIndex, cancellationToken).ConfigureAwait(false);

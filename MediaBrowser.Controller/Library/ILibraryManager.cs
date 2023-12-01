@@ -585,8 +585,10 @@ namespace MediaBrowser.Controller.Library
         /// </remarks>
         void QueueLibraryScan();
 
+        [Obsolete("LibraryManager.GetChapters is deprecated, please use ChapterManager.GetChapters instead.")]
         public Task<List<ChapterInfo>> GetChapters(BaseItem item, CancellationToken cancellationToken);
 
+        [Obsolete("LibraryManager.GetChapter is deprecated, please use ChapterManager.GetChapter instead.")]
         public Task<ChapterInfo> GetChapter(BaseItem item, int chapterIndex, CancellationToken cancellationToken);
     }
 }
