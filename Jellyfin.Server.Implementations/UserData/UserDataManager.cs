@@ -73,6 +73,7 @@ public class UserDataManager : IUserDataManager
         {
             foreach (var key in keys)
             {
+                userData.Key = key;
                 dbContext.UserDatas.Update(userData);
             }
 
