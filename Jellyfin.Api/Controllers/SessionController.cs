@@ -91,12 +91,6 @@ public class SessionController : BaseJellyfinApiController
                 result = result.Where(i => !i.UserId.Equals(default));
             }
 
-            if (activeWithinSeconds.HasValue && activeWithinSeconds.Value > 0)
-            {
-                var minActiveDate = DateTime.UtcNow.AddSeconds(0 - activeWithinSeconds.Value);
-                result = result.Where(i => i.LastActivityDate >= minActiveDate);
-            }
-
             result = result.Where(i =>
             {
                 if (!string.IsNullOrWhiteSpace(i.DeviceId))
@@ -109,6 +103,12 @@ public class SessionController : BaseJellyfinApiController
 
                 return true;
             });
+        }
+
+        if (activeWithinSeconds.HasValue && activeWithinSeconds.Value > 0)
+        {
+            var minActiveDate = DateTime.UtcNow.AddSeconds(0 - activeWithinSeconds.Value);
+            result = result.Where(i => i.LastActivityDate >= minActiveDate);
         }
 
         return Ok(result);

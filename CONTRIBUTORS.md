@@ -173,6 +173,7 @@
  - [scampower3](https://github.com/scampower3)
  - [Chris-Codes-It] (https://github.com/Chris-Codes-It)
  - [Pithaya](https://github.com/Pithaya)
+ - [Çağrı Sakaoğlu](https://github.com/ilovepilav)
 
 # Emby Contributors
 

@@ -105,7 +105,7 @@
     "TaskRefreshPeople": "Actualiser les acteurs",
     "TaskCleanLogsDescription": "Supprime les journaux de plus de {0} jours.",
     "TaskCleanLogs": "Nettoyer le répertoire des journaux",
-    "TaskRefreshLibraryDescription": "Analyser sa médiathèque pour trouver les nouveaux fichiers et actualiser les métadonnées.",
+    "TaskRefreshLibraryDescription": "Analyse votre médiathèque pour trouver de nouveaux fichiers et actualise les métadonnées.",
     "TaskRefreshLibrary": "Analyser la médiathèque",
     "TaskRefreshChapterImagesDescription": "Crée des vignettes pour les vidéos ayant des chapitres.",
     "TaskRefreshChapterImages": "Extraire les images de chapitre",
