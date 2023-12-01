@@ -49,7 +49,7 @@ namespace MediaBrowser.Providers.Chapters
         }
 
         /// <inheritdoc />
-        public async void SaveChapters(Guid itemId, IReadOnlyList<ChapterInfo> chapters)
+        public async Task SaveChapters(Guid itemId, IReadOnlyList<ChapterInfo> chapters)
         {
             if (itemId.Equals(default))
             {

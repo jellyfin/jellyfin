@@ -17,7 +17,8 @@ namespace MediaBrowser.Controller.Chapters
         /// </summary>
         /// <param name="itemId">The item.</param>
         /// <param name="chapters">The set of chapters.</param>
-        void SaveChapters(Guid itemId, IReadOnlyList<ChapterInfo> chapters);
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task SaveChapters(Guid itemId, IReadOnlyList<ChapterInfo> chapters);
 
         /// <summary>
         /// Get a chapter for item and index.
