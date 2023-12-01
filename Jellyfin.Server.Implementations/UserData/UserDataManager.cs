@@ -74,7 +74,16 @@ public class UserDataManager : IUserDataManager
             foreach (var key in keys)
             {
                 userData.Key = key;
-                dbContext.UserDatas.Update(userData);
+                var existingUserDataItem = await dbContext.UserDatas.FindAsync(new object[] { user.Id, userData.Key }, cancellationToken).ConfigureAwait(false);
+
+                if (existingUserDataItem == null)
+                {
+                    await dbContext.UserDatas.AddAsync(userData, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    dbContext.Entry(existingUserDataItem).CurrentValues.SetValues(userData);
+                }
             }
 
             await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
