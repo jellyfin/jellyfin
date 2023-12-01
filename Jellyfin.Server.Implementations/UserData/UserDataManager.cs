@@ -110,7 +110,7 @@ public class UserDataManager : IUserDataManager
         SaveUserDataAsync(user, item, userData, reason, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<UserItemData> GetUserDataAsync(User? user, BaseItem item)
+    private async Task<UserItemData?> GetUserDataAsync(User? user, BaseItem item)
     {
         ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(item);
@@ -118,22 +118,14 @@ public class UserDataManager : IUserDataManager
         UserItemData? userItemData;
         await using (dbContext.ConfigureAwait(false))
         {
-            userItemData = await dbContext.UserDatas.FindAsync(new object[] { user.Id, item.Id.ToString() }).ConfigureAwait(true);
-            if (userItemData == null)
-            {
-                userItemData = new UserItemData
-                {
-                    Key = item.Id.ToString(),
-                    UserId = user.Id
-                };
-            }
+            userItemData = await dbContext.UserDatas.Where(u => u.UserId.Equals(user.Id) && u.Key == item.Id.ToString()).FirstOrDefaultAsync().ConfigureAwait(false);
         }
 
         return userItemData;
     }
 
     [Obsolete("Use GetUserDataAsync instead.")]
-    public UserItemData GetUserData(User? user, BaseItem item)
+    public UserItemData? GetUserData(User? user, BaseItem item)
     {
         return GetUserDataAsync(user, item).GetAwaiter().GetResult();
     }
@@ -156,7 +148,7 @@ public class UserDataManager : IUserDataManager
              return dto;
     }
 
-    private UserItemDataDto GetUserItemDataDto(UserItemData data)
+    private UserItemDataDto GetUserItemDataDto(UserItemData? data)
      {
          ArgumentNullException.ThrowIfNull(data);
 
