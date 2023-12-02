@@ -177,7 +177,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
     [HttpPost("Users/{userId}/FavoriteItems/{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<UserItemDataDto> MarkFavoriteItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
+    public async Task<ActionResult<UserItemDataDto>> MarkFavoriteItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
     {
         var user = _userManager.GetUserById(userId);
         if (user is null)
@@ -201,7 +201,7 @@ public class UserLibraryController : BaseJellyfinApiController
             return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
         }
 
-        return MarkFavorite(user, item, true);
+        return await MarkFavorite(user, item, true).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -213,7 +213,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
     [HttpDelete("Users/{userId}/FavoriteItems/{itemId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<UserItemDataDto> UnmarkFavoriteItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
+    public async Task<ActionResult<UserItemDataDto>> UnmarkFavoriteItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
     {
         var user = _userManager.GetUserById(userId);
         if (user is null)
@@ -237,7 +237,7 @@ public class UserLibraryController : BaseJellyfinApiController
             return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
         }
 
-        return MarkFavorite(user, item, false);
+        return await MarkFavorite(user, item, false).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -249,7 +249,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
     [HttpDelete("Users/{userId}/Items/{itemId}/Rating")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<UserItemDataDto> DeleteUserItemRating([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
+    public async Task<ActionResult<UserItemDataDto>> DeleteUserItemRating([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
     {
         var user = _userManager.GetUserById(userId);
         if (user is null)
@@ -273,7 +273,7 @@ public class UserLibraryController : BaseJellyfinApiController
             return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
         }
 
-        return UpdateUserItemRatingInternal(user, item, null);
+        return await UpdateUserItemRatingInternal(user, item, null).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -286,7 +286,7 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
     [HttpPost("Users/{userId}/Items/{itemId}/Rating")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<UserItemDataDto> UpdateUserItemRating([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId, [FromQuery] bool? likes)
+    public async Task<ActionResult<UserItemDataDto>> UpdateUserItemRating([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId, [FromQuery] bool? likes)
     {
         var user = _userManager.GetUserById(userId);
         if (user is null)
@@ -310,7 +310,7 @@ public class UserLibraryController : BaseJellyfinApiController
             return Unauthorized($"{user.Username} is not permitted to access item {item.Name}.");
         }
 
-        return UpdateUserItemRatingInternal(user, item, likes);
+        return await UpdateUserItemRatingInternal(user, item, likes).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -508,17 +508,17 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <param name="user">The user.</param>
     /// <param name="item">The item.</param>
     /// <param name="isFavorite">if set to <c>true</c> [is favorite].</param>
-    private UserItemDataDto MarkFavorite(User user, BaseItem item, bool isFavorite)
+    private async Task<UserItemDataDto> MarkFavorite(User user, BaseItem item, bool isFavorite)
     {
         // Get the user data for this item
-        var data = _userDataRepository.GetUserData(user, item);
+        var data = await _userDataRepository.GetUserDataAsync(user, item).ConfigureAwait(false);
 
         // Set favorite status
         data.IsFavorite = isFavorite;
 
         _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
 
-        return _userDataRepository.GetUserDataDto(item, user);
+        return await _userDataRepository.GetUserDataDtoAsync(item, user).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -527,16 +527,16 @@ public class UserLibraryController : BaseJellyfinApiController
     /// <param name="user">The user.</param>
     /// <param name="item">The item.</param>
     /// <param name="likes">if set to <c>true</c> [likes].</param>
-    private UserItemDataDto UpdateUserItemRatingInternal(User user, BaseItem item, bool? likes)
+    private async Task<UserItemDataDto> UpdateUserItemRatingInternal(User user, BaseItem item, bool? likes)
     {
         // Get the user data for this item
-        var data = _userDataRepository.GetUserData(user, item);
+        var data = await _userDataRepository.GetUserDataAsync(user, item).ConfigureAwait(false);
 
         data.Likes = likes;
 
         _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
 
-        return _userDataRepository.GetUserDataDto(item, user);
+        return await _userDataRepository.GetUserDataDtoAsync(item, user).ConfigureAwait(false);
     }
 
     /// <summary>

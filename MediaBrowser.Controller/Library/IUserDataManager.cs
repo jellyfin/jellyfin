@@ -36,9 +36,22 @@ namespace MediaBrowser.Controller.Library
 
         void SaveUserData(User user, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken);
 
+        /// <summary>
+        /// Gets the user data for a BaseItem.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="item">The BaseItem.</param>
+        /// <returns>The User data.</returns>
         [Obsolete("Use GetUserDataAsync instead.")]
         UserItemData GetUserData(User user, BaseItem item);
 
+        /// <summary>
+        /// Gets the user data for a BaseItem.
+        /// </summary>
+        /// <remarks>Async operation.</remarks>
+        /// <param name="user">The user.</param>
+        /// <param name="item">The BaseItem.</param>
+        /// <returns>The User data.</returns>
         Task<UserItemData> GetUserDataAsync(User user, BaseItem item);
 
         /// <summary>
@@ -49,7 +62,17 @@ namespace MediaBrowser.Controller.Library
         /// <returns>User data dto.</returns>
         UserItemDataDto GetUserDataDto(BaseItem item, User user);
 
+        /// <summary>
+        /// Gets the user data dto.
+        /// </summary>
+        /// <param name="item">Item to use.</param>
+        /// <param name="user">User to use.</param>
+        /// <returns>User data dto.</returns>
+        Task<UserItemDataDto> GetUserDataDtoAsync(BaseItem item, User user);
+
         UserItemDataDto GetUserDataDto(BaseItem item, BaseItemDto itemDto, User user, DtoOptions options);
+
+        Task<UserItemDataDto> GetUserDataDtoAsync(BaseItem item, BaseItemDto itemDto, User user, DtoOptions options);
 
         /// <summary>
         /// Get all user data for the given user.

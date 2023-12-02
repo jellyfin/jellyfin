@@ -134,21 +134,29 @@ public class UserDataManager : IUserDataManager
     /// <inheritdoc />
     public UserItemDataDto GetUserDataDto(BaseItem item, User user)
     {
-             var userData = GetUserDataAsync(user, item).GetAwaiter().GetResult();
-             var dto = GetUserItemDataDto(userData);
-
-             item.FillUserDataDtoValues(dto, userData, null, user, new DtoOptions());
-             return dto;
+        return GetUserDataDtoAsync(item, null, user, new DtoOptions()).GetAwaiter().GetResult();
     }
 
     /// <inheritdoc />
-    public UserItemDataDto GetUserDataDto(BaseItem item, BaseItemDto itemDto, User user, DtoOptions options)
+    public async Task<UserItemDataDto> GetUserDataDtoAsync(BaseItem item, User user)
     {
-             var userData = GetUserDataAsync(user, item).GetAwaiter().GetResult();
-             var dto = GetUserItemDataDto(userData);
+        return await GetUserDataDtoAsync(item, null, user, new DtoOptions()).ConfigureAwait(false);
+    }
 
-             item.FillUserDataDtoValues(dto, userData, null, user, new DtoOptions());
-             return dto;
+    /// <inheritdoc />
+    public async Task<UserItemDataDto> GetUserDataDtoAsync(BaseItem item, BaseItemDto? itemDto, User user, DtoOptions options)
+    {
+         var userData = await GetUserDataAsync(user, item).ConfigureAwait(false);
+         var dto = GetUserItemDataDto(userData);
+
+         item.FillUserDataDtoValues(dto, userData, itemDto, user, options);
+         return dto;
+    }
+
+    /// <inheritdoc />
+    public UserItemDataDto GetUserDataDto(BaseItem item, BaseItemDto? itemDto, User user, DtoOptions options)
+    {
+        return GetUserDataDtoAsync(item, itemDto, user, options).GetAwaiter().GetResult();
     }
 
     private UserItemDataDto GetUserItemDataDto(UserItemData? data)
