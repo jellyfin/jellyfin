@@ -953,7 +953,7 @@ namespace Emby.Server.Implementations.LiveTv
                 return score;
             }
 
-            var channelUserdata = _userDataManager.GetUserData(user, channel);
+            var channelUserdata = _userDataManager.GetUserDataAsync(user, channel).GetAwaiter().GetResult();
 
             if (channelUserdata.Likes.HasValue)
             {

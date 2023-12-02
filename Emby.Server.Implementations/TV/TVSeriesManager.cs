@@ -271,7 +271,7 @@ namespace Emby.Server.Implementations.TV
 
                 if (nextEpisode is not null && !includeResumable)
                 {
-                    var userData = _userDataManager.GetUserData(user, nextEpisode);
+                    var userData = _userDataManager.GetUserDataAsync(user, nextEpisode).GetAwaiter().GetResult();
 
                     if (userData.PlaybackPositionTicks > 0)
                     {
@@ -284,7 +284,7 @@ namespace Emby.Server.Implementations.TV
 
             if (lastWatchedEpisode is not null)
             {
-                var userData = _userDataManager.GetUserData(user, lastWatchedEpisode);
+                var userData = _userDataManager.GetUserDataAsync(user, lastWatchedEpisode).GetAwaiter().GetResult();
 
                 var lastWatchedDate = userData.LastPlayedDate ?? DateTime.MinValue.AddDays(1);
 

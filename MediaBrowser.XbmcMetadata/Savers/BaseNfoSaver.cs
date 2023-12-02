@@ -783,7 +783,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 AddImages(item, writer, libraryManager);
             }
 
-            AddUserData(item, writer, userManager, userDataRepo, options);
+            AddUserData(item, writer, userManager, userDataRepo, options).GetAwaiter().GetResult();
 
             AddActors(people, writer, libraryManager, options.SaveImagePathsInNfo);
 
@@ -847,7 +847,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             writer.WriteEndElement();
         }
 
-        private void AddUserData(BaseItem item, XmlWriter writer, IUserManager userManager, IUserDataManager userDataRepo, XbmcMetadataOptions options)
+        private async Task AddUserData(BaseItem item, XmlWriter writer, IUserManager userManager, IUserDataManager userDataRepo, XbmcMetadataOptions options)
         {
             var userId = options.UserId;
             if (string.IsNullOrWhiteSpace(userId))
@@ -867,48 +867,62 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 return;
             }
 
-            var userdata = userDataRepo.GetUserData(user, item);
+            var userdata = await userDataRepo.GetUserDataAsync(user, item).ConfigureAwait(false);
 
-            writer.WriteElementString(
+            await writer.WriteElementStringAsync(
+                null,
                 "isuserfavorite",
-                userdata.IsFavorite.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
+                null,
+                userdata.IsFavorite.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()).ConfigureAwait(false);
 
             if (userdata.Rating.HasValue)
             {
-                writer.WriteElementString(
+                await writer.WriteElementStringAsync(
+                    null,
                     "userrating",
-                    userdata.Rating.Value.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
+                    null,
+                    userdata.Rating.Value.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()).ConfigureAwait(false);
             }
 
             if (!item.IsFolder)
             {
-                writer.WriteElementString(
+                await writer.WriteElementStringAsync(
+                    null,
                     "playcount",
-                    userdata.PlayCount.ToString(CultureInfo.InvariantCulture));
-                writer.WriteElementString(
+                    null,
+                    userdata.PlayCount.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
+                await writer.WriteElementStringAsync(
+                    null,
                     "watched",
-                    userdata.Played.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
+                    null,
+                    userdata.Played.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()).ConfigureAwait(false);
 
                 if (userdata.LastPlayedDate.HasValue)
                 {
-                    writer.WriteElementString(
+                    await writer.WriteElementStringAsync(
+                        null,
                         "lastplayed",
-                        userdata.LastPlayedDate.Value.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture).ToLowerInvariant());
+                        null,
+                        userdata.LastPlayedDate.Value.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture).ToLowerInvariant()).ConfigureAwait(false);
                 }
 
-                writer.WriteStartElement("resume");
+                await writer.WriteStartElementAsync(null, "resume", null).ConfigureAwait(false);
 
                 var runTimeTicks = item.RunTimeTicks ?? 0;
 
-                writer.WriteElementString(
+                await writer.WriteElementStringAsync(
+                    null,
                     "position",
-                    TimeSpan.FromTicks(userdata.PlaybackPositionTicks).TotalSeconds.ToString(CultureInfo.InvariantCulture));
-                writer.WriteElementString(
+                    null,
+                    TimeSpan.FromTicks(userdata.PlaybackPositionTicks).TotalSeconds.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
+                await writer.WriteElementStringAsync(
+                    null,
                     "total",
-                    TimeSpan.FromTicks(runTimeTicks).TotalSeconds.ToString(CultureInfo.InvariantCulture));
+                    null,
+                    TimeSpan.FromTicks(runTimeTicks).TotalSeconds.ToString(CultureInfo.InvariantCulture)).ConfigureAwait(false);
             }
 
-            writer.WriteEndElement();
+            await writer.WriteEndElementAsync().ConfigureAwait(false);
         }
 
         private void AddActors(List<PersonInfo> people, XmlWriter writer, ILibraryManager libraryManager, bool saveImagePath)

@@ -310,7 +310,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     if (!string.IsNullOrWhiteSpace(nfoConfiguration.UserId))
                     {
                         var user = _userManager.GetUserById(Guid.Parse(nfoConfiguration.UserId));
-                        userData = _userDataManager.GetUserData(user, item);
+                        userData = _userDataManager.GetUserDataAsync(user, item).GetAwaiter().GetResult();
                         userData.Played = played;
                         _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
                     }
@@ -321,7 +321,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         && Guid.TryParse(nfoConfiguration.UserId, out var playCountUserId))
                     {
                         var user = _userManager.GetUserById(playCountUserId);
-                        userData = _userDataManager.GetUserData(user, item);
+                        userData = _userDataManager.GetUserDataAsync(user, item).GetAwaiter().GetResult();
                         userData.PlayCount = count;
                         _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
                     }
@@ -332,7 +332,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         && Guid.TryParse(nfoConfiguration.UserId, out var lastPlayedUserId))
                     {
                         var user = _userManager.GetUserById(lastPlayedUserId);
-                        userData = _userDataManager.GetUserData(user, item);
+                        userData = _userDataManager.GetUserDataAsync(user, item).GetAwaiter().GetResult();
                         userData.LastPlayedDate = lastPlayed;
                         _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
                     }
