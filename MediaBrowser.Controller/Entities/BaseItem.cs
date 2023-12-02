@@ -16,6 +16,7 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Audio;
@@ -461,6 +462,8 @@ namespace MediaBrowser.Controller.Entities
         public static ILogger<BaseItem> Logger { get; set; }
 
         public static ILibraryManager LibraryManager { get; set; }
+
+        public static IChapterManager ChapterManager { get; set; }
 
         public static IServerConfigurationManager ConfigurationManager { get; set; }
 
@@ -2017,7 +2020,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (imageType == ImageType.Chapter)
             {
-                var chapter = LibraryManager.GetChapter(this, imageIndex, CancellationToken.None).GetAwaiter().GetResult();
+                var chapter = ChapterManager.GetChapter(this, imageIndex, CancellationToken.None).GetAwaiter().GetResult();
 
                 if (chapter is null)
                 {
@@ -2067,7 +2070,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (image.Type == ImageType.Chapter)
             {
-                var chapters = LibraryManager.GetChapters(this, CancellationToken.None).GetAwaiter().GetResult();
+                var chapters = ChapterManager.GetChapters(this, CancellationToken.None).GetAwaiter().GetResult();
                 for (var i = 0; i < chapters.Count; i++)
                 {
                     if (chapters[i].ImagePath == image.Path)
