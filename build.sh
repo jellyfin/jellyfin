@@ -9,12 +9,13 @@ set -o pipefail
 usage() {
     echo -e "build.sh - Build Jellyfin binary packages"
     echo -e "Usage:"
-    echo -e "  $0 -t/--type <BUILD_TYPE> -p/--platform <PLATFORM> [-k/--keep-artifacts] [-l/--list-platforms]"
+    echo -e "  $0 -t/--type <BUILD_TYPE> -p/--platform <PLATFORM> [-o/--output-dir <OUTPUT_DIR>] [-k/--keep-artifacts] [-l/--list-platforms]"
     echo -e "Notes:"
     echo -e "  * BUILD_TYPE can be one of: [native, docker] and must be specified"
     echo -e "    * native: Build using the build script in the host OS"
     echo -e "    * docker: Build using the build script in a standardized Docker container"
     echo -e "  * PLATFORM can be any platform shown by -l/--list-platforms and must be specified"
+    echo -e "  * OUTPUT_DIR will be where build output is stored. By default it is './..'"
     echo -e "  * If -k/--keep-artifacts is specified, transient artifacts (e.g. Docker containers) will be"
     echo -e "    retained after the build is finished; the source directory will still be cleaned"
     echo -e "  * If -l/--list-platforms is specified, all other arguments are ignored; the script will print"
@@ -58,9 +59,11 @@ do_build_docker() {
     fi
 
     docker build . -t "jellyfin-builder.${PLATFORM}" -f deployment/Dockerfile.${PLATFORM}
-    mkdir -p ${ARTIFACT_DIR}
+    mkdir -p "${ARTIFACT_DIR}"
     docker run $docker_args -v "${SOURCE_DIR}:/jellyfin" -v "${ARTIFACT_DIR}:/dist" "jellyfin-builder.${PLATFORM}"
 }
+
+OUTPUT_DIR=""
 
 while [[ $# -gt 0 ]]; do
     key="$1"
@@ -72,6 +75,11 @@ while [[ $# -gt 0 ]]; do
         ;;
         -p|--platform)
         PLATFORM="$2"
+        shift # past argument
+        shift # past value
+        ;;
+        -o|--output-dir)
+        OUTPUT_DIR="$2"
         shift # past argument
         shift # past value
         ;;
@@ -101,7 +109,11 @@ if [[ -z ${BUILD_TYPE} || -z ${PLATFORM} ]]; then
 fi
 
 export SOURCE_DIR="$( pwd )"
-export ARTIFACT_DIR="${SOURCE_DIR}/../bin/${PLATFORM}"
+DEFAULT_OUTPUT_DIR="${SOURCE_DIR}/../"
+if [[ "$OUTPUT_DIR" == "" ]]; then
+    OUTPUT_DIR=$DEFAULT_OUTPUT_DIR
+fi
+export ARTIFACT_DIR="${OUTPUT_DIR}/bin/${PLATFORM}"
 
 # Determine build type
 case ${BUILD_TYPE} in
