@@ -11,7 +11,7 @@ NSSM_URL="http://files.evilt.win/nssm/${NSSM_VERSION}.zip"
 FFMPEG_URL="https://repo.jellyfin.org/releases/server/windows/ffmpeg/jellyfin-ffmpeg-portable_win64.zip";
 
 # Move to source directory
-pushd ${SOURCE_DIR}
+pushd "${SOURCE_DIR}"
 
 # Get version
 if [[ ${IS_UNSTABLE} == 'yes' ]]; then
@@ -42,11 +42,11 @@ popd
 rm -rf ${output_dir}
 
 # Move the artifacts out
-mkdir -p ${ARTIFACT_DIR}/
-mv dist/jellyfin[-_]*.zip ${ARTIFACT_DIR}/
+mkdir -p "${ARTIFACT_DIR}/"
+mv dist/jellyfin[-_]*.zip "${ARTIFACT_DIR}/"
 
 if [[ ${IS_DOCKER} == YES ]]; then
-    chown -Rc $(stat -c %u:%g ${ARTIFACT_DIR}) ${ARTIFACT_DIR}
+    chown -Rc $(stat -c %u:%g "${ARTIFACT_DIR}") "${ARTIFACT_DIR}"
 fi
 
 popd
