@@ -184,7 +184,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 Block();
                 void Block()
                 {
-                    var endingXml = xml.AsSpan(index).Slice(index);
+                    var endingXml = xml.AsSpan().Slice(index);
 
                     ParseProviderLinks(item.Item, endingXml);
                 }
@@ -954,7 +954,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 ValidationType = ValidationType.None,
                 CheckCharacters = false,
                 IgnoreProcessingInstructions = true,
-                IgnoreComments = true
+                IgnoreComments = true,
+                Async = true
             };
 
         /// <summary>
