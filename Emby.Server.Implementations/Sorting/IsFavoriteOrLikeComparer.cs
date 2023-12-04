@@ -1,6 +1,7 @@
 #nullable disable
 #pragma warning disable CS1591
 
+using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
@@ -51,10 +52,10 @@ namespace Emby.Server.Implementations.Sorting
         /// Gets the date.
         /// </summary>
         /// <param name="x">The x.</param>
-        /// <returns>DateTime.</returns>
+        /// <returns>Int.</returns>
         private int GetValue(BaseItem x)
         {
-            return x.IsFavoriteOrLiked(User) ? 0 : 1;
+            return x.IsFavoriteOrLiked(User).GetAwaiter().GetResult() ? 0 : 1;
         }
     }
 }

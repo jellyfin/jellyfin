@@ -55,7 +55,7 @@ namespace Emby.Server.Implementations.Sorting
         /// <returns>DateTime.</returns>
         private int GetValue(BaseItem x)
         {
-            return x.IsPlayed(User) ? 0 : 1;
+            return x.IsPlayed(User).GetAwaiter().GetResult() ? 0 : 1;
         }
     }
 }

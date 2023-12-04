@@ -1799,14 +1799,15 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="datePlayed">The date played.</param>
         /// <param name="resetPosition">if set to <c>true</c> [reset position].</param>
         /// <exception cref="ArgumentNullException">Throws if user is null.</exception>
-        public virtual void MarkPlayed(
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public virtual async Task MarkPlayed(
             User user,
             DateTime? datePlayed,
             bool resetPosition)
         {
             ArgumentNullException.ThrowIfNull(user);
 
-            var data = UserDataManager.GetUserData(user, this);
+            var data = await UserDataManager.GetUserDataAsync(user, this).ConfigureAwait(false);
 
             if (datePlayed.HasValue)
             {
@@ -1833,11 +1834,12 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="user">The user.</param>
         /// <exception cref="ArgumentNullException">Throws if user is null.</exception>
-        public virtual void MarkUnplayed(User user)
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public virtual async Task MarkUnplayed(User user)
         {
             ArgumentNullException.ThrowIfNull(user);
 
-            var data = UserDataManager.GetUserData(user, this);
+            var data = await UserDataManager.GetUserDataAsync(user, this).ConfigureAwait(false);
 
             // I think it is okay to do this here.
             // if this is only called when a user is manually forcing something to un-played
@@ -2257,25 +2259,25 @@ namespace MediaBrowser.Controller.Entities
             return UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None);
         }
 
-        public virtual bool IsPlayed(User user)
+        public virtual async Task<bool> IsPlayed(User user)
         {
-            var userdata = UserDataManager.GetUserData(user, this);
+            var userdata = await UserDataManager.GetUserDataAsync(user, this).ConfigureAwait(false);
 
             return userdata is not null && userdata.Played;
         }
 
-        public bool IsFavoriteOrLiked(User user)
+        public async Task<bool> IsFavoriteOrLiked(User user)
         {
-            var userdata = UserDataManager.GetUserData(user, this);
+            var userdata = await UserDataManager.GetUserDataAsync(user, this).ConfigureAwait(false);
 
             return userdata is not null && (userdata.IsFavorite || (userdata.Likes ?? false));
         }
 
-        public virtual bool IsUnplayed(User user)
+        public virtual async Task<bool> IsUnplayed(User user)
         {
             ArgumentNullException.ThrowIfNull(user);
 
-            var userdata = UserDataManager.GetUserData(user, this);
+            var userdata = await UserDataManager.GetUserDataAsync(user, this).ConfigureAwait(false);
 
             return userdata is null || !userdata.Played;
         }

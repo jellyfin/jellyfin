@@ -681,7 +681,7 @@ namespace MediaBrowser.Controller.Entities
             if (!query.ForceDirect && RequiresPostFiltering(query))
             {
                 IEnumerable<BaseItem> items;
-                Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
+                Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager).GetAwaiter().GetResult();
 
                 if (query.User is null)
                 {
@@ -937,7 +937,7 @@ namespace MediaBrowser.Controller.Entities
 
             var user = query.User;
 
-            Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
+            Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager).GetAwaiter().GetResult();
 
             IEnumerable<BaseItem> items;
 
@@ -1613,7 +1613,8 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="user">The user.</param>
         /// <param name="datePlayed">The date played.</param>
         /// <param name="resetPosition">if set to <c>true</c> [reset position].</param>
-        public override void MarkPlayed(
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        public override async Task MarkPlayed(
             User user,
             DateTime? datePlayed,
             bool resetPosition)
@@ -1646,15 +1647,12 @@ namespace MediaBrowser.Controller.Entities
                     }
                 }
 
-                item.MarkPlayed(user, datePlayed, resetPosition);
+                await item.MarkPlayed(user, datePlayed, resetPosition).ConfigureAwait(false);
             }
         }
 
-        /// <summary>
-        /// Marks the unplayed.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        public override void MarkUnplayed(User user)
+        /// <inheritdoc />
+        public override async Task MarkUnplayed(User user)
         {
             var itemsResult = GetItemList(new InternalItemsQuery
             {
@@ -1667,11 +1665,11 @@ namespace MediaBrowser.Controller.Entities
             // Sweep through recursively and update status
             foreach (var item in itemsResult)
             {
-                item.MarkUnplayed(user);
+                await item.MarkUnplayed(user).ConfigureAwait(false);
             }
         }
 
-        public override bool IsPlayed(User user)
+        public override Task<bool> IsPlayed(User user)
         {
             var itemsResult = GetItemList(new InternalItemsQuery(user)
             {
@@ -1681,13 +1679,13 @@ namespace MediaBrowser.Controller.Entities
                 EnableTotalRecordCount = false
             });
 
-            return itemsResult
-                .All(i => i.IsPlayed(user));
+            return Task.FromResult(itemsResult
+                .All(i => i.IsPlayed(user).GetAwaiter().GetResult()));
         }
 
-        public override bool IsUnplayed(User user)
+        public override async Task<bool> IsUnplayed(User user)
         {
-            return !IsPlayed(user);
+            return !(await IsPlayed(user).ConfigureAwait(false));
         }
 
         public override void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, DtoOptions fields)

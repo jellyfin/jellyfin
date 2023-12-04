@@ -227,7 +227,7 @@ namespace Emby.Server.Implementations.Dto
             if (item is IHasMediaSources
                 && options.ContainsField(ItemFields.MediaSources))
             {
-                dto.MediaSources = _mediaSourceManager.GetStaticMediaSources(item, true, user).ToArray();
+                dto.MediaSources = _mediaSourceManager.GetStaticMediaSources(item, true, user).GetAwaiter().GetResult().ToArray();
 
                 NormalizeMediaSourceContainers(dto);
             }
@@ -1099,7 +1099,7 @@ namespace Emby.Server.Implementations.Dto
                     }
                     else
                     {
-                        mediaStreams = _mediaSourceManager.GetStaticMediaSources(item, true)[0].MediaStreams.ToArray();
+                        mediaStreams = _mediaSourceManager.GetStaticMediaSources(item, true).GetAwaiter().GetResult()[0].MediaStreams.ToArray();
                     }
 
                     dto.MediaStreams = mediaStreams;
