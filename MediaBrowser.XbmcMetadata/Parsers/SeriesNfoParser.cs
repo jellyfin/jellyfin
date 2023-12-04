@@ -1,6 +1,8 @@
 using System;
 using System.Globalization;
+using System.Threading.Tasks;
 using System.Xml;
+using Jellyfin.Server.Implementations.Library.Interfaces;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Extensions;
@@ -24,6 +26,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
+        /// <param name="genreManager">Instance of the <see cref="IGenreManager"/> interface.</param>
         /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
         public SeriesNfoParser(
             ILogger logger,
@@ -31,8 +34,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             IProviderManager providerManager,
             IUserManager userManager,
             IUserDataManager userDataManager,
+            IGenreManager genreManager,
             IDirectoryService directoryService)
-            : base(logger, config, providerManager, userManager, userDataManager, directoryService)
+            : base(logger, config, providerManager, userManager, userDataManager, genreManager, directoryService)
         {
         }
 
@@ -40,7 +44,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         protected override bool SupportsUrlAfterClosingXmlTag => true;
 
         /// <inheritdoc />
-        protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<Series> itemResult)
+        protected override async Task FetchDataFromXmlNode(XmlReader reader, MetadataResult<Series> itemResult)
         {
             var item = itemResult.Item;
 
@@ -54,7 +58,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (string.IsNullOrWhiteSpace(tvdbId))
                         {
-                            tvdbId = reader.ReadElementContentAsString();
+                            tvdbId = await reader.ReadElementContentAsStringAsync().ConfigureAwait(false);
                         }
 
                         if (!string.IsNullOrWhiteSpace(imdbId))
@@ -76,14 +80,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 case "airs_dayofweek":
-                    item.AirDays = TVUtils.GetAirDays(reader.ReadElementContentAsString());
+                    item.AirDays = TVUtils.GetAirDays(await reader.ReadElementContentAsStringAsync().ConfigureAwait(false));
                     break;
                 case "airs_time":
                     item.AirTime = reader.ReadNormalizedString();
                     break;
                 case "status":
                     {
-                        var status = reader.ReadElementContentAsString();
+                        var status = await reader.ReadElementContentAsStringAsync().ConfigureAwait(false);
 
                         if (!string.IsNullOrWhiteSpace(status))
                         {
@@ -103,7 +107,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 case "namedseason":
                     {
                         var parsed = int.TryParse(reader.GetAttribute("number"), NumberStyles.Integer, CultureInfo.InvariantCulture, out var seasonNumber);
-                        var name = reader.ReadElementContentAsString();
+                        var name = await reader.ReadElementContentAsStringAsync().ConfigureAwait(false);
 
                         if (!string.IsNullOrWhiteSpace(name) && parsed)
                         {
@@ -114,7 +118,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 default:
-                    base.FetchDataFromXmlNode(reader, itemResult);
+                    await base.FetchDataFromXmlNode(reader, itemResult).ConfigureAwait(false);
                     break;
             }
         }

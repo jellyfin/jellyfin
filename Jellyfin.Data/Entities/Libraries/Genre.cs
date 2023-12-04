@@ -1,13 +1,14 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Jellyfin.Data.Interfaces;
+using Jellyfin.Server.Implementations;
 
 namespace Jellyfin.Data.Entities.Libraries
 {
     /// <summary>
     /// An entity representing a genre.
     /// </summary>
-    public class Genre : IHasConcurrencyToken
+    public class Genre : IHasConcurrencyToken, ILibraryModel
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Genre"/> class.

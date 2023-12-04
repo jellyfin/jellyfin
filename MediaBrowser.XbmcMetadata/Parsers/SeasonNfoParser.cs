@@ -1,4 +1,6 @@
+using System.Threading.Tasks;
 using System.Xml;
+using Jellyfin.Server.Implementations.Library.Interfaces;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Extensions;
@@ -21,6 +23,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
+        /// <param name="genreManager">Instance of the <see cref="IGenreManager"/> interface.</param>
         /// <param name="directoryService">Instance of the <see cref="DirectoryService"/> interface.</param>
         public SeasonNfoParser(
             ILogger logger,
@@ -28,13 +31,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             IProviderManager providerManager,
             IUserManager userManager,
             IUserDataManager userDataManager,
+            IGenreManager genreManager,
             IDirectoryService directoryService)
-            : base(logger, config, providerManager, userManager, userDataManager, directoryService)
+            : base(logger, config, providerManager, userManager, userDataManager, genreManager, directoryService)
         {
         }
 
         /// <inheritdoc />
-        protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<Season> itemResult)
+        protected override async Task FetchDataFromXmlNode(XmlReader reader, MetadataResult<Season> itemResult)
         {
             var item = itemResult.Item;
 
@@ -51,7 +55,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     item.Name = reader.ReadNormalizedString();
                     break;
                 default:
-                    base.FetchDataFromXmlNode(reader, itemResult);
+                    await base.FetchDataFromXmlNode(reader, itemResult).ConfigureAwait(false);
                     break;
             }
         }

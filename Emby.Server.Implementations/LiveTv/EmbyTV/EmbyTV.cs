@@ -18,6 +18,7 @@ using Emby.Server.Implementations.Library;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.Extensions;
+using Jellyfin.Server.Implementations.Library.Interfaces;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
@@ -61,6 +62,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly ILibraryManager _libraryManager;
+        private readonly IGenreManager _genreManager;
         private readonly IProviderManager _providerManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IMediaSourceManager _mediaSourceManager;
@@ -86,6 +88,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             ILiveTvManager liveTvManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager,
+            IGenreManager genreManager,
             ILibraryMonitor libraryMonitor,
             IProviderManager providerManager,
             IMediaEncoder mediaEncoder)
@@ -99,6 +102,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _fileSystem = fileSystem;
             _libraryManager = libraryManager;
             _libraryMonitor = libraryMonitor;
+            _genreManager = genreManager;
             _providerManager = providerManager;
             _mediaEncoder = mediaEncoder;
             _liveTvManager = (LiveTvManager)liveTvManager;
@@ -1798,18 +1802,22 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 if (timer.IsSports)
                 {
-                    program.AddGenre("Sports");
+                    var genre = await _genreManager.AddGenre("Sports").ConfigureAwait(false);
+                    program.AddGenre(genre);
                 }
 
                 if (timer.IsKids)
                 {
-                    program.AddGenre("Kids");
-                    program.AddGenre("Children");
+                    var genre = await _genreManager.AddGenre("Kids").ConfigureAwait(false);
+                    program.AddGenre(genre);
+                    genre = await _genreManager.AddGenre("Children").ConfigureAwait(false);
+                    program.AddGenre(genre);
                 }
 
                 if (timer.IsNews)
                 {
-                    program.AddGenre("News");
+                    var genre = await _genreManager.AddGenre("News").ConfigureAwait(false);
+                    program.AddGenre(genre);
                 }
 
                 var config = GetConfiguration();

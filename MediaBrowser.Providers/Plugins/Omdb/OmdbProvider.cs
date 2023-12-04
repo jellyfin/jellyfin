@@ -15,12 +15,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json;
+using Jellyfin.Server.Implementations.Library.Interfaces;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using Genre = Jellyfin.Data.Entities.Libraries.Genre;
 
 namespace MediaBrowser.Providers.Plugins.Omdb
 {
@@ -31,14 +33,21 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly JsonSerializerOptions _jsonOptions;
+        private readonly IGenreManager _genreManager;
 
         /// <summary>Initializes a new instance of the <see cref="OmdbProvider"/> class.</summary>
         /// <param name="httpClientFactory">HttpClientFactory to use for calls to OMDB service.</param>
         /// <param name="fileSystem">IFileSystem to use for store OMDB data.</param>
         /// <param name="configurationManager">IServerConfigurationManager to use.</param>
-        public OmdbProvider(IHttpClientFactory httpClientFactory, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
+        /// <param name="genreManager">The Genre Manager.</param>
+        public OmdbProvider(
+            IHttpClientFactory httpClientFactory,
+            IGenreManager genreManager,
+            IFileSystem fileSystem,
+            IServerConfigurationManager configurationManager)
         {
             _httpClientFactory = httpClientFactory;
+            _genreManager = genreManager;
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
 
@@ -115,7 +124,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 item.SetProviderId(MetadataProvider.Imdb, result.imdbID);
             }
 
-            ParseAdditionalMetadata(itemResult, result, isEnglishRequested);
+            await ParseAdditionalMetadata(itemResult, result, isEnglishRequested).ConfigureAwait(false);
         }
 
         /// <summary>Gets data about an episode.</summary>
@@ -225,7 +234,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 item.SetProviderId(MetadataProvider.Imdb, result.imdbID);
             }
 
-            ParseAdditionalMetadata(itemResult, result, isEnglishRequested);
+            await ParseAdditionalMetadata(itemResult, result, isEnglishRequested).ConfigureAwait(false);
 
             return true;
         }
@@ -396,7 +405,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             return Path.Combine(dataPath, filename);
         }
 
-        private static void ParseAdditionalMetadata<T>(MetadataResult<T> itemResult, RootObject result, bool isEnglishRequested)
+        private async Task ParseAdditionalMetadata<T>(MetadataResult<T> itemResult, RootObject result, bool isEnglishRequested)
             where T : BaseItem
         {
             var item = itemResult.Item;
@@ -407,8 +416,9 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             {
                 item.Genres = Array.Empty<string>();
 
-                foreach (var genre in result.Genre.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                foreach (var genreName in result.Genre.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                 {
+                    Genre genre = await _genreManager.AddGenre(genreName).ConfigureAwait(false);
                     item.AddGenre(genre);
                 }
             }

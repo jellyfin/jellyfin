@@ -14,6 +14,7 @@ using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
+using Genre = Jellyfin.Data.Entities.Libraries.Genre;
 
 namespace MediaBrowser.LocalMetadata.Parsers
 {
@@ -618,9 +619,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     switch (reader.Name)
                     {
                         case "Genre":
-                            var genre = reader.ReadNormalizedString();
-                            if (!string.IsNullOrEmpty(genre))
+                            var genreName = reader.ReadNormalizedString();
+                            if (!string.IsNullOrEmpty(genreName))
                             {
+                                Genre genre = new Genre(genreName);
                                 item.AddGenre(genre);
                             }
 

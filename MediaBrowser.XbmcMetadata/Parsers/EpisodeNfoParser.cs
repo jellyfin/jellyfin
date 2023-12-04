@@ -2,7 +2,9 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
+using Jellyfin.Server.Implementations.Library.Interfaces;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Extensions;
@@ -25,6 +27,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
+        /// <param name="genreManager">Instance of the <see cref="IGenreManager"/> interface.</param>
         /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
         public EpisodeNfoParser(
             ILogger logger,
@@ -32,17 +35,18 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             IProviderManager providerManager,
             IUserManager userManager,
             IUserDataManager userDataManager,
+            IGenreManager genreManager,
             IDirectoryService directoryService)
-            : base(logger, config, providerManager, userManager, userDataManager, directoryService)
+            : base(logger, config, providerManager, userManager, userDataManager, genreManager, directoryService)
         {
         }
 
         /// <inheritdoc />
-        protected override void Fetch(MetadataResult<Episode> item, string metadataFile, XmlReaderSettings settings, CancellationToken cancellationToken)
+        protected override async Task Fetch(MetadataResult<Episode> item, string metadataFile, XmlReaderSettings settings, CancellationToken cancellationToken)
         {
             item.ResetPeople();
 
-            var xmlFile = File.ReadAllText(metadataFile);
+            var xmlFile = await File.ReadAllTextAsync(metadataFile, cancellationToken).ConfigureAwait(false);
 
             var srch = "</episodedetails>";
             var index = xmlFile.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
@@ -62,8 +66,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 using (var stringReader = new StringReader(xml))
                 using (var reader = XmlReader.Create(stringReader, settings))
                 {
-                    reader.MoveToContent();
-                    reader.Read();
+                    await reader.MoveToContentAsync().ConfigureAwait(false);
+                    await reader.ReadAsync().ConfigureAwait(false);
 
                     // Loop through each element
                     while (!reader.EOF && reader.ReadState == ReadState.Interactive)
@@ -72,11 +76,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (reader.NodeType == XmlNodeType.Element)
                         {
-                            FetchDataFromXmlNode(reader, item);
+                            await FetchDataFromXmlNode(reader, item).ConfigureAwait(false);
                         }
                         else
                         {
-                            reader.Read();
+                            await reader.ReadAsync().ConfigureAwait(false);
                         }
                     }
                 }
@@ -94,7 +98,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     using (var stringReader = new StringReader(xml))
                     using (var reader = XmlReader.Create(stringReader, settings))
                     {
-                        reader.MoveToContent();
+                        await reader.MoveToContentAsync().ConfigureAwait(false);
 
                         while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                         {
@@ -107,11 +111,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                     case "name":
                                     case "title":
                                     case "localtitle":
-                                        name.Append(" / ").Append(reader.ReadElementContentAsString());
+                                        name.Append(" / ").Append(await reader.ReadElementContentAsStringAsync().ConfigureAwait(false));
                                         break;
                                     case "episode":
                                         {
-                                            if (int.TryParse(reader.ReadElementContentAsString(), out var num))
+                                            if (int.TryParse(await reader.ReadElementContentAsStringAsync().ConfigureAwait(false), out var num))
                                             {
                                                 item.Item.IndexNumberEnd = Math.Max(num, item.Item.IndexNumberEnd ?? num);
                                             }
@@ -122,12 +126,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                     case "biography":
                                     case "plot":
                                     case "review":
-                                        overview.Append(" / ").Append(reader.ReadElementContentAsString());
+                                        overview.Append(" / ").Append(await reader.ReadElementContentAsStringAsync().ConfigureAwait(false));
                                         break;
                                 }
                             }
 
-                            reader.Read();
+                            await reader.ReadAsync().ConfigureAwait(false);
                         }
                     }
                 }
@@ -141,7 +145,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         }
 
         /// <inheritdoc />
-        protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<Episode> itemResult)
+        protected override async Task FetchDataFromXmlNode(XmlReader reader, MetadataResult<Episode> itemResult)
         {
             var item = itemResult.Item;
 
@@ -196,7 +200,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     item.SeriesName = reader.ReadNormalizedString();
                     break;
                 default:
-                    base.FetchDataFromXmlNode(reader, itemResult);
+                    await base.FetchDataFromXmlNode(reader, itemResult).ConfigureAwait(false);
                     break;
             }
         }

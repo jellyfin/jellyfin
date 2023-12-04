@@ -1,7 +1,9 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml;
+using Jellyfin.Server.Implementations.Library.Interfaces;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -26,6 +28,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
+        /// <param name="genreManager">Instance of the <see cref="IGenreManager"/> interface.</param>
         /// <param name="directoryService">Instance of the <see cref="DirectoryService"/> interface.</param>
         public MovieNfoParser(
             ILogger logger,
@@ -33,8 +36,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             IProviderManager providerManager,
             IUserManager userManager,
             IUserDataManager userDataManager,
+            IGenreManager genreManager,
             IDirectoryService directoryService)
-            : base(logger, config, providerManager, userManager, userDataManager, directoryService)
+            : base(logger, config, providerManager, userManager, userDataManager, genreManager, directoryService)
         {
         }
 
@@ -42,7 +46,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         protected override bool SupportsUrlAfterClosingXmlTag => true;
 
         /// <inheritdoc />
-        protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<Video> itemResult)
+        protected override async Task FetchDataFromXmlNode(XmlReader reader, MetadataResult<Video> itemResult)
         {
             var item = itemResult.Item;
 
@@ -55,7 +59,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         string? tmdbId = reader.GetAttribute("TMDB");
 
                         // read id from content
-                        var contentId = reader.ReadElementContentAsString();
+                        var contentId = await reader.ReadElementContentAsStringAsync().ConfigureAwait(false);
                         if (contentId.Contains("tt", StringComparison.Ordinal) && string.IsNullOrEmpty(imdbId))
                         {
                             imdbId = contentId;
@@ -88,7 +92,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             movie.SetProviderId(MetadataProvider.TmdbCollection, tmdbcolid);
                         }
 
-                        var val = reader.ReadInnerXml();
+                        var val = await reader.ReadInnerXmlAsync().ConfigureAwait(false);
 
                         if (!string.IsNullOrWhiteSpace(val) && movie is not null)
                         {
@@ -132,7 +136,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                     break;
                 default:
-                    base.FetchDataFromXmlNode(reader, itemResult);
+                    await base.FetchDataFromXmlNode(reader, itemResult).ConfigureAwait(false);
                     break;
             }
         }

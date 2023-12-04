@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Entities.Libraries;
 using Jellyfin.Data.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,6 +28,11 @@ public class LibraryDbContext : DbContext
     /// Gets the <see cref="DbSet{TEntity}"/> containing the Chapters info.
     /// </summary>
     public DbSet<ChapterInfo> ChapterInfos => Set<ChapterInfo>();
+
+    /// <summary>
+    /// Gets the <see cref="DbSet{TEntity}"/> containing the Genres info.
+    /// </summary>
+    public DbSet<Genre> Genres => Set<Genre>();
 
     /// <inheritdoc/>
     public override int SaveChanges()

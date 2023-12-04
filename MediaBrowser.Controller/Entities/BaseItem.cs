@@ -1777,19 +1777,22 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Adds a genre to the item.
         /// </summary>
-        /// <param name="name">The name.</param>
-        /// <exception cref="ArgumentNullException">Throwns if name is null.</exception>
-        public void AddGenre(string name)
+        /// <remarks>This should be made obsolete when we move to EF Core and we can use ICollection.</remarks>
+        /// <param name="genre">The name.</param>
+        /// <exception cref="ArgumentNullException">Throws if genre is null.</exception>
+        public void AddGenre(Jellyfin.Data.Entities.Libraries.Genre genre)
         {
-            ArgumentException.ThrowIfNullOrEmpty(name);
+            ArgumentNullException.ThrowIfNull(genre);
 
             var genres = Genres;
-            if (!genres.Contains(name, StringComparison.OrdinalIgnoreCase))
+            if (genres.Contains(genre.Name, StringComparison.OrdinalIgnoreCase))
             {
-                var list = genres.ToList();
-                list.Add(name);
-                Genres = list.ToArray();
+                return;
             }
+
+            var list = genres.ToList();
+            list.Add(genre.Name);
+            Genres = list.ToArray();
         }
 
         /// <summary>

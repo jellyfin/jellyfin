@@ -1,5 +1,7 @@
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
+using Jellyfin.Server.Implementations.Library.Interfaces;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -20,6 +22,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
         private readonly IProviderManager _providerManager;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
+        private readonly IGenreManager _genreManager;
         private readonly IDirectoryService _directoryService;
 
         /// <summary>
@@ -31,6 +34,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
         /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
+        /// <param name="genreManager">Instance of the <see cref="IGenreManager"/> interface.</param>
         /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
         public EpisodeNfoProvider(
             ILogger<EpisodeNfoProvider> logger,
@@ -39,6 +43,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
             IProviderManager providerManager,
             IUserManager userManager,
             IUserDataManager userDataManager,
+            IGenreManager genreManager,
             IDirectoryService directoryService)
             : base(fileSystem)
         {
@@ -47,13 +52,14 @@ namespace MediaBrowser.XbmcMetadata.Providers
             _providerManager = providerManager;
             _userManager = userManager;
             _userDataManager = userDataManager;
+            _genreManager = genreManager;
             _directoryService = directoryService;
         }
 
         /// <inheritdoc />
-        protected override void Fetch(MetadataResult<Episode> result, string path, CancellationToken cancellationToken)
+        protected override async Task Fetch(MetadataResult<Episode> result, string path, CancellationToken cancellationToken)
         {
-            new EpisodeNfoParser(_logger, _config, _providerManager, _userManager, _userDataManager, _directoryService).Fetch(result, path, cancellationToken);
+            await new EpisodeNfoParser(_logger, _config, _providerManager, _userManager, _userDataManager, _genreManager, _directoryService).Fetch(result, path, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />

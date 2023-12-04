@@ -42,6 +42,8 @@ using Jellyfin.Drawing;
 using Jellyfin.MediaEncoding.Hls.Playlist;
 using Jellyfin.Networking.Manager;
 using Jellyfin.Server.Implementations;
+using Jellyfin.Server.Implementations.Library.Interfaces;
+using Jellyfin.Server.Implementations.Library.Managers;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
@@ -569,6 +571,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IUserViewManager, UserViewManager>();
 
             serviceCollection.AddSingleton<IChapterManager, ChapterManager>();
+            serviceCollection.AddSingleton<IGenreManager, GenreManager>();
 
             serviceCollection.AddSingleton<IEncodingManager, MediaEncoder.EncodingManager>();
 

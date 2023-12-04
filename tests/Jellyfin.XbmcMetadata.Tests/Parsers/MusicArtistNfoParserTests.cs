@@ -1,5 +1,7 @@
 using System;
 using System.Threading;
+using System.Threading.Tasks;
+using Jellyfin.Server.Implementations.Library.Interfaces;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -34,6 +36,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
                 .Returns(new XbmcMetadataOptions());
             var user = new Mock<IUserManager>();
             var userData = new Mock<IUserDataManager>();
+            var genreManager = new Mock<IGenreManager>();
             var directoryService = new Mock<IDirectoryService>();
 
             _parser = new BaseNfoParser<MusicArtist>(
@@ -42,18 +45,19 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
                 providerManager.Object,
                 user.Object,
                 userData.Object,
+                genreManager.Object,
                 directoryService.Object);
         }
 
         [Fact]
-        public void Fetch_Valid_Success()
+        public async Task Fetch_Valid_Success()
         {
             var result = new MetadataResult<MusicArtist>()
             {
                 Item = new MusicArtist()
             };
 
-            _parser.Fetch(result, "Test Data/U2.nfo", CancellationToken.None);
+            await _parser.Fetch(result, "Test Data/U2.nfo", CancellationToken.None);
             var item = result.Item;
 
             Assert.Equal("U2", item.Name);
@@ -65,22 +69,22 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
         }
 
         [Fact]
-        public void Fetch_WithNullItem_ThrowsArgumentException()
+        public async Task Fetch_WithNullItem_ThrowsArgumentException()
         {
             var result = new MetadataResult<MusicArtist>();
 
-            Assert.Throws<ArgumentException>(() => _parser.Fetch(result, "Test Data/U2.nfo", CancellationToken.None));
+            await Assert.ThrowsAsync<ArgumentException>(() => _parser.Fetch(result, "Test Data/U2.nfo", CancellationToken.None));
         }
 
         [Fact]
-        public void Fetch_NullResult_ThrowsArgumentException()
+        public async Task Fetch_NullResult_ThrowsArgumentException()
         {
             var result = new MetadataResult<MusicArtist>()
             {
                 Item = new MusicArtist()
             };
 
-            Assert.Throws<ArgumentException>(() => _parser.Fetch(result, string.Empty, CancellationToken.None));
+            await Assert.ThrowsAsync<ArgumentException>(() => _parser.Fetch(result, string.Empty, CancellationToken.None));
         }
     }
 }

@@ -26,6 +26,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
+using Genre = Jellyfin.Data.Entities.Libraries.Genre;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -411,8 +412,9 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     video.Genres = Array.Empty<string>();
 
-                    foreach (var genre in data.Genres)
+                    foreach (var genreName in data.Genres)
                     {
+                        Genre genre = new Genre(genreName);
                         video.AddGenre(genre);
                     }
                 }

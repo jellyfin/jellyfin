@@ -1,8 +1,10 @@
 using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Server.Implementations.Library.Interfaces;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -55,6 +57,8 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             userData.Setup(x => x.GetUserDataAsync(_testUser, It.IsAny<BaseItem>()))
                 .ReturnsAsync(new UserItemData());
 
+            var genreManager = new Mock<IGenreManager>();
+
             var directoryService = new Mock<IDirectoryService>();
             _localImageFileMetadata = new FileSystemMetadata()
             {
@@ -73,18 +77,19 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
                 providerManager.Object,
                 user.Object,
                 userData.Object,
+                genreManager.Object,
                 directoryService.Object);
         }
 
         [Fact]
-        public void Fetch_Valid_Success()
+        public async Task Fetch_Valid_Success()
         {
             var result = new MetadataResult<Video>()
             {
                 Item = new Movie()
             };
 
-            _parser.Fetch(result, "Test Data/Justice League.nfo", CancellationToken.None);
+            await _parser.Fetch(result, "Test Data/Justice League.nfo", CancellationToken.None);
             var item = (Movie)result.Item;
 
             Assert.Equal("Justice League", item.OriginalTitle);
@@ -196,42 +201,42 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
         [Theory]
         [InlineData("Test Data/Tmdb.nfo", "Tmdb", "30287")]
         [InlineData("Test Data/Imdb.nfo", "Imdb", "tt0944947")]
-        public void Parse_UrlFile_Success(string path, string provider, string id)
+        public async Task Parse_UrlFile_Success(string path, string provider, string id)
         {
             var result = new MetadataResult<Video>()
             {
                 Item = new Movie()
             };
 
-            _parser.Fetch(result, path, CancellationToken.None);
+            await _parser.Fetch(result, path, CancellationToken.None);
             var item = (Movie)result.Item;
 
             Assert.Equal(id, item.ProviderIds[provider]);
         }
 
         [Fact]
-        public void Parse_GivenFileWithFanartTag_Success()
+        public async Task Parse_GivenFileWithFanartTag_Success()
         {
             var result = new MetadataResult<Video>()
             {
                 Item = new Movie()
             };
 
-            _parser.Fetch(result, "Test Data/Fanart.nfo", CancellationToken.None);
+            await _parser.Fetch(result, "Test Data/Fanart.nfo", CancellationToken.None);
 
             Assert.Single(result.RemoteImages.Where(x => x.Type == ImageType.Backdrop));
             Assert.Equal("https://assets.fanart.tv/fanart/movies/141052/moviebackground/justice-league-5a5332c7b5e77.jpg", result.RemoteImages.First(x => x.Type == ImageType.Backdrop).Url);
         }
 
         [Fact]
-        public void Parse_RadarrUrlFile_Success()
+        public async Task Parse_RadarrUrlFile_Success()
         {
             var result = new MetadataResult<Video>()
             {
                 Item = new Movie()
             };
 
-            _parser.Fetch(result, "Test Data/Radarr.nfo", CancellationToken.None);
+            await _parser.Fetch(result, "Test Data/Radarr.nfo", CancellationToken.None);
             var item = (Movie)result.Item;
 
             Assert.Equal("583689", item.ProviderIds[MetadataProvider.Tmdb.ToString()]);
@@ -239,22 +244,22 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
         }
 
         [Fact]
-        public void Fetch_WithNullItem_ThrowsArgumentException()
+        public async Task Fetch_WithNullItem_ThrowsArgumentException()
         {
             var result = new MetadataResult<Video>();
 
-            Assert.Throws<ArgumentException>(() => _parser.Fetch(result, "Test Data/Justice League.nfo", CancellationToken.None));
+            await Assert.ThrowsAsync<ArgumentException>(() => _parser.Fetch(result, "Test Data/Justice League.nfo", CancellationToken.None));
         }
 
         [Fact]
-        public void Fetch_NullResult_ThrowsArgumentException()
+        public async Task Fetch_NullResult_ThrowsArgumentException()
         {
             var result = new MetadataResult<Video>()
             {
                 Item = new Movie()
             };
 
-            Assert.Throws<ArgumentException>(() => _parser.Fetch(result, string.Empty, CancellationToken.None));
+            await Assert.ThrowsAsync<ArgumentException>(() => _parser.Fetch(result, string.Empty, CancellationToken.None));
         }
     }
 }

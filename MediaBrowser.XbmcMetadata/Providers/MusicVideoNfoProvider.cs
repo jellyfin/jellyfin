@@ -1,3 +1,4 @@
+using Jellyfin.Server.Implementations.Library.Interfaces;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -21,6 +22,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
         /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
+        /// <param name="genreManager">Instance of the <see cref="IGenreManager"/> interface.</param>
         /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
         public MusicVideoNfoProvider(
             ILogger<MusicVideoNfoProvider> logger,
@@ -29,8 +31,9 @@ namespace MediaBrowser.XbmcMetadata.Providers
             IProviderManager providerManager,
             IUserManager userManager,
             IUserDataManager userDataManager,
+            IGenreManager genreManager,
             IDirectoryService directoryService)
-            : base(logger, fileSystem, config, providerManager, userManager, userDataManager, directoryService)
+            : base(logger, fileSystem, config, providerManager, userManager, userDataManager, genreManager, directoryService)
         {
         }
     }

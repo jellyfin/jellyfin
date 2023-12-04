@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
+using Jellyfin.Server.Implementations.Library.Interfaces;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -16,6 +17,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using TMDbLib.Objects.Find;
 using TMDbLib.Objects.Search;
+using Genre = Jellyfin.Data.Entities.Libraries.Genre;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 {
@@ -26,6 +28,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILibraryManager _libraryManager;
+        private readonly IGenreManager _genreManager;
         private readonly TmdbClientManager _tmdbClientManager;
 
         /// <summary>
@@ -33,13 +36,16 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         /// </summary>
         /// <param name="libraryManager">The <see cref="ILibraryManager"/>.</param>
         /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
+        /// <param name="genreManager">The <see cref="IGenreManager"/>.</param>
         /// <param name="tmdbClientManager">The <see cref="TmdbClientManager"/>.</param>
         public TmdbMovieProvider(
             ILibraryManager libraryManager,
+            IGenreManager genreManager,
             TmdbClientManager tmdbClientManager,
             IHttpClientFactory httpClientFactory)
         {
             _libraryManager = libraryManager;
+            _genreManager = genreManager;
             _tmdbClientManager = tmdbClientManager;
             _httpClientFactory = httpClientFactory;
         }
@@ -238,8 +244,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             var genres = movieResult.Genres;
 
-            foreach (var genre in genres.Select(g => g.Name))
+            foreach (var genreName in genres.Select(g => g.Name))
             {
+                Genre genre = await _genreManager.AddGenre(genreName).ConfigureAwait(false);
                 movie.AddGenre(genre);
             }
 
