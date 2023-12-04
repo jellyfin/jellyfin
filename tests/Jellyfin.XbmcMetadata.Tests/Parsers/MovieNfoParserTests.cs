@@ -52,8 +52,8 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
                 .Returns(_testUser);
 
             var userData = new Mock<IUserDataManager>();
-            userData.Setup(x => x.GetUserDataAsync(_testUser, It.IsAny<BaseItem>()).GetAwaiter().GetResult())
-                .Returns(new UserItemData());
+            userData.Setup(x => x.GetUserDataAsync(_testUser, It.IsAny<BaseItem>()))
+                .ReturnsAsync(new UserItemData());
 
             var directoryService = new Mock<IDirectoryService>();
             _localImageFileMetadata = new FileSystemMetadata()
