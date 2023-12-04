@@ -119,7 +119,11 @@ public class UserDataManager : IUserDataManager
         UserItemData? userItemData;
         await using (dbContext.ConfigureAwait(false))
         {
-            userItemData = await dbContext.UserDatas.Where(u => u.UserId.Equals(user.Id) && u.Key == item.Id.ToString()).FirstOrDefaultAsync().ConfigureAwait(false);
+            userItemData = await dbContext.UserDatas.Where(u => u.UserId.Equals(user.Id) && u.Key == item.Id.ToString()).FirstOrDefaultAsync().ConfigureAwait(false) ?? new UserItemData
+            {
+                UserId = user.Id,
+                Key = item.Id.ToString()
+            };
         }
 
         return userItemData;
