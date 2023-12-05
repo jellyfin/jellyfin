@@ -134,7 +134,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
         }
 
-        private void TrySeek(Stream stream, long offset)
+        private void TrySeek(FileStream stream, long offset)
         {
             if (!stream.CanSeek)
             {

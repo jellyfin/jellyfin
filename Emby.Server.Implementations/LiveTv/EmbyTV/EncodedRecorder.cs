@@ -34,7 +34,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private bool _hasExited;
-        private Stream _logFileStream;
+        private FileStream _logFileStream;
         private string _targetPath;
         private Process _process;
         private bool _disposed = false;
@@ -308,7 +308,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private async Task StartStreamingLog(Stream source, Stream target)
+        private async Task StartStreamingLog(Stream source, FileStream target)
         {
             try
             {
