@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
-    public class DirectRecorder : IRecorder
+    public sealed class DirectRecorder : IRecorder
     {
         private readonly ILogger _logger;
         private readonly IHttpClientFactory _httpClientFactory;
@@ -108,6 +108,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 _logger.LogInformation("Recording completed to file {0}", targetFile);
             }
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
         }
     }
 }

@@ -1269,7 +1269,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     directStreamProvider = liveStreamResponse.Item2;
                 }
 
-                var recorder = GetRecorder(mediaStreamInfo);
+                using var recorder = GetRecorder(mediaStreamInfo);
 
                 recordPath = recorder.GetOutputPath(mediaStreamInfo, recordPath);
                 recordPath = EnsureFileUnique(recordPath, timer.Id);

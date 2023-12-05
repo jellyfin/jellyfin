@@ -25,7 +25,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
-    public class EncodedRecorder : IRecorder, IDisposable
+    public class EncodedRecorder : IRecorder
     {
         private readonly ILogger _logger;
         private readonly IMediaEncoder _mediaEncoder;
@@ -37,7 +37,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private FileStream _logFileStream;
         private string _targetPath;
         private Process _process;
-        private bool _disposed = false;
+        private bool _disposed;
 
         public EncodedRecorder(
             ILogger logger,
