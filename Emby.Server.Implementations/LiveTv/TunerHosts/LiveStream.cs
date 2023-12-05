@@ -112,6 +112,21 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             return stream;
         }
 
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool dispose)
+        {
+            if (dispose)
+            {
+                LiveStreamCancellationTokenSource?.Dispose();
+            }
+        }
+
         protected async Task DeleteTempFiles(string path, int retryCount = 0)
         {
             if (retryCount == 0)
