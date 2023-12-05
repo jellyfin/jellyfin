@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../Jellyfin.Networking/Jellyfin.Networking.csproj" />
+    <ProjectReference Include="../../src/Jellyfin.Networking/Jellyfin.Networking.csproj" />
   </ItemGroup>
 
 </Project>
