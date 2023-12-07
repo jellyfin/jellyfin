@@ -100,7 +100,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                Fetch(item, result, cancellationToken);
+                Fetch(item, result, options, cancellationToken);
             }
 
             var libraryOptions = _libraryManager.GetLibraryOptions(item);
@@ -159,8 +159,9 @@ namespace MediaBrowser.Providers.MediaInfo
         /// </summary>
         /// <param name="audio">The <see cref="Audio"/>.</param>
         /// <param name="mediaInfo">The <see cref="Model.MediaInfo.MediaInfo"/>.</param>
+        /// <param name="options">The <see cref="MetadataRefreshOptions"/>.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
-        protected void Fetch(Audio audio, Model.MediaInfo.MediaInfo mediaInfo, CancellationToken cancellationToken)
+        protected void Fetch(Audio audio, Model.MediaInfo.MediaInfo mediaInfo, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             audio.Container = mediaInfo.Container;
             audio.TotalBitrate = mediaInfo.Bitrate;
@@ -170,7 +171,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!audio.IsLocked)
             {
-                FetchDataFromTags(audio);
+                FetchDataFromTags(audio, options);
             }
 
             _itemRepo.SaveMediaStreams(audio.Id, mediaInfo.MediaStreams, cancellationToken);
@@ -180,7 +181,8 @@ namespace MediaBrowser.Providers.MediaInfo
         /// Fetches data from the tags.
         /// </summary>
         /// <param name="audio">The <see cref="Audio"/>.</param>
-        private void FetchDataFromTags(Audio audio)
+        /// <param name="options">The <see cref="MetadataRefreshOptions"/>.</param>
+        private void FetchDataFromTags(Audio audio, MetadataRefreshOptions options)
         {
             var file = TagLib.File.Create(audio.Path);
             var tagTypes = file.TagTypesOnDisk;
@@ -263,10 +265,23 @@ namespace MediaBrowser.Providers.MediaInfo
                     audio.AlbumArtists ??= albumArtists;
                 }
 
-                audio.Name = string.IsNullOrEmpty(audio.Name) ? tags.Title : audio.Name;
-                audio.Album ??= tags.Album;
-                audio.IndexNumber ??= Convert.ToInt32(tags.Track);
-                audio.ParentIndexNumber ??= Convert.ToInt32(tags.Disc);
+                if (!audio.LockedFields.Contains(MetadataField.Name))
+                {
+                    audio.Name = options.ReplaceAllMetadata || string.IsNullOrEmpty(audio.Name) ? tags.Title : audio.Name;
+                }
+
+                if (options.ReplaceAllMetadata)
+                {
+                    audio.Album = tags.Album;
+                    audio.IndexNumber = Convert.ToInt32(tags.Track);
+                    audio.ParentIndexNumber = Convert.ToInt32(tags.Disc);
+                }
+                else
+                {
+                    audio.Album ??= tags.Album;
+                    audio.IndexNumber ??= Convert.ToInt32(tags.Track);
+                    audio.ParentIndexNumber ??= Convert.ToInt32(tags.Disc);
+                }
 
                 if (tags.Year != 0)
                 {
@@ -277,30 +292,32 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 if (!audio.LockedFields.Contains(MetadataField.Genres))
                 {
-                    audio.Genres = tags.Genres.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                    audio.Genres = options.ReplaceAllMetadata || audio.Genres == null || audio.Genres.Length == 0
+                        ? tags.Genres.Distinct(StringComparer.OrdinalIgnoreCase).ToArray()
+                        : audio.Genres;
                 }
 
-                if (!audio.TryGetProviderId("MusicBrainzArtist", out _))
+                if (options.ReplaceAllMetadata || !audio.TryGetProviderId("MusicBrainzArtist", out _))
                 {
                     audio.SetProviderId(MetadataProvider.MusicBrainzArtist, tags.MusicBrainzArtistId);
                 }
 
-                if (!audio.TryGetProviderId("MusicBrainzAlbumArtist", out _))
+                if (options.ReplaceAllMetadata || !audio.TryGetProviderId("MusicBrainzAlbumArtist", out _))
                 {
                     audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, tags.MusicBrainzReleaseArtistId);
                 }
 
-                if (!audio.TryGetProviderId("MusicBrainzAlbum", out _))
+                if (options.ReplaceAllMetadata || !audio.TryGetProviderId("MusicBrainzAlbum", out _))
                 {
                     audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, tags.MusicBrainzReleaseId);
                 }
 
-                if (!audio.TryGetProviderId("MusicBrainzReleaseGroup", out _))
+                if (options.ReplaceAllMetadata || !audio.TryGetProviderId("MusicBrainzReleaseGroup", out _))
                 {
                     audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, tags.MusicBrainzReleaseGroupId);
                 }
 
-                if (!audio.TryGetProviderId("MusicBrainzTrack", out _))
+                if (options.ReplaceAllMetadata || !audio.TryGetProviderId("MusicBrainzTrack", out _))
                 {
                     audio.SetProviderId(MetadataProvider.MusicBrainzTrack, tags.MusicBrainzTrackId);
                 }
