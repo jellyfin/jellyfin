@@ -330,9 +330,9 @@ namespace Emby.Server.Implementations.IO
             var ex = e.GetException();
             var dw = (FileSystemWatcher)sender;
 
-            if (ex.GetType() == typeof(UnauthorizedAccessException))
+            if (ex is UnauthorizedAccessException unauthorizedAccessException)
             {
-                _logger.LogError(ex, "Permission error for Directory watcher: {Path}", dw.Path);
+                _logger.LogError(unauthorizedAccessException, "Permission error for Directory watcher: {Path}", dw.Path);
                 return;
             }
 
