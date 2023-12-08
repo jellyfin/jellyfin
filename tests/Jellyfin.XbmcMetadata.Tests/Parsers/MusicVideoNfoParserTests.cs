@@ -2,7 +2,9 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Library.Interfaces;
+using Jellyfin.Server.Implementations.Library.Managers;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -11,6 +13,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.XbmcMetadata.Parsers;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -30,9 +33,11 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             config.Setup(x => x.GetConfiguration(It.IsAny<string>()))
                 .Returns(new XbmcMetadataOptions());
 
+            // Arrange
             var user = new Mock<IUserManager>();
             var userData = new Mock<IUserDataManager>();
-            var genreManager = new Mock<IGenreManager>();
+            var dbContextFactory = new InMemoryDbContextFactory();
+            var genreManager = new GenreManager(dbContextFactory);
             var directoryService = new Mock<IDirectoryService>();
 
             _parser = new MovieNfoParser(
@@ -41,12 +46,12 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
                 providerManager.Object,
                 user.Object,
                 userData.Object,
-                genreManager.Object,
+                genreManager,
                 directoryService.Object);
         }
 
         [Fact]
-        public async Task Fetch_Valid_Succes()
+        public async Task Fetch_Valid_Success()
         {
             var result = new MetadataResult<Video>()
             {

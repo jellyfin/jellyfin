@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Server.Implementations.Library.Interfaces;
+using Jellyfin.Server.Implementations.Library.Managers;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -57,7 +58,8 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             userData.Setup(x => x.GetUserDataAsync(_testUser, It.IsAny<BaseItem>()))
                 .ReturnsAsync(new UserItemData());
 
-            var genreManager = new Mock<IGenreManager>();
+            var dbContextFactory = new InMemoryDbContextFactory();
+            var genreManager = new GenreManager(dbContextFactory);
 
             var directoryService = new Mock<IDirectoryService>();
             _localImageFileMetadata = new FileSystemMetadata()
@@ -77,7 +79,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
                 providerManager.Object,
                 user.Object,
                 userData.Object,
-                genreManager.Object,
+                genreManager,
                 directoryService.Object);
         }
 
