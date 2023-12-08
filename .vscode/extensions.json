@@ -4,7 +4,7 @@
 
 	// List of extensions which should be recommended for users of this workspace.
 	"recommendations": [
-        "ms-dotnettools.csharp",
+        "ms-dotnettools.csdevkit",
         "editorconfig.editorconfig"
 	],
 	// List of extensions recommended by VS Code that should not be recommended for users of this workspace.
