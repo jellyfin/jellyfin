@@ -36,7 +36,7 @@ namespace Emby.Server.Implementations.Images
             var view = (UserView)item;
 
             var isUsingCollectionStrip = IsUsingCollectionStrip(view);
-            var recursive = isUsingCollectionStrip && view?.ViewType is not null && view.ViewType != CollectionType.BoxSets && view.ViewType != CollectionType.Playlists;
+            var recursive = isUsingCollectionStrip && view?.ViewType is not null && view.ViewType != CollectionType.boxsets && view.ViewType != CollectionType.playlists;
 
             var result = view.GetItemList(new InternalItemsQuery
             {
@@ -114,9 +114,9 @@ namespace Emby.Server.Implementations.Images
         {
             CollectionType[] collectionStripViewTypes =
             {
-                CollectionType.Movies,
-                CollectionType.TvShows,
-                CollectionType.Playlists
+                CollectionType.movies,
+                CollectionType.tvshows,
+                CollectionType.playlists
             };
 
             return view?.ViewType is not null && collectionStripViewTypes.Contains(view.ViewType.Value);
