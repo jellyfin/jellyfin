@@ -151,9 +151,9 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Equal(new DateTime(2019, 8, 6, 9, 1, 18), item.DateCreated);
 
             // userData
-#pragma warning disable xUnit1031
-            var userData = _userDataManager.GetUserDataAsync(_testUser, item).GetAwaiter().GetResult();
-#pragma warning restore xUnit1031
+
+            var userData = await _userDataManager.GetUserDataAsync(_testUser, item);
+
             Assert.Equal(2, userData.PlayCount);
             Assert.True(userData.Played);
             Assert.Equal(new DateTime(2021, 02, 11, 07, 47, 23), userData.LastPlayedDate);
