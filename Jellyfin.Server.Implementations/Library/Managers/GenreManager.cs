@@ -24,7 +24,7 @@ public class GenreManager : IGenreManager
     /// <inheritdoc />
     public async Task<Genre> AddGenre(string genreName)
     {
-        ArgumentNullException.ThrowIfNull(genreName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(genreName);
 
         var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
         Genre? genre;
