@@ -107,7 +107,7 @@ public class UserDataManager : IUserDataManager
     /// <inheritdoc />
     public void SaveUserData(User? user, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
     {
-        SaveUserDataAsync(user, item, userData, reason, cancellationToken).ConfigureAwait(false);
+        SaveUserDataAsync(user, item, userData, reason, cancellationToken).GetAwaiter().GetResult();
     }
 
     /// <inheritdoc />
