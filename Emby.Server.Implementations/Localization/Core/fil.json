@@ -124,5 +124,6 @@
     "TaskKeyframeExtractor": "Tagabunot ng Keyframe",
     "TaskKeyframeExtractorDescription": "Nagbubunot ng keyframe mula sa mga bidyo upang makabuo ng mas tumpak na HLS playlist. Maaaring matagal ito gawin.",
     "External": "External",
-    "TaskRefreshTrickplayImages": "Gumawa ng Trickplay na Imahe"
+    "TaskRefreshTrickplayImages": "Gumawa ng Trickplay na Imahe",
+    "TaskRefreshTrickplayImagesDescription": "Nanggagawa ng mga trickplay prebiyu para sa mga bidyo sa pinaganang mga aklatan."
 }

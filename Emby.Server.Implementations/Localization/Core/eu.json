@@ -123,5 +123,7 @@
     "HeaderRecordingGroups": "Grabaketa taldeak",
     "Inherit": "Oinordetu",
     "TaskOptimizeDatabaseDescription": "Datu-basea trinkotu eta bertatik espazioa askatzen du. Liburutegia eskaneatu ondoren edo datu-basean aldaketak egin ondoren ataza hau exekutatzeak errendimendua hobetu lezake.",
-    "TaskKeyframeExtractor": "Fotograma gakoen erauzgailua"
+    "TaskKeyframeExtractor": "Fotograma gakoen erauzgailua",
+    "TaskRefreshTrickplayImages": "\"Trickplay Irudiak Sortu",
+    "TaskRefreshTrickplayImagesDescription": "Bideoentzako trickplay aurrebistak sortzen ditu gaitutako liburutegietan."
 }

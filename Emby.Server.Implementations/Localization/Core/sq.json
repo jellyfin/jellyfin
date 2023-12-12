@@ -123,5 +123,7 @@
     "TaskKeyframeExtractorDescription": "Nxjerrë kornizat kryesore nga skedarët video për të krijuar lista luajtjeje më të sakta HLS. Ky veprim mund të dojë një kohë të gjatë për tu kompletuar.",
     "TaskKeyframeExtractor": "Nxjerrës i kornizës kryesore",
     "External": "Jashtem",
-    "HearingImpaired": "Dëgjimi i dëmtuar"
+    "HearingImpaired": "Dëgjimi i dëmtuar",
+    "TaskRefreshTrickplayImages": "Krijo Imazhe Trickplay",
+    "TaskRefreshTrickplayImagesDescription": "Krijon pamje paraprake për video në bibliotekat e aktivizuara."
 }
