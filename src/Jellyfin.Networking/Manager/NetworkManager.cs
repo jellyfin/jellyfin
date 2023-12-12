@@ -735,7 +735,7 @@ public class NetworkManager : INetworkManager, IDisposable
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<IPData> GetAllBindInterfaces(bool individualInterfaces = false)
+    public virtual IReadOnlyList<IPData> GetAllBindInterfaces(bool individualInterfaces = false)
     {
         if (_interfaces.Count > 0 || individualInterfaces)
         {
