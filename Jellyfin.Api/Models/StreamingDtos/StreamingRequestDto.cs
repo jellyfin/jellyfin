@@ -8,11 +8,6 @@ namespace Jellyfin.Api.Models.StreamingDtos;
 public class StreamingRequestDto : BaseEncodingJobOptions
 {
     /// <summary>
-    /// Gets or sets the device profile.
-    /// </summary>
-    public string? DeviceProfileId { get; set; }
-
-    /// <summary>
     /// Gets or sets the params.
     /// </summary>
     public string? Params { get; set; }

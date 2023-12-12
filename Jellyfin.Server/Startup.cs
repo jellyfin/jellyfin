@@ -4,7 +4,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
-using Emby.Dlna.Extensions;
 using Jellyfin.Api.Middleware;
 using Jellyfin.MediaEncoding.Hls.Extensions;
 using Jellyfin.Networking.HappyEyeballs;
@@ -122,7 +121,6 @@ namespace Jellyfin.Server
                 .AddCheck<DbContextFactoryHealthCheck<JellyfinDbContext>>(nameof(JellyfinDbContext));
 
             services.AddHlsPlaylistGenerator();
-            services.AddDlnaServices(_serverApplicationHost);
         }
 
         /// <summary>
