@@ -3343,7 +3343,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // [0:s]scale=s=1280x720
                 var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                 subFilters.Add(subSwScaleFilter);
-                overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
+                overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
             }
 
             return (mainFilters, subFilters, overlayFilters);
@@ -3520,7 +3520,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
 
                     subFilters.Add("hwupload=derive_device=cuda");
-                    overlayFilters.Add("overlay_cuda=eof_action=endall:shortest=1:repeatlast=0");
+                    overlayFilters.Add("overlay_cuda=eof_action=pass:repeatlast=0");
                 }
             }
             else
@@ -3529,7 +3529,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
-                    overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
+                    overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
                 }
             }
 
@@ -3718,7 +3718,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
 
                     subFilters.Add("hwupload=derive_device=opencl");
-                    overlayFilters.Add("overlay_opencl=eof_action=endall:shortest=1:repeatlast=0");
+                    overlayFilters.Add("overlay_opencl=eof_action=pass:repeatlast=0");
                     overlayFilters.Add("hwmap=derive_device=d3d11va:reverse=1");
                     overlayFilters.Add("format=d3d11");
                 }
@@ -3729,7 +3729,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
-                    overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
+                    overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
                 }
             }
 
@@ -3964,7 +3964,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         : string.Empty;
                     var overlayQsvFilter = string.Format(
                         CultureInfo.InvariantCulture,
-                        "overlay_qsv=eof_action=endall:shortest=1:repeatlast=0{0}",
+                        "overlay_qsv=eof_action=pass:repeatlast=0{0}",
                         overlaySize);
                     overlayFilters.Add(overlayQsvFilter);
                 }
@@ -3975,7 +3975,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
-                    overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
+                    overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
                 }
             }
 
@@ -4180,7 +4180,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         : string.Empty;
                     var overlayQsvFilter = string.Format(
                         CultureInfo.InvariantCulture,
-                        "overlay_qsv=eof_action=endall:shortest=1:repeatlast=0{0}",
+                        "overlay_qsv=eof_action=pass:repeatlast=0{0}",
                         overlaySize);
                     overlayFilters.Add(overlayQsvFilter);
                 }
@@ -4191,7 +4191,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
-                    overlayFilters.Add("overlay=eof_action=pass:shortest=1:repeatlast=0");
+                    overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
                 }
             }
 
@@ -4445,7 +4445,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         : string.Empty;
                     var overlayVaapiFilter = string.Format(
                         CultureInfo.InvariantCulture,
-                        "overlay_vaapi=eof_action=endall:shortest=1:repeatlast=0{0}",
+                        "overlay_vaapi=eof_action=pass:repeatlast=0{0}",
                         overlaySize);
                     overlayFilters.Add(overlayVaapiFilter);
                 }
@@ -4456,7 +4456,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
-                    overlayFilters.Add("overlay=eof_action=pass:shortest=1:repeatlast=0");
+                    overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
 
                     if (isVaapiEncoder)
                     {
@@ -4616,7 +4616,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 subFilters.Add("hwupload=derive_device=vulkan");
                 subFilters.Add("format=vulkan");
 
-                overlayFilters.Add("overlay_vulkan=eof_action=endall:shortest=1:repeatlast=0");
+                overlayFilters.Add("overlay_vulkan=eof_action=pass:repeatlast=0");
 
                 if (isSwEncoder)
                 {
@@ -4817,7 +4817,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
-                    overlayFilters.Add("overlay=eof_action=pass:shortest=1:repeatlast=0");
+                    overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
 
                     if (isVaapiEncoder)
                     {
