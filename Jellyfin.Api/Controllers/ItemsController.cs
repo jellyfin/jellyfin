@@ -34,6 +34,7 @@ public class ItemsController : BaseJellyfinApiController
     private readonly IDtoService _dtoService;
     private readonly ILogger<ItemsController> _logger;
     private readonly ISessionManager _sessionManager;
+    private readonly IUserDataManager _userDataRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ItemsController"/> class.
@@ -44,13 +45,15 @@ public class ItemsController : BaseJellyfinApiController
     /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
     /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
+    /// <param name="userDataRepository">Instance of the <see cref="IUserDataManager"/> interface.</param>
     public ItemsController(
         IUserManager userManager,
         ILibraryManager libraryManager,
         ILocalizationManager localization,
         IDtoService dtoService,
         ILogger<ItemsController> logger,
-        ISessionManager sessionManager)
+        ISessionManager sessionManager,
+        IUserDataManager userDataRepository)
     {
         _userManager = userManager;
         _libraryManager = libraryManager;
@@ -58,6 +61,7 @@ public class ItemsController : BaseJellyfinApiController
         _dtoService = dtoService;
         _logger = logger;
         _sessionManager = sessionManager;
+        _userDataRepository = userDataRepository;
     }
 
     /// <summary>
@@ -880,5 +884,65 @@ public class ItemsController : BaseJellyfinApiController
             startIndex,
             itemsResult.TotalRecordCount,
             returnItems);
+    }
+
+    /// <summary>
+    /// Get Item User Data.
+    /// </summary>
+    /// <param name="userId">The user id.</param>
+    /// <param name="itemId">The item id.</param>
+    /// <response code="200">return item user data.</response>
+    /// <response code="404">Item is not found.</response>
+    /// <returns>Return <see cref="UserItemDataDto"/>.</returns>
+    [HttpGet("Users/{userId}/Items/{itemId}/UserData")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<UserItemDataDto> GetItemUserData(
+        [FromRoute, Required] Guid userId,
+        [FromRoute, Required] Guid itemId)
+    {
+        if (!RequestHelpers.AssertCanUpdateUser(_userManager, User, userId, true))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to view this item user data.");
+        }
+
+        var user = _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException();
+        var item = _libraryManager.GetItemById(itemId);
+
+        return (item == null) ? NotFound() : _userDataRepository.GetUserDataDto(item, user);
+    }
+
+    /// <summary>
+    /// Update Item User Data.
+    /// </summary>
+    /// <param name="userId">The user id.</param>
+    /// <param name="itemId">The item id.</param>
+    /// <param name="userDataDto">New user data object.</param>
+    /// <response code="200">return updated user item data.</response>
+    /// <response code="404">Item is not found.</response>
+    /// <returns>Return <see cref="UserItemDataDto"/>.</returns>
+    [HttpPost("Users/{userId}/Items/{itemId}/UserData")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<UserItemDataDto> UpdateItemUserData(
+        [FromRoute, Required] Guid userId,
+        [FromRoute, Required] Guid itemId,
+        [FromBody, Required] UpdateUserItemDataDto userDataDto)
+    {
+        if (!RequestHelpers.AssertCanUpdateUser(_userManager, User, userId, true))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update this item user data.");
+        }
+
+        var user = _userManager.GetUserById(userId) ?? throw new ResourceNotFoundException();
+        var item = _libraryManager.GetItemById(itemId);
+        if (item == null)
+        {
+            return NotFound();
+        }
+
+        _userDataRepository.SaveUserData(user, item, userDataDto, UserDataSaveReason.UpdateUserData);
+
+        return _userDataRepository.GetUserDataDto(item, user);
     }
 }
