@@ -16,9 +16,6 @@ jobs:
     strategy:
       matrix:
         os: ["ubuntu-latest", "macos-latest", "windows-latest"]
-        include:
-          - os: ubuntu-latest
-            openapi: true
 
     runs-on: "${{ matrix.os }}"
     steps:
@@ -45,10 +42,3 @@ jobs:
 
       # TODO - which action / tool to use to publish code coverage results?
       # - name: Publish code coverage results
-
-      - name: Publish OpenAPI Artifact
-        if: ${{ matrix.openapi }}
-        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 # v4
-        with:
-          name: "OpenAPI Spec"
-          path: "tests/Jellyfin.Server.Integration.Tests/bin/Release/net*/openapi.json"
