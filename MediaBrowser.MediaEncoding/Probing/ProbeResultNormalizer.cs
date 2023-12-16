@@ -29,7 +29,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private const string ArtistReplaceValue = " | ";
 
-        private readonly char[] _nameDelimiters = { '/', '|', ';', '\\', '&', ',' };
+        private readonly char[] _nameDelimiters = { '/', '|', ';', '\\', ',' };
 
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;
