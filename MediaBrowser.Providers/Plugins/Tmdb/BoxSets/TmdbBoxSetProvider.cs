@@ -75,12 +75,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
             var collections = new RemoteSearchResult[collectionSearchResults.Count];
             for (var i = 0; i < collectionSearchResults.Count; i++)
             {
+                var result = collectionSearchResults[i];
                 var collection = new RemoteSearchResult
                 {
-                    Name = collectionSearchResults[i].Name,
-                    SearchProviderName = Name
+                    Name = result.Name,
+                    SearchProviderName = Name,
+                    ImageUrl = _tmdbClientManager.GetPosterUrl(result.PosterPath)
                 };
-                collection.SetProviderId(MetadataProvider.Tmdb, collectionSearchResults[i].Id.ToString(CultureInfo.InvariantCulture));
+                collection.SetProviderId(MetadataProvider.Tmdb, result.Id.ToString(CultureInfo.InvariantCulture));
 
                 collections[i] = collection;
             }
