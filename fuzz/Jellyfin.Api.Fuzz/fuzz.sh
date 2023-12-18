@@ -2,7 +2,7 @@
 
 set -e
 
-dotnet build -c Release ../../Jellyfin.Api/Jellyfin.Api.csproj --output bin
+dotnet build -c Release ../../src/Jellyfin.Api/Jellyfin.Api.csproj --output bin
 sharpfuzz bin/Jellyfin.Api.dll
 cp bin/Jellyfin.Api.dll .
 

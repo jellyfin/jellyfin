@@ -36,8 +36,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Drawing.Skia", "src\Jellyfin.Drawing.Skia\Jellyfin.Drawing.Skia.csproj", "{154872D9-6C12-4007-96E3-8F70A58386CE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Api", "Jellyfin.Api\Jellyfin.Api.csproj", "{DFBEFB4C-DA19-4143-98B7-27320C7F7163}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}"
 	ProjectSection(SolutionItems) = preProject
 		tests\jellyfin-tests.ruleset = tests\jellyfin-tests.ruleset
@@ -86,6 +84,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.MediaEncoding.Hls.Tests", "tests\Jellyfin.MediaEncoding.Hls.Tests\Jellyfin.MediaEncoding.Hls.Tests.csproj", "{FE47334C-EFDE-4519-BD50-F24430FF360B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.MediaEncoding.Keyframes.Tests", "tests\Jellyfin.MediaEncoding.Keyframes.Tests\Jellyfin.MediaEncoding.Keyframes.Tests.csproj", "{24960660-DE6C-47BF-AEEF-CEE8F19FE6C2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Api", "src\Jellyfin.Api\Jellyfin.Api.csproj", "{DFBEFB4C-DA19-4143-98B7-27320C7F7163}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -145,10 +145,6 @@ Global
 		{154872D9-6C12-4007-96E3-8F70A58386CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{154872D9-6C12-4007-96E3-8F70A58386CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{154872D9-6C12-4007-96E3-8F70A58386CE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DFBEFB4C-DA19-4143-98B7-27320C7F7163}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DFBEFB4C-DA19-4143-98B7-27320C7F7163}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DFBEFB4C-DA19-4143-98B7-27320C7F7163}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DFBEFB4C-DA19-4143-98B7-27320C7F7163}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DF194677-DFD3-42AF-9F75-D44D5A416478}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DF194677-DFD3-42AF-9F75-D44D5A416478}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF194677-DFD3-42AF-9F75-D44D5A416478}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -233,6 +229,10 @@ Global
 		{24960660-DE6C-47BF-AEEF-CEE8F19FE6C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{24960660-DE6C-47BF-AEEF-CEE8F19FE6C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{24960660-DE6C-47BF-AEEF-CEE8F19FE6C2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFBEFB4C-DA19-4143-98B7-27320C7F7163}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFBEFB4C-DA19-4143-98B7-27320C7F7163}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFBEFB4C-DA19-4143-98B7-27320C7F7163}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFBEFB4C-DA19-4143-98B7-27320C7F7163}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -259,6 +259,7 @@ Global
 		{08FFF49B-F175-4807-A2B5-73B0EBD9F716} = {C9F0AB5D-F4D7-40C8-A353-3305C86D6D4C}
 		{154872D9-6C12-4007-96E3-8F70A58386CE} = {C9F0AB5D-F4D7-40C8-A353-3305C86D6D4C}
 		{0A3FCC4D-C714-4072-B90F-E374A15F9FF9} = {C9F0AB5D-F4D7-40C8-A353-3305C86D6D4C}
+		{DFBEFB4C-DA19-4143-98B7-27320C7F7163} = {C9F0AB5D-F4D7-40C8-A353-3305C86D6D4C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3448830C-EBDC-426C-85CD-7BBB9651A7FE}
