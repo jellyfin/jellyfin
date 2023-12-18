@@ -55,7 +55,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         protected override MusicAlbum Resolve(ItemResolveArgs args)
         {
             var collectionType = args.GetCollectionType();
-            var isMusicMediaFolder = collectionType == CollectionType.Music;
+            var isMusicMediaFolder = collectionType == CollectionType.music;
 
             // If there's a collection type and it's not music, don't allow it.
             if (!isMusicMediaFolder)

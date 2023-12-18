@@ -32,26 +32,26 @@ namespace Emby.Server.Implementations.Images
 
             switch (viewType)
             {
-                case CollectionType.Movies:
+                case CollectionType.movies:
                     includeItemTypes = new[] { BaseItemKind.Movie };
                     break;
-                case CollectionType.TvShows:
+                case CollectionType.tvshows:
                     includeItemTypes = new[] { BaseItemKind.Series };
                     break;
-                case CollectionType.Music:
+                case CollectionType.music:
                     includeItemTypes = new[] { BaseItemKind.MusicAlbum };
                     break;
-                case CollectionType.MusicVideos:
+                case CollectionType.musicvideos:
                     includeItemTypes = new[] { BaseItemKind.MusicVideo };
                     break;
-                case CollectionType.Books:
+                case CollectionType.books:
                     includeItemTypes = new[] { BaseItemKind.Book, BaseItemKind.AudioBook };
                     break;
-                case CollectionType.BoxSets:
+                case CollectionType.boxsets:
                     includeItemTypes = new[] { BaseItemKind.BoxSet };
                     break;
-                case CollectionType.HomeVideos:
-                case CollectionType.Photos:
+                case CollectionType.homevideos:
+                case CollectionType.photos:
                     includeItemTypes = new[] { BaseItemKind.Video, BaseItemKind.Photo };
                     break;
                 default:
@@ -59,7 +59,7 @@ namespace Emby.Server.Implementations.Images
                     break;
             }
 
-            var recursive = viewType != CollectionType.Playlists;
+            var recursive = viewType != CollectionType.playlists;
 
             return view.GetItemList(new InternalItemsQuery
             {

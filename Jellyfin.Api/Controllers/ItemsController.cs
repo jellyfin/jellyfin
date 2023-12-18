@@ -279,7 +279,7 @@ public class ItemsController : BaseJellyfinApiController
             collectionType = hasCollectionType.CollectionType;
         }
 
-        if (collectionType == CollectionType.Playlists)
+        if (collectionType == CollectionType.playlists)
         {
             recursive = true;
             includeItemTypes = new[] { BaseItemKind.Playlist };

@@ -2168,7 +2168,7 @@ namespace Emby.Server.Implementations.LiveTv
         public Folder GetInternalLiveTvFolder(CancellationToken cancellationToken)
         {
             var name = _localization.GetLocalizedString("HeaderLiveTV");
-            return _libraryManager.GetNamedView(name, CollectionType.LiveTv, name);
+            return _libraryManager.GetNamedView(name, CollectionType.livetv, name);
         }
 
         public async Task<TunerHostInfo> SaveTunerHost(TunerHostInfo info, bool dataSourceChanged = true)
