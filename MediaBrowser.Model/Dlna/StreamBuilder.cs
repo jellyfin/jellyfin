@@ -72,6 +72,8 @@ namespace MediaBrowser.Model.Dlna
 
         private StreamInfo? GetOptimalAudioStream(MediaSourceInfo item, MediaOptions options)
         {
+            CheckCompatibility(MediaType.Audio, item, options.Profile);
+
             var playlistItem = new StreamInfo
             {
                 ItemId = options.ItemId,
@@ -241,6 +243,213 @@ namespace MediaBrowser.Model.Dlna
             }
 
             return GetOptimalStream(streams, options.GetMaxBitrate(false) ?? 0);
+        }
+
+        /// <summary>
+        /// Sets compatibility errors (if any) for streams.
+        /// </summary>
+        /// <param name="mediaType">The <see cref="MediaType"/> of object for which to check compatibility.</param>
+        /// <param name="options">The <see cref="MediaOptions"/> object for which to check compatibility.</param>
+        public void CheckCompatibility(MediaType mediaType, MediaOptions options)
+        {
+            foreach (var mediaSource in options.MediaSources)
+            {
+                CheckCompatibility(mediaType, mediaSource, options.Profile);
+            }
+        }
+
+        /// <summary>
+        /// Sets compatibility errors (if any) for streams.
+        /// </summary>
+        /// <param name="mediaType">The <see cref="MediaType"/> of object for which to check compatibility.</param>
+        /// <param name="mediaSource">The <see cref="MediaSourceInfo"/>.</param>
+        /// <param name="profile">The <see cref="DeviceProfile"/>.</param>
+        public void CheckCompatibility(MediaType mediaType, MediaSourceInfo mediaSource, DeviceProfile profile)
+        {
+            foreach (var stream in mediaSource.MediaStreams)
+            {
+                if (!stream.DirectPlayErrors.HasValue)
+                {
+                    stream.DirectPlayErrors = GetCompatibility(mediaType, mediaSource, stream, profile);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets stream compatibility errors, if any.
+        /// </summary>
+        /// <param name="mediaType">The <see cref="MediaType"/> of object for which to check compatibility.</param>
+        /// <param name="mediaSource">The <see cref="MediaSourceInfo"/>.</param>
+        /// <param name="stream">The <see cref="MediaStream"/> for which to check compatibility.</param>
+        /// <param name="profile">The <see cref="DeviceProfile"/>.</param>
+        /// <returns>Stream compatibility errors, if any.</returns>
+        private TranscodeReason GetCompatibility(MediaType mediaType, MediaSourceInfo mediaSource, MediaStream stream, DeviceProfile profile)
+        {
+            switch (stream.Type)
+            {
+                case MediaStreamType.Audio:
+                    return GetCompatibilityAudio(mediaSource, stream, profile, mediaType == MediaType.Video);
+
+                case MediaStreamType.Video:
+                    return GetCompatibilityVideo(mediaSource, stream, profile);
+
+                case MediaStreamType.Subtitle:
+                    var subtitleProfile = GetSubtitleProfile(mediaSource, stream, profile.SubtitleProfiles, PlayMethod.DirectPlay, _transcoderSupport, mediaSource.Container, null);
+
+                    if (subtitleProfile.Method != SubtitleDeliveryMethod.Drop
+                        && subtitleProfile.Method != SubtitleDeliveryMethod.External
+                        && subtitleProfile.Method != SubtitleDeliveryMethod.Embed)
+                    {
+                        return TranscodeReason.SubtitleCodecNotSupported;
+                    }
+
+                    break;
+            }
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Gets video stream compatibility errors, if any.
+        /// </summary>
+        /// <param name="mediaSource">The <see cref="MediaSourceInfo"/>.</param>
+        /// <param name="videoStream">The <see cref="MediaStream"/> of the video stream.</param>
+        /// <param name="profile">The <see cref="DeviceProfile"/>.</param>
+        /// <returns>Video stream compatibility errors, if any.</returns>
+        private TranscodeReason GetCompatibilityVideo(MediaSourceInfo mediaSource, MediaStream videoStream, DeviceProfile profile)
+        {
+            string container = mediaSource.Container;
+            string videoCodec = videoStream.Codec;
+
+            bool containerSupported = false;
+            bool videoSupported = false;
+
+            foreach (var directPlayProfile in profile.DirectPlayProfiles)
+            {
+                if (directPlayProfile.Type == DlnaProfileType.Video && directPlayProfile.SupportsContainer(container))
+                {
+                    containerSupported = true;
+
+                    if (directPlayProfile.SupportsVideoCodec(videoCodec))
+                    {
+                        videoSupported = true;
+                    }
+
+                    if (containerSupported && videoSupported)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            TranscodeReason failures = default;
+
+            if (!containerSupported)
+            {
+                failures |= TranscodeReason.ContainerNotSupported;
+            }
+
+            if (!videoSupported)
+            {
+                return failures | TranscodeReason.VideoCodecNotSupported;
+            }
+
+            // Video
+            int? width = videoStream.Width;
+            int? height = videoStream.Height;
+            int? bitDepth = videoStream.BitDepth;
+            int? videoBitrate = videoStream.BitRate;
+            double? videoLevel = videoStream.Level;
+            string? videoProfile = videoStream.Profile;
+            VideoRangeType? videoRangeType = videoStream.VideoRangeType;
+            float videoFramerate = videoStream.AverageFrameRate ?? videoStream.AverageFrameRate ?? 0;
+            bool? isAnamorphic = videoStream.IsAnamorphic;
+            bool? isInterlaced = videoStream.IsInterlaced;
+            string? videoCodecTag = videoStream.CodecTag;
+            bool? isAvc = videoStream.IsAVC;
+
+            TransportStreamTimestamp? timestamp = mediaSource.Timestamp;
+            int? packetLength = videoStream.PacketLength;
+            int? refFrames = videoStream.RefFrames;
+
+            int? numAudioStreams = mediaSource.GetStreamCount(MediaStreamType.Audio);
+            int? numVideoStreams = mediaSource.GetStreamCount(MediaStreamType.Video);
+
+            var checkVideoConditions = (ProfileCondition[] conditions) =>
+                conditions.Where(applyCondition => !ConditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoRangeType, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc));
+
+            failures |= AggregateFailureConditions(
+                mediaSource,
+                profile,
+                "VideoCodecProfile",
+                profile.CodecProfiles
+                    .Where(codecProfile => codecProfile.Type == CodecType.Video &&
+                        codecProfile.ContainsAnyCodec(videoCodec, container) &&
+                        !checkVideoConditions(codecProfile.ApplyConditions).Any())
+                    .SelectMany(codecProfile => checkVideoConditions(codecProfile.Conditions)));
+
+            return failures;
+        }
+
+        /// <summary>
+        /// Gets audio stream compatibility errors, if any.
+        /// </summary>
+        /// <param name="mediaSource">The <see cref="MediaSourceInfo"/>.</param>
+        /// <param name="audioStream">The <see cref="MediaStream"/> of the audio stream.</param>
+        /// <param name="profile">The <see cref="DeviceProfile"/>.</param>
+        /// <param name="isVideo">True if source is video.</param>
+        /// <returns>Audio stream compatibility errors, if any.</returns>
+        private TranscodeReason GetCompatibilityAudio(MediaSourceInfo mediaSource, MediaStream audioStream, DeviceProfile profile, bool isVideo)
+        {
+            string container = mediaSource.Container;
+            string audioCodec = audioStream.Codec;
+            DlnaProfileType profileType = isVideo ? DlnaProfileType.Video : DlnaProfileType.Audio;
+
+            bool containerSupported = false;
+            bool audioSupported = false;
+
+            foreach (var directPlayProfile in profile.DirectPlayProfiles)
+            {
+                if (directPlayProfile.Type == profileType && directPlayProfile.SupportsContainer(container))
+                {
+                    containerSupported = true;
+
+                    if (directPlayProfile.SupportsAudioCodec(audioCodec))
+                    {
+                        audioSupported = true;
+                    }
+
+                    if (containerSupported && audioSupported)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            TranscodeReason failures = default;
+
+            if (!containerSupported)
+            {
+                failures |= TranscodeReason.ContainerNotSupported;
+            }
+
+            if (!audioSupported)
+            {
+                return failures | TranscodeReason.AudioCodecNotSupported;
+            }
+
+            var audioFailureConditions = isVideo
+                ? GetProfileConditionsForVideoAudio(profile.CodecProfiles, container, audioCodec, audioStream.Channels, audioStream.BitRate, audioStream.SampleRate, audioStream.BitDepth, audioStream.Profile, mediaSource.IsSecondaryAudio(audioStream))
+                : GetProfileConditionsForAudio(profile.CodecProfiles, container, audioCodec, audioStream.Channels, audioStream.BitRate, audioStream.SampleRate, audioStream.BitDepth, true);
+
+            failures |= AggregateFailureConditions(mediaSource, profile, "AudioCodecProfile", audioFailureConditions);
+
+            if (audioStream.IsExternal)
+            {
+                failures |= TranscodeReason.AudioIsExternal;
+            }
+
+            return failures;
         }
 
         private static StreamInfo? GetOptimalStream(List<StreamInfo> streams, long maxBitrate)
@@ -628,6 +837,8 @@ namespace MediaBrowser.Model.Dlna
         private StreamInfo BuildVideoItem(MediaSourceInfo item, MediaOptions options)
         {
             ArgumentNullException.ThrowIfNull(item);
+
+            CheckCompatibility(MediaType.Video, item, options.Profile);
 
             StreamInfo playlistItem = new StreamInfo
             {
