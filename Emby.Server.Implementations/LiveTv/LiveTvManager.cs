@@ -1101,7 +1101,7 @@ namespace Emby.Server.Implementations.LiveTv
             progress.Report(100);
         }
 
-        private async Task<Tuple<List<Guid>, List<Guid>>> RefreshChannelsInternal(ILiveTvService service, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task<Tuple<List<Guid>, List<Guid>>> RefreshChannelsInternal(ILiveTvService service, ActionableProgress<double> progress, CancellationToken cancellationToken)
         {
             progress.Report(10);
 
