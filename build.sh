@@ -110,7 +110,7 @@ fi
 
 export SOURCE_DIR="$( pwd )"
 DEFAULT_OUTPUT_DIR="${SOURCE_DIR}/../"
-if [[ "$OUTPUT_DIR" == "" ]]; then
+if [[ -z "${OUTPUT_DIR}" ]]; then
     OUTPUT_DIR=$DEFAULT_OUTPUT_DIR
 fi
 export ARTIFACT_DIR="${OUTPUT_DIR}/bin/${PLATFORM}"
