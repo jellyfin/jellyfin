@@ -11,7 +11,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// Gets or sets a value to use as the API key for accessing TMDb. This is intentionally excluded from the
         /// settings page as the API key should not need to be changed by most users.
         /// </summary>
-        public string TmdbApiKey { get; set; } = TmdbUtils.ApiKey;
+        public string TmdbApiKey { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets a value indicating whether include adult content when searching with TMDb.
