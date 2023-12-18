@@ -1,5 +1,3 @@
-#nullable disable
-
 namespace MediaBrowser.Common.Configuration
 {
     /// <summary>

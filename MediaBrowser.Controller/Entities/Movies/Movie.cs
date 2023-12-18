@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// <inheritdoc />
         [JsonIgnore]
         public IReadOnlyList<Guid> SpecialFeatureIds => GetExtras()
-            .Where(extra => extra.ExtraType != null && extra is Video)
+            .Where(extra => extra.ExtraType is not null && extra is Video)
             .Select(extra => extra.Id)
             .ToArray();
 
@@ -33,9 +33,9 @@ namespace MediaBrowser.Controller.Entities.Movies
             .ToArray();
 
         /// <summary>
-        /// Gets or sets the name of the TMDB collection.
+        /// Gets or sets the name of the TMDb collection.
         /// </summary>
-        /// <value>The name of the TMDB collection.</value>
+        /// <value>The name of the TMDb collection.</value>
         public string TmdbCollectionName { get; set; }
 
         [JsonIgnore]

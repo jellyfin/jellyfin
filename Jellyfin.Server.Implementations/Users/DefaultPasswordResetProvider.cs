@@ -54,7 +54,8 @@ namespace Jellyfin.Server.Implementations.Users
             foreach (var resetFile in Directory.EnumerateFiles(_passwordResetFileBaseDir, $"{BaseResetFileName}*"))
             {
                 SerializablePasswordReset spr;
-                await using (var str = AsyncFile.OpenRead(resetFile))
+                var str = AsyncFile.OpenRead(resetFile);
+                await using (str.ConfigureAwait(false))
                 {
                     spr = await JsonSerializer.DeserializeAsync<SerializablePasswordReset>(str).ConfigureAwait(false)
                         ?? throw new ResourceNotFoundException($"Provided path ({resetFile}) is not valid.");
@@ -67,7 +68,7 @@ namespace Jellyfin.Server.Implementations.Users
                 else if (string.Equals(
                     spr.Pin.Replace("-", string.Empty, StringComparison.Ordinal),
                     pin.Replace("-", string.Empty, StringComparison.Ordinal),
-                    StringComparison.OrdinalIgnoreCase))
+                    StringComparison.Ordinal))
                 {
                     var resetUser = userManager.GetUserByName(spr.UserName)
                         ?? throw new ResourceNotFoundException($"User with a username of {spr.UserName} not found");
@@ -107,12 +108,11 @@ namespace Jellyfin.Server.Implementations.Users
                 UserName = user.Username
             };
 
-            await using (FileStream fileStream = AsyncFile.OpenWrite(filePath))
+            FileStream fileStream = AsyncFile.OpenWrite(filePath);
+            await using (fileStream.ConfigureAwait(false))
             {
                 await JsonSerializer.SerializeAsync(fileStream, spr).ConfigureAwait(false);
             }
-
-            user.EasyPassword = pin;
 
             return new ForgotPasswordResult
             {

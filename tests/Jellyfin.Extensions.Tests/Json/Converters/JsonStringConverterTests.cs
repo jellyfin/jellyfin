@@ -32,7 +32,7 @@ namespace Jellyfin.Extensions.Tests.Json.Converters
             const string? input = "123";
             const int output = 123;
             var deserialized = JsonSerializer.Deserialize<int>(input, _jsonSerializerOptions);
-            Assert.Equal(deserialized, output);
+            Assert.Equal(output, deserialized);
         }
     }
 }

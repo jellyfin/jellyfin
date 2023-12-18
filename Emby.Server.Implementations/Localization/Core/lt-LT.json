@@ -20,9 +20,9 @@
     "HeaderFavoriteAlbums": "Mėgstami Albumai",
     "HeaderFavoriteArtists": "Mėgstami Atlikėjai",
     "HeaderFavoriteEpisodes": "Mėgstamiausios serijos",
-    "HeaderFavoriteShows": "Mėgstamiausi serialai",
-    "HeaderFavoriteSongs": "Mėgstamos dainos",
-    "HeaderLiveTV": "TV gyvai",
+    "HeaderFavoriteShows": "Mėgstamiausios TV Laidos",
+    "HeaderFavoriteSongs": "Mėgstamos Dainos",
+    "HeaderLiveTV": "Tiesioginė TV",
     "HeaderNextUp": "Toliau eilėje",
     "HeaderRecordingGroups": "Įrašų grupės",
     "HomeVideos": "Namų vaizdo įrašai",
@@ -39,7 +39,7 @@
     "MixedContent": "Mixed content",
     "Movies": "Filmai",
     "Music": "Muzika",
-    "MusicVideos": "Muzikiniai klipai",
+    "MusicVideos": "Muzikiniai vaizdo įrašai",
     "NameInstallFailed": "{0} diegimo klaida",
     "NameSeasonNumber": "Sezonas {0}",
     "NameSeasonUnknown": "Sezonas neatpažintas",
@@ -123,5 +123,8 @@
     "TaskKeyframeExtractorDescription": "Iš vaizdo įrašo paruošia reikšminius kadrus, kad būtų sukuriamas tikslenis HLS grojaraštis. Šios užduoties vykdymas gali ilgai užtrukti.",
     "TaskKeyframeExtractor": "Pagrindinių kadrų ištraukėjas",
     "TaskOptimizeDatabaseDescription": "Suspaudžia duomenų bazę ir atlaisvina vietą. Paleidžiant šią užduotį, po bibliotekos skenavimo arba kitų veiksmų kurie galimai modifikuoja duomenų bazė, gali pagerinti greitaveiką.",
-    "External": "Išorinis"
+    "External": "Išorinis",
+    "HearingImpaired": "Su klausos sutrikimais",
+    "TaskRefreshTrickplayImages": "Generuoti Trickplay atvaizdus",
+    "TaskRefreshTrickplayImagesDescription": "Sukuria trickplay peržiūras vaizdo įrašams įgalintose bibliotekose."
 }

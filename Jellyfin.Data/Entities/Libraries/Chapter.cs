@@ -17,10 +17,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <param name="startTime">The start time for this chapter.</param>
         public Chapter(string language, long startTime)
         {
-            if (string.IsNullOrEmpty(language))
-            {
-                throw new ArgumentNullException(nameof(language));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(language);
 
             Language = language;
             StartTime = startTime;

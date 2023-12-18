@@ -56,5 +56,12 @@ namespace MediaBrowser.Controller.Collections
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
         IEnumerable<BaseItem> CollapseItemsWithinBoxSets(IEnumerable<BaseItem> items, User user);
+
+        /// <summary>
+        /// Gets the folder where collections are stored.
+        /// </summary>
+        /// <param name="createIfNeeded">Will create the collection folder on the storage if set to true.</param>
+        /// <returns>The folder instance referencing the collection storage.</returns>
+        Task<Folder?> GetCollectionsFolder(bool createIfNeeded);
     }
 }

@@ -105,7 +105,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (Rating != null)
+                if (Rating is not null)
                 {
                     return Rating >= MinLikeValue;
                 }

@@ -10,6 +10,7 @@ namespace Jellyfin.Naming.Tests.Video
 
         [Theory]
         [InlineData("Super movie 480p.mp4", "Super movie")]
+        [InlineData("Super movie Multi.mp4", "Super movie")]
         [InlineData("Super movie 480p 2001.mp4", "Super movie")]
         [InlineData("Super movie [480p].mp4", "Super movie")]
         [InlineData("480 Super movie [tmdbid=12345].mp4", "480 Super movie")]

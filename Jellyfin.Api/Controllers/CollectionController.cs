@@ -4,113 +4,108 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.ModelBinders;
+using MediaBrowser.Common.Api;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Collections;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Jellyfin.Api.Controllers
+namespace Jellyfin.Api.Controllers;
+
+/// <summary>
+/// The collection controller.
+/// </summary>
+[Route("Collections")]
+[Authorize(Policy = Policies.CollectionManagement)]
+public class CollectionController : BaseJellyfinApiController
 {
+    private readonly ICollectionManager _collectionManager;
+    private readonly IDtoService _dtoService;
+
     /// <summary>
-    /// The collection controller.
+    /// Initializes a new instance of the <see cref="CollectionController"/> class.
     /// </summary>
-    [Route("Collections")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
-    public class CollectionController : BaseJellyfinApiController
+    /// <param name="collectionManager">Instance of <see cref="ICollectionManager"/> interface.</param>
+    /// <param name="dtoService">Instance of <see cref="IDtoService"/> interface.</param>
+    public CollectionController(
+        ICollectionManager collectionManager,
+        IDtoService dtoService)
     {
-        private readonly ICollectionManager _collectionManager;
-        private readonly IDtoService _dtoService;
-        private readonly IAuthorizationContext _authContext;
+        _collectionManager = collectionManager;
+        _dtoService = dtoService;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CollectionController"/> class.
-        /// </summary>
-        /// <param name="collectionManager">Instance of <see cref="ICollectionManager"/> interface.</param>
-        /// <param name="dtoService">Instance of <see cref="IDtoService"/> interface.</param>
-        /// <param name="authContext">Instance of <see cref="IAuthorizationContext"/> interface.</param>
-        public CollectionController(
-            ICollectionManager collectionManager,
-            IDtoService dtoService,
-            IAuthorizationContext authContext)
+    /// <summary>
+    /// Creates a new collection.
+    /// </summary>
+    /// <param name="name">The name of the collection.</param>
+    /// <param name="ids">Item Ids to add to the collection.</param>
+    /// <param name="parentId">Optional. Create the collection within a specific folder.</param>
+    /// <param name="isLocked">Whether or not to lock the new collection.</param>
+    /// <response code="200">Collection created.</response>
+    /// <returns>A <see cref="CollectionCreationOptions"/> with information about the new collection.</returns>
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<CollectionCreationResult>> CreateCollection(
+        [FromQuery] string? name,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] ids,
+        [FromQuery] Guid? parentId,
+        [FromQuery] bool isLocked = false)
+    {
+        var userId = User.GetUserId();
+
+        var item = await _collectionManager.CreateCollectionAsync(new CollectionCreationOptions
         {
-            _collectionManager = collectionManager;
-            _dtoService = dtoService;
-            _authContext = authContext;
-        }
+            IsLocked = isLocked,
+            Name = name,
+            ParentId = parentId,
+            ItemIdList = ids,
+            UserIds = new[] { userId }
+        }).ConfigureAwait(false);
 
-        /// <summary>
-        /// Creates a new collection.
-        /// </summary>
-        /// <param name="name">The name of the collection.</param>
-        /// <param name="ids">Item Ids to add to the collection.</param>
-        /// <param name="parentId">Optional. Create the collection within a specific folder.</param>
-        /// <param name="isLocked">Whether or not to lock the new collection.</param>
-        /// <response code="200">Collection created.</response>
-        /// <returns>A <see cref="CollectionCreationOptions"/> with information about the new collection.</returns>
-        [HttpPost]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<CollectionCreationResult>> CreateCollection(
-            [FromQuery] string? name,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] ids,
-            [FromQuery] Guid? parentId,
-            [FromQuery] bool isLocked = false)
+        var dtoOptions = new DtoOptions().AddClientFields(User);
+
+        var dto = _dtoService.GetBaseItemDto(item, dtoOptions);
+
+        return new CollectionCreationResult
         {
-            var userId = (await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false)).UserId;
+            Id = dto.Id
+        };
+    }
 
-            var item = await _collectionManager.CreateCollectionAsync(new CollectionCreationOptions
-            {
-                IsLocked = isLocked,
-                Name = name,
-                ParentId = parentId,
-                ItemIdList = ids,
-                UserIds = new[] { userId }
-            }).ConfigureAwait(false);
+    /// <summary>
+    /// Adds items to a collection.
+    /// </summary>
+    /// <param name="collectionId">The collection id.</param>
+    /// <param name="ids">Item ids, comma delimited.</param>
+    /// <response code="204">Items added to collection.</response>
+    /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+    [HttpPost("{collectionId}/Items")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<ActionResult> AddToCollection(
+        [FromRoute, Required] Guid collectionId,
+        [FromQuery, Required, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids)
+    {
+        await _collectionManager.AddToCollectionAsync(collectionId, ids).ConfigureAwait(true);
+        return NoContent();
+    }
 
-            var dtoOptions = new DtoOptions().AddClientFields(Request);
-
-            var dto = _dtoService.GetBaseItemDto(item, dtoOptions);
-
-            return new CollectionCreationResult
-            {
-                Id = dto.Id
-            };
-        }
-
-        /// <summary>
-        /// Adds items to a collection.
-        /// </summary>
-        /// <param name="collectionId">The collection id.</param>
-        /// <param name="ids">Item ids, comma delimited.</param>
-        /// <response code="204">Items added to collection.</response>
-        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
-        [HttpPost("{collectionId}/Items")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> AddToCollection(
-            [FromRoute, Required] Guid collectionId,
-            [FromQuery, Required, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids)
-        {
-            await _collectionManager.AddToCollectionAsync(collectionId, ids).ConfigureAwait(true);
-            return NoContent();
-        }
-
-        /// <summary>
-        /// Removes items from a collection.
-        /// </summary>
-        /// <param name="collectionId">The collection id.</param>
-        /// <param name="ids">Item ids, comma delimited.</param>
-        /// <response code="204">Items removed from collection.</response>
-        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
-        [HttpDelete("{collectionId}/Items")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> RemoveFromCollection(
-            [FromRoute, Required] Guid collectionId,
-            [FromQuery, Required, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids)
-        {
-            await _collectionManager.RemoveFromCollectionAsync(collectionId, ids).ConfigureAwait(false);
-            return NoContent();
-        }
+    /// <summary>
+    /// Removes items from a collection.
+    /// </summary>
+    /// <param name="collectionId">The collection id.</param>
+    /// <param name="ids">Item ids, comma delimited.</param>
+    /// <response code="204">Items removed from collection.</response>
+    /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+    [HttpDelete("{collectionId}/Items")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<ActionResult> RemoveFromCollection(
+        [FromRoute, Required] Guid collectionId,
+        [FromQuery, Required, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids)
+    {
+        await _collectionManager.RemoveFromCollectionAsync(collectionId, ids).ConfigureAwait(false);
+        return NoContent();
     }
 }

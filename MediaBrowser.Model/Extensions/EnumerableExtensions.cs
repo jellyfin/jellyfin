@@ -24,24 +24,27 @@ namespace MediaBrowser.Model.Extensions
                 requestedLanguage = "en";
             }
 
-            var isRequestedLanguageEn = string.Equals(requestedLanguage, "en", StringComparison.OrdinalIgnoreCase);
-
             return remoteImageInfos.OrderByDescending(i =>
                 {
+                    // Image priority ordering:
+                    //  - Images that match the requested language
+                    //  - Images with no language
+                    //  - TODO: Images that match the original language
+                    //  - Images in English
+                    //  - Images that don't match the requested language
+
                     if (string.Equals(requestedLanguage, i.Language, StringComparison.OrdinalIgnoreCase))
                     {
-                        return 3;
+                        return 4;
                     }
 
                     if (string.IsNullOrEmpty(i.Language))
                     {
-                        // Assume empty image language is likely to be English.
-                        return isRequestedLanguageEn ? 3 : 2;
+                        return 3;
                     }
 
-                    if (!isRequestedLanguageEn && string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase))
                     {
-                        // Prioritize English over non-requested languages.
                         return 2;
                     }
 

@@ -1,7 +1,3 @@
-#nullable disable
-
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,26 +12,36 @@ using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.People
 {
+    /// <summary>
+    /// Person image provider powered by TMDb.
+    /// </summary>
     public class TmdbPersonProvider : IRemoteMetadataProvider<Person, PersonLookupInfo>
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly TmdbClientManager _tmdbClientManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TmdbPersonProvider"/> class.
+        /// </summary>
+        /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
+        /// <param name="tmdbClientManager">The <see cref="TmdbClientManager"/>.</param>
         public TmdbPersonProvider(IHttpClientFactory httpClientFactory, TmdbClientManager tmdbClientManager)
         {
             _httpClientFactory = httpClientFactory;
             _tmdbClientManager = tmdbClientManager;
         }
 
+        /// <inheritdoc />
         public string Name => TmdbUtils.ProviderName;
 
+        /// <inheritdoc />
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(PersonLookupInfo searchInfo, CancellationToken cancellationToken)
         {
             if (searchInfo.TryGetProviderId(MetadataProvider.Tmdb, out var personTmdbId))
             {
                 var personResult = await _tmdbClientManager.GetPersonAsync(int.Parse(personTmdbId, CultureInfo.InvariantCulture), searchInfo.MetadataLanguage, cancellationToken).ConfigureAwait(false);
 
-                if (personResult != null)
+                if (personResult is not null)
                 {
                     var result = new RemoteSearchResult
                     {
@@ -44,7 +50,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                         Overview = personResult.Biography
                     };
 
-                    if (personResult.Images?.Profiles != null && personResult.Images.Profiles.Count > 0)
+                    if (personResult.Images?.Profiles is not null && personResult.Images.Profiles.Count > 0)
                     {
                         result.ImageUrl = _tmdbClientManager.GetProfileUrl(personResult.Images.Profiles[0].FilePath);
                     }
@@ -61,7 +67,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
 
             var personSearchResult = await _tmdbClientManager.SearchPersonAsync(searchInfo.Name, cancellationToken).ConfigureAwait(false);
 
-            var remoteSearchResults = new List<RemoteSearchResult>();
+            var remoteSearchResults = new RemoteSearchResult[personSearchResult.Count];
             for (var i = 0; i < personSearchResult.Count; i++)
             {
                 var person = personSearchResult[i];
@@ -73,12 +79,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                 };
 
                 remoteSearchResult.SetProviderId(MetadataProvider.Tmdb, person.Id.ToString(CultureInfo.InvariantCulture));
-                remoteSearchResults.Add(remoteSearchResult);
+                remoteSearchResults[i] = remoteSearchResult;
             }
 
             return remoteSearchResults;
         }
 
+        /// <inheritdoc />
         public async Task<MetadataResult<Person>> GetMetadata(PersonLookupInfo info, CancellationToken cancellationToken)
         {
             var personTmdbId = Convert.ToInt32(info.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
@@ -98,6 +105,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
             if (personTmdbId > 0)
             {
                 var person = await _tmdbClientManager.GetPersonAsync(personTmdbId, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                if (person is null)
+                {
+                    return result;
+                }
 
                 result.HasMetadata = true;
 
@@ -131,6 +142,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
             return result;
         }
 
+        /// <inheritdoc />
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);

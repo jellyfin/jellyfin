@@ -27,9 +27,9 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
         }
 
         /// <summary>
-        /// Gets the playlist identifiers ot the items.
+        /// Gets the playlist identifiers of the items.
         /// </summary>
-        /// <value>The playlist identifiers ot the items.</value>
+        /// <value>The playlist identifiers of the items.</value>
         public IReadOnlyList<Guid> PlaylistItemIds { get; }
 
         /// <summary>

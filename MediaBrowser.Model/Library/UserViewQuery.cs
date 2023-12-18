@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
+using Jellyfin.Data.Enums;
 
 namespace MediaBrowser.Model.Library
 {
@@ -9,7 +10,7 @@ namespace MediaBrowser.Model.Library
         public UserViewQuery()
         {
             IncludeExternalContent = true;
-            PresetViews = Array.Empty<string>();
+            PresetViews = Array.Empty<CollectionType?>();
         }
 
         /// <summary>
@@ -30,6 +31,6 @@ namespace MediaBrowser.Model.Library
         /// <value><c>true</c> if [include hidden]; otherwise, <c>false</c>.</value>
         public bool IncludeHidden { get; set; }
 
-        public string[] PresetViews { get; set; }
+        public CollectionType?[] PresetViews { get; set; }
     }
 }

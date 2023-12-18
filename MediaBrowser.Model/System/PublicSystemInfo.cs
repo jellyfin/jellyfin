@@ -1,6 +1,8 @@
 #nullable disable
 #pragma warning disable CS1591
 
+using System;
+
 namespace MediaBrowser.Model.System
 {
     public class PublicSystemInfo
@@ -32,7 +34,8 @@ namespace MediaBrowser.Model.System
         /// Gets or sets the operating system.
         /// </summary>
         /// <value>The operating system.</value>
-        public string OperatingSystem { get; set; }
+        [Obsolete("This is no longer set")]
+        public string OperatingSystem { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the id.

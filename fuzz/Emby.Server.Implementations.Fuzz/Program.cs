@@ -6,6 +6,7 @@ using Emby.Server.Implementations.Library;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using SharpFuzz;
 
@@ -54,8 +55,16 @@ namespace Emby.Server.Implementations.Fuzz
             appHost.Setup(x => x.ReverseVirtualPath(It.IsAny<string>()))
                 .Returns((string x) => x.Replace(MetaDataPath, VirtualMetaDataPath, StringComparison.Ordinal));
 
+            var configSection = new Mock<IConfigurationSection>();
+            configSection.SetupGet(x => x[It.Is<string>(s => s == MediaBrowser.Controller.Extensions.ConfigurationExtensions.SqliteCacheSizeKey)])
+                .Returns("0");
+            var config = new Mock<IConfiguration>();
+            config.Setup(x => x.GetSection(It.Is<string>(s => s == MediaBrowser.Controller.Extensions.ConfigurationExtensions.SqliteCacheSizeKey)))
+                .Returns(configSection.Object);
+
             IFixture fixture = new Fixture().Customize(new AutoMoqCustomization { ConfigureMembers = true });
             fixture.Inject(appHost);
+            fixture.Inject(config);
             return fixture.Create<SqliteItemRepository>();
         }
     }

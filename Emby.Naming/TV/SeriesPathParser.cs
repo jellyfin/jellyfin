@@ -28,7 +28,7 @@ namespace Emby.Naming.TV
                 }
             }
 
-            if (result != null)
+            if (result is not null)
             {
                 if (!string.IsNullOrEmpty(result.SeriesName))
                 {

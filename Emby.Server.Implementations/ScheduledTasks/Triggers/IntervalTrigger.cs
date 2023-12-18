@@ -50,7 +50,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Triggers
 
             DateTime triggerDate;
 
-            if (lastResult == null)
+            if (lastResult is null)
             {
                 // Task has never been completed before
                 triggerDate = DateTime.UtcNow.AddHours(1);
@@ -100,7 +100,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Triggers
         {
             DisposeTimer();
 
-            if (Triggered != null)
+            if (Triggered is not null)
             {
                 _lastStartDate = DateTime.UtcNow;
                 Triggered(this, EventArgs.Empty);

@@ -42,7 +42,7 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 var activeRecordingInfo = _liveTvManager.GetActiveRecordingInfo(item.Path);
 
-                if (string.IsNullOrEmpty(item.Path) || activeRecordingInfo != null)
+                if (string.IsNullOrEmpty(item.Path) || activeRecordingInfo is not null)
                 {
                     return GetMediaSourcesInternal(item, activeRecordingInfo, cancellationToken);
                 }
@@ -59,7 +59,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             try
             {
-                if (activeRecordingInfo != null)
+                if (activeRecordingInfo is not null)
                 {
                     sources = await EmbyTV.EmbyTV.Current.GetRecordingStreamMediaSources(activeRecordingInfo, cancellationToken)
                         .ConfigureAwait(false);

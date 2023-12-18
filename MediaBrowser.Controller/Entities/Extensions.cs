@@ -1,5 +1,3 @@
-#nullable disable
-
 using System;
 using System.Linq;
 using Jellyfin.Extensions;
@@ -19,14 +17,11 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="url">Trailer URL.</param>
         public static void AddTrailerUrl(this BaseItem item, string url)
         {
-            if (string.IsNullOrEmpty(url))
-            {
-                throw new ArgumentNullException(nameof(url));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(url);
 
             var current = item.RemoteTrailers.FirstOrDefault(i => string.Equals(i.Url, url, StringComparison.OrdinalIgnoreCase));
 
-            if (current == null)
+            if (current is null)
             {
                 var mediaUrl = new MediaUrl
                 {

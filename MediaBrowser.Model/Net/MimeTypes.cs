@@ -117,7 +117,9 @@ namespace MediaBrowser.Model.Net
 
             // Type image
             { "image/jpeg", ".jpg" },
+            { "image/tiff", ".tiff" },
             { "image/x-png", ".png" },
+            { "image/x-icon", ".ico" },
 
             // Type text
             { "text/plain", ".txt" },
@@ -140,10 +142,7 @@ namespace MediaBrowser.Model.Net
         [return: NotNullIfNotNull("defaultValue")]
         public static string? GetMimeType(string filename, string? defaultValue = null)
         {
-            if (filename.Length == 0)
-            {
-                throw new ArgumentException("String can't be empty.", nameof(filename));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(filename);
 
             var ext = Path.GetExtension(filename);
 
@@ -168,10 +167,7 @@ namespace MediaBrowser.Model.Net
 
         public static string? ToExtension(string mimeType)
         {
-            if (mimeType.Length == 0)
-            {
-                throw new ArgumentException("String can't be empty.", nameof(mimeType));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(mimeType);
 
             // handle text/html; charset=UTF-8
             mimeType = mimeType.AsSpan().LeftPart(';').ToString();
@@ -184,5 +180,8 @@ namespace MediaBrowser.Model.Net
             var extension = Model.MimeTypes.GetMimeTypeExtensions(mimeType).FirstOrDefault();
             return string.IsNullOrEmpty(extension) ? null : "." + extension;
         }
+
+        public static bool IsImage(ReadOnlySpan<char> mimeType)
+            => mimeType.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
     }
 }

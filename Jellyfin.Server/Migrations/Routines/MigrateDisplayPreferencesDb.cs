@@ -4,14 +4,16 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Emby.Server.Implementations.Data;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SQLitePCL.pretty;
 
 namespace Jellyfin.Server.Migrations.Routines
 {
@@ -24,7 +26,7 @@ namespace Jellyfin.Server.Migrations.Routines
 
         private readonly ILogger<MigrateDisplayPreferencesDb> _logger;
         private readonly IServerApplicationPaths _paths;
-        private readonly JellyfinDbProvider _provider;
+        private readonly IDbContextFactory<JellyfinDbContext> _provider;
         private readonly JsonSerializerOptions _jsonOptions;
         private readonly IUserManager _userManager;
 
@@ -38,7 +40,7 @@ namespace Jellyfin.Server.Migrations.Routines
         public MigrateDisplayPreferencesDb(
             ILogger<MigrateDisplayPreferencesDb> logger,
             IServerApplicationPaths paths,
-            JellyfinDbProvider provider,
+            IDbContextFactory<JellyfinDbContext> provider,
             IUserManager userManager)
         {
             _logger = logger;
@@ -82,22 +84,23 @@ namespace Jellyfin.Server.Migrations.Routines
             var displayPrefs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var customDisplayPrefs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var dbFilePath = Path.Combine(_paths.DataPath, DbFilename);
-            using (var connection = SQLite3.Open(dbFilePath, ConnectionFlags.ReadOnly, null))
+            using (var connection = new SqliteConnection($"Filename={dbFilePath}"))
             {
-                using var dbContext = _provider.CreateContext();
+                connection.Open();
+                using var dbContext = _provider.CreateDbContext();
 
                 var results = connection.Query("SELECT * FROM userdisplaypreferences");
                 foreach (var result in results)
                 {
-                    var dto = JsonSerializer.Deserialize<DisplayPreferencesDto>(result[3].ToBlob(), _jsonOptions);
-                    if (dto == null)
+                    var dto = JsonSerializer.Deserialize<DisplayPreferencesDto>(result.GetStream(3), _jsonOptions);
+                    if (dto is null)
                     {
                         continue;
                     }
 
-                    var itemId = new Guid(result[1].ToBlob());
-                    var dtoUserId = new Guid(result[1].ToBlob());
-                    var client = result[2].ToString();
+                    var itemId = result.GetGuid(1);
+                    var dtoUserId = itemId;
+                    var client = result.GetString(2);
                     var displayPreferencesKey = $"{dtoUserId}|{itemId}|{client}";
                     if (displayPrefs.Contains(displayPreferencesKey))
                     {
@@ -107,7 +110,7 @@ namespace Jellyfin.Server.Migrations.Routines
 
                     displayPrefs.Add(displayPreferencesKey);
                     var existingUser = _userManager.GetUserById(dtoUserId);
-                    if (existingUser == null)
+                    if (existingUser is null)
                     {
                         _logger.LogWarning("User with ID {UserId} does not exist in the database, skipping migration.", dtoUserId);
                         continue;
@@ -129,12 +132,10 @@ namespace Jellyfin.Server.Migrations.Routines
                         SkipForwardLength = dto.CustomPrefs.TryGetValue("skipForwardLength", out var length) && int.TryParse(length, out var skipForwardLength)
                             ? skipForwardLength
                             : 30000,
-                        SkipBackwardLength = dto.CustomPrefs.TryGetValue("skipBackLength", out length) && !string.IsNullOrEmpty(length) && int.TryParse(length, out var skipBackwardLength)
+                        SkipBackwardLength = dto.CustomPrefs.TryGetValue("skipBackLength", out length) && int.TryParse(length, out var skipBackwardLength)
                             ? skipBackwardLength
                             : 10000,
-                        EnableNextVideoInfoOverlay = dto.CustomPrefs.TryGetValue("enableNextVideoInfoOverlay", out var enabled) && !string.IsNullOrEmpty(enabled)
-                            ? bool.Parse(enabled)
-                            : true,
+                        EnableNextVideoInfoOverlay = !dto.CustomPrefs.TryGetValue("enableNextVideoInfoOverlay", out var enabled) || string.IsNullOrEmpty(enabled) || bool.Parse(enabled),
                         DashboardTheme = dto.CustomPrefs.TryGetValue("dashboardtheme", out var theme) ? theme : string.Empty,
                         TvHome = dto.CustomPrefs.TryGetValue("tvhome", out var home) ? home : string.Empty
                     };

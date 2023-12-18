@@ -17,10 +17,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <param name="metadataProvider">The metadata provider.</param>
         public MetadataProviderId(string providerId, MetadataProvider metadataProvider)
         {
-            if (string.IsNullOrEmpty(providerId))
-            {
-                throw new ArgumentNullException(nameof(providerId));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(providerId);
 
             ProviderId = providerId;
             MetadataProvider = metadataProvider;

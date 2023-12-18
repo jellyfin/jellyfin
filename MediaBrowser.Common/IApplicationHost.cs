@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MediaBrowser.Common
@@ -36,22 +35,15 @@ namespace MediaBrowser.Common
         string SystemId { get; }
 
         /// <summary>
-        /// Gets a value indicating whether this instance has pending kernel reload.
+        /// Gets a value indicating whether this instance has pending changes requiring a restart.
         /// </summary>
-        /// <value><c>true</c> if this instance has pending kernel reload; otherwise, <c>false</c>.</value>
+        /// <value><c>true</c> if this instance has a pending restart; otherwise, <c>false</c>.</value>
         bool HasPendingRestart { get; }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is currently shutting down.
+        /// Gets or sets a value indicating whether the application should restart.
         /// </summary>
-        /// <value><c>true</c> if this instance is shutting down; otherwise, <c>false</c>.</value>
-        bool IsShuttingDown { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance can self restart.
-        /// </summary>
-        /// <value><c>true</c> if this instance can self restart; otherwise, <c>false</c>.</value>
-        bool CanSelfRestart { get; }
+        bool ShouldRestart { get; set; }
 
         /// <summary>
         /// Gets the application version.
@@ -94,11 +86,6 @@ namespace MediaBrowser.Common
         void NotifyPendingRestart();
 
         /// <summary>
-        /// Restarts this instance.
-        /// </summary>
-        void Restart();
-
-        /// <summary>
         /// Gets the exports.
         /// </summary>
         /// <typeparam name="T">The type.</typeparam>
@@ -128,12 +115,6 @@ namespace MediaBrowser.Common
         /// <typeparam name="T">The <c>Type</c>.</typeparam>
         /// <returns>``0.</returns>
         T Resolve<T>();
-
-        /// <summary>
-        /// Shuts down.
-        /// </summary>
-        /// <returns>A task.</returns>
-        Task Shutdown();
 
         /// <summary>
         /// Initializes this instance.

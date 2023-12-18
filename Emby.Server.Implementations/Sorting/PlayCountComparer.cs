@@ -1,6 +1,7 @@
 #nullable disable
 
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Sorting;
@@ -23,7 +24,7 @@ namespace Emby.Server.Implementations.Sorting
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name => ItemSortBy.PlayCount;
+        public ItemSortBy Type => ItemSortBy.PlayCount;
 
         /// <summary>
         /// Gets or sets the user data repository.
@@ -57,7 +58,7 @@ namespace Emby.Server.Implementations.Sorting
         {
             var userdata = UserDataRepository.GetUserData(User, x);
 
-            return userdata == null ? 0 : userdata.PlayCount;
+            return userdata is null ? 0 : userdata.PlayCount;
         }
     }
 }

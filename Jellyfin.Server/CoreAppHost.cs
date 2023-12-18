@@ -1,17 +1,17 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
-using Emby.Drawing;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.Session;
 using Jellyfin.Api.WebSocketListeners;
+using Jellyfin.Drawing;
 using Jellyfin.Drawing.Skia;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Activity;
 using Jellyfin.Server.Implementations.Devices;
 using Jellyfin.Server.Implementations.Events;
 using Jellyfin.Server.Implementations.Security;
+using Jellyfin.Server.Implementations.Trickplay;
 using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.BaseItemManager;
@@ -19,10 +19,12 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Lyrics;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
+using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.Activity;
-using Microsoft.EntityFrameworkCore;
+using MediaBrowser.Providers.Lyric;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -70,20 +72,15 @@ namespace Jellyfin.Server
                 Logger.LogWarning("Skia not available. Will fallback to {ImageEncoder}.", nameof(NullImageEncoder));
             }
 
-            serviceCollection.AddDbContextPool<JellyfinDb>(
-                 options => options
-                    .UseLoggerFactory(LoggerFactory)
-                    .UseSqlite($"Filename={Path.Combine(ApplicationPaths.DataPath, "jellyfin.db")}"));
-
             serviceCollection.AddEventServices();
             serviceCollection.AddSingleton<IBaseItemManager, BaseItemManager>();
             serviceCollection.AddSingleton<IEventManager, EventManager>();
-            serviceCollection.AddSingleton<JellyfinDbProvider>();
 
             serviceCollection.AddSingleton<IActivityManager, ActivityManager>();
             serviceCollection.AddSingleton<IUserManager, UserManager>();
-            serviceCollection.AddSingleton<IDisplayPreferencesManager, DisplayPreferencesManager>();
+            serviceCollection.AddScoped<IDisplayPreferencesManager, DisplayPreferencesManager>();
             serviceCollection.AddSingleton<IDeviceManager, DeviceManager>();
+            serviceCollection.AddSingleton<ITrickplayManager, TrickplayManager>();
 
             // TODO search the assemblies instead of adding them manually?
             serviceCollection.AddSingleton<IWebSocketListener, SessionWebSocketListener>();
@@ -95,11 +92,18 @@ namespace Jellyfin.Server
 
             serviceCollection.AddScoped<IAuthenticationManager, AuthenticationManager>();
 
+            foreach (var type in GetExportTypes<ILyricProvider>())
+            {
+                serviceCollection.AddSingleton(typeof(ILyricProvider), type);
+            }
+
+            foreach (var type in GetExportTypes<ILyricParser>())
+            {
+                serviceCollection.AddSingleton(typeof(ILyricParser), type);
+            }
+
             base.RegisterServices(serviceCollection);
         }
-
-        /// <inheritdoc />
-        protected override void RestartInternal() => Program.Restart();
 
         /// <inheritdoc />
         protected override IEnumerable<Assembly> GetAssembliesWithPartsInternal()
@@ -108,10 +112,7 @@ namespace Jellyfin.Server
             yield return typeof(CoreAppHost).Assembly;
 
             // Jellyfin.Server.Implementations
-            yield return typeof(JellyfinDb).Assembly;
+            yield return typeof(JellyfinDbContext).Assembly;
         }
-
-        /// <inheritdoc />
-        protected override void ShutdownInternal() => Program.Shutdown();
     }
 }

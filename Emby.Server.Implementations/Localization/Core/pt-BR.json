@@ -123,5 +123,8 @@
     "TaskOptimizeDatabase": "Otimizar base de dados",
     "TaskKeyframeExtractor": "Extrator de quadro-chave",
     "TaskKeyframeExtractorDescription": "Extrai quadros-chave de arquivos de vídeo para criar listas de reprodução HLS mais precisas. Esta tarefa pode ser executada por um longo tempo.",
-    "External": "Externo"
+    "External": "Externo",
+    "HearingImpaired": "Deficiência Auditiva",
+    "TaskRefreshTrickplayImages": "Gerar imagens Trickplay",
+    "TaskRefreshTrickplayImagesDescription": "Cria prévias Trickplay para vídeos em bibliotecas em que o recurso está habilitado."
 }

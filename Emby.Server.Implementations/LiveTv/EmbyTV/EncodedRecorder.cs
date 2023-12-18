@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -207,7 +208,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             // var audioChannels = 2;
             // var audioStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
-            // if (audioStream != null)
+            // if (audioStream is not null)
             // {
             //    audioChannels = audioStream.Channels ?? audioChannels;
             // }
@@ -297,7 +298,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 else
                 {
                     _taskCompletionSource.TrySetException(
-                        new Exception(
+                        new FfmpegException(
                             string.Format(
                                 CultureInfo.InvariantCulture,
                                 "Recording for {0} failed. Exit code {1}",

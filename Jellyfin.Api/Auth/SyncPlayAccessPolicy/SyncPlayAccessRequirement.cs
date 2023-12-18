@@ -1,12 +1,12 @@
-﻿using Jellyfin.Data.Enums;
-using Microsoft.AspNetCore.Authorization;
+﻿using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
+using Jellyfin.Data.Enums;
 
 namespace Jellyfin.Api.Auth.SyncPlayAccessPolicy
 {
     /// <summary>
     /// The default authorization requirement.
     /// </summary>
-    public class SyncPlayAccessRequirement : IAuthorizationRequirement
+    public class SyncPlayAccessRequirement : DefaultAuthorizationRequirement
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncPlayAccessRequirement"/> class.

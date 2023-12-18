@@ -51,4 +51,68 @@ public class MediaStreamSelectorTests
 
         Assert.Equal(expectedIndex, MediaStreamSelector.GetDefaultAudioStreamIndex(streams, preferredLanguages, preferDefaultTrack));
     }
+
+    public static TheoryData<MediaStream, int> GetStreamScore_MediaStream_TestData()
+    {
+        var data = new TheoryData<MediaStream, int>();
+
+        data.Add(new MediaStream(), 111111);
+        data.Add(
+            new MediaStream()
+            {
+                Language = "eng"
+            },
+            10111111);
+        data.Add(
+            new MediaStream()
+            {
+                Language = "fre"
+            },
+            10011111);
+        data.Add(
+            new MediaStream()
+            {
+                IsForced = true
+            },
+            121111);
+        data.Add(
+            new MediaStream()
+            {
+                IsDefault = true
+            },
+            112111);
+        data.Add(
+            new MediaStream()
+            {
+                SupportsExternalStream = true
+            },
+            111211);
+        data.Add(
+            new MediaStream()
+            {
+                IsExternal = true
+            },
+            111112);
+        data.Add(
+            new MediaStream()
+            {
+                Language = "eng",
+                IsForced = true,
+                IsDefault = true,
+                SupportsExternalStream = true,
+                IsExternal = true
+            },
+            10122212);
+
+        return data;
+    }
+
+    [Theory]
+    [MemberData(nameof(GetStreamScore_MediaStream_TestData))]
+    public void GetStreamScore_MediaStream_CorrectScore(MediaStream stream, int expectedScore)
+    {
+        var languagePref = new[] { "eng", "fre" };
+
+        Assert.Equal(expectedScore, MediaStreamSelector.GetStreamScore(stream, languagePref));
+    }
 }

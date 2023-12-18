@@ -15,8 +15,8 @@ namespace MediaBrowser.Common.Extensions
         /// <returns><c>true</c> if the request is coming from LAN, <c>false</c> otherwise.</returns>
         public static bool IsLocal(this HttpContext context)
         {
-            return (context.Connection.LocalIpAddress == null
-                    && context.Connection.RemoteIpAddress == null)
+            return (context.Connection.LocalIpAddress is null
+                    && context.Connection.RemoteIpAddress is null)
                    || Equals(context.Connection.LocalIpAddress, context.Connection.RemoteIpAddress);
         }
 
@@ -25,7 +25,7 @@ namespace MediaBrowser.Common.Extensions
         /// </summary>
         /// <param name="context">The HTTP context.</param>
         /// <returns>The remote caller IP address.</returns>
-        public static IPAddress GetNormalizedRemoteIp(this HttpContext context)
+        public static IPAddress GetNormalizedRemoteIP(this HttpContext context)
         {
             // Default to the loopback address if no RemoteIpAddress is specified (i.e. during integration tests)
             var ip = context.Connection.RemoteIpAddress ?? IPAddress.Loopback;

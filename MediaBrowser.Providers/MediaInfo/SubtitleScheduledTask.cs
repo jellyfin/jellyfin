@@ -80,7 +80,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 bool skipIfEmbeddedSubtitlesPresent;
                 bool skipIfAudioTrackMatches;
 
-                if (libraryOptions.SubtitleDownloadLanguages == null)
+                if (libraryOptions.SubtitleDownloadLanguages is null)
                 {
                     subtitleDownloadLanguages = options.DownloadLanguages;
                     skipIfEmbeddedSubtitlesPresent = options.SkipIfEmbeddedSubtitlesPresent;
@@ -97,7 +97,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     var query = new InternalItemsQuery
                     {
-                        MediaTypes = new string[] { MediaType.Video },
+                        MediaTypes = new[] { MediaType.Video },
                         IsVirtualItem = false,
                         IncludeItemTypes = types,
                         DtoOptions = new DtoOptions(true),
@@ -172,7 +172,7 @@ namespace MediaBrowser.Providers.MediaInfo
             bool skipIfAudioTrackMatches;
             bool requirePerfectMatch;
 
-            if (libraryOptions.SubtitleDownloadLanguages == null)
+            if (libraryOptions.SubtitleDownloadLanguages is null)
             {
                 subtitleDownloadLanguages = options.DownloadLanguages;
                 skipIfEmbeddedSubtitlesPresent = options.SkipIfEmbeddedSubtitlesPresent;

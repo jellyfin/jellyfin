@@ -74,10 +74,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public override void Add(TimerInfo item)
         {
-            if (string.IsNullOrEmpty(item.Id))
-            {
-                throw new ArgumentException("TimerInfo.Id cannot be null or empty.");
-            }
+            ArgumentException.ThrowIfNullOrEmpty(item.Id);
 
             base.Add(item);
             AddOrUpdateSystemTimer(item);
@@ -122,11 +119,28 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             if (_timers.TryAdd(item.Id, timer))
             {
-                Logger.LogInformation(
-                    "Creating recording timer for {Id}, {Name}. Timer will fire in {Minutes} minutes",
+                if (item.IsSeries)
+                {
+                    Logger.LogInformation(
+                    "Creating recording timer for {Id}, {Name} {SeasonNumber}x{EpisodeNumber:D2} on channel {ChannelId}. Timer will fire in {Minutes} minutes at {StartDate}",
                     item.Id,
                     item.Name,
-                    dueTime.TotalMinutes.ToString(CultureInfo.InvariantCulture));
+                    item.SeasonNumber,
+                    item.EpisodeNumber,
+                    item.ChannelId,
+                    dueTime.TotalMinutes.ToString(CultureInfo.InvariantCulture),
+                    item.StartDate);
+                }
+                else
+                {
+                    Logger.LogInformation(
+                    "Creating recording timer for {Id}, {Name} on channel {ChannelId}. Timer will fire in {Minutes} minutes at {StartDate}",
+                    item.Id,
+                    item.Name,
+                    item.ChannelId,
+                    dueTime.TotalMinutes.ToString(CultureInfo.InvariantCulture),
+                    item.StartDate);
+                }
             }
             else
             {
@@ -148,7 +162,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var timerId = (string?)state ?? throw new ArgumentNullException(nameof(state));
 
             var timer = GetAll().FirstOrDefault(i => string.Equals(i.Id, timerId, StringComparison.OrdinalIgnoreCase));
-            if (timer != null)
+            if (timer is not null)
             {
                 TimerFired?.Invoke(this, new GenericEventArgs<TimerInfo>(timer));
             }

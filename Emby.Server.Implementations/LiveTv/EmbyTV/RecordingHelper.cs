@@ -2,8 +2,8 @@
 
 using System;
 using System.Globalization;
-using MediaBrowser.Controller.LiveTv;
 using System.Text;
+using MediaBrowser.Controller.LiveTv;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
@@ -56,14 +56,14 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     }
 
                     tmpName += " " + info.EpisodeTitle;
-                    //  Since the filename will be used with file ext. (.mp4, .ts, etc)
+                    // Since the filename will be used with file ext. (.mp4, .ts, etc)
                     if (Encoding.UTF8.GetByteCount(tmpName) < 250)
                     {
                         name = tmpName;
                     }
                 }
             }
-            else if (info.IsMovie && info.ProductionYear != null)
+            else if (info.IsMovie && info.ProductionYear is not null)
             {
                 name += " (" + info.ProductionYear + ")";
             }

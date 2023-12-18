@@ -51,7 +51,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
             lock (_syncLock)
             {
-                if (_updateTimer == null)
+                if (_updateTimer is null)
                 {
                     _updateTimer = new Timer(
                         UpdateTimerCallback,
@@ -75,11 +75,11 @@ namespace Emby.Server.Implementations.EntryPoints
                 var baseItem = e.Item;
 
                 // Go up one level for indicators
-                if (baseItem != null)
+                if (baseItem is not null)
                 {
                     var parent = baseItem.GetOwner() ?? baseItem.GetParent();
 
-                    if (parent != null)
+                    if (parent is not null)
                     {
                         keys.Add(parent);
                     }
@@ -87,29 +87,30 @@ namespace Emby.Server.Implementations.EntryPoints
             }
         }
 
-        private void UpdateTimerCallback(object? state)
+        private async void UpdateTimerCallback(object? state)
         {
+            List<KeyValuePair<Guid, List<BaseItem>>> changes;
             lock (_syncLock)
             {
                 // Remove dupes in case some were saved multiple times
-                var changes = _changedItems.ToList();
+                changes = _changedItems.ToList();
                 _changedItems.Clear();
 
-                SendNotifications(changes, CancellationToken.None).GetAwaiter().GetResult();
-
-                if (_updateTimer != null)
+                if (_updateTimer is not null)
                 {
                     _updateTimer.Dispose();
                     _updateTimer = null;
                 }
             }
+
+            await SendNotifications(changes, CancellationToken.None).ConfigureAwait(false);
         }
 
         private async Task SendNotifications(List<KeyValuePair<Guid, List<BaseItem>>> changes, CancellationToken cancellationToken)
         {
-            foreach (var pair in changes)
+            foreach ((var key, var value) in changes)
             {
-                await SendNotifications(pair.Key, pair.Value, cancellationToken).ConfigureAwait(false);
+                await SendNotifications(key, value, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -123,8 +124,7 @@ namespace Emby.Server.Implementations.EntryPoints
             var user = _userManager.GetUserById(userId);
 
             var dtoList = changedItems
-                .GroupBy(x => x.Id)
-                .Select(x => x.First())
+                .DistinctBy(x => x.Id)
                 .Select(i =>
                 {
                     var dto = _userDataManager.GetUserDataDto(i, user);
@@ -145,7 +145,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
         public void Dispose()
         {
-            if (_updateTimer != null)
+            if (_updateTimer is not null)
             {
                 _updateTimer.Dispose();
                 _updateTimer = null;

@@ -22,7 +22,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         {
             return new ContentResult()
             {
-                Content = (@params != null && @params.Count > 0)
+                Content = (@params is not null && @params.Count > 0)
                     ? string.Join("&", @params.Select(x => x.Key + "=" + x.Value))
                     : string.Empty,
                 ContentType = "text/plain; charset=utf-8",
@@ -42,7 +42,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         {
             return new ContentResult()
             {
-                Content = (@params != null && @params.Count > 0)
+                Content = (@params is not null && @params.Count > 0)
                     ? string.Join("&", @params.Select(x => x.Key + "=" + string.Join(',', x.Value)))
                     : string.Empty,
                 ContentType = "text/plain; charset=utf-8",

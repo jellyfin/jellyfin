@@ -71,25 +71,10 @@ namespace Emby.Server.Implementations.QuickConnect
         /// <inheritdoc/>
         public QuickConnectResult TryConnect(AuthorizationInfo authorizationInfo)
         {
-            if (string.IsNullOrEmpty(authorizationInfo.DeviceId))
-            {
-                throw new ArgumentException(nameof(authorizationInfo.DeviceId) + " is required");
-            }
-
-            if (string.IsNullOrEmpty(authorizationInfo.Device))
-            {
-                throw new ArgumentException(nameof(authorizationInfo.Device) + " is required");
-            }
-
-            if (string.IsNullOrEmpty(authorizationInfo.Client))
-            {
-                throw new ArgumentException(nameof(authorizationInfo.Client) + " is required");
-            }
-
-            if (string.IsNullOrEmpty(authorizationInfo.Version))
-            {
-                throw new ArgumentException(nameof(authorizationInfo.Version) + "is required");
-            }
+            ArgumentException.ThrowIfNullOrEmpty(authorizationInfo.DeviceId);
+            ArgumentException.ThrowIfNullOrEmpty(authorizationInfo.Device);
+            ArgumentException.ThrowIfNullOrEmpty(authorizationInfo.Client);
+            ArgumentException.ThrowIfNullOrEmpty(authorizationInfo.Version);
 
             AssertActive();
             ExpireRequests();

@@ -19,7 +19,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
 {
     public class VideoImageProviderTests
     {
-        private static TheoryData<Video> GetImage_UnsupportedInput_ReturnsNoImage_TestData()
+        public static TheoryData<Video> GetImage_UnsupportedInput_ReturnsNoImage_TestData()
         {
             return new()
             {
@@ -110,7 +110,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
         private static IMediaSourceManager GetMediaSourceManager(Video item, MediaStream? defaultStream, List<MediaStream> mediaStreams)
         {
             var defaultStreamList = new List<MediaStream>();
-            if (defaultStream != null)
+            if (defaultStream is not null)
             {
                 defaultStreamList.Add(defaultStream);
             }

@@ -63,7 +63,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// </summary>
         /// <value>The type of the media.</value>
         [JsonIgnore]
-        public override string MediaType => Model.Entities.MediaType.Audio;
+        public override MediaType MediaType => MediaType.Audio;
 
         public override double GetDefaultPrimaryImageAspectRatio()
         {
@@ -81,8 +81,8 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// <returns>System.String.</returns>
         protected override string CreateSortName()
         {
-            return (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("0000 - ", CultureInfo.InvariantCulture) : string.Empty)
-                    + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ", CultureInfo.InvariantCulture) : string.Empty) + Name;
+            return (ParentIndexNumber is not null ? ParentIndexNumber.Value.ToString("0000 - ", CultureInfo.InvariantCulture) : string.Empty)
+                    + (IndexNumber is not null ? IndexNumber.Value.ToString("0000 - ", CultureInfo.InvariantCulture) : string.Empty) + Name;
         }
 
         public override List<string> GetUserDataKeys()

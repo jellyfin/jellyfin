@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using System.Xml.Serialization;
 
 namespace MediaBrowser.Model.Branding;
 
@@ -23,7 +22,7 @@ public class BrandingOptions
     /// <summary>
     /// Gets or sets a value indicating whether to enable the splashscreen.
     /// </summary>
-    public bool SplashscreenEnabled { get; set; } = true;
+    public bool SplashscreenEnabled { get; set; } = false;
 
     /// <summary>
     /// Gets or sets the splashscreen location on disk.

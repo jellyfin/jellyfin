@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -8,12 +6,14 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Providers;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -23,6 +23,10 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
 {
+    /// <summary>
+    /// The BaseNfoParser class.
+    /// </summary>
+    /// <typeparam name="T">The type.</typeparam>
     public class BaseNfoParser<T>
         where T : BaseItem
     {
@@ -63,29 +67,32 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// </summary>
         protected ILogger Logger { get; }
 
+        /// <summary>
+        /// Gets the provider manager.
+        /// </summary>
         protected IProviderManager ProviderManager { get; }
 
+        /// <summary>
+        /// Gets a value indicating whether URLs after a closing XML tag are supporrted.
+        /// </summary>
         protected virtual bool SupportsUrlAfterClosingXmlTag => false;
 
         /// <summary>
         /// Fetches metadata for an item from one xml file.
         /// </summary>
-        /// <param name="item">The item.</param>
+        /// <param name="item">The <see cref="MetadataResult{T}"/>.</param>
         /// <param name="metadataFile">The metadata file.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         /// <exception cref="ArgumentNullException"><c>item</c> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException"><c>metadataFile</c> is <c>null</c> or empty.</exception>
         public void Fetch(MetadataResult<T> item, string metadataFile, CancellationToken cancellationToken)
         {
-            if (item.Item == null)
+            if (item.Item is null)
             {
                 throw new ArgumentException("Item can't be null.", nameof(item));
             }
 
-            if (string.IsNullOrEmpty(metadataFile))
-            {
-                throw new ArgumentException("The metadata filepath was empty.", nameof(metadataFile));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(metadataFile);
 
             _validProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -94,10 +101,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             foreach (var info in idInfos)
             {
                 var id = info.Key + "Id";
-                if (!_validProviderIds.ContainsKey(id))
-                {
-                    _validProviderIds.Add(id, info.Key);
-                }
+                _validProviderIds.TryAdd(id, info.Key);
             }
 
             // Additional Mappings
@@ -111,10 +115,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <summary>
         /// Fetches the specified item.
         /// </summary>
-        /// <param name="item">The item.</param>
+        /// <param name="item">The <see cref="MetadataResult{T}"/>.</param>
         /// <param name="metadataFile">The metadata file.</param>
-        /// <param name="settings">The settings.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="settings">The <see cref="XmlReaderSettings"/>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         protected virtual void Fetch(MetadataResult<T> item, string metadataFile, XmlReaderSettings settings, CancellationToken cancellationToken)
         {
             if (!SupportsUrlAfterClosingXmlTag)
@@ -156,7 +160,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
             // Find last closing Tag
             // Need to do this in two steps to account for random > characters after the closing xml
-            var index = xml.LastIndexOf(@"</", StringComparison.Ordinal);
+            var index = xml.LastIndexOf("</", StringComparison.Ordinal);
 
             // If closing tag exists, move to end of Tag
             if (index != -1)
@@ -170,7 +174,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 ParseProviderLinks(item.Item, endingXml);
 
-                // If the file is just an imdb url, don't go any further
+                // If the file is just an IMDb url, don't go any further
                 if (index == 0)
                 {
                     return;
@@ -216,6 +220,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             }
         }
 
+        /// <summary>
+        /// Parses a XML tag to a provider id.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="xml">The xml tag.</param>
         protected void ParseProviderLinks(T item, ReadOnlySpan<char> xml)
         {
             if (ProviderIdParsers.TryFindImdbId(xml, out var imdbId))
@@ -245,165 +254,92 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             }
         }
 
+        /// <summary>
+        /// Fetches metadata from an XML node.
+        /// </summary>
+        /// <param name="reader">The <see cref="XmlReader"/>.</param>
+        /// <param name="itemResult">The <see cref="MetadataResult{T}"/>.</param>
         protected virtual void FetchDataFromXmlNode(XmlReader reader, MetadataResult<T> itemResult)
         {
             var item = itemResult.Item;
-
             var nfoConfiguration = _config.GetNfoConfiguration();
-            UserItemData? userData = null;
-            if (!string.IsNullOrWhiteSpace(nfoConfiguration.UserId))
-            {
-                var user = _userManager.GetUserById(Guid.Parse(nfoConfiguration.UserId));
-                userData = _userDataManager.GetUserData(user, item);
-            }
+            UserItemData? userData;
 
             switch (reader.Name)
             {
-                // DateCreated
                 case "dateadded":
+                    if (reader.TryReadDateTime(out var dateCreated))
                     {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var added))
-                            {
-                                item.DateCreated = added;
-                            }
-                            else
-                            {
-                                Logger.LogWarning("Invalid Added value found: {Value}", val);
-                            }
-                        }
-
-                        break;
+                        item.DateCreated = dateCreated;
                     }
 
+                    break;
                 case "originaltitle":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrEmpty(val))
-                        {
-                            item.OriginalTitle = val;
-                        }
-
-                        break;
-                    }
-
+                    item.OriginalTitle = reader.ReadNormalizedString();
+                    break;
                 case "name":
                 case "title":
                 case "localtitle":
-                    item.Name = reader.ReadElementContentAsString();
+                    item.Name = reader.ReadNormalizedString();
                     break;
-
                 case "sortname":
-                    item.SortName = reader.ReadElementContentAsString();
+                    item.SortName = reader.ReadNormalizedString();
                     break;
-
                 case "criticrating":
+                    var criticRatingText = reader.ReadElementContentAsString();
+                    if (float.TryParse(criticRatingText, CultureInfo.InvariantCulture, out var value))
                     {
-                        var text = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrEmpty(text))
-                        {
-                            if (float.TryParse(text, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
-                            {
-                                item.CriticRating = value;
-                            }
-                        }
-
-                        break;
+                        item.CriticRating = value;
                     }
 
+                    break;
                 case "sorttitle":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.ForcedSortName = val;
-                        }
-
-                        break;
-                    }
-
+                    item.ForcedSortName = reader.ReadNormalizedString();
+                    break;
                 case "biography":
                 case "plot":
                 case "review":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.Overview = val;
-                        }
-
-                        break;
-                    }
-
+                    item.Overview = reader.ReadNormalizedString();
+                    break;
                 case "language":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        item.PreferredMetadataLanguage = val;
-
-                        break;
-                    }
-
+                    item.PreferredMetadataLanguage = reader.ReadNormalizedString();
+                    break;
                 case "watched":
+                    var played = reader.ReadElementContentAsBoolean();
+                    if (!string.IsNullOrWhiteSpace(nfoConfiguration.UserId))
                     {
-                        var val = reader.ReadElementContentAsBoolean();
-
-                        if (userData != null)
-                        {
-                            userData.Played = val;
-                        }
-
-                        break;
+                        var user = _userManager.GetUserById(Guid.Parse(nfoConfiguration.UserId));
+                        userData = _userDataManager.GetUserData(user, item);
+                        userData.Played = played;
+                        _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
                     }
 
+                    break;
                 case "playcount":
+                    if (reader.TryReadInt(out var count)
+                        && Guid.TryParse(nfoConfiguration.UserId, out var playCountUserId))
                     {
-                        var val = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(val) && userData != null)
-                        {
-                            if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var count))
-                            {
-                                userData.PlayCount = count;
-                            }
-                        }
-
-                        break;
+                        var user = _userManager.GetUserById(playCountUserId);
+                        userData = _userDataManager.GetUserData(user, item);
+                        userData.PlayCount = count;
+                        _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
                     }
 
+                    break;
                 case "lastplayed":
+                    if (reader.TryReadDateTime(out var lastPlayed)
+                        && Guid.TryParse(nfoConfiguration.UserId, out var lastPlayedUserId))
                     {
-                        var val = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(val) && userData != null)
-                        {
-                            if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var added))
-                            {
-                                userData.LastPlayedDate = added;
-                            }
-                            else
-                            {
-                                Logger.LogWarning("Invalid lastplayed value found: {Value}", val);
-                            }
-                        }
-
-                        break;
+                        var user = _userManager.GetUserById(lastPlayedUserId);
+                        userData = _userDataManager.GetUserData(user, item);
+                        userData.LastPlayedDate = lastPlayed;
+                        _userDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, CancellationToken.None);
                     }
 
+                    break;
                 case "countrycode":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        item.PreferredMetadataCountryCode = val;
-
-                        break;
-                    }
-
+                    item.PreferredMetadataCountryCode = reader.ReadNormalizedString();
+                    break;
                 case "lockedfields":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -425,9 +361,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 case "tagline":
-                    item.Tagline = reader.ReadElementContentAsString();
+                    item.Tagline = reader.ReadNormalizedString();
                     break;
-
                 case "country":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -444,97 +379,45 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 case "mpaa":
-                    {
-                        var rating = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(rating))
-                        {
-                            item.OfficialRating = rating;
-                        }
-
-                        break;
-                    }
-
+                    item.OfficialRating = reader.ReadNormalizedString();
+                    break;
                 case "customrating":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.CustomRating = val;
-                        }
-
-                        break;
-                    }
-
+                    item.CustomRating = reader.ReadNormalizedString();
+                    break;
                 case "runtime":
+                    var runtimeText = reader.ReadElementContentAsString();
+                    if (int.TryParse(runtimeText.AsSpan().LeftPart(' '), NumberStyles.Integer, CultureInfo.InvariantCulture, out var runtime))
                     {
-                        var text = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(text))
-                        {
-                            if (int.TryParse(text.AsSpan().LeftPart(' '), NumberStyles.Integer, CultureInfo.InvariantCulture, out var runtime))
-                            {
-                                item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
-                            }
-                        }
-
-                        break;
+                        item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
                     }
 
+                    break;
                 case "aspectratio":
+                    var aspectRatio = reader.ReadNormalizedString();
+                    if (!string.IsNullOrEmpty(aspectRatio) && item is IHasAspectRatio hasAspectRatio)
                     {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val)
-                            && item is IHasAspectRatio hasAspectRatio)
-                        {
-                            hasAspectRatio.AspectRatio = val;
-                        }
-
-                        break;
+                        hasAspectRatio.AspectRatio = aspectRatio;
                     }
 
+                    break;
                 case "lockdata":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.IsLocked = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
-                        }
-
-                        break;
-                    }
-
+                    item.IsLocked = string.Equals(reader.ReadElementContentAsString(), "true", StringComparison.OrdinalIgnoreCase);
+                    break;
                 case "studio":
+                    var studio = reader.ReadNormalizedString();
+                    if (!string.IsNullOrEmpty(studio))
                     {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.AddStudio(val);
-                        }
-
-                        break;
+                        item.AddStudio(studio);
                     }
 
+                    break;
                 case "director":
+                    foreach (var director in reader.GetPersonArray(PersonKind.Director))
                     {
-                        var val = reader.ReadElementContentAsString();
-                        foreach (var p in SplitNames(val).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Director }))
-                        {
-                            if (string.IsNullOrWhiteSpace(p.Name))
-                            {
-                                continue;
-                            }
-
-                            itemResult.AddPerson(p);
-                        }
-
-                        break;
+                        itemResult.AddPerson(director);
                     }
 
+                    break;
                 case "credits":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -544,7 +427,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             var parts = val.Split('/').Select(i => i.Trim())
                                 .Where(i => !string.IsNullOrEmpty(i));
 
-                            foreach (var p in parts.Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Writer }))
+                            foreach (var p in parts.Select(v => new PersonInfo { Name = v.Trim(), Type = PersonKind.Writer }))
                             {
                                 if (string.IsNullOrWhiteSpace(p.Name))
                                 {
@@ -559,157 +442,76 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 case "writer":
+                    foreach (var writer in reader.GetPersonArray(PersonKind.Writer))
                     {
-                        var val = reader.ReadElementContentAsString();
-                        foreach (var p in SplitNames(val).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Writer }))
-                        {
-                            if (string.IsNullOrWhiteSpace(p.Name))
-                            {
-                                continue;
-                            }
-
-                            itemResult.AddPerson(p);
-                        }
-
-                        break;
+                        itemResult.AddPerson(writer);
                     }
 
+                    break;
                 case "actor":
+                    var person = reader.GetPersonFromXmlNode();
+                    if (person is not null)
                     {
-                        if (!reader.IsEmptyElement)
-                        {
-                            using (var subtree = reader.ReadSubtree())
-                            {
-                                var person = GetPersonFromXmlNode(subtree);
-
-                                if (!string.IsNullOrWhiteSpace(person.Name))
-                                {
-                                    itemResult.AddPerson(person);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            reader.Read();
-                        }
-
-                        break;
+                        itemResult.AddPerson(person);
                     }
 
+                    break;
                 case "trailer":
+                    var trailer = reader.ReadNormalizedString();
+                    if (!string.IsNullOrEmpty(trailer))
                     {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            val = val.Replace("plugin://plugin.video.youtube/?action=play_video&videoid=", BaseNfoSaver.YouTubeWatchUrl, StringComparison.OrdinalIgnoreCase);
-
-                            item.AddTrailerUrl(val);
-                        }
-
-                        break;
+                        item.AddTrailerUrl(trailer.Replace(
+                            "plugin://plugin.video.youtube/?action=play_video&videoid=",
+                            BaseNfoSaver.YouTubeWatchUrl,
+                            StringComparison.OrdinalIgnoreCase));
                     }
 
+                    break;
                 case "displayorder":
+                    var displayOrder = reader.ReadNormalizedString();
+                    if (!string.IsNullOrEmpty(displayOrder) && item is IHasDisplayOrder hasDisplayOrder)
                     {
-                        var val = reader.ReadElementContentAsString();
-
-                        var hasDisplayOrder = item as IHasDisplayOrder;
-                        if (hasDisplayOrder != null)
-                        {
-                            if (!string.IsNullOrWhiteSpace(val))
-                            {
-                                hasDisplayOrder.DisplayOrder = val;
-                            }
-                        }
-
-                        break;
+                        hasDisplayOrder.DisplayOrder = displayOrder;
                     }
 
+                    break;
                 case "year":
+                    if (reader.TryReadInt(out var productionYear) && productionYear > 1850)
                     {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            if (int.TryParse(val, out var productionYear) && productionYear > 1850)
-                            {
-                                item.ProductionYear = productionYear;
-                            }
-                        }
-
-                        break;
+                        item.ProductionYear = productionYear;
                     }
 
+                    break;
                 case "rating":
+                    var rating = reader.ReadElementContentAsString().Replace(',', '.');
+                    // All external meta is saving this as '.' for decimal I believe...but just to be sure
+                    if (float.TryParse(rating, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var communityRating))
                     {
-                        var rating = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(rating))
-                        {
-                            // All external meta is saving this as '.' for decimal I believe...but just to be sure
-                            if (float.TryParse(rating.Replace(',', '.'), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var val))
-                            {
-                                item.CommunityRating = val;
-                            }
-                        }
-
-                        break;
+                        item.CommunityRating = communityRating;
                     }
 
+                    break;
                 case "ratings":
-                    {
-                        if (!reader.IsEmptyElement)
-                        {
-                            using var subtree = reader.ReadSubtree();
-                            FetchFromRatingsNode(subtree, item);
-                        }
-                        else
-                        {
-                            reader.Read();
-                        }
-
-                        break;
-                    }
-
+                    FetchFromRatingsNode(reader, item);
+                    break;
                 case "aired":
                 case "formed":
                 case "premiered":
                 case "releasedate":
+                    if (reader.TryReadDateTimeExact(nfoConfiguration.ReleaseDateFormat, out var releaseDate))
                     {
-                        var formatString = nfoConfiguration.ReleaseDateFormat;
-
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            if (DateTime.TryParseExact(val, formatString, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var date) && date.Year > 1850)
-                            {
-                                item.PremiereDate = date;
-                                item.ProductionYear = date.Year;
-                            }
-                        }
-
-                        break;
+                        item.PremiereDate = releaseDate;
+                        item.ProductionYear = releaseDate.Year;
                     }
 
+                    break;
                 case "enddate":
+                    if (reader.TryReadDateTimeExact(nfoConfiguration.ReleaseDateFormat, out var endDate))
                     {
-                        var formatString = nfoConfiguration.ReleaseDateFormat;
-
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            if (DateTime.TryParseExact(val, formatString, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var date) && date.Year > 1850)
-                            {
-                                item.EndDate = date;
-                            }
-                        }
-
-                        break;
+                        item.EndDate = endDate;
                     }
 
+                    break;
                 case "genre":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -731,57 +533,34 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 case "style":
                 case "tag":
+                    var tag = reader.ReadNormalizedString();
+                    if (!string.IsNullOrEmpty(tag))
                     {
-                        var val = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.AddTag(val);
-                        }
-
-                        break;
+                        item.AddTag(tag);
                     }
 
+                    break;
                 case "fileinfo":
-                    {
-                        if (!reader.IsEmptyElement)
-                        {
-                            using (var subtree = reader.ReadSubtree())
-                            {
-                                FetchFromFileInfoNode(subtree, item);
-                            }
-                        }
-                        else
-                        {
-                            reader.Read();
-                        }
-
-                        break;
-                    }
-
+                    FetchFromFileInfoNode(reader, item);
+                    break;
                 case "uniqueid":
+                    if (reader.IsEmptyElement)
                     {
-                        if (reader.IsEmptyElement)
-                        {
-                            reader.Read();
-                            break;
-                        }
-
-                        var provider = reader.GetAttribute("type");
-                        var id = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(provider) && !string.IsNullOrWhiteSpace(id))
-                        {
-                            item.SetProviderId(provider, id);
-                        }
-
+                        reader.Read();
                         break;
                     }
 
+                    var provider = reader.GetAttribute("type");
+                    var providerId = reader.ReadElementContentAsString();
+                    if (!string.IsNullOrWhiteSpace(provider) && !string.IsNullOrWhiteSpace(providerId))
+                    {
+                        item.SetProviderId(provider, providerId);
+                    }
+
+                    break;
                 case "thumb":
-                    {
-                        FetchThumbNode(reader, itemResult, "thumb");
-                        break;
-                    }
-
+                    FetchThumbNode(reader, itemResult, "thumb");
+                    break;
                 case "fanart":
                     {
                         if (reader.IsEmptyElement)
@@ -862,7 +641,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 var fileSystemMetadata = _directoryService.GetFile(val);
                 // non existing file returns null
-                if (fileSystemMetadata == null || !fileSystemMetadata.Exists)
+                if (fileSystemMetadata is null || !fileSystemMetadata.Exists)
                 {
                     Logger.LogWarning("Artwork file {Path} specified in nfo file for {ItemName} does not exist.", uri, itemResult.Item.Name);
                     return;
@@ -886,245 +665,188 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             }
         }
 
-        private void FetchFromFileInfoNode(XmlReader reader, T item)
+        private void FetchFromFileInfoNode(XmlReader parentReader, T item)
         {
+            if (parentReader.IsEmptyElement)
+            {
+                parentReader.Read();
+                return;
+            }
+
+            using var reader = parentReader.ReadSubtree();
             reader.MoveToContent();
             reader.Read();
 
             // Loop through each element
             while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "streamdetails":
-                            {
-                                if (reader.IsEmptyElement)
-                                {
-                                    reader.Read();
-                                    continue;
-                                }
-
-                                using (var subtree = reader.ReadSubtree())
-                                {
-                                    FetchFromStreamDetailsNode(subtree, item);
-                                }
-
-                                break;
-                            }
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
-                else
+                if (reader.NodeType != XmlNodeType.Element)
                 {
                     reader.Read();
+                    continue;
+                }
+
+                switch (reader.Name)
+                {
+                    case "streamdetails":
+                        FetchFromStreamDetailsNode(reader, item);
+                        break;
+                    default:
+                        reader.Skip();
+                        break;
                 }
             }
         }
 
-        private void FetchFromStreamDetailsNode(XmlReader reader, T item)
+        private void FetchFromStreamDetailsNode(XmlReader parentReader, T item)
         {
+            if (parentReader.IsEmptyElement)
+            {
+                parentReader.Read();
+                return;
+            }
+
+            using var reader = parentReader.ReadSubtree();
             reader.MoveToContent();
             reader.Read();
 
             // Loop through each element
             while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "video":
-                            {
-                                if (reader.IsEmptyElement)
-                                {
-                                    reader.Read();
-                                    continue;
-                                }
-
-                                using (var subtree = reader.ReadSubtree())
-                                {
-                                    FetchFromVideoNode(subtree, item);
-                                }
-
-                                break;
-                            }
-
-                        case "subtitle":
-                            {
-                                if (reader.IsEmptyElement)
-                                {
-                                    reader.Read();
-                                    continue;
-                                }
-
-                                using (var subtree = reader.ReadSubtree())
-                                {
-                                    FetchFromSubtitleNode(subtree, item);
-                                }
-
-                                break;
-                            }
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
-                else
+                if (reader.NodeType != XmlNodeType.Element)
                 {
                     reader.Read();
+                    continue;
+                }
+
+                switch (reader.Name)
+                {
+                    case "video":
+                        FetchFromVideoNode(reader, item);
+                        break;
+                    case "subtitle":
+                        FetchFromSubtitleNode(reader, item);
+                        break;
+                    default:
+                        reader.Skip();
+                        break;
                 }
             }
         }
 
-        private void FetchFromVideoNode(XmlReader reader, T item)
+        private void FetchFromVideoNode(XmlReader parentReader, T item)
         {
+            if (parentReader.IsEmptyElement)
+            {
+                parentReader.Read();
+                return;
+            }
+
+            using var reader = parentReader.ReadSubtree();
             reader.MoveToContent();
             reader.Read();
 
             // Loop through each element
             while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "format3d":
-                            {
-                                var val = reader.ReadElementContentAsString();
-
-                                var video = item as Video;
-
-                                if (video != null)
-                                {
-                                    if (string.Equals("HSBS", val, StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        video.Video3DFormat = Video3DFormat.HalfSideBySide;
-                                    }
-                                    else if (string.Equals("HTAB", val, StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        video.Video3DFormat = Video3DFormat.HalfTopAndBottom;
-                                    }
-                                    else if (string.Equals("FTAB", val, StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        video.Video3DFormat = Video3DFormat.FullTopAndBottom;
-                                    }
-                                    else if (string.Equals("FSBS", val, StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        video.Video3DFormat = Video3DFormat.FullSideBySide;
-                                    }
-                                    else if (string.Equals("MVC", val, StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        video.Video3DFormat = Video3DFormat.MVC;
-                                    }
-                                }
-
-                                break;
-                            }
-
-                        case "aspect":
-                            {
-                                var val = reader.ReadElementContentAsString();
-
-                                if (item is Video video)
-                                {
-                                    video.AspectRatio = val;
-                                }
-
-                                break;
-                            }
-
-                        case "width":
-                            {
-                                var val = reader.ReadElementContentAsInt();
-
-                                if (item is Video video)
-                                {
-                                    video.Width = val;
-                                }
-
-                                break;
-                            }
-
-                        case "height":
-                            {
-                                var val = reader.ReadElementContentAsInt();
-
-                                if (item is Video video)
-                                {
-                                    video.Height = val;
-                                }
-
-                                break;
-                            }
-
-                        case "durationinseconds":
-                            {
-                                var val = reader.ReadElementContentAsInt();
-
-                                if (item is Video video)
-                                {
-                                    video.RunTimeTicks = new TimeSpan(0, 0, val).Ticks;
-                                }
-
-                                break;
-                            }
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
-                else
+                if (reader.NodeType != XmlNodeType.Element || item is not Video video)
                 {
                     reader.Read();
+                    continue;
+                }
+
+                switch (reader.Name)
+                {
+                    case "format3d":
+                        var format = reader.ReadElementContentAsString();
+                        if (string.Equals("HSBS", format, StringComparison.OrdinalIgnoreCase))
+                        {
+                            video.Video3DFormat = Video3DFormat.HalfSideBySide;
+                        }
+                        else if (string.Equals("HTAB", format, StringComparison.OrdinalIgnoreCase))
+                        {
+                            video.Video3DFormat = Video3DFormat.HalfTopAndBottom;
+                        }
+                        else if (string.Equals("FTAB", format, StringComparison.OrdinalIgnoreCase))
+                        {
+                            video.Video3DFormat = Video3DFormat.FullTopAndBottom;
+                        }
+                        else if (string.Equals("FSBS", format, StringComparison.OrdinalIgnoreCase))
+                        {
+                            video.Video3DFormat = Video3DFormat.FullSideBySide;
+                        }
+                        else if (string.Equals("MVC", format, StringComparison.OrdinalIgnoreCase))
+                        {
+                            video.Video3DFormat = Video3DFormat.MVC;
+                        }
+
+                        break;
+                    case "aspect":
+                        video.AspectRatio = reader.ReadNormalizedString();
+                        break;
+                    case "width":
+                        video.Width = reader.ReadElementContentAsInt();
+                        break;
+                    case "height":
+                        video.Height = reader.ReadElementContentAsInt();
+                        break;
+                    case "durationinseconds":
+                        video.RunTimeTicks = new TimeSpan(0, 0, reader.ReadElementContentAsInt()).Ticks;
+                        break;
+                    default:
+                        reader.Skip();
+                        break;
                 }
             }
         }
 
-        private void FetchFromSubtitleNode(XmlReader reader, T item)
+        private void FetchFromSubtitleNode(XmlReader parentReader, T item)
         {
+            if (parentReader.IsEmptyElement)
+            {
+                parentReader.Read();
+                return;
+            }
+
+            using var reader = parentReader.ReadSubtree();
             reader.MoveToContent();
             reader.Read();
 
             // Loop through each element
             while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "language":
-                            {
-                                _ = reader.ReadElementContentAsString();
-
-                                if (item is Video video)
-                                {
-                                    video.HasSubtitles = true;
-                                }
-
-                                break;
-                            }
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
-                else
+                if (reader.NodeType != XmlNodeType.Element)
                 {
                     reader.Read();
+                    continue;
+                }
+
+                switch (reader.Name)
+                {
+                    case "language":
+                        _ = reader.ReadElementContentAsString();
+                        if (item is Video video)
+                        {
+                            video.HasSubtitles = true;
+                        }
+
+                        break;
+                    default:
+                        reader.Skip();
+                        break;
                 }
             }
         }
 
-        private void FetchFromRatingsNode(XmlReader reader, T item)
+        private void FetchFromRatingsNode(XmlReader parentReader, T item)
         {
+            if (parentReader.IsEmptyElement)
+            {
+                parentReader.Read();
+                return;
+            }
+
+            using var reader = parentReader.ReadSubtree();
             reader.MoveToContent();
             reader.Read();
 
@@ -1136,20 +858,20 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     switch (reader.Name)
                     {
                         case "rating":
-                        {
-                            if (reader.IsEmptyElement)
                             {
-                                reader.Read();
-                                continue;
+                                if (reader.IsEmptyElement)
+                                {
+                                    reader.Read();
+                                    continue;
+                                }
+
+                                var ratingName = reader.GetAttribute("name");
+
+                                using var subtree = reader.ReadSubtree();
+                                FetchFromRatingNode(subtree, item, ratingName);
+
+                                break;
                             }
-
-                            var ratingName = reader.GetAttribute("name");
-
-                            using var subtree = reader.ReadSubtree();
-                            FetchFromRatingNode(subtree, item, ratingName);
-
-                            break;
-                        }
 
                         default:
                             reader.Skip();
@@ -1178,21 +900,21 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         case "value":
                             var val = reader.ReadElementContentAsString();
 
-                            if (!string.IsNullOrWhiteSpace(val))
+                            if (float.TryParse(val, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var ratingValue))
                             {
-                                if (float.TryParse(val, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var ratingValue))
+                                // if ratingName contains tomato --> assume critic rating
+                                if (ratingName is not null
+                                    && ratingName.Contains("tomato", StringComparison.OrdinalIgnoreCase)
+                                    && !ratingName.Contains("audience", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    // if ratingName contains tomato --> assume critic rating
-                                    if (ratingName != null &&
-                                        ratingName.Contains("tomato", StringComparison.OrdinalIgnoreCase) &&
-                                        !ratingName.Contains("audience", StringComparison.OrdinalIgnoreCase))
+                                    if (!ratingName.Contains("avg", StringComparison.OrdinalIgnoreCase))
                                     {
                                         item.CriticRating = ratingValue;
                                     }
-                                    else
-                                    {
-                                        item.CommunityRating = ratingValue;
-                                    }
+                                }
+                                else
+                                {
+                                    item.CommunityRating = ratingValue;
                                 }
                             }
 
@@ -1207,117 +929,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     reader.Read();
                 }
             }
-        }
-
-        /// <summary>
-        /// Gets the persons from XML node.
-        /// </summary>
-        /// <param name="reader">The reader.</param>
-        /// <returns>IEnumerable{PersonInfo}.</returns>
-        private PersonInfo GetPersonFromXmlNode(XmlReader reader)
-        {
-            var name = string.Empty;
-            var type = PersonType.Actor;  // If type is not specified assume actor
-            var role = string.Empty;
-            int? sortOrder = null;
-            string? imageUrl = null;
-
-            reader.MoveToContent();
-            reader.Read();
-
-            // Loop through each element
-            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
-            {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "name":
-                            name = reader.ReadElementContentAsString();
-                            break;
-
-                        case "role":
-                            {
-                                var val = reader.ReadElementContentAsString();
-
-                                if (!string.IsNullOrWhiteSpace(val))
-                                {
-                                    role = val;
-                                }
-
-                                break;
-                            }
-
-                        case "type":
-                            {
-                                var val = reader.ReadElementContentAsString();
-
-                                if (!string.IsNullOrWhiteSpace(val))
-                                {
-                                    type = val switch
-                                    {
-                                        PersonType.Composer => PersonType.Composer,
-                                        PersonType.Conductor => PersonType.Conductor,
-                                        PersonType.Director => PersonType.Director,
-                                        PersonType.Lyricist => PersonType.Lyricist,
-                                        PersonType.Producer => PersonType.Producer,
-                                        PersonType.Writer => PersonType.Writer,
-                                        PersonType.GuestStar => PersonType.GuestStar,
-                                        // unknown type --> actor
-                                        _ => PersonType.Actor
-                                    };
-                                }
-
-                                break;
-                            }
-
-                        case "order":
-                        case "sortorder":
-                            {
-                                var val = reader.ReadElementContentAsString();
-
-                                if (!string.IsNullOrWhiteSpace(val))
-                                {
-                                    if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intVal))
-                                    {
-                                        sortOrder = intVal;
-                                    }
-                                }
-
-                                break;
-                            }
-
-                        case "thumb":
-                            {
-                                var val = reader.ReadElementContentAsString();
-
-                                if (!string.IsNullOrWhiteSpace(val))
-                                {
-                                    imageUrl = val;
-                                }
-
-                                break;
-                            }
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
-                else
-                {
-                    reader.Read();
-                }
-            }
-
-            return new PersonInfo
-            {
-                Name = name.Trim(),
-                Role = role,
-                Type = type,
-                SortOrder = sortOrder,
-                ImageUrl = imageUrl
-            };
         }
 
         internal XmlReaderSettings GetXmlReaderSettings()
@@ -1330,28 +941,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             };
 
         /// <summary>
-        /// Used to split names of comma or pipe delimeted genres and people.
+        /// Parses the <see cref="ImageType"/> from the NFO aspect property.
         /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns>IEnumerable{System.String}.</returns>
-        private IEnumerable<string> SplitNames(string value)
-        {
-            // Only split by comma if there is no pipe in the string
-            // We have to be careful to not split names like Matthew, Jr.
-            var separator = !value.Contains('|', StringComparison.Ordinal) && !value.Contains(';', StringComparison.Ordinal)
-                ? new[] { ',' }
-                : new[] { '|', ';' };
-
-            value = value.Trim().Trim(separator);
-
-            return string.IsNullOrWhiteSpace(value) ? Array.Empty<string>() : value.Split(separator, StringSplitOptions.RemoveEmptyEntries);
-        }
-
-        /// <summary>
-        /// Parses the ImageType from the nfo aspect property.
-        /// </summary>
-        /// <param name="aspect">The nfo aspect property.</param>
-        /// <returns>The image type.</returns>
+        /// <param name="aspect">The NFO aspect property.</param>
+        /// <returns>The <see cref="ImageType"/>.</returns>
         private static ImageType GetImageType(string aspect)
         {
             return aspect switch

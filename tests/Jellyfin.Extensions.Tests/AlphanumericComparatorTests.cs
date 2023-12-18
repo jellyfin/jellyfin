@@ -19,11 +19,16 @@ namespace Jellyfin.Extensions.Tests
         [InlineData("12345678912345678912345678913234567891", "12345678912345678912345678913234567892")]
         [InlineData("12345678912345678912345678913234567891a", "12345678912345678912345678913234567891a")]
         [InlineData("12345678912345678912345678913234567891a", "12345678912345678912345678913234567891b")]
+        [InlineData("a5", "a11")]
+        [InlineData("a05a", "a5b")]
+        [InlineData("a5a", "a05b")]
+        [InlineData("6xxx", "007asdf")]
+        [InlineData("00042Q", "42s")]
         public void AlphanumericComparatorTest(params string?[] strings)
         {
             var copy = strings.Reverse().ToArray();
             Array.Sort(copy, new AlphanumericComparator());
-            Assert.True(strings.SequenceEqual(copy));
+            Assert.Equal(strings, copy);
         }
     }
 }

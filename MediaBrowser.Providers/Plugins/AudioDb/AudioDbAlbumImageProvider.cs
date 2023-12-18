@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
@@ -42,11 +43,8 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         /// <inheritdoc />
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
-            return new List<ImageType>
-            {
-                ImageType.Primary,
-                ImageType.Disc
-            };
+            yield return ImageType.Primary;
+            yield return ImageType.Disc;
         }
 
         /// <inheritdoc />
@@ -60,19 +58,22 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
                 var path = AudioDbAlbumProvider.GetAlbumInfoPath(_config.ApplicationPaths, id);
 
-                await using FileStream jsonStream = AsyncFile.OpenRead(path);
-                var obj = await JsonSerializer.DeserializeAsync<AudioDbAlbumProvider.RootObject>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-
-                if (obj != null && obj.album != null && obj.album.Count > 0)
+                FileStream jsonStream = AsyncFile.OpenRead(path);
+                await using (jsonStream.ConfigureAwait(false))
                 {
-                    return GetImages(obj.album[0]);
+                    var obj = await JsonSerializer.DeserializeAsync<AudioDbAlbumProvider.RootObject>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+
+                    if (obj is not null && obj.album is not null && obj.album.Count > 0)
+                    {
+                        return GetImages(obj.album[0]);
+                    }
                 }
             }
 
-            return new List<RemoteImageInfo>();
+            return Enumerable.Empty<RemoteImageInfo>();
         }
 
-        private IEnumerable<RemoteImageInfo> GetImages(AudioDbAlbumProvider.Album item)
+        private List<RemoteImageInfo> GetImages(AudioDbAlbumProvider.Album item)
         {
             var list = new List<RemoteImageInfo>();
 

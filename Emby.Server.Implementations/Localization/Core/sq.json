@@ -119,5 +119,11 @@
     "Forced": "I detyruar",
     "Default": "Parazgjedhur",
     "TaskOptimizeDatabaseDescription": "Kompakton bazën e të dhënave dhe shkurton hapësirën e lirë. Drejtimi i kësaj detyre pasi skanoni bibliotekën ose bëni ndryshime të tjera që nënkuptojnë modifikime të bazës së të dhënave mund të përmirësojë performancën.",
-    "TaskOptimizeDatabase": "Optimizo databazën"
+    "TaskOptimizeDatabase": "Optimizo databazën",
+    "TaskKeyframeExtractorDescription": "Nxjerrë kornizat kryesore nga skedarët video për të krijuar lista luajtjeje më të sakta HLS. Ky veprim mund të dojë një kohë të gjatë për tu kompletuar.",
+    "TaskKeyframeExtractor": "Nxjerrës i kornizës kryesore",
+    "External": "Jashtem",
+    "HearingImpaired": "Dëgjimi i dëmtuar",
+    "TaskRefreshTrickplayImages": "Krijo Imazhe Trickplay",
+    "TaskRefreshTrickplayImagesDescription": "Krijon pamje paraprake për video në bibliotekat e aktivizuara."
 }

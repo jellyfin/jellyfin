@@ -192,7 +192,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 var result = searchResults.FirstOrDefault();
 
-                if (result != null)
+                if (result is not null)
                 {
                     await _subtitleManager.DownloadSubtitles(video, result.Id, cancellationToken).ConfigureAwait(false);
 

@@ -63,6 +63,11 @@ namespace Jellyfin.Data.Enums
         /// <summary>
         /// A list of ordered views.
         /// </summary>
-        OrderedViews = 11
+        OrderedViews = 11,
+
+        /// <summary>
+        /// A list of allowed tags.
+        /// </summary>
+        AllowedTags = 12
     }
 }

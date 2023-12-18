@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Jellyfin.Server.Implementations.Migrations
 {
-    [DbContext(typeof(JellyfinDb))]
+    [DbContext(typeof(JellyfinDbContext))]
     [Migration("20201204223655_AddCustomDisplayPreferences")]
     partial class AddCustomDisplayPreferences
     {

@@ -1,7 +1,3 @@
-#nullable disable
-
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -19,29 +15,41 @@ using TMDbLib.Objects.Find;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 {
+    /// <summary>
+    /// Movie image provider powered by TMDb.
+    /// </summary>
     public class TmdbMovieImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly TmdbClientManager _tmdbClientManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TmdbMovieImageProvider"/> class.
+        /// </summary>
+        /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
+        /// <param name="tmdbClientManager">The <see cref="TmdbClientManager"/>.</param>
         public TmdbMovieImageProvider(IHttpClientFactory httpClientFactory, TmdbClientManager tmdbClientManager)
         {
             _httpClientFactory = httpClientFactory;
             _tmdbClientManager = tmdbClientManager;
         }
 
+        /// <inheritdoc />
         public int Order => 0;
 
+        /// <inheritdoc />
         public string Name => TmdbUtils.ProviderName;
 
+        /// <inheritdoc />
         public bool Supports(BaseItem item)
         {
             return item is Movie || item is Trailer;
         }
 
+        /// <inheritdoc />
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
-            return new List<ImageType>
+            return new ImageType[]
             {
                 ImageType.Primary,
                 ImageType.Backdrop,
@@ -49,6 +57,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             };
         }
 
+        /// <inheritdoc />
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             var language = item.GetPreferredMetadataLanguage();
@@ -63,7 +72,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 }
 
                 var movieResult = await _tmdbClientManager.FindByExternalIdAsync(movieImdbId, FindExternalSource.Imdb, language, cancellationToken).ConfigureAwait(false);
-                if (movieResult?.MovieResults != null && movieResult.MovieResults.Count > 0)
+                if (movieResult?.MovieResults is not null && movieResult.MovieResults.Count > 0)
                 {
                     movieTmdbId = movieResult.MovieResults[0].Id;
                 }
@@ -79,7 +88,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 .GetMovieAsync(movieTmdbId, null, null, cancellationToken)
                 .ConfigureAwait(false);
 
-            if (movie?.Images == null)
+            if (movie?.Images is null)
             {
                 return Enumerable.Empty<RemoteImageInfo>();
             }
@@ -89,13 +98,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             var logos = movie.Images.Logos;
             var remoteImages = new List<RemoteImageInfo>(posters.Count + backdrops.Count + logos.Count);
 
-            _tmdbClientManager.ConvertPostersToRemoteImageInfo(posters, language, remoteImages);
-            _tmdbClientManager.ConvertBackdropsToRemoteImageInfo(backdrops, language, remoteImages);
-            _tmdbClientManager.ConvertLogosToRemoteImageInfo(logos, language, remoteImages);
+            remoteImages.AddRange(_tmdbClientManager.ConvertPostersToRemoteImageInfo(posters, language));
+            remoteImages.AddRange(_tmdbClientManager.ConvertBackdropsToRemoteImageInfo(backdrops, language));
+            remoteImages.AddRange(_tmdbClientManager.ConvertLogosToRemoteImageInfo(logos, language));
 
             return remoteImages;
         }
 
+        /// <inheritdoc />
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);

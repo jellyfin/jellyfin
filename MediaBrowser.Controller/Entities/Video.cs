@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
@@ -256,7 +257,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The type of the media.</value>
         [JsonIgnore]
-        public override string MediaType => Model.Entities.MediaType.Video;
+        public override MediaType MediaType => MediaType.Video;
 
         public override List<string> GetUserDataKeys()
         {
@@ -333,7 +334,7 @@ namespace MediaBrowser.Controller.Entities
 
         protected override bool IsActiveRecording()
         {
-            return LiveTvManager.GetActiveRecordingInfo(Path) != null;
+            return LiveTvManager.GetActiveRecordingInfo(Path) is not null;
         }
 
         public override bool CanDelete()
@@ -373,7 +374,7 @@ namespace MediaBrowser.Controller.Entities
         {
             return LinkedAlternateVersions
                 .Select(GetLinkedChild)
-                .Where(i => i != null)
+                .Where(i => i is not null)
                 .OfType<Video>()
                 .OrderBy(i => i.SortName);
         }
@@ -386,7 +387,7 @@ namespace MediaBrowser.Controller.Entities
         {
             return GetAdditionalPartIds()
                 .Select(i => LibraryManager.GetItemById(i))
-                .Where(i => i != null)
+                .Where(i => i is not null)
                 .OfType<Video>()
                 .OrderBy(i => i.SortName);
         }
@@ -469,7 +470,7 @@ namespace MediaBrowser.Controller.Entities
 
             var localAlternates = GetLocalAlternateVersionIds()
                 .Select(i => LibraryManager.GetItemById(i))
-                .Where(i => i != null);
+                .Where(i => i is not null);
 
             foreach (var item in localAlternates)
             {
@@ -542,7 +543,7 @@ namespace MediaBrowser.Controller.Entities
                     return i.Item1 is Video video ? video.GetLocalAlternateVersionIds() : Enumerable.Empty<Guid>();
                 })
                 .Select(LibraryManager.GetItemById)
-                .Where(i => i != null)
+                .Where(i => i is not null)
                 .ToList();
 
             list.AddRange(localAlternates.Select(i => (i, MediaSourceType.Default)));

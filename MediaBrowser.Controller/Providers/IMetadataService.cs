@@ -23,6 +23,11 @@ namespace MediaBrowser.Controller.Providers
         /// <returns><c>true</c> if this instance can refresh the specified item.</returns>
         bool CanRefresh(BaseItem item);
 
+        /// <summary>
+        /// Determines whether this instance primarily targets the specified type.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns><c>true</c> if this instance primarily targets the specified type.</returns>
         bool CanRefreshPrimary(Type type);
 
         /// <summary>

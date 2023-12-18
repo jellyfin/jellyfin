@@ -11,8 +11,9 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SQLitePCL.pretty;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Jellyfin.Server.Migrations.Routines
@@ -26,7 +27,7 @@ namespace Jellyfin.Server.Migrations.Routines
 
         private readonly ILogger<MigrateUserDb> _logger;
         private readonly IServerApplicationPaths _paths;
-        private readonly JellyfinDbProvider _provider;
+        private readonly IDbContextFactory<JellyfinDbContext> _provider;
         private readonly IXmlSerializer _xmlSerializer;
 
         /// <summary>
@@ -39,7 +40,7 @@ namespace Jellyfin.Server.Migrations.Routines
         public MigrateUserDb(
             ILogger<MigrateUserDb> logger,
             IServerApplicationPaths paths,
-            JellyfinDbProvider provider,
+            IDbContextFactory<JellyfinDbContext> provider,
             IXmlSerializer xmlSerializer)
         {
             _logger = logger;
@@ -63,9 +64,10 @@ namespace Jellyfin.Server.Migrations.Routines
             var dataPath = _paths.DataPath;
             _logger.LogInformation("Migrating the user database may take a while, do not stop Jellyfin.");
 
-            using (var connection = SQLite3.Open(Path.Combine(dataPath, DbFilename), ConnectionFlags.ReadOnly, null))
+            using (var connection = new SqliteConnection($"Filename={Path.Combine(dataPath, DbFilename)}"))
             {
-                var dbContext = _provider.CreateContext();
+                connection.Open();
+                var dbContext = _provider.CreateDbContext();
 
                 var queryResult = connection.Query("SELECT * FROM LocalUsersv2");
 
@@ -74,8 +76,8 @@ namespace Jellyfin.Server.Migrations.Routines
 
                 foreach (var entry in queryResult)
                 {
-                    UserMockup? mockup = JsonSerializer.Deserialize<UserMockup>(entry[2].ToBlob(), JsonDefaults.Options);
-                    if (mockup == null)
+                    UserMockup? mockup = JsonSerializer.Deserialize<UserMockup>(entry.GetStream(2), JsonDefaults.Options);
+                    if (mockup is null)
                     {
                         continue;
                     }
@@ -107,8 +109,8 @@ namespace Jellyfin.Server.Migrations.Routines
 
                     var user = new User(mockup.Name, policy.AuthenticationProviderId!, policy.PasswordResetProviderId!)
                     {
-                        Id = entry[1].ReadGuidFromBlob(),
-                        InternalId = entry[0].ToInt64(),
+                        Id = entry.GetGuid(1),
+                        InternalId = entry.GetInt64(0),
                         MaxParentalAgeRating = policy.MaxParentalRating,
                         EnableUserPreferenceAccess = policy.EnableUserPreferenceAccess,
                         RemoteClientBitrateLimit = policy.RemoteClientBitrateLimit,
@@ -126,7 +128,6 @@ namespace Jellyfin.Server.Migrations.Routines
                         RememberSubtitleSelections = config.RememberSubtitleSelections,
                         SubtitleLanguagePreference = config.SubtitleLanguagePreference,
                         Password = mockup.Password,
-                        EasyPassword = mockup.EasyPassword,
                         LastLoginDate = mockup.LastLoginDate,
                         LastActivityDate = mockup.LastActivityDate
                     };
@@ -162,6 +163,7 @@ namespace Jellyfin.Server.Migrations.Routines
                     user.SetPermission(PermissionKind.EnablePlaybackRemuxing, policy.EnablePlaybackRemuxing);
                     user.SetPermission(PermissionKind.ForceRemoteSourceTranscoding, policy.ForceRemoteSourceTranscoding);
                     user.SetPermission(PermissionKind.EnablePublicSharing, policy.EnablePublicSharing);
+                    user.SetPermission(PermissionKind.EnableCollectionManagement, policy.EnableCollectionManagement);
 
                     foreach (var policyAccessSchedule in policy.AccessSchedules)
                     {

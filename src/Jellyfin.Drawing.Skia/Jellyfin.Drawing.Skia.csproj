@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- ProjectGuid is only included as a requirement for SonarQube analysis -->
+  <PropertyGroup>
+    <ProjectGuid>{154872D9-6C12-4007-96E3-8F70A58386CE}</ProjectGuid>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- TODO: Remove once we update SkiaSharp > 2.88.5 -->
+    <NoWarn>NU1903</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\SharedVersion.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BlurHashSharp" />
+    <PackageReference Include="BlurHashSharp.SkiaSharp" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" />
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" />
+    <PackageReference Include="SkiaSharp.HarfBuzz" />
+    <PackageReference Include="Svg.Skia" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
+    <ProjectReference Include="..\..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
+    <ProjectReference Include="..\..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
+  </ItemGroup>
+
+</Project>

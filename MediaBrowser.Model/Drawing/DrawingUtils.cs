@@ -71,18 +71,18 @@ namespace MediaBrowser.Model.Drawing
             int? fillHeight)
         {
             // Return original size if input is invalid.
-            if ((fillWidth == null || fillWidth == 0)
-                && (fillHeight == null || fillHeight == 0))
+            if ((fillWidth is null || fillWidth == 0)
+                && (fillHeight is null || fillHeight == 0))
             {
                 return size;
             }
 
-            if (fillWidth == null || fillWidth == 0)
+            if (fillWidth is null || fillWidth == 0)
             {
                 fillWidth = 1;
             }
 
-            if (fillHeight == null || fillHeight == 0)
+            if (fillHeight is null || fillHeight == 0)
             {
                 fillHeight = 1;
             }

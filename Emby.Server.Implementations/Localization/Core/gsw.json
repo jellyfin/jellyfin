@@ -1,7 +1,7 @@
 {
     "Albums": "Alben",
     "AppDeviceValues": "App: {0}, Gerät: {1}",
-    "Application": "Anwendung",
+    "Application": "Applikation",
     "Artists": "Künstler",
     "AuthenticationSucceededWithUserName": "{0} hat sich angemeldet",
     "Books": "Bücher",
@@ -14,7 +14,7 @@
     "FailedLoginAttemptWithUserName": "Fehlgeschlagener Anmeldeversuch von {0}",
     "Favorites": "Favoriten",
     "Folders": "Ordner",
-    "Genres": "Genres",
+    "Genres": "Genre",
     "HeaderAlbumArtists": "Album-Künstler",
     "HeaderContinueWatching": "weiter schauen",
     "HeaderFavoriteAlbums": "Lieblingsalben",
@@ -49,7 +49,7 @@
     "NotificationOptionAudioPlayback": "Audiowedergab gstartet",
     "NotificationOptionAudioPlaybackStopped": "Audiwedergab gstoppt",
     "NotificationOptionCameraImageUploaded": "Foti ueglade",
-    "NotificationOptionInstallationFailed": "Installationsfehler",
+    "NotificationOptionInstallationFailed": "Installationsfähler",
     "NotificationOptionNewLibraryContent": "Nöie Inhaut hinzuegfüegt",
     "NotificationOptionPluginError": "Plugin-Fäuer",
     "NotificationOptionPluginInstalled": "Plugin installiert",
@@ -119,5 +119,12 @@
     "Undefined": "Undefiniert",
     "Forced": "Erzwungen",
     "Default": "Standard",
-    "TaskOptimizeDatabase": "Datenbank optimieren"
+    "TaskOptimizeDatabase": "Datenbank optimieren",
+    "External": "Extern",
+    "TaskOptimizeDatabaseDescription": "Kompromiert d Datenbank und trennt freie Speicherplatz. Durch die Ufagb cha d Leistig nach em ne Scan vor Bibliothek oder andere Ufgabe verbesseret werde.",
+    "HearingImpaired": "Hörgschädigti",
+    "TaskKeyframeExtractor": "Keyframe-Extraktor",
+    "TaskKeyframeExtractorDescription": "Extrahiert Keyframes us Videodateien zum erstelle vo genauere HLS Playliste. Die Ufgab cha für e langi Zyt laufe.",
+    "TaskRefreshTrickplayImages": "Trickplay-Bilder erstelle",
+    "TaskRefreshTrickplayImagesDescription": "Erstellt Trickplay-Vorschaue für Video in aktivierte Bibliothèke."
 }

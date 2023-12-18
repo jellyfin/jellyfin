@@ -1,0 +1,35 @@
+name: Stale Issue Labeler
+
+on:
+  schedule:
+    - cron: '30 1 * * *'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+  actions: write
+
+jobs:
+  issues:
+    name: Check for stale issues
+    runs-on: ubuntu-latest
+    if: ${{ contains(github.repository, 'jellyfin/') }}
+    steps:
+      - uses: actions/stale@28ca1036281a5e5922ead5184a1bbf96e5fc984e # v9.0.0
+        with:
+          repo-token: ${{ secrets.JF_BOT_TOKEN }}
+          ascending: true
+          days-before-stale: 120
+          days-before-pr-stale: -1
+          days-before-close: 21
+          days-before-pr-close: -1
+          operations-per-run: 500
+          exempt-issue-labels: regression,security,roadmap,future,feature,enhancement,confirmed
+          stale-issue-label: stale
+          stale-issue-message: |-
+            This issue has gone 120 days without an update and will be closed within 21 days if there is no new activity. To prevent this issue from being closed, please confirm the issue has not already been fixed by providing updated examples or logs.
+
+            If you have any questions you can use one of several ways to [contact us](https://jellyfin.org/contact).
+          close-issue-message: |-
+            This issue was closed due to inactivity.

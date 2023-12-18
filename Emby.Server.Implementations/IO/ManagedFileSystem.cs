@@ -15,29 +15,34 @@ namespace Emby.Server.Implementations.IO
     /// </summary>
     public class ManagedFileSystem : IFileSystem
     {
-        private readonly ILogger<ManagedFileSystem> _logger;
-
-        private readonly List<IShortcutHandler> _shortcutHandlers = new List<IShortcutHandler>();
-        private readonly string _tempPath;
         private static readonly bool _isEnvironmentCaseInsensitive = OperatingSystem.IsWindows();
+        private static readonly char[] _invalidPathCharacters =
+        {
+            '\"', '<', '>', '|', '\0',
+            (char)1, (char)2, (char)3, (char)4, (char)5, (char)6, (char)7, (char)8, (char)9, (char)10,
+            (char)11, (char)12, (char)13, (char)14, (char)15, (char)16, (char)17, (char)18, (char)19, (char)20,
+            (char)21, (char)22, (char)23, (char)24, (char)25, (char)26, (char)27, (char)28, (char)29, (char)30,
+            (char)31, ':', '*', '?', '\\', '/'
+        };
+
+        private readonly ILogger<ManagedFileSystem> _logger;
+        private readonly List<IShortcutHandler> _shortcutHandlers;
+        private readonly string _tempPath;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ManagedFileSystem"/> class.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> instance to use.</param>
         /// <param name="applicationPaths">The <see cref="IApplicationPaths"/> instance to use.</param>
+        /// <param name="shortcutHandlers">the <see cref="IShortcutHandler"/>'s to use.</param>
         public ManagedFileSystem(
             ILogger<ManagedFileSystem> logger,
-            IApplicationPaths applicationPaths)
+            IApplicationPaths applicationPaths,
+            IEnumerable<IShortcutHandler> shortcutHandlers)
         {
             _logger = logger;
             _tempPath = applicationPaths.TempDirectory;
-        }
-
-        /// <inheritdoc />
-        public virtual void AddShortcutHandler(IShortcutHandler handler)
-        {
-            _shortcutHandlers.Add(handler);
+            _shortcutHandlers = shortcutHandlers.ToList();
         }
 
         /// <summary>
@@ -48,10 +53,7 @@ namespace Emby.Server.Implementations.IO
         /// <exception cref="ArgumentNullException"><paramref name="filename"/> is <c>null</c>.</exception>
         public virtual bool IsShortcut(string filename)
         {
-            if (string.IsNullOrEmpty(filename))
-            {
-                throw new ArgumentNullException(nameof(filename));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(filename);
 
             var extension = Path.GetExtension(filename);
             return _shortcutHandlers.Any(i => string.Equals(extension, i.Extension, StringComparison.OrdinalIgnoreCase));
@@ -65,10 +67,7 @@ namespace Emby.Server.Implementations.IO
         /// <exception cref="ArgumentNullException"><paramref name="filename"/> is <c>null</c>.</exception>
         public virtual string? ResolveShortcut(string filename)
         {
-            if (string.IsNullOrEmpty(filename))
-            {
-                throw new ArgumentNullException(nameof(filename));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(filename);
 
             var extension = Path.GetExtension(filename);
             var handler = _shortcutHandlers.Find(i => string.Equals(extension, i.Extension, StringComparison.OrdinalIgnoreCase));
@@ -92,7 +91,7 @@ namespace Emby.Server.Implementations.IO
             }
 
             // unc path
-            if (filePath.StartsWith("\\\\", StringComparison.Ordinal))
+            if (filePath.StartsWith(@"\\", StringComparison.Ordinal))
             {
                 return filePath;
             }
@@ -104,15 +103,17 @@ namespace Emby.Server.Implementations.IO
                 return filePath;
             }
 
+            var filePathSpan = filePath.AsSpan();
+
             // relative path
             if (firstChar == '\\')
             {
-                filePath = filePath.Substring(1);
+                filePathSpan = filePathSpan.Slice(1);
             }
 
             try
             {
-                return Path.GetFullPath(Path.Combine(folderPath, filePath));
+                return Path.GetFullPath(Path.Join(folderPath, filePathSpan));
             }
             catch (ArgumentException)
             {
@@ -136,20 +137,13 @@ namespace Emby.Server.Implementations.IO
         /// <exception cref="ArgumentNullException">The shortcutPath or target is null.</exception>
         public virtual void CreateShortcut(string shortcutPath, string target)
         {
-            if (string.IsNullOrEmpty(shortcutPath))
-            {
-                throw new ArgumentNullException(nameof(shortcutPath));
-            }
-
-            if (string.IsNullOrEmpty(target))
-            {
-                throw new ArgumentNullException(nameof(target));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(shortcutPath);
+            ArgumentException.ThrowIfNullOrEmpty(target);
 
             var extension = Path.GetExtension(shortcutPath);
             var handler = _shortcutHandlers.Find(i => string.Equals(extension, i.Extension, StringComparison.OrdinalIgnoreCase));
 
-            if (handler != null)
+            if (handler is not null)
             {
                 handler.Create(shortcutPath, target);
             }
@@ -280,25 +274,6 @@ namespace Emby.Server.Implementations.IO
             return result;
         }
 
-        private static ExtendedFileSystemInfo GetExtendedFileSystemInfo(string path)
-        {
-            var result = new ExtendedFileSystemInfo();
-
-            var info = new FileInfo(path);
-
-            if (info.Exists)
-            {
-                result.Exists = true;
-
-                var attributes = info.Attributes;
-
-                result.IsHidden = (attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
-                result.IsReadOnly = (attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly;
-            }
-
-            return result;
-        }
-
         /// <summary>
         /// Takes a filename and removes invalid characters.
         /// </summary>
@@ -307,8 +282,7 @@ namespace Emby.Server.Implementations.IO
         /// <exception cref="ArgumentNullException">The filename is null.</exception>
         public string GetValidFilename(string filename)
         {
-            var invalid = Path.GetInvalidFileNameChars();
-            var first = filename.IndexOfAny(invalid);
+            var first = filename.IndexOfAny(_invalidPathCharacters);
             if (first == -1)
             {
                 // Fast path for clean strings
@@ -317,7 +291,7 @@ namespace Emby.Server.Implementations.IO
 
             return string.Create(
                 filename.Length,
-                (filename, invalid, first),
+                (filename, _invalidPathCharacters, first),
                 (chars, state) =>
                 {
                     state.filename.AsSpan().CopyTo(chars);
@@ -325,7 +299,7 @@ namespace Emby.Server.Implementations.IO
                     chars[state.first++] = ' ';
 
                     var len = chars.Length;
-                    foreach (var c in state.invalid)
+                    foreach (var c in state._invalidPathCharacters)
                     {
                         for (int i = state.first; i < len; i++)
                         {
@@ -416,19 +390,18 @@ namespace Emby.Server.Implementations.IO
                 return;
             }
 
-            var info = GetExtendedFileSystemInfo(path);
+            var info = new FileInfo(path);
 
-            if (info.Exists && info.IsHidden != isHidden)
+            if (info.Exists &&
+                ((info.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) != isHidden)
             {
                 if (isHidden)
                 {
-                    File.SetAttributes(path, File.GetAttributes(path) | FileAttributes.Hidden);
+                    File.SetAttributes(path, info.Attributes | FileAttributes.Hidden);
                 }
                 else
                 {
-                    var attributes = File.GetAttributes(path);
-                    attributes = RemoveAttribute(attributes, FileAttributes.Hidden);
-                    File.SetAttributes(path, attributes);
+                    File.SetAttributes(path, info.Attributes & ~FileAttributes.Hidden);
                 }
             }
         }
@@ -441,19 +414,20 @@ namespace Emby.Server.Implementations.IO
                 return;
             }
 
-            var info = GetExtendedFileSystemInfo(path);
+            var info = new FileInfo(path);
 
             if (!info.Exists)
             {
                 return;
             }
 
-            if (info.IsReadOnly == readOnly && info.IsHidden == isHidden)
+            if (((info.Attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly) == readOnly
+                && ((info.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden) == isHidden)
             {
                 return;
             }
 
-            var attributes = File.GetAttributes(path);
+            var attributes = info.Attributes;
 
             if (readOnly)
             {
@@ -461,7 +435,7 @@ namespace Emby.Server.Implementations.IO
             }
             else
             {
-                attributes = RemoveAttribute(attributes, FileAttributes.ReadOnly);
+                attributes &= ~FileAttributes.ReadOnly;
             }
 
             if (isHidden)
@@ -470,15 +444,10 @@ namespace Emby.Server.Implementations.IO
             }
             else
             {
-                attributes = RemoveAttribute(attributes, FileAttributes.Hidden);
+                attributes &= ~FileAttributes.Hidden;
             }
 
             File.SetAttributes(path, attributes);
-        }
-
-        private static FileAttributes RemoveAttribute(FileAttributes attributes, FileAttributes attributesToRemove)
-        {
-            return attributes & ~attributesToRemove;
         }
 
         /// <summary>
@@ -488,15 +457,8 @@ namespace Emby.Server.Implementations.IO
         /// <param name="file2">The file2.</param>
         public virtual void SwapFiles(string file1, string file2)
         {
-            if (string.IsNullOrEmpty(file1))
-            {
-                throw new ArgumentNullException(nameof(file1));
-            }
-
-            if (string.IsNullOrEmpty(file2))
-            {
-                throw new ArgumentNullException(nameof(file2));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(file1);
+            ArgumentException.ThrowIfNullOrEmpty(file2);
 
             var temp1 = Path.Combine(_tempPath, Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture));
 
@@ -514,15 +476,8 @@ namespace Emby.Server.Implementations.IO
         /// <inheritdoc />
         public virtual bool ContainsSubPath(string parentPath, string path)
         {
-            if (string.IsNullOrEmpty(parentPath))
-            {
-                throw new ArgumentNullException(nameof(parentPath));
-            }
-
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(parentPath);
+            ArgumentException.ThrowIfNullOrEmpty(path);
 
             return path.Contains(
                 Path.TrimEndingDirectorySeparator(parentPath) + Path.DirectorySeparatorChar,
@@ -530,27 +485,10 @@ namespace Emby.Server.Implementations.IO
         }
 
         /// <inheritdoc />
-        public virtual string NormalizePath(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
-            if (path.EndsWith(":\\", StringComparison.OrdinalIgnoreCase))
-            {
-                return path;
-            }
-
-            return Path.TrimEndingDirectorySeparator(path);
-        }
-
-        /// <inheritdoc />
         public virtual bool AreEqual(string path1, string path2)
         {
-            return string.Equals(
-                NormalizePath(path1),
-                NormalizePath(path2),
+            return Path.TrimEndingDirectorySeparator(path1).Equals(
+                Path.TrimEndingDirectorySeparator(path2),
                 _isEnvironmentCaseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
         }
 
@@ -621,14 +559,14 @@ namespace Emby.Server.Implementations.IO
 
             // On linux and osx the search pattern is case sensitive
             // If we're OK with case-sensitivity, and we're only filtering for one extension, then use the native method
-            if ((enableCaseSensitiveExtensions || _isEnvironmentCaseInsensitive) && extensions != null && extensions.Count == 1)
+            if ((enableCaseSensitiveExtensions || _isEnvironmentCaseInsensitive) && extensions is not null && extensions.Count == 1)
             {
                 return ToMetadata(new DirectoryInfo(path).EnumerateFiles("*" + extensions[0], enumerationOptions));
             }
 
             var files = new DirectoryInfo(path).EnumerateFiles("*", enumerationOptions);
 
-            if (extensions != null && extensions.Count > 0)
+            if (extensions is not null && extensions.Count > 0)
             {
                 files = files.Where(i =>
                 {
@@ -678,14 +616,14 @@ namespace Emby.Server.Implementations.IO
 
             // On linux and osx the search pattern is case sensitive
             // If we're OK with case-sensitivity, and we're only filtering for one extension, then use the native method
-            if ((enableCaseSensitiveExtensions || _isEnvironmentCaseInsensitive) && extensions != null && extensions.Length == 1)
+            if ((enableCaseSensitiveExtensions || _isEnvironmentCaseInsensitive) && extensions is not null && extensions.Length == 1)
             {
                 return Directory.EnumerateFiles(path, "*" + extensions[0], enumerationOptions);
             }
 
             var files = Directory.EnumerateFiles(path, "*", enumerationOptions);
 
-            if (extensions != null && extensions.Length > 0)
+            if (extensions is not null && extensions.Length > 0)
             {
                 files = files.Where(i =>
                 {

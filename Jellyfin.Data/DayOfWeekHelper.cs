@@ -17,5 +17,16 @@ namespace Jellyfin.Data
                 _ => new[] { (DayOfWeek)day }
             };
         }
+
+        public static bool Contains(this DynamicDayOfWeek dynamicDayOfWeek, DayOfWeek dayOfWeek)
+        {
+            return dynamicDayOfWeek switch
+            {
+                DynamicDayOfWeek.Everyday => true,
+                DynamicDayOfWeek.Weekday => dayOfWeek is >= DayOfWeek.Monday and <= DayOfWeek.Friday,
+                DynamicDayOfWeek.Weekend => dayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday,
+                _ => (DayOfWeek)dynamicDayOfWeek == dayOfWeek
+            };
+        }
     }
 }

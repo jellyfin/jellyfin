@@ -20,7 +20,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {
-    public class M3uParser
+    public partial class M3uParser
     {
         private const string ExtInfPrefix = "#EXTINF:";
 
@@ -33,6 +33,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             _httpClientFactory = httpClientFactory;
         }
 
+        [GeneratedRegex(@"([a-z0-9\-_]+)=\""([^""]+)\""", RegexOptions.IgnoreCase, "en-US")]
+        private static partial Regex KeyValueRegex();
+
         public async Task<List<ChannelInfo>> Parse(TunerHostInfo info, string channelIdPrefix, CancellationToken cancellationToken)
         {
             // Read the file and display it line by line.
@@ -44,10 +47,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         public async Task<Stream> GetListingsStream(TunerHostInfo info, CancellationToken cancellationToken)
         {
-            if (info == null)
-            {
-                throw new ArgumentNullException(nameof(info));
-            }
+            ArgumentNullException.ThrowIfNull(info);
 
             if (!info.Url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
@@ -94,14 +94,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 else if (!string.IsNullOrWhiteSpace(extInf) && !trimmedLine.StartsWith('#'))
                 {
                     var channel = GetChannelnfo(extInf, tunerHostId, trimmedLine);
-                    if (string.IsNullOrWhiteSpace(channel.Id))
-                    {
-                        channel.Id = channelIdPrefix + trimmedLine.GetMD5().ToString("N", CultureInfo.InvariantCulture);
-                    }
-                    else
-                    {
-                        channel.Id = channelIdPrefix + channel.Id.GetMD5().ToString("N", CultureInfo.InvariantCulture);
-                    }
+                    channel.Id = channelIdPrefix + trimmedLine.GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
                     channel.Path = trimmedLine;
                     channels.Add(channel);
@@ -125,9 +118,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             var attributes = ParseExtInf(extInf, out string remaining);
             extInf = remaining;
 
-            if (attributes.TryGetValue("tvg-logo", out string value))
+            if (attributes.TryGetValue("tvg-logo", out string tvgLogo))
             {
-                channel.ImageUrl = value;
+                channel.ImageUrl = tvgLogo;
+            }
+            else if (attributes.TryGetValue("logo", out string logo))
+            {
+                channel.ImageUrl = logo;
             }
 
             if (attributes.TryGetValue("group-title", out string groupTitle))
@@ -169,37 +166,32 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             var nameInExtInf = nameParts.Length > 1 ? nameParts[^1].AsSpan().Trim() : ReadOnlySpan<char>.Empty;
 
             string numberString = null;
-            string attributeValue;
 
-            if (attributes.TryGetValue("tvg-chno", out attributeValue))
+            if (attributes.TryGetValue("tvg-chno", out var attributeValue)
+                && double.TryParse(attributeValue, CultureInfo.InvariantCulture, out _))
             {
-                if (double.TryParse(attributeValue, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
-                {
-                    numberString = attributeValue;
-                }
+                numberString = attributeValue;
             }
 
             if (!IsValidChannelNumber(numberString))
             {
                 if (attributes.TryGetValue("tvg-id", out attributeValue))
                 {
-                    if (double.TryParse(attributeValue, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
+                    if (double.TryParse(attributeValue, CultureInfo.InvariantCulture, out _))
                     {
                         numberString = attributeValue;
                     }
-                    else if (attributes.TryGetValue("channel-id", out attributeValue))
+                    else if (attributes.TryGetValue("channel-id", out attributeValue)
+                        && double.TryParse(attributeValue, CultureInfo.InvariantCulture, out _))
                     {
-                        if (double.TryParse(attributeValue, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
-                        {
-                            numberString = attributeValue;
-                        }
+                        numberString = attributeValue;
                     }
                 }
 
                 if (string.IsNullOrWhiteSpace(numberString))
                 {
                     // Using this as a fallback now as this leads to Problems with channels like "5 USA"
-                    // where 5 isn't ment to be the channel number
+                    // where 5 isn't meant to be the channel number
                     // Check for channel number with the format from SatIp
                     // #EXTINF:0,84. VOX Schweiz
                     // #EXTINF:0,84.0 - VOX Schweiz
@@ -210,7 +202,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                         {
                             var numberPart = nameInExtInf.Slice(0, numberIndex).Trim(new[] { ' ', '.' });
 
-                            if (double.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
+                            if (double.TryParse(numberPart, CultureInfo.InvariantCulture, out _))
                             {
                                 numberString = numberPart.ToString();
                             }
@@ -258,19 +250,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         private static bool IsValidChannelNumber(string numberString)
         {
-            if (string.IsNullOrWhiteSpace(numberString) ||
-                string.Equals(numberString, "-1", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(numberString, "0", StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(numberString)
+                || string.Equals(numberString, "-1", StringComparison.Ordinal)
+                || string.Equals(numberString, "0", StringComparison.Ordinal))
             {
                 return false;
             }
 
-            if (!double.TryParse(numberString, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
-            {
-                return false;
-            }
-
-            return true;
+            return double.TryParse(numberString, CultureInfo.InvariantCulture, out _);
         }
 
         private static string GetChannelName(string extInf, Dictionary<string, string> attributes)
@@ -288,7 +275,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 {
                     var numberPart = nameInExtInf.Substring(0, numberIndex).Trim(new[] { ' ', '.' });
 
-                    if (double.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
+                    if (double.TryParse(numberPart, CultureInfo.InvariantCulture, out _))
                     {
                         // channel.Number = number.ToString();
                         nameInExtInf = nameInExtInf.Substring(numberIndex + 1).Trim(new[] { ' ', '-' });
@@ -320,8 +307,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         {
             var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            var reg = new Regex(@"([a-z0-9\-_]+)=\""([^""]+)\""", RegexOptions.IgnoreCase);
-            var matches = reg.Matches(line);
+            var matches = KeyValueRegex().Matches(line);
 
             remaining = line;
 
@@ -330,7 +316,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 var key = match.Groups[1].Value;
                 var value = match.Groups[2].Value;
 
-                dict[match.Groups[1].Value] = match.Groups[2].Value;
+                dict[key] = value;
                 remaining = remaining.Replace(key + "=\"" + value + "\"", string.Empty, StringComparison.OrdinalIgnoreCase);
             }
 

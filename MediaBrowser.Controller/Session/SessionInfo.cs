@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
+using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Session;
@@ -17,7 +19,7 @@ namespace MediaBrowser.Controller.Session
     /// <summary>
     /// Class SessionInfo.
     /// </summary>
-    public sealed class SessionInfo : IDisposable
+    public sealed class SessionInfo : IAsyncDisposable, IDisposable
     {
         // 1 second
         private const long ProgressIncrement = 10000000;
@@ -59,13 +61,13 @@ namespace MediaBrowser.Controller.Session
         /// Gets the playable media types.
         /// </summary>
         /// <value>The playable media types.</value>
-        public IReadOnlyList<string> PlayableMediaTypes
+        public IReadOnlyList<MediaType> PlayableMediaTypes
         {
             get
             {
-                if (Capabilities == null)
+                if (Capabilities is null)
                 {
-                    return Array.Empty<string>();
+                    return Array.Empty<MediaType>();
                 }
 
                 return Capabilities.PlayableMediaTypes;
@@ -107,6 +109,12 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <value>The last playback check in.</value>
         public DateTime LastPlaybackCheckIn { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last paused date.
+        /// </summary>
+        /// <value>The last paused date.</value>
+        public DateTime? LastPausedDate { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the device.
@@ -181,7 +189,7 @@ namespace MediaBrowser.Controller.Session
         {
             get
             {
-                if (Capabilities == null || !Capabilities.SupportsMediaControl)
+                if (Capabilities is null || !Capabilities.SupportsMediaControl)
                 {
                     return false;
                 }
@@ -203,7 +211,7 @@ namespace MediaBrowser.Controller.Session
         {
             get
             {
-                if (Capabilities == null || !Capabilities.SupportsMediaControl)
+                if (Capabilities is null || !Capabilities.SupportsMediaControl)
                 {
                     return false;
                 }
@@ -238,7 +246,7 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <value>The supported commands.</value>
         public IReadOnlyList<GeneralCommandType> SupportedCommands
-            => Capabilities == null ? Array.Empty<GeneralCommandType>() : Capabilities.SupportedCommands;
+            => Capabilities is null ? Array.Empty<GeneralCommandType>() : Capabilities.SupportedCommands;
 
         public Tuple<ISessionController, bool> EnsureController<T>(Func<SessionInfo, ISessionController> factory)
         {
@@ -295,7 +303,7 @@ namespace MediaBrowser.Controller.Session
             {
                 _lastProgressInfo = progressInfo;
 
-                if (_progressTimer == null)
+                if (_progressTimer is null)
                 {
                     _progressTimer = new Timer(OnProgressTimerCallback, null, 1000, 1000);
                 }
@@ -314,7 +322,7 @@ namespace MediaBrowser.Controller.Session
             }
 
             var progressInfo = _lastProgressInfo;
-            if (progressInfo == null)
+            if (progressInfo is null)
             {
                 return;
             }
@@ -356,7 +364,7 @@ namespace MediaBrowser.Controller.Session
         {
             lock (_progressLock)
             {
-                if (_progressTimer != null)
+                if (_progressTimer is not null)
                 {
                     _progressTimer.Dispose();
                     _progressTimer = null;
@@ -380,8 +388,26 @@ namespace MediaBrowser.Controller.Session
             {
                 if (controller is IDisposable disposable)
                 {
-                    _logger.LogDebug("Disposing session controller {0}", disposable.GetType().Name);
+                    _logger.LogDebug("Disposing session controller synchronously {TypeName}", disposable.GetType().Name);
                     disposable.Dispose();
+                }
+            }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            _disposed = true;
+
+            StopAutomaticProgress();
+
+            var controllers = SessionControllers.ToList();
+
+            foreach (var controller in controllers)
+            {
+                if (controller is IAsyncDisposable disposableAsync)
+                {
+                    _logger.LogDebug("Disposing session controller asynchronously {TypeName}", disposableAsync.GetType().Name);
+                    await disposableAsync.DisposeAsync().ConfigureAwait(false);
                 }
             }
         }

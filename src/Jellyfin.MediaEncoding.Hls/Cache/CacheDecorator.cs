@@ -87,7 +87,7 @@ public class CacheDecorator : IKeyframeExtractor
         {
             var bytes = File.ReadAllBytes(cachePath);
             cachedResult = JsonSerializer.Deserialize<KeyframeData>(bytes, _jsonOptions);
-            return cachedResult != null;
+            return cachedResult is not null;
         }
 
         cachedResult = null;

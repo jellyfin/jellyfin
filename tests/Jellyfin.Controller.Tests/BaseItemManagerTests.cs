@@ -20,17 +20,13 @@ namespace Jellyfin.Controller.Tests
         {
             BaseItem item = (BaseItem)Activator.CreateInstance(itemType)!;
 
-            var libraryOptions = new LibraryOptions
-            {
-                TypeOptions = new[]
+            var libraryTypeOptions = itemType == typeof(Book)
+                ? new TypeOptions
                 {
-                    new TypeOptions
-                    {
-                        Type = "Book",
-                        MetadataFetchers = new[] { "LibraryEnabled" }
-                    }
+                    Type = "Book",
+                    MetadataFetchers = new[] { "LibraryEnabled" }
                 }
-            };
+                : null;
 
             var serverConfiguration = new ServerConfiguration();
             foreach (var typeConfig in serverConfiguration.MetadataOptions)
@@ -43,7 +39,7 @@ namespace Jellyfin.Controller.Tests
                 .Returns(serverConfiguration);
 
             var baseItemManager = new BaseItemManager(serverConfigurationManager.Object);
-            var actual = baseItemManager.IsMetadataFetcherEnabled(item, libraryOptions, fetcherName);
+            var actual = baseItemManager.IsMetadataFetcherEnabled(item, libraryTypeOptions, fetcherName);
 
             Assert.Equal(expected, actual);
         }
@@ -57,17 +53,13 @@ namespace Jellyfin.Controller.Tests
         {
             BaseItem item = (BaseItem)Activator.CreateInstance(itemType)!;
 
-            var libraryOptions = new LibraryOptions
-            {
-                TypeOptions = new[]
+            var libraryTypeOptions = itemType == typeof(Book)
+                ? new TypeOptions
                 {
-                    new TypeOptions
-                    {
-                        Type = "Book",
-                        ImageFetchers = new[] { "LibraryEnabled" }
-                    }
+                    Type = "Book",
+                    ImageFetchers = new[] { "LibraryEnabled" }
                 }
-            };
+                : null;
 
             var serverConfiguration = new ServerConfiguration();
             foreach (var typeConfig in serverConfiguration.MetadataOptions)
@@ -80,7 +72,7 @@ namespace Jellyfin.Controller.Tests
                 .Returns(serverConfiguration);
 
             var baseItemManager = new BaseItemManager(serverConfigurationManager.Object);
-            var actual = baseItemManager.IsImageFetcherEnabled(item, libraryOptions, fetcherName);
+            var actual = baseItemManager.IsImageFetcherEnabled(item, libraryTypeOptions, fetcherName);
 
             Assert.Equal(expected, actual);
         }

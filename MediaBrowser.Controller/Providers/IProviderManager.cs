@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
@@ -53,14 +52,6 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task<ItemUpdateType> RefreshSingleItem(BaseItem item, MetadataRefreshOptions options, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Runs multiple metadata refreshes concurrently.
-        /// </summary>
-        /// <param name="action">The action to run.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        Task RunMetadataRefresh(Func<Task> action, CancellationToken cancellationToken);
 
         /// <summary>
         /// Saves the image.
@@ -132,6 +123,24 @@ namespace MediaBrowser.Controller.Providers
         IEnumerable<ImageProviderInfo> GetRemoteImageProviderInfo(BaseItem item);
 
         /// <summary>
+        /// Gets the image providers for the provided item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="refreshOptions">The image refresh options.</param>
+        /// <returns>The image providers for the item.</returns>
+        IEnumerable<IImageProvider> GetImageProviders(BaseItem item, ImageRefreshOptions refreshOptions);
+
+        /// <summary>
+        /// Gets the metadata providers for the provided item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="libraryOptions">The library options.</param>
+        /// <typeparam name="T">The type of metadata provider.</typeparam>
+        /// <returns>The metadata providers.</returns>
+        IEnumerable<IMetadataProvider<T>> GetMetadataProviders<T>(BaseItem item, LibraryOptions libraryOptions)
+            where T : BaseItem;
+
+        /// <summary>
         /// Gets all metadata plugins.
         /// </summary>
         /// <returns>IEnumerable{MetadataPlugin}.</returns>
@@ -189,16 +198,7 @@ namespace MediaBrowser.Controller.Providers
             where TItemType : BaseItem, new()
             where TLookupType : ItemLookupInfo;
 
-        /// <summary>
-        /// Gets the search image.
-        /// </summary>
-        /// <param name="providerName">Name of the provider.</param>
-        /// <param name="url">The URL.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{HttpResponseInfo}.</returns>
-        Task<HttpResponseMessage> GetSearchImage(string providerName, string url, CancellationToken cancellationToken);
-
-        Dictionary<Guid, Guid> GetRefreshQueue();
+        HashSet<Guid> GetRefreshQueue();
 
         void OnRefreshStart(BaseItem item);
 

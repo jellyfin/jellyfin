@@ -18,6 +18,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Providers.MediaInfo;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -28,7 +29,7 @@ public class MediaInfoResolverTests
     public const string VideoDirectoryPath = "Test Data/Video";
     public const string VideoDirectoryRegex = @"Test Data[/\\]Video";
     public const string MetadataDirectoryPath = "library/00/00000000000000000000000000000000";
-    public const string MetadataDirectoryRegex = @"library.*";
+    public const string MetadataDirectoryRegex = "library.*";
 
     private readonly ILocalizationManager _localizationManager;
     private readonly MediaInfoResolver _subtitleResolver;
@@ -48,7 +49,7 @@ public class MediaInfoResolverTests
         var englishCultureDto = new CultureDto("English", "English", "en", new[] { "eng" });
 
         var localizationManager = new Mock<ILocalizationManager>(MockBehavior.Loose);
-        localizationManager.Setup(lm => lm.FindLanguageInfo(It.IsRegex(@"en.*", RegexOptions.IgnoreCase)))
+        localizationManager.Setup(lm => lm.FindLanguageInfo(It.IsRegex("en.*", RegexOptions.IgnoreCase)))
             .Returns(englishCultureDto);
         _localizationManager = localizationManager.Object;
 
@@ -70,7 +71,7 @@ public class MediaInfoResolverTests
         fileSystem.Setup(fs => fs.DirectoryExists(It.IsRegex(MetadataDirectoryRegex)))
             .Returns(true);
 
-        _subtitleResolver = new SubtitleResolver(_localizationManager, mediaEncoder.Object, fileSystem.Object, new NamingOptions());
+        _subtitleResolver = new SubtitleResolver(Mock.Of<ILogger<SubtitleResolver>>(), _localizationManager, mediaEncoder.Object, fileSystem.Object, new NamingOptions());
     }
 
     [Fact]
@@ -78,7 +79,7 @@ public class MediaInfoResolverTests
     {
         // need a media source manager capable of returning something other than file protocol
         var mediaSourceManager = new Mock<IMediaSourceManager>();
-        mediaSourceManager.Setup(m => m.GetPathProtocol(It.IsRegex(@"http.*")))
+        mediaSourceManager.Setup(m => m.GetPathProtocol(It.IsRegex("http.*")))
             .Returns(MediaProtocol.Http);
         BaseItem.MediaSourceManager = mediaSourceManager.Object;
 
@@ -185,7 +186,7 @@ public class MediaInfoResolverTests
     {
         // need a media source manager capable of returning something other than file protocol
         var mediaSourceManager = new Mock<IMediaSourceManager>();
-        mediaSourceManager.Setup(m => m.GetPathProtocol(It.IsRegex(@"http.*")))
+        mediaSourceManager.Setup(m => m.GetPathProtocol(It.IsRegex("http.*")))
             .Returns(MediaProtocol.Http);
         BaseItem.MediaSourceManager = mediaSourceManager.Object;
 
@@ -201,14 +202,14 @@ public class MediaInfoResolverTests
         var mediaEncoder = Mock.Of<IMediaEncoder>(MockBehavior.Strict);
         var fileSystem = Mock.Of<IFileSystem>();
 
-        var subtitleResolver = new SubtitleResolver(_localizationManager, mediaEncoder, fileSystem, new NamingOptions());
+        var subtitleResolver = new SubtitleResolver(Mock.Of<ILogger<SubtitleResolver>>(), _localizationManager, mediaEncoder, fileSystem, new NamingOptions());
 
         var streams = await subtitleResolver.GetExternalStreamsAsync(video, 0, directoryService.Object, false, CancellationToken.None);
 
         Assert.Empty(streams);
     }
 
-    private static TheoryData<string, MediaStream[], MediaStream[]> GetExternalStreams_MergeMetadata_HandlesOverridesCorrectly_Data()
+    public static TheoryData<string, MediaStream[], MediaStream[]> GetExternalStreams_MergeMetadata_HandlesOverridesCorrectly_Data()
     {
         var data = new TheoryData<string, MediaStream[], MediaStream[]>();
 
@@ -226,7 +227,7 @@ public class MediaInfoResolverTests
             });
 
         // filename has metadata
-        file = "My.Video.Title1.default.forced.en.srt";
+        file = "My.Video.Title1.default.forced.sdh.en.srt";
         data.Add(
             file,
             new[]
@@ -235,7 +236,7 @@ public class MediaInfoResolverTests
             },
             new[]
             {
-                CreateMediaStream(VideoDirectoryPath + "/" + file, "eng", "Title1", 0, true, true)
+                CreateMediaStream(VideoDirectoryPath + "/" + file, "eng", "Title1", 0, true, true, true)
             });
 
         // single stream with metadata
@@ -244,15 +245,15 @@ public class MediaInfoResolverTests
             file,
             new[]
             {
-                CreateMediaStream(VideoDirectoryPath + "/" + file, "eng", "Title", 0, true, true)
+                CreateMediaStream(VideoDirectoryPath + "/" + file, "eng", "Title", 0, true, true, true)
             },
             new[]
             {
-                CreateMediaStream(VideoDirectoryPath + "/" + file, "eng", "Title", 0, true, true)
+                CreateMediaStream(VideoDirectoryPath + "/" + file, "eng", "Title", 0, true, true, true)
             });
 
         // stream wins for title/language, filename wins for flags when conflicting
-        file = "My.Video.Title2.default.forced.en.srt";
+        file = "My.Video.Title2.default.forced.sdh.en.srt";
         data.Add(
             file,
             new[]
@@ -261,7 +262,7 @@ public class MediaInfoResolverTests
             },
             new[]
             {
-                CreateMediaStream(VideoDirectoryPath + "/" + file, "fra", "Metadata", 0, true, true)
+                CreateMediaStream(VideoDirectoryPath + "/" + file, "fra", "Metadata", 0, true, true, true)
             });
 
         // multiple stream with metadata - filename flags ignored but other data filled in when missing from stream
@@ -306,7 +307,7 @@ public class MediaInfoResolverTests
         fileSystem.Setup(fs => fs.DirectoryExists(It.IsRegex(MetadataDirectoryRegex)))
             .Returns(true);
 
-        var subtitleResolver = new SubtitleResolver(_localizationManager, mediaEncoder.Object, fileSystem.Object, new NamingOptions());
+        var subtitleResolver = new SubtitleResolver(Mock.Of<ILogger<SubtitleResolver>>(), _localizationManager, mediaEncoder.Object, fileSystem.Object, new NamingOptions());
 
         var directoryService = GetDirectoryServiceForExternalFile(file);
         var streams = await subtitleResolver.GetExternalStreamsAsync(video, 0, directoryService, false, CancellationToken.None);
@@ -323,6 +324,7 @@ public class MediaInfoResolverTests
             Assert.Equal(expected.Path, actual.Path);
             Assert.Equal(expected.IsDefault, actual.IsDefault);
             Assert.Equal(expected.IsForced, actual.IsForced);
+            Assert.Equal(expected.IsHearingImpaired, actual.IsHearingImpaired);
             Assert.Equal(expected.Language, actual.Language);
             Assert.Equal(expected.Title, actual.Title);
         }
@@ -381,7 +383,7 @@ public class MediaInfoResolverTests
         fileSystem.Setup(fs => fs.DirectoryExists(It.IsRegex(MetadataDirectoryRegex)))
             .Returns(true);
 
-        var subtitleResolver = new SubtitleResolver(_localizationManager, mediaEncoder.Object, fileSystem.Object, new NamingOptions());
+        var subtitleResolver = new SubtitleResolver(Mock.Of<ILogger<SubtitleResolver>>(), _localizationManager, mediaEncoder.Object, fileSystem.Object, new NamingOptions());
 
         int startIndex = 1;
         var streams = await subtitleResolver.GetExternalStreamsAsync(video, startIndex, directoryService.Object, false, CancellationToken.None);
@@ -395,7 +397,7 @@ public class MediaInfoResolverTests
         }
     }
 
-    private static MediaStream CreateMediaStream(string path, string? language, string? title, int index, bool isForced = false, bool isDefault = false)
+    private static MediaStream CreateMediaStream(string path, string? language, string? title, int index, bool isForced = false, bool isDefault = false, bool isHearingImpaired = false)
     {
         return new MediaStream
         {
@@ -404,6 +406,7 @@ public class MediaInfoResolverTests
             Path = path,
             IsDefault = isDefault,
             IsForced = isForced,
+            IsHearingImpaired = isHearingImpaired,
             Language = language,
             Title = title
         };

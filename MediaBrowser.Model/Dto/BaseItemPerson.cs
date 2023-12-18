@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Dto
@@ -33,7 +34,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the type.
         /// </summary>
         /// <value>The type.</value>
-        public string Type { get; set; }
+        public PersonKind Type { get; set; }
 
         /// <summary>
         /// Gets or sets the primary image tag.
@@ -52,6 +53,6 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value><c>true</c> if this instance has primary image; otherwise, <c>false</c>.</value>
         [JsonIgnore]
-        public bool HasPrimaryImage => PrimaryImageTag != null;
+        public bool HasPrimaryImage => PrimaryImageTag is not null;
     }
 }

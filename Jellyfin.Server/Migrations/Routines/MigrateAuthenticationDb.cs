@@ -6,8 +6,9 @@ using Jellyfin.Data.Entities.Security;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SQLitePCL.pretty;
 
 namespace Jellyfin.Server.Migrations.Routines
 {
@@ -19,7 +20,7 @@ namespace Jellyfin.Server.Migrations.Routines
         private const string DbFilename = "authentication.db";
 
         private readonly ILogger<MigrateAuthenticationDb> _logger;
-        private readonly JellyfinDbProvider _dbProvider;
+        private readonly IDbContextFactory<JellyfinDbContext> _dbProvider;
         private readonly IServerApplicationPaths _appPaths;
         private readonly IUserManager _userManager;
 
@@ -32,7 +33,7 @@ namespace Jellyfin.Server.Migrations.Routines
         /// <param name="userManager">The user manager.</param>
         public MigrateAuthenticationDb(
             ILogger<MigrateAuthenticationDb> logger,
-            JellyfinDbProvider dbProvider,
+            IDbContextFactory<JellyfinDbContext> dbProvider,
             IServerApplicationPaths appPaths,
             IUserManager userManager)
         {
@@ -55,34 +56,32 @@ namespace Jellyfin.Server.Migrations.Routines
         public void Perform()
         {
             var dataPath = _appPaths.DataPath;
-            using (var connection = SQLite3.Open(
-                Path.Combine(dataPath, DbFilename),
-                ConnectionFlags.ReadOnly,
-                null))
+            using (var connection = new SqliteConnection($"Filename={Path.Combine(dataPath, DbFilename)}"))
             {
-                using var dbContext = _dbProvider.CreateContext();
+                connection.Open();
+                using var dbContext = _dbProvider.CreateDbContext();
 
                 var authenticatedDevices = connection.Query("SELECT * FROM Tokens");
 
                 foreach (var row in authenticatedDevices)
                 {
-                    var dateCreatedStr = row[9].ToString();
+                    var dateCreatedStr = row.GetString(9);
                     _ = DateTime.TryParse(dateCreatedStr, out var dateCreated);
-                    var dateLastActivityStr = row[10].ToString();
+                    var dateLastActivityStr = row.GetString(10);
                     _ = DateTime.TryParse(dateLastActivityStr, out var dateLastActivity);
 
-                    if (row[6].IsDbNull())
+                    if (row.IsDBNull(6))
                     {
-                        dbContext.ApiKeys.Add(new ApiKey(row[3].ToString())
+                        dbContext.ApiKeys.Add(new ApiKey(row.GetString(3))
                         {
-                            AccessToken = row[1].ToString(),
+                            AccessToken = row.GetString(1),
                             DateCreated = dateCreated,
                             DateLastActivity = dateLastActivity
                         });
                     }
                     else
                     {
-                        var userId = new Guid(row[6].ToString());
+                        var userId = row.GetGuid(6);
                         var user = _userManager.GetUserById(userId);
                         if (user is null)
                         {
@@ -91,14 +90,14 @@ namespace Jellyfin.Server.Migrations.Routines
                         }
 
                         dbContext.Devices.Add(new Device(
-                            new Guid(row[6].ToString()),
-                            row[3].ToString(),
-                            row[4].ToString(),
-                            row[5].ToString(),
-                            row[2].ToString())
+                            userId,
+                            row.GetString(3),
+                            row.GetString(4),
+                            row.GetString(5),
+                            row.GetString(2))
                         {
-                            AccessToken = row[1].ToString(),
-                            IsActive = row[8].ToBool(),
+                            AccessToken = row.GetString(1),
+                            IsActive = row.GetBoolean(8),
                             DateCreated = dateCreated,
                             DateLastActivity = dateLastActivity
                         });
@@ -109,12 +108,12 @@ namespace Jellyfin.Server.Migrations.Routines
                 var deviceIds = new HashSet<string>();
                 foreach (var row in deviceOptions)
                 {
-                    if (row[2].IsDbNull())
+                    if (row.IsDBNull(2))
                     {
                         continue;
                     }
 
-                    var deviceId = row[2].ToString();
+                    var deviceId = row.GetString(2);
                     if (deviceIds.Contains(deviceId))
                     {
                         continue;
@@ -124,7 +123,7 @@ namespace Jellyfin.Server.Migrations.Routines
 
                     dbContext.DeviceOptions.Add(new DeviceOptions(deviceId)
                     {
-                        CustomName = row[1].IsDbNull() ? null : row[1].ToString()
+                        CustomName = row.IsDBNull(1) ? null : row.GetString(1)
                     });
                 }
 

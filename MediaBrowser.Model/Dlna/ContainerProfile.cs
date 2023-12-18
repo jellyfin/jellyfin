@@ -11,7 +11,7 @@ namespace MediaBrowser.Model.Dlna
         [XmlAttribute("type")]
         public DlnaProfileType Type { get; set; }
 
-        public ProfileCondition[]? Conditions { get; set; } = Array.Empty<ProfileCondition>();
+        public ProfileCondition[] Conditions { get; set; } = Array.Empty<ProfileCondition>();
 
         [XmlAttribute("container")]
         public string Container { get; set; } = string.Empty;
@@ -36,7 +36,7 @@ namespace MediaBrowser.Model.Dlna
         public static bool ContainsContainer(string? profileContainers, string? inputContainer)
         {
             var isNegativeList = false;
-            if (profileContainers != null && profileContainers.StartsWith('-'))
+            if (profileContainers is not null && profileContainers.StartsWith('-'))
             {
                 isNegativeList = true;
                 profileContainers = profileContainers.Substring(1);
@@ -52,7 +52,7 @@ namespace MediaBrowser.Model.Dlna
 
         public static bool ContainsContainer(string[]? profileContainers, bool isNegativeList, string? inputContainer)
         {
-            if (profileContainers == null || profileContainers.Length == 0)
+            if (profileContainers is null || profileContainers.Length == 0)
             {
                 // Empty profiles always support all containers/codecs
                 return true;

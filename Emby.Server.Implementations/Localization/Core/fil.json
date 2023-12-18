@@ -119,5 +119,11 @@
     "Undefined": "Hindi tiyak",
     "Forced": "Sapilitan",
     "TaskOptimizeDatabaseDescription": "Iko-compact ang database at ita-truncate ang free space. Ang pagpapatakbo ng gawaing ito pagkatapos ng pag-scan sa library o paggawa ng iba pang mga pagbabago na nagpapahiwatig ng mga pagbabago sa database ay maaaring magpa-improve ng performance.",
-    "TaskOptimizeDatabase": "I-optimize ang database"
+    "TaskOptimizeDatabase": "I-optimize ang database",
+    "HearingImpaired": "Bingi",
+    "TaskKeyframeExtractor": "Tagabunot ng Keyframe",
+    "TaskKeyframeExtractorDescription": "Nagbubunot ng keyframe mula sa mga bidyo upang makabuo ng mas tumpak na HLS playlist. Maaaring matagal ito gawin.",
+    "External": "External",
+    "TaskRefreshTrickplayImages": "Gumawa ng Trickplay na Imahe",
+    "TaskRefreshTrickplayImagesDescription": "Nanggagawa ng mga trickplay prebiyu para sa mga bidyo sa pinaganang mga aklatan."
 }

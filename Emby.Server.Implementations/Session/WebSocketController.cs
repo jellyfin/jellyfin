@@ -7,14 +7,14 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Net.WebSocketMessages;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Session
 {
-    public sealed class WebSocketController : ISessionController, IDisposable
+    public sealed class WebSocketController : ISessionController, IAsyncDisposable, IDisposable
     {
         private readonly ILogger<WebSocketController> _logger;
         private readonly ISessionManager _sessionManager;
@@ -69,17 +69,15 @@ namespace Emby.Server.Implementations.Session
             T data,
             CancellationToken cancellationToken)
         {
-            var socket = GetActiveSockets()
-                .OrderByDescending(i => i.LastActivityDate)
-                .FirstOrDefault();
+            var socket = GetActiveSockets().MaxBy(i => i.LastActivityDate);
 
-            if (socket == null)
+            if (socket is null)
             {
                 return Task.CompletedTask;
             }
 
             return socket.SendAsync(
-                new WebSocketMessage<T>
+                new OutboundWebSocketMessage<T>
                 {
                     Data = data,
                     MessageType = name,
@@ -99,6 +97,23 @@ namespace Emby.Server.Implementations.Session
             foreach (var socket in _sockets)
             {
                 socket.Closed -= OnConnectionClosed;
+                socket.Dispose();
+            }
+
+            _disposed = true;
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            foreach (var socket in _sockets)
+            {
+                socket.Closed -= OnConnectionClosed;
+                await socket.DisposeAsync().ConfigureAwait(false);
             }
 
             _disposed = true;

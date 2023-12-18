@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System;
@@ -14,7 +12,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the path.
         /// </summary>
         /// <value>The path.</value>
-        public string Path { get; set; }
+        public required string Path { get; set; }
 
         /// <summary>
         /// Gets or sets the type.
@@ -36,9 +34,9 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the blurhash.
         /// </summary>
         /// <value>The blurhash.</value>
-        public string BlurHash { get; set; }
+        public string? BlurHash { get; set; }
 
         [JsonIgnore]
-        public bool IsLocalFile => Path == null || !Path.StartsWith("http", StringComparison.OrdinalIgnoreCase);
+        public bool IsLocalFile => !Path.StartsWith("http", StringComparison.OrdinalIgnoreCase);
     }
 }

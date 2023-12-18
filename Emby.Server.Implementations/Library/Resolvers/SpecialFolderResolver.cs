@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -62,7 +63,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
             return null;
         }
 
-        private string GetCollectionType(ItemResolveArgs args)
+        private CollectionType? GetCollectionType(ItemResolveArgs args)
         {
             return args.FileSystemChildren
                 .Where(i =>
@@ -78,7 +79,8 @@ namespace Emby.Server.Implementations.Library.Resolvers
                     }
                 })
                 .Select(i => _fileSystem.GetFileNameWithoutExtension(i))
-                .FirstOrDefault();
+                .Select(i => Enum.TryParse<CollectionType>(i, out var collectionType) ? collectionType : (CollectionType?)null)
+                .FirstOrDefault(i => i is not null);
         }
     }
 }

@@ -5,28 +5,24 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Security.Claims;
 using Emby.Server.Implementations;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.AnonymousLanAccessPolicy;
 using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
-using Jellyfin.Api.Auth.DownloadPolicy;
-using Jellyfin.Api.Auth.FirstTimeOrIgnoreParentalControlSetupPolicy;
-using Jellyfin.Api.Auth.FirstTimeSetupOrDefaultPolicy;
-using Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy;
-using Jellyfin.Api.Auth.IgnoreParentalControlPolicy;
+using Jellyfin.Api.Auth.FirstTimeSetupPolicy;
 using Jellyfin.Api.Auth.LocalAccessOrRequiresElevationPolicy;
-using Jellyfin.Api.Auth.LocalAccessPolicy;
-using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Auth.SyncPlayAccessPolicy;
+using Jellyfin.Api.Auth.UserPermissionPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
+using Jellyfin.Api.Formatters;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json;
-using Jellyfin.Networking.Configuration;
 using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
-using Jellyfin.Server.Formatters;
+using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Session;
@@ -41,6 +37,7 @@ using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using AuthenticationSchemes = Jellyfin.Api.Constants.AuthenticationSchemes;
+using IPNetwork = System.Net.IPNetwork;
 
 namespace Jellyfin.Server.Extensions
 {
@@ -56,117 +53,40 @@ namespace Jellyfin.Server.Extensions
         /// <returns>The updated service collection.</returns>
         public static IServiceCollection AddJellyfinApiAuthorization(this IServiceCollection serviceCollection)
         {
+            // The default handler must be first so that it is evaluated first
             serviceCollection.AddSingleton<IAuthorizationHandler, DefaultAuthorizationHandler>();
-            serviceCollection.AddSingleton<IAuthorizationHandler, DownloadHandler>();
-            serviceCollection.AddSingleton<IAuthorizationHandler, FirstTimeSetupOrDefaultHandler>();
-            serviceCollection.AddSingleton<IAuthorizationHandler, FirstTimeSetupOrElevatedHandler>();
-            serviceCollection.AddSingleton<IAuthorizationHandler, IgnoreParentalControlHandler>();
-            serviceCollection.AddSingleton<IAuthorizationHandler, FirstTimeOrIgnoreParentalControlSetupHandler>();
-            serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, UserPermissionHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, FirstTimeSetupHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, AnonymousLanAccessHandler>();
-            serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessOrRequiresElevationHandler>();
-            serviceCollection.AddSingleton<IAuthorizationHandler, RequiresElevationHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, SyncPlayAccessHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessOrRequiresElevationHandler>();
+
             return serviceCollection.AddAuthorizationCore(options =>
             {
-                options.AddPolicy(
-                    Policies.DefaultAuthorization,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new DefaultAuthorizationRequirement());
-                    });
-                options.AddPolicy(
-                    Policies.Download,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new DownloadRequirement());
-                    });
-                options.AddPolicy(
-                    Policies.FirstTimeSetupOrDefault,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new FirstTimeSetupOrDefaultRequirement());
-                    });
-                options.AddPolicy(
-                    Policies.FirstTimeSetupOrElevated,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new FirstTimeSetupOrElevatedRequirement());
-                    });
-                options.AddPolicy(
-                    Policies.IgnoreParentalControl,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new IgnoreParentalControlRequirement());
-                    });
-                options.AddPolicy(
-                    Policies.FirstTimeSetupOrIgnoreParentalControl,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new FirstTimeOrIgnoreParentalControlSetupRequirement());
-                    });
-                options.AddPolicy(
-                    Policies.LocalAccessOnly,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new LocalAccessRequirement());
-                    });
-                options.AddPolicy(
-                    Policies.LocalAccessOrRequiresElevation,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new LocalAccessOrRequiresElevationRequirement());
-                    });
+                options.DefaultPolicy = new AuthorizationPolicyBuilder()
+                    .AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication)
+                    .AddRequirements(new DefaultAuthorizationRequirement())
+                    .Build();
+
+                options.AddPolicy(Policies.AnonymousLanAccessPolicy, new AnonymousLanAccessRequirement());
+                options.AddPolicy(Policies.CollectionManagement, new UserPermissionRequirement(PermissionKind.EnableCollectionManagement));
+                options.AddPolicy(Policies.Download, new UserPermissionRequirement(PermissionKind.EnableContentDownloading));
+                options.AddPolicy(Policies.FirstTimeSetupOrDefault, new FirstTimeSetupRequirement(requireAdmin: false));
+                options.AddPolicy(Policies.FirstTimeSetupOrElevated, new FirstTimeSetupRequirement());
+                options.AddPolicy(Policies.FirstTimeSetupOrIgnoreParentalControl, new FirstTimeSetupRequirement(false, false));
+                options.AddPolicy(Policies.IgnoreParentalControl, new DefaultAuthorizationRequirement(validateParentalSchedule: false));
+                options.AddPolicy(Policies.LiveTvAccess, new UserPermissionRequirement(PermissionKind.EnableLiveTvAccess));
+                options.AddPolicy(Policies.LiveTvManagement, new UserPermissionRequirement(PermissionKind.EnableLiveTvManagement));
+                options.AddPolicy(Policies.LocalAccessOrRequiresElevation, new LocalAccessOrRequiresElevationRequirement());
+                options.AddPolicy(Policies.SyncPlayHasAccess, new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.HasAccess));
+                options.AddPolicy(Policies.SyncPlayCreateGroup, new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.CreateGroup));
+                options.AddPolicy(Policies.SyncPlayJoinGroup, new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.JoinGroup));
+                options.AddPolicy(Policies.SyncPlayIsInGroup, new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.IsInGroup));
+                options.AddPolicy(Policies.SubtitleManagement, new UserPermissionRequirement(PermissionKind.EnableSubtitleManagement));
                 options.AddPolicy(
                     Policies.RequiresElevation,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new RequiresElevationRequirement());
-                    });
-                options.AddPolicy(
-                    Policies.SyncPlayHasAccess,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.HasAccess));
-                    });
-                options.AddPolicy(
-                    Policies.SyncPlayCreateGroup,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.CreateGroup));
-                    });
-                options.AddPolicy(
-                    Policies.SyncPlayJoinGroup,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.JoinGroup));
-                    });
-                options.AddPolicy(
-                    Policies.SyncPlayIsInGroup,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.IsInGroup));
-                    });
-                options.AddPolicy(
-                    Policies.AnonymousLanAccessPolicy,
-                    policy =>
-                    {
-                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new AnonymousLanAccessRequirement());
-                    });
+                    policy => policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication)
+                        .RequireClaim(ClaimTypes.Role, UserRoles.Administrator));
             });
         }
 
@@ -182,7 +102,7 @@ namespace Jellyfin.Server.Extensions
         }
 
         /// <summary>
-        /// Extension method for adding the jellyfin API to the service collection.
+        /// Extension method for adding the Jellyfin API to the service collection.
         /// </summary>
         /// <param name="serviceCollection">The service collection.</param>
         /// <param name="pluginAssemblies">An IEnumerable containing all plugin assemblies with API controllers.</param>
@@ -326,6 +246,7 @@ namespace Jellyfin.Server.Extensions
                 // TODO - remove when all types are supported in System.Text.Json
                 c.AddSwaggerTypeMappings();
 
+                c.SchemaFilter<IgnoreEnumSchemaFilter>();
                 c.OperationFilter<SecurityRequirementsOperationFilter>();
                 c.OperationFilter<FileResponseFilter>();
                 c.OperationFilter<FileRequestFilter>();
@@ -334,8 +255,16 @@ namespace Jellyfin.Server.Extensions
             });
         }
 
+        private static void AddPolicy(this AuthorizationOptions authorizationOptions, string policyName, IAuthorizationRequirement authorizationRequirement)
+        {
+            authorizationOptions.AddPolicy(policyName, policy =>
+            {
+                policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication).AddRequirements(authorizationRequirement);
+            });
+        }
+
         /// <summary>
-        /// Sets up the proxy configuration based on the addresses in <paramref name="allowedProxies"/>.
+        /// Sets up the proxy configuration based on the addresses/subnets in <paramref name="allowedProxies"/>.
         /// </summary>
         /// <param name="config">The <see cref="NetworkConfiguration"/> containing the config settings.</param>
         /// <param name="allowedProxies">The string array to parse.</param>
@@ -344,42 +273,46 @@ namespace Jellyfin.Server.Extensions
         {
             for (var i = 0; i < allowedProxies.Length; i++)
             {
-                if (IPNetAddress.TryParse(allowedProxies[i], out var addr))
+                if (IPAddress.TryParse(allowedProxies[i], out var addr))
                 {
-                    AddIpAddress(config, options, addr.Address, addr.PrefixLength);
+                    AddIPAddress(config, options, addr, addr.AddressFamily == AddressFamily.InterNetwork ? NetworkConstants.MinimumIPv4PrefixSize : NetworkConstants.MinimumIPv6PrefixSize);
                 }
-                else if (IPHost.TryParse(allowedProxies[i], out var host))
+                else if (NetworkUtils.TryParseToSubnet(allowedProxies[i], out var subnet))
                 {
-                    foreach (var address in host.GetAddresses())
+                    if (subnet is not null)
                     {
-                        AddIpAddress(config, options, address, address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);
+                        AddIPAddress(config, options, subnet.Prefix, subnet.PrefixLength);
+                    }
+                }
+                else if (NetworkUtils.TryParseHost(allowedProxies[i], out var addresses, config.EnableIPv4, config.EnableIPv6))
+                {
+                    foreach (var address in addresses)
+                    {
+                        AddIPAddress(config, options, address, address.AddressFamily == AddressFamily.InterNetwork ? NetworkConstants.MinimumIPv4PrefixSize : NetworkConstants.MinimumIPv6PrefixSize);
                     }
                 }
             }
         }
 
-        private static void AddIpAddress(NetworkConfiguration config, ForwardedHeadersOptions options, IPAddress addr, int prefixLength)
+        private static void AddIPAddress(NetworkConfiguration config, ForwardedHeadersOptions options, IPAddress addr, int prefixLength)
         {
-            if ((!config.EnableIPV4 && addr.AddressFamily == AddressFamily.InterNetwork) || (!config.EnableIPV6 && addr.AddressFamily == AddressFamily.InterNetworkV6))
+            if (addr.IsIPv4MappedToIPv6)
+            {
+                addr = addr.MapToIPv4();
+            }
+
+            if ((!config.EnableIPv4 && addr.AddressFamily == AddressFamily.InterNetwork) || (!config.EnableIPv6 && addr.AddressFamily == AddressFamily.InterNetworkV6))
             {
                 return;
             }
 
-            // In order for dual-mode sockets to be used, IP6 has to be enabled in JF and an interface has to have an IP6 address.
-            if (addr.AddressFamily == AddressFamily.InterNetwork && config.EnableIPV6)
-            {
-                // If the server is using dual-mode sockets, IPv4 addresses are supplied in an IPv6 format.
-                // https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer?view=aspnetcore-5.0 .
-                addr = addr.MapToIPv6();
-            }
-
-            if (prefixLength == 32)
+            if (prefixLength == NetworkConstants.MinimumIPv4PrefixSize)
             {
                 options.KnownProxies.Add(addr);
             }
             else
             {
-                options.KnownNetworks.Add(new IPNetwork(addr, prefixLength));
+                options.KnownNetworks.Add(new Microsoft.AspNetCore.HttpOverrides.IPNetwork(addr, prefixLength));
             }
         }
 
@@ -434,11 +367,15 @@ namespace Jellyfin.Server.Extensions
             options.MapType<TranscodeReason>(() =>
                 new OpenApiSchema
                 {
-                    Type = "string",
-                    Enum = Enum.GetNames<TranscodeReason>()
-                        .Select(e => new OpenApiString(e))
-                        .Cast<IOpenApiAny>()
-                        .ToArray()
+                    Type = "array",
+                    Items = new OpenApiSchema
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Id = nameof(TranscodeReason),
+                            Type = ReferenceType.Schema,
+                        }
+                    }
                 });
 
             // Swashbuckle doesn't use JsonOptions to describe responses, so we need to manually describe it.

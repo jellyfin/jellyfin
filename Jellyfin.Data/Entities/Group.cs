@@ -18,10 +18,7 @@ namespace Jellyfin.Data.Entities
         /// <param name="name">The name of the group.</param>
         public Group(string name)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(name);
 
             Name = name;
             Id = Guid.NewGuid();

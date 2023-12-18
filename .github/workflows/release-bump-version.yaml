@@ -1,0 +1,82 @@
+name: '🆙 Auto bump_version'
+
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+    inputs:
+      TAG_BRANCH:
+        required: true
+        description: release-x.y.z
+      NEXT_VERSION:
+        required: true
+        description: x.y.z
+
+jobs:
+  auto_bump_version:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'release' && !contains(github.event.release.tag_name, 'rc') }}
+    env:
+      TAG_BRANCH: ${{ github.event.release.target_commitish }}
+    steps:
+      - name: Wait for deploy checks to finish
+        uses: jitterbit/await-check-suites@292a541bb7618078395b2ce711a0d89cfb8a568a # v1
+        with:
+          ref: ${{ env.TAG_BRANCH }}
+          intervalSeconds: 60
+          timeoutSeconds: 3600
+
+      - name: Setup YQ
+        uses: chrisdickinson/setup-yq@latest
+        with:
+          yq-version: v4.9.8
+
+      - name: Checkout Repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ env.TAG_BRANCH }}
+
+      - name: Setup EnvVars
+        run: |-
+          CURRENT_VERSION=$(yq e '.version' build.yaml)
+          CURRENT_MAJOR_MINOR=${CURRENT_VERSION%.*}
+          CURRENT_PATCH=${CURRENT_VERSION##*.}
+          echo "CURRENT_VERSION=${CURRENT_VERSION}" >> $GITHUB_ENV
+          echo "CURRENT_MAJOR_MINOR=${CURRENT_MAJOR_MINOR}" >> $GITHUB_ENV
+          echo "CURRENT_PATCH=${CURRENT_PATCH}" >> $GITHUB_ENV
+          echo "NEXT_VERSION=${CURRENT_MAJOR_MINOR}.$(($CURRENT_PATCH + 1))" >> $GITHUB_ENV
+
+      - name: Run bump_version
+        run: ./bump_version ${{ env.NEXT_VERSION }}
+
+      - name: Commit Changes
+        run: |-
+          git config user.name "jellyfin-bot"
+          git config user.email "team@jellyfin.org"
+          git checkout ${{ env.TAG_BRANCH }}
+          git commit -am "Bump version to ${{ env.NEXT_VERSION }}"
+          git push origin ${{ env.TAG_BRANCH }}
+
+  manual_bump_version:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    env:
+      TAG_BRANCH: ${{ github.event.inputs.TAG_BRANCH }}
+      NEXT_VERSION: ${{ github.event.inputs.NEXT_VERSION }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ env.TAG_BRANCH }}
+
+      - name: Run bump_version
+        run: ./bump_version ${{ env.NEXT_VERSION }}
+
+      - name: Commit Changes
+        run: |-
+          git config user.name "jellyfin-bot"
+          git config user.email "team@jellyfin.org"
+          git checkout ${{ env.TAG_BRANCH }}
+          git commit -am "Bump version to ${{ env.NEXT_VERSION }}"
+          git push origin ${{ env.TAG_BRANCH }}

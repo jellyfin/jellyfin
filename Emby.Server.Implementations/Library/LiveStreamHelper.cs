@@ -48,19 +48,24 @@ namespace Emby.Server.Implementations.Library
 
             if (!string.IsNullOrEmpty(cacheKey))
             {
+                FileStream jsonStream = AsyncFile.OpenRead(cacheFilePath);
                 try
                 {
-                    await using FileStream jsonStream = AsyncFile.OpenRead(cacheFilePath);
                     mediaInfo = await JsonSerializer.DeserializeAsync<MediaInfo>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
                     // _logger.LogDebug("Found cached media info");
                 }
-                catch
+                catch (Exception ex)
                 {
+                    _logger.LogError(ex, "Error deserializing mediainfo cache");
+                }
+                finally
+                {
+                    await jsonStream.DisposeAsync().ConfigureAwait(false);
                 }
             }
 
-            if (mediaInfo == null)
+            if (mediaInfo is null)
             {
                 if (addProbeDelay)
                 {
@@ -81,13 +86,16 @@ namespace Emby.Server.Implementations.Library
                     },
                     cancellationToken).ConfigureAwait(false);
 
-                if (cacheFilePath != null)
+                if (cacheFilePath is not null)
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
-                    await using FileStream createStream = AsyncFile.OpenWrite(cacheFilePath);
-                    await JsonSerializer.SerializeAsync(createStream, mediaInfo, _jsonOptions, cancellationToken).ConfigureAwait(false);
+                    FileStream createStream = AsyncFile.OpenWrite(cacheFilePath);
+                    await using (createStream.ConfigureAwait(false))
+                    {
+                        await JsonSerializer.SerializeAsync(createStream, mediaInfo, _jsonOptions, cancellationToken).ConfigureAwait(false);
+                    }
 
-                    // _logger.LogDebug("Saved media info to {0}", cacheFilePath);
+                    _logger.LogDebug("Saved media info to {0}", cacheFilePath);
                 }
             }
 
@@ -130,7 +138,7 @@ namespace Emby.Server.Implementations.Library
 
             var audioStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
 
-            if (audioStream == null || audioStream.Index == -1)
+            if (audioStream is null || audioStream.Index == -1)
             {
                 mediaSource.DefaultAudioStreamIndex = null;
             }
@@ -140,7 +148,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
-            if (videoStream != null)
+            if (videoStream is not null)
             {
                 if (!videoStream.BitRate.HasValue)
                 {

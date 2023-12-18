@@ -18,15 +18,8 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <param name="language">ISO-639-3 3-character language codes.</param>
         protected ItemMetadata(string title, string language)
         {
-            if (string.IsNullOrEmpty(title))
-            {
-                throw new ArgumentNullException(nameof(title));
-            }
-
-            if (string.IsNullOrEmpty(language))
-            {
-                throw new ArgumentNullException(nameof(language));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(title);
+            ArgumentException.ThrowIfNullOrEmpty(language);
 
             Title = title;
             Language = language;

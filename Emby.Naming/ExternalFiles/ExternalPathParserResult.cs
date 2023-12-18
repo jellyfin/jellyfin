@@ -11,11 +11,13 @@ namespace Emby.Naming.ExternalFiles
         /// <param name="path">Path to file.</param>
         /// <param name="isDefault">Is default.</param>
         /// <param name="isForced">Is forced.</param>
-        public ExternalPathParserResult(string path, bool isDefault = false, bool isForced = false)
+        /// <param name="isHearingImpaired">For the hearing impaired.</param>
+        public ExternalPathParserResult(string path, bool isDefault = false, bool isForced = false, bool isHearingImpaired = false)
         {
             Path = path;
             IsDefault = isDefault;
             IsForced = isForced;
+            IsHearingImpaired = isHearingImpaired;
         }
 
         /// <summary>
@@ -47,5 +49,11 @@ namespace Emby.Naming.ExternalFiles
         /// </summary>
         /// <value><c>true</c> if this instance is forced; otherwise, <c>false</c>.</value>
         public bool IsForced { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is for the hearing impaired.
+        /// </summary>
+        /// <value><c>true</c> if this instance is for the hearing impaired; otherwise, <c>false</c>.</value>
+        public bool IsHearingImpaired { get; set; }
     }
 }

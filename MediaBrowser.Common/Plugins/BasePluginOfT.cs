@@ -47,10 +47,10 @@ namespace MediaBrowser.Common.Plugins
             var assemblyFilePath = assembly.Location;
 
             var dataFolderPath = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(assemblyFilePath));
-            if (Version != null && !Directory.Exists(dataFolderPath))
+            if (Version is not null && !Directory.Exists(dataFolderPath))
             {
                 // Try again with the version number appended to the folder name.
-                dataFolderPath += "_" + Version.ToString();
+                dataFolderPath += "_" + Version;
             }
 
             SetAttributes(assemblyFilePath, dataFolderPath, assemblyName.Version);
@@ -103,7 +103,7 @@ namespace MediaBrowser.Common.Plugins
             get
             {
                 // Lazy load
-                if (_configuration == null)
+                if (_configuration is null)
                 {
                     lock (_configurationSyncLock)
                     {
@@ -164,10 +164,7 @@ namespace MediaBrowser.Common.Plugins
         /// <inheritdoc />
         public virtual void UpdateConfiguration(BasePluginConfiguration configuration)
         {
-            if (configuration == null)
-            {
-                throw new ArgumentNullException(nameof(configuration));
-            }
+            ArgumentNullException.ThrowIfNull(configuration);
 
             Configuration = (TConfigurationType)configuration;
 

@@ -18,10 +18,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <param name="kind">The kind of art.</param>
         public Artwork(string path, ArtKind kind)
         {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(path);
 
             Path = path;
             Kind = kind;

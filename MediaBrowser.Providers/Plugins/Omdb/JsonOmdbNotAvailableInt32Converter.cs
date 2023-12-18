@@ -16,7 +16,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             if (reader.TokenType == JsonTokenType.String)
             {
                 var str = reader.GetString();
-                if (str == null || str.Equals("N/A", StringComparison.OrdinalIgnoreCase))
+                if (str is null || str.Equals("N/A", StringComparison.OrdinalIgnoreCase))
                 {
                     return null;
                 }

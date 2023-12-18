@@ -7,7 +7,7 @@ using MediaBrowser.Model.Providers;
 namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 {
     /// <summary>
-    /// External ID for a TMBD movie.
+    /// External id for a TMDb movie.
     /// </summary>
     public class TmdbMovieExternalId : IExternalId
     {
@@ -21,7 +21,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         public ExternalIdMediaType? Type => ExternalIdMediaType.Movie;
 
         /// <inheritdoc />
-        public string? UrlFormatString => TmdbUtils.BaseTmdbUrl + "movie/{0}";
+        public string UrlFormatString => TmdbUtils.BaseTmdbUrl + "movie/{0}";
 
         /// <inheritdoc />
         public bool Supports(IHasProviderIds item)

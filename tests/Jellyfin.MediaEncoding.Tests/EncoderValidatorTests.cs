@@ -17,6 +17,8 @@ namespace Jellyfin.MediaEncoding.Tests
         }
 
         [Theory]
+        [InlineData(EncoderValidatorTestsData.FFmpegV60Output, true)]
+        [InlineData(EncoderValidatorTestsData.FFmpegV512Output, true)]
         [InlineData(EncoderValidatorTestsData.FFmpegV44Output, true)]
         [InlineData(EncoderValidatorTestsData.FFmpegV432Output, true)]
         [InlineData(EncoderValidatorTestsData.FFmpegV431Output, true)]
@@ -32,10 +34,12 @@ namespace Jellyfin.MediaEncoding.Tests
             Assert.Equal(valid, _encoderValidator.ValidateVersionInternal(versionOutput));
         }
 
-        private class GetFFmpegVersionTestData : TheoryData<string, Version?>
+        private sealed class GetFFmpegVersionTestData : TheoryData<string, Version?>
         {
             public GetFFmpegVersionTestData()
             {
+                Add(EncoderValidatorTestsData.FFmpegV60Output, new Version(6, 0));
+                Add(EncoderValidatorTestsData.FFmpegV512Output, new Version(5, 1, 2));
                 Add(EncoderValidatorTestsData.FFmpegV44Output, new Version(4, 4));
                 Add(EncoderValidatorTestsData.FFmpegV432Output, new Version(4, 3, 2));
                 Add(EncoderValidatorTestsData.FFmpegV431Output, new Version(4, 3, 1));

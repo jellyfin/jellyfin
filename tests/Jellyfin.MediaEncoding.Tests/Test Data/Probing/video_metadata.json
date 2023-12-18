@@ -47,7 +47,20 @@
             "tags": {
                 "ENCODER": "Lavc57.107.100 libx264",
                 "DURATION": "00:00:01.000000000"
-            }
+            },
+            "side_data_list": [
+                {
+                    "side_data_type": "DOVI configuration record",
+                    "dv_version_major": 1,
+                    "dv_version_minor": 0,
+                    "dv_profile": 5,
+                    "dv_level": 6,
+                    "rpu_present_flag": 1,
+                    "el_present_flag": 0,
+                    "bl_present_flag": 1,
+                    "dv_bl_signal_compatibility_id": 0
+                }
+            ]
         }
     ],
     "chapters": [

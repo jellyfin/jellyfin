@@ -59,7 +59,7 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         public void ResetPeople()
         {
-            if (People == null)
+            if (People is null)
             {
                 People = new List<PersonInfo>();
             }
@@ -83,7 +83,7 @@ namespace MediaBrowser.Controller.Providers
                 }
             }
 
-            if (userData == null)
+            if (userData is null)
             {
                 userData = new UserItemData()
                 {

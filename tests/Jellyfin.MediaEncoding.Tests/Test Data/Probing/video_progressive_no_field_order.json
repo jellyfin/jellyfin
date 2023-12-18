@@ -1,0 +1,133 @@
+{
+    "streams": [
+        {
+            "index": 0,
+            "codec_name": "h264",
+            "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+            "profile": "Main",
+            "codec_type": "video",
+            "codec_time_base": "1001/48000",
+            "codec_tag_string": "avc1",
+            "codec_tag": "0x31637661",
+            "width": 1920,
+            "height": 1080,
+            "coded_width": 1920,
+            "coded_height": 1088,
+            "closed_captions": 0,
+            "has_b_frames": 1,
+            "sample_aspect_ratio": "1:1",
+            "display_aspect_ratio": "16:9",
+            "pix_fmt": "yuv420p",
+            "level": 41,
+            "chroma_location": "left",
+            "refs": 1,
+            "is_avc": "true",
+            "nal_length_size": "4",
+            "r_frame_rate": "24000/1001",
+            "avg_frame_rate": "24000/1001",
+            "time_base": "1/24000",
+            "start_pts": 1000,
+            "start_time": "0.041667",
+            "duration_ts": 29095066,
+            "duration": "1212.294417",
+            "bit_rate": "3948341",
+            "bits_per_raw_sample": "8",
+            "nb_frames": "29066",
+            "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0
+            },
+            "tags": {
+                "creation_time": "2020-01-20T13:56:34.000000Z",
+                "language": "eng",
+                "handler_name": "\fVideoHandler",
+                "encoder": "h264"
+            }
+        },
+        {
+            "index": 1,
+            "codec_name": "ac3",
+            "codec_long_name": "ATSC A/52A (AC-3)",
+            "codec_type": "audio",
+            "codec_time_base": "1/48000",
+            "codec_tag_string": "ac-3",
+            "codec_tag": "0x332d6361",
+            "sample_fmt": "fltp",
+            "sample_rate": "48000",
+            "channels": 2,
+            "channel_layout": "stereo",
+            "bits_per_sample": 0,
+            "dmix_mode": "-1",
+            "ltrt_cmixlev": "-1.000000",
+            "ltrt_surmixlev": "-1.000000",
+            "loro_cmixlev": "-1.000000",
+            "loro_surmixlev": "-1.000000",
+            "r_frame_rate": "0/0",
+            "avg_frame_rate": "0/0",
+            "time_base": "1/48000",
+            "start_pts": 0,
+            "start_time": "0.000000",
+            "duration_ts": 58232832,
+            "duration": "1213.184000",
+            "bit_rate": "224000",
+            "nb_frames": "37912",
+            "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0
+            },
+            "tags": {
+                "creation_time": "2020-01-20T13:56:34.000000Z",
+                "language": "eng",
+                "handler_name": "\fSoundHandler"
+            },
+            "side_data_list": [
+                {
+                    "side_data_type": "Audio Service Type"
+                }
+            ]
+        }
+    ],
+    "format": {
+        "filename": "The Big Bang Theory - S01E17.mp4",
+        "nb_streams": 2,
+        "nb_programs": 0,
+        "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+        "format_long_name": "QuickTime / MOV",
+        "start_time": "0.000000",
+        "duration": "1213.184000",
+        "size": "633084606",
+        "bit_rate": "4174698",
+        "probe_score": 100,
+        "tags": {
+            "major_brand": "mp42",
+            "minor_version": "512",
+            "compatible_brands": "mp42",
+            "creation_time": "2020-01-20T13:56:34.000000Z",
+            "media_type": "9",
+            "season_number": "0",
+            "episode_sort": "0",
+            "hd_video": "0",
+            "iTunMOVI": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\"  \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\"><plist version=\"1.0\"><dict><key>studio</key><string>studio</string><key>cast</key><array><dict><key>name</key><string></string></dict></array><key>directors</key><array><dict><key>name</key><string></string></dict></array><key>producers</key><array><dict><key>name</key><string></string></dict></array><key>codirectors</key><array><dict><key>name</key><string>codirector</string></dict></array><key>screenwriters</key><array><dict><key>name</key><string></string></dict></array></dict></plist>"
+        }
+    }
+}

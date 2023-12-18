@@ -1,22 +1,33 @@
-#nullable disable
-#pragma warning disable CS1591
-
 using System;
 
 namespace MediaBrowser.Common.Configuration
 {
+    /// <summary>
+    /// <see cref="EventArgs" /> for the ConfigurationUpdated event.
+    /// </summary>
     public class ConfigurationUpdateEventArgs : EventArgs
     {
         /// <summary>
-        /// Gets or sets the key.
+        /// Initializes a new instance of the <see cref="ConfigurationUpdateEventArgs"/> class.
         /// </summary>
-        /// <value>The key.</value>
-        public string Key { get; set; }
+        /// <param name="key">The configuration key.</param>
+        /// <param name="newConfiguration">The new configuration.</param>
+        public ConfigurationUpdateEventArgs(string key, object newConfiguration)
+        {
+            Key = key;
+            NewConfiguration = newConfiguration;
+        }
 
         /// <summary>
-        /// Gets or sets the new configuration.
+        /// Gets the key.
+        /// </summary>
+        /// <value>The key.</value>
+        public string Key { get; }
+
+        /// <summary>
+        /// Gets the new configuration.
         /// </summary>
         /// <value>The new configuration.</value>
-        public object NewConfiguration { get; set; }
+        public object NewConfiguration { get; }
     }
 }

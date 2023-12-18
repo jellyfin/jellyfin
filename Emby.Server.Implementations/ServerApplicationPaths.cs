@@ -83,24 +83,6 @@ namespace Emby.Server.Implementations
         public string YearPath => Path.Combine(InternalMetadataPath, "Year");
 
         /// <summary>
-        /// Gets the path to the General IBN directory.
-        /// </summary>
-        /// <value>The general path.</value>
-        public string GeneralPath => Path.Combine(InternalMetadataPath, "general");
-
-        /// <summary>
-        /// Gets the path to the Ratings IBN directory.
-        /// </summary>
-        /// <value>The ratings path.</value>
-        public string RatingsPath => Path.Combine(InternalMetadataPath, "ratings");
-
-        /// <summary>
-        /// Gets the media info images path.
-        /// </summary>
-        /// <value>The media info images path.</value>
-        public string MediaInfoImagesPath => Path.Combine(InternalMetadataPath, "mediainfo");
-
-        /// <summary>
         /// Gets the path to the user configuration directory.
         /// </summary>
         /// <value>The user configuration directory path.</value>

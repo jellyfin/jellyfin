@@ -15,6 +15,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -33,6 +34,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// </summary>
         private readonly IMediaEncoder _mediaEncoder;
 
+        private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
@@ -48,18 +50,21 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <summary>
         /// Initializes a new instance of the <see cref="MediaInfoResolver"/> class.
         /// </summary>
+        /// <param name="logger">The logger.</param>
         /// <param name="localizationManager">The localization manager.</param>
         /// <param name="mediaEncoder">The media encoder.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="namingOptions">The <see cref="NamingOptions"/> object containing FileExtensions, MediaDefaultFlags, MediaForcedFlags and MediaFlagDelimiters.</param>
         /// <param name="type">The <see cref="DlnaProfileType"/> of the parsed file.</param>
         protected MediaInfoResolver(
+            ILogger logger,
             ILocalizationManager localizationManager,
             IMediaEncoder mediaEncoder,
             IFileSystem fileSystem,
             NamingOptions namingOptions,
             DlnaProfileType type)
         {
+            _logger = logger;
             _mediaEncoder = mediaEncoder;
             _fileSystem = fileSystem;
             _namingOptions = namingOptions;
@@ -101,34 +106,44 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 if (!pathInfo.Path.AsSpan().EndsWith(".strm", StringComparison.OrdinalIgnoreCase))
                 {
-                    var mediaInfo = await GetMediaInfo(pathInfo.Path, _type, cancellationToken).ConfigureAwait(false);
-
-                    if (mediaInfo.MediaStreams.Count == 1)
+                    try
                     {
-                        MediaStream mediaStream = mediaInfo.MediaStreams[0];
+                        var mediaInfo = await GetMediaInfo(pathInfo.Path, _type, cancellationToken).ConfigureAwait(false);
 
-                        if ((mediaStream.Type == MediaStreamType.Audio && _type == DlnaProfileType.Audio)
-                            || (mediaStream.Type == MediaStreamType.Subtitle && _type == DlnaProfileType.Subtitle))
+                        if (mediaInfo.MediaStreams.Count == 1)
                         {
-                            mediaStream.Index = startIndex++;
-                            mediaStream.IsDefault = pathInfo.IsDefault || mediaStream.IsDefault;
-                            mediaStream.IsForced = pathInfo.IsForced || mediaStream.IsForced;
+                            MediaStream mediaStream = mediaInfo.MediaStreams[0];
 
-                            mediaStreams.Add(MergeMetadata(mediaStream, pathInfo));
-                        }
-                    }
-                    else
-                    {
-                        foreach (MediaStream mediaStream in mediaInfo.MediaStreams)
-                        {
                             if ((mediaStream.Type == MediaStreamType.Audio && _type == DlnaProfileType.Audio)
                                 || (mediaStream.Type == MediaStreamType.Subtitle && _type == DlnaProfileType.Subtitle))
                             {
                                 mediaStream.Index = startIndex++;
+                                mediaStream.IsDefault = pathInfo.IsDefault || mediaStream.IsDefault;
+                                mediaStream.IsForced = pathInfo.IsForced || mediaStream.IsForced;
+                                mediaStream.IsHearingImpaired = pathInfo.IsHearingImpaired || mediaStream.IsHearingImpaired;
 
                                 mediaStreams.Add(MergeMetadata(mediaStream, pathInfo));
                             }
                         }
+                        else
+                        {
+                            foreach (MediaStream mediaStream in mediaInfo.MediaStreams)
+                            {
+                                if ((mediaStream.Type == MediaStreamType.Audio && _type == DlnaProfileType.Audio)
+                                    || (mediaStream.Type == MediaStreamType.Subtitle && _type == DlnaProfileType.Subtitle))
+                                {
+                                    mediaStream.Index = startIndex++;
+
+                                    mediaStreams.Add(MergeMetadata(mediaStream, pathInfo));
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error getting external streams from {Path}", pathInfo.Path);
+
+                        continue;
                     }
                 }
             }
@@ -160,15 +175,15 @@ namespace MediaBrowser.Providers.MediaInfo
                 return Array.Empty<ExternalPathParserResult>();
             }
 
-            var files = directoryService.GetFilePaths(folder, clearCache).ToList();
+            var files = directoryService.GetFilePaths(folder, clearCache, true).ToList();
             files.Remove(video.Path);
             var internalMetadataPath = video.GetInternalMetadataPath();
             if (_fileSystem.DirectoryExists(internalMetadataPath))
             {
-                files.AddRange(directoryService.GetFilePaths(internalMetadataPath, clearCache));
+                files.AddRange(directoryService.GetFilePaths(internalMetadataPath, clearCache, true));
             }
 
-            if (!files.Any())
+            if (files.Count == 0)
             {
                 return Array.Empty<ExternalPathParserResult>();
             }
@@ -184,7 +199,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     var externalPathInfo = _externalPathParser.ParseFile(file, fileNameWithoutExtension[prefix.Length..].ToString());
 
-                    if (externalPathInfo != null)
+                    if (externalPathInfo is not null)
                     {
                         externalPathInfos.Add(externalPathInfo);
                     }

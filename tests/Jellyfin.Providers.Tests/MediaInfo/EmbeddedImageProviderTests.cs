@@ -80,7 +80,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
 
             var actual = await embeddedImageProvider.GetImage(input, type, CancellationToken.None);
             Assert.NotNull(actual);
-            if (expectedFormat == null)
+            if (expectedFormat is null)
             {
                 Assert.False(actual.HasImage);
             }
@@ -98,9 +98,11 @@ namespace Jellyfin.Providers.Tests.MediaInfo
         [InlineData(null, null, 1, ImageType.Primary, ImageFormat.Jpg)] // no label, finds primary
         [InlineData("backdrop", null, 2, ImageType.Backdrop, ImageFormat.Jpg)] // uses label to find index 2, not just pulling first stream
         [InlineData("cover", null, 2, ImageType.Primary, ImageFormat.Jpg)] // uses label to find index 2, not just pulling first stream
+        [InlineData(null, "bmp", 1, ImageType.Primary, ImageFormat.Bmp)]
+        [InlineData(null, "gif", 1, ImageType.Primary, ImageFormat.Gif)]
         [InlineData(null, "mjpeg", 1, ImageType.Primary, ImageFormat.Jpg)]
         [InlineData(null, "png", 1, ImageType.Primary, ImageFormat.Png)]
-        [InlineData(null, "gif", 1, ImageType.Primary, ImageFormat.Gif)]
+        [InlineData(null, "webp", 1, ImageType.Primary, ImageFormat.Webp)]
         public async void GetImage_Embedded_ReturnsCorrectSelection(string label, string? codec, int targetIndex, ImageType type, ImageFormat? expectedFormat)
         {
             var streams = new List<MediaStream>();
@@ -131,7 +133,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
 
             var actual = await embeddedImageProvider.GetImage(input, type, CancellationToken.None);
             Assert.NotNull(actual);
-            if (expectedFormat == null)
+            if (expectedFormat is null)
             {
                 Assert.False(actual.HasImage);
             }

@@ -1,16 +1,15 @@
 using MediaBrowser.Model.SyncPlay;
 
-namespace Jellyfin.Api.Models.SyncPlayDtos
+namespace Jellyfin.Api.Models.SyncPlayDtos;
+
+/// <summary>
+/// Class SetShuffleModeRequestDto.
+/// </summary>
+public class SetShuffleModeRequestDto
 {
     /// <summary>
-    /// Class SetShuffleModeRequestDto.
+    /// Gets or sets the shuffle mode.
     /// </summary>
-    public class SetShuffleModeRequestDto
-    {
-        /// <summary>
-        /// Gets or sets the shuffle mode.
-        /// </summary>
-        /// <value>The shuffle mode.</value>
-        public GroupShuffleMode Mode { get; set; }
-    }
+    /// <value>The shuffle mode.</value>
+    public GroupShuffleMode Mode { get; set; }
 }

@@ -25,12 +25,7 @@ namespace Emby.Server.Implementations.Playlists
         public override bool SupportsInheritedParentImages => false;
 
         [JsonIgnore]
-        public override string CollectionType => MediaBrowser.Model.Entities.CollectionType.Playlists;
-
-        public override bool IsVisible(User user)
-        {
-            return base.IsVisible(user) && GetChildren(user, true).Any();
-        }
+        public override CollectionType? CollectionType => Jellyfin.Data.Enums.CollectionType.playlists;
 
         protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
         {
@@ -39,7 +34,7 @@ namespace Emby.Server.Implementations.Playlists
 
         protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
         {
-            if (query.User == null)
+            if (query.User is null)
             {
                 query.Recursive = false;
                 return base.GetItemsInternal(query);
@@ -47,8 +42,7 @@ namespace Emby.Server.Implementations.Playlists
 
             query.Recursive = true;
             query.IncludeItemTypes = new[] { BaseItemKind.Playlist };
-            query.Parent = null;
-            return LibraryManager.GetItemsResult(query);
+            return QueryWithPostFiltering2(query);
         }
 
         public override string GetClientTypeName()

@@ -20,12 +20,12 @@ namespace MediaBrowser.Controller.MediaEncoding
             _logger = logger;
         }
 
-        public async Task StartStreamingLog(EncodingJobInfo state, Stream source, Stream target)
+        public async Task StartStreamingLog(EncodingJobInfo state, StreamReader reader, Stream target)
         {
             try
             {
                 using (target)
-                using (var reader = new StreamReader(source))
+                using (reader)
                 {
                     while (!reader.EndOfStream && reader.BaseStream.CanRead)
                     {
@@ -86,7 +86,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     var rate = parts[i + 1];
 
-                    if (float.TryParse(rate, NumberStyles.Any, CultureInfo.InvariantCulture, out var val))
+                    if (float.TryParse(rate, CultureInfo.InvariantCulture, out var val))
                     {
                         framerate = val;
                     }
@@ -95,7 +95,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     var rate = part.Split('=', 2)[^1];
 
-                    if (float.TryParse(rate, NumberStyles.Any, CultureInfo.InvariantCulture, out var val))
+                    if (float.TryParse(rate, CultureInfo.InvariantCulture, out var val))
                     {
                         framerate = val;
                     }
@@ -111,7 +111,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                         percent = 100.0 * currentMs / totalMs;
 
-                        transcodingPosition = val;
+                        transcodingPosition = TimeSpan.FromMilliseconds(currentMs);
                     }
                 }
                 else if (part.StartsWith("size=", StringComparison.OrdinalIgnoreCase))
@@ -127,7 +127,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     if (scale.HasValue)
                     {
-                        if (long.TryParse(size, NumberStyles.Any, CultureInfo.InvariantCulture, out var val))
+                        if (long.TryParse(size, CultureInfo.InvariantCulture, out var val))
                         {
                             bytesTranscoded = val * scale.Value;
                         }
@@ -146,7 +146,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     if (scale.HasValue)
                     {
-                        if (float.TryParse(rate, NumberStyles.Any, CultureInfo.InvariantCulture, out var val))
+                        if (float.TryParse(rate, CultureInfo.InvariantCulture, out var val))
                         {
                             bitRate = (int)Math.Ceiling(val * scale.Value);
                         }

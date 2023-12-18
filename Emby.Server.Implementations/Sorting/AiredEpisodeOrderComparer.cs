@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Sorting;
@@ -14,7 +15,7 @@ namespace Emby.Server.Implementations.Sorting
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name => ItemSortBy.AiredEpisodeOrder;
+        public ItemSortBy Type => ItemSortBy.AiredEpisodeOrder;
 
         /// <summary>
         /// Compares the specified x.
@@ -24,22 +25,16 @@ namespace Emby.Server.Implementations.Sorting
         /// <returns>System.Int32.</returns>
         public int Compare(BaseItem? x, BaseItem? y)
         {
-            if (x == null)
-            {
-                throw new ArgumentNullException(nameof(x));
-            }
+            ArgumentNullException.ThrowIfNull(x);
 
-            if (y == null)
-            {
-                throw new ArgumentNullException(nameof(y));
-            }
+            ArgumentNullException.ThrowIfNull(y);
 
             var episode1 = x as Episode;
             var episode2 = y as Episode;
 
-            if (episode1 == null)
+            if (episode1 is null)
             {
-                if (episode2 == null)
+                if (episode2 is null)
                 {
                     return 0;
                 }
@@ -47,7 +42,7 @@ namespace Emby.Server.Implementations.Sorting
                 return 1;
             }
 
-            if (episode2 == null)
+            if (episode2 is null)
             {
                 return -1;
             }

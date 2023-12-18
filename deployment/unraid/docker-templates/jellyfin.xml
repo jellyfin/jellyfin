@@ -21,7 +21,7 @@
   <Registry>https://hub.docker.com/r/jellyfin/jellyfin/</Registry>
   <GitHub>https://github.com/jellyfin/jellyfin/></GitHub>
   <Repository>jellyfin/jellyfin</Repository>
-  <Project>https://jellyfin.media/</Project>
+  <Project>https://jellyfin.org/</Project>
   <BindTime>true</BindTime>
   <Privileged>false</Privileged>
   <Networking>

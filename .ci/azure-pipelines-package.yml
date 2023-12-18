@@ -26,12 +26,16 @@ jobs:
         BuildConfiguration: linux.amd64-musl
       Linux.arm64:
         BuildConfiguration: linux.arm64
+      Linux.musl-linux-arm64:
+        BuildConfiguration: linux.musl-linux-arm64
       Linux.armhf:
         BuildConfiguration: linux.armhf
       Windows.amd64:
         BuildConfiguration: windows.amd64
-      MacOS:
-        BuildConfiguration: macos
+      MacOS.amd64:
+        BuildConfiguration: macos.amd64
+      MacOS.arm64:
+        BuildConfiguration: macos.arm64
       Portable:
         BuildConfiguration: portable
 
@@ -43,7 +47,7 @@ jobs:
     displayName: Set release version (stable)
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
 
-  - script: 'docker build -f deployment/Dockerfile.$(BuildConfiguration) -t jellyfin-server-$(BuildConfiguration) deployment'
+  - script: 'docker build -f deployment/Dockerfile.$(BuildConfiguration) -t jellyfin-server-$(BuildConfiguration) --label "org.opencontainers.image.url=$(Build.Repository.Uri)" --label "org.opencontainers.image.revision=$(Build.SourceVersion)"  deployment'
     displayName: 'Build Dockerfile'
 
   - script: 'docker image ls -a && docker run -v $(pwd)/deployment/dist:/dist -v $(pwd):/jellyfin -e IS_UNSTABLE="yes" -e BUILD_ID=$(Build.BuildNumber) jellyfin-server-$(BuildConfiguration)'
@@ -164,6 +168,7 @@ jobs:
 - job: CollectArtifacts
   timeoutInMinutes: 20
   displayName: 'Collect Artifacts'
+  condition: succeededOrFailed()
   continueOnError: true
   dependsOn:
   - BuildPackage
@@ -203,10 +208,10 @@ jobs:
 
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET 6.0 sdk'
+    displayName: 'Use .NET 8.0 sdk'
     inputs:
       packageType: 'sdk'
-      version: '6.0.x'
+      version: '8.0.x'
 
   - task: DotNetCoreCLI@2
     displayName: 'Build Stable Nuget packages'

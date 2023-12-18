@@ -50,7 +50,7 @@ namespace Jellyfin.Server.Implementations.Tests.TypedBaseItem
 
         private static bool IsProjectAssemblyName(string? name)
         {
-            if (name == null)
+            if (name is null)
             {
                 return false;
             }

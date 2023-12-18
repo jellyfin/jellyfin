@@ -55,7 +55,7 @@ namespace Jellyfin.Extensions
         public static Enumerator Split(this ReadOnlySpan<char> str, char separator) => new(str, separator);
 
         /// <summary>
-        /// Provides an enumerator for the substrings seperated by the separator.
+        /// Provides an enumerator for the substrings separated by the separator.
         /// </summary>
         [StructLayout(LayoutKind.Auto)]
         public ref struct Enumerator

@@ -2,6 +2,7 @@
 
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Resolvers;
 
 namespace Emby.Server.Implementations.Library.Resolvers
 {
@@ -21,7 +22,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
         {
             base.SetInitialItemValues(item, args);
 
-            item.IsRoot = args.Parent == null;
+            item.IsRoot = args.Parent is null;
         }
     }
 }

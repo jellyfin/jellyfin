@@ -57,7 +57,7 @@ namespace Jellyfin.Extensions.Tests.Json.Converters
             Assert.Equal(json, res);
         }
 
-        private class TestContainer
+        private sealed class TestContainer
         {
             public TestContainer(CollectionTypeOptions? collectionType)
             {

@@ -9,9 +9,9 @@ namespace Jellyfin.Server.Implementations.Tests.Sorting;
 
 public class IndexNumberComparerTests
 {
-    private readonly IBaseItemComparer _cmp = new IndexNumberComparer();
+    private readonly IndexNumberComparer _cmp = new IndexNumberComparer();
 
-    private static TheoryData<BaseItem?, BaseItem?> Compare_GivenNull_ThrowsArgumentNullException_TestData()
+    public static TheoryData<BaseItem?, BaseItem?> Compare_GivenNull_ThrowsArgumentNullException_TestData()
         => new()
         {
             { null, new Audio() },

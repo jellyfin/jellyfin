@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using Jellyfin.Networking.Configuration;
-using Jellyfin.Server.Middleware;
+using Jellyfin.Api.Middleware;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.OpenApi.Models;
@@ -63,9 +63,9 @@ namespace Jellyfin.Server.Extensions
         /// </summary>
         /// <param name="appBuilder">The application builder.</param>
         /// <returns>The updated application builder.</returns>
-        public static IApplicationBuilder UseIpBasedAccessValidation(this IApplicationBuilder appBuilder)
+        public static IApplicationBuilder UseIPBasedAccessValidation(this IApplicationBuilder appBuilder)
         {
-            return appBuilder.UseMiddleware<IpBasedAccessValidationMiddleware>();
+            return appBuilder.UseMiddleware<IPBasedAccessValidationMiddleware>();
         }
 
         /// <summary>

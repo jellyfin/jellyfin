@@ -87,7 +87,7 @@ namespace MediaBrowser.Providers.Playlists
                 return GetPlsItems(stream);
             }
 
-            return new List<LinkedChild>();
+            return Enumerable.Empty<LinkedChild>();
         }
 
         private IEnumerable<LinkedChild> GetPlsItems(Stream stream)
@@ -157,7 +157,7 @@ namespace MediaBrowser.Providers.Playlists
             if (!string.IsNullOrWhiteSpace(path) && item.IsFileProtocol)
             {
                 var file = directoryService.GetFile(path);
-                if (file != null && file.LastWriteTimeUtc != item.DateModified)
+                if (file is not null && file.LastWriteTimeUtc != item.DateModified)
                 {
                     _logger.LogDebug("Refreshing {0} due to date modified timestamp change.", path);
                     return true;

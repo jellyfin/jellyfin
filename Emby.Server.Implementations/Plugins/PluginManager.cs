@@ -5,15 +5,18 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Runtime.Loader;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Emby.Server.Implementations.Library;
 using Jellyfin.Extensions.Json;
 using Jellyfin.Extensions.Json.Converters;
-using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Plugins;
@@ -26,13 +29,16 @@ namespace Emby.Server.Implementations.Plugins
     /// <summary>
     /// Defines the <see cref="PluginManager" />.
     /// </summary>
-    public class PluginManager : IPluginManager
+    public sealed class PluginManager : IPluginManager, IDisposable
     {
+        private const string MetafileName = "meta.json";
+
         private readonly string _pluginsPath;
         private readonly Version _appVersion;
+        private readonly List<AssemblyLoadContext> _assemblyLoadContexts;
         private readonly JsonSerializerOptions _jsonOptions;
         private readonly ILogger<PluginManager> _logger;
-        private readonly IApplicationHost _appHost;
+        private readonly IServerApplicationHost _appHost;
         private readonly ServerConfiguration _config;
         private readonly List<LocalPlugin> _plugins;
         private readonly Version _minimumVersion;
@@ -42,14 +48,14 @@ namespace Emby.Server.Implementations.Plugins
         /// <summary>
         /// Initializes a new instance of the <see cref="PluginManager"/> class.
         /// </summary>
-        /// <param name="logger">The <see cref="ILogger"/>.</param>
-        /// <param name="appHost">The <see cref="IApplicationHost"/>.</param>
+        /// <param name="logger">The <see cref="ILogger{PluginManager}"/>.</param>
+        /// <param name="appHost">The <see cref="IServerApplicationHost"/>.</param>
         /// <param name="config">The <see cref="ServerConfiguration"/>.</param>
         /// <param name="pluginsPath">The plugin path.</param>
         /// <param name="appVersion">The application version.</param>
         public PluginManager(
             ILogger<PluginManager> logger,
-            IApplicationHost appHost,
+            IServerApplicationHost appHost,
             ServerConfiguration config,
             string pluginsPath,
             Version appVersion)
@@ -76,6 +82,8 @@ namespace Emby.Server.Implementations.Plugins
             _appHost = appHost;
             _minimumVersion = new Version(0, 0, 0, 1);
             _plugins = Directory.Exists(_pluginsPath) ? DiscoverPlugins().ToList() : new List<LocalPlugin>();
+
+            _assemblyLoadContexts = new List<AssemblyLoadContext>();
         }
 
         private IHttpClientFactory HttpClientFactory
@@ -119,38 +127,64 @@ namespace Emby.Server.Implementations.Plugins
                     continue;
                 }
 
+                var assemblyLoadContext = new PluginLoadContext(plugin.Path);
+                _assemblyLoadContexts.Add(assemblyLoadContext);
+
+                var assemblies = new List<Assembly>(plugin.DllFiles.Count);
+                var loadedAll = true;
+
                 foreach (var file in plugin.DllFiles)
                 {
-                    Assembly assembly;
                     try
                     {
-                        assembly = Assembly.LoadFrom(file);
-
-                        // Load all required types to verify that the plugin will load
-                        assembly.GetTypes();
+                        assemblies.Add(assemblyLoadContext.LoadFromAssemblyPath(file));
                     }
                     catch (FileLoadException ex)
                     {
-                        _logger.LogError(ex, "Failed to load assembly {Path}. Disabling plugin.", file);
+                        _logger.LogError(ex, "Failed to load assembly {Path}. Disabling plugin", file);
                         ChangePluginState(plugin, PluginStatus.Malfunctioned);
-                        continue;
-                    }
-                    catch (SystemException ex) when (ex is TypeLoadException or ReflectionTypeLoadException) // Undocumented exception
-                    {
-                        _logger.LogError(ex, "Failed to load assembly {Path}. This error occurs when a plugin references an incompatible version of one of the shared libraries. Disabling plugin.", file);
-                        ChangePluginState(plugin, PluginStatus.NotSupported);
-                        continue;
+                        loadedAll = false;
+                        break;
                     }
 #pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
                     {
-                        _logger.LogError(ex, "Failed to load assembly {Path}. Unknown exception was thrown. Disabling plugin.", file);
+                        _logger.LogError(ex, "Failed to load assembly {Path}. Unknown exception was thrown. Disabling plugin", file);
                         ChangePluginState(plugin, PluginStatus.Malfunctioned);
-                        continue;
+                        loadedAll = false;
+                        break;
+                    }
+                }
+
+                if (!loadedAll)
+                {
+                    continue;
+                }
+
+                foreach (var assembly in assemblies)
+                {
+                    try
+                    {
+                        // Load all required types to verify that the plugin will load
+                        assembly.GetTypes();
+                    }
+                    catch (SystemException ex) when (ex is TypeLoadException or ReflectionTypeLoadException) // Undocumented exception
+                    {
+                        _logger.LogError(ex, "Failed to load assembly {Path}. This error occurs when a plugin references an incompatible version of one of the shared libraries. Disabling plugin", assembly.Location);
+                        ChangePluginState(plugin, PluginStatus.NotSupported);
+                        break;
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types
+                    catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                    {
+                        _logger.LogError(ex, "Failed to load assembly {Path}. Unknown exception was thrown. Disabling plugin", assembly.Location);
+                        ChangePluginState(plugin, PluginStatus.Malfunctioned);
+                        break;
                     }
 
-                    _logger.LogInformation("Loaded assembly {Assembly} from {Path}", assembly.FullName, file);
+                    _logger.LogInformation("Loaded assembly {Assembly} from {Path}", assembly.FullName, assembly.Location);
                     yield return assembly;
                 }
             }
@@ -174,7 +208,7 @@ namespace Emby.Server.Implementations.Plugins
             foreach (var pluginServiceRegistrator in _appHost.GetExportTypes<IPluginServiceRegistrator>())
             {
                 var plugin = GetPluginByAssembly(pluginServiceRegistrator.Assembly);
-                if (plugin == null)
+                if (plugin is null)
                 {
                     _logger.LogError("Unable to find plugin in assembly {Assembly}", pluginServiceRegistrator.Assembly.FullName);
                     continue;
@@ -189,7 +223,7 @@ namespace Emby.Server.Implementations.Plugins
                 try
                 {
                     var instance = (IPluginServiceRegistrator?)Activator.CreateInstance(pluginServiceRegistrator);
-                    instance?.RegisterServices(serviceCollection);
+                    instance?.RegisterServices(serviceCollection, _appHost);
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
@@ -210,10 +244,7 @@ namespace Emby.Server.Implementations.Plugins
         /// <param name="folder">Folder of the plugin.</param>
         public void ImportPluginFrom(string folder)
         {
-            if (string.IsNullOrEmpty(folder))
-            {
-                throw new ArgumentNullException(nameof(folder));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(folder);
 
             // Load the plugin.
             var plugin = LoadManifest(folder);
@@ -234,10 +265,7 @@ namespace Emby.Server.Implementations.Plugins
         /// <returns>Outcome of the operation.</returns>
         public bool RemovePlugin(LocalPlugin plugin)
         {
-            if (plugin == null)
-            {
-                throw new ArgumentNullException(nameof(plugin));
-            }
+            ArgumentNullException.ThrowIfNull(plugin);
 
             if (DeletePlugin(plugin))
             {
@@ -266,12 +294,12 @@ namespace Emby.Server.Implementations.Plugins
         {
             LocalPlugin? plugin;
 
-            if (version == null)
+            if (version is null)
             {
                 // If no version is given, return the current instance.
                 var plugins = _plugins.Where(p => p.Id.Equals(id)).ToList();
 
-                plugin = plugins.FirstOrDefault(p => p.Instance != null) ?? plugins.OrderByDescending(p => p.Version).FirstOrDefault();
+                plugin = plugins.FirstOrDefault(p => p.Instance is not null) ?? plugins.MaxBy(p => p.Version);
             }
             else
             {
@@ -288,10 +316,7 @@ namespace Emby.Server.Implementations.Plugins
         /// <param name="plugin">The <see cref="LocalPlugin"/> of the plug to disable.</param>
         public void EnablePlugin(LocalPlugin plugin)
         {
-            if (plugin == null)
-            {
-                throw new ArgumentNullException(nameof(plugin));
-            }
+            ArgumentNullException.ThrowIfNull(plugin);
 
             if (ChangePluginState(plugin, PluginStatus.Active))
             {
@@ -306,10 +331,7 @@ namespace Emby.Server.Implementations.Plugins
         /// <param name="plugin">The <see cref="LocalPlugin"/> of the plug to disable.</param>
         public void DisablePlugin(LocalPlugin plugin)
         {
-            if (plugin == null)
-            {
-                throw new ArgumentNullException(nameof(plugin));
-            }
+            ArgumentNullException.ThrowIfNull(plugin);
 
             // Update the manifest on disk
             if (ChangePluginState(plugin, PluginStatus.Disabled))
@@ -326,13 +348,10 @@ namespace Emby.Server.Implementations.Plugins
         public void FailPlugin(Assembly assembly)
         {
             // Only save if disabled.
-            if (assembly == null)
-            {
-                throw new ArgumentNullException(nameof(assembly));
-            }
+            ArgumentNullException.ThrowIfNull(assembly);
 
             var plugin = _plugins.FirstOrDefault(p => p.DllFiles.Contains(assembly.Location));
-            if (plugin == null)
+            if (plugin is null)
             {
                 // A plugin's assembly didn't cause this issue, so ignore it.
                 return;
@@ -347,7 +366,7 @@ namespace Emby.Server.Implementations.Plugins
             try
             {
                 var data = JsonSerializer.Serialize(manifest, _jsonOptions);
-                File.WriteAllText(Path.Combine(path, "meta.json"), data);
+                File.WriteAllText(Path.Combine(path, MetafileName), data);
                 return true;
             }
             catch (ArgumentException e)
@@ -358,7 +377,7 @@ namespace Emby.Server.Implementations.Plugins
         }
 
         /// <inheritdoc/>
-        public async Task<bool> GenerateManifest(PackageInfo packageInfo, Version version, string path, PluginStatus status)
+        public async Task<bool> PopulateManifest(PackageInfo packageInfo, Version version, string path, PluginStatus status)
         {
             var versionInfo = packageInfo.Versions.First(v => v.Version == version.ToString());
             var imagePath = string.Empty;
@@ -368,11 +387,11 @@ namespace Emby.Server.Implementations.Plugins
                 var url = new Uri(packageInfo.ImageUrl);
                 imagePath = Path.Join(path, url.Segments[^1]);
 
-                await using var fileStream = AsyncFile.OpenWrite(imagePath);
-
+                var fileStream = AsyncFile.OpenWrite(imagePath);
+                Stream? downloadStream = null;
                 try
                 {
-                    await using var downloadStream = await HttpClientFactory
+                    downloadStream = await HttpClientFactory
                         .CreateClient(NamedClient.Default)
                         .GetStreamAsync(url)
                         .ConfigureAwait(false);
@@ -383,6 +402,14 @@ namespace Emby.Server.Implementations.Plugins
                 {
                     _logger.LogError(ex, "Failed to download image to path {Path} on disk.", imagePath);
                     imagePath = string.Empty;
+                }
+                finally
+                {
+                    await fileStream.DisposeAsync().ConfigureAwait(false);
+                    if (downloadStream is not null)
+                    {
+                        await downloadStream.DisposeAsync().ConfigureAwait(false);
+                    }
                 }
             }
 
@@ -403,7 +430,78 @@ namespace Emby.Server.Implementations.Plugins
                 ImagePath = imagePath
             };
 
+            if (!await ReconcileManifest(manifest, path).ConfigureAwait(false))
+            {
+                // An error occurred during reconciliation and saving could be undesirable.
+                return false;
+            }
+
             return SaveManifest(manifest, path);
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            foreach (var assemblyLoadContext in _assemblyLoadContexts)
+            {
+                assemblyLoadContext.Unload();
+            }
+        }
+
+        /// <summary>
+        /// Reconciles the manifest against any properties that exist locally in a pre-packaged meta.json found at the path.
+        /// If no file is found, no reconciliation occurs.
+        /// </summary>
+        /// <param name="manifest">The <see cref="PluginManifest"/> to reconcile against.</param>
+        /// <param name="path">The plugin path.</param>
+        /// <returns>The reconciled <see cref="PluginManifest"/>.</returns>
+        private async Task<bool> ReconcileManifest(PluginManifest manifest, string path)
+        {
+            try
+            {
+                var metafile = Path.Combine(path, MetafileName);
+                if (!File.Exists(metafile))
+                {
+                    _logger.LogInformation("No local manifest exists for plugin {Plugin}. Skipping manifest reconciliation.", manifest.Name);
+                    return true;
+                }
+
+                using var metaStream = File.OpenRead(metafile);
+                var localManifest = await JsonSerializer.DeserializeAsync<PluginManifest>(metaStream, _jsonOptions).ConfigureAwait(false);
+                localManifest ??= new PluginManifest();
+
+                if (!Equals(localManifest.Id, manifest.Id))
+                {
+                    _logger.LogError("The manifest ID {LocalUUID} did not match the package info ID {PackageUUID}.", localManifest.Id, manifest.Id);
+                    manifest.Status = PluginStatus.Malfunctioned;
+                }
+
+                if (localManifest.Version != manifest.Version)
+                {
+                    // Package information provides the version and is the source of truth. Pre-packages meta.json is assumed to be a mistake in this regard.
+                    _logger.LogWarning("The version of the local manifest was {LocalVersion}, but {PackageVersion} was expected. The value will be replaced.", localManifest.Version, manifest.Version);
+                }
+
+                // Explicitly mapping properties instead of using reflection is preferred here.
+                manifest.Category = string.IsNullOrEmpty(localManifest.Category) ? manifest.Category : localManifest.Category;
+                manifest.AutoUpdate = localManifest.AutoUpdate; // Preserve whatever is local. Package info does not have this property.
+                manifest.Changelog = string.IsNullOrEmpty(localManifest.Changelog) ? manifest.Changelog : localManifest.Changelog;
+                manifest.Description = string.IsNullOrEmpty(localManifest.Description) ? manifest.Description : localManifest.Description;
+                manifest.Name = string.IsNullOrEmpty(localManifest.Name) ? manifest.Name : localManifest.Name;
+                manifest.Overview = string.IsNullOrEmpty(localManifest.Overview) ? manifest.Overview : localManifest.Overview;
+                manifest.Owner = string.IsNullOrEmpty(localManifest.Owner) ? manifest.Owner : localManifest.Owner;
+                manifest.TargetAbi = string.IsNullOrEmpty(localManifest.TargetAbi) ? manifest.TargetAbi : localManifest.TargetAbi;
+                manifest.Timestamp = localManifest.Timestamp.Equals(default) ? manifest.Timestamp : localManifest.Timestamp;
+                manifest.ImagePath = string.IsNullOrEmpty(localManifest.ImagePath) ? manifest.ImagePath : localManifest.ImagePath;
+                manifest.Assemblies = localManifest.Assemblies;
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning(e, "Unable to reconcile plugin manifest due to an error. {Path}", path);
+                return false;
+            }
         }
 
         /// <summary>
@@ -454,7 +552,7 @@ namespace Emby.Server.Implementations.Plugins
                 _logger.LogDebug("Creating instance of {Type}", type);
                 // _appHost.ServiceProvider is already assigned when we create the plugins
                 var instance = (IPlugin)ActivatorUtilities.CreateInstance(_appHost.ServiceProvider!, type);
-                if (plugin == null)
+                if (plugin is null)
                 {
                     // Create a dummy record for the providers.
                     // TODO: remove this code once all provided have been released as separate plugins.
@@ -512,7 +610,7 @@ namespace Emby.Server.Implementations.Plugins
 #pragma warning restore CA1031 // Do not catch general exception types
             {
                 _logger.LogError(ex, "Error creating {Type}", type.FullName);
-                if (plugin != null)
+                if (plugin is not null)
                 {
                     if (ChangePluginState(plugin, PluginStatus.Malfunctioned))
                     {
@@ -535,7 +633,7 @@ namespace Emby.Server.Implementations.Plugins
 
             var predecessor = _plugins.OrderByDescending(p => p.Version)
                 .FirstOrDefault(p => p.Id.Equals(plugin.Id) && p.IsEnabledAndSupported && p.Version != plugin.Version);
-            if (predecessor != null)
+            if (predecessor is not null)
             {
                 return;
             }
@@ -570,7 +668,7 @@ namespace Emby.Server.Implementations.Plugins
         {
             Version? version;
             PluginManifest? manifest = null;
-            var metafile = Path.Combine(dir, "meta.json");
+            var metafile = Path.Combine(dir, MetafileName);
             if (File.Exists(metafile))
             {
                 // Only path where this stays null is when File.ReadAllBytes throws an IOException
@@ -586,10 +684,10 @@ namespace Emby.Server.Implementations.Plugins
                 }
                 catch (JsonException ex)
                 {
-                    _logger.LogError(ex, "Error deserializing {Json}.", Encoding.UTF8.GetString(data!));
+                    _logger.LogError(ex, "Error deserializing {Json}.", Encoding.UTF8.GetString(data));
                 }
 
-                if (manifest != null)
+                if (manifest is not null)
                 {
                     if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
                     {
@@ -664,7 +762,15 @@ namespace Emby.Server.Implementations.Plugins
                 var entry = versions[x];
                 if (!string.Equals(lastName, entry.Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    entry.DllFiles = Directory.GetFiles(entry.Path, "*.dll", SearchOption.AllDirectories);
+                    if (!TryGetPluginDlls(entry, out var allowedDlls))
+                    {
+                        _logger.LogError("One or more assembly paths was invalid. Marking plugin {Plugin} as \"Malfunctioned\".", entry.Name);
+                        ChangePluginState(entry, PluginStatus.Malfunctioned);
+                        continue;
+                    }
+
+                    entry.DllFiles = allowedDlls;
+
                     if (entry.IsEnabledAndSupported)
                     {
                         lastName = entry.Name;
@@ -711,6 +817,68 @@ namespace Emby.Server.Implementations.Plugins
         }
 
         /// <summary>
+        /// Attempts to retrieve valid DLLs from the plugin path. This method will consider the assembly whitelist
+        /// from the manifest.
+        /// </summary>
+        /// <remarks>
+        /// Loading DLLs from externally supplied paths introduces a path traversal risk. This method
+        /// uses a safelisting tactic of considering DLLs from the plugin directory and only using
+        /// the plugin's canonicalized assembly whitelist for comparison. See
+        /// <see href="https://owasp.org/www-community/attacks/Path_Traversal"/> for more details.
+        /// </remarks>
+        /// <param name="plugin">The plugin.</param>
+        /// <param name="whitelistedDlls">The whitelisted DLLs. If the method returns <see langword="false"/>, this will be empty.</param>
+        /// <returns>
+        /// <see langword="true"/> if all assemblies listed in the manifest were available in the plugin directory.
+        /// <see langword="false"/> if any assemblies were invalid or missing from the plugin directory.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">If the <see cref="LocalPlugin"/> is null.</exception>
+        private bool TryGetPluginDlls(LocalPlugin plugin, out IReadOnlyList<string> whitelistedDlls)
+        {
+            ArgumentNullException.ThrowIfNull(nameof(plugin));
+
+            IReadOnlyList<string> pluginDlls = Directory.GetFiles(plugin.Path, "*.dll", SearchOption.AllDirectories);
+
+            whitelistedDlls = Array.Empty<string>();
+            if (pluginDlls.Count > 0 && plugin.Manifest.Assemblies.Count > 0)
+            {
+                _logger.LogInformation("Registering whitelisted assemblies for plugin \"{Plugin}\"...", plugin.Name);
+
+                var canonicalizedPaths = new List<string>();
+                foreach (var path in plugin.Manifest.Assemblies)
+                {
+                    var canonicalized = Path.Combine(plugin.Path, path).Canonicalize();
+
+                    // Ensure we stay in the plugin directory.
+                    if (!canonicalized.StartsWith(plugin.Path.NormalizePath(), StringComparison.Ordinal))
+                    {
+                        _logger.LogError("Assembly path {Path} is not inside the plugin directory.", path);
+                        return false;
+                    }
+
+                    canonicalizedPaths.Add(canonicalized);
+                }
+
+                var intersected = pluginDlls.Intersect(canonicalizedPaths).ToList();
+
+                if (intersected.Count != canonicalizedPaths.Count)
+                {
+                    _logger.LogError("Plugin {Plugin} contained assembly paths that were not found in the directory.", plugin.Name);
+                    return false;
+                }
+
+                whitelistedDlls = intersected;
+            }
+            else
+            {
+                // No whitelist, default to loading all DLLs in plugin directory.
+                whitelistedDlls = pluginDlls;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Changes the status of the other versions of the plugin to "Superceded".
         /// </summary>
         /// <param name="plugin">The <see cref="LocalPlugin"/> that's master.</param>
@@ -723,10 +891,11 @@ namespace Emby.Server.Implementations.Plugins
                     && p.IsEnabledAndSupported
                     && p.Version != plugin.Version);
 
-            if (previousVersion == null)
+            if (previousVersion is null)
             {
                 // This value is memory only - so that the web will show restart required.
                 plugin.Manifest.Status = PluginStatus.Restart;
+                plugin.Manifest.AutoUpdate = false;
                 return;
             }
 
@@ -741,6 +910,7 @@ namespace Emby.Server.Implementations.Plugins
 
             // This value is memory only - so that the web will show restart required.
             plugin.Manifest.Status = PluginStatus.Restart;
+            plugin.Manifest.AutoUpdate = false;
         }
     }
 }

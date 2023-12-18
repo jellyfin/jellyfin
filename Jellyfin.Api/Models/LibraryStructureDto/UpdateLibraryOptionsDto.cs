@@ -1,21 +1,20 @@
 ﻿using System;
 using MediaBrowser.Model.Configuration;
 
-namespace Jellyfin.Api.Models.LibraryStructureDto
+namespace Jellyfin.Api.Models.LibraryStructureDto;
+
+/// <summary>
+/// Update library options dto.
+/// </summary>
+public class UpdateLibraryOptionsDto
 {
     /// <summary>
-    /// Update library options dto.
+    /// Gets or sets the library item id.
     /// </summary>
-    public class UpdateLibraryOptionsDto
-    {
-        /// <summary>
-        /// Gets or sets the library item id.
-        /// </summary>
-        public Guid Id { get; set; }
+    public Guid Id { get; set; }
 
-        /// <summary>
-        /// Gets or sets library options.
-        /// </summary>
-        public LibraryOptions? LibraryOptions { get; set; }
-    }
+    /// <summary>
+    /// Gets or sets library options.
+    /// </summary>
+    public LibraryOptions? LibraryOptions { get; set; }
 }

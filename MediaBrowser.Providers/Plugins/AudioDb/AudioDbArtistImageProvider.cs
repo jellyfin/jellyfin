@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
@@ -42,7 +43,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         /// <inheritdoc />
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
-            return new List<ImageType>
+            return new ImageType[]
             {
                 ImageType.Primary,
                 ImageType.Logo,
@@ -62,19 +63,22 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
                 var path = AudioDbArtistProvider.GetArtistInfoPath(_config.ApplicationPaths, id);
 
-                await using FileStream jsonStream = AsyncFile.OpenRead(path);
-                var obj = await JsonSerializer.DeserializeAsync<AudioDbArtistProvider.RootObject>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-
-                if (obj != null && obj.artists != null && obj.artists.Count > 0)
+                FileStream jsonStream = AsyncFile.OpenRead(path);
+                await using (jsonStream.ConfigureAwait(false))
                 {
-                    return GetImages(obj.artists[0]);
+                    var obj = await JsonSerializer.DeserializeAsync<AudioDbArtistProvider.RootObject>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+
+                    if (obj is not null && obj.artists is not null && obj.artists.Count > 0)
+                    {
+                        return GetImages(obj.artists[0]);
+                    }
                 }
             }
 
-            return new List<RemoteImageInfo>();
+            return Enumerable.Empty<RemoteImageInfo>();
         }
 
-        private IEnumerable<RemoteImageInfo> GetImages(AudioDbArtistProvider.Artist item)
+        private List<RemoteImageInfo> GetImages(AudioDbArtistProvider.Artist item)
         {
             var list = new List<RemoteImageInfo>();
 

@@ -34,7 +34,7 @@ namespace Emby.Server.Implementations.Images
                     if (subItem is Episode episode)
                     {
                         var series = episode.Series;
-                        if (series != null && series.HasImage(ImageType.Primary))
+                        if (series is not null && series.HasImage(ImageType.Primary))
                         {
                             return series;
                         }
@@ -47,7 +47,7 @@ namespace Emby.Server.Implementations.Images
 
                     var parent = subItem.GetOwner() ?? subItem.GetParent();
 
-                    if (parent != null && parent.HasImage(ImageType.Primary))
+                    if (parent is not null && parent.HasImage(ImageType.Primary))
                     {
                         if (parent is MusicAlbum)
                         {
@@ -57,9 +57,8 @@ namespace Emby.Server.Implementations.Images
 
                     return null;
                 })
-                .Where(i => i != null)
-                .GroupBy(x => x.Id)
-                .Select(x => x.First())
+                .Where(i => i is not null)
+                .DistinctBy(x => x.Id)
                 .ToList();
         }
     }

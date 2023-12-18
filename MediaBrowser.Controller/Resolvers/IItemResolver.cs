@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System.Collections.Generic;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -24,7 +25,7 @@ namespace MediaBrowser.Controller.Resolvers
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns>BaseItem.</returns>
-        BaseItem ResolvePath(ItemResolveArgs args);
+        BaseItem? ResolvePath(ItemResolveArgs args);
     }
 
     public interface IMultiItemResolver
@@ -32,7 +33,7 @@ namespace MediaBrowser.Controller.Resolvers
         MultiItemResolverResult ResolveMultiple(
             Folder parent,
             List<FileSystemMetadata> files,
-            string collectionType,
+            CollectionType? collectionType,
             IDirectoryService directoryService);
     }
 

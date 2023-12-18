@@ -32,7 +32,7 @@ namespace MediaBrowser.LocalMetadata.Images
         public IEnumerable<LocalImageInfo> GetImages(BaseItem item, IDirectoryService directoryService)
         {
             var parentPath = Path.GetDirectoryName(item.Path);
-            if (parentPath == null)
+            if (parentPath is null)
             {
                 return Enumerable.Empty<LocalImageInfo>();
             }

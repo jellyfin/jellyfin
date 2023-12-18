@@ -22,7 +22,7 @@ namespace MediaBrowser.Providers.Movies
         public ExternalIdMediaType? Type => null;
 
         /// <inheritdoc />
-        public string? UrlFormatString => "https://www.imdb.com/title/{0}";
+        public string UrlFormatString => "https://www.imdb.com/title/{0}";
 
         /// <inheritdoc />
         public bool Supports(IHasProviderIds item)

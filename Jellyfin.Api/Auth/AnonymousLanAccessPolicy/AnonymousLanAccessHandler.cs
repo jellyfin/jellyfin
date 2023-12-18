@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -29,10 +30,10 @@ namespace Jellyfin.Api.Auth.AnonymousLanAccessPolicy
         /// <inheritdoc />
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, AnonymousLanAccessRequirement requirement)
         {
-            var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress;
+            var ip = _httpContextAccessor.HttpContext?.GetNormalizedRemoteIP();
 
             // Loopback will be on LAN, so we can accept null.
-            if (ip == null || _networkManager.IsInLocalNetwork(ip))
+            if (ip is null || _networkManager.IsInLocalNetwork(ip))
             {
                 context.Succeed(requirement);
             }

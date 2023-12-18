@@ -23,6 +23,11 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// The embedded image.
         /// </summary>
-        EmbeddedImage
+        EmbeddedImage,
+
+        /// <summary>
+        /// The data.
+        /// </summary>
+        Data
     }
 }

@@ -43,7 +43,7 @@ namespace Emby.Naming.ExternalFiles
                 return null;
             }
 
-            var extension = Path.GetExtension(path);
+            var extension = Path.GetExtension(path.AsSpan());
             if (!(_type == DlnaProfileType.Subtitle && _namingOptions.SubtitleFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
                 && !(_type == DlnaProfileType.Audio && _namingOptions.AudioFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase)))
             {
@@ -94,9 +94,21 @@ namespace Emby.Naming.ExternalFiles
                     // Try to translate to three character code
                     var culture = _localizationManager.FindLanguageInfo(currentSliceWithoutSeparator);
 
-                    if (culture != null && pathInfo.Language == null)
+                    if (culture is not null && pathInfo.Language is null)
                     {
                         pathInfo.Language = culture.ThreeLetterISOLanguageName;
+                        extraString = extraString.Replace(currentSlice, string.Empty, StringComparison.OrdinalIgnoreCase);
+                    }
+                    else if (culture is not null && pathInfo.Language == "hin")
+                    {
+                        // Hindi language code "hi" collides with a hearing impaired flag - use as Hindi only if no other language is set
+                        pathInfo.IsHearingImpaired = true;
+                        pathInfo.Language = culture.ThreeLetterISOLanguageName;
+                        extraString = extraString.Replace(currentSlice, string.Empty, StringComparison.OrdinalIgnoreCase);
+                    }
+                    else if (_namingOptions.MediaHearingImpairedFlags.Any(s => currentSliceWithoutSeparator.Contains(s, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        pathInfo.IsHearingImpaired = true;
                         extraString = extraString.Replace(currentSlice, string.Empty, StringComparison.OrdinalIgnoreCase);
                     }
                     else

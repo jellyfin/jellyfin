@@ -150,8 +150,6 @@ publish/
 *.pubxml
 
 # NuGet Packages Directory
-## TODO: If you have NuGet Package Restore enabled, uncomment the next line
-# packages/
 dlls/
 dllssigned/
 
@@ -166,7 +164,6 @@ AppPackages/
 sql/
 *.Cache
 ClientBin/
-[Ss]tyle[Cc]op.*
 ~$*
 *~
 *.dbmdl
@@ -276,7 +273,6 @@ BenchmarkDotNet.Artifacts
 # Ignore web artifacts from native builds
 web/
 web-src.*
-MediaBrowser.WebDashboard/jellyfin-web
 apiclient/generated
 
 # Omnisharp crash logs

@@ -20,7 +20,7 @@ namespace MediaBrowser.Common.Providers
         /// <returns>True if parsing was successful, false otherwise.</returns>
         public static bool TryFindImdbId(ReadOnlySpan<char> text, out ReadOnlySpan<char> imdbId)
         {
-            // imdb id is at least 9 chars (tt + 7 numbers)
+            // IMDb id is at least 9 chars (tt + 7 numbers)
             while (text.Length >= 2 + ImdbMinNumbers)
             {
                 var ttPos = text.IndexOf(ImdbPrefix);
@@ -42,7 +42,7 @@ namespace MediaBrowser.Common.Providers
                     }
                 }
 
-                // skip if more than 8 digits + 2 chars for tt
+                // Skip if more than 8 digits + 2 chars for tt
                 if (i <= ImdbMaxNumbers + 2 && i >= ImdbMinNumbers + 2)
                 {
                     imdbId = text.Slice(0, i);

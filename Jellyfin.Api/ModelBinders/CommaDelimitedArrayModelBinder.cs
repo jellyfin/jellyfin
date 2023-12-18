@@ -5,86 +5,85 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Api.ModelBinders
+namespace Jellyfin.Api.ModelBinders;
+
+/// <summary>
+/// Comma delimited array model binder.
+/// Returns an empty array of specified type if there is no query parameter.
+/// </summary>
+public class CommaDelimitedArrayModelBinder : IModelBinder
 {
+    private readonly ILogger<CommaDelimitedArrayModelBinder> _logger;
+
     /// <summary>
-    /// Comma delimited array model binder.
-    /// Returns an empty array of specified type if there is no query parameter.
+    /// Initializes a new instance of the <see cref="CommaDelimitedArrayModelBinder"/> class.
     /// </summary>
-    public class CommaDelimitedArrayModelBinder : IModelBinder
+    /// <param name="logger">Instance of the <see cref="ILogger{CommaDelimitedArrayModelBinder}"/> interface.</param>
+    public CommaDelimitedArrayModelBinder(ILogger<CommaDelimitedArrayModelBinder> logger)
     {
-        private readonly ILogger<CommaDelimitedArrayModelBinder> _logger;
+        _logger = logger;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CommaDelimitedArrayModelBinder"/> class.
-        /// </summary>
-        /// <param name="logger">Instance of the <see cref="ILogger{CommaDelimitedArrayModelBinder}"/> interface.</param>
-        public CommaDelimitedArrayModelBinder(ILogger<CommaDelimitedArrayModelBinder> logger)
+    /// <inheritdoc/>
+    public Task BindModelAsync(ModelBindingContext bindingContext)
+    {
+        var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
+        var elementType = bindingContext.ModelType.GetElementType() ?? bindingContext.ModelType.GenericTypeArguments[0];
+        var converter = TypeDescriptor.GetConverter(elementType);
+
+        if (valueProviderResult.Length > 1)
         {
-            _logger = logger;
+            var typedValues = GetParsedResult(valueProviderResult.Values, elementType, converter);
+            bindingContext.Result = ModelBindingResult.Success(typedValues);
         }
-
-        /// <inheritdoc/>
-        public Task BindModelAsync(ModelBindingContext bindingContext)
+        else
         {
-            var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
-            var elementType = bindingContext.ModelType.GetElementType() ?? bindingContext.ModelType.GenericTypeArguments[0];
-            var converter = TypeDescriptor.GetConverter(elementType);
+            var value = valueProviderResult.FirstValue;
 
-            if (valueProviderResult.Length > 1)
+            if (value is not null)
             {
-                var typedValues = GetParsedResult(valueProviderResult.Values, elementType, converter);
+                var splitValues = value.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                var typedValues = GetParsedResult(splitValues, elementType, converter);
                 bindingContext.Result = ModelBindingResult.Success(typedValues);
             }
             else
             {
-                var value = valueProviderResult.FirstValue;
-
-                if (value != null)
-                {
-                    var splitValues = value.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                    var typedValues = GetParsedResult(splitValues, elementType, converter);
-                    bindingContext.Result = ModelBindingResult.Success(typedValues);
-                }
-                else
-                {
-                    var emptyResult = Array.CreateInstance(elementType, 0);
-                    bindingContext.Result = ModelBindingResult.Success(emptyResult);
-                }
+                var emptyResult = Array.CreateInstance(elementType, 0);
+                bindingContext.Result = ModelBindingResult.Success(emptyResult);
             }
-
-            return Task.CompletedTask;
         }
 
-        private Array GetParsedResult(IReadOnlyList<string> values, Type elementType, TypeConverter converter)
+        return Task.CompletedTask;
+    }
+
+    private Array GetParsedResult(IReadOnlyList<string> values, Type elementType, TypeConverter converter)
+    {
+        var parsedValues = new object?[values.Count];
+        var convertedCount = 0;
+        for (var i = 0; i < values.Count; i++)
         {
-            var parsedValues = new object?[values.Count];
-            var convertedCount = 0;
-            for (var i = 0; i < values.Count; i++)
+            try
             {
-                try
-                {
-                    parsedValues[i] = converter.ConvertFromString(values[i].Trim());
-                    convertedCount++;
-                }
-                catch (FormatException e)
-                {
-                    _logger.LogDebug(e, "Error converting value.");
-                }
+                parsedValues[i] = converter.ConvertFromString(values[i].Trim());
+                convertedCount++;
             }
-
-            var typedValues = Array.CreateInstance(elementType, convertedCount);
-            var typedValueIndex = 0;
-            for (var i = 0; i < parsedValues.Length; i++)
+            catch (FormatException e)
             {
-                if (parsedValues[i] != null)
-                {
-                    typedValues.SetValue(parsedValues[i], typedValueIndex);
-                    typedValueIndex++;
-                }
+                _logger.LogDebug(e, "Error converting value.");
             }
-
-            return typedValues;
         }
+
+        var typedValues = Array.CreateInstance(elementType, convertedCount);
+        var typedValueIndex = 0;
+        for (var i = 0; i < parsedValues.Length; i++)
+        {
+            if (parsedValues[i] is not null)
+            {
+                typedValues.SetValue(parsedValues[i], typedValueIndex);
+                typedValueIndex++;
+            }
+        }
+
+        return typedValues;
     }
 }

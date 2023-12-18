@@ -1,7 +1,3 @@
-#nullable disable
-
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -18,12 +14,21 @@ using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
 {
+    /// <summary>
+    /// BoxSet provider powered by TMDb.
+    /// </summary>
     public class TmdbBoxSetProvider : IRemoteMetadataProvider<BoxSet, BoxSetInfo>
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly TmdbClientManager _tmdbClientManager;
         private readonly ILibraryManager _libraryManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TmdbBoxSetProvider"/> class.
+        /// </summary>
+        /// <param name="libraryManager">The <see cref="ILibraryManager"/>.</param>
+        /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
+        /// <param name="tmdbClientManager">The <see cref="TmdbClientManager"/>.</param>
         public TmdbBoxSetProvider(IHttpClientFactory httpClientFactory, TmdbClientManager tmdbClientManager, ILibraryManager libraryManager)
         {
             _httpClientFactory = httpClientFactory;
@@ -31,8 +36,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
             _libraryManager = libraryManager;
         }
 
+        /// <inheritdoc />
         public string Name => TmdbUtils.ProviderName;
 
+        /// <inheritdoc />
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(BoxSetInfo searchInfo, CancellationToken cancellationToken)
         {
             var tmdbId = Convert.ToInt32(searchInfo.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
@@ -42,7 +49,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
             {
                 var collection = await _tmdbClientManager.GetCollectionAsync(tmdbId, language, TmdbUtils.GetImageLanguagesParam(language), cancellationToken).ConfigureAwait(false);
 
-                if (collection == null)
+                if (collection is null)
                 {
                     return Enumerable.Empty<RemoteSearchResult>();
                 }
@@ -53,7 +60,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
                     SearchProviderName = Name
                 };
 
-                if (collection.Images != null)
+                if (collection.Images is not null)
                 {
                     result.ImageUrl = _tmdbClientManager.GetPosterUrl(collection.PosterPath);
                 }
@@ -65,7 +72,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
 
             var collectionSearchResults = await _tmdbClientManager.SearchCollectionAsync(searchInfo.Name, language, cancellationToken).ConfigureAwait(false);
 
-            var collections = new List<RemoteSearchResult>();
+            var collections = new RemoteSearchResult[collectionSearchResults.Count];
             for (var i = 0; i < collectionSearchResults.Count; i++)
             {
                 var collection = new RemoteSearchResult
@@ -75,12 +82,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
                 };
                 collection.SetProviderId(MetadataProvider.Tmdb, collectionSearchResults[i].Id.ToString(CultureInfo.InvariantCulture));
 
-                collections.Add(collection);
+                collections[i] = collection;
             }
 
             return collections;
         }
 
+        /// <inheritdoc />
         public async Task<MetadataResult<BoxSet>> GetMetadata(BoxSetInfo info, CancellationToken cancellationToken)
         {
             var tmdbId = Convert.ToInt32(info.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
@@ -94,7 +102,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
                 var cleanedName = TmdbUtils.CleanName(parsedName.Name);
                 var searchResults = await _tmdbClientManager.SearchCollectionAsync(cleanedName, language, cancellationToken).ConfigureAwait(false);
 
-                if (searchResults != null && searchResults.Count > 0)
+                if (searchResults is not null && searchResults.Count > 0)
                 {
                     tmdbId = searchResults[0].Id;
                 }
@@ -106,7 +114,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
             {
                 var collection = await _tmdbClientManager.GetCollectionAsync(tmdbId, language, TmdbUtils.GetImageLanguagesParam(language), cancellationToken).ConfigureAwait(false);
 
-                if (collection != null)
+                if (collection is not null)
                 {
                     var item = new BoxSet
                     {
@@ -124,6 +132,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
             return result;
         }
 
+        /// <inheritdoc />
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);

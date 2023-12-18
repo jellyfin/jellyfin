@@ -5,9 +5,9 @@ using Emby.Server.Implementations.Data;
 using Jellyfin.Data.Entities;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Controller;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using SQLitePCL.pretty;
 
 namespace Jellyfin.Server.Migrations.Routines
 {
@@ -19,7 +19,7 @@ namespace Jellyfin.Server.Migrations.Routines
         private const string DbFilename = "activitylog.db";
 
         private readonly ILogger<MigrateActivityLogDb> _logger;
-        private readonly JellyfinDbProvider _provider;
+        private readonly IDbContextFactory<JellyfinDbContext> _provider;
         private readonly IServerApplicationPaths _paths;
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace Jellyfin.Server.Migrations.Routines
         /// <param name="logger">The logger.</param>
         /// <param name="paths">The server application paths.</param>
         /// <param name="provider">The database provider.</param>
-        public MigrateActivityLogDb(ILogger<MigrateActivityLogDb> logger, IServerApplicationPaths paths, JellyfinDbProvider provider)
+        public MigrateActivityLogDb(ILogger<MigrateActivityLogDb> logger, IServerApplicationPaths paths, IDbContextFactory<JellyfinDbContext> provider)
         {
             _logger = logger;
             _provider = provider;
@@ -61,16 +61,14 @@ namespace Jellyfin.Server.Migrations.Routines
             };
 
             var dataPath = _paths.DataPath;
-            using (var connection = SQLite3.Open(
-                Path.Combine(dataPath, DbFilename),
-                ConnectionFlags.ReadOnly,
-                null))
+            using (var connection = new SqliteConnection($"Filename={Path.Combine(dataPath, DbFilename)}"))
             {
-                using var userDbConnection = SQLite3.Open(Path.Combine(dataPath, "users.db"), ConnectionFlags.ReadOnly, null);
-                _logger.LogWarning("Migrating the activity database may take a while, do not stop Jellyfin.");
-                using var dbContext = _provider.CreateContext();
+                connection.Open();
 
-                var queryResult = connection.Query("SELECT * FROM ActivityLog ORDER BY Id");
+                using var userDbConnection = new SqliteConnection($"Filename={Path.Combine(dataPath, "users.db")}");
+                userDbConnection.Open();
+                _logger.LogWarning("Migrating the activity database may take a while, do not stop Jellyfin.");
+                using var dbContext = _provider.CreateDbContext();
 
                 // Make sure that the database is empty in case of failed migration due to power outages, etc.
                 dbContext.ActivityLogs.RemoveRange(dbContext.ActivityLogs);
@@ -81,51 +79,52 @@ namespace Jellyfin.Server.Migrations.Routines
 
                 var newEntries = new List<ActivityLog>();
 
+                var queryResult = connection.Query("SELECT * FROM ActivityLog ORDER BY Id");
+
                 foreach (var entry in queryResult)
                 {
-                    if (!logLevelDictionary.TryGetValue(entry[8].ToString(), out var severity))
+                    if (!logLevelDictionary.TryGetValue(entry.GetString(8), out var severity))
                     {
                         severity = LogLevel.Trace;
                     }
 
                     var guid = Guid.Empty;
-                    if (entry[6].SQLiteType != SQLiteType.Null && !Guid.TryParse(entry[6].ToString(), out guid))
+                    if (!entry.IsDBNull(6) && !entry.TryGetGuid(6, out guid))
                     {
+                        var id = entry.GetString(6);
                         // This is not a valid Guid, see if it is an internal ID from an old Emby schema
-                        _logger.LogWarning("Invalid Guid in UserId column: {Guid}", entry[6].ToString());
+                        _logger.LogWarning("Invalid Guid in UserId column: {Guid}", id);
 
                         using var statement = userDbConnection.PrepareStatement("SELECT guid FROM LocalUsersv2 WHERE Id=@Id");
-                        statement.TryBind("@Id", entry[6].ToString());
+                        statement.TryBind("@Id", id);
 
-                        foreach (var row in statement.Query())
+                        using var reader = statement.ExecuteReader();
+                        if (reader.HasRows && reader.Read() && reader.TryGetGuid(0, out guid))
                         {
-                            if (row.Count > 0 && Guid.TryParse(row[0].ToString(), out guid))
-                            {
-                                // Successfully parsed a Guid from the user table.
-                                break;
-                            }
+                            // Successfully parsed a Guid from the user table.
+                            break;
                         }
                     }
 
-                    var newEntry = new ActivityLog(entry[1].ToString(), entry[4].ToString(), guid)
+                    var newEntry = new ActivityLog(entry.GetString(1), entry.GetString(4), guid)
                     {
-                        DateCreated = entry[7].ReadDateTime(),
+                        DateCreated = entry.GetDateTime(7),
                         LogSeverity = severity
                     };
 
-                    if (entry[2].SQLiteType != SQLiteType.Null)
+                    if (entry.TryGetString(2, out var result))
                     {
-                        newEntry.Overview = entry[2].ToString();
+                        newEntry.Overview = result;
                     }
 
-                    if (entry[3].SQLiteType != SQLiteType.Null)
+                    if (entry.TryGetString(3, out result))
                     {
-                        newEntry.ShortOverview = entry[3].ToString();
+                        newEntry.ShortOverview = result;
                     }
 
-                    if (entry[5].SQLiteType != SQLiteType.Null)
+                    if (entry.TryGetString(5, out result))
                     {
-                        newEntry.ItemId = entry[5].ToString();
+                        newEntry.ItemId = result;
                     }
 
                     newEntries.Add(newEntry);

@@ -1,10 +1,10 @@
-#nullable disable
 #pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -34,9 +34,9 @@ namespace MediaBrowser.Model.Dlna
 
         public DlnaProfileType MediaType { get; set; }
 
-        public string Container { get; set; }
+        public string? Container { get; set; }
 
-        public string SubProtocol { get; set; }
+        public string? SubProtocol { get; set; }
 
         public long StartPositionTicks { get; set; }
 
@@ -80,11 +80,11 @@ namespace MediaBrowser.Model.Dlna
 
         public float? MaxFramerate { get; set; }
 
-        public DeviceProfile DeviceProfile { get; set; }
+        public required DeviceProfile DeviceProfile { get; set; }
 
-        public string DeviceProfileId { get; set; }
+        public string? DeviceProfileId { get; set; }
 
-        public string DeviceId { get; set; }
+        public string? DeviceId { get; set; }
 
         public long? RunTimeTicks { get; set; }
 
@@ -92,35 +92,34 @@ namespace MediaBrowser.Model.Dlna
 
         public bool EstimateContentLength { get; set; }
 
-        public MediaSourceInfo MediaSource { get; set; }
+        public MediaSourceInfo? MediaSource { get; set; }
 
         public string[] SubtitleCodecs { get; set; }
 
         public SubtitleDeliveryMethod SubtitleDeliveryMethod { get; set; }
 
-        public string SubtitleFormat { get; set; }
+        public string? SubtitleFormat { get; set; }
 
-        public string PlaySessionId { get; set; }
+        public string? PlaySessionId { get; set; }
 
         public TranscodeReason TranscodeReasons { get; set; }
 
         public Dictionary<string, string> StreamOptions { get; private set; }
 
-        public string MediaSourceId => MediaSource?.Id;
+        public string? MediaSourceId => MediaSource?.Id;
 
-        public bool IsDirectStream =>
-            PlayMethod == PlayMethod.DirectStream ||
-            PlayMethod == PlayMethod.DirectPlay;
+        public bool IsDirectStream => MediaSource?.VideoType is not (VideoType.Dvd or VideoType.BluRay)
+            && PlayMethod is PlayMethod.DirectStream or PlayMethod.DirectPlay;
 
         /// <summary>
         /// Gets the audio stream that will be used.
         /// </summary>
-        public MediaStream TargetAudioStream => MediaSource?.GetDefaultAudioStream(AudioStreamIndex);
+        public MediaStream? TargetAudioStream => MediaSource?.GetDefaultAudioStream(AudioStreamIndex);
 
         /// <summary>
         /// Gets the video stream that will be used.
         /// </summary>
-        public MediaStream TargetVideoStream => MediaSource?.VideoStream;
+        public MediaStream? TargetVideoStream => MediaSource?.VideoStream;
 
         /// <summary>
         /// Gets the audio sample rate that will be in the output stream.
@@ -216,7 +215,7 @@ namespace MediaBrowser.Model.Dlna
                 var stream = TargetVideoStream;
                 return MaxFramerate.HasValue && !IsDirectStream
                     ? MaxFramerate
-                    : stream == null ? null : stream.AverageFrameRate ?? stream.RealFrameRate;
+                    : stream is null ? null : stream.AverageFrameRate ?? stream.RealFrameRate;
             }
         }
 
@@ -260,7 +259,7 @@ namespace MediaBrowser.Model.Dlna
         /// <summary>
         /// Gets the audio sample rate that will be in the output stream.
         /// </summary>
-        public string TargetVideoProfile
+        public string? TargetVideoProfile
         {
             get
             {
@@ -281,10 +280,34 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
+        /// Gets the target video range type that will be in the output stream.
+        /// </summary>
+        public VideoRangeType TargetVideoRangeType
+        {
+            get
+            {
+                if (IsDirectStream)
+                {
+                    return TargetVideoStream?.VideoRangeType ?? VideoRangeType.Unknown;
+                }
+
+                var targetVideoCodecs = TargetVideoCodec;
+                var videoCodec = targetVideoCodecs.Length == 0 ? null : targetVideoCodecs[0];
+                if (!string.IsNullOrEmpty(videoCodec)
+                    && Enum.TryParse(GetOption(videoCodec, "rangetype"), true, out VideoRangeType videoRangeType))
+                {
+                    return videoRangeType;
+                }
+
+                return TargetVideoStream?.VideoRangeType ?? VideoRangeType.Unknown;
+            }
+        }
+
+        /// <summary>
         /// Gets the target video codec tag.
         /// </summary>
         /// <value>The target video codec tag.</value>
-        public string TargetVideoCodecTag
+        public string? TargetVideoCodecTag
         {
             get
             {
@@ -341,7 +364,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 var stream = TargetAudioStream;
 
-                string inputCodec = stream?.Codec;
+                string? inputCodec = stream?.Codec;
 
                 if (IsDirectStream)
                 {
@@ -366,7 +389,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 var stream = TargetVideoStream;
 
-                string inputCodec = stream?.Codec;
+                string? inputCodec = stream?.Codec;
 
                 if (IsDirectStream)
                 {
@@ -394,7 +417,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 if (IsDirectStream)
                 {
-                    return MediaSource.Size;
+                    return MediaSource?.Size;
                 }
 
                 if (RunTimeTicks.HasValue)
@@ -409,7 +432,7 @@ namespace MediaBrowser.Model.Dlna
 
                     return totalBitrate.HasValue ?
                         Convert.ToInt64(totalBitrate.Value * totalSeconds) :
-                        (long?)null;
+                        null;
                 }
 
                 return null;
@@ -438,7 +461,7 @@ namespace MediaBrowser.Model.Dlna
 
                 return !IsDirectStream
                     ? defaultValue
-                    : MediaSource == null ? defaultValue : MediaSource.Timestamp ?? TransportStreamTimestamp.None;
+                    : MediaSource is null ? defaultValue : MediaSource.Timestamp ?? TransportStreamTimestamp.None;
             }
         }
 
@@ -499,7 +522,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 var videoStream = TargetVideoStream;
 
-                if (videoStream != null && videoStream.Width.HasValue && videoStream.Height.HasValue)
+                if (videoStream is not null && videoStream.Width.HasValue && videoStream.Height.HasValue)
                 {
                     ImageDimensions size = new ImageDimensions(videoStream.Width.Value, videoStream.Height.Value);
 
@@ -518,7 +541,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 var videoStream = TargetVideoStream;
 
-                if (videoStream != null && videoStream.Width.HasValue && videoStream.Height.HasValue)
+                if (videoStream is not null && videoStream.Width.HasValue && videoStream.Height.HasValue)
                 {
                     ImageDimensions size = new ImageDimensions(videoStream.Width.Value, videoStream.Height.Value);
 
@@ -557,7 +580,7 @@ namespace MediaBrowser.Model.Dlna
             }
         }
 
-        public void SetOption(string qualifier, string name, string value)
+        public void SetOption(string? qualifier, string name, string value)
         {
             if (string.IsNullOrEmpty(qualifier))
             {
@@ -574,7 +597,7 @@ namespace MediaBrowser.Model.Dlna
             StreamOptions[name] = value;
         }
 
-        public string GetOption(string qualifier, string name)
+        public string? GetOption(string? qualifier, string name)
         {
             var value = GetOption(qualifier + "-" + name);
 
@@ -586,7 +609,7 @@ namespace MediaBrowser.Model.Dlna
             return value;
         }
 
-        public string GetOption(string name)
+        public string? GetOption(string name)
         {
             if (StreamOptions.TryGetValue(name, out var value))
             {
@@ -596,12 +619,9 @@ namespace MediaBrowser.Model.Dlna
             return null;
         }
 
-        public string ToUrl(string baseUrl, string accessToken)
+        public string ToUrl(string baseUrl, string? accessToken)
         {
-            if (string.IsNullOrEmpty(baseUrl))
-            {
-                throw new ArgumentNullException(nameof(baseUrl));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(baseUrl);
 
             var list = new List<string>();
             foreach (NameValuePair pair in BuildParams(this, accessToken))
@@ -642,10 +662,7 @@ namespace MediaBrowser.Model.Dlna
 
         private string GetUrl(string baseUrl, string queryString)
         {
-            if (string.IsNullOrEmpty(baseUrl))
-            {
-                throw new ArgumentNullException(nameof(baseUrl));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(baseUrl);
 
             string extension = string.IsNullOrEmpty(Container) ? string.Empty : "." + Container;
 
@@ -669,7 +686,7 @@ namespace MediaBrowser.Model.Dlna
             return string.Format(CultureInfo.InvariantCulture, "{0}/videos/{1}/stream{2}?{3}", baseUrl, ItemId, extension, queryString);
         }
 
-        private static IEnumerable<NameValuePair> BuildParams(StreamInfo item, string accessToken)
+        private static IEnumerable<NameValuePair> BuildParams(StreamInfo item, string? accessToken)
         {
             var list = new List<NameValuePair>();
 
@@ -713,7 +730,7 @@ namespace MediaBrowser.Model.Dlna
             list.Add(new NameValuePair("PlaySessionId", item.PlaySessionId ?? string.Empty));
             list.Add(new NameValuePair("api_key", accessToken ?? string.Empty));
 
-            string liveStreamId = item.MediaSource?.LiveStreamId;
+            string? liveStreamId = item.MediaSource?.LiveStreamId;
             list.Add(new NameValuePair("LiveStreamId", liveStreamId ?? string.Empty));
 
             list.Add(new NameValuePair("SubtitleMethod", item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod != SubtitleDeliveryMethod.External ? item.SubtitleDeliveryMethod.ToString() : string.Empty));
@@ -755,7 +772,7 @@ namespace MediaBrowser.Model.Dlna
                 list.Add(new NameValuePair("RequireAvc", item.RequireAvc.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
             }
 
-            list.Add(new NameValuePair("Tag", item.MediaSource.ETag ?? string.Empty));
+            list.Add(new NameValuePair("Tag", item.MediaSource?.ETag ?? string.Empty));
 
             string subtitleCodecs = item.SubtitleCodecs.Length == 0 ?
                string.Empty :
@@ -799,13 +816,18 @@ namespace MediaBrowser.Model.Dlna
             return list;
         }
 
-        public IEnumerable<SubtitleStreamInfo> GetSubtitleProfiles(ITranscoderSupport transcoderSupport, bool includeSelectedTrackOnly, string baseUrl, string accessToken)
+        public IEnumerable<SubtitleStreamInfo> GetSubtitleProfiles(ITranscoderSupport transcoderSupport, bool includeSelectedTrackOnly, string baseUrl, string? accessToken)
         {
             return GetSubtitleProfiles(transcoderSupport, includeSelectedTrackOnly, false, baseUrl, accessToken);
         }
 
-        public IEnumerable<SubtitleStreamInfo> GetSubtitleProfiles(ITranscoderSupport transcoderSupport, bool includeSelectedTrackOnly, bool enableAllProfiles, string baseUrl, string accessToken)
+        public IEnumerable<SubtitleStreamInfo> GetSubtitleProfiles(ITranscoderSupport transcoderSupport, bool includeSelectedTrackOnly, bool enableAllProfiles, string baseUrl, string? accessToken)
         {
+            if (MediaSource is null)
+            {
+                return Enumerable.Empty<SubtitleStreamInfo>();
+            }
+
             var list = new List<SubtitleStreamInfo>();
 
             // HLS will preserve timestamps so we can just grab the full subtitle stream
@@ -839,27 +861,36 @@ namespace MediaBrowser.Model.Dlna
             return list;
         }
 
-        private void AddSubtitleProfiles(List<SubtitleStreamInfo> list, MediaStream stream, ITranscoderSupport transcoderSupport, bool enableAllProfiles, string baseUrl, string accessToken, long startPositionTicks)
+        private void AddSubtitleProfiles(List<SubtitleStreamInfo> list, MediaStream stream, ITranscoderSupport transcoderSupport, bool enableAllProfiles, string baseUrl, string? accessToken, long startPositionTicks)
         {
             if (enableAllProfiles)
             {
                 foreach (var profile in DeviceProfile.SubtitleProfiles)
                 {
                     var info = GetSubtitleStreamInfo(stream, baseUrl, accessToken, startPositionTicks, new[] { profile }, transcoderSupport);
-
-                    list.Add(info);
+                    if (info is not null)
+                    {
+                        list.Add(info);
+                    }
                 }
             }
             else
             {
                 var info = GetSubtitleStreamInfo(stream, baseUrl, accessToken, startPositionTicks, DeviceProfile.SubtitleProfiles, transcoderSupport);
-
-                list.Add(info);
+                if (info is not null)
+                {
+                    list.Add(info);
+                }
             }
         }
 
-        private SubtitleStreamInfo GetSubtitleStreamInfo(MediaStream stream, string baseUrl, string accessToken, long startPositionTicks, SubtitleProfile[] subtitleProfiles, ITranscoderSupport transcoderSupport)
+        private SubtitleStreamInfo? GetSubtitleStreamInfo(MediaStream stream, string baseUrl, string? accessToken, long startPositionTicks, SubtitleProfile[] subtitleProfiles, ITranscoderSupport transcoderSupport)
         {
+            if (MediaSource is null)
+            {
+                return null;
+            }
+
             var subtitleProfile = StreamBuilder.GetSubtitleProfile(MediaSource, stream, subtitleProfiles, PlayMethod, transcoderSupport, Container, SubProtocol);
             var info = new SubtitleStreamInfo
             {
@@ -903,15 +934,11 @@ namespace MediaBrowser.Model.Dlna
             return info;
         }
 
-        public int? GetTargetVideoBitDepth(string codec)
+        public int? GetTargetVideoBitDepth(string? codec)
         {
             var value = GetOption(codec, "videobitdepth");
-            if (string.IsNullOrEmpty(value))
-            {
-                return null;
-            }
 
-            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result))
+            if (int.TryParse(value, CultureInfo.InvariantCulture, out var result))
             {
                 return result;
             }
@@ -919,15 +946,11 @@ namespace MediaBrowser.Model.Dlna
             return null;
         }
 
-        public int? GetTargetAudioBitDepth(string codec)
+        public int? GetTargetAudioBitDepth(string? codec)
         {
             var value = GetOption(codec, "audiobitdepth");
-            if (string.IsNullOrEmpty(value))
-            {
-                return null;
-            }
 
-            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result))
+            if (int.TryParse(value, CultureInfo.InvariantCulture, out var result))
             {
                 return result;
             }
@@ -935,15 +958,11 @@ namespace MediaBrowser.Model.Dlna
             return null;
         }
 
-        public double? GetTargetVideoLevel(string codec)
+        public double? GetTargetVideoLevel(string? codec)
         {
             var value = GetOption(codec, "level");
-            if (string.IsNullOrEmpty(value))
-            {
-                return null;
-            }
 
-            if (double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+            if (double.TryParse(value, CultureInfo.InvariantCulture, out var result))
             {
                 return result;
             }
@@ -951,15 +970,11 @@ namespace MediaBrowser.Model.Dlna
             return null;
         }
 
-        public int? GetTargetRefFrames(string codec)
+        public int? GetTargetRefFrames(string? codec)
         {
             var value = GetOption(codec, "maxrefframes");
-            if (string.IsNullOrEmpty(value))
-            {
-                return null;
-            }
 
-            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+            if (int.TryParse(value, CultureInfo.InvariantCulture, out var result))
             {
                 return result;
             }
@@ -967,7 +982,7 @@ namespace MediaBrowser.Model.Dlna
             return null;
         }
 
-        public int? GetTargetAudioChannels(string codec)
+        public int? GetTargetAudioChannels(string? codec)
         {
             var defaultValue = GlobalMaxAudioChannels ?? TranscodingMaxAudioChannels;
 
@@ -987,7 +1002,7 @@ namespace MediaBrowser.Model.Dlna
 
         private int? GetMediaStreamCount(MediaStreamType type, int limit)
         {
-            var count = MediaSource.GetStreamCount(type);
+            var count = MediaSource?.GetStreamCount(type);
 
             if (count.HasValue)
             {

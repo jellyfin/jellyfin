@@ -35,7 +35,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             EnableStreamSharing = true;
             UniqueId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
 
-            if (tuner != null)
+            if (tuner is not null)
             {
                 TunerHostId = tuner.Id;
             }
@@ -84,15 +84,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             return Task.CompletedTask;
         }
 
-        public Task Close()
+        public async Task Close()
         {
             EnableStreamSharing = false;
 
             Logger.LogInformation("Closing {Type}", GetType().Name);
 
-            LiveStreamCancellationTokenSource.Cancel();
-
-            return Task.CompletedTask;
+            await LiveStreamCancellationTokenSource.CancelAsync().ConfigureAwait(false);
         }
 
         public Stream GetStream()

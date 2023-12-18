@@ -1,7 +1,7 @@
-using System.Globalization;
 using System.Xml;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using Microsoft.Extensions.Logging;
@@ -41,20 +41,15 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             switch (reader.Name)
             {
                 case "seasonnumber":
+                    if (reader.TryReadInt(out var seasonNumber))
                     {
-                        var number = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(number))
-                        {
-                            if (int.TryParse(number, NumberStyles.Integer, CultureInfo.InvariantCulture, out var num))
-                            {
-                                item.IndexNumber = num;
-                            }
-                        }
-
-                        break;
+                        item.IndexNumber = seasonNumber;
                     }
 
+                    break;
+                case "seasonname":
+                    item.Name = reader.ReadNormalizedString();
+                    break;
                 default:
                     base.FetchDataFromXmlNode(reader, itemResult);
                     break;

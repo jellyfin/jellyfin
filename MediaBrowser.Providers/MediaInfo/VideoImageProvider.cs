@@ -89,14 +89,14 @@ namespace MediaBrowser.Providers.MediaInfo
 
             var query = new MediaStreamQuery { ItemId = item.Id, Index = item.DefaultVideoStreamIndex };
             var videoStream = _mediaSourceManager.GetMediaStreams(query).FirstOrDefault();
-            if (videoStream == null)
+            if (videoStream is null)
             {
                 query.Type = MediaStreamType.Video;
                 query.Index = null;
                 videoStream = _mediaSourceManager.GetMediaStreams(query).FirstOrDefault();
             }
 
-            if (videoStream == null)
+            if (videoStream is null)
             {
                 _logger.LogInformation("Skipping image extraction: no video stream found for {Path}.", item.Path ?? string.Empty);
                 return new DynamicImageResponse { HasImage = false };

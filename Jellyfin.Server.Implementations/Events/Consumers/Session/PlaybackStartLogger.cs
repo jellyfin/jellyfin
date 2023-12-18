@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Activity;
@@ -38,13 +39,13 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
         /// <inheritdoc />
         public async Task OnEvent(PlaybackStartEventArgs eventArgs)
         {
-            if (eventArgs.MediaInfo == null)
+            if (eventArgs.MediaInfo is null)
             {
                 _logger.LogWarning("PlaybackStart reported with null media info.");
                 return;
             }
 
-            if (eventArgs.Item != null && eventArgs.Item.IsThemeMedia)
+            if (eventArgs.Item is not null && eventArgs.Item.IsThemeMedia)
             {
                 // Don't report theme song or local trailer playback
                 return;
@@ -58,15 +59,18 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
             var user = eventArgs.Users[0];
 
             await _activityManager.CreateAsync(new ActivityLog(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        _localizationManager.GetLocalizedString("UserStartedPlayingItemWithValues"),
-                        user.Username,
-                        GetItemName(eventArgs.MediaInfo),
-                        eventArgs.DeviceName),
-                    GetPlaybackNotificationType(eventArgs.MediaInfo.MediaType),
-                    user.Id))
-                .ConfigureAwait(false);
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localizationManager.GetLocalizedString("UserStartedPlayingItemWithValues"),
+                    user.Username,
+                    GetItemName(eventArgs.MediaInfo),
+                    eventArgs.DeviceName),
+                GetPlaybackNotificationType(eventArgs.MediaInfo.MediaType),
+                user.Id)
+            {
+                ItemId = eventArgs.Item?.Id.ToString("N", CultureInfo.InvariantCulture),
+            })
+            .ConfigureAwait(false);
         }
 
         private static string GetItemName(BaseItemDto item)
@@ -78,7 +82,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
                 name = item.SeriesName + " - " + name;
             }
 
-            if (item.Artists != null && item.Artists.Count > 0)
+            if (item.Artists is not null && item.Artists.Count > 0)
             {
                 name = item.Artists[0] + " - " + name;
             }
@@ -86,14 +90,14 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
             return name;
         }
 
-        private static string GetPlaybackNotificationType(string mediaType)
+        private static string GetPlaybackNotificationType(MediaType mediaType)
         {
-            if (string.Equals(mediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
+            if (mediaType == MediaType.Audio)
             {
                 return NotificationType.AudioPlayback.ToString();
             }
 
-            if (string.Equals(mediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
+            if (mediaType == MediaType.Video)
             {
                 return NotificationType.VideoPlayback.ToString();
             }

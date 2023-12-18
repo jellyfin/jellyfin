@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System;
@@ -47,14 +45,14 @@ namespace MediaBrowser.Controller.Library
         /// <param name="id">The id.</param>
         /// <returns>The user with the specified Id, or <c>null</c> if the user doesn't exist.</returns>
         /// <exception cref="ArgumentException"><c>id</c> is an empty Guid.</exception>
-        User GetUserById(Guid id);
+        User? GetUserById(Guid id);
 
         /// <summary>
         /// Gets the name of the user by.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>User.</returns>
-        User GetUserByName(string name);
+        User? GetUserByName(string name);
 
         /// <summary>
         /// Renames the user.
@@ -99,13 +97,6 @@ namespace MediaBrowser.Controller.Library
         Task ResetPassword(User user);
 
         /// <summary>
-        /// Resets the easy password.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <returns>Task.</returns>
-        Task ResetEasyPassword(User user);
-
-        /// <summary>
         /// Changes the password.
         /// </summary>
         /// <param name="user">The user.</param>
@@ -114,21 +105,12 @@ namespace MediaBrowser.Controller.Library
         Task ChangePassword(User user, string newPassword);
 
         /// <summary>
-        /// Changes the easy password.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="newPassword">New password to use.</param>
-        /// <param name="newPasswordSha1">Hash of new password.</param>
-        /// <returns>Task.</returns>
-        Task ChangeEasyPassword(User user, string newPassword, string newPasswordSha1);
-
-        /// <summary>
         /// Gets the user dto.
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <returns>UserDto.</returns>
-        UserDto GetUserDto(User user, string remoteEndPoint = null);
+        UserDto GetUserDto(User user, string? remoteEndPoint = null);
 
         /// <summary>
         /// Authenticates the user.
@@ -139,7 +121,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="remoteEndPoint">Remove endpoint to use.</param>
         /// <param name="isUserSession">Specifies if a user session.</param>
         /// <returns>User wrapped in awaitable task.</returns>
-        Task<User> AuthenticateUser(string username, string password, string passwordSha1, string remoteEndPoint, bool isUserSession);
+        Task<User?> AuthenticateUser(string username, string password, string passwordSha1, string remoteEndPoint, bool isUserSession);
 
         /// <summary>
         /// Starts the forgot password process.

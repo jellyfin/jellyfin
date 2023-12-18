@@ -17,10 +17,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <param name="name">The name of the person.</param>
         public Person(string name)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(name);
 
             Name = name;
             DateAdded = DateTime.UtcNow;

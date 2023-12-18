@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Globalization;
@@ -21,7 +22,7 @@ namespace Emby.Server.Implementations.Sorting
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name => ItemSortBy.OfficialRating;
+        public ItemSortBy Type => ItemSortBy.OfficialRating;
 
         /// <summary>
         /// Compares the specified x.
@@ -31,15 +32,9 @@ namespace Emby.Server.Implementations.Sorting
         /// <returns>System.Int32.</returns>
         public int Compare(BaseItem? x, BaseItem? y)
         {
-            if (x == null)
-            {
-                throw new ArgumentNullException(nameof(x));
-            }
+            ArgumentNullException.ThrowIfNull(x);
 
-            if (y == null)
-            {
-                throw new ArgumentNullException(nameof(y));
-            }
+            ArgumentNullException.ThrowIfNull(y);
 
             var levelX = string.IsNullOrEmpty(x.OfficialRating) ? 0 : _localization.GetRatingLevel(x.OfficialRating) ?? 0;
             var levelY = string.IsNullOrEmpty(y.OfficialRating) ? 0 : _localization.GetRatingLevel(y.OfficialRating) ?? 0;

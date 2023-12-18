@@ -533,11 +533,9 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
                     _logger.LogWarning("Session {SessionId} is seeking to wrong position, correcting.", session.Id);
                     return;
                 }
-                else
-                {
-                    // Session is ready.
-                    context.SetBuffering(session, false);
-                }
+
+                // Session is ready.
+                context.SetBuffering(session, false);
 
                 if (!context.IsBuffering())
                 {
@@ -549,7 +547,7 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
 
                     if (InitialState.Equals(GroupStateType.Playing))
                     {
-                        // Group went from playing to waiting state and a pause request occured while waiting.
+                        // Group went from playing to waiting state and a pause request occurred while waiting.
                         var pauseRequest = new PauseGroupRequest();
                         pausedState.HandleRequest(pauseRequest, context, Type, session, cancellationToken);
                     }

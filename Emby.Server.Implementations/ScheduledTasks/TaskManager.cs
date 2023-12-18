@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System;
@@ -43,9 +41,9 @@ namespace Emby.Server.Implementations.ScheduledTasks
             ScheduledTasks = Array.Empty<IScheduledTaskWorker>();
         }
 
-        public event EventHandler<GenericEventArgs<IScheduledTaskWorker>> TaskExecuting;
+        public event EventHandler<GenericEventArgs<IScheduledTaskWorker>>? TaskExecuting;
 
-        public event EventHandler<TaskCompletionEventArgs> TaskCompleted;
+        public event EventHandler<TaskCompletionEventArgs>? TaskCompleted;
 
         /// <summary>
         /// Gets the list of Scheduled Tasks.
@@ -94,7 +92,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             var scheduledTask = ScheduledTasks.FirstOrDefault(t => t.ScheduledTask.GetType() == typeof(T));
 
-            if (scheduledTask == null)
+            if (scheduledTask is null)
             {
                 _logger.LogError("Unable to find scheduled task of type {0} in QueueScheduledTask.", typeof(T).Name);
             }
@@ -126,7 +124,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             var scheduledTask = ScheduledTasks.FirstOrDefault(t => t.ScheduledTask.GetType() == typeof(T));
 
-            if (scheduledTask == null)
+            if (scheduledTask is null)
             {
                 _logger.LogError("Unable to find scheduled task of type {0} in Execute.", typeof(T).Name);
             }
@@ -134,7 +132,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             {
                 var type = scheduledTask.ScheduledTask.GetType();
 
-                _logger.LogInformation("Queuing task {0}", type.Name);
+                _logger.LogDebug("Queuing task {0}", type.Name);
 
                 lock (_taskQueue)
                 {
@@ -155,7 +153,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             var scheduledTask = ScheduledTasks.FirstOrDefault(t => t.ScheduledTask.GetType() == task.GetType());
 
-            if (scheduledTask == null)
+            if (scheduledTask is null)
             {
                 _logger.LogError("Unable to find scheduled task of type {0} in QueueScheduledTask.", task.GetType().Name);
             }
@@ -174,7 +172,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             var type = task.ScheduledTask.GetType();
 
-            _logger.LogInformation("Queuing task {0}", type.Name);
+            _logger.LogDebug("Queuing task {0}", type.Name);
 
             lock (_taskQueue)
             {
@@ -256,9 +254,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         private void ExecuteQueuedTasks()
         {
-            _logger.LogInformation("ExecuteQueuedTasks");
-
-            // Execute queued tasks
             lock (_taskQueue)
             {
                 var list = new List<Tuple<Type, TaskOptions>>();

@@ -9,25 +9,24 @@ namespace Jellyfin.Server.Implementations.Tests.Sorting
 {
     public class AiredEpisodeOrderComparerTests
     {
+        private readonly AiredEpisodeOrderComparer _cmp = new AiredEpisodeOrderComparer();
+
         [Theory]
         [ClassData(typeof(EpisodeBadData))]
         public void Compare_GivenNull_ThrowsArgumentNullException(BaseItem? x, BaseItem? y)
         {
-            var cmp = new AiredEpisodeOrderComparer();
-            Assert.Throws<ArgumentNullException>(() => cmp.Compare(x, y));
+            Assert.Throws<ArgumentNullException>(() => _cmp.Compare(x, y));
         }
 
         [Theory]
         [ClassData(typeof(EpisodeTestData))]
         public void AiredEpisodeOrderCompareTest(BaseItem x, BaseItem y, int expected)
         {
-            var cmp = new AiredEpisodeOrderComparer();
-
-            Assert.Equal(expected, cmp.Compare(x, y));
-            Assert.Equal(-expected, cmp.Compare(y, x));
+            Assert.Equal(expected, _cmp.Compare(x, y));
+            Assert.Equal(-expected, _cmp.Compare(y, x));
         }
 
-        private class EpisodeBadData : TheoryData<BaseItem?, BaseItem?>
+        private sealed class EpisodeBadData : TheoryData<BaseItem?, BaseItem?>
         {
             public EpisodeBadData()
             {
@@ -36,7 +35,7 @@ namespace Jellyfin.Server.Implementations.Tests.Sorting
             }
         }
 
-        private class EpisodeTestData : TheoryData<BaseItem, BaseItem, int>
+        private sealed class EpisodeTestData : TheoryData<BaseItem, BaseItem, int>
         {
             public EpisodeTestData()
             {

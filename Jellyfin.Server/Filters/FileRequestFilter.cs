@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Filters
             {
                 if (attribute is AcceptsFileAttribute acceptsFileAttribute)
                 {
-                    operation.RequestBody = GetRequestBody(acceptsFileAttribute.GetContentTypes());
+                    operation.RequestBody = GetRequestBody(acceptsFileAttribute.ContentTypes);
                     break;
                 }
             }

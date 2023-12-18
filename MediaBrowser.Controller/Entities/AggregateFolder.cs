@@ -67,14 +67,14 @@ namespace MediaBrowser.Controller.Entities
         {
             lock (_childIdsLock)
             {
-                if (_childrenIds == null || _childrenIds.Length == 0)
+                if (_childrenIds is null || _childrenIds.Length == 0)
                 {
                     var list = base.LoadChildren();
                     _childrenIds = list.Select(i => i.Id).ToArray();
                     return list;
                 }
 
-                return _childrenIds.Select(LibraryManager.GetItemById).Where(i => i != null).ToList();
+                return _childrenIds.Select(LibraryManager.GetItemById).Where(i => i is not null).ToList();
             }
         }
 
@@ -120,7 +120,7 @@ namespace MediaBrowser.Controller.Entities
 
             var path = ContainingFolderPath;
 
-            var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, directoryService)
+            var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, LibraryManager)
             {
                 FileInfo = FileSystem.GetDirectoryInfo(path)
             };
@@ -171,10 +171,7 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="ArgumentNullException">Throws if child is null.</exception>
         public void AddVirtualChild(BaseItem child)
         {
-            if (child == null)
-            {
-                throw new ArgumentNullException(nameof(child));
-            }
+            ArgumentNullException.ThrowIfNull(child);
 
             _virtualChildren.Add(child);
         }

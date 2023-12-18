@@ -1,16 +1,13 @@
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Extensions;
+using Jellyfin.Api.Extensions;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Net.WebSocketMessages.Outbound;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -37,7 +34,7 @@ namespace Emby.Server.Implementations.Session
         private const float ForceKeepAliveFactor = 0.75f;
 
         /// <summary>
-        /// Lock used for accesing the KeepAlive cancellation token.
+        /// Lock used for accessing the KeepAlive cancellation token.
         /// </summary>
         private readonly object _keepAliveLock = new object();
 
@@ -54,12 +51,11 @@ namespace Emby.Server.Implementations.Session
         private readonly ISessionManager _sessionManager;
         private readonly ILogger<SessionWebSocketListener> _logger;
         private readonly ILoggerFactory _loggerFactory;
-        private readonly IAuthorizationContext _authorizationContext;
 
         /// <summary>
         /// The KeepAlive cancellation token.
         /// </summary>
-        private CancellationTokenSource _keepAliveCancellationToken;
+        private CancellationTokenSource? _keepAliveCancellationToken;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SessionWebSocketListener" /> class.
@@ -67,17 +63,14 @@ namespace Emby.Server.Implementations.Session
         /// <param name="logger">The logger.</param>
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="loggerFactory">The logger factory.</param>
-        /// <param name="authorizationContext">The authorization context.</param>
         public SessionWebSocketListener(
             ILogger<SessionWebSocketListener> logger,
             ISessionManager sessionManager,
-            ILoggerFactory loggerFactory,
-            IAuthorizationContext authorizationContext)
+            ILoggerFactory loggerFactory)
         {
             _logger = logger;
             _sessionManager = sessionManager;
             _loggerFactory = loggerFactory;
-            _authorizationContext = authorizationContext;
         }
 
         /// <inheritdoc />
@@ -98,7 +91,7 @@ namespace Emby.Server.Implementations.Session
         public async Task ProcessWebSocketConnectedAsync(IWebSocketConnection connection, HttpContext httpContext)
         {
             var session = await GetSession(httpContext, connection.RemoteEndPoint?.ToString()).ConfigureAwait(false);
-            if (session != null)
+            if (session is not null)
             {
                 EnsureController(session, connection);
                 await KeepAliveWebSocket(connection).ConfigureAwait(false);
@@ -109,23 +102,20 @@ namespace Emby.Server.Implementations.Session
             }
         }
 
-        private async Task<SessionInfo> GetSession(HttpContext httpContext, string remoteEndpoint)
+        private async Task<SessionInfo?> GetSession(HttpContext httpContext, string? remoteEndpoint)
         {
-            var authorizationInfo = await _authorizationContext.GetAuthorizationInfo(httpContext)
-                .ConfigureAwait(false);
-
-            if (!authorizationInfo.IsAuthenticated)
+            if (!httpContext.User.Identity?.IsAuthenticated ?? false)
             {
                 return null;
             }
 
-            var deviceId = authorizationInfo.DeviceId;
+            var deviceId = httpContext.User.GetDeviceId();
             if (httpContext.Request.Query.TryGetValue("deviceId", out var queryDeviceId))
             {
                 deviceId = queryDeviceId;
             }
 
-            return await _sessionManager.GetSessionByAuthenticationToken(authorizationInfo.Token, deviceId, remoteEndpoint)
+            return await _sessionManager.GetSessionByAuthenticationToken(httpContext.User.GetToken(), deviceId, remoteEndpoint)
                 .ConfigureAwait(false);
         }
 
@@ -145,8 +135,13 @@ namespace Emby.Server.Implementations.Session
         /// </summary>
         /// <param name="sender">The WebSocket.</param>
         /// <param name="e">The event arguments.</param>
-        private void OnWebSocketClosed(object sender, EventArgs e)
+        private void OnWebSocketClosed(object? sender, EventArgs e)
         {
+            if (sender is null)
+            {
+                return;
+            }
+
             var webSocket = (IWebSocketConnection)sender;
             _logger.LogDebug("WebSocket {0} is closed.", webSocket);
             RemoveWebSocket(webSocket);
@@ -209,7 +204,7 @@ namespace Emby.Server.Implementations.Session
         {
             lock (_keepAliveLock)
             {
-                if (_keepAliveCancellationToken == null)
+                if (_keepAliveCancellationToken is null)
                 {
                     _keepAliveCancellationToken = new CancellationTokenSource();
                     // Start KeepAlive watcher
@@ -228,7 +223,7 @@ namespace Emby.Server.Implementations.Session
         {
             lock (_keepAliveLock)
             {
-                if (_keepAliveCancellationToken != null)
+                if (_keepAliveCancellationToken is not null)
                 {
                     _keepAliveCancellationToken.Cancel();
                     _keepAliveCancellationToken.Dispose();
@@ -312,11 +307,7 @@ namespace Emby.Server.Implementations.Session
         private Task SendForceKeepAlive(IWebSocketConnection webSocket)
         {
             return webSocket.SendAsync(
-                new WebSocketMessage<int>
-                {
-                    MessageType = SessionMessageType.ForceKeepAlive,
-                    Data = WebSocketLostTimeout
-                },
+                new ForceKeepAliveMessage(WebSocketLostTimeout),
                 CancellationToken.None);
         }
 

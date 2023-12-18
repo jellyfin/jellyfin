@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -90,7 +91,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             var imdbId = searchInfo.GetProviderId(MetadataProvider.Imdb);
 
             var urlQuery = new StringBuilder("plot=full&r=json");
-            if (episodeSearchInfo != null)
+            if (episodeSearchInfo is not null)
             {
                 episodeSearchInfo.SeriesProviderIds.TryGetValue(MetadataProvider.Imdb.ToString(), out imdbId);
                 if (searchInfo.IndexNumber.HasValue)
@@ -137,12 +138,10 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             var url = OmdbProvider.GetOmdbUrl(urlQuery.ToString());
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-
             if (isSearch)
             {
-                var searchResultList = await JsonSerializer.DeserializeAsync<SearchResultList>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-                if (searchResultList?.Search != null)
+                var searchResultList = await response.Content.ReadFromJsonAsync<SearchResultList>(_jsonOptions, cancellationToken).ConfigureAwait(false);
+                if (searchResultList?.Search is not null)
                 {
                     var resultCount = searchResultList.Search.Count;
                     var result = new RemoteSearchResult[resultCount];
@@ -156,7 +155,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
             else
             {
-                var result = await JsonSerializer.DeserializeAsync<SearchResult>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+                var result = await response.Content.ReadFromJsonAsync<SearchResult>(_jsonOptions, cancellationToken).ConfigureAwait(false);
                 if (string.Equals(result?.Response, "true", StringComparison.OrdinalIgnoreCase))
                 {
                     return new[] { ResultToMetadataResult(result, searchInfo, indexNumberEnd) };

@@ -63,7 +63,7 @@ namespace Emby.Server.Implementations.Library.Validators
                 {
                     var movies = _libraryManager.GetItemList(new InternalItemsQuery
                     {
-                        MediaTypes = new string[] { MediaType.Video },
+                        MediaTypes = new[] { MediaType.Video },
                         IncludeItemTypes = new[] { BaseItemKind.Movie },
                         IsVirtualItem = false,
                         OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
@@ -118,7 +118,7 @@ namespace Emby.Server.Implementations.Library.Validators
                 try
                 {
                     var boxSet = boxSets.FirstOrDefault(b => b?.Name == collectionName) as BoxSet;
-                    if (boxSet == null)
+                    if (boxSet is null)
                     {
                         // won't automatically create collection if only one movie in it
                         if (movieIds.Count >= 2)
