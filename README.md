@@ -122,7 +122,7 @@ Next, [install the recommended extensions for the workspace](https://code.visual
 
 Build the project by choosing `Terminal` > `Run Build Task...`. The integrated terminal will appear and show the progress of the build. After it completes, press any key to close the terminal.
 
-Lastly, you need to reference the [web client static files](#installing-the-web-client). The initial build will have created a directory in the repository at path `Jellyfin.Server/bin/Debug/net8.0` (or similar, based on your SDK version). You may place the web client static files in a subdirectory called `jellyfin-web`. Another option that you might prefer if you might need to clean your build directory often is to update the `.vscode/launch.json` config to add an argument in the `"args"` array that specifies where the web client static files can be found, i.e. `"--webdir some/path/to/webui"`.
+Lastly, you need to reference the [web client static files](#installing-the-web-client). The initial build will have created a directory in the repository at path `Jellyfin.Server/bin/Debug/net8.0` (or similar, based on your SDK version). You may place the web client static files in a subdirectory called `jellyfin-web`. Another option that you might prefer if you need to clean your build directory often is to update the `.vscode/launch.json` config to add an argument in the `"args"` array that specifies where the web client static files can be found, i.e. `"--webdir some/path/to/webui"`.
 
 Run the server for debugging by pressing `F5`.
 
