@@ -25,6 +25,7 @@ namespace MediaBrowser.Model.Dlna
         internal const TranscodeReason VideoCodecReasons = TranscodeReason.VideoResolutionNotSupported | TranscodeReason.AnamorphicVideoNotSupported | TranscodeReason.InterlacedVideoNotSupported | TranscodeReason.VideoBitDepthNotSupported | TranscodeReason.VideoBitrateNotSupported | TranscodeReason.VideoFramerateNotSupported | TranscodeReason.VideoLevelNotSupported | TranscodeReason.RefFramesNotSupported | TranscodeReason.VideoRangeTypeNotSupported | TranscodeReason.VideoProfileNotSupported | TranscodeReason.VideoRotationNotSupported;
         internal const TranscodeReason VideoReasons = TranscodeReason.VideoCodecNotSupported | VideoCodecReasons;
         internal const TranscodeReason DirectStreamReasons = AudioReasons | TranscodeReason.ContainerNotSupported | TranscodeReason.VideoCodecTagNotSupported;
+        internal const TranscodeReason GenericReasons = TranscodeReason.VideoCodecNotSupported | TranscodeReason.AudioCodecNotSupported | TranscodeReason.ContainerNotSupported;
 
         private readonly ILogger _logger;
         private readonly ITranscoderSupport _transcoderSupport;
@@ -1295,24 +1296,18 @@ namespace MediaBrowser.Model.Dlna
             // Check container conditions
             var containerProfileReasons = GetCompatibilityContainer(options, mediaSource, container, videoStream);
 
-            // Check video conditions
-            var videoCodecProfileReasons = videoStream is null ? default : GetCompatibilityVideoCodec(options, mediaSource, container, videoStream);
+            // FIXME: Throw if DirectPlayErrors has no value?
+            var videoCodecProfileReasons = (videoStream?.DirectPlayErrors ?? 0) & ~GenericReasons;
 
-            // Check audio candidates profile conditions
-            var audioStreamMatches = candidateAudioStreams.ToDictionary(s => s, audioStream => GetCompatibilityAudioCodecDirect(options, mediaSource, container, audioStream, true, mediaSource.IsSecondaryAudio(audioStream) ?? false));
+            // FIXME: Throw if DirectPlayErrors has no value?
+            var audioStreamMatches = candidateAudioStreams.ToDictionary(s => s, audioStream => (audioStream.DirectPlayErrors ?? 0) & ~GenericReasons);
 
-            TranscodeReason subtitleProfileReasons = 0;
-            if (subtitleStream is not null)
+            // FIXME: Throw if DirectPlayErrors has no value?
+            var subtitleProfileReasons = (subtitleStream?.DirectPlayErrors ?? 0) & ~GenericReasons;
+
+            if ((subtitleProfileReasons & TranscodeReason.SubtitleCodecNotSupported) != 0)
             {
-                var subtitleProfile = GetSubtitleProfile(mediaSource, subtitleStream, options.Profile.SubtitleProfiles, PlayMethod.DirectPlay, _transcoderSupport, container, null);
-
-                if (subtitleProfile.Method != SubtitleDeliveryMethod.Drop
-                    && subtitleProfile.Method != SubtitleDeliveryMethod.External
-                    && subtitleProfile.Method != SubtitleDeliveryMethod.Embed)
-                {
-                    _logger.LogDebug("Not eligible for {0} due to unsupported subtitles", PlayMethod.DirectPlay);
-                    subtitleProfileReasons |= TranscodeReason.SubtitleCodecNotSupported;
-                }
+                _logger.LogDebug("Not eligible for {0} due to unsupported subtitles", PlayMethod.DirectPlay);
             }
 
             var containerSupported = false;
