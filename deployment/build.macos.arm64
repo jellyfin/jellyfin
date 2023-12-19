@@ -6,7 +6,7 @@ set -o errexit
 set -o xtrace
 
 # Move to source directory
-pushd ${SOURCE_DIR}
+pushd "${SOURCE_DIR}"
 
 # Get version
 if [[ ${IS_UNSTABLE} == 'yes' ]]; then
@@ -21,11 +21,11 @@ tar -czf jellyfin-server_${version}_macos-arm64.tar.gz -C dist jellyfin-server_$
 rm -rf dist/jellyfin-server_${version}
 
 # Move the artifacts out
-mkdir -p ${ARTIFACT_DIR}/
-mv jellyfin[-_]*.tar.gz ${ARTIFACT_DIR}/
+mkdir -p "${ARTIFACT_DIR}/"
+mv jellyfin[-_]*.tar.gz "${ARTIFACT_DIR}/"
 
 if [[ ${IS_DOCKER} == YES ]]; then
-    chown -Rc $(stat -c %u:%g ${ARTIFACT_DIR}) ${ARTIFACT_DIR}
+    chown -Rc $(stat -c %u:%g "${ARTIFACT_DIR}") "${ARTIFACT_DIR}"
 fi
 
 popd

@@ -89,7 +89,7 @@
     "UserPolicyUpdatedWithName": "{0} için kullanıcı politikası güncellendi",
     "UserStartedPlayingItemWithValues": "{0}, {2} cihazında {1} izliyor",
     "UserStoppedPlayingItemWithValues": "{0}, {2} cihazında {1} izlemeyi bitirdi",
-    "ValueHasBeenAddedToLibrary": "Medya kütüphanenize {0} eklendi",
+    "ValueHasBeenAddedToLibrary": "{0} medya kütüphanenize eklendi",
     "ValueSpecialEpisodeName": "Özel - {0}",
     "VersionNumber": "Sürüm {0}",
     "TaskCleanCache": "Önbellek Dizinini Temizle",

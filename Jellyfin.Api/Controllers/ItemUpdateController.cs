@@ -171,7 +171,7 @@ public class ItemUpdateController : BaseJellyfinApiController
                 info.ContentTypeOptions = GetContentTypeOptions(true).ToArray();
                 info.ContentType = configuredContentType;
 
-                if (inheritedContentType is null || inheritedContentType == CollectionType.TvShows)
+                if (inheritedContentType is null || inheritedContentType == CollectionType.tvshows)
                 {
                     info.ContentTypeOptions = info.ContentTypeOptions
                         .Where(i => string.IsNullOrWhiteSpace(i.Value)
