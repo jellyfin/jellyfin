@@ -196,40 +196,6 @@ public class DynamicHlsHelper
         {
             var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
 
-            // Provide SDR HEVC entrance for backward compatibility.
-            if (encodingOptions.AllowHevcEncoding
-                && !encodingOptions.AllowAv1Encoding
-                && EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
-                && state.VideoStream.VideoRange == VideoRange.HDR
-                && string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase))
-            {
-                var requestedVideoProfiles = state.GetRequestedProfiles("hevc");
-                if (requestedVideoProfiles is not null && requestedVideoProfiles.Length > 0)
-                {
-                    // Force HEVC Main Profile and disable video stream copy.
-                    state.OutputVideoCodec = "hevc";
-                    var sdrVideoUrl = ReplaceProfile(playlistUrl, "hevc", string.Join(',', requestedVideoProfiles), "main");
-                    sdrVideoUrl += "&AllowVideoStreamCopy=false";
-
-                    var sdrOutputVideoBitrate = _encodingHelper.GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec);
-                    var sdrOutputAudioBitrate = 0;
-                    if (EncodingHelper.LosslessAudioCodecs.Contains(state.VideoRequest.AudioCodec, StringComparison.OrdinalIgnoreCase))
-                    {
-                        sdrOutputAudioBitrate = state.AudioStream.BitRate ?? 0;
-                    }
-                    else
-                    {
-                        sdrOutputAudioBitrate = _encodingHelper.GetAudioBitrateParam(state.VideoRequest, state.AudioStream, state.OutputAudioChannels) ?? 0;
-                    }
-
-                    var sdrTotalBitrate = sdrOutputAudioBitrate + sdrOutputVideoBitrate;
-                    AppendPlaylist(builder, state, sdrVideoUrl, sdrTotalBitrate, subtitleGroup);
-
-                    // Restore the video codec
-                    state.OutputVideoCodec = "copy";
-                }
-            }
-
             // Provide Level 5.0 entrance for backward compatibility.
             // e.g. Apple A10 chips refuse the master playlist containing SDR HEVC Main Level 5.1 video,
             // but in fact it is capable of playing videos up to Level 6.1.
