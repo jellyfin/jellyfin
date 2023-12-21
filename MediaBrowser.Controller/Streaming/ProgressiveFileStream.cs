@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.IO;
 
-namespace Jellyfin.Api.Helpers;
+namespace MediaBrowser.Controller.Streaming;
 
 /// <summary>
 /// A progressive file stream for transferring transcoded files as they are written to.
