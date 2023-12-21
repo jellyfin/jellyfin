@@ -78,10 +78,7 @@ public sealed class VirtualFolderManager : IVirtualFolderManager
     /// <inheritdoc />
     public async Task AddVirtualFolder(string name, CollectionTypeOptions? collectionType, LibraryOptions options, bool refreshLibrary)
     {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
         name = _fileSystem.GetValidFilename(name);
 
@@ -169,10 +166,7 @@ public sealed class VirtualFolderManager : IVirtualFolderManager
     /// <inheritdoc />
     public async Task RemoveVirtualFolder(string name, bool refreshLibrary)
     {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
         var rootFolderPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
         var path = Path.Combine(rootFolderPath, name);
@@ -332,12 +326,9 @@ public sealed class VirtualFolderManager : IVirtualFolderManager
     private void AddMediaPathInternal(string virtualFolderName, MediaPathInfo pathInfo, bool refreshLibrary, bool saveLibraryOptions)
     {
         ArgumentNullException.ThrowIfNull(pathInfo);
+        ArgumentException.ThrowIfNullOrWhiteSpace(pathInfo.Path);
 
         var path = pathInfo.Path;
-        if (string.IsNullOrWhiteSpace(path))
-        {
-            throw new ArgumentException(nameof(path));
-        }
 
         if (!Directory.Exists(path))
         {
@@ -383,10 +374,7 @@ public sealed class VirtualFolderManager : IVirtualFolderManager
 
     private void RemoveContentTypeOverrides(string path)
     {
-        if (string.IsNullOrWhiteSpace(path))
-        {
-            throw new ArgumentNullException(nameof(path));
-        }
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
 
         List<NameValuePair>? removeList = null;
 
