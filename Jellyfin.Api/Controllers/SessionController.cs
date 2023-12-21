@@ -10,6 +10,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.SessionDtos;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Common.Api;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
@@ -90,12 +91,6 @@ public class SessionController : BaseJellyfinApiController
                 result = result.Where(i => !i.UserId.Equals(default));
             }
 
-            if (activeWithinSeconds.HasValue && activeWithinSeconds.Value > 0)
-            {
-                var minActiveDate = DateTime.UtcNow.AddSeconds(0 - activeWithinSeconds.Value);
-                result = result.Where(i => i.LastActivityDate >= minActiveDate);
-            }
-
             result = result.Where(i =>
             {
                 if (!string.IsNullOrWhiteSpace(i.DeviceId))
@@ -108,6 +103,12 @@ public class SessionController : BaseJellyfinApiController
 
                 return true;
             });
+        }
+
+        if (activeWithinSeconds.HasValue && activeWithinSeconds.Value > 0)
+        {
+            var minActiveDate = DateTime.UtcNow.AddSeconds(0 - activeWithinSeconds.Value);
+            result = result.Where(i => i.LastActivityDate >= minActiveDate);
         }
 
         return Ok(result);
@@ -393,7 +394,7 @@ public class SessionController : BaseJellyfinApiController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> PostCapabilities(
         [FromQuery] string? id,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] playableMediaTypes,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] MediaType[] playableMediaTypes,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] GeneralCommandType[] supportedCommands,
         [FromQuery] bool supportsMediaControl = false,
         [FromQuery] bool supportsSync = false,

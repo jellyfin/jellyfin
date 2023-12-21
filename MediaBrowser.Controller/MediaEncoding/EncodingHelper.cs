@@ -20,6 +20,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Configuration;
+using IConfigurationManager = MediaBrowser.Common.Configuration.IConfigurationManager;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
@@ -100,6 +101,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             { "truehd", 6 },
         };
 
+        private static readonly string _defaultMjpegEncoder = "mjpeg";
+        private static readonly Dictionary<string, string> _mjpegCodecMap = new(StringComparer.OrdinalIgnoreCase)
+        {
+            { "vaapi", _defaultMjpegEncoder + "_vaapi" },
+            { "qsv", _defaultMjpegEncoder + "_qsv" }
+        };
+
         public static readonly string[] LosslessAudioCodecs = new string[]
         {
             "alac",
@@ -165,6 +173,24 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             return defaultEncoder;
+        }
+
+        private string GetMjpegEncoder(EncodingJobInfo state, EncodingOptions encodingOptions)
+        {
+            if (state.VideoType == VideoType.VideoFile)
+            {
+                var hwType = encodingOptions.HardwareAccelerationType;
+
+                if (!string.IsNullOrEmpty(hwType)
+                    && encodingOptions.EnableHardwareEncoding
+                    && _mjpegCodecMap.TryGetValue(hwType, out var preferredEncoder)
+                    && _mediaEncoder.SupportsEncoder(preferredEncoder))
+                {
+                    return preferredEncoder;
+                }
+            }
+
+            return _defaultMjpegEncoder;
         }
 
         private bool IsVaapiSupported(EncodingJobInfo state)
@@ -298,6 +324,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (string.Equals(codec, "h264", StringComparison.OrdinalIgnoreCase))
                 {
                     return GetH264Encoder(state, encodingOptions);
+                }
+
+                if (string.Equals(codec, "mjpeg", StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetMjpegEncoder(state, encodingOptions);
                 }
 
                 if (string.Equals(codec, "vp8", StringComparison.OrdinalIgnoreCase)
@@ -745,12 +776,17 @@ namespace MediaBrowser.Controller.MediaEncoding
         private string GetVaapiDeviceArgs(string renderNodePath, string driver, string kernelDriver, string srcDeviceAlias, string alias)
         {
             alias ??= VaapiAlias;
-            renderNodePath = renderNodePath ?? "/dev/dri/renderD128";
-            var driverOpts = string.IsNullOrEmpty(driver)
-                ? ":" + renderNodePath
-                : ":,driver=" + driver + (string.IsNullOrEmpty(kernelDriver) ? string.Empty : ",kernel_driver=" + kernelDriver);
+
+            // 'renderNodePath' has higher priority than 'kernelDriver'
+            var driverOpts = string.IsNullOrEmpty(renderNodePath)
+                ? (string.IsNullOrEmpty(kernelDriver) ? string.Empty : ",kernel_driver=" + kernelDriver)
+                : renderNodePath;
+
+            // 'driver' behaves similarly to env LIBVA_DRIVER_NAME
+            driverOpts += string.IsNullOrEmpty(driver) ? string.Empty : ",driver=" + driver;
+
             var options = string.IsNullOrEmpty(srcDeviceAlias)
-                ? driverOpts
+                ? (string.IsNullOrEmpty(driverOpts) ? string.Empty : ":" + driverOpts)
                 : "@" + srcDeviceAlias;
 
             return string.Format(
@@ -872,14 +908,14 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (_mediaEncoder.IsVaapiDeviceInteliHD)
                 {
-                    args.Append(GetVaapiDeviceArgs(null, "iHD", null, null, VaapiAlias));
+                    args.Append(GetVaapiDeviceArgs(options.VaapiDevice, "iHD", null, null, VaapiAlias));
                 }
                 else if (_mediaEncoder.IsVaapiDeviceInteli965)
                 {
                     // Only override i965 since it has lower priority than iHD in libva lookup.
                     Environment.SetEnvironmentVariable("LIBVA_DRIVER_NAME", "i965");
                     Environment.SetEnvironmentVariable("LIBVA_DRIVER_NAME_JELLYFIN", "i965");
-                    args.Append(GetVaapiDeviceArgs(null, "i965", null, null, VaapiAlias));
+                    args.Append(GetVaapiDeviceArgs(options.VaapiDevice, "i965", null, null, VaapiAlias));
                 }
 
                 var filterDevArgs = string.Empty;
@@ -3307,7 +3343,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // [0:s]scale=s=1280x720
                 var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                 subFilters.Add(subSwScaleFilter);
-                overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
+                overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
             }
 
             return (mainFilters, subFilters, overlayFilters);
@@ -3484,7 +3520,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
 
                     subFilters.Add("hwupload=derive_device=cuda");
-                    overlayFilters.Add("overlay_cuda=eof_action=endall:shortest=1:repeatlast=0");
+                    overlayFilters.Add("overlay_cuda=eof_action=pass:repeatlast=0");
                 }
             }
             else
@@ -3493,7 +3529,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
-                    overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
+                    overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
                 }
             }
 
@@ -3682,7 +3718,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
 
                     subFilters.Add("hwupload=derive_device=opencl");
-                    overlayFilters.Add("overlay_opencl=eof_action=endall:shortest=1:repeatlast=0");
+                    overlayFilters.Add("overlay_opencl=eof_action=pass:repeatlast=0");
                     overlayFilters.Add("hwmap=derive_device=d3d11va:reverse=1");
                     overlayFilters.Add("format=d3d11");
                 }
@@ -3693,7 +3729,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
-                    overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
+                    overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
                 }
             }
 
@@ -3928,7 +3964,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         : string.Empty;
                     var overlayQsvFilter = string.Format(
                         CultureInfo.InvariantCulture,
-                        "overlay_qsv=eof_action=endall:shortest=1:repeatlast=0{0}",
+                        "overlay_qsv=eof_action=pass:repeatlast=0{0}",
                         overlaySize);
                     overlayFilters.Add(overlayQsvFilter);
                 }
@@ -3939,7 +3975,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
-                    overlayFilters.Add("overlay=eof_action=endall:shortest=1:repeatlast=0");
+                    overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
                 }
             }
 
@@ -4144,7 +4180,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         : string.Empty;
                     var overlayQsvFilter = string.Format(
                         CultureInfo.InvariantCulture,
-                        "overlay_qsv=eof_action=endall:shortest=1:repeatlast=0{0}",
+                        "overlay_qsv=eof_action=pass:repeatlast=0{0}",
                         overlaySize);
                     overlayFilters.Add(overlayQsvFilter);
                 }
@@ -4155,7 +4191,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
-                    overlayFilters.Add("overlay=eof_action=pass:shortest=1:repeatlast=0");
+                    overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
                 }
             }
 
@@ -4409,7 +4445,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         : string.Empty;
                     var overlayVaapiFilter = string.Format(
                         CultureInfo.InvariantCulture,
-                        "overlay_vaapi=eof_action=endall:shortest=1:repeatlast=0{0}",
+                        "overlay_vaapi=eof_action=pass:repeatlast=0{0}",
                         overlaySize);
                     overlayFilters.Add(overlayVaapiFilter);
                 }
@@ -4420,7 +4456,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
-                    overlayFilters.Add("overlay=eof_action=pass:shortest=1:repeatlast=0");
+                    overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
 
                     if (isVaapiEncoder)
                     {
@@ -4580,7 +4616,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 subFilters.Add("hwupload=derive_device=vulkan");
                 subFilters.Add("format=vulkan");
 
-                overlayFilters.Add("overlay_vulkan=eof_action=endall:shortest=1:repeatlast=0");
+                overlayFilters.Add("overlay_vulkan=eof_action=pass:repeatlast=0");
 
                 if (isSwEncoder)
                 {
@@ -4781,7 +4817,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     var subSwScaleFilter = GetCustomSwScaleFilter(inW, inH, reqW, reqH, reqMaxW, reqMaxH);
                     subFilters.Add(subSwScaleFilter);
-                    overlayFilters.Add("overlay=eof_action=pass:shortest=1:repeatlast=0");
+                    overlayFilters.Add("overlay=eof_action=pass:repeatlast=0");
 
                     if (isVaapiEncoder)
                     {
@@ -4916,6 +4952,15 @@ namespace MediaBrowser.Controller.MediaEncoding
             mainFilters?.RemoveAll(filter => string.IsNullOrEmpty(filter));
             subFilters?.RemoveAll(filter => string.IsNullOrEmpty(filter));
             overlayFilters?.RemoveAll(filter => string.IsNullOrEmpty(filter));
+
+            var framerate = GetFramerateParam(state);
+            if (framerate.HasValue)
+            {
+                mainFilters.Insert(0, string.Format(
+                    CultureInfo.InvariantCulture,
+                    "fps={0}",
+                    framerate.Value));
+            }
 
             var mainStr = string.Empty;
             if (mainFilters?.Count > 0)

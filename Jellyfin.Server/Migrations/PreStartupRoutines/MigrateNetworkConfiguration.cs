@@ -3,7 +3,7 @@ using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 using Emby.Server.Implementations;
-using Jellyfin.Networking.Configuration;
+using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Migrations.PreStartupRoutines;

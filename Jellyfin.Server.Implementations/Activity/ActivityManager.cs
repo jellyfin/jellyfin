@@ -68,7 +68,6 @@ namespace Jellyfin.Server.Implementations.Activity
                             Date = entity.DateCreated,
                             Severity = entity.LogSeverity
                         })
-                        .AsQueryable()
                         .ToListAsync()
                         .ConfigureAwait(false));
             }
@@ -80,11 +79,10 @@ namespace Jellyfin.Server.Implementations.Activity
             var dbContext = await _provider.CreateDbContextAsync().ConfigureAwait(false);
             await using (dbContext.ConfigureAwait(false))
             {
-                var entries = dbContext.ActivityLogs
-                    .Where(entry => entry.DateCreated <= startDate);
-
-                dbContext.RemoveRange(entries);
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
+                await dbContext.ActivityLogs
+                    .Where(entry => entry.DateCreated <= startDate)
+                    .ExecuteDeleteAsync()
+                    .ConfigureAwait(false);
             }
         }
 

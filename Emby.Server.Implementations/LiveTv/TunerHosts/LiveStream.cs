@@ -84,15 +84,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             return Task.CompletedTask;
         }
 
-        public Task Close()
+        public async Task Close()
         {
             EnableStreamSharing = false;
 
             Logger.LogInformation("Closing {Type}", GetType().Name);
 
-            LiveStreamCancellationTokenSource.Cancel();
-
-            return Task.CompletedTask;
+            await LiveStreamCancellationTokenSource.CancelAsync().ConfigureAwait(false);
         }
 
         public Stream GetStream()
@@ -112,6 +110,21 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
 
             return stream;
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool dispose)
+        {
+            if (dispose)
+            {
+                LiveStreamCancellationTokenSource?.Dispose();
+            }
         }
 
         protected async Task DeleteTempFiles(string path, int retryCount = 0)
@@ -136,7 +149,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
         }
 
-        private void TrySeek(Stream stream, long offset)
+        private void TrySeek(FileStream stream, long offset)
         {
             if (!stream.CanSeek)
             {

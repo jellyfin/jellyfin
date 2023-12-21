@@ -21,6 +21,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.MediaEncoding.Probing;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
@@ -28,8 +29,10 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using static Nikse.SubtitleEdit.Core.Common.IfoParser;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
@@ -415,9 +418,24 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public Task<MediaInfo> GetMediaInfo(MediaInfoRequest request, CancellationToken cancellationToken)
         {
             var extractChapters = request.MediaType == DlnaProfileType.Video && request.ExtractChapters;
-            var analyzeDuration = string.Empty;
+            var extraArgs = GetExtraArguments(request);
+
+            return GetMediaInfoInternal(
+                GetInputArgument(request.MediaSource.Path, request.MediaSource),
+                request.MediaSource.Path,
+                request.MediaSource.Protocol,
+                extractChapters,
+                extraArgs,
+                request.MediaType == DlnaProfileType.Audio,
+                request.MediaSource.VideoType,
+                cancellationToken);
+        }
+
+        internal string GetExtraArguments(MediaInfoRequest request)
+        {
             var ffmpegAnalyzeDuration = _config.GetFFmpegAnalyzeDuration() ?? string.Empty;
             var ffmpegProbeSize = _config.GetFFmpegProbeSize() ?? string.Empty;
+            var analyzeDuration = string.Empty;
             var extraArgs = string.Empty;
 
             if (request.MediaSource.AnalyzeDurationMs > 0)
@@ -439,15 +457,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 extraArgs += " -probesize " + ffmpegProbeSize;
             }
 
-            return GetMediaInfoInternal(
-                GetInputArgument(request.MediaSource.Path, request.MediaSource),
-                request.MediaSource.Path,
-                request.MediaSource.Protocol,
-                extractChapters,
-                extraArgs,
-                request.MediaType == DlnaProfileType.Audio,
-                request.MediaSource.VideoType,
-                cancellationToken);
+            if (request.MediaSource.RequiredHttpHeaders.TryGetValue("user_agent", out var userAgent))
+            {
+                extraArgs += " -user_agent " + userAgent;
+            }
+
+            return extraArgs;
         }
 
         /// <inheritdoc />
@@ -781,6 +796,191 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         /// <inheritdoc />
+        public Task<string> ExtractVideoImagesOnIntervalAccelerated(
+            string inputFile,
+            string container,
+            MediaSourceInfo mediaSource,
+            MediaStream imageStream,
+            int maxWidth,
+            TimeSpan interval,
+            bool allowHwAccel,
+            int? threads,
+            int? qualityScale,
+            ProcessPriorityClass? priority,
+            EncodingHelper encodingHelper,
+            CancellationToken cancellationToken)
+        {
+            var options = allowHwAccel ? _configurationManager.GetEncodingOptions() : new EncodingOptions();
+            threads ??= _threads;
+
+            // A new EncodingOptions instance must be used as to not disable HW acceleration for all of Jellyfin.
+            // Additionally, we must set a few fields without defaults to prevent null pointer exceptions.
+            if (!allowHwAccel)
+            {
+                options.EnableHardwareEncoding = false;
+                options.HardwareAccelerationType = string.Empty;
+                options.EnableTonemapping = false;
+            }
+
+            var baseRequest = new BaseEncodingJobOptions { MaxWidth = maxWidth, MaxFramerate = (float)(1.0 / interval.TotalSeconds) };
+            var jobState = new EncodingJobInfo(TranscodingJobType.Progressive)
+            {
+                IsVideoRequest = true,  // must be true for InputVideoHwaccelArgs to return non-empty value
+                MediaSource = mediaSource,
+                VideoStream = imageStream,
+                BaseRequest = baseRequest,  // GetVideoProcessingFilterParam errors if null
+                MediaPath = inputFile,
+                OutputVideoCodec = "mjpeg"
+            };
+            var vidEncoder = options.AllowMjpegEncoding ? encodingHelper.GetVideoEncoder(jobState, options) : jobState.OutputVideoCodec;
+
+            // Get input and filter arguments
+            var inputArg = encodingHelper.GetInputArgument(jobState, options, container).Trim();
+            if (string.IsNullOrWhiteSpace(inputArg))
+            {
+                throw new InvalidOperationException("EncodingHelper returned empty input arguments.");
+            }
+
+            if (!allowHwAccel)
+            {
+                inputArg = "-threads " + threads + " " + inputArg; // HW accel args set a different input thread count, only set if disabled
+            }
+
+            var filterParam = encodingHelper.GetVideoProcessingFilterParam(jobState, options, jobState.OutputVideoCodec).Trim();
+            if (string.IsNullOrWhiteSpace(filterParam))
+            {
+                throw new InvalidOperationException("EncodingHelper returned empty or invalid filter parameters.");
+            }
+
+            return ExtractVideoImagesOnIntervalInternal(inputArg, filterParam, vidEncoder, threads, qualityScale, priority, cancellationToken);
+        }
+
+        private async Task<string> ExtractVideoImagesOnIntervalInternal(
+            string inputArg,
+            string filterParam,
+            string vidEncoder,
+            int? outputThreads,
+            int? qualityScale,
+            ProcessPriorityClass? priority,
+            CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(inputArg))
+            {
+                throw new InvalidOperationException("Empty or invalid input argument.");
+            }
+
+            // Output arguments
+            var targetDirectory = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(targetDirectory);
+            var outputPath = Path.Combine(targetDirectory, "%08d.jpg");
+
+            // Final command arguments
+            var args = string.Format(
+                CultureInfo.InvariantCulture,
+                "-loglevel error {0} -an -sn {1} -threads {2} -c:v {3} {4}-f {5} \"{6}\"",
+                inputArg,
+                filterParam,
+                outputThreads.GetValueOrDefault(_threads),
+                vidEncoder,
+                qualityScale.HasValue ? "-qscale:v " + qualityScale.Value.ToString(CultureInfo.InvariantCulture) + " " : string.Empty,
+                "image2",
+                outputPath);
+
+            // Start ffmpeg process
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    FileName = _ffmpegPath,
+                    Arguments = args,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    ErrorDialog = false,
+                },
+                EnableRaisingEvents = true
+            };
+
+            var processDescription = string.Format(CultureInfo.InvariantCulture, "{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+            _logger.LogInformation("Trickplay generation: {ProcessDescription}", processDescription);
+
+            using (var processWrapper = new ProcessWrapper(process, this))
+            {
+                bool ranToCompletion = false;
+
+                await _thumbnailResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    StartProcess(processWrapper);
+
+                    // Set process priority
+                    if (priority.HasValue)
+                    {
+                        try
+                        {
+                            processWrapper.Process.PriorityClass = priority.Value;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogDebug(ex, "Unable to set process priority to {Priority} for {Description}", priority.Value, processDescription);
+                        }
+                    }
+
+                    // Need to give ffmpeg enough time to make all the thumbnails, which could be a while,
+                    // but we still need to detect if the process hangs.
+                    // Making the assumption that as long as new jpegs are showing up, everything is good.
+
+                    bool isResponsive = true;
+                    int lastCount = 0;
+                    var timeoutMs = _configurationManager.Configuration.ImageExtractionTimeoutMs;
+                    timeoutMs = timeoutMs <= 0 ? DefaultHdrImageExtractionTimeout : timeoutMs;
+
+                    while (isResponsive)
+                    {
+                        try
+                        {
+                            await process.WaitForExitAsync(TimeSpan.FromMilliseconds(timeoutMs)).ConfigureAwait(false);
+
+                            ranToCompletion = true;
+                            break;
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            // We don't actually expect the process to be finished in one timeout span, just that one image has been generated.
+                        }
+
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        var jpegCount = _fileSystem.GetFilePaths(targetDirectory).Count();
+
+                        isResponsive = jpegCount > lastCount;
+                        lastCount = jpegCount;
+                    }
+
+                    if (!ranToCompletion)
+                    {
+                        _logger.LogInformation("Stopping trickplay extraction due to process inactivity.");
+                        StopProcess(processWrapper, 1000);
+                    }
+                }
+                finally
+                {
+                    _thumbnailResourcePool.Release();
+                }
+
+                var exitCode = ranToCompletion ? processWrapper.ExitCode ?? 0 : -1;
+
+                if (exitCode == -1)
+                {
+                    _logger.LogError("ffmpeg image extraction failed for {ProcessDescription}", processDescription);
+
+                    throw new FfmpegException(string.Format(CultureInfo.InvariantCulture, "ffmpeg image extraction failed for {0}", processDescription));
+                }
+
+                return targetDirectory;
+            }
+        }
+
         public string GetTimeParameter(long ticks)
         {
             var time = TimeSpan.FromTicks(ticks);

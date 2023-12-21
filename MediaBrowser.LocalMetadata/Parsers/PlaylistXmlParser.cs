@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Xml;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Playlists;
@@ -31,7 +33,11 @@ namespace MediaBrowser.LocalMetadata.Parsers
             switch (reader.Name)
             {
                 case "PlaylistMediaType":
-                    item.PlaylistMediaType = reader.ReadNormalizedString();
+                    if (Enum.TryParse<MediaType>(reader.ReadNormalizedString(), out var mediaType))
+                    {
+                        item.PlaylistMediaType = mediaType;
+                    }
+
                     break;
                 case "PlaylistItems":
 

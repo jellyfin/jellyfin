@@ -80,7 +80,7 @@ These instructions will help you get set up with a local development environment
 
 ### Prerequisites
 
-Before the project can be built, you must first install the [.NET 7.0 SDK](https://dotnet.microsoft.com/download/dotnet) on your system.
+Before the project can be built, you must first install the [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet) on your system.
 
 Instructions to run this project from the command line are included here, but you will also need to install an IDE if you want to debug the server while it is running. Any IDE that supports .NET 6 development will work, but two options are recent versions of [Visual Studio](https://visualstudio.microsoft.com/downloads/) (at least 2022) and [Visual Studio Code](https://code.visualstudio.com/Download).
 
@@ -137,7 +137,7 @@ A second option is to build the project and then run the resulting executable fi
 
 ```bash
 dotnet build                       # Build the project
-cd Jellyfin.Server/bin/Debug/net7.0 # Change into the build output directory
+cd Jellyfin.Server/bin/Debug/net8.0 # Change into the build output directory
 ```
 
 2. Execute the build output. On Linux, Mac, etc. use `./jellyfin` and on Windows use `jellyfin.exe`.

@@ -37,12 +37,11 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
-    public class EmbyTV : ILiveTvService, ISupportsDirectStreamProvider, ISupportsNewTimerIds, IDisposable
+    public sealed class EmbyTV : ILiveTvService, ISupportsDirectStreamProvider, ISupportsNewTimerIds, IDisposable
     {
         public const string DateAddedFormat = "yyyy-MM-dd HH:mm:ss";
 
@@ -1273,7 +1272,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     directStreamProvider = liveStreamResponse.Item2;
                 }
 
-                var recorder = GetRecorder(mediaStreamInfo);
+                using var recorder = GetRecorder(mediaStreamInfo);
 
                 recordPath = recorder.GetOutputPath(mediaStreamInfo, recordPath);
                 recordPath = EnsureFileUnique(recordPath, timer.Id);
@@ -2528,21 +2527,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         /// <inheritdoc />
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
             if (_disposed)
             {
                 return;
             }
 
-            if (disposing)
-            {
-                _recordingDeleteSemaphore.Dispose();
-            }
+            _recordingDeleteSemaphore.Dispose();
 
             foreach (var pair in _activeRecordings.ToList())
             {

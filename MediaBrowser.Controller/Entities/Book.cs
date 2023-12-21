@@ -18,11 +18,14 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [JsonIgnore]
-        public override string MediaType => Model.Entities.MediaType.Book;
+        public override MediaType MediaType => MediaType.Book;
 
         public override bool SupportsPlayedStatus => true;
 
         public override bool SupportsPositionTicksResume => true;
+
+        [JsonIgnore]
+        public override bool SupportsPeople => true;
 
         [JsonIgnore]
         public string SeriesPresentationUniqueKey { get; set; }

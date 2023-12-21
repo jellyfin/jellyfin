@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Emby.Naming.Common;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -64,7 +65,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
 
             var collectionType = args.GetCollectionType();
 
-            var isMusicMediaFolder = string.Equals(collectionType, CollectionType.Music, StringComparison.OrdinalIgnoreCase);
+            var isMusicMediaFolder = collectionType == CollectionType.music;
 
             // If there's a collection type and it's not music, it can't be a music artist
             if (!isMusicMediaFolder)

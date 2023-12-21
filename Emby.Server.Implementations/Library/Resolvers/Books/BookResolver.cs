@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -22,7 +23,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
             var collectionType = args.GetCollectionType();
 
             // Only process items that are in a collection folder containing books
-            if (!string.Equals(collectionType, CollectionType.Books, StringComparison.OrdinalIgnoreCase))
+            if (collectionType != CollectionType.books)
             {
                 return null;
             }

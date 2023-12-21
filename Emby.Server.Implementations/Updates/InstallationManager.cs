@@ -321,9 +321,15 @@ namespace Emby.Server.Implementations.Updates
                 }
 
                 _completedInstallationsInternal.Add(package);
-                await _eventManager.PublishAsync(isUpdate
-                    ? (GenericEventArgs<InstallationInfo>)new PluginUpdatedEventArgs(package)
-                    : new PluginInstalledEventArgs(package)).ConfigureAwait(false);
+
+                if (isUpdate)
+                {
+                    await _eventManager.PublishAsync(new PluginUpdatedEventArgs(package)).ConfigureAwait(false);
+                }
+                else
+                {
+                    await _eventManager.PublishAsync(new PluginInstalledEventArgs(package)).ConfigureAwait(false);
+                }
 
                 _applicationHost.NotifyPendingRestart();
             }
@@ -551,8 +557,7 @@ namespace Emby.Server.Implementations.Updates
             }
 
             stream.Position = 0;
-            using var reader = new ZipArchive(stream);
-            reader.ExtractToDirectory(targetDir, true);
+            ZipFile.ExtractToDirectory(stream, targetDir, true);
 
             // Ensure we create one or populate existing ones with missing data.
             await _pluginManager.PopulateManifest(package.PackageInfo, package.Version, targetDir, status).ConfigureAwait(false);

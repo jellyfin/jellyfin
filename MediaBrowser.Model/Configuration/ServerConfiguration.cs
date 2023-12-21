@@ -159,6 +159,13 @@ public class ServerConfiguration : BaseApplicationConfiguration
     public int MaxAudiobookResume { get; set; } = 5;
 
     /// <summary>
+    /// Gets or sets the threshold in minutes after a inactive session gets closed automatically.
+    /// If set to 0 the check for inactive sessions gets disabled.
+    /// </summary>
+    /// <value>The close inactive session threshold in minutes. 0 to disable.</value>
+    public int InactiveSessionThreshold { get; set; } = 10;
+
+    /// <summary>
     /// Gets or sets the delay in seconds that we will wait after a file system change to try and discover what has been added/removed
     /// Some delay is necessary with some items because their creation is not atomic.  It involves the creation of several
     /// different directories and files.
@@ -270,4 +277,10 @@ public class ServerConfiguration : BaseApplicationConfiguration
     /// Gets or sets the list of cast receiver applications.
     /// </summary>
     public CastReceiverApplication[] CastReceiverApplications { get; set; } = Array.Empty<CastReceiverApplication>();
+
+    /// <summary>
+    /// Gets or sets the trickplay options.
+    /// </summary>
+    /// <value>The trickplay options.</value>
+    public TrickplayOptions TrickplayOptions { get; set; } = new TrickplayOptions();
 }

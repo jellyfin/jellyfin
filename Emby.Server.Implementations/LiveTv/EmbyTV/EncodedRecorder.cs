@@ -25,7 +25,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
-    public class EncodedRecorder : IRecorder, IDisposable
+    public class EncodedRecorder : IRecorder
     {
         private readonly ILogger _logger;
         private readonly IMediaEncoder _mediaEncoder;
@@ -34,10 +34,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private bool _hasExited;
-        private Stream _logFileStream;
+        private FileStream _logFileStream;
         private string _targetPath;
         private Process _process;
-        private bool _disposed = false;
+        private bool _disposed;
 
         public EncodedRecorder(
             ILogger logger,
@@ -308,7 +308,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private async Task StartStreamingLog(Stream source, Stream target)
+        private async Task StartStreamingLog(Stream source, FileStream target)
         {
             try
             {

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.EnvironmentDtos;
+using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.IO;
 using Microsoft.AspNetCore.Authorization;
@@ -168,7 +169,7 @@ public class EnvironmentController : BaseJellyfinApiController
             // Check if unc share
             var index = path.LastIndexOf(UncSeparator);
 
-            if (index != -1 && path.IndexOf(UncSeparator, StringComparison.OrdinalIgnoreCase) == 0)
+            if (index != -1 && path[0] == UncSeparator)
             {
                 parent = path.Substring(0, index);
 

@@ -17,8 +17,6 @@ using Jellyfin.Extensions;
 using Jellyfin.MediaEncoding.Hls.Playlist;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.MediaEncoding.Encoder;
@@ -49,12 +47,10 @@ public class DynamicHlsController : BaseJellyfinApiController
 
     private readonly ILibraryManager _libraryManager;
     private readonly IUserManager _userManager;
-    private readonly IDlnaManager _dlnaManager;
     private readonly IMediaSourceManager _mediaSourceManager;
     private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly IMediaEncoder _mediaEncoder;
     private readonly IFileSystem _fileSystem;
-    private readonly IDeviceManager _deviceManager;
     private readonly TranscodingJobHelper _transcodingJobHelper;
     private readonly ILogger<DynamicHlsController> _logger;
     private readonly EncodingHelper _encodingHelper;
@@ -67,12 +63,10 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// </summary>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-    /// <param name="dlnaManager">Instance of the <see cref="IDlnaManager"/> interface.</param>
     /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
     /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-    /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
     /// <param name="transcodingJobHelper">Instance of the <see cref="TranscodingJobHelper"/> class.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{DynamicHlsController}"/> interface.</param>
     /// <param name="dynamicHlsHelper">Instance of <see cref="DynamicHlsHelper"/>.</param>
@@ -81,12 +75,10 @@ public class DynamicHlsController : BaseJellyfinApiController
     public DynamicHlsController(
         ILibraryManager libraryManager,
         IUserManager userManager,
-        IDlnaManager dlnaManager,
         IMediaSourceManager mediaSourceManager,
         IServerConfigurationManager serverConfigurationManager,
         IMediaEncoder mediaEncoder,
         IFileSystem fileSystem,
-        IDeviceManager deviceManager,
         TranscodingJobHelper transcodingJobHelper,
         ILogger<DynamicHlsController> logger,
         DynamicHlsHelper dynamicHlsHelper,
@@ -95,12 +87,10 @@ public class DynamicHlsController : BaseJellyfinApiController
     {
         _libraryManager = libraryManager;
         _userManager = userManager;
-        _dlnaManager = dlnaManager;
         _mediaSourceManager = mediaSourceManager;
         _serverConfigurationManager = serverConfigurationManager;
         _mediaEncoder = mediaEncoder;
         _fileSystem = fileSystem;
-        _deviceManager = deviceManager;
         _transcodingJobHelper = transcodingJobHelper;
         _logger = logger;
         _dynamicHlsHelper = dynamicHlsHelper;
@@ -176,7 +166,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
-        [FromQuery] string? deviceProfileId,
+        [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
         [FromQuery] string? segmentContainer,
         [FromQuery] int? segmentLength,
@@ -231,7 +221,6 @@ public class DynamicHlsController : BaseJellyfinApiController
             Static = @static ?? false,
             Params = @params,
             Tag = tag,
-            DeviceProfileId = deviceProfileId,
             PlaySessionId = playSessionId,
             SegmentContainer = segmentContainer,
             SegmentLength = segmentLength,
@@ -294,8 +283,6 @@ public class DynamicHlsController : BaseJellyfinApiController
                 _serverConfigurationManager,
                 _mediaEncoder,
                 _encodingHelper,
-                _dlnaManager,
-                _deviceManager,
                 _transcodingJobHelper,
                 TranscodingJobType,
                 cancellationToken)
@@ -410,6 +397,7 @@ public class DynamicHlsController : BaseJellyfinApiController
     /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
     /// <param name="streamOptions">Optional. The streaming options.</param>
     /// <param name="enableAdaptiveBitrateStreaming">Enable adaptive bitrate streaming.</param>
+    /// <param name="enableTrickplay">Enable trickplay image playlists being added to master playlist.</param>
     /// <response code="200">Video stream returned.</response>
     /// <returns>A <see cref="FileResult"/> containing the playlist file.</returns>
     [HttpGet("Videos/{itemId}/master.m3u8")]
@@ -421,7 +409,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
-        [FromQuery] string? deviceProfileId,
+        [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
         [FromQuery] string? segmentContainer,
         [FromQuery] int? segmentLength,
@@ -467,7 +455,8 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] int? videoStreamIndex,
         [FromQuery] EncodingContext? context,
         [FromQuery] Dictionary<string, string> streamOptions,
-        [FromQuery] bool enableAdaptiveBitrateStreaming = true)
+        [FromQuery] bool enableAdaptiveBitrateStreaming = true,
+        [FromQuery] bool enableTrickplay = true)
     {
         var streamingRequest = new HlsVideoRequestDto
         {
@@ -475,7 +464,6 @@ public class DynamicHlsController : BaseJellyfinApiController
             Static = @static ?? false,
             Params = @params,
             Tag = tag,
-            DeviceProfileId = deviceProfileId,
             PlaySessionId = playSessionId,
             SegmentContainer = segmentContainer,
             SegmentLength = segmentLength,
@@ -521,7 +509,8 @@ public class DynamicHlsController : BaseJellyfinApiController
             VideoStreamIndex = videoStreamIndex,
             Context = context ?? EncodingContext.Streaming,
             StreamOptions = streamOptions,
-            EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming
+            EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming,
+            EnableTrickplay = enableTrickplay
         };
 
         return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
@@ -591,7 +580,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
-        [FromQuery] string? deviceProfileId,
+        [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
         [FromQuery] string? segmentContainer,
         [FromQuery] int? segmentLength,
@@ -644,7 +633,6 @@ public class DynamicHlsController : BaseJellyfinApiController
             Static = @static ?? false,
             Params = @params,
             Tag = tag,
-            DeviceProfileId = deviceProfileId,
             PlaySessionId = playSessionId,
             SegmentContainer = segmentContainer,
             SegmentLength = segmentLength,
@@ -757,7 +745,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
-        [FromQuery] string? deviceProfileId,
+        [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
         [FromQuery] string? segmentContainer,
         [FromQuery] int? segmentLength,
@@ -811,7 +799,6 @@ public class DynamicHlsController : BaseJellyfinApiController
             Static = @static ?? false,
             Params = @params,
             Tag = tag,
-            DeviceProfileId = deviceProfileId,
             PlaySessionId = playSessionId,
             SegmentContainer = segmentContainer,
             SegmentLength = segmentLength,
@@ -925,7 +912,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
-        [FromQuery] string? deviceProfileId,
+        [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
         [FromQuery] string? segmentContainer,
         [FromQuery] int? segmentLength,
@@ -978,7 +965,6 @@ public class DynamicHlsController : BaseJellyfinApiController
             Static = @static ?? false,
             Params = @params,
             Tag = tag,
-            DeviceProfileId = deviceProfileId,
             PlaySessionId = playSessionId,
             SegmentContainer = segmentContainer,
             SegmentLength = segmentLength,
@@ -1102,7 +1088,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
-        [FromQuery] string? deviceProfileId,
+        [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
         [FromQuery] string? segmentContainer,
         [FromQuery] int? segmentLength,
@@ -1158,7 +1144,6 @@ public class DynamicHlsController : BaseJellyfinApiController
             Static = @static ?? false,
             Params = @params,
             Tag = tag,
-            DeviceProfileId = deviceProfileId,
             PlaySessionId = playSessionId,
             SegmentContainer = segmentContainer,
             SegmentLength = segmentLength,
@@ -1283,7 +1268,7 @@ public class DynamicHlsController : BaseJellyfinApiController
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
-        [FromQuery] string? deviceProfileId,
+        [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
         [FromQuery] string? segmentContainer,
         [FromQuery] int? segmentLength,
@@ -1338,7 +1323,6 @@ public class DynamicHlsController : BaseJellyfinApiController
             Static = @static ?? false,
             Params = @params,
             Tag = tag,
-            DeviceProfileId = deviceProfileId,
             PlaySessionId = playSessionId,
             SegmentContainer = segmentContainer,
             SegmentLength = segmentLength,
@@ -1399,8 +1383,6 @@ public class DynamicHlsController : BaseJellyfinApiController
                 _serverConfigurationManager,
                 _mediaEncoder,
                 _encodingHelper,
-                _dlnaManager,
-                _deviceManager,
                 _transcodingJobHelper,
                 TranscodingJobType,
                 cancellationTokenSource.Token)
@@ -1439,8 +1421,6 @@ public class DynamicHlsController : BaseJellyfinApiController
                 _serverConfigurationManager,
                 _mediaEncoder,
                 _encodingHelper,
-                _dlnaManager,
-                _deviceManager,
                 _transcodingJobHelper,
                 TranscodingJobType,
                 cancellationToken)

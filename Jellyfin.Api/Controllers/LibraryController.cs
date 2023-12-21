@@ -14,6 +14,7 @@ using Jellyfin.Api.Models.LibraryDtos;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
+using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
@@ -778,7 +779,7 @@ public class LibraryController : BaseJellyfinApiController
     [Authorize(Policy = Policies.FirstTimeSetupOrDefault)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<LibraryOptionsResultDto> GetLibraryOptionsInfo(
-        [FromQuery] string? libraryContentType,
+        [FromQuery] CollectionType? libraryContentType,
         [FromQuery] bool isNewLibrary = false)
     {
         var result = new LibraryOptionsResultDto();
@@ -912,19 +913,19 @@ public class LibraryController : BaseJellyfinApiController
         }
     }
 
-    private static string[] GetRepresentativeItemTypes(string? contentType)
+    private static string[] GetRepresentativeItemTypes(CollectionType? contentType)
     {
         return contentType switch
         {
-            CollectionType.BoxSets => new[] { "BoxSet" },
-            CollectionType.Playlists => new[] { "Playlist" },
-            CollectionType.Movies => new[] { "Movie" },
-            CollectionType.TvShows => new[] { "Series", "Season", "Episode" },
-            CollectionType.Books => new[] { "Book" },
-            CollectionType.Music => new[] { "MusicArtist", "MusicAlbum", "Audio", "MusicVideo" },
-            CollectionType.HomeVideos => new[] { "Video", "Photo" },
-            CollectionType.Photos => new[] { "Video", "Photo" },
-            CollectionType.MusicVideos => new[] { "MusicVideo" },
+            CollectionType.boxsets => new[] { "BoxSet" },
+            CollectionType.playlists => new[] { "Playlist" },
+            CollectionType.movies => new[] { "Movie" },
+            CollectionType.tvshows => new[] { "Series", "Season", "Episode" },
+            CollectionType.books => new[] { "Book" },
+            CollectionType.music => new[] { "MusicArtist", "MusicAlbum", "Audio", "MusicVideo" },
+            CollectionType.homevideos => new[] { "Video", "Photo" },
+            CollectionType.photos => new[] { "Video", "Photo" },
+            CollectionType.musicvideos => new[] { "MusicVideo" },
             _ => new[] { "Series", "Season", "Episode", "Movie" }
         };
     }

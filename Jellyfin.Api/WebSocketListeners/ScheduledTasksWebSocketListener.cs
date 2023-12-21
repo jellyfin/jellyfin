@@ -58,8 +58,11 @@ public class ScheduledTasksWebSocketListener : BasePeriodicWebSocketListener<IEn
     /// <inheritdoc />
     protected override void Dispose(bool dispose)
     {
-        _taskManager.TaskExecuting -= OnTaskExecuting;
-        _taskManager.TaskCompleted -= OnTaskCompleted;
+        if (dispose)
+        {
+            _taskManager.TaskExecuting -= OnTaskExecuting;
+            _taskManager.TaskCompleted -= OnTaskCompleted;
+        }
 
         base.Dispose(dispose);
     }

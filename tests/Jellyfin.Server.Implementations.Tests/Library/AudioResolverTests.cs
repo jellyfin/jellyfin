@@ -1,6 +1,7 @@
 using System.Linq;
 using Emby.Naming.Common;
 using Emby.Server.Implementations.Library.Resolvers.Audio;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.IO;
@@ -62,7 +63,7 @@ public class AudioResolverTests
             null,
             Mock.Of<ILibraryManager>())
         {
-            CollectionType = "books",
+            CollectionType = CollectionType.books,
             FileInfo = new FileSystemMetadata
             {
                 FullName = parent,

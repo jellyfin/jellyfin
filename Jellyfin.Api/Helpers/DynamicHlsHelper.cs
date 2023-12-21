@@ -9,16 +9,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Models.StreamingDtos;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Trickplay;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Net;
@@ -36,58 +36,54 @@ public class DynamicHlsHelper
 {
     private readonly ILibraryManager _libraryManager;
     private readonly IUserManager _userManager;
-    private readonly IDlnaManager _dlnaManager;
     private readonly IMediaSourceManager _mediaSourceManager;
     private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly IMediaEncoder _mediaEncoder;
-    private readonly IDeviceManager _deviceManager;
     private readonly TranscodingJobHelper _transcodingJobHelper;
     private readonly INetworkManager _networkManager;
     private readonly ILogger<DynamicHlsHelper> _logger;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly EncodingHelper _encodingHelper;
+    private readonly ITrickplayManager _trickplayManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DynamicHlsHelper"/> class.
     /// </summary>
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-    /// <param name="dlnaManager">Instance of the <see cref="IDlnaManager"/> interface.</param>
     /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-    /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
     /// <param name="transcodingJobHelper">Instance of <see cref="TranscodingJobHelper"/>.</param>
     /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
     /// <param name="logger">Instance of the <see cref="ILogger{DynamicHlsHelper}"/> interface.</param>
     /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
     /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
+    /// <param name="trickplayManager">Instance of <see cref="ITrickplayManager"/>.</param>
     public DynamicHlsHelper(
         ILibraryManager libraryManager,
         IUserManager userManager,
-        IDlnaManager dlnaManager,
         IMediaSourceManager mediaSourceManager,
         IServerConfigurationManager serverConfigurationManager,
         IMediaEncoder mediaEncoder,
-        IDeviceManager deviceManager,
         TranscodingJobHelper transcodingJobHelper,
         INetworkManager networkManager,
         ILogger<DynamicHlsHelper> logger,
         IHttpContextAccessor httpContextAccessor,
-        EncodingHelper encodingHelper)
+        EncodingHelper encodingHelper,
+        ITrickplayManager trickplayManager)
     {
         _libraryManager = libraryManager;
         _userManager = userManager;
-        _dlnaManager = dlnaManager;
         _mediaSourceManager = mediaSourceManager;
         _serverConfigurationManager = serverConfigurationManager;
         _mediaEncoder = mediaEncoder;
-        _deviceManager = deviceManager;
         _transcodingJobHelper = transcodingJobHelper;
         _networkManager = networkManager;
         _logger = logger;
         _httpContextAccessor = httpContextAccessor;
         _encodingHelper = encodingHelper;
+        _trickplayManager = trickplayManager;
     }
 
     /// <summary>
@@ -134,14 +130,12 @@ public class DynamicHlsHelper
                 _serverConfigurationManager,
                 _mediaEncoder,
                 _encodingHelper,
-                _dlnaManager,
-                _deviceManager,
                 _transcodingJobHelper,
                 transcodingJobType,
                 cancellationTokenSource.Token)
             .ConfigureAwait(false);
 
-        _httpContextAccessor.HttpContext.Response.Headers.Add(HeaderNames.Expires, "0");
+        _httpContextAccessor.HttpContext.Response.Headers.Append(HeaderNames.Expires, "0");
         if (isHeadRequest)
         {
             return new FileContentResult(Array.Empty<byte>(), MimeTypes.GetMimeType("playlist.m3u8"));
@@ -278,6 +272,13 @@ public class DynamicHlsHelper
             newBitrate = totalBitrate - variation;
             variantUrl = ReplaceVideoBitrate(playlistUrl, requestedVideoBitrate, requestedVideoBitrate - variation);
             AppendPlaylist(builder, state, variantUrl, newBitrate, subtitleGroup);
+        }
+
+        if (!isLiveStream && (state.VideoRequest?.EnableTrickplay ?? false))
+        {
+            var sourceId = Guid.Parse(state.Request.MediaSourceId);
+            var trickplayResolutions = await _trickplayManager.GetTrickplayResolutions(sourceId).ConfigureAwait(false);
+            AddTrickplay(state, trickplayResolutions, builder, _httpContextAccessor.HttpContext.User);
         }
 
         return new FileContentResult(Encoding.UTF8.GetBytes(builder.ToString()), MimeTypes.GetMimeType("playlist.m3u8"));
@@ -509,6 +510,41 @@ public class DynamicHlsHelper
     }
 
     /// <summary>
+    /// Appends EXT-X-IMAGE-STREAM-INF playlists for each available trickplay resolution.
+    /// </summary>
+    /// <param name="state">StreamState of the current stream.</param>
+    /// <param name="trickplayResolutions">Dictionary of widths to corresponding tiles info.</param>
+    /// <param name="builder">StringBuilder to append the field to.</param>
+    /// <param name="user">Http user context.</param>
+    private void AddTrickplay(StreamState state, Dictionary<int, TrickplayInfo> trickplayResolutions, StringBuilder builder, ClaimsPrincipal user)
+    {
+        const string playlistFormat = "#EXT-X-IMAGE-STREAM-INF:BANDWIDTH={0},RESOLUTION={1}x{2},CODECS=\"jpeg\",URI=\"{3}\"";
+
+        foreach (var resolution in trickplayResolutions)
+        {
+            var width = resolution.Key;
+            var trickplayInfo = resolution.Value;
+
+            var url = string.Format(
+                CultureInfo.InvariantCulture,
+                "Trickplay/{0}/tiles.m3u8?MediaSourceId={1}&api_key={2}",
+                width.ToString(CultureInfo.InvariantCulture),
+                state.Request.MediaSourceId,
+                user.GetToken());
+
+            builder.AppendFormat(
+                CultureInfo.InvariantCulture,
+                playlistFormat,
+                trickplayInfo.Bandwidth.ToString(CultureInfo.InvariantCulture),
+                trickplayInfo.Width.ToString(CultureInfo.InvariantCulture),
+                trickplayInfo.Height.ToString(CultureInfo.InvariantCulture),
+                url);
+
+            builder.AppendLine();
+        }
+    }
+
+    /// <summary>
     /// Get the H.26X level of the output video stream.
     /// </summary>
     /// <param name="state">StreamState of the current stream.</param>
@@ -520,7 +556,7 @@ public class DynamicHlsHelper
             && state.VideoStream is not null
             && state.VideoStream.Level.HasValue)
         {
-            levelString = state.VideoStream.Level.ToString() ?? string.Empty;
+            levelString = state.VideoStream.Level.Value.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
         }
         else
         {

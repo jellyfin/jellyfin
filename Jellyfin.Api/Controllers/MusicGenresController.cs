@@ -85,7 +85,7 @@ public class MusicGenresController : BaseJellyfinApiController
         [FromQuery] string? nameStartsWithOrGreater,
         [FromQuery] string? nameStartsWith,
         [FromQuery] string? nameLessThan,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] sortBy,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemSortBy[] sortBy,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] SortOrder[] sortOrder,
         [FromQuery] bool? enableImages = true,
         [FromQuery] bool enableTotalRecordCount = true)
@@ -150,7 +150,7 @@ public class MusicGenresController : BaseJellyfinApiController
 
         MusicGenre? item;
 
-        if (genreName.IndexOf(BaseItem.SlugChar, StringComparison.OrdinalIgnoreCase) != -1)
+        if (genreName.Contains(BaseItem.SlugChar, StringComparison.OrdinalIgnoreCase))
         {
             item = GetItemFromSlugName<MusicGenre>(_libraryManager, genreName, dtoOptions, BaseItemKind.MusicGenre);
         }

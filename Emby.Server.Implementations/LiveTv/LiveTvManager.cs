@@ -207,7 +207,7 @@ namespace Emby.Server.Implementations.LiveTv
                 orderBy.Insert(0, (ItemSortBy.IsFavoriteOrLiked, SortOrder.Descending));
             }
 
-            if (!internalQuery.OrderBy.Any(i => string.Equals(i.OrderBy, ItemSortBy.SortName, StringComparison.OrdinalIgnoreCase)))
+            if (internalQuery.OrderBy.All(i => i.OrderBy != ItemSortBy.SortName))
             {
                 orderBy.Add((ItemSortBy.SortName, SortOrder.Ascending));
             }
@@ -1101,7 +1101,7 @@ namespace Emby.Server.Implementations.LiveTv
             progress.Report(100);
         }
 
-        private async Task<Tuple<List<Guid>, List<Guid>>> RefreshChannelsInternal(ILiveTvService service, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task<Tuple<List<Guid>, List<Guid>>> RefreshChannelsInternal(ILiveTvService service, ActionableProgress<double> progress, CancellationToken cancellationToken)
         {
             progress.Report(10);
 
@@ -2168,7 +2168,7 @@ namespace Emby.Server.Implementations.LiveTv
         public Folder GetInternalLiveTvFolder(CancellationToken cancellationToken)
         {
             var name = _localization.GetLocalizedString("HeaderLiveTV");
-            return _libraryManager.GetNamedView(name, CollectionType.LiveTv, name);
+            return _libraryManager.GetNamedView(name, CollectionType.livetv, name);
         }
 
         public async Task<TunerHostInfo> SaveTunerHost(TunerHostInfo info, bool dataSourceChanged = true)

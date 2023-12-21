@@ -6,12 +6,12 @@ set -o errexit
 set -o xtrace
 
 # Move to source directory
-pushd ${SOURCE_DIR}
+pushd "${SOURCE_DIR}"
 
 if [[ ${IS_DOCKER} == YES ]]; then
-    # Remove build-dep for dotnet-sdk-7.0, since it's installed manually
+    # Remove build-dep for dotnet-sdk-8.0, since it's installed manually
     cp -a debian/control /tmp/control.orig
-    sed -i '/dotnet-sdk-7.0,/d' debian/control
+    sed -i '/dotnet-sdk-8.0,/d' debian/control
 fi
 
 # Modify changelog to unstable configuration if IS_UNSTABLE
@@ -33,12 +33,12 @@ fi
 export CONFIG_SITE=/etc/dpkg-cross/cross-config.${ARCH}
 dpkg-buildpackage -us -uc -a arm64 --pre-clean --post-clean
 
-mkdir -p ${ARTIFACT_DIR}/
-mv ../jellyfin*.{deb,dsc,tar.gz,buildinfo,changes} ${ARTIFACT_DIR}/
+mkdir -p "${ARTIFACT_DIR}/"
+mv ../jellyfin*.{deb,dsc,tar.gz,buildinfo,changes} "${ARTIFACT_DIR}/"
 
 if [[ ${IS_DOCKER} == YES ]]; then
     cp -a /tmp/control.orig debian/control
-    chown -Rc $(stat -c %u:%g ${ARTIFACT_DIR}) ${ARTIFACT_DIR}
+    chown -Rc $(stat -c %u:%g "${ARTIFACT_DIR}") "${ARTIFACT_DIR}"
 fi
 
 popd

@@ -140,6 +140,9 @@
     <Rule Id="CA1812" Action="Info" />
     <!-- disable warning CA1822: Member does not access instance data and can be marked as static -->
     <Rule Id="CA1822" Action="Info" />
+    <!-- TODO: Enable -->
+    <!-- CA1861: Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array -->
+    <Rule Id="CA1861" Action="Info" />
     <!-- disable warning CA2000: Dispose objects before losing scope -->
     <Rule Id="CA2000" Action="Info" />
     <!-- disable warning CA2253: Named placeholders should not be numeric values -->

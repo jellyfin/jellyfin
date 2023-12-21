@@ -85,7 +85,7 @@ public class GenresController : BaseJellyfinApiController
         [FromQuery] string? nameStartsWithOrGreater,
         [FromQuery] string? nameStartsWith,
         [FromQuery] string? nameLessThan,
-        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] sortBy,
+        [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemSortBy[] sortBy,
         [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] SortOrder[] sortOrder,
         [FromQuery] bool? enableImages = true,
         [FromQuery] bool enableTotalRecordCount = true)
@@ -131,8 +131,8 @@ public class GenresController : BaseJellyfinApiController
 
         QueryResult<(BaseItem, ItemCounts)> result;
         if (parentItem is ICollectionFolder parentCollectionFolder
-            && (string.Equals(parentCollectionFolder.CollectionType, CollectionType.Music, StringComparison.Ordinal)
-                || string.Equals(parentCollectionFolder.CollectionType, CollectionType.MusicVideos, StringComparison.Ordinal)))
+            && (parentCollectionFolder.CollectionType == CollectionType.music
+                || parentCollectionFolder.CollectionType == CollectionType.musicvideos))
         {
             result = _libraryManager.GetMusicGenres(query);
         }

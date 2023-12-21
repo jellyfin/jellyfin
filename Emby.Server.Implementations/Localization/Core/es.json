@@ -124,5 +124,7 @@
     "TaskKeyframeExtractorDescription": "Extrae los fotogramas clave de los archivos de vídeo para crear listas HLS más precisas. Esta tarea puede tardar mucho tiempo.",
     "TaskKeyframeExtractor": "Extractor de Fotogramas Clave",
     "External": "Externo",
-    "HearingImpaired": "Discapacidad Auditiva"
+    "HearingImpaired": "Discapacidad Auditiva",
+    "TaskRefreshTrickplayImages": "Generar miniaturas de línea de tiempo",
+    "TaskRefreshTrickplayImagesDescription": "Crear miniaturas de tiempo para videos en las librerías habilitadas."
 }

@@ -359,6 +359,7 @@ namespace Jellyfin.Server.Implementations.Users
                     ForceRemoteSourceTranscoding = user.HasPermission(PermissionKind.ForceRemoteSourceTranscoding),
                     EnablePublicSharing = user.HasPermission(PermissionKind.EnablePublicSharing),
                     EnableCollectionManagement = user.HasPermission(PermissionKind.EnableCollectionManagement),
+                    EnableSubtitleManagement = user.HasPermission(PermissionKind.EnableSubtitleManagement),
                     AccessSchedules = user.AccessSchedules.ToArray(),
                     BlockedTags = user.GetPreference(PreferenceKind.BlockedTags),
                     AllowedTags = user.GetPreference(PreferenceKind.AllowedTags),
@@ -683,6 +684,7 @@ namespace Jellyfin.Server.Implementations.Users
                 user.SetPermission(PermissionKind.EnableRemoteControlOfOtherUsers, policy.EnableRemoteControlOfOtherUsers);
                 user.SetPermission(PermissionKind.EnablePlaybackRemuxing, policy.EnablePlaybackRemuxing);
                 user.SetPermission(PermissionKind.EnableCollectionManagement, policy.EnableCollectionManagement);
+                user.SetPermission(PermissionKind.EnableSubtitleManagement, policy.EnableSubtitleManagement);
                 user.SetPermission(PermissionKind.ForceRemoteSourceTranscoding, policy.ForceRemoteSourceTranscoding);
                 user.SetPermission(PermissionKind.EnablePublicSharing, policy.EnablePublicSharing);
 
@@ -746,7 +748,7 @@ namespace Jellyfin.Server.Implementations.Users
             return GetPasswordResetProviders(user)[0];
         }
 
-        private IList<IAuthenticationProvider> GetAuthenticationProviders(User? user)
+        private List<IAuthenticationProvider> GetAuthenticationProviders(User? user)
         {
             var authenticationProviderId = user?.AuthenticationProviderId;
 
@@ -773,7 +775,7 @@ namespace Jellyfin.Server.Implementations.Users
             return providers;
         }
 
-        private IList<IPasswordResetProvider> GetPasswordResetProviders(User user)
+        private IPasswordResetProvider[] GetPasswordResetProviders(User user)
         {
             var passwordResetProviderId = user.PasswordResetProviderId;
             var providers = _passwordResetProviders.Where(i => i.IsEnabled).ToArray();

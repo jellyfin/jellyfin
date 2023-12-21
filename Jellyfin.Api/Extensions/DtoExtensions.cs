@@ -38,10 +38,10 @@ public static class DtoExtensions
 
         if (!dtoOptions.ContainsField(ItemFields.RecursiveItemCount))
         {
-            if (client.IndexOf("kodi", StringComparison.OrdinalIgnoreCase) != -1 ||
-                client.IndexOf("wmc", StringComparison.OrdinalIgnoreCase) != -1 ||
-                client.IndexOf("media center", StringComparison.OrdinalIgnoreCase) != -1 ||
-                client.IndexOf("classic", StringComparison.OrdinalIgnoreCase) != -1)
+            if (client.Contains("kodi", StringComparison.OrdinalIgnoreCase) ||
+                client.Contains("wmc", StringComparison.OrdinalIgnoreCase) ||
+                client.Contains("media center", StringComparison.OrdinalIgnoreCase) ||
+                client.Contains("classic", StringComparison.OrdinalIgnoreCase))
             {
                 int oldLen = dtoOptions.Fields.Count;
                 var arr = new ItemFields[oldLen + 1];
@@ -53,13 +53,13 @@ public static class DtoExtensions
 
         if (!dtoOptions.ContainsField(ItemFields.ChildCount))
         {
-            if (client.IndexOf("kodi", StringComparison.OrdinalIgnoreCase) != -1 ||
-                client.IndexOf("wmc", StringComparison.OrdinalIgnoreCase) != -1 ||
-                client.IndexOf("media center", StringComparison.OrdinalIgnoreCase) != -1 ||
-                client.IndexOf("classic", StringComparison.OrdinalIgnoreCase) != -1 ||
-                client.IndexOf("roku", StringComparison.OrdinalIgnoreCase) != -1 ||
-                client.IndexOf("samsung", StringComparison.OrdinalIgnoreCase) != -1 ||
-                client.IndexOf("androidtv", StringComparison.OrdinalIgnoreCase) != -1)
+            if (client.Contains("kodi", StringComparison.OrdinalIgnoreCase) ||
+                client.Contains("wmc", StringComparison.OrdinalIgnoreCase) ||
+                client.Contains("media center", StringComparison.OrdinalIgnoreCase) ||
+                client.Contains("classic", StringComparison.OrdinalIgnoreCase) ||
+                client.Contains("roku", StringComparison.OrdinalIgnoreCase) ||
+                client.Contains("samsung", StringComparison.OrdinalIgnoreCase) ||
+                client.Contains("androidtv", StringComparison.OrdinalIgnoreCase))
             {
                 int oldLen = dtoOptions.Fields.Count;
                 var arr = new ItemFields[oldLen + 1];

@@ -16,7 +16,7 @@ namespace MediaBrowser.Model.Search
             IncludePeople = true;
             IncludeStudios = true;
 
-            MediaTypes = Array.Empty<string>();
+            MediaTypes = Array.Empty<MediaType>();
             IncludeItemTypes = Array.Empty<BaseItemKind>();
             ExcludeItemTypes = Array.Empty<BaseItemKind>();
         }
@@ -55,7 +55,7 @@ namespace MediaBrowser.Model.Search
 
         public bool IncludeArtists { get; set; }
 
-        public string[] MediaTypes { get; set; }
+        public MediaType[] MediaTypes { get; set; }
 
         public BaseItemKind[] IncludeItemTypes { get; set; }
 

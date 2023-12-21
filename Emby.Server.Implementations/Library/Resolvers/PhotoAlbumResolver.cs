@@ -2,6 +2,7 @@
 
 using System;
 using Emby.Naming.Common;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -45,8 +46,8 @@ namespace Emby.Server.Implementations.Library.Resolvers
                 // Must be an image file within a photo collection
                 var collectionType = args.GetCollectionType();
 
-                if (string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase)
-                    || (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) && args.LibraryOptions.EnablePhotos))
+                if (collectionType == CollectionType.photos
+                    || (collectionType == CollectionType.homevideos && args.LibraryOptions.EnablePhotos))
                 {
                     if (HasPhotos(args))
                     {

@@ -12,11 +12,10 @@ using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.StreamingDtos;
+using MediaBrowser.Common.Api;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -41,11 +40,9 @@ public class VideosController : BaseJellyfinApiController
     private readonly ILibraryManager _libraryManager;
     private readonly IUserManager _userManager;
     private readonly IDtoService _dtoService;
-    private readonly IDlnaManager _dlnaManager;
     private readonly IMediaSourceManager _mediaSourceManager;
     private readonly IServerConfigurationManager _serverConfigurationManager;
     private readonly IMediaEncoder _mediaEncoder;
-    private readonly IDeviceManager _deviceManager;
     private readonly TranscodingJobHelper _transcodingJobHelper;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly EncodingHelper _encodingHelper;
@@ -58,11 +55,9 @@ public class VideosController : BaseJellyfinApiController
     /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
     /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
     /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
-    /// <param name="dlnaManager">Instance of the <see cref="IDlnaManager"/> interface.</param>
     /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
     /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
     /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-    /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
     /// <param name="transcodingJobHelper">Instance of the <see cref="TranscodingJobHelper"/> class.</param>
     /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
     /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
@@ -70,11 +65,9 @@ public class VideosController : BaseJellyfinApiController
         ILibraryManager libraryManager,
         IUserManager userManager,
         IDtoService dtoService,
-        IDlnaManager dlnaManager,
         IMediaSourceManager mediaSourceManager,
         IServerConfigurationManager serverConfigurationManager,
         IMediaEncoder mediaEncoder,
-        IDeviceManager deviceManager,
         TranscodingJobHelper transcodingJobHelper,
         IHttpClientFactory httpClientFactory,
         EncodingHelper encodingHelper)
@@ -82,11 +75,9 @@ public class VideosController : BaseJellyfinApiController
         _libraryManager = libraryManager;
         _userManager = userManager;
         _dtoService = dtoService;
-        _dlnaManager = dlnaManager;
         _mediaSourceManager = mediaSourceManager;
         _serverConfigurationManager = serverConfigurationManager;
         _mediaEncoder = mediaEncoder;
-        _deviceManager = deviceManager;
         _transcodingJobHelper = transcodingJobHelper;
         _httpClientFactory = httpClientFactory;
         _encodingHelper = encodingHelper;
@@ -323,7 +314,7 @@ public class VideosController : BaseJellyfinApiController
         [FromQuery] bool? @static,
         [FromQuery] string? @params,
         [FromQuery] string? tag,
-        [FromQuery] string? deviceProfileId,
+        [FromQuery, ParameterObsolete] string? deviceProfileId,
         [FromQuery] string? playSessionId,
         [FromQuery] string? segmentContainer,
         [FromQuery] int? segmentLength,
@@ -380,7 +371,6 @@ public class VideosController : BaseJellyfinApiController
             Static = @static ?? false,
             Params = @params,
             Tag = tag,
-            DeviceProfileId = deviceProfileId,
             PlaySessionId = playSessionId,
             SegmentContainer = segmentContainer,
             SegmentLength = segmentLength,
@@ -437,8 +427,6 @@ public class VideosController : BaseJellyfinApiController
                 _serverConfigurationManager,
                 _mediaEncoder,
                 _encodingHelper,
-                _dlnaManager,
-                _deviceManager,
                 _transcodingJobHelper,
                 _transcodingJobType,
                 cancellationTokenSource.Token)
@@ -446,8 +434,6 @@ public class VideosController : BaseJellyfinApiController
 
         if (@static.HasValue && @static.Value && state.DirectStreamProvider is not null)
         {
-            StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, state.Request.StartTimeTicks, Request, _dlnaManager);
-
             var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfo(streamingRequest.LiveStreamId);
             if (liveStreamInfo is null)
             {
@@ -462,8 +448,6 @@ public class VideosController : BaseJellyfinApiController
         // Static remote stream
         if (@static.HasValue && @static.Value && state.InputProtocol == MediaProtocol.Http)
         {
-            StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, state.Request.StartTimeTicks, Request, _dlnaManager);
-
             var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
             return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, httpClient, HttpContext).ConfigureAwait(false);
         }
@@ -474,12 +458,6 @@ public class VideosController : BaseJellyfinApiController
         }
 
         var outputPath = state.OutputFilePath;
-        var outputPathExists = System.IO.File.Exists(outputPath);
-
-        var transcodingJob = _transcodingJobHelper.GetTranscodingJob(outputPath, TranscodingJobType.Progressive);
-        var isTranscodeCached = outputPathExists && transcodingJob is not null;
-
-        StreamingHelpers.AddDlnaHeaders(state, Response.Headers, (@static.HasValue && @static.Value) || isTranscodeCached, state.Request.StartTimeTicks, Request, _dlnaManager);
 
         // Static stream
         if (@static.HasValue && @static.Value)

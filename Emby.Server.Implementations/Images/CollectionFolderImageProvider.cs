@@ -30,47 +30,43 @@ namespace Emby.Server.Implementations.Images
 
             BaseItemKind[] includeItemTypes;
 
-            if (string.Equals(viewType, CollectionType.Movies, StringComparison.Ordinal))
+            switch (viewType)
             {
-                includeItemTypes = new[] { BaseItemKind.Movie };
-            }
-            else if (string.Equals(viewType, CollectionType.TvShows, StringComparison.Ordinal))
-            {
-                includeItemTypes = new[] { BaseItemKind.Series };
-            }
-            else if (string.Equals(viewType, CollectionType.Music, StringComparison.Ordinal))
-            {
-                includeItemTypes = new[] { BaseItemKind.MusicAlbum };
-            }
-            else if (string.Equals(viewType, CollectionType.MusicVideos, StringComparison.Ordinal))
-            {
-                includeItemTypes = new[] { BaseItemKind.MusicVideo };
-            }
-            else if (string.Equals(viewType, CollectionType.Books, StringComparison.Ordinal))
-            {
-                includeItemTypes = new[] { BaseItemKind.Book, BaseItemKind.AudioBook };
-            }
-            else if (string.Equals(viewType, CollectionType.BoxSets, StringComparison.Ordinal))
-            {
-                includeItemTypes = new[] { BaseItemKind.BoxSet };
-            }
-            else if (string.Equals(viewType, CollectionType.HomeVideos, StringComparison.Ordinal) || string.Equals(viewType, CollectionType.Photos, StringComparison.Ordinal))
-            {
-                includeItemTypes = new[] { BaseItemKind.Video, BaseItemKind.Photo };
-            }
-            else
-            {
-                includeItemTypes = new[] { BaseItemKind.Video, BaseItemKind.Audio, BaseItemKind.Photo, BaseItemKind.Movie, BaseItemKind.Series };
+                case CollectionType.movies:
+                    includeItemTypes = new[] { BaseItemKind.Movie };
+                    break;
+                case CollectionType.tvshows:
+                    includeItemTypes = new[] { BaseItemKind.Series };
+                    break;
+                case CollectionType.music:
+                    includeItemTypes = new[] { BaseItemKind.MusicAlbum };
+                    break;
+                case CollectionType.musicvideos:
+                    includeItemTypes = new[] { BaseItemKind.MusicVideo };
+                    break;
+                case CollectionType.books:
+                    includeItemTypes = new[] { BaseItemKind.Book, BaseItemKind.AudioBook };
+                    break;
+                case CollectionType.boxsets:
+                    includeItemTypes = new[] { BaseItemKind.BoxSet };
+                    break;
+                case CollectionType.homevideos:
+                case CollectionType.photos:
+                    includeItemTypes = new[] { BaseItemKind.Video, BaseItemKind.Photo };
+                    break;
+                default:
+                    includeItemTypes = new[] { BaseItemKind.Video, BaseItemKind.Audio, BaseItemKind.Photo, BaseItemKind.Movie, BaseItemKind.Series };
+                    break;
             }
 
-            var recursive = !string.Equals(CollectionType.Playlists, viewType, StringComparison.OrdinalIgnoreCase);
+            var recursive = viewType != CollectionType.playlists;
 
             return view.GetItemList(new InternalItemsQuery
             {
                 CollapseBoxSetItems = false,
                 Recursive = recursive,
                 DtoOptions = new DtoOptions(false),
-                ImageTypes = new ImageType[] { ImageType.Primary },
+                ImageTypes = new[] { ImageType.Primary },
                 Limit = 8,
                 OrderBy = new[]
                 {

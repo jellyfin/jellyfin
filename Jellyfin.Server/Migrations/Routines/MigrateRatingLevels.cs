@@ -78,11 +78,7 @@ namespace Jellyfin.Server.Migrations.Routines
                     }
                     else
                     {
-                        var ratingValue = _localizationManager.GetRatingLevel(ratingString).ToString();
-                        if (string.IsNullOrEmpty(ratingValue))
-                        {
-                            ratingValue = "NULL";
-                        }
+                        var ratingValue = _localizationManager.GetRatingLevel(ratingString)?.ToString(CultureInfo.InvariantCulture) ?? "NULL";
 
                         using var statement = connection.PrepareStatement("UPDATE TypedBaseItems SET InheritedParentalRatingValue = @Value WHERE OfficialRating = @Rating;");
                         statement.TryBind("@Value", ratingValue);

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Querying;
@@ -16,21 +17,21 @@ namespace MediaBrowser.Controller.Entities
 {
     public class UserView : Folder, IHasCollectionType
     {
-        private static readonly string[] _viewTypesEligibleForGrouping = new string[]
+        private static readonly CollectionType?[] _viewTypesEligibleForGrouping =
         {
-            Model.Entities.CollectionType.Movies,
-            Model.Entities.CollectionType.TvShows,
-            string.Empty
+            Jellyfin.Data.Enums.CollectionType.movies,
+            Jellyfin.Data.Enums.CollectionType.tvshows,
+            null
         };
 
-        private static readonly string[] _originalFolderViewTypes = new string[]
+        private static readonly CollectionType?[] _originalFolderViewTypes =
         {
-            Model.Entities.CollectionType.Books,
-            Model.Entities.CollectionType.MusicVideos,
-            Model.Entities.CollectionType.HomeVideos,
-            Model.Entities.CollectionType.Photos,
-            Model.Entities.CollectionType.Music,
-            Model.Entities.CollectionType.BoxSets
+            Jellyfin.Data.Enums.CollectionType.books,
+            Jellyfin.Data.Enums.CollectionType.musicvideos,
+            Jellyfin.Data.Enums.CollectionType.homevideos,
+            Jellyfin.Data.Enums.CollectionType.photos,
+            Jellyfin.Data.Enums.CollectionType.music,
+            Jellyfin.Data.Enums.CollectionType.boxsets
         };
 
         public static ITVSeriesManager TVSeriesManager { get; set; }
@@ -38,7 +39,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Gets or sets the view type.
         /// </summary>
-        public string ViewType { get; set; }
+        public CollectionType? ViewType { get; set; }
 
         /// <summary>
         /// Gets or sets the display parent id.
@@ -52,7 +53,7 @@ namespace MediaBrowser.Controller.Entities
 
         /// <inheritdoc />
         [JsonIgnore]
-        public string CollectionType => ViewType;
+        public CollectionType? CollectionType => ViewType;
 
         /// <inheritdoc />
         [JsonIgnore]
@@ -160,7 +161,7 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            return string.Equals(Model.Entities.CollectionType.Playlists, collectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase);
+            return collectionFolder.CollectionType == Jellyfin.Data.Enums.CollectionType.playlists;
         }
 
         public static bool IsEligibleForGrouping(Folder folder)
@@ -169,14 +170,14 @@ namespace MediaBrowser.Controller.Entities
                     && IsEligibleForGrouping(collectionFolder.CollectionType);
         }
 
-        public static bool IsEligibleForGrouping(string viewType)
+        public static bool IsEligibleForGrouping(CollectionType? viewType)
         {
-            return _viewTypesEligibleForGrouping.Contains(viewType ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+            return _viewTypesEligibleForGrouping.Contains(viewType);
         }
 
-        public static bool EnableOriginalFolder(string viewType)
+        public static bool EnableOriginalFolder(CollectionType? viewType)
         {
-            return _originalFolderViewTypes.Contains(viewType ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+            return _originalFolderViewTypes.Contains(viewType);
         }
 
         protected override Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, Providers.MetadataRefreshOptions refreshOptions, Providers.IDirectoryService directoryService, System.Threading.CancellationToken cancellationToken)

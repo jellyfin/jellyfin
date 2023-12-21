@@ -88,7 +88,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         public bool SupportsFileExtension(string fileExtension)
             => _subtitleFormats.ContainsKey(fileExtension);
 
-        private IEnumerable<SubtitleFormat> GetSubtitleFormats()
+        private List<SubtitleFormat> GetSubtitleFormats()
         {
             var subtitleFormats = new List<SubtitleFormat>();
             var assembly = typeof(SubtitleFormat).Assembly;

@@ -1,4 +1,4 @@
-using Jellyfin.Networking.Configuration;
+using MediaBrowser.Common.Net;
 using Xunit;
 
 namespace Jellyfin.Networking.Tests.Configuration;
@@ -6,7 +6,6 @@ namespace Jellyfin.Networking.Tests.Configuration;
 public static class NetworkConfigurationTests
 {
     [Theory]
-    [InlineData("", null)]
     [InlineData("", "")]
     [InlineData("/Test", "/Test")]
     [InlineData("/Test", "Test")]
