@@ -24,6 +24,8 @@ public sealed class VirtualFolderManager : IVirtualFolderManager
 {
     private const string ShortcutFileExtension = ".mblink";
 
+    private static readonly string[] _collectionExtensions = [".collection"];
+
     private readonly ILogger<VirtualFolderManager> _logger;
     private readonly IServerApplicationHost _appHost;
     private readonly IServerConfigurationManager _configurationManager;
@@ -311,7 +313,7 @@ public sealed class VirtualFolderManager : IVirtualFolderManager
 
     private CollectionTypeOptions? GetCollectionType(string path)
     {
-        var files = _fileSystem.GetFilePaths(path, new[] { ".collection" }, true, false);
+        var files = _fileSystem.GetFilePaths(path, _collectionExtensions, true, false);
         foreach (ReadOnlySpan<char> file in files)
         {
             if (Enum.TryParse<CollectionTypeOptions>(Path.GetFileNameWithoutExtension(file), true, out var res))
